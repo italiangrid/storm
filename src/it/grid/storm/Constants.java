@@ -2,7 +2,7 @@ package it.grid.storm;
 
 public class Constants {
 
-  public static Entry BE_VERSION = new Entry("BE-Version","1.3.19-02");
+  public static Entry BE_VERSION = new Entry("BE-Version","1.3.20");
 
   public static class Entry
    {
