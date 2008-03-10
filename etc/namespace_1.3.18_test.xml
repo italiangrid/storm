@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<namespace version="1.3.18" xsi:noNamespaceSchemaLocation="namespace-1.3.18.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <filesystems>
+        <filesystem name="scratch-FS" fs_type="ext3">
+            <space-token-description>default</space-token-description>
+            <root>/mnt/gpfs/tmp</root>
+            <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+            <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+            <authorization-source>permit-all</authorization-source>
+            <properties>
+                <RetentionPolicy>custodial</RetentionPolicy>
+                <AccessLatency>online</AccessLatency>
+                <ExpirationMode>neverExpire</ExpirationMode>
+                <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+                <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+            </properties>
+            <capabilities>
+                <aclMode>AoT</aclMode>
+                <trans-prot>
+                    <prot name="file">
+                        <schema>file</schema>
+                    </prot>
+                    <prot name="gsiftp">
+                        <schema>gsiftp</schema>
+                        <host>gridftp-storm.cr.cnaf.infn.it</host>
+                    </prot>
+                </trans-prot>
+            </capabilities>
+            <defaults-values>
+                <space type="permanent" lifetime="2147483647" guarsize="2147483647" totalsize="2147483647"/>
+                <file type="volatile" lifetime="2147483647"/>
+            </defaults-values>
+        </filesystem>
+        <filesystem name="LHCB-FS" fs_type="gpfs">
+            <space-token-description>lhcb:LHCb_RAW</space-token-description>
+            <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
+            <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+            <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+            <properties>
+                <RetentionPolicy>custodial</RetentionPolicy>
+                <AccessLatency>online</AccessLatency>
+                <ExpirationMode>neverExpire</ExpirationMode>
+                <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+                <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+            </properties>
+            <capabilities>
+                <aclMode>AoT</aclMode>
+                <disk-quota-check>true</disk-quota-check>
+                <trans-prot>
+                    <prot name="file">
+                        <schema>file</schema>
+                    </prot>
+                    <prot name="rfio">
+                        <schema>rfio</schema>
+                        <host>gpfs-farm-1.cr.cnaf.infn.it</host>
+                        <port>5001</port>
+                    </prot>
+                </trans-prot>
+            </capabilities>
+        </filesystem>
+    </filesystems>
+    <mapping-rules>
+        <map-rule name="LHCB-maprule">
+            <stfn-root>/lhcb</stfn-root>
+            <mapped-fs>LHCB-FS</mapped-fs>
+        </map-rule>
+        <map-rule name="Scratch-rule">
+            <stfn-root>/scratch</stfn-root>
+            <mapped-fs>scratch-FS</mapped-fs>
+        </map-rule>
+    </mapping-rules>
+    <approachable-rules>
+        <app-rule name="LHCB-AppRule">
+            <subjects>
+                <dn>*</dn>
+                <vo-name>lhcb</vo-name>
+            </subjects>
+            <approachable-fs>LHCB-FS*, scratch-FS</approachable-fs>
+        </app-rule>
+        <app-rule name="scratch-AppRule">
+            <subjects>
+                <dn>*</dn>
+            </subjects>
+            <approachable-fs>scratch-FS</approachable-fs>
+            <space-rel-path>/spacefiles/</space-rel-path>
+        </app-rule>
+        <app-rule name="SuperUsers-AppRule">
+            <subjects>
+                <dn>C=IT,O=INFN,CN=Riccardo Zappi</dn>
+            </subjects>
+            <approachable-fs>LHCB-FS, scratch-FS*</approachable-fs>
+        </app-rule>
+    </approachable-rules>
+</namespace>
+

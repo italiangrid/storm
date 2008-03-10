@@ -1,0 +1,22 @@
+TODO:
+
+- Need to rework the configuration file format to XML or another
+  hierarchical one, to exploit the new tree structure of AuthzSources;
+  Jakarta XMLBeans is probably the way to go.
+
+
+- move the class finding algortihm from config.Configuration to a
+  local (private) class, so that AuthorizationCollector will be the
+  only package-public class (is this useful? probably not)
+
+
+DONE:
+
+- create a CompositeAuthorizationSource class, which has the same
+  logic as the AuthorizationCollector, thus allowing to have *trees*
+  of authorization sources, each branching node having its own
+  combining algorithm.
+
+  Then, AuthorizationCollector will be just the root instance of
+  CombiningAuthorizationSource. 
+

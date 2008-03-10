@@ -1,0 +1,17 @@
+The StoRM BE server software includes libraries developed by many
+third-parties:
+
+  * StoRM BE includes material developed by the Globus Project
+    (http://www.globus.org/).
+
+  * This product includes software developed by the 
+    Apache Software Foundation (http://www.apache.org/).
+
+  * This product includes software developed by Greg Luck
+    (http://sourceforge.net/users/gregluck) and contributors.
+    See http://sourceforge.net/project/memberlist.php?group_id=93232
+    for a list of contributors
+
+  * Due credit should be given to the DOM4J Project - http://www.dom4j.org
+
+

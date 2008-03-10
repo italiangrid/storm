@@ -1,0 +1,79 @@
+1) Problem with dlopen(): the ``liblcmaps_interface.so`` shared object
+needs to be linked with explicit reference to any LCMAPS plugin it
+wishes to load (see ``LIBS`` in ``lcmaps_interface.mk``), or plugin
+loading at runtime will fail with some ``dlopen()`` error.
+
+Looks like ``dlopen()`` cannot resolve symbols that are in some
+library that is not directly referenced by the main program body::
+
+  java
+    `-- dlopen() --> liblcmap_interface.so
+                       `-- dlopen() --> liblcmaps_without_gsi.so
+										  `-- dlopen() --> liblcmaps_good.so
+
+This has to be checked with the LCMAPS maintainer.  
+
+UPDATE 2006-01: checked with LCMAPS maintainer; looks like the problem
+is in the way JVM calls dlopen(), but the bug shows up only in SLC3,
+not on Debian.  Anyway, no one has a clue on this topic.
+
+
+
+2) UPDATE 2006-03-15: corrected memory leak by moving to a C++ version
+of the lcmaps_interface; the "solution" below was not working, due to
+free()ing memory while it was still being used by the JVM: the
+lifetime of the underlying C/C++ structure must be *at least* equal to
+the lifetime of the corresponding Java object.
+
+THE FOLLOWING IS THEREFORE INCORRECT:
+
+  UPDATE 2006-01-24: Corrected memory leak in the lcmaps_interface.i
+  code; see comment in the file.  I tested sample code that was
+  allocating a struct and passing it to Java, and it does not leak if we
+  are using the %newobject+%typemap(newfree) mathod.
+
+THE FOLLOWING REMARKS ARE THEREFORE OBSOLETE:
+
+This code *may have* a memory leak, in that the wrapper code in
+VomsInfo.java actually does a shallow free() of the voms_info
+structure::
+
+    protected void finalize() {
+	  delete();
+	}
+
+	public void delete() 
+	{
+	  if(swigCPtr != 0 && swigCMemOwn) {
+		swigCMemOwn = false;
+			voms_interface.voms_info_delete(this);        
+	  }
+	  swigCPtr = 0;
+	}
+
+If the Java objects corresponding to the C members of the structure
+hold a reference to the C object underneath, then *all is OK.*
+
+If the objects corresponding to the C members of the structure are
+*copies* of the C objects underneath, then *we have a memory leak.*
+
+If we have a memory leak, then a solution could be along these lines::
+
+  // override default delete() implementation
+  %typemap(javadestruct, methodname="delete") struct voms_info %{
+	{
+	  if(swigCPtr != 0 && swigCMemOwn) {
+		swigCMemOwn = false;
+		voms_interface.voms_info_delete(this);	
+	  }
+	  swigCPtr = 0;
+	}
+  %}
+  // import voms_interface into voms_info
+  %typemap(javaimports) struct voms_info %{
+    import it.grid.storm.griduser.swig.voms_interface;
+  %}
+
+But I have yet to read the memory management part of the SWIG
+manual... 
+

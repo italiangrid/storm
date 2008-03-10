@@ -1,0 +1,184 @@
+/**
+ * This class represents the TReturnStatus value in SRM request.
+ * It is composed by a TStatusCode and an explanetion String
+ *
+ * @author  Magnoni Luca
+ * @author  CNAF - INFN  Bologna
+ * @date    Avril, 2005
+ * @version 1.0
+ */
+package it.grid.storm.srm.types;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+public class TReturnStatus implements Serializable
+{
+    private TStatusCode  statusCode   = null;          //TStatusCode.SRM_CUSTOM_STATUS;??
+    private String       explanation;
+
+    public static String PNAME_RETURNSTATUS = "returnStatus";
+    public static String PNAME_STATUS       = "status";
+
+    /**
+     * Default constructor that makes a TReturnStatus with SRM_CUSTOM_STATUS, and
+     * explanation String "undefined".
+     */
+    public TReturnStatus() {
+        this.statusCode = TStatusCode.SRM_CUSTOM_STATUS;
+        this.explanation = "undefined";
+    }
+
+    /**
+     * Can be Explanation String a null value?
+     */
+    public TReturnStatus(TStatusCode statusCode, String explanation) throws InvalidTReturnStatusAttributeException {
+        if (statusCode == null)
+            throw new InvalidTReturnStatusAttributeException(statusCode, explanation);
+        this.statusCode = statusCode;
+        this.explanation = explanation;
+    }
+
+    /**
+     * Method used to set the TStatusCode: an InvalidTReturnStatusAttributeException
+     * is thrown if the supplied statusCode is null.
+     */
+    public void setStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException
+    {
+        if (statusCode == null)
+            throw new InvalidTReturnStatusAttributeException(statusCode, explanation);
+        this.statusCode = statusCode;
+    }
+
+    /**
+     * Returns the status code
+     * @return TStatusCode
+     */
+    public TStatusCode getStatusCode()
+    {
+        return statusCode;
+    }
+
+    /**
+     * Set explanation string
+     * @param expl String
+     */
+    public void setExplanation(String explanationString)
+    {
+        explanation = explanationString;
+    }
+
+    /**
+     * Returns the explanation string
+     * @return String
+     */
+    public String getExplanation()
+    {
+        return explanation;
+    }
+
+    /**
+     * This metod encode a TReturnStatus Object into an Hashtable used for xmlrpc comunication.
+     */
+    public void encode(Map outputParam, String name)
+    {
+        //      Return STATUS OF REQUEST
+        Map globalStatus = new HashMap();
+        String globalSCode = this.getStatusCode().getValue();
+        String member_globalSCode = new String("statusCode");
+        globalStatus.put(member_globalSCode, globalSCode);
+        String g_explanation = this.getExplanation();
+        String member_g_expl = new String("explanation");
+        globalStatus.put(member_g_expl, g_explanation);
+
+        //Insert TReturnStatus struct into global Output structure
+        outputParam.put(name, globalStatus);
+
+    }
+
+    public String toString()
+    {
+        return statusCode + ": " + explanation;
+    }
+
+	public boolean isSRM_SUCCESS() {
+		if (statusCode.equals(TStatusCode.SRM_SUCCESS))
+			return true;
+		else
+			return false;
+	}
+
+    //WARNING!!!
+    //No equals(Object) and hashCode(): this may be dangerous
+    //if these Objects get used in containers!
+
+    /*   public static void main(String[] args) {
+     //Testing object creation
+     System.out.println("Testing default constructor...");
+     TReturnStatus s1 = new TReturnStatus();
+     System.out.println("Should see SRM_CUSTOM_STATUS: undefined");
+     System.out.println(s1);
+     System.out.println("Code: "+s1.getStatusCode()+"; explanation: "+s1.getExplanation());
+     //
+     //Testing constructor
+     System.out.println("\n\nTesting constructor...");
+     try {
+     String str = "Cannot proceed because authentication failed.";
+     TStatusCode stc = TStatusCode.SRM_AUTHENTICATION_FAILURE;
+     TReturnStatus s2 = new TReturnStatus(stc,str);
+     System.out.println("Should see "+stc+": "+str);
+     System.out.println(s2);
+     System.out.println("Code: "+s2.getStatusCode()+"; explanation: "+s2.getExplanation());
+     } catch (Exception e) {
+     System.out.println("Should not see this!");
+     }
+     try {
+     String str = null;
+     TStatusCode stc = TStatusCode.SRM_AUTHENTICATION_FAILURE;
+     TReturnStatus s2 = new TReturnStatus(stc,str);
+     System.out.println("\nShould see "+stc+": "+str);
+     System.out.println(s2);
+     System.out.println("Code: "+s2.getStatusCode()+"; explanation: "+s2.getExplanation());
+     } catch (Exception e) {
+     System.out.println("Should not see this!");
+     }
+     //
+     //Testing Exception throwing
+     System.out.println("\n\nTesting constructor Exception...");
+     try {
+     System.out.print("Trying with null TStatusCode: ");
+     String str = "Cannot proceed because authentication failed.";
+     TStatusCode stc = null;
+     new TReturnStatus(stc,str);
+     System.out.println("Should not see this!");
+     } catch (InvalidTReturnStatusAttributeException e) {
+     System.out.println(" OK creation failed as expeceted. "+e);
+     }
+     //
+     //Testing setting of TStatusCode
+     System.out.println("\n\nTesting settig of TStausCode...");
+     TReturnStatus ss = new TReturnStatus();
+     TStatusCode ns = TStatusCode.SRM_ABORTED;
+     System.out.println("TReturnStatus: "+ss+"; now will set status to "+ns);
+     try {
+     ss.setStatus(ns);
+     System.out.println("New TReturnStatus: "+ss);
+     } catch (Exception e) {
+     System.out.println("Should not see this!");
+     }
+     //
+     //Testing setting of TStatusCode throwing an Exception
+     System.out.println("\n\nTesting setStatus throwing an Exception...");
+     TReturnStatus sss = new TReturnStatus();
+     System.out.println("TReturnStatus: "+sss+"; now will set status to "+null);
+     try {
+     sss.setStatus(null);
+     System.out.println("Should not see this!");
+     } catch (InvalidTReturnStatusAttributeException e) {
+     System.out.println("OK: setting failed as expected! "+e);
+     System.out.println("TReturnStatus remained the same: "+sss);
+     }
+     }*/
+}

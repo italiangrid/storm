@@ -1,0 +1,21 @@
+TODO:
+- unit test per path, split2
+- supporto XFS
+- fix catch() clauses ordering in SWIG
+- delete permission support in gpfs23_acl
+
+DONE:
+
+COMMITED:
+- interfaccia GPFS
+- separare classe di costanti per interfaccia SWIG
+- Makefile
+- SWIG/Java std::vector support
+- use numeric UID/GID in users_and_groups.cpp
+- usare permission_type nelle parti pubbliche
+- rimuovere using-declaration da header
+- delete permission support
+- correggere semantica di ACL_MASK
+- namespace
+- mappa eccezioni C++/Java
+- unit test per fs_acl, posixfs_acl, gpfs23_acl, helper_command

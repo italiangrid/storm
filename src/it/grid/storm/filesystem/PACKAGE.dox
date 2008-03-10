@@ -1,0 +1,92 @@
+/**
+
+  @package it.grid.storm.filesystem
+  @author  Riccardo Murri <riccardo.murri@ictp.it>
+
+  Classes in this package aim at providing a uniform interface to
+  filesystem-level operations, that is independent of the actual
+  filesystem type used.  Currently, a "generic" POSIX filesystem
+  (e.g., ext3, reiserfs, XFS) and IBM's GPFS are supported.  Most of
+  the actual functionality is implemented by C++ classes in the fs
+  namespace, with a SWIG-generated layer to make them available to the
+  Java runtime; Java classes in the it.grid.storm.filesystem package
+  are often simple font-ends to the C++ implementation.
+
+
+  The main classes in the package are:
+  <ul>
+
+  <li> <em>Filesystem</em>: interface to low-level functionality. You
+    should not call this in any StoRM code from outside this package;
+    rather, use the File and Space classes constitute the public
+    interface of the package.
+
+  <li> <em>File</em>: façade for all operations on files and
+    directories.  Create a File instance whenever you need to make
+    some filesystem-related operation in StoRM.
+
+  <li> <em>Space</em>: a draft interface of a mediator/adaptor class
+    for abstracting the SRM concept of space and its operations and
+    implementing them on a concrete filesystem.
+
+  </ul>	
+
+
+  <b>On the "filesystem" word usage</b>
+  
+  The word "filesystem" is used in UNIX system parlance to denote
+  different concepts:
+
+    -# A particular algorithm to lay file data and metadata on the
+       disk (e.g., ext3, reiserfs); when ambiguity can arise, we shall
+       denote this as "filesystem type" in this document.
+	-# The whole tree of directories accessible to the UNIX kernel and
+       processes, that starts at the root directory @c /
+	-# A portion of the above tree, rooted in a prticular directory,
+       that has the same filesystem type and corresponds to a single
+       block device; note that a filesystem in this sense is uniquely
+       identified by its root directory pathname.
+
+  What StoRM calls a "filesystem" is actually a filesystem in the
+  latter sense.  Note that a StoRM filesystem may actually be a
+  subtree of a Linux filesystem.
+
+
+  <b>How to use the classes for filesystem manipulation</b>
+  
+  All operations on the filesystem should be performed by
+  creating an instance of the {@link it.grid.storm.filesystem.File}
+  class, and using its methods to create or modify a filesystem
+  entry.
+
+	
+  <b>Exceptions</b>
+  
+  All exceptions thrown by methods of objects in this package 
+  are subclasses of the generic FilesystemError class.  Most methods
+  report explicit "throw" clauses even though FilesystemError is a
+  java.lang.RuntimeException subclass.
+
+  - @em AclNotSupported : thrown when some ACL manipulation is
+    requested on a filesystem that does not support ACLs, or when ACL
+    support is not enabled in the kernel.
+
+  - @em CannotGiveAway : thrown when the StoRM process has
+	insufficient privileges to change ownership of a file.
+
+  - @em InvalidPathException : thrown when some filesystem operation
+    is requested on a non-existent or otherwise invalid path name.
+
+  - @em InvalidPermissionOnFileException : thrown when an operation is
+    attempted on the filesystem, for which the StoRM process has
+    insufficient privileges.
+
+  - @em WrongFilesystemType : thrown when a specific filesystem-type
+    class (e.g., GPFS) is used to operate on a different incompatible
+    filesystem (e.g., ext3).
+
+  
+  See the individual classes documentation for more details.
+
+
+**/

@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This is the Ant buildfile for the StoRM BE sources.
+
+Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
+
+You may copy, modify and distribute this file according to the same
+terms as the rest of the StoRM sources.
+
+
+
+Buildfile targets
+=================
+
+Please use ``ant -projecthelp`` to see user-available targets with a
+short description.
+
+Other targets are defined here, but they are mostly used internally
+and need not be visible to the end-user.
+
+-->
+
+<project basedir="." default="help" name="StoRM">
+  <description>
+     Ant buildfile for the StoRM backend server.
+
+     $Id: build-new.xml,v 1.1 2007/04/05 15:41:15 rzappi Exp $
+  </description>
+
+
+
+  <!-- =================================================================== -->
+  <!-- PRINT USAGE INFORMATION                                             -->
+  <!-- =================================================================== -->
+  <target name="help"
+	description="short help text">
+	<echo>
+This is StoRM-BE version ${version}.
+
+To run the JUnit tests, you _must_ start ant with -lib option!
+ant -lib PATH_TO_JUNIT.JAR/junit.jar test
+
+To compile the BE, run:
+ant clean
+ant build
+
+If you then want to install the BE in /opt/storm, run:
+ant install
+
+Please, use:
+
+  ant -projecthelp
+
+to get a list of the available targets for this buildfile.
+	</echo>
+  </target>
+
+
+
+  <!-- =============================================================== -->
+  <!-- SET ANT PROPERTIES                                              -->
+  <!-- =============================================================== -->
+  <!--                                                                 -->
+  <!-- N.B.: once a property has been set, it will not be overwritten. -->
+  <!-- Therefore, default values for properties go last, and user      -->
+  <!-- overrides go first.                                             -->
+  <!--                                                                 -->
+
+  <!-- sets the standard DSTAMP, TSTAMP, and TODAY properties -->
+  <tstamp/>
+
+  <!-- load all properties from ``build.properties`` file -->
+  <property file="build.properties"/>
+
+  <!-- load environment vars under the env.* property hierarchy -->
+  <property environment="env"/>
+
+  <!-- set default global properties for this build -->
+  <property name="basedir" location="."/>
+  <property name="cvs.checkout.dir" location="${basedir}"/>
+
+  <!-- if not set, then assume we're doing a snapshot from CVS -->
+  <property name="version" value="cvs.${DSTAMP}"/>
+
+  <!-- sources used to build and make the distribution archives -->
+  <property name="src.dir" location="${cvs.checkout.dir}"/>
+  <property name="src.doc.dir" location="${src.dir}/doc"/>
+  <property name="src.java.dir" location="${src.dir}/src"/>
+  <property name="src.jars.dir" location="${src.dir}/lib"/>
+  <property name="src.config.dir" location="${src.dir}/etc"/>
+  <property name="src.sbin.dir" location="${src.dir}/sbin"/>
+  <property name="src.sysvinit.dir" location="${src.dir}/etc/init.d"/>
+
+  <!-- where to put class and native library files -->
+  <property name="build.dir" location="${basedir}/build"/>
+  <property name="build.classes.dir" location="${build.dir}/classes"/>
+  <property name="build.libs.dir" location="${build.dir}/lib"/>
+  <property name="build.debug" value="false"/>
+  <property name="build.gpfs" value="true"/>
+  <property name="build.lustre" value="false"/>
+
+  <!-- these names are chosen to match configure/Makefile common usage -->
+  <property name="prefix" location="/opt/storm"/>
+
+  <property name="bindir" location="${prefix}/bin"/>
+  <property name="datadir" location="${prefix}/share"/>
+  <property name="docdir" location="${prefix}/doc"/>
+  <property name="libdir" location="${prefix}/lib/storm-backend"/>
+  <property name="jardir" location="${libdir}/jar"/>
+  <property name="localstatedir" location="${prefix}/var"/>
+  <property name="logdir" location="${localstatedir}/log"/>
+  <property name="sbindir" location="${prefix}/sbin"/>
+  <property name="sysconfdir" location="${prefix}/etc"/>
+  <property name="sysvinitdir" location="${sysconfdir}/init.d"/>
+  <property name="tmpdir" location="${localstatedir}/tmp"/>
+
+  <!-- the output file names -->
+  <property name="dist.jar" value="storm-backend.jar"/>
+  <property name="dist.tarfile" value="storm-backend-${version}.tar"/>
+
+  <!-- where unit test files are located -->
+  <property name="test.junit.dir" value="${src.dir}/test"/>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- Print properties                                                -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!--                                                                 -->
+
+  <target name="help.properties"
+	description="Print values of customizable properties">
+	<echo>
+This is StoRM-BE, version ${version}
+------------------------------------------------
+
+All properties may be overridden with the
+``build.properties`` file or ant's ``-D`` command-line
+switch, as usual.
+
+
+basedir=${basedir}
+  The mother of all paths
+
+
+cvs.checkout.dir=${cvs.checkout.dir}
+  Where the CVS sources have been checked out
+
+
+src.dir=${src.dir}
+  Root of the source tree; the properties below name
+  its different parts
+
+src.doc.dir=${src.doc.dir}
+  Root for the documentation in the source tree
+
+src.java.dir=${src.java.dir}
+  Root for the Java source files
+
+src.jars.dir=${src.jars.dir}
+  All .jar files in this directory are inserted in the
+  compilation CLASSPATH and copied to the installation tree
+
+src.config.dir=${src.config.dir}
+  Example configuration files; copied verbatim to the
+  installation tree
+
+src.sbin.dir=${src.sbin.dir}
+  Installation/setup scripts; copied verbatim to the the
+  installation tree
+
+src.sysvinit.dir=${src.sysvinit.dir}
+  Start/stop scripts; copied verbatim to the the
+  installation tree
+
+
+build.dir=${build.dir}
+  Root to the build tree; binary files are created here
+
+build.classes.dir=${build.classes.dir}
+  Root to the compiled Java classes
+
+build.libs.dir=${build.libs.dir}
+  Directory where native code (C/C++) libraries are created
+
+build.compiler=${build.compiler}
+  If set, ant will use this Java compiler; see Ant
+  documentation
+
+build.debug=${build.debug}
+  If true, then build debugging code too
+
+build.gpfs=${build.gpfs}
+  If true, then build GPFS support code in the filesystem
+  wrapper
+
+build.lustre=${build.lustre}
+  If true, then build Lustre support code in the filesystem
+  wrapper
+
+
+prefix=${prefix}
+  Root path for making all the following directory paths;
+  they may be individually set, but all default to a
+  standardly-named subdirectory of ``prefix``.
+
+bindir=${bindir}
+  Location of user executable scripts and binaries.
+
+datadir=${datadir}
+  Location of architecture-independent files.
+
+docdir=${docdir}
+  Location of miscellaneous program documentation.
+
+jardir=${jardir}
+  Location of 3rd party .jar files needed at runtime.
+
+libdir=${libdir}
+  Location of architecture-dependent non-executable program
+  files.
+
+localstatedir=${localstatedir}
+  Root path for ``logdir`` and ``tmpdir``, if those are not
+  set independently
+
+logdir=${logdir}
+  Created by ``install`` target; where will the StoRM
+  logfiles reside.
+
+sbindir=${sbindir}
+  Location of sysadmin executable scripts and binaries
+
+sysconfdir=${sysconfdir}
+  Location of program config files.
+
+sysvinitdir=${sysvinitdir}
+  Location of sysvinit start/stop scripts
+
+tmpdir=${tmpdir}
+  Created by ``install`` target; where will the StoRM
+  temporary files reside.
+
+
+dist.jar=${dist.jar}
+  The name of the created .jar file with StoRM code
+
+dist.tarfile=${dist.tarfile}
+  The name of the created .tar file containing source code.
+  The tarfile should contain whatever is needed to rebuild
+  StoRM from the sources on another machine.
+
+
+test.junit.dir
+  Path to the directory containing the jUnit TestCase source files.
+	</echo>
+  </target>
+
+
+  <!-- ============================================================== -->
+  <!-- FILE SET -->
+  <!-- ============================================================== -->
+  <!--
+    Please include here any file/path set that is referenced later on
+    in the buildfile.
+
+    Currently defined filesets are:
+
+      src.config
+        Configuration files used by the StoRM server at runtime
+
+      src.jars
+        Jars referenced in the StoRM source; used at compile time,
+        and also copied to installation directory for runtime.
+
+      src.libs
+        StoRM BE native code libraries; built from sources in the
+        StoRM BE tree, and needed at runtime
+
+      src.sysvinit
+        StoRM BE start/stop scripts
+
+  -->
+
+  <!-- classpath used when building the sources -->
+  <path id="build.classpath">
+	<pathelement path="${classpath}"/>
+	<pathelement path="${env.CLASSPATH}"/>
+	<fileset refid="src.jars.dist"/>
+	<fileset refid="src.jars.build"/>
+	<pathelement path="${src.java.dir}"/>
+  </path>
+
+  <fileset id="src.jars.dist"
+     dir="${src.jars.dir}">
+	<include name="activation.jar"/>
+	<!-- <include name="axis-ant.jar"/> -->
+	<include name="axis.jar"/>
+	<include name="axis-schema.jar"/>
+	<include name="backport-util-concurrent.jar"/>
+	<include name="c3p0-0.8.4.5.jar"/>
+	<include name="cglib-full-2.0.1.jar"/>
+	<include name="srm22client.jar"/>
+        <include name="cog-axis.jar"/>
+	<include name="cog-jglobus.jar"/>
+        <include name="cog-jobmanager.jar"/>
+	<include name="cog-url.jar"/>
+        <include name="commons-beanutils.jar"/>
+	<include name="commons-cli-1.0.jar"/>
+	<include name="commons-codec-1.3.jar"/>
+	<include name="commons-collections-3.1.jar"/>
+	<include name="commons-configuration-1.1.jar"/>
+	<include name="commons-dbcp-1.2.1.jar"/>
+	<include name="commons-digester-1.7.jar"/>
+	<include name="commons-discovery-0.2.jar"/>
+	<include name="commons-lang-2.0.jar"/>
+        <include name="commons-logging-1.1.jar"/>
+        <include name="commons-pool-1.2.jar"/>
+        <include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
+	<include name="cryptix32.jar"/>
+	<include name="cryptix-asn1.jar"/>
+	<include name="cryptix.jar"/>
+	<include name="dom4j-1.4.jar"/>
+	<include name="dom.jar"/>
+	<include name="ehcache-0.9.jar"/>
+	<include name="hibernate-2.1.6.jar"/>
+	<include name="hsqldb.jar"/>
+        <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
+	<include name="jaxrpc.jar"/>
+        <include name="jce-jdk13-131.jar"/>
+	<include name="jgss.jar"/>
+        <include name="log4j-1.2.13.jar"/>
+        <include name="mail.jar"/>
+	<include name="middlegen-2.1.jar"/>
+	<include name="middlegen-hibernate-plugin-2.1.jar"/>
+	<include name="odmg-3.0.jar"/>
+	<include name="puretls.jar"/>
+	<include name="saaj.jar"/>
+	<include name="wsdl4j-1.5.1.jar"/>
+	<include name="xalan.jar"/> <!-- XSLT processor -->
+	<include name="xercesImpl.jar"/>  <!-- PART of xerces 2.8.0 -->
+        <include name="xml-apis.jar"/> <!-- Standard JAXP API; PART of xerces 2.8.0 -->
+	<include name="xmlrpc-2.0.jar"/>
+	<include name="xsdlib.jar"/>
+        <include name="ECARClient.jar"/>
+
+        <include name="jline-0.9.9.jar"/> <!-- Used for Console feature (NS-Admin) -->
+        <include name="QuickServer.jar"/> <!-- Administration Server -->
+        <include name="QSAdminGUI.jar"/> <!-- Administration Server GUI -->
+
+  </fileset>
+
+  <fileset id="src.jars.build"
+     dir="${src.jars.dir}">
+	<include name="mysql-connector-java-3.1.8-bin.jar"/>
+  </fileset>
+
+  <!-- native code libs; needed at runtime -->
+  <fileset id="src.lib"
+     dir="${build.libs.dir}">
+    <include name="*.so"/>
+  </fileset>
+
+  <!-- config files; needed at runtime -->
+  <fileset id="src.config"
+     dir="${src.config.dir}">
+    <include name="*.properties"/>
+    <include name="namespace.xml"/>
+    <include name="namespace.xsd"/>
+    <include name="lcmaps.db"/>
+	<include name="*.template"/>
+	<include name="sysconfig/storm-backend"/>
+	<include name="logrotate.d/storm-backend"/>
+  </fileset>
+
+  <!-- start/stop scripts -->
+  <fileset id="src.sysvinit"
+     dir="${src.sysvinit.dir}">
+	<include name="storm-backend"/>
+  </fileset>
+
+  <!-- configuration script -->
+  <fileset id="src.sbin"
+     dir="${src.sbin.dir}">
+	<include name="storm-backend-configure"/>
+  </fileset>
+
+  <!-- documentation and licenses -->
+  <fileset id="src.docs.proper"
+	dir="${src.doc.dir}"/>
+  <fileset id="src.docs.license"
+	dir="${src.dir}"
+	includes="LICENSE.txt"/>
+  <fileset id="src.docs.3rdparty.licenses"
+	dir="${src.dir}">
+	<include name="ACKNOWLEDGEMENTS.txt"/>
+	<include name="lib/*.LICENSE"/>
+  </fileset>
+
+  <!-- junit ant task support -->
+  <path id="test.classpath">
+	<pathelement location="${src.jars.dir}/junit.jar"/>
+	<pathelement location="${test.junit.dir}"/>
+	<path refid="build.classpath"/>
+  </path>
+
+
+
+
+  <!-- =============================================================== -->
+  <!-- BUILD/COMPILE TARGETS                                           -->
+  <!-- =============================================================== -->
+
+  <!-- Prepare directories and properties for compile/build tasks to run -->
+  <target name="init">
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.classes.dir}"/>
+    <mkdir dir="${build.libs.dir}"/>
+  </target>
+
+
+  <!-- preprocess source files -->
+  <target name="preprocess">
+	<!--
+	  it's faster to rebuild this file each time than checking for
+	  up-to-date-ness...
+	-->
+    <exec executable="cpp"
+        input="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.jappo"
+        output="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.java"
+        logError="true">
+      <arg line="-P -C"/>
+    </exec>
+  </target>
+
+
+  <!-- make SWIG Java interfaces -->
+  <target name="swig"
+	depends="swig.lcmaps,swig.filesystem"/>
+
+  <target name="swig.lcmaps" depends="init">
+    <exec executable="make" logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig"/>
+	  <arg line="swig"/>
+    </exec>
+  </target>
+
+  <target name="swig.filesystem" depends="init">
+    <exec executable="make" logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig"/>
+	  <arg line="fs_acl.java genericfs.java"/>
+    </exec>
+  </target>
+
+<!-- Filestem classes -->
+ <target name="libs.filesystem"
+	depends="init,swig.filesystem">
+    <exec executable="make"
+	  dir="${src.java.dir}/it/grid/storm/filesystem/swig"
+	  failonerror="true"
+	  logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+<!--	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/> -->
+    </exec>
+  </target>
+
+
+
+
+
+
+
+
+
+  <!-- make wrapper component native libs -->
+  <target name="libs.wrapper"
+	depends="init">
+	<condition
+	  property="libs.wrapper.debug"
+	  value="1">
+	  <istrue value="${build.debug}"/>
+	</condition>
+	<condition
+	  property="libs.wrapper.gpfs"
+	  value="1">
+	  <istrue value="${build.gpfs}"/>
+	</condition>
+	<condition
+	  property="libs.wrapper.lustre"
+	  value="lustre">
+	  <istrue value="${build.lustre}"/>
+	</condition>
+    <exec executable="make"
+	  dir="${src.java.dir}/it/grid/storm/wrapper"
+	  failonerror="true"
+	  logError="true">
+      <arg value="BUILDDIR=${build.libs.dir}"/>
+      <arg value="DEBUG=${libs.wrapper.debug}"/>
+      <arg value="destdir=${build.libs.dir}"/>
+      <arg
+		value="FILESYSTEMS=posix gpfs xfs"/>
+<!-- ${libs.wrapper.gpfs} ${libs.wrapper.lustre}" -->
+      <arg value="all"/>
+      <arg value="alllib"/>
+    </exec>
+  </target>
+
+  <target name="libs.lcmaps"
+	depends="init,swig.lcmaps">
+    <exec executable="make"
+	  dir="${src.java.dir}/it/grid/storm/griduser/swig"
+	  failonerror="true"
+	  logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+    </exec>
+  </target>
+
+  <target name="libs"
+	description="compile native code libs"
+	depends="libs.lcmaps,libs.filesystem"/>
+
+  <target name="precompile"
+	depends="init,preprocess,swig"/>
+
+  <!-- compile the .java source files -->
+  <target name="javac"
+	description="Compile the .java source files"
+	depends="precompile">
+    <javac
+      destdir="${build.classes.dir}"
+      debug="true"
+      deprecation="true"
+      source="1.5"
+      target="1.4"
+      compiler="javac1.5"
+      bootclasspath=
+    >
+	  <!-- Javac needs a *directory* as argument... -->
+	  <src path="${src.java.dir}/it/grid/storm/"/>
+	  <classpath refid="build.classpath"/>
+    </javac>
+  </target>
+
+  <!-- 'compile' is an alias for 'javac' -->
+  <target name="compile" depends="javac"/>
+
+  <target name="build"
+	description="Compile *all* StoRM BE code"
+	depends="libs,javac,storm-backend.jar"/>
+
+  <target name="storm-backend.jar"
+	description="Make the ${dist.jar} file out of compiled Java classes"
+	depends="javac">
+    <jar destfile="${build.dir}/${dist.jar}"
+	  basedir="${build.classes.dir}"
+	  includes="it/grid/storm/**"
+	  index="true"/>
+  </target>
+
+
+  <!-- =============================================================== -->
+  <!-- CLEAN                                                           -->
+  <!-- =============================================================== -->
+
+  <!-- Invoke 'clean' target on it/grid/storm/wrapper Makefile -->
+  <target name="clean.libs.wrapper">
+    <exec executable="make"
+    	dir="${src.java.dir}/it/grid/storm/wrapper"
+        logError="true">
+      <arg value="BUILDDIR=${build.libs.dir}"/>
+      <arg value="clean"/>
+    </exec>
+  </target>
+
+  <!-- Invoke 'clean' target on it/grid/storm/grid/swig/Makefile -->
+  <target name="clean.swig.lcmaps">
+    <exec executable="make"
+    	dir="${src.java.dir}/it/grid/storm/griduser/swig"
+        logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg value="extraclean"/>
+    </exec>
+  </target>
+
+  <!-- Invoke 'clean' target on it/grid/storm/filesystem/swig/Makefile -->
+  <target name="clean.swig.filesystem">
+    <exec executable="make"
+    	dir="${src.java.dir}/it/grid/storm/filesystem/swig"
+        logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg value="extraclean"/>
+    </exec>
+  </target>
+
+  <target name="clean"
+	description="Remove build tree and all of the intermediate build files"
+	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem">
+    <!-- Delete the ${build.dir} directory tree -->
+    <delete dir="${build.dir}"/>
+  </target>
+
+
+
+  <!-- =============================================================== -->
+  <!-- INSTALL                                                         -->
+  <!-- =============================================================== -->
+
+  <target name="install"
+	description="Copy built and distributed files to a deployable tree structure under ${prefix}"
+	depends="install.nojars,install.jarsonly"/>
+
+
+  <target name="install.nojars"
+	description="Copy built files (except 3rd-party .jar's) to a deployable tree structure under ${prefix}"
+	depends="storm-backend.jar">
+
+    <!-- Create the distribution directory hierarchy -->
+	<mkdir dir="${bindir}"/>
+	<mkdir dir="${datadir}"/>
+	<mkdir dir="${docdir}"/>
+	<mkdir dir="${logdir}"/>
+	<mkdir dir="${prefix}"/>
+	<mkdir dir="${sbindir}"/>
+	<mkdir dir="${sysconfdir}"/>
+	<mkdir dir="${sysvinitdir}"/>
+	<mkdir dir="${tmpdir}"/>
+
+	<!-- copy files -->
+	<copy
+	  file="${build.dir}/${dist.jar}"
+	  tofile="${libdir}/storm-backend.jar"
+	  overwrite="true"/>
+	<copy
+	  todir="${sysconfdir}"
+	  flatten="false"
+	  overwrite="true">
+	  <fileset refid="src.config"/>
+	</copy>
+	<copy
+	  todir="${sysvinitdir}"
+	  flatten="true"
+	  overwrite="true">
+	  <fileset refid="src.sysvinit"/>
+	</copy>
+	<copy
+	  todir="${sbindir}"
+	  flatten="false"
+	  overwrite="true">
+	  <fileset refid="src.sbin"/>
+	</copy>
+    <copy
+	  todir="${libdir}"
+	  flatten="true"
+	  overwrite="true">
+      <fileset refid="src.lib"/>
+    </copy>
+	<copy
+	  todir="${docdir}"
+	  overwrite="true">
+	  <fileset refid="src.docs.proper"/>
+	  <fileset refid="src.docs.license"/>
+	</copy>
+
+	<!-- fix permissions -->
+    <chmod perm="0755" type="dir">
+	  <!-- this is necessary if umask != 022 -->
+      <dirset id="dist.dirs" dir="${prefix}/"/>
+    </chmod>
+    <chmod perm="0644" type="file">
+	  <!-- this is necessary if umask != 022 -->
+      <fileset id="dist.files" dir="${prefix}/"/>
+    </chmod>
+    <chmod perm="0755" type="file">
+      <fileset id="dist.bin"
+         dir="${prefix}">
+		<!-- set executable bit for binaries and scripts -->
+        <include name="bin/*"/>
+        <include name="sbin/*"/>
+        <include name="etc/init.d/*"/>
+      </fileset>
+    </chmod>
+    <chmod perm="1755" type="dir"
+	  dir="${tmpdir}"/>
+  </target>
+
+
+  <target name="install.jarsonly"
+	description="Copy 3rd-party jar files to directory ${jardir}">
+
+    <!-- Create the distribution directory hierarchy -->
+	<mkdir dir="${docdir}"/>
+	<mkdir dir="${jardir}"/>
+
+	<!-- copy files -->
+	<copy
+	  todir="${jardir}"
+	  flatten="true"
+	  overwrite="true">
+	  <fileset refid="src.jars.dist"/>
+	</copy>
+	<copy
+	  todir="${docdir}"
+	  flatten="true"
+	  overwrite="true">
+	  <fileset refid="src.docs.3rdparty.licenses"/>
+	</copy>
+  </target>
+
+
+
+  <!-- =============================================================== -->
+  <!-- TARBALL                                                         -->
+  <!-- =============================================================== -->
+
+  <target name="tar.src"
+	description="Roll a tarball of the checked-out sources">
+    <delete file="${dist.tarfile}"/>
+    <delete file="${dist.tarfile}.gz"/>
+    <delete file="${dist.tarfile}.bz2"/>
+    <tar
+	  destfile="${dist.tarfile}"
+	  compression="none"
+	  longfile="gnu">
+	  <!-- main source tree -->
+      <tarfileset
+		dir="${src.dir}"
+		username="storm"
+		group="storm"
+		mode="0644"
+		prefix="storm-backend-${version}/">
+		<!-- all relevant directories -->
+		<exclude name="build/**"/>
+		<include name="LICENSE.txt"/>
+		<include name="ACKNOWLEDGEMENTS.txt"/>
+		<include name="build.xml"/>
+		<include name="config/"/>
+		<include name="doc/"/>
+		<include name="etc/"/>
+		<include name="lib/"/>
+		<include name="rpm/"/>
+		<include name="sbin/"/>
+		<!-- program sources -->
+		<include name="src/"/>
+		<exclude name="src/**/*.o"/>
+		<exclude name="src/**/*.so"/>
+		<include name="test/"/>
+	  </tarfileset>
+    </tar>
+	<!-- FIXME: should check if filename ends in .gz and compress -->
+    <gzip
+	  src="${dist.tarfile}"
+	  destfile="${dist.tarfile}.gz"/>
+    <!-- hangs forever on testbed006 :-/
+	<bzip2
+	  src="${dist.tarfile}"
+	  destfile="${dist.tarfile}.bz2"/>
+	-->
+  </target>
+
+
+
+  <!-- =============================================================== -->
+  <!-- UNIT TESTS                                                      -->
+  <!-- =============================================================== -->
+
+  <target name="test"
+	description="Run unit tests"
+	depends="test.junit"/>
+
+  <target name="test.junit" depends="test.compile">
+	<junit>
+	  <formatter type="brief" usefile="false" />
+	  <classpath refid="test.classpath"/>
+  	  <batchtest>
+		<fileset id="test.junit.files" dir="${test.junit.dir}" includes="**/Test*.class"/>
+	  </batchtest>
+	</junit>
+  </target>
+
+  <target name="test.compile">
+    <javac
+      destdir="${test.junit.dir}"
+      debug="true"
+      deprecation="true"
+      source="1.4"
+      target="1.4"
+      sourcepath="${src.java.dir}">
+	  <!-- Javac needs a *directory* as argument... -->
+	  <src path="${test.junit.dir}"/>
+	  <include name="**/Test*.java"/>
+	  <classpath refid="test.classpath"/>
+    </javac>
+  </target>
+
+  <target name="test.clean">
+	<delete>
+	  <fileset dir="${test.junit.dir}" includes="**/*.class" />
+    </delete>
+  </target>
+
+</project>

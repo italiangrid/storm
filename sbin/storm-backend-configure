@@ -1,0 +1,347 @@
+#! /bin/bash
+#
+# Perform some configuration tasks needed to bring the StoRM backend server
+# into operational status, and that cannot be done by the RPM alone.
+#
+# FIXME: this script needs to run *interactively*!!!
+#
+# 
+# Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
+# for the joint EGRID/INFN project StoRM.
+#
+# You may copy, modify and distribute this file under the same terms
+# as StoRM itself. 
+#
+# $Id: storm-backend-configure,v 1.21 2006/11/23 16:14:27 aforti Exp $
+#
+
+PROG="`basename $0`"
+
+
+## hard-coded config
+
+DB_HOSTNAME=${DB_HOSTNAME:-localhost}
+DB_USER=${DB_USER:-storm}
+ROOT_DB_PASSWD=${ROOT_DB_PASSWD:-storm}
+
+# DB_PASSWD=""
+
+## useful functions
+
+function die () {  # XXX: is this LSB-compliant?
+    rc="$1"
+    shift
+    echo -n "$INISCRIPT: " 1>&2
+    if [ $# -gt 0 ]; then
+        echo "$@" 1>&2
+    else
+        cat 1>&2
+    fi
+    exit $rc
+}
+
+verbose () {
+    local lvl="$1"; shift
+    
+    if [ "$lvl" -le "${VERBOSE:-1}" ]; then
+        if [ $# -gt 0 ]; then
+            echo "$@"
+        else
+            cat
+        fi
+    fi
+}
+
+setenv_if_not_set () {
+    # a little black magic makes a script more spicy ;-)
+    if test -z "${!1}"; then
+        eval export $1=\'"$2"\'
+    fi
+}
+
+function command_in_path () {
+    type -p "$1" >&/dev/null;
+}
+
+function require_command () {
+    local cmd="$1"
+
+    command_in_path "$cmd" \
+        || die 1 "Cannot find command '$cmd' in the current PATH - aborting."
+}
+
+function file_exists () {
+    test -e "$1"
+}
+
+function files_are_equal () {
+    cmp --quiet "$1" "$2"
+}
+
+function link_and_backup_if_different () {
+    local src="$1"
+    local dst="$2"
+
+    set -e
+    if file_exists "$dst" && files_are_equal "$src" "$dst"; then
+        mv -v "$dst" "${dst}.`date -I`"
+    fi
+    ln -v -sf "$src" "$dst"
+    set +e
+}
+
+function user_exists () {
+    getent passwd "$1" >/dev/null 
+}
+
+function group_exists () {
+    getent group "$1" >/dev/null 
+}
+
+function normalize_dirpath () {
+    cd "$1" && pwd -P && cd -
+}
+
+# download_and_extract URL FILE [FILE ...]
+#
+# Download URL to a temporary local file,
+# then, for each FILE,  extract a file having the
+# basename of FILE from it and copy the extracted file
+# to the full path FILE.
+# 
+download_and_extract () {
+    local url="$1"; shift
+    if test -z "$url"; then
+        die 1 "Internal error: download_and_extract: empty URL given."
+    fi
+
+    local tmpdir="`mktemp -d ${TMPDIR:-/tmp}/${PROG}.XXXXXX`" \
+        || die 1 "Cannot make a temporary directory in '${TMPDIR:-/tmp}' - aborting."
+
+    ( # effects of 'cd' are local to this (...) block
+        cd $tmpdir
+        wget  "$url"
+        
+        local archive="`echo *`" # there's only one file in cwd by now
+        local path 
+        local file 
+        local file_in_tar
+        case "$archive" in
+            *.tar.gz)
+                for path in "$@"; do
+                    file="`basename $path`"
+                    file_in_tar="`tar -tzf "$archive" | fgrep "$file"`"
+                    if test -z "$file_in_tar"; then
+                        die 1 "Cannot find file '$file' in .tar.gz archive '$tmpdir/$archive' - aborting."
+                    fi
+                    tar -x -z -f "$archive" "$file_in_tar" \
+                        || die 1 "Cannot extract file '$file' from .tar.gz archive '$tmpdir/$archive' - aborting."
+                    cp -v ./"$file_in_tar" "$path"
+                done
+                ;;
+            *)
+                die 1 "download_and_extract: unsupported file type '$archive' - aborting."
+                ;;
+        esac
+    )
+}
+
+## check for required commands in the environment
+
+require_command chkconfig
+require_command getent
+require_command groupadd
+require_command hostname
+require_command mysql
+require_command mysqladmin
+require_command useradd
+require_command wget
+
+## execution environment setup
+
+# read config values override (INSTALL_ROOT is from LCG-2's site.def)
+if test -e "$INSTALL_ROOT/etc/sysconfig/storm-backend"; then
+    source "$INSTALL_ROOT/etc/sysconfig/storm-backend"
+fi
+
+# try to find the installation directory
+if test -z "$STORM_HOME"; then
+    for dir in \
+        "`pwd -P`/../.." \
+        /opt/storm \
+        /usr/local/storm \
+        /home/storm \
+        ;
+      do
+      if test -d "$dir"/lib/storm-backend; then
+          STORM_HOME="$dir"
+          break
+      fi
+    done
+    if test -z "$STORM_HOME"; then
+        die 5 "Cannot find StoRM backend installation directory - please set environment variable STORM_HOME and run '$0 $@' again."
+    fi
+fi
+export STORM_HOME="`normalize_dirpath "$STORM_HOME"`"
+
+setenv_if_not_set STORM_BE_CONFIGDIR "$STORM_HOME/config"
+setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/storm-backend"
+setenv_if_not_set STORM_BE_JARDIR "$STORM_BE_LIBDIR/jar"
+
+# sanity checks
+if ! test -d "$STORM_BE_LIBDIR"; then
+    die 5 "Cannot find directory '$STORM_BE_LIBDIR' - please set environment variable STORM_HOME or STORM_BE_LIBDIR and run '$0 $@' again."
+fi
+if ! test -d "$STORM_BE_JARDIR"; then
+    die 5 "Cannot find third-party .jar files directory '$STORM_BE_JARDIR' - please set environment variable STORM_HOME or STORM_BE_JARDIR and run '$0 $@' again."
+fi
+if ! test -d "$STORM_BE_CONFIGDIR"; then
+    die 6 "Cannot find configuration files directory '$STORM_BE_CONFIGDIR' - please set environment variable STORM_HOME or STORM_BE_CONFIGDIR and run '$0 $@' again."
+fi
+
+
+### main
+
+## download missing jar files
+download_and_extract \
+    http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-3.1.11.tar.gz/from/http://na.mirror.garr.it/mirrors/MySQL/ \
+    "$STORM_BE_JARDIR"/mysql-connector-java-3.1.11-bin.jar
+
+
+## make additional links (not in the RPM)
+link_and_backup_if_different \
+    "$STORM_HOME/etc/init.d/storm-backend" \
+    /etc/init.d/storm-backend
+
+link_and_backup_if_different \
+    "$STORM_HOME/etc/sysconfig/storm-backend" \
+    /etc/sysconfig/storm-backend
+
+# activate the service
+chkconfig --add storm-backend
+chkconfig storm-backend on
+
+## create user 'storm' - there's an hardcoded dependency on it in the code
+verbose 1 -n "Checking existence of system group 'storm'... "
+if ! group_exists 'storm'; then
+    verbose 1 "not found."
+    verbose 1 "Adding group 'storm'... "
+    groupadd storm \
+        || die 1 "Cannot add group 'storm' with 'groupadd storm' - aborting"
+else
+    verbose 1 "found."
+fi
+
+verbose 1 -n "Checking existence of system user 'storm'... "
+if ! user_exists 'storm'; then
+    verbose 1 "not found."
+    verbose 1 "Adding user 'storm'... "
+    useradd -g storm storm \
+        || die 1 "Cannot add user 'storm' with 'useradd storm' - aborting"
+else
+    verbose 1 "found."
+fi
+
+# The user 'storm' must have write permission on /etc/grid-security/gridmapdir
+# Usually the group edguser has write permission on this directory
+verbose 1 -n "Checking existence of system group 'edguser'... "
+if ! group_exists 'edguser'; then
+    verbose 1 "not found."
+    verbose 1 -n "Setting root:storm as owners for /etc/grid-security/gridmapdir... "
+    if [ -d /etc/grid-security/gridmapdir ]; then
+        chown root:storm /etc/grid-security/gridmapdir \
+            || die 1 "Cannot set owner with 'chown root:storm /etc/grid-security/gridmapdir' - aborting"
+        chmod 775 /etc/grid-security/gridmapdir \
+            || die 1 "Cannot set permissions with 'chmod 775 /etc/grid-security/gridmapdir' - aborting"
+        verbose 1 "done."
+    else
+        verbose 1 "does not exsist."
+    fi
+else
+    verbose 1 "found."
+    verbose 1 -n "Adding user 'storm' to the group 'edguser'... "
+    usermod -G storm,edguser storm \
+        || echo "Cannot modify user 'storm' with 'usermod -G storm,edguser storm' - aborting"
+    verbose 1 "done."
+fi
+
+## setup MySQL tables and users
+verbose 1 -n "Checking if MySQL server is up and running... "
+mysqladmin -h "$DB_HOST" -s ping \
+    || die 1 "Cannot connect to MySQL server (run 'mysqladmin -h '$DB_HOST' -s ping' for details) - aborting."
+verbose 1 "OK."
+
+
+verbose 1 "*** WARNING: When you are asked for a password, it's the 'root' MySQL user password. ***"
+
+# check if mysql need a root password
+if mysql -h "$DB_HOST" -u root  -e ";" 2>/dev/null;
+then
+    # no passwd
+    P_OPTION=""
+else # we uses, if exists, the ROOT_DB_PASSWD environment variable as mysql root password.
+    P_OPTION="-p$ROOT_DB_PASSWD";
+fi
+# look for the 'storm' database user
+if [ 0 -eq `mysql -h "$DB_HOST" -u root $P_OPTION \
+                  -s -s -D mysql \
+                  -e "select user from user where user='$DB_USER';" \
+                  | wc -l` ];
+then
+    die 1 "No '$DB_USER' user in MySQL; have you installed the front-end server already? - aborting."
+fi
+
+# get the (encrypted) '$DB_USER' user password
+# FIXME: should check that all passwords are the same?
+pass="`mysql -h "$DB_HOST" -u root $P_OPTION \
+    -D mysql \
+    -s -s \
+    -e "SELECT DISTINCT(password) FROM user WHERE user='$DB_USER' LIMIT 1;"`"
+if test -z "$pass"; then
+    # passwordless account
+    echo 1>&2 "*** WARNING: passwordless '$DB_USER' account in MySQL; this is a security risk."
+    grant_password=''
+else
+    grant_password="IDENTIFIED BY PASSWORD '$pass'"
+fi
+
+
+
+
+# inform user
+verbose 1 <<EOF
+Substituting values into templates...
+
+Values to be substituted:
+
+  DB_HOSTNAME  $DB_HOSTNAME
+  DB_USER      $DB_USER
+  DB_PASSWD    $DB_PASSWD
+
+  HOSTNAME     `hostname -f`
+
+  STORM_HOME   $STORM_HOME
+
+EOF
+
+for file in "$STORM_BE_CONFIGDIR"/*.template; do
+    file_to_write=`basename $file .template`
+    if [ -f "$STORM_BE_CONFIGDIR/$file_to_write" ]; then
+        file_to_write=$file_to_write.rpmnew
+    fi
+    sed <$file > "$STORM_BE_CONFIGDIR/$file_to_write" \
+        -e " \
+# use nonprinting character as separator so we don't bug on
+# strong passwords...
+s@DB_HOSTNAME@$DB_HOSTNAME; \
+s@DB_USER@$DB_USER; \
+s@DB_PASSWD@$DB_PASSWD; \
+s@HOSTNAME@`hostname -f`; \
+s@STORM_HOME@$STORM_HOME; \
+" \
+    && verbose 1 "Created file: $STORM_BE_CONFIGDIR/$file_to_write" \
+    && chmod -v 0600 "$STORM_BE_CONFIGDIR/$file_to_write"
+done
+
+
+    

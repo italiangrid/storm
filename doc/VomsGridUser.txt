@@ -1,0 +1,509 @@
+======================
+VomsGridUser per StoRM
+======================
+
+
+:Author:  Riccardo Murri
+:Version: $Revision: 1.1 $
+
+
+
+Indice dei contenuti
+====================
+
+  * Installazione e configurazione del software esterno
+
+    * Installazione del software necessario per runtime: librerie
+      VOMS ed LCMAPS
+
+    * Installazione del software necessario per la compilazione: 
+      SWIG
+
+    * Configurazione di esempio di LCMAPS
+
+  * Compilazione
+
+    * Generazione dell'interfaccia e compilazione delle librerie in
+      codice nativo
+
+    * Compilazione delle classi Java
+
+    * Automazione con ``ant``
+
+  * Esecuzione dei programmi di Test
+
+    * TestVomsInterface
+
+    * TestLcmapsInterface
+
+    * TestVomsGridUser
+
+  * Caveat
+
+    * Limitazioni correnti di LCMAPS
+
+
+
+Installazione e configurazione del software esterno
+===================================================
+
+Il software esterno necessario per eseguire correttamente VomsGridUser
+ed i suoi test è:
+
+  VOMS
+     necessario per compilazione ed esecuzione
+
+  LCMAPS
+     necessario per compilazione ed esecuzione
+
+  SWIG
+     necessario per rigenerare il wrapper di interfaccia
+     tra il codice C che accede a VOMS ed LCMAPS, ed il codice
+     Java di VomsGridUser
+
+Di tutte queste componenti, si installa la versione fornita con
+gLite.  I test sono stati eseguiti e passati con gLite 1.1 su una
+macchina Scientific Linux 3.
+
+
+Installazione di VOMS ed LCMAPS
+-------------------------------
+
+Ecco un trascritto commentato dell'installazione (tutti questi comandi
+vanno eseguiti come utente ``root``)::
+  
+  # inserisce il repository di GLite 1.1 neel sorgenti APT
+  echo 'rpm http://glitesoft.cern.ch/EGEE/gLite/APT/R1.1 rhel30 externals Release1.1' > /etc/apt/sources.list.d/glite.list
+  
+  # aggiorna l'elenco dei pacchetti disponibili
+  apt-get update
+  
+  # installa i pacchetti necessari di LCMAPS/VOMS
+  apt-get install \
+    glite-security-lcmaps-interface-without-gsi \
+    glite-security-lcmaps-plugins-basic \
+    glite-security-lcmaps-plugins-voms \
+    glite-security-voms \
+    vdt_globus_sdk
+  
+  # aggiunge le librerie di gLite e Globus alle librerie di sistema
+  echo /opt/globus/lib >> /etc/ld.so.conf
+  echo /opt/glite/lib >> /etc/ld.so.conf
+  ldconfig
+
+Senza l'ultimo passaggio, sarà necessario impostare la variabile
+``LD_LIBRARY_PATH`` ad ogni invocazione di un programma che chiama
+LCMAPS o VOMS::
+
+  export LD_LIBRARY_PATH=/opt/globus/lib:/opt/glite/lib
+
+
+Installazione di SWIG
+---------------------
+
+SWIG è necessario solo per rigenerare l'interfaccia Java/C.
+Purtroppo, SLC3 include una versione obsoleta di SWIG (1.1, la
+versione corrente è 1.3.x), quindi occorre installare una versione
+presa da un'altra sorgente.
+
+Sia LCG-2 che gLite forniscono versioni di SWIG-1.3, e la versione di
+gLite è più recente ma la versione di gLite non è attualmente
+installabile su SLC3. :-(
+
+Ecco un trascritto commentato dell'installazione di SWIG (tutti questi
+comandi vanno eseguiti come utente ``root``)::
+
+  # mirror del repository di LCG-2
+  echo 'rpm http://www.egrid.it/download/rpm . lcg lcg-updates' \
+    > /etc/apt/sources.list.d/lcg.list
+
+  # aggiorna l'elenco dei pacchetti disponibili
+  apt-get update
+
+  # forza il sistema di pacchetti a usare la versione di LCG
+  cat >> /etc/apt/preferences <<__END__
+
+  Package: swig
+  Pin: version 1.3.19-6.1_sl3
+  Pin-Priority: 990
+  __END__
+
+  # verifica che installerà proprio quella giusta
+  apt-cache policy swig
+
+  # ok, installa
+  apt-get install swig
+
+
+Configurazione di VOMS
+----------------------
+
+La libreria VOMS richiede che sia installato un particolare pacchetto
+per ogni server/VO che deve contattare; senza questa installazione,
+l'invocazione di VOMS potrebbe fallire già dalla funzione
+``VOMS_Init()``. 
+
+Per testare StoRM, è attivo un server VOMS che serve la VO
+``stormdev``; l'interfaccia di amministrazione del server consente di
+manipolare le informazioni associate ad un utente:
+
+  https://egrid-1.egrid.it:8443/edg-voms-admin/stormdev/index.html
+
+(Occorre un certificato di un utente inserito nella VO).
+
+
+Ecco un trascritto commentato dell'installazione (tutti questi comandi
+vanno eseguiti come utente ``root``)::
+
+  # mirror del repository di LCG-2
+  echo 'rpm http://www.egrid.it/download/rpm . egrid' \
+    > /etc/apt/sources.list.d/voms.list
+
+  # aggiorna l'elenco dei pacchetti disponibili
+  apt-get update
+
+  # installa la descrizione del server della VO 'stormdev'
+  apt-get install edg-voms-vo-stormdev
+
+
+Configurazione di esempio di LCMAPS
+-----------------------------------
+
+Questa configurazione di esempio permette a LCMAPS di allocare un
+poolaccount della VO ``stormdev`` per un utente il cui certificate
+subject DN sia stato inserito in ``/etc/grid-security/grid-mapfile``.
+
+Sono ovviamente possibili configurazioni più sofisticate, ma questa
+basta per i test.
+
+
+Creazione dei poolaccount per la VO ``stormdev``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tutti questi comandi di configurazione vanno eseguiti come utente
+``root``. 
+   
+   1. creare i pool account per la VO ``stormdev`` (già fatto su
+   testbed006)::
+        
+     groupdadd -g 1000 stormdev
+     for x in `seq -w 0 7`; do \
+       useradd -u $((1000+$x)) -g stormdev \
+         -c "account $x in pool 'stormdev'" \
+         stormdev$x; \
+     done
+   
+   2. creare i lease file (già fatto su testbed006)::
+     
+     mkdir -p /etc/grid-security/gridmapdir
+     for x in `seq -w 0 7`; do \
+       touch /etc/grid-security/gridmapdir/stormdev$x; \
+     done
+   
+   3. aggiungere il proprio DN di prova nel grid-mapfile
+   (assicurarsi che non sia duplicato!)::
+        
+     echo '"/C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri" .stormdev' >> /etc/grid-security/grid-mapfile
+
+
+Variabili d'ambiente da impostare
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In aggiunta a questa configurazione di sistema, ci sono dei parametri
+che si possono variare ad ogni esecuzione, impostando delle variabili
+d'ambiente e un file di configurazione specifico.
+
+Prima di eseguire un programma che usa LCMAPS, impostare le seguenti
+variabili d'ambiente::
+
+  # dove si trova il file di configurazione di LCMAPS
+  export LCMAPS_DB_FILE=$HOME/storm/backend/src/it/grid/storm/griduser/test/lcmaps.db
+
+  # la policy LCMAPS per mappare  gli utenti (definita nel config. file)
+  export LCMAPS_POLICY_NAME=standard
+
+  # file di log di LCMAPS
+  export LCMAPS_LOG_FILE=./lcmaps.log
+
+  # verbosità dei log: 0 è il minimo (default), 5 è il massimo
+  export LCMAPS_DEBUG_LEVEL=2
+
+  # prefisso per le righe di logging
+  export LCMAPS_LOG_STRING=lcmaps_interface
+
+ 
+File di configurazione ``lcmaps.db``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Questo file di configurazione viene letto ad ogni invocazione di un
+programma che chiama LCMAPS.  La sua posizione viene presa dalla
+variabile d'ambiente ``LCMAPS_DB_FILE``.
+
+Ecco il contenuto del file di esempio, usato nei test::
+
+  # LCMAPS policy file/plugin definition
+  #
+  # default path
+  path = /opt/glite/lib/modules
+
+  # Plugin definitions:
+  good             = "lcmaps_dummy_good.mod"
+  bad              = "lcmaps_dummy_bad.mod"
+  localaccount     = "lcmaps_localaccount.mod"
+             "-gridmapfile /etc/grid-security/grid-mapfile"
+  poolaccount      = "lcmaps_poolaccount.mod"
+             "-gridmapfile /etc/grid-security/grid-mapfile"
+             "-gridmapdir /etc/grid-security/gridmapdir"
+             "-override_inconsistency" 
+  posix_enf        = "lcmaps_posix_enf.mod"
+             "-maxuid 1"
+             "-maxpgid 1"
+             "-maxsgid 32"
+  #vomsextract      = "lcmaps_voms.mod"
+  #                       "-vomsdir /etc/grid-security/vomsdir"
+  #                       "-certdir /etc/grid-security/certificates"
+  #vomslocalgroup   = "lcmaps_voms_localgroup.mod"
+  #                       "-groupmapfile /etc/grid-security/groupmapfile"
+  #                       "-mapmin 0"
+  #vomspoolgroup    = "lcmaps_voms_poolgroup.mod"
+  #                       "-groupmapfile /etc/grid-security/groupmapfile"
+  #                       "-groupmapdir /etc/grid-security/groupmapdir"
+  #                       "-override_inconsistency" 
+  #                       "-mapmin 0"
+  #vomspoolaccount  = "lcmaps_voms_poolaccount.mod"
+  #                       "-gridmapfile /etc/grid-security/grid-mapfile"
+  #                       "-gridmapdir /etc/grid-security/gridmapdir"
+
+  # Policies:
+  #voms:
+  #localaccount -> posix_enf | vomsextract
+  #vomsextract -> vomslocalgroup
+  #vomslocalgroup -> vomspoolgroup
+  #vomspoolgroup -> vomspoolaccount
+  #vomspoolaccount -> posix_enf
+
+  standard:
+  good -> poolaccount | localaccount
+  #poolaccount -> good
+
+Questo file di configurazione mappa un utente in un poolaccount,
+secondo quanto specificato nel grid-mapfile.
+
+
+
+Compilazione
+============
+
+Assumiamo qui di lavorare su una copia "checkout" delle sorgenti di
+StoRM BackEnd.  I percorsi sono scritti assumendo che questo checkout
+sia nella directory ``storm`` dentro la propria home::
+
+  cd ~
+  cvs -d :ext:egrid-doc.egrid.it:/home/cvs checkout storm
+
+
+Librerie native
+---------------
+
+La generazione dell'interfaccia verso le librerie native e la sua
+compilazione sono controllate da un unico Makefile::
+
+  # directory dove sono i sorgenti delle lib native
+  cd ~/storm/backend/src/it/grid/storm/griduser/swig
+  
+  # genera le interfacce e le compila
+  make -f voms_interface.mk all
+  make -f lcmaps_interface.mk all
+
+Per compilare solo le librerie native, senza rigenerare le interfacce,
+si usa::
+
+  make -f voms_interface.mk libvoms_interface.so
+  make -f lcmaps_interface.mk liblcmaps_interface.so
+
+
+Compilazione delle classi Java
+------------------------------
+
+Nulla di particolare; siccome alcune classi usano ``assert`` è
+necessario passare l'opzione ``-source 1.4`` al compilatore.
+
+
+Automazione con ``ant``
+-----------------------
+
+Il codice seguente definisce un task ``swig`` che genera le interfacce
+e le compila, chiamando ``make`` come descritto sopra::
+
+  <!-- make SWIG Java interfaces -->
+  <target name="swig" depends="swig.voms,swig.lcmaps"/>
+
+  <target name="swig.voms">
+    <exec executable="make" logError="true">
+      <arg line="-C ${src}/it/grid/storm/griduser/swig -f voms_interface.mk all"/>
+    </exec>
+  </target>
+
+  <target name="swig.lcmaps">
+    <exec executable="make" logError="true">
+      <arg line="-C ${src}/it/grid/storm/griduser/swig -f lcmaps_interface.mk all"/>
+    </exec>
+  </target>
+
+
+
+Esecuzione dei programmi di test
+================================
+
+L'unico requisito dei programmi di test è che la proprietà
+``java.library.path`` deve contenere il percorso dove sono le librerie
+``libvoms_interface.so`` e ``liblcmaps_interface.so``.  Il passo di
+compilazione delle librerie ha creato questi file in
+``storm/backend/src/it/grid/storm/griduser/swig``. 
+
+
+TestVomsInterface
+-----------------
+
+Per questi test si utilizzano due file: ``voms-proxy``, che contiene
+una proxy con estensioni VOMS (``voms-proxy-init -voms stormdev``)::
+
+  [rmurri@testbed006:~/storm/backend/src]$ voms-proxy-info -all -file ~/voms-proxy 
+  subject   : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri/CN=proxy
+  issuer    : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  identity  : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  type      : proxy
+  strength  : 512 bits
+  path      : /home/rmurri/voms-proxy
+  timeleft  : 11:05:19
+  VO        : stormdev
+  subject   : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  issuer    : /C=IT/O=INFN/OU=Host/L=ICTP/CN=egrid-1.egrid.it
+  attribute : /stormdev/Role=NULL/Capability=NULL
+  timeleft  : 11:05:19
+
+ed il file ``no-voms-proxy`` che contiene un certificato proxy senza
+estensioni VOMS, generato con ``grid-proxy-init``::
+
+  [rmurri@testbed006:~/storm/backend/src]$ voms-proxy-info -all -file ~/no-voms-proxy 
+  subject   : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri/CN=proxy
+  issuer    : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  identity  : /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  type      : proxy
+  strength  : 512 bits
+  path      : /home/rmurri/no-voms-proxy
+  timeleft  : 4:00:33
+
+
+Trascritto di una sessione su testbed006, configurato come scritto sopra::
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsInterface
+  Usage: TestVomsInterface PROXYFILE
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsInterface ~/voms-proxy 
+  DN: /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  Number of FQANs found: 1
+  FQANs:
+  /stormdev/Role=NULL/Capability=NULL
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsInterface ~/no-voms-proxy 
+  DN: /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri/CN=proxy
+  Number of FQANs found: 0
+  No VOMS extensions in this certificate.
+
+
+TestLcmapsInterface
+-------------------
+
+Qui usiamo DN e FQAN delle proxy presentate prima per verificare la
+funzionalità di mapping.
+
+Come operazione preparatoria, è necessario caricare le variabili
+d'ambiente per configurare LCMAPS::
+
+  [rmurri@testbed006:~/storm/backend/src]$ set -x; source it/grid/storm/griduser/test/lcmaps_setenv.sh 
+  + source it/grid/storm/griduser/test/lcmaps_setenv.sh
+  ++ export LCMAPS_DB_FILE=/home/rmurri/storm/backend/src/it/grid/storm/griduser/test/lcmaps.db
+  ++ LCMAPS_DB_FILE=/home/rmurri/storm/backend/src/it/grid/storm/griduser/test/lcmaps.db
+  ++ export LCMAPS_POLICY_NAME=standard
+  ++ LCMAPS_POLICY_NAME=standard
+  ++ export LCMAPS_LOG_FILE=./lcmaps.log
+  ++ LCMAPS_LOG_FILE=./lcmaps.log
+  ++ export LCMAPS_LOG_STRING=lcmaps_interface
+  ++ LCMAPS_LOG_STRING=lcmaps_interface
+
+Poi si procede con il test:: 
+  
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestLcmapsInterface
+  Usage: TestLcmapsInterface DN [FQAN ...]
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestLcmapsInterface '/C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri' '/stormdev/Role=NULL/Capability=NULL'
+  *** Mapping user with data:
+  DN: /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  FQAN[0]: /stormdev/Role=NULL/Capability=NULL
+
+  *** Response from LCMAPS:
+  UID: 1000
+  GIDs: 1000 
+
+
+Testvomsgriduser
+----------------
+
+Questo codice istanzia un oggetto ``VomsGridUser`` e ne usa i metodi
+per ottenere informazioni sul DN, gli FQAN (VOMS) e per mappare le
+credenziali di griglia in un utente locale (LCMAPS).  Costituisce
+dunque un test delle funzionalità di VomsGridUser esercitate in StoRM.
+
+::
+
+  [rmurri@testbed006:~/storm/backend/src]$ javac -source 1.4 -sourcepath . -classpath ../lib/log4j-1.2.8.jar it/grid/storm/griduser/test/TestVomsGridUser.java
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsGridUser
+  Usage: TestVomsGridUser PROXYFILE
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -classpath ../lib/log4j-1.2.8.jar:. -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsGridUser ~/voms-proxy 
+  Trying to parse the certificate with VOMS...
+  Successfully created a VomsGridUser object from file contents.
+  Stored DN: /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri
+  Number of FQANs found: 1
+  FQANs:
+  /stormdev/ROLE=NULL/CAPABILITY=NULL (VO=stormdev, Group=/stormdev, Role=NULL, Capability=NULL)
+  Trying to map the user by LCMAPS...
+  Successfully mapped into account:
+  UID: 1000
+  GIDs: 1000 
+
+  [rmurri@testbed006:~/storm/backend/src]$ java -classpath ../lib/log4j-1.2.8.jar:. -Djava.library.path=it/grid/storm/griduser/swig it.grid.storm.griduser.test.TestVomsGridUser ~/no-voms-proxy 
+  Trying to parse the certificate with VOMS...
+  Successfully created a VomsGridUser object from file contents.
+  Stored DN: /C=IT/O=INFN/OU=Personal Certificate/L=ICTP/CN=Riccardo Murri/CN=proxy
+  Number of FQANs found: 0
+  No VOMS extensions in this certificate.
+  Trying to map the user by LCMAPS...
+  Successfully mapped into account:
+  UID: 1000
+  GIDs: 1000 
+
+
+
+Caveat
+======
+
+Limitazioni correnti di LCMAPS
+------------------------------
+
+(2005-07-22) La funzione ``lcmaps_return_poolindex_without_gsi()``,
+che è usata nel codice di ``lcmaps_interface``, attualmente può
+mappare un utente *solo in un pool account*; non è quindi possibile,
+con il codice attuale di ``VomsGridUser``, mappare le credenziali di
+un utente in un account singolo.
+
+Il maintainer di LCMAPS ha acconsentito ad rimuovere questa
+limitazione, ma il nuovo codice non sarà pronto prima di "gLite
+release 1.3"; cfr.:
+
+  https://savannah.cern.ch/bugs/index.php?func=detailitem&item_id=8923
+
+
+

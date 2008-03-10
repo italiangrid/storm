@@ -1,0 +1,4 @@
+xfsapi_interface_wrap.o: xfsapi_interface_wrap.cxx \
+  /usr/java/jdk1.5.0_11/include/jni.h \
+  /usr/java/jdk1.5.0_11/include/linux/jni_md.h fs_errors.hpp xfs.hpp \
+  posixfs.hpp genericfs.hpp posixfs_acl.hpp fs_acl.hpp

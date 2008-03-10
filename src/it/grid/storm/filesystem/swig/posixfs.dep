@@ -1,0 +1,2 @@
+posixfs.o posixfs.dep : posixfs.cpp posixfs.hpp genericfs.hpp fs_errors.hpp \
+  posixfs_acl.hpp fs_acl.hpp

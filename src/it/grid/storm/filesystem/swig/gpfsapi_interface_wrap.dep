@@ -1,0 +1,5 @@
+gpfsapi_interface_wrap.o: gpfsapi_interface_wrap.cxx \
+  /usr/java/jdk1.5.0_11/include/jni.h \
+  /usr/java/jdk1.5.0_11/include/linux/jni_md.h fs_errors.hpp gpfs.hpp \
+  genericfs.hpp posixfs_acl.hpp fs_acl.hpp gpfs31_acl.hpp gpfs23.hpp \
+  gpfs23_acl.hpp helper_command.hpp path.hpp

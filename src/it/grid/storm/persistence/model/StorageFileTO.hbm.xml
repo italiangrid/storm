@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping SYSTEM "C:\develop\hibernate-2.1\src\net\sf\hibernate\hibernate-mapping-2.0.dtd">
+-->
+
+<!--
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN" "http://hibernate.sourceforge.net/hibernate-configuration-2.0.dtd">
+-->
+
+
+
+<hibernate-mapping>
+
+  <class name="it.grid.storm.catalog.model.StorageFileTO"
+    table="STORAGE_FILE"
+    lazy="true">
+
+    <id name="storageFileId" type="long" column="SF_ID" unsaved-value="null">
+      <generator class="native"/>
+    </id>
+
+    <property name="ownerName" type="string" column="USERDN" length="150" not-null="true"/>
+
+    <property name="voName" type="string" column="VO" length="20"/>
+
+    <property name="name" type="string"  column="NAME" not-null="true"/>
+
+    <property name="justInTime" type="boolean" column="JIT" not-null="false"/>
+
+    <!--
+    <property name="fileType" type="string" column="FILETYPE" length="10" not-null="true"/>
+    -->
+
+    <!-- We can't change the creation time, so map it with update="false". -->
+
+    <property name="created" column="CREATED" type="java.util.Date" update="false" not-null="true" />
+
+    <property name="currentSize" type="long"  column="SIZE" not-null="false"/>
+
+    <property name="currentLifeTime" type="long"  column="LIFETIME" not-null="false"/>
+
+    <!-- We use a one-to-many association to express the relationship
+    to a set of pins.
+    -->
+    <!--
+    <set    name="pins"
+      cascade="all-delete-orphan"
+      inverse="true"
+      lazy="true">
+      <key foreign-key="FK_PIN_ID">
+        <column name="SF_ID" not-null="true" length="16"/>
+      </key>
+      <one-to-many class="it.grid.storm.catalog.model.PinData"/>
+    </set>
+    -->
+    <many-to-one name="storageSpace"
+      column="FK_SS_ID"
+      class="it.grid.storm.catalog.model.StorageSpaceTO"
+      not-null="false" >
+    </many-to-one>
+
+  </class>
+</hibernate-mapping>

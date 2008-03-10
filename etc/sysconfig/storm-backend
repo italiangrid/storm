@@ -1,0 +1,78 @@
+# /etc/sysconfig/storm-backend
+#
+# $Id: storm-backend,v 1.10 2006/06/28 20:57:39 amessina Exp $
+#
+
+# root of all other StoRM-related directories
+# (individual portions may be overridden later)
+#export STORM_HOME=/opt/storm
+
+# user that will own the StoRM BE process
+export STORM_BE_USER=root
+
+# library path, if you don't set this in /etc/ld.so.conf
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/globus/lib:/opt/glite/lib:/opt/glite/lib/modules
+
+# absolute path to configuration file
+#export STORM_BE_CONFIG_FILE="$STORM_HOME/etc/storm.properties"
+
+# how often to reload configuration file; set to 0 to disable 
+# automatic configuration file reloading.
+#export STORM_BE_CONFIG_REFRESH=0
+
+# where native code libraries are kept
+#export STORM_BE_LIBDIR="$STORM_HOME/lib/storm-backend"
+
+# name of the StoRM backend classes bundle file
+# (If this is a relative path, $STORM_BE_LIBDIR
+#  will be prepended)
+#export STORM_BE_JAR="$STORM_BE_LIBDIR/${NAME}.jar"
+
+# where the 3rd-party .jar files reside
+#export STORM_BE_JARDIR="$STORM_BE_LIBDIR/jars"
+
+# where StoRM puts logfiles
+#export STORM_BE_LOGDIR="$STORM_HOME/var/log"
+
+# where StoRM writes temporary files for GPFS ACL tools
+# BUG: maybe code reads this from storm.properties, not from here...
+#STORM_BE_TMPDIR="$STORM_HOME/var/tmp"
+
+# options for the JVM running the StoRM BE server
+#STORM_BE_JVM_OPTS='-server'
+
+# port for the command server (FIXME: should read from conf. file)
+#export STORM_COMMAND_PORT=4444
+
+# LCMAPS config file
+#export LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"
+
+# LCMAPS user mapping policy (defined in $LCMAPS_DB_FILE)
+#export LCMAPS_POLICY_NAME=standard
+
+# LCMAPS log file
+#export LCMAPS_LOG_FILE="$STORM_BE_LOGDIR/lcmaps.log"
+
+# LCMAPS log verbosity: 0 minimum (default), 5 maximum
+#export LCMAPS_DEBUG_LEVEL=2
+
+# if ENABLE_SSL != yes, the following SSL_* options are ignored.
+export ENABLE_SSL=yes
+
+# Path to the keystore containing trusted CA
+export SSL_TRUST_STORE="/opt/storm/etc/ecar.ts"
+
+# password of the trusted keystore
+export SSL_TRUST_STORE_PWD="truststore_pwd"
+
+# Path to the key store
+export SSL_KEY_STORE="/opt/storm/etc/ecar.p12"
+
+# password of the keystore containing the private and
+# public key used by ecar.
+export SSL_KEY_STORE_PWD="keystore_pwd"
+
+# Type of the keystore containing public and
+# private key used by ecar.
+export SSL_KEY_STORE_TYPE=PKCS12
+

@@ -1,0 +1,465 @@
+package it.grid.storm.persistence.impl.mysql;
+
+import it.grid.storm.persistence.util.db.DataBaseStrategy;
+import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.model.StorageSpaceTO;
+import it.grid.storm.persistence.dao.StorageSpaceDAO;
+import java.util.HashSet;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import it.grid.storm.persistence.util.helper.StorageSpaceSQLHelper;
+import it.grid.storm.persistence.DataSourceConnectionFactory;
+import java.sql.Connection;
+import it.grid.storm.persistence.exceptions.*;
+import java.sql.*;
+import org.apache.log4j.Logger;
+
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.VomsGridUser;
+
+
+/**
+ find = con.prepareStatement("SELECT storm_get_filereq.rowid, storm_req.r_token, storm_get_filereq.from_surl, storm_get_filereq.lifetime, storm_get_filereq.s_token, storm_get_filereq.flags, storm_req.protocol, storm_get_filereq.actual_size, storm_get_filereq.status, storm_get_filereq.errstring, storm_get_filereq.pfn FROM storm_get_filereq, storm_req WHERE storm_get_filereq.r_token=storm_req.r_token AND storm_get_filereq.r_token=?");
+ **/
+
+
+public class StorageSpaceDAOMySql implements StorageSpaceDAO {
+
+  private static final Logger log = Logger.getLogger("persistence");
+
+  private static String INSERT_NEW;
+  private static String FIND_BY_OWNER;
+  private static String REMOVE;
+
+  private DataSourceConnectionFactory connFactory;
+
+  private DataBaseStrategy db;
+  private StorageSpaceSQLHelper helper;
+
+  /**
+   * CONSTRUCTOR
+   */
+  public StorageSpaceDAOMySql()
+  {
+       db = PersistenceDirector.getDataBase();
+       helper = new StorageSpaceSQLHelper(db.getDbmsVendor());
+       connFactory = PersistenceDirector.getConnectionFactory();
+  }
+
+  /**
+   * addStorageSpace
+   *
+   * @param ss StorageSpace
+   * @throws DataAccessException
+   * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+   */
+  public void addStorageSpace(StorageSpaceTO ss) throws DataAccessException {
+     String query = helper.insertQuery(ss);
+     log.debug("INSERT query = "+query);
+     Connection conn = getConnection();
+     int res = -1;
+     Statement stat = getStatement(conn);
+     try {
+       res = stat.executeUpdate(query);
+       log.debug("UPDATE result = "+res);
+       if (res == -1) {
+         log.error("db error : " + query);
+       }
+     }
+     catch (SQLException ex) {
+       log.error("Error while executing INSERT query", ex);
+       throw new DataAccessException("Error while executing INSERT query",ex);
+     }
+     releaseConnection(null, stat, conn);
+  }
+
+  /**
+   * getStorageSpaceById
+   *
+   * @param ssId Long
+   * @return StorageSpace
+   * @throws DataAccessException
+   * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+   */
+  public StorageSpaceTO getStorageSpaceById(Long ssId) throws DataAccessException {
+    return null;
+  }
+
+    /**
+    * Returns a Collection of StorageSpaceTO owned by 'user' and with the specified 
+    * alias ('spaceAlias'). 'spaceAlias' can be NULL or empty and in these cases a Collection 
+    * of all the StorageSpaceTO owned by 'user' is returned.
+    *
+    * @param owner VomsGridUser.
+    * @param spaceAlias String.
+    * @return Collection of StorageSpaceTO.
+    * @throws DataAccessException
+    * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+    */
+    public Collection getStorageSpaceByOwner(VomsGridUser owner, String spaceAlias) throws DataAccessException
+    {
+        StorageSpaceTO ssTO = null;
+        Collection result = new LinkedList();
+        String query = helper.selectBySpaceAliasQuery(owner, spaceAlias);
+        log.debug("DB query = " + query);
+        Connection conn = getConnection();
+        ResultSet res = null;
+        Statement stat = getStatement(conn);
+        try {
+            res = stat.executeQuery(query);
+            log.debug("query result = " + res);
+            if (res == null) {
+                log.error("db error : " + query);
+                throw new DataAccessException("No Storage Space found!");
+            } else {
+                // Fetch each row from the result set
+                while (res.next()) {
+                    ssTO = helper.makeStorageSpaceTO(res);
+                    result.add(ssTO);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error while executing DB query", e);
+            throw new DataAccessException("Error while executing DB query", e);
+        }
+        releaseConnection(res, stat, conn);
+        
+        return result;
+    }
+
+    
+    /**
+     * Returns a Collection of StorageSpaceTO with the specified 
+     * alias ('spaceAlias'). 'spaceAlias' can not be be NULL or empty.
+     * @param spaceAlias String.
+     * @return Collection of StorageSpaceTO.
+     * @throws DataAccessException
+     * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+     */
+     public Collection getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException
+     {
+         StorageSpaceTO ssTO = null;
+         Collection result = new LinkedList();
+         String query = helper.selectBySpaceAliasOnlyQuery(spaceAlias);
+         log.debug("DB query = " + query);
+         Connection conn = getConnection();
+         ResultSet res = null;
+         Statement stat = getStatement(conn);
+         try {
+             res = stat.executeQuery(query);
+             log.debug("query result = " + res);
+             if (res == null) {
+                 log.error("db error : " + query);
+                 throw new DataAccessException("No Storage Space found!");
+             } else {
+                 // Fetch each row from the result set
+                 while (res.next()) {
+                     ssTO = helper.makeStorageSpaceTO(res);
+                     result.add(ssTO);
+                 }
+             }
+         } catch (SQLException e) {
+             log.error("Error while executing DB query", e);
+             throw new DataAccessException("Error while executing DB query", e);
+         }
+         releaseConnection(res, stat, conn);
+         
+         return result;
+     }
+    
+    
+    
+  /**
+   * getStorageSpaceByToken
+   *
+   * @param token TSpaceToken
+   * @return StorageSpace
+   * @throws DataAccessException
+   * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+   */
+  public StorageSpaceTO getStorageSpaceByToken(String token) throws DataAccessException {
+
+    StorageSpaceTO ssTO = null;
+    String query = helper.selectByTokenQuery(token);
+    log.debug("SELECT query = " + query);
+    Connection conn = getConnection();
+    ResultSet res = null;
+    Statement stat = getStatement(conn);
+    try {
+      res = stat.executeQuery(query);
+      log.debug("SELECT result = " + res);
+      if (res == null) {
+        log.error("db error : " + query);
+        throw new DataAccessException("Storage Space with token = '"+token+"' not found!");
+      }
+      else
+      {
+	  /**
+	   * @todo: Check size of result set.
+	   * Only one storage space can hold the token.
+	   **/
+
+          // Fetch each row from the result set
+          while (res.next()) {
+             ssTO = helper.makeStorageSpaceTO(res);
+          }
+      }
+    }
+    catch (SQLException ex) {
+      log.error("Error while executing INSERT query", ex);
+      throw new DataAccessException("Error while executing INSERT query", ex);
+    }
+    releaseConnection(res, stat, conn);
+
+   return ssTO;
+  }
+
+  /**
+   * removeStorageSpace
+   *
+   * @param ss StorageSpace
+   * @throws DataAccessException
+   * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+   */
+  public void removeStorageSpace(GridUserInterface user, String spaceToken) throws DataAccessException {
+    String query = helper.removeByTokenQuery((VomsGridUser) user, spaceToken);
+    log.debug("query = " + query);
+    Connection conn = getConnection();
+    int res = -1;
+    Statement stat = getStatement(conn);
+    try {
+        res = stat.executeUpdate(query);
+        log.debug("Number of rows removed: " + res);
+        if (res == -1) {
+            log.error("db error : " + query);
+            throw new DataAccessException("Storage Space with token = '" + spaceToken + "' not found!");
+        }
+    } catch (SQLException ex) {
+        log.error("Error while executing DELETE query", ex);
+        throw new DataAccessException("Error while executing DELETE query", ex);
+    }
+    releaseConnection(null, stat, conn);
+  }
+
+  public Collection findAll() throws DataAccessException {
+    return null;
+  }
+
+  /**
+   * removeStorageSpace only by spaceToken
+   *
+   * @param ss StorageSpace
+   * @throws DataAccessException
+   * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
+   */
+  public void removeStorageSpace(String spaceToken) throws DataAccessException {
+    String query = helper.removeByTokenQuery(spaceToken);
+    log.debug("query = " + query);
+    Connection conn = getConnection();
+    int res = -1;
+    Statement stat = getStatement(conn); 
+    try {
+        res = stat.executeUpdate(query);
+        log.debug("Number of rows removed: " + res);
+        if (res == -1) {
+            log.error("db error : " + query);
+            throw new DataAccessException("Storage Space with token = '" + spaceToken + "' not found!");
+        }
+    } catch (SQLException ex) {
+        log.error("Error while executing DELETE query", ex);
+        throw new DataAccessException("Error while executing DELETE query", ex);
+    }
+    releaseConnection(null, stat, conn);
+  }
+  
+
+  /**
+   *
+   * @param ss StorageSpaceTO
+   * @throws DataAccessException
+   */
+  public void updateStorageSpace(StorageSpaceTO ss) throws DataAccessException
+  {
+      long freeSpace = (ss.getUnusedSize());
+      /**
+       * @todo: Update all changeable column! not only FreeSpace.
+       */
+      String query = helper.updateFreeSpaceByTokenQuery(ss.getSpaceToken(),freeSpace);
+      log.debug("UPDATE query = "+query);
+      Connection conn = getConnection();
+      int res = -1;
+      Statement stat = getStatement(conn);
+      try {
+	  res = stat.executeUpdate(query);
+	  log.debug("UPDATE result = "+res);
+	  if (res==-1) {
+	      log.error("db error : "+query);
+	  }
+      }
+      catch (SQLException ex) {
+	  log.error("Error while executing INSERT query", ex);
+	  throw new DataAccessException("Error while executing UPDATE query", ex);
+      }
+      releaseConnection(null, stat, conn);
+  }
+  
+  /**
+  *
+  * @param ss StorageSpaceTO
+  * @throws DataAccessException
+  */
+ public void updateAllStorageSpace(StorageSpaceTO ss) throws DataAccessException
+ {
+     long freeSpace = (ss.getUnusedSize());
+     /**
+      * @todo: Update all changeable column! not only FreeSpace.
+      */
+     String query = helper.updateAllByTokenQuery(ss.getSpaceToken(), ss.getAlias(), ss.getGuaranteedSize(), ss.getSpaceFile());
+     log.debug("UPDATE query = "+query);
+     Connection conn = getConnection();
+     int res = -1;
+     Statement stat = getStatement(conn);
+     try {
+      res = stat.executeUpdate(query);
+      log.debug("UPDATE result = "+res);
+      if (res==-1) {
+          log.error("db error : "+query);
+      }
+     }
+     catch (SQLException ex) {
+      log.error("Error while executing INSERT query", ex);
+      throw new DataAccessException("Error while executing UPDATE query", ex);
+     }
+     releaseConnection(null, stat, conn);
+ }
+
+  /**
+   * Method used to retrieve the set of StorageTO for expired space.
+   * @param long timeInSecond 
+   * @return Collection of transfer object
+   */
+    public Collection getExpired(long currentTimeInSecond) throws DataAccessException {
+    	StorageSpaceTO ssTO = null;
+        Collection result = new LinkedList();
+        String query = helper.selectExpiredQuery(currentTimeInSecond);
+        log.debug("DB query = " + query);
+        Connection conn = getConnection();
+        ResultSet res = null;
+        Statement stat = getStatement(conn);
+        try {
+            res = stat.executeQuery(query);
+            log.debug("query result = " + res);
+            if (res == null) {
+                log.error("db error : " + query);
+                throw new DataAccessException("No Storage Space found!");
+            } else {
+                // Fetch each row from the result set
+                while (res.next()) {
+                    ssTO = helper.makeStorageSpaceTO(res);
+                    result.add(ssTO);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error while executing DB query", e);
+            throw new DataAccessException("Error while executing DB query", e);
+        }
+        releaseConnection(res, stat, conn);
+        
+        return result;
+  }
+
+
+  /**
+   * Retrieve a connection
+   * Accessor method.
+   *
+   * @return Connection
+   * @throws DataAccessException
+   */
+  protected Connection getConnection() throws DataAccessException {
+    //Retrieve a Connection
+    Connection conn = null;
+    try {
+      conn = connFactory.borrowConnection();
+    }
+    catch (PersistenceException ex) {
+      throw new DataAccessException(ex);
+    }
+    return conn;
+  }
+
+
+  /**
+   * Release  a connection
+   * Accessor method.
+   *
+   * @param resultSet ResultSet
+   * @param statement Statement
+   * @param connection Connection
+   * @throws DataAccessException
+   */
+  protected void releaseConnection(ResultSet resultSet, Statement statement, Connection connection) throws DataAccessException {
+
+    //Release the ResultSet
+    if (resultSet != null) {
+      try {
+        resultSet.close();
+      }
+      catch (SQLException ex1) {
+        log.error("Error while releasing the result set");
+        throw new DataAccessException(ex1);
+      }
+    }
+
+    //Close the statement
+    if (statement != null) {
+      try {
+        statement.close();
+      }
+      catch (SQLException ex2) {
+        log.error("Error while releasing the statement");
+        throw new DataAccessException(ex2);
+      }
+    }
+
+    //Release the connection
+    if (connection != null) {
+      try {
+        connFactory.giveBackConnection(connection);
+      }
+      catch (PersistenceException ex3) {
+        log.error("Error while releasing the connection");
+        throw new DataAccessException(ex3);
+      }
+  }
+
+ }
+
+  /**
+   * Retrieve a Statement from connetion
+   * Accessor method.
+   *
+   * @param conn Connection
+   * @return Statement
+   * @throws DataAccessException
+   */
+  protected Statement getStatement(Connection conn) throws DataAccessException {
+    Statement stat = null;
+    if (conn==null)
+      throw new DataAccessException("No Connection available to create a Statement");
+    else
+    {
+      try {
+        stat = conn.createStatement();
+      }
+      catch (SQLException ex1) {
+        log.error("Error while creating the statement");
+        throw new DataAccessException(ex1);
+      }
+    }
+    return stat;
+  }
+
+}

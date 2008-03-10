@@ -1,0 +1,3 @@
+#!/bin/bash
+cd ..
+ant StoRM > ./log/storm_server.out &

@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="StoRM-BE classpath properties">
+
+  <!--load properties about jar filenames -->
+  <property file="${build.external-jars.filenames}"/>
+
+
+  <target name="make-local-repository" depends="init">
+    <mkdir dir="${external-jars.local-repository.path}"/>
+    <echo>Created the directory ${external-jars.local-repository.path}</echo>
+  </target>
+
+  <target name="init-lib-jars">
+    <mkdir dir="${build.jars.dir}"/>
+  </target>
+
+  <target name="rmdir-libs">
+    <delete dir="${build.jars.dir}"/>
+  </target>
+
+
+  <target name="print-availability-jars-1.4.0">
+    <available file="${external-jars.local-repository.path}/${jar.axis.core}" property="jar.axis.core.exists"/>
+    <echo message="${jar.axis.core} exists: ${jar.axis.core.exists}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.axis.axis-ant}" property="jar.axis.axis-ant.exist"/>
+    <echo message="${jar.axis.axis-ant} exists: ${jar.axis.axis-ant.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.axis-axis-schema}" property="jar.axis-axis-schema.exist"/>
+    <echo message="${jar.axis-axis-schema} exists: ${jar.axis-axis-schema.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.axis.jaxrpc}" property="jar.axis.jaxrpc.exist"/>
+    <echo message="${jar.axis.jaxrpc} exists: ${jar.axis.jaxrpc.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.axis.saaj}" property="jar.axis.saaj.exist"/>
+    <echo message="${jar.axis.saaj} exists: ${jar.axis.saaj.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.axis.wsdl4j}"  property="jar.axis.wsdl4j.exist"/>
+    <echo message="${jar.axis.wsdl4j} exists: ${jar.axis.wsdl4j.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.backport}"  property="jar.backport.exist"/>
+    <echo message="${jar.backport} exists: ${jar.backport.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.core}"  property="jar.cog-jglobus.core.exist"/>
+    <echo message="${jar.cog-jglobus.core} exists: ${jar.cog-jglobus.core.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.cog-jobmanager}"  property="jar.cog-jglobus.cog-jobmanager.exist"/>
+    <echo message="${jar.cog-jglobus.cog-jobmanager} exists: ${jar.cog-jglobus.cog-jobmanager.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.cog-url}"  property="jar.cog-jglobus.cog-url.exist"/>
+    <echo message="${jar.cog-jglobus.cog-url} exists: ${jar.cog-jglobus.cog-url.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix}"  property="jar.cog-jglobus.cryptix.exist"/>
+    <echo message="${jar.cog-jglobus.cryptix} exists: ${jar.cog-jglobus.cryptix.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix32}"  property="jar.cog-jglobus.cryptix32.exist"/>
+    <echo message="${jar.cog-jglobus.cryptix32} exists: ${jar.cog-jglobus.cryptix32.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix-asn1}"  property="jar.cog-jglobus.cryptix-asn1.exist"/>
+    <echo message="${jar.cog-jglobus.cryptix-asn1} exists: ${jar.cog-jglobus.cryptix-asn1.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.jce}"  property="jar.cog-jglobus.jce.exist"/>
+    <echo message="${jar.cog-jglobus.jce} exists: ${jar.cog-jglobus.jce.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.jgss}"  property="jar.cog-jglobus.jgss.exist"/>
+    <echo message="${jar.cog-jglobus.jgss} exists: ${jar.cog-jglobus.jgss.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus.puretls}"  property="jar.cog-jglobus.puretls.exist"/>
+    <echo message="${jar.cog-jglobus.puretls} exists: ${jar.cog-jglobus.puretls.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.cog-jglobus-fx.cog-axis}"  property="jar.cog-jglobus-fx.cog-axis.exist"/>
+    <echo message="${jar.cog-jglobus-fx.cog-axis} exists: ${jar.cog-jglobus-fx.cog-axis.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.beanutils}"  property="jar.jakarta-commons.beanutils.exist"/>
+    <echo message="${jar.jakarta-commons.beanutils} exists: ${jar.jakarta-commons.beanutils.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.cli}"  property="jar.jakarta-commons.cli.exist"/>
+    <echo message="${jar.jakarta-commons.cli} exists: ${jar.jakarta-commons.cli.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.codec}"  property="jar.jakarta-commons.codec.exist"/>
+    <echo message="${jar.jakarta-commons.codec} exists: ${jar.jakarta-commons.codec.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.collections}"  property="jar.jakarta-commons.collections.exist"/>
+    <echo message="${jar.jakarta-commons.collections} exists: ${jar.jakarta-commons.collections.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.configuration}"  property="jar.jakarta-commons.configuration.exist"/>
+    <echo message="${jar.jakarta-commons.configuration} exists: ${jar.jakarta-commons.configuration.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.dbcp}"  property="jar.jakarta-commons.dbcp.exist"/>
+    <echo message="${jar.jakarta-commons.dbcp} exists: ${jar.jakarta-commons.dbcp.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.digester}"  property="jar.jakarta-commons.digester.exist"/>
+    <echo message="${jar.jakarta-commons.digester} exists: ${jar.jakarta-commons.digester.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.discovery}"  property="jar.jakarta-commons.discovery.exist"/>
+    <echo message="${jar.jakarta-commons.discovery} exists: ${jar.jakarta-commons.discovery.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.lang}"  property="jar.jakarta-commons.lang.exist"/>
+    <echo message="${jar.jakarta-commons.lang} exists: ${jar.jakarta-commons.lang.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.logging}"  property="jar.jakarta-commons.logging.exist"/>
+    <echo message="${jar.jakarta-commons.logging} exists: ${jar.jakarta-commons.logging.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.pool}"  property="jar.jakarta-commons.pool.exist"/>
+    <echo message="${jar.jakarta-commons.pool} exists: ${jar.jakarta-commons.pool.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta-commons.validator}"  property="jar.jakarta-commons.validator.exist"/>
+    <echo message="${jar.jakarta-commons.validator} exists: ${jar.jakarta-commons.validator.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta.jakarta-oro}"  property="jar.jakarta.jakarta-oro.exist"/>
+    <echo message="${jar.jakarta.jakarta-oro} exists: ${jar.jakarta.jakarta-oro.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jakarta.log4j}"  property="jar.jakarta.log4j.exist"/>
+    <echo message="${jar.jakarta.log4j} exists: ${jar.jakarta.log4j.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.hsqldb}"  property="jar.hsqldb.exist"/>
+    <echo message="${jar.hsqldb} exists: ${jar.hsqldb.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.jline}"  property="jar.jline.exist"/>
+    <echo message="${jar.jline} exists: ${jar.jline.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.quickserser.qsadmingui}"  property="jar.quickserser.qsadmingui.exist"/>
+    <echo message="${jar.quickserser.qsadmingui} exists: ${jar.quickserser.qsadmingui.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.quickserver.core}"  property="jar.quickserver.core.exist"/>
+    <echo message="${jar.quickserver.core} exists: ${jar.quickserver.core.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.mysql.connector}"  property="jar.mysql.connector.exist"/>
+    <echo message="${jar.mysql.connector} exists: ${jar.mysql.connector.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.storm.ecar}"  property="jar.storm.ecar.exist"/>
+    <echo message="${jar.storm.ecar} exists: ${jar.storm.ecar.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.storm.srm22stub}"  property="jar.storm.srm22stub.exist"/>
+    <echo message="${jar.storm.srm22stub} exists: ${jar.storm.srm22stub.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xalan.core}"  property="jar.xalan.core.exist"/>
+    <echo message="${jar.xalan.core} exists: ${jar.xalan.core.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xerces.resolver}"  property="jar.xerces.resolver.exist"/>
+    <echo message="${jar.xerces.resolver} exists: ${jar.xerces.resolver.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xerces.serializer}"  property="jar.xerces.serializer.exist"/>
+    <echo message="${jar.xerces.serializer} exists: ${jar.xerces.serializer.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xerces.xercesimpl}"  property="jar.xerces.xercesimpl.exist"/>
+    <echo message="${jar.xerces.xercesimpl} exists: ${jar.xerces.xercesimpl.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xerces.xml-apis}"  property="jar.xerces.xml-apis.exist"/>
+    <echo message="${jar.xerces.xml-apis} exists: ${jar.xerces.xml-apis.exist}"/>
+
+    <available file="${external-jars.local-repository.path}/${jar.xmlrpc}"  property="jar.xmlrpc.exist"/>
+    <echo message="${jar.xmlrpc} exists: ${jar.xmlrpc.exist}"/>
+
+  </target>
+
+
+  <condition property="version-1.4.0">
+    <equals arg1="1.4.0" arg2="${jars-set-version}"/>
+  </condition>
+
+  <target name="refresh-local-repository-1.4.0" depends="make-local-repository" if="version-1.4.0">
+
+    <get src="${external-jars.repository.url}/${jar.axis.core}"
+         dest="${external-jars.local-repository.path}/${jar.axis.core}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.axis.axis-ant}"
+         dest="${external-jars.local-repository.path}/${jar.axis.axis-ant}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.axis-axis-schema}"
+         dest="${external-jars.local-repository.path}/${jar.axis-axis-schema}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.axis.jaxrpc}"
+         dest="${external-jars.local-repository.path}/${jar.axis.jaxrpc}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.axis.saaj}"
+         dest="${external-jars.local-repository.path}/${jar.axis.saaj}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.axis.wsdl4j}"
+         dest="${external-jars.local-repository.path}/${jar.axis.wsdl4j}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.backport}"
+         dest="${external-jars.local-repository.path}/${jar.backport}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.core}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.core}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.cog-jobmanager}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.cog-jobmanager}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.cog-url}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.cog-url}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.cryptix}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.cryptix32}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix32}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.cryptix-asn1}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.cryptix-asn1}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.jce}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.jce}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.jgss}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.jgss}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus.puretls}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus.puretls}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.cog-jglobus-fx.cog-axis}"
+         dest="${external-jars.local-repository.path}/${jar.cog-jglobus-fx.cog-axis}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.beanutils}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.beanutils}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.cli}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.cli}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.codec}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.codec}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.collections}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.collections}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.configuration}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.configuration}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.dbcp}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.dbcp}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.digester}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.digester}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.discovery}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.discovery}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.lang}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.lang}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.logging}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.logging}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.pool}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.pool}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta-commons.validator}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta-commons.validator}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta.jakarta-oro}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta.jakarta-oro}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jakarta.log4j}"
+         dest="${external-jars.local-repository.path}/${jar.jakarta.log4j}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.hsqldb}"
+         dest="${external-jars.local-repository.path}/${jar.hsqldb}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.jline}"
+         dest="${external-jars.local-repository.path}/${jar.jline}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.quickserser.qsadmingui}"
+         dest="${external-jars.local-repository.path}/${jar.quickserser.qsadmingui}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.quickserver.core}"
+         dest="${external-jars.local-repository.path}/${jar.quickserver.core}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.mysql.connector}"
+         dest="${external-jars.local-repository.path}/${jar.mysql.connector}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.storm.ecar}"
+         dest="${external-jars.local-repository.path}/${jar.storm.ecar}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.storm.srm22stub}"
+         dest="${external-jars.local-repository.path}/${jar.storm.srm22stub}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xalan.core}"
+         dest="${external-jars.local-repository.path}/${jar.xalan.core}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xerces.resolver}"
+         dest="${external-jars.local-repository.path}/${jar.xerces.resolver}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xerces.serializer}"
+         dest="${external-jars.local-repository.path}/${jar.xerces.serializer}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xerces.xercesimpl}"
+         dest="${external-jars.local-repository.path}/${jar.xerces.xercesimpl}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xerces.xml-apis}"
+         dest="${external-jars.local-repository.path}/${jar.xerces.xml-apis}" verbose="false"
+         usetimestamp="true"/>
+
+    <get src="${external-jars.repository.url}/${jar.xmlrpc}"
+         dest="${external-jars.local-repository.path}/${jar.xmlrpc}" verbose="false"
+         usetimestamp="true"/>
+
+  </target>
+
+  <condition property="version-1.3.0">
+    <equals arg1="1.3.0" arg2="${jars-set-version}"/>
+  </condition>
+
+  <target name="refresh-local-repository-1.3.0" depends="make-local-repository" if="version-1.3.0">
+      <get src="${external-jars.repository.url}/${external-jars.repository.archive-name}.tar.gz"
+         dest="${external-jars.local-repository.path}/${external-jars.repository.archive-name}.tar.gz" verbose="false"
+         usetimestamp="true"/>
+      <gunzip src="${external-jars.local-repository.path}/${external-jars.repository.archive-name}.tar.gz"
+              dest="${external-jars.local-repository.path}/${external-jars.repository.archive-name}.tar"/>
+      <untar src="${external-jars.local-repository.path}/${external-jars.repository.archive-name}.tar"
+             dest="${external-jars.local-repository.path}"/>
+  </target>
+
+  <target name="refresh-local-repository" depends="make-local-repository">
+      <antcall target="refresh-local-repository-1.3.0"/>
+      <antcall target="refresh-local-repository-1.4.0"/>
+  </target>
+
+  <fileset id="external-jars" dir="${external-jars.local-repository.path}">
+     <include name="**/*.jar"/>
+     <include name="**/*.LICENSE"/>
+  </fileset>
+
+  <target name="print-external-jars" depends="init">
+    <property name="external-jars-list" refid="external-jars"/>
+    <echo level="info" message="external-jars=${external-jars-list}"/>
+  </target>
+
+
+  <fileset id="build.jars" dir="${build.jars.dir}">
+        <include name="*.jar"/>
+  </fileset>
+
+  <fileset id="dist.jars" dir="${build.jars.dir}">
+        <include name="*.jar"/>
+        <exclude name="${jar.mysql.connector}"/>
+  </fileset>
+
+  <path id="compile.classpath">
+    <fileset refid="build.jars" />
+  </path>
+
+</project>
+
+
+
+

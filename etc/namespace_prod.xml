@@ -1,0 +1,290 @@
+<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace.xsd">
+  <filesystems>
+    <filesystem name="LHCB-FS" fs_type="gpfs">
+     <space-token-description>LHCb_DST</space-token-description>
+      <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+    <filesystem name="DTEAM-FS" fs_type="gpfs">
+     <space-token-description>srm2_d1t0</space-token-description>
+     <root>//storage/gpfs_storm/dteam</root>
+     <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+     <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>gpfs-farm-1.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+   </filesystem>
+   <filesystem name="GIN-FS" fs_type="gpfs">
+      <space-token-description>GIN_DISK</space-token-description>
+      <root>/storage/gpfs_storm/gin</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+   </filesystem>
+   <filesystem name="OPS-FS" fs_type="gpfs">
+     <space-token-description>OPS_DISK</space-token-description>
+     <root>/storage/gpfs_storm/ops</root>
+     <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+    <filesystem name="CMS-FS" fs_type="gpfs">
+      <space-token-description>CMS_DISK</space-token-description>
+      <root>/storage/gpfs_cms1/cms</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+    <filesystem name="ATLAS-FS" fs_type="gpfs">
+      <space-token-description>DISK</space-token-description>
+      <root>/storage/gpfs_storm/atlas</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+       <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>gridftp-storm-atlas.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="rfio">
+            <schema>rfio</schema>
+            <host>gpfs-farm-1.cr.cnaf.infn.it</host>
+            <port>5001</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+     <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+</filesystems>
+<mapping-rules>
+    <map-rule name="LHCB-maprule">
+      <stfn-root>/lhcb</stfn-root>
+      <mapped-fs>LHCB-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="GIN-maprule">
+      <stfn-root>/gin</stfn-root>
+      <mapped-fs>GIN-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="DTEAM-maprule">
+      <stfn-root>/dteam</stfn-root>
+      <mapped-fs>DTEAM-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="OPS-maprule">
+      <stfn-root>/ops</stfn-root>
+      <mapped-fs>OPS-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="CMS-maprule">
+      <stfn-root>/cms</stfn-root>
+      <mapped-fs>CMS-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="ATLAS-maprule">
+      <stfn-root>/atlas</stfn-root>
+      <mapped-fs>ATLAS-FS</mapped-fs>
+    </map-rule>
+</mapping-rules>
+<approachable-rules>
+    <app-rule name="LHCB-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>LHCB-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+   <app-rule name="DTEAM-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>DTEAM-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+    <app-rule name="GIN-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>GIN-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+    <app-rule name="OPS-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>OPS-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+    <app-rule name="CMS-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>CMS-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+    <app-rule name="ATLAS-rule">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>ATLAS-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+  </approachable-rules>
+</namespace>

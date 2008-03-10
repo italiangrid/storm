@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+spawn telnet  127.0.0.1 4444 
+send "SHUTDOWN\r"
+send "exit\r"
+
+expect "127.0.0.1 console login:"
+#expect "telnet>"
+#send "STOP"
+#send "\r"
+#expect "ok"
+#send "STOP"
+exit
+

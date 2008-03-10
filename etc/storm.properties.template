@@ -1,0 +1,61 @@
+# ============================
+# StoRM General config
+# ============================
+storm.machinenames=@HOSTNAME@
+# BEWARE! storm.machinenames is a list of comma separated strings
+# identifying the various names of the FE. For example:
+# storm.machinenames=egrid-7.egrid.it,fe.egrid.it,storm.egrid.it
+
+storm.service.hostname=@HOSTNAME@
+storm.service.port=8444
+fe.port = 8444
+storm.service.inQueryForm=true
+storm.service.endpoint=/srm/managerv2
+proxy.home=/opt/storm/var/proxies
+
+# ============================
+# FE/BE communication RDBMS
+# ============================
+asynch.picker.db.host = @DB_HOSTNAME@
+asynch.picker.db.username = @DB_USER@
+asynch.picker.db.passwd = @DB_PASSWD@
+
+# ============================
+# SYNCHCALL Component parameter
+# ============================
+synchcall.directoryManager.maxLsEntry=2000
+
+# ============================
+# BE-private RDBMS
+# ============================
+persistence.db.host = @DB_HOSTNAME@
+persistence.db.username = @DB_USER@
+persistence.db.passwd = @DB_PASSWD@
+
+persistence.db.pool = true
+persistence.db.pool.maxActive = 10
+persistence.db.pool.maxWait = 50
+
+# =======================
+# Authorization Component
+# =======================
+# authorization.sources = ECARAuthorizationSource
+# ecar.sea=https://egrid-lfc-01.pd.infn.it:8859/
+
+# =======================
+# Default Lifetime
+# =======================
+
+# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
+# without any pinLifetime specified. The value specified below is 1 day
+pinLifetime.minimum=259200
+
+# Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
+# The value specified below is 1 day
+fileLifetime.default=259200
+
+# Deault PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
+# This value is the one specified in the remote SrmPrepareToGet request.
+# The value specified below is 1 day.
+SRM22Client.PinLifeTime=259200
+

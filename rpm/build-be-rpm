@@ -1,0 +1,93 @@
+#!/bin/sh
+# Build a zzz rpm set. 
+# Uses temp space here, does not touch the source.
+# Runnable as myself, does not use root permission at all.
+
+PROG="`basename $0`"
+
+usage () {
+	cat <<EOF
+Usage: $PROG SPECFILE SOURCE [SOURCE ...]
+
+Builds the RPM package(s) driven by SPECFILE from
+the given SOURCEs, using the tempoprary build area specified 
+by the ``%_topdir`` declaration in ``~/.rpmmacros``.
+
+If SOURCE is a file, copy it to the RPM temporary build area.
+If SOURCE is a directory, then make a .tar.gz file out of it,
+and copy the .tar.gz to the build area.
+EOF
+}
+
+die () {
+	rc="$1"
+	shift
+
+	echo -n "$PROG: "
+	if [ -z "$1" ]; then cat 1>&2; else echo 1>&2 "$@"; fi
+	
+	exit $rc
+}
+
+
+## process cmd line args
+
+spec="$1"; shift
+if [ -z "$spec" ]; then
+	echo 1>&2 "No SPECFILE given on command line."
+	usage
+	exit 1
+fi
+
+# rest  of args is SOURCE files...'
+if [ 0 -eq $# ]; then
+	echo 1>&2 "No SOURCE(s) given on command line."
+	usage 
+	exit 1
+fi
+
+
+## main
+
+topdir="`grep '%_topdir' ~/.rpmmacros | (read a b c; echo $b)`"
+if [ -z "$topdir" ]; then
+	echo 1>&2 "$PROG: No RPM build tree top dir set in ~/.rpmmacros with '%_topdir': aborting."
+	exit 1
+fi
+
+PACKAGE="`grep -i 'Name:' "$spec" | head -n 1 | sed -e 's/.*://' | tr -d ' '`"
+if [ -z "$PACKAGE" ]; then
+	die 1 "Cannot determine package name from spec file '$spec' (looked for 'Name:' lines. Aborting."
+fi
+
+
+# make rpm directory structure
+if [ ! -d "$topdir" ]; then
+	mkdir -v "$topdir"
+fi
+
+mkdir -v "$topdir"/SOURCES
+mkdir -v "$topdir"/SRPMS
+mkdir -v "$topdir"/SPECS
+mkdir -v "$topdir"/BUILD
+mkdir -v "$topdir"/RPMS
+
+# copy the source(s)
+rm -rf "$topdir/SOURCES/${PACKAGE}"
+for src in "$@"; do
+	rm -rf "$topdir/SOURCES/`basename "$src"`"
+	if [ -d "$src" ]; then
+		# create a .tar.gz of the directory
+		tar -c -v \
+			-zf "$topdir/SOURCES/`basename "$src"`".tar.gz \
+			-C "$src"/.. \
+			"`basename "$src"`"
+	else
+		cp -v "$src" "$topdir/SOURCES"/
+	fi
+done
+
+# now build the binaries and the rpms.
+cp -v "$spec" "$topdir/SPECS/"
+cd "$topdir"
+rpmbuild -ba "$topdir/SPECS/`basename $spec`"

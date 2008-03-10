@@ -1,0 +1,2 @@
+gpfs23.o gpfs23.dep : gpfs23.cpp gpfs23.hpp genericfs.hpp fs_errors.hpp \
+  posixfs_acl.hpp fs_acl.hpp gpfs23_acl.hpp helper_command.hpp path.hpp
