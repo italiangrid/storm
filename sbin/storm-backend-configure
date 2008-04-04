@@ -99,7 +99,7 @@ function group_exists () {
 }
 
 function normalize_dirpath () {
-    cd "$1" && pwd -P && cd -
+    cd "$1" && pwd -P && cd - > /dev/null
 }
 
 # download_and_extract URL FILE [FILE ...]
