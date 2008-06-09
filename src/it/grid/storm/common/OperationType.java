@@ -1,6 +1,5 @@
 package it.grid.storm.common;
 
-import it.grid.storm.scheduler.ChunkType;
 
 /**
  * This class is part of the StoRM project.
