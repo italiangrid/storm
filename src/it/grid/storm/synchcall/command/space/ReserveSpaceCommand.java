@@ -25,6 +25,8 @@ import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.naming.NamespaceUtil;
+import it.grid.storm.space.IllegalSRMSpaceParameter;
+import it.grid.storm.space.SRMSpace;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TAccessLatency;
@@ -79,7 +81,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             e.printStackTrace();
         }
         return formatLogMessage(success, user, desSize, guarSize, lifetime,
-                rpinfo, status);
+                                rpinfo, status);
     }
 
     private String formatLogMessage(boolean success, GridUserInterface user,
@@ -150,7 +152,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             explanation = "Invalid Parameter specified";
             statusCode = TStatusCode.SRM_FAILURE;
             log.error(formatLogMessage(FAILURE, null, null, null, null, null,
-                    statusCode, explanation));
+                                       statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -173,10 +175,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             statusCode = TStatusCode.SRM_AUTHENTICATION_FAILURE;
             explanation = "Unable to get user credential!";
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -187,43 +189,43 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
         if (data.getRetentionPolicyInfo() != null) {
             if (data.getRetentionPolicyInfo().getAccessLatency().equals(
-                    TAccessLatency.EMPTY))
+                                                                        TAccessLatency.EMPTY))
                 // Set accessLatency to the default value.
                 data.getRetentionPolicyInfo().setAccessLatency(
-                        TAccessLatency.ONLINE);
+                                                               TAccessLatency.ONLINE);
 
             if (!(data.getRetentionPolicyInfo().getAccessLatency()
                     .equals(TAccessLatency.ONLINE))
                     || !(data.getRetentionPolicyInfo().getRetentionPolicy()
                             .equals(TRetentionPolicy.REPLICA))) {
                 log.debug("SpaceRes: Invalid TRetentionPolicyInfo specified:  "
-                        + data.getRetentionPolicyInfo().getAccessLatency()
-                                .toString()
-                        + ","
-                        + (data.getRetentionPolicyInfo().getRetentionPolicy()
-                                .toString()));
+                          + data.getRetentionPolicyInfo().getAccessLatency()
+                          .toString()
+                          + ","
+                          + (data.getRetentionPolicyInfo().getRetentionPolicy()
+                                  .toString()));
                 statusCode = TStatusCode.SRM_NOT_SUPPORTED;
                 explanation = "RetentionPolicy requested cannot be satisfied.";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             }
         } else {
             log.debug("SpaceRes: Invalid TRetentionPolicyInfo specified:  "
-                    + data.getRetentionPolicyInfo().getAccessLatency()
-                            .toString()
-                    + ","
-                    + (data.getRetentionPolicyInfo().getRetentionPolicy()
-                            .toString()));
+                      + data.getRetentionPolicyInfo().getAccessLatency()
+                      .toString()
+                      + ","
+                      + (data.getRetentionPolicyInfo().getRetentionPolicy()
+                              .toString()));
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "RetentionPolicy requested cannot be satisfied.";
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -257,10 +259,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to build default Space FN \n" + ex;
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -273,30 +275,30 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to resolve VFS \n" + ex2;
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
         String relativeSpaceFN = null;
         try {
             log.debug("ExtraceRelativeSpace: root:" + vfs.getRootPath()
-                    + " spaceFN:" + spaceFN);
+                      + " spaceFN:" + spaceFN);
             relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs
-                    .getRootPath(), spaceFN);
+                                                                .getRootPath(), spaceFN);
             log.debug("relativeSpaceFN:" + relativeSpaceFN);
         } catch (NamespaceException ex3) {
             log.debug("Unable to retrieve the relative space file name ", ex3);
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to retrieve the relative space file name \n"
-                    + ex3;
+                + ex3;
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -308,11 +310,11 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 lifeTime = vfs.getDefaultValues().getDefaultSpaceLifetime();
             } catch (NamespaceException e) {
                 log
-                        .debug(
-                                "Error while retrieving default Default Space Lifetime",
-                                e);
+                .debug(
+                       "Error while retrieving default Default Space Lifetime",
+                       e);
                 explanation = "Error while retrieving default Lifetime Type \n"
-                        + e;
+                    + e;
                 failure = true;
             }
         } else {
@@ -337,17 +339,17 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 statusCode = TStatusCode.SRM_INVALID_REQUEST;
                 explanation = "Error: totalSize can not be greater then guaranteedSize";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             }
         } else { // Assign default values if totalSize and guaranteedSize are
-                    // not defined
+            // not defined
             if (!(totalSize.isEmpty())) {
                 try {
                     guarSize = vfs.getDefaultValues()
-                            .getDefaultGuaranteedSpaceSize();
+                    .getDefaultGuaranteedSpaceSize();
                     if (totalSize.value() < guarSize.value())
                         guarSize = totalSize;
                 } catch (NamespaceException ex1) {
@@ -356,11 +358,11 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             } else if (!((guarSize.isEmpty()) || guarSize.value() == 0)) {
                 try {
                     totalSize = vfs.getDefaultValues()
-                            .getDefaultTotalSpaceSize();
+                    .getDefaultTotalSpaceSize();
                     if (totalSize.value() < guarSize.value()) {
                         totalSize = guarSize;
                         log
-                                .debug("GuaranteedSize greater than default total size!");
+                        .debug("GuaranteedSize greater than default total size!");
                     }
                 } catch (NamespaceException ex1) {
                     totalSize = guarSize;
@@ -368,26 +370,26 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             } else {
                 try {
                     totalSize = vfs.getDefaultValues()
-                            .getDefaultTotalSpaceSize();
+                    .getDefaultTotalSpaceSize();
                 } catch (NamespaceException ex1) {
                     log
-                            .debug(
-                                    "Error while retrieving default TOTAL Space Values",
-                                    ex1);
+                    .debug(
+                           "Error while retrieving default TOTAL Space Values",
+                           ex1);
                     explanation = "Error while retrieving default TOTAL Space Values \n"
-                            + ex1;
+                        + ex1;
                     failure = true;
                 }
                 try {
                     guarSize = vfs.getDefaultValues()
-                            .getDefaultGuaranteedSpaceSize();
+                    .getDefaultGuaranteedSpaceSize();
                 } catch (NamespaceException ex1) {
                     log
-                            .debug(
-                                    "Error while retrieving default Guaranteed Space Values",
-                                    ex1);
+                    .debug(
+                           "Error while retrieving default Guaranteed Space Values",
+                           ex1);
                     explanation = "Error while retrieving default Guaranteed Space Values \n"
-                            + ex1;
+                        + ex1;
                     failure = true;
                 }
                 // totalSize must be greater than guaranteedSize the following
@@ -418,31 +420,31 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem",
-                            e);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem",
+                   e);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem \n"
-                    + e;
+                + e;
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         } catch (NamespaceException ex) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-                            ex);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
+                   ex);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-                    + ex;
+                + ex;
             log
-                    .error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+            .error(formatLogMessage(FAILURE, user, data
+                                    .getDesiredSize(), data.getGuaranteedSize(), data
+                                    .getLifetime(), data.getRetentionPolicyInfo(),
+                                    statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
@@ -454,13 +456,13 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             if (freeSpace.value() < guarSize.value()) {
                 // Not enough freespace
                 log
-                        .debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
+                .debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
                 statusCode = TStatusCode.SRM_NO_FREE_SPACE;
                 explanation = "SRM has not more free space.";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             } else {
                 // Enough free space to reserve granted space asked.
@@ -487,7 +489,29 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
          *       space
          */
 
+
+
+
+
+        //TOCHANGE AD CALL TO THE NEW FACTORY
+
         if (authorize) {
+            
+            
+            
+            //new 
+            
+            SRMSpace srmp = null;
+            
+            try {
+                 srmp = new SRMSpace(user, desiderataSpaceSize, guarSize, lifeTime, null);
+            } catch (IllegalSRMSpaceParameter e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            
+            srmp.doReservation();
+            
             // Create SpaceFile Name finding right StoRI by UserID, Virtual
             // Organization
             PFN spacePFN = null;
@@ -498,30 +522,30 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("Unable to create Space File in PFN Format", ex6);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create Space File in PFN Format \n"
-                        + ex6;
+                    + ex6;
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             }
 
             // Call wrapper to reserve Space.
             log.debug("reserve Space File Size :"
-                    + desiderataSpaceSize.toString());
+                      + desiderataSpaceSize.toString());
 
             StoRI spaceFile = null;
             try {
                 spaceFile = vfs.createSpace(relativeSpaceFN,
-                        desiderataSpaceSize.value());
+                                            desiderataSpaceSize.value());
             } catch (NamespaceException ex4) {
                 log.debug("Unable to create Space File in VFS ", ex4);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create Space File in VFS \n" + ex4;
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             }
 
@@ -533,9 +557,9 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create Space File into filesystem. \n";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation);
             }
 
@@ -548,37 +572,37 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             if (hasJiTACL) {
                 // JiT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "USER RW");
+                          + spacePFN + "  " + "USER RW");
                 try {
                     spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                                                                 user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     explanation = "Unable to setting up the ACL ";
                     log.error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+                                               .getDesiredSize(), data.getGuaranteedSize(), data
+                                               .getLifetime(), data.getRetentionPolicyInfo(),
+                                               statusCode, explanation));
                     return manageError(statusCode, explanation);
                 }
             } else {
                 // AoT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "GROUP RW");
+                          + spacePFN + "  " + "GROUP RW");
                 try {
                     spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
+                                                                  user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     explanation = "Unable to setting up the ACL ";
                     log.error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
+                                               .getDesiredSize(), data.getGuaranteedSize(), data
+                                               .getLifetime(), data.getRetentionPolicyInfo(),
+                                               statusCode, explanation));
                     return manageError(statusCode, explanation, 1, spaceFile
-                            .getLocalFile());
+                                       .getLocalFile());
                 }
             }
 
@@ -597,8 +621,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             // new type ArrayOfTExtraInfo
             try {
                 spaceDt = new StorageSpaceData(data.getUser(), spaceType, data
-                        .getSpaceTokenAlias(), totalSize, guarSize, lifeTime,
-                        null, date, spacePFN);
+                                               .getSpaceTokenAlias(), totalSize, guarSize, lifeTime,
+                                               null, date, spacePFN);
                 log.debug(spaceDt.toString());
                 log.debug("-- Created Storage Space Data --");
             } catch (InvalidSpaceDataAttributesException ex7) {
@@ -606,11 +630,11 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create storage space data.";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation, 2, spaceFile
-                        .getLocalFile());
+                                   .getLocalFile());
             }
 
             /**
@@ -638,16 +662,16 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 tok = TSpaceToken.make(spaceDt.getSpaceToken().toString());
             } catch (InvalidTSpaceTokenAttributesException ex10) {
                 log
-                        .debug("Error creating Space Token . Critical error!"
-                                + ex10);
+                .debug("Error creating Space Token . Critical error!"
+                       + ex10);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create space token.";
                 log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                                .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
+                                           data.getDesiredSize(), data.getGuaranteedSize(), data
+                                           .getLifetime(), data.getRetentionPolicyInfo(),
+                                           statusCode, explanation));
                 return manageError(statusCode, explanation, 2, spaceFile
-                        .getLocalFile());
+                                   .getLocalFile());
             }
             // }
         }
@@ -655,20 +679,20 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             try {
                 if (!lower_space) {
                     status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                            "Space Reservation done");
+                    "Space Reservation done");
                     log.info(formatLogMessage(SUCCESS, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            status));
+                                              .getDesiredSize(), data.getGuaranteedSize(), data
+                                              .getLifetime(), data.getRetentionPolicyInfo(),
+                                              status));
 
                 } else {
                     status = new TReturnStatus(
-                            TStatusCode.SRM_LOWER_SPACE_GRANTED,
-                            "Space Reservation done, lower space granted.");
+                                               TStatusCode.SRM_LOWER_SPACE_GRANTED,
+                    "Space Reservation done, lower space granted.");
                     log.info(formatLogMessage(SUCCESS, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            status));
+                                              .getDesiredSize(), data.getGuaranteedSize(), data
+                                              .getLifetime(), data.getRetentionPolicyInfo(),
+                                              status));
                 }
             } catch (InvalidTReturnStatusAttributeException ex9) {
                 log.debug("InvalidTReturnStatusAttributeException", ex9);
@@ -683,14 +707,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
         try {
             outputData = new ReserveSpaceOutputData(totalSize, guarSize,
-                    lifeTime, tok, status);
+                                                    lifeTime, tok, status);
         } catch (InvalidReserveSpaceOutputDataAttributesException ex11) {
             log.error("Error creating Output DATA . Critical error!" + ex11);
         }
 
         log.error(formatLogMessage(FAILURE, user, data.getDesiredSize(), data
-                .getGuaranteedSize(), data.getLifetime(), data
-                .getRetentionPolicyInfo(), status));
+                                   .getGuaranteedSize(), data.getLifetime(), data
+                                   .getRetentionPolicyInfo(), status));
         return (outputData);
 
     }
@@ -712,7 +736,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         // Check if it a VO_SA_Token, in that case do nothing
         if (sdata.getSpaceType().equals(TSpaceType.VOSPACE)) {
             return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-                    "Abort file done.");
+            "Abort file done.");
         }
 
         GridUserInterface user = sdata.getUser();
@@ -738,15 +762,15 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         String relativeSpaceFN = null;
         try {
             log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath()
-                    + " spaceFN:" + spaceFN);
+                      + " spaceFN:" + spaceFN);
             relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs
-                    .getRootPath(), spaceFN);
+                                                                .getRootPath(), spaceFN);
             log.debug("relativeSpaceFN:" + relativeSpaceFN);
         } catch (NamespaceException ex3) {
             log.debug("Unable to retrieve the relative space file name ", ex3);
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to retrieve the relative space file name \n"
-                    + ex3;
+                + ex3;
             return manageErrorStatus(statusCode, explanation);
         }
 
@@ -765,21 +789,21 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem",
-                            e);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem",
+                   e);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem \n"
-                    + e;
+                + e;
             return manageErrorStatus(statusCode, explanation);
         } catch (NamespaceException ex) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-                            ex);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
+                   ex);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-                    + ex;
+                + ex;
             return manageErrorStatus(statusCode, explanation);
         }
 
@@ -792,12 +816,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
             // Call wrapper to reserve Space.
             log.debug("reserve Space File Size :"
-                    + desiderataSpaceSize.toString());
+                      + desiderataSpaceSize.toString());
 
             StoRI spaceFile = null;
             try {
                 spaceFile = vfs.createSpace(relativeSpaceFN,
-                        desiderataSpaceSize.value());
+                                            desiderataSpaceSize.value());
             } catch (NamespaceException ex4) {
                 log.debug("Unable to create Space File in VFS ", ex4);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -824,10 +848,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             if (hasJiTACL) {
                 // JiT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "USER RW");
+                          + spacePFN + "  " + "USER RW");
                 try {
                     spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                                                                 user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -837,10 +861,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             } else {
                 // AoT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "GROUP RW");
+                          + spacePFN + "  " + "GROUP RW");
                 try {
                     spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
+                                                                  user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -865,21 +889,21 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         } catch (InvalidRetrievedDataException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         } catch (MultipleDataEntriesException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         }
 
         return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-                "Successfull creation.");
+        "Successfull creation.");
     }
 
     /**
@@ -903,7 +927,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         // Check if it a VO_SA_Token, in that case do nothing
         if (sdata.getSpaceType().equals(TSpaceType.VOSPACE)) {
             return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-                    "Abort file done.");
+            "Abort file done.");
         }
 
         /**
@@ -929,15 +953,15 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         String relativeSpaceFN = null;
         try {
             log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath()
-                    + " spaceFN:" + spaceFN);
+                      + " spaceFN:" + spaceFN);
             relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs
-                    .getRootPath(), spaceFN);
+                                                                .getRootPath(), spaceFN);
             log.debug("relativeSpaceFN:" + relativeSpaceFN);
         } catch (NamespaceException ex3) {
             log.debug("Unable to retrieve the relative space file name ", ex3);
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to retrieve the relative space file name \n"
-                    + ex3;
+                + ex3;
             return manageErrorStatus(statusCode, explanation);
         }
 
@@ -955,7 +979,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
          */
         try {
             desiderataSpaceSize = TSizeInBytes.make(unusedSize.value()
-                    + sizeToAdd.value(), SizeUnit.BYTES);
+                                                    + sizeToAdd.value(), SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -971,21 +995,21 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem",
-                            e);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem",
+                   e);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem \n"
-                    + e;
+                + e;
             return manageErrorStatus(statusCode, explanation);
         } catch (NamespaceException ex) {
             log
-                    .debug(
-                            "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-                            ex);
+            .debug(
+                   "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
+                   ex);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-                    + ex;
+                + ex;
             return manageErrorStatus(statusCode, explanation);
         }
 
@@ -998,12 +1022,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
             // Call wrapper to reserve Space.
             log.debug("reserve Space File Size :"
-                    + desiderataSpaceSize.toString());
+                      + desiderataSpaceSize.toString());
 
             StoRI spaceFile = null;
             try {
                 spaceFile = vfs.createSpace(relativeSpaceFN,
-                        desiderataSpaceSize.value());
+                                            desiderataSpaceSize.value());
             } catch (NamespaceException ex4) {
                 log.debug("Unable to create Space File in VFS ", ex4);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -1040,10 +1064,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             if (hasJiTACL) {
                 // JiT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "USER RW");
+                          + spacePFN + "  " + "USER RW");
                 try {
                     spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                                                                 user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -1053,10 +1077,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             } else {
                 // AoT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "GROUP RW");
+                          + spacePFN + "  " + "GROUP RW");
                 try {
                     spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
+                                                                  user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -1082,7 +1106,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         //  
         try {
             unusedSize = TSizeInBytes.make(sdata.getUnusedSizes().value()
-                    + sizeToAdd.value(), SizeUnit.BYTES);
+                                           + sizeToAdd.value(), SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -1099,21 +1123,21 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         } catch (InvalidRetrievedDataException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         } catch (MultipleDataEntriesException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return manageErrorStatus(TStatusCode.SRM_FAILURE,
-                    "Error updating DB.");
+            "Error updating DB.");
         }
 
         return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-                "Successfull creation.");
+        "Successfull creation.");
     }
 
     /**

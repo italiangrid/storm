@@ -127,11 +127,11 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
                 // The user that perform the ReleaseSpace is the owner of the
                 // SpaceToken.
                 log
-                        .debug("ReleaseExecutor: Authorized Release Space for user: "
+                        .debug("ReleaseCommand: Authorized Release Space for user: "
                                 + data.getUser());
                 returnStatus = manageAuthorizedReleaseSpace(data, user);
             } else {
-                log.debug("ReleaseExecutor: Unauthorized ReleaseSpaceRequest!");
+                log.debug("ReleaseCommand: Unauthorized ReleaseSpaceRequest!");
                 failure = true;
                 explanation = "User is not authorized to release this token";
                 statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
@@ -139,7 +139,7 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
             }
 
         } else {
-            log.debug("ReleaseExecutor: Space still contains pinned files!");
+            log.debug("ReleaseCommand: Space still contains pinned files!");
             failure = true;
             explanation = "Space still contains pinned files. ";
             statusCode = TStatusCode.SRM_FAILURE;
@@ -149,7 +149,7 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
         // if (failure) {
         // returnStatus = manageStatus(statusCode, explanation);
         // }
-        log.debug("ReleaseExecutor:return outputData");
+        log.debug("ReleaseCommand:return outputData");
         outputData.setStatus(returnStatus);
         if (returnStatus.isSRM_SUCCESS())
             log
@@ -179,11 +179,11 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
         // Get Space File name
         String spaceFileName;
         PFN pfn = data.getSpaceFileName();
-        log.debug("ReleaseExecutor: manageAuthorizedReleaseSpace");
+        log.debug("ReleaseCommand: manageAuthorizedReleaseSpace");
 
         if (pfn != null) {
             spaceFileName = pfn.getValue();
-            log.debug("ReleaseExecutor: spaceFileName: " + spaceFileName);
+            log.debug("ReleaseCommand: spaceFileName: " + spaceFileName);
             File spaceFile = new File(spaceFileName);
             if (spaceFile.delete()) {
                 // Remove spaceData from presistence
