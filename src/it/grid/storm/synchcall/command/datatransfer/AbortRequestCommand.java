@@ -34,7 +34,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
-import it.grid.storm.synchcall.dataTransfer.AbortExecutorInterface;
 import it.grid.storm.griduser.CannotMapUserException;
 
 /**

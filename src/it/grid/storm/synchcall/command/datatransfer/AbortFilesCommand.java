@@ -6,36 +6,31 @@
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
-import org.apache.log4j.Logger;
-
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ArrayList;
-
+import it.grid.storm.asynch.AdvancedPicker;
+import it.grid.storm.asynch.SchedulerFacade;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.scheduler.Scheduler;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.griduser.VomsGridUser;
-// import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.asynch.AdvancedPicker;
-import it.grid.storm.asynch.SchedulerFacade;
-import it.grid.storm.catalogs.*;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortFilesOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
-import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
+
+import org.apache.log4j.Logger;
 
 public class AbortFilesCommand extends DataTransferCommand implements Command
 {
@@ -43,7 +38,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
     private RequestSummaryCatalog summaryCat = null;
     private Scheduler scheduler = null;
     private AdvancedPicker advancedPicker = null;
-    private AbortCommandInterface executor = null;
+    private AbortExecutorInterface executor = null;
 
     public AbortFilesCommand() {};
 
@@ -54,7 +49,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
      * an empty SURLArray.
      */
 
-    public OutputData execute(InputData inputData) {
+    public AbortRequestOutputData execute(AbortRequestInputData inputData) {
 
         log.debug("srmAbort: AbortExecutor input request:"+inputData);
 
@@ -64,7 +59,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         log.debug("srmAbort: abortExecutor: GeneralInputData created.");
 
         //Call the Abort* executor
-        AbortGeneralOutputData newOutData = doIt(newInputData);
+        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute((InputData)newInputData);
 
         //Creat a AbortRequestOutputData to send to the syncall server from
         //the general AbortFilesOutputData
@@ -78,7 +73,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         AbortGeneralInputData newInputData = AbortGeneralInputData.make(inputData);
 
         //Call the Abort* executor
-        AbortGeneralOutputData newOutData = doIt(newInputData);
+        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute ((InputData)newInputData);
 
         //Creat a AbortFilesOutputData to send to the syncall server from
         //the general AbortGeneralOutputData
@@ -94,12 +89,13 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
      * The effects of SrmAbortRequests() depends on the type of request.
      */
 
-    public AbortGeneralOutputData doIt(AbortGeneralInputData inputData)
+    public OutputData execute(InputData data)
     {
         summaryCat = RequestSummaryCatalog.getInstance();
         scheduler = SchedulerFacade.getInstance().crusherScheduler();
         advancedPicker = new AdvancedPicker();
         AbortGeneralOutputData outputData = new AbortGeneralOutputData();
+        AbortGeneralInputData inputData = (AbortGeneralInputData) data;
 
         boolean requestFailure, requestSuccess;
         //Risultato Parziale

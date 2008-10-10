@@ -39,6 +39,7 @@ import it.grid.storm.synchcall.discovery.PingConverter;
 import it.grid.storm.synchcall.discovery.PingInputData;
 import it.grid.storm.synchcall.discovery.PingOutputData;
 import it.grid.storm.synchcall.space.*;
+import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.dataTransfer.*;
 import it.grid.storm.xmlrpc.converter.datatransfer.PutDoneConverter;
 import it.grid.storm.health.BookKeeper;
@@ -133,9 +134,9 @@ public class SynchCallServer {
     PutDoneOutputData outputData;
     Map outputParam = new HashMap();
 
-    inputData = converter.getPutDoneInputData(inputParam);
+    inputData = (PutDoneInputData) converter.convertToInputData(inputParam);
     outputData = dataTransferManager.putDone(inputData);
-    outputParam = converter.getOutputParameter(outputData);
+    outputParam = converter.convertFromOutputData((OutputData)outputData);
 
     //****** LOGs SYNCH OPERATION *********
      successResult = outputData.getReturnStatus().isSRM_SUCCESS();

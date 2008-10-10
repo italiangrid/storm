@@ -14,6 +14,7 @@ import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.exception.InvalidAbortFilesOutputDataAttributeException;
 
 public class AbortGeneralOutputData implements OutputData
 {
