@@ -47,6 +47,9 @@ import it.grid.storm.common.types.SizeUnit;
  * 
  */
 
+
+
+
 public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
     private ReservedSpaceCatalog catalog = null;
@@ -59,6 +62,8 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
     /**
      * Constructor. Bind the Executor with ReservedSpaceCatalog
      */
+
+
     public GetSpaceMetaDataCommand() {
         catalog = new ReservedSpaceCatalog();
     }
@@ -98,11 +103,9 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 TReturnStatus status = null;
                 try {
                     status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                            "Space token not valid");
+                    "Space token not valid");
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    log
-                            .debug("dataTransferManger: Error creating returnStatus "
-                                    + e);
+                    log.debug("dataTransferManger: Error creating returnStatus "+ e);
                 }
                 metadata.setStatus(status);
                 log.error(formatLogMessage(SUCCESS, LOCALSTATUS,
@@ -114,10 +117,10 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 if (metadata.getSpaceType().equals(TSpaceType.VOSPACE)) {
                     TSpaceToken tk = metadata.getSpaceToken();
                     log.debug("srmGetSpaceMetaData: Space Token '" + tk
-                            + "' is pointing to a STATIC space reservation.");
+                              + "' is pointing to a STATIC space reservation.");
                     log
-                            .debug("srmGetSpaceMetaData: going to execute Quota Command for SA with token '"
-                                    + tk + "'");
+                    .debug("srmGetSpaceMetaData: going to execute Quota Command for SA with token '"
+                           + tk + "'");
                     QuotaInfoInterface quotaInfo = null;
                     try {
                         // Retrieve MetaData Info from the execution of Quota
