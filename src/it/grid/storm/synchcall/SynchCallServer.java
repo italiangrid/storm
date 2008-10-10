@@ -40,6 +40,7 @@ import it.grid.storm.synchcall.discovery.PingInputData;
 import it.grid.storm.synchcall.discovery.PingOutputData;
 import it.grid.storm.synchcall.space.*;
 import it.grid.storm.synchcall.dataTransfer.*;
+import it.grid.storm.xmlrpc.converter.datatransfer.PutDoneConverter;
 import it.grid.storm.health.BookKeeper;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.health.OperationType;
