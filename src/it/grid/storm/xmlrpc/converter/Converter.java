@@ -6,12 +6,16 @@ import it.grid.storm.synchcall.data.OutputData;
 import java.util.Map;
 
 /**
- * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
- * Company: INFN-CNAF and ICTP/EGRID project
  *
- * @author lucamag
- * @date May 28, 2008
+ * This class is part of the StoRM project.
+ * Copyright (c) 2008 INFN-CNAF.
+ * <p>
+ *
+ *
+ * Authors:
+ *     @author=lucamag luca.magnoniATcnaf.infn.it
+ *
+ * @date = Oct 9, 2008
  *
  */
 

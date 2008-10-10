@@ -15,18 +15,22 @@ import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
+
 /**
+ *
  * This class is part of the StoRM project.
+ * Copyright (c) 2008 INFN-CNAF.
+ * <p>
  * 
  * This class represents the Type Converter for LS function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the LSManager
- * 
- * Copyright: Copyright (c) 2008 
- * Company: INFN-CNAF and ICTP/EGRID project
  *
- * @author lucamag
- * @date May 28, 2008
+ *
+ * Authors:
+ *     @author=lucamag luca.magnoniATcnaf.infn.it
+ *
+ * @date = Oct 9, 2008
  *
  */
 

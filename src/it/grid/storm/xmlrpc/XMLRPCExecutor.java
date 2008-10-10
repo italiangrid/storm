@@ -47,7 +47,7 @@ public class XMLRPCExecutor {
         // ******************
 
         log.debug("Call received : Structure size = " + inputParam.size());
-        log.debug("Call Tyoe: "+type.toString());
+        log.debug("Call Type: "+type.toString());
         log.debug("toString: " + inputParam.toString());
 
         // InputData RmInputData uset for Rm method of DirectoryFunctionsManager

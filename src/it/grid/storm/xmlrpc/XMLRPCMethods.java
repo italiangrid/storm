@@ -82,185 +82,33 @@ public class XMLRPCMethods {
     }
 
     public Map putDone(Map inputParam) {
+        
+        return executor.execute(OperationType.PD, inputParam);
 
-        // ****** LOGs SYNCH OPERATION SETTING VAR*********
-        OperationType opType = OperationType.PD;
-        String dn = "synch";
-        long startTime = System.currentTimeMillis();
-        long duration = startTime;
-        boolean successResult = true;
-        // ******************
-
-        log.debug("putDone: Call received : Structure size = "
-                + inputParam.size());
-        log
-                .debug("putDone: Input Structure toString: "
-                        + inputParam.toString());
-
-        PutDoneConverter converter = new PutDoneConverter();
-        DataTransferManager dataTransferManager = new DataTransferManagerImpl(
-                DataTransferManager.PUTDONE);
-        PutDoneInputData inputData;
-        PutDoneOutputData outputData;
-        Map outputParam = new HashMap();
-
-        inputData = converter.getPutDoneInputData(inputParam);
-        outputData = dataTransferManager.putDone(inputData);
-        outputParam = converter.getOutputParameter(outputData);
-
-        // ****** LOGs SYNCH OPERATION *********
-        successResult = outputData.getReturnStatus().isSRM_SUCCESS();
-        duration = System.currentTimeMillis() - startTime;
-        logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
-
-        return outputParam;
     }
 
     public Map releaseFiles(Map inputParam) {
-        // ****** LOGs SYNCH OPERATION SETTING VAR*********
-        OperationType opType = OperationType.RF;
-        String dn = "synch";
-        long startTime = System.currentTimeMillis();
-        long duration = startTime;
-        boolean successResult = true;
-        // ******************
-
-        log.debug("releaseFiles: Call received : Structure size = "
-                + inputParam.size());
-        log.debug("releaseFiles: Input Structure toString: "
-                + inputParam.toString());
-
-        ReleaseFilesConverter converter = new ReleaseFilesConverter();
-        DataTransferManager dataTransferManager = new DataTransferManagerImpl(
-                DataTransferManager.RELEASEFILES);
-        ReleaseFilesInputData inputData;
-        ReleaseFilesOutputData outputData;
-        Map outputParam = new HashMap();
-
-        inputData = converter.getReleaseFilesInputData(inputParam);
-        outputData = dataTransferManager.releaseFiles(inputData);
-        outputParam = converter.getOutputParameter(outputData);
-
-        // ****** LOGs SYNCH OPERATION *********
-        successResult = outputData.getReturnStatus().isSRM_SUCCESS();
-        duration = System.currentTimeMillis() - startTime;
-        logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
-
-        return outputParam;
+        
+        return executor.execute(OperationType.PD, inputParam);
+    
     }
 
     public Map extendFileLifeTime(Map inputParam) {
+        
+        return executor.execute(OperationType.PD, inputParam);
 
-        // ****** LOGs SYNCH OPERATION SETTING VAR*********
-        OperationType opType = OperationType.EFL;
-        String dn = "synch";
-        long startTime = System.currentTimeMillis();
-        long duration = startTime;
-        boolean successResult = true;
-        // ******************
-
-        log.debug("extendFileLifeTime: Call received : Structure size = "
-                + inputParam.size());
-        log.debug("extendFileLifeTime: Input Structure toString: "
-                + inputParam.toString());
-
-        ExtendFileLifeTimeConverter converter = new ExtendFileLifeTimeConverter();
-        DataTransferManager dataTransferManager = new DataTransferManagerImpl(
-                DataTransferManager.EXTENDFILELIFETIME);
-        ExtendFileLifeTimeInputData inputData;
-        ExtendFileLifeTimeOutputData outputData;
-        Map outputParam = new HashMap();
-
-        inputData = converter.getExtendFileLifeTimeInputData(inputParam);
-        outputData = dataTransferManager.extendFileLifeTime(inputData);
-        outputParam = converter.getOutputParameter(outputData);
-
-        // ****** LOGs SYNCH OPERATION *********
-        successResult = outputData.getReturnStatus().isSRM_SUCCESS();
-        duration = System.currentTimeMillis() - startTime;
-        logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
-
-        return outputParam;
     }
 
     public Map abortRequest(Map inputParam) {
-
-        // ****** LOGs SYNCH OPERATION SETTING VAR*********
-        OperationType opType = OperationType.AR;
-        String dn = "synch";
-        long startTime = System.currentTimeMillis();
-        long duration = startTime;
-        boolean successResult = true;
-        // ******************
-
-        log.debug("abortRequest: Call received : Structure size = "
-                + inputParam.size());
-        log.debug("abortRequest: Input Structure toString: "
-                + inputParam.toString());
-        // Converter
-        AbortRequestConverter converter = new AbortRequestConverter();
-        // Manager
-        DataTransferManager dataTransferManager = new DataTransferManagerImpl(
-                DataTransferManager.ABORT_REQUEST);
-        // Data structure
-        AbortRequestInputData inputData;
-        AbortRequestOutputData outputData;
-        Map outputParam = new HashMap();
-        // Convert data from xmlrpc struct to StoRM types
-        inputData = converter.getAbortRequestInputData(inputParam);
-        // Performs request
-        outputData = dataTransferManager.abortRequest(inputData);
-        // Convert data from StoRM type to xmlrpc struct.
-        outputParam = converter.getOutputParameter(outputData);
-
-        // ****** LOGs SYNCH OPERATION *********
-        successResult = outputData.getReturnStatus().isSRM_SUCCESS();
-        duration = System.currentTimeMillis() - startTime;
-        logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
-
-        return outputParam;
+        
+        return executor.execute(OperationType.AR, inputParam);
+       
     }
 
     public Map abortFiles(HashMap inputParam) {
-        // ****** LOGs SYNCH OPERATION SETTING VAR*********
-        OperationType opType = OperationType.AF;
-        String dn = "synch";
-        long startTime = System.currentTimeMillis();
-        long duration = startTime;
-        boolean successResult = true;
-        // ******************
-
-        log.debug("abortFiles: Call received : Structure size = "
-                + inputParam.size());
-        log.debug("abortFiles: Input Structure toString: "
-                + inputParam.toString());
-        // Converter
-        AbortFilesConverter converter = new AbortFilesConverter();
-        // Manager
-        DataTransferManager dataTransferManager = new DataTransferManagerImpl(
-                DataTransferManager.ABORT_FILES);
-        // Data struct
-        AbortFilesInputData inputData;
-        AbortFilesOutputData outputData;
-        Map outputParam = new HashMap();
-        // Convert data from xmlrpc to StoRM readble type
-        inputData = converter.getAbortFilesInputData(inputParam);
-        // Perform request
-        outputData = dataTransferManager.abortFiles(inputData);
-        // Convert data from StoRM type to xmlrpc
-        outputParam = converter.getOutputParameter(outputData);
-
-        // ****** LOGs SYNCH OPERATION *********
-        successResult = outputData.getReturnStatus().isSRM_SUCCESS();
-        duration = System.currentTimeMillis() - startTime;
-        logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
-
-        return outputParam;
+        
+        return executor.execute(OperationType.AF, inputParam);
+       
     }
 
     public Map reserveSpace(Map inputParam) {
