@@ -1,6 +1,11 @@
 package it.grid.storm.synchcall.command;
 
 import it.grid.storm.common.OperationType;
+import it.grid.storm.synchcall.command.datatransfer.AbortFilesCommand;
+import it.grid.storm.synchcall.command.datatransfer.AbortRequestCommand;
+import it.grid.storm.synchcall.command.datatransfer.ExtendFileLifeTimeCommand;
+import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
+import it.grid.storm.synchcall.command.datatransfer.ReleaseFilesCommand;
 import it.grid.storm.synchcall.command.directory.LsCommand;
 import it.grid.storm.synchcall.command.directory.MkdirCommand;
 import it.grid.storm.synchcall.command.directory.MvCommand;
@@ -36,6 +41,12 @@ public class CommandFactory  {
         case GSM: return new GetSpaceMetaDataCommand();
         case RESSP: return new ReserveSpaceCommand();
         case RELSP: return new ReleaseSpaceCommand();
+        
+        case PD: return new PutDoneCommand();
+        case RF: return new ReleaseFilesCommand();
+        case EFL: return new ExtendFileLifeTimeCommand(); 
+        case AF: return new AbortFilesCommand();
+        case AR: return new AbortRequestCommand();
         
         }
         throw new AssertionError("SimpleCommandFactory: Unknown op: ");
