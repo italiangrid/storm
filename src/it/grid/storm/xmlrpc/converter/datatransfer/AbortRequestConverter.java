@@ -80,7 +80,7 @@ public class AbortRequestConverter implements Converter
         return inputData;
     }
 
-    public Map convertFromOutPutData(OutputData data)
+    public Map convertFromOutputData(OutputData data)
     {
         log.debug("AbortRequestOutputData - Creation of XMLRPC Output Structure!");
 
