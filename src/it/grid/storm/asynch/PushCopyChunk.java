@@ -249,7 +249,7 @@ public class PushCopyChunk extends CopyChunk {
 
 
     /**
-     * In PushMode the trasfer operation consists of a PUT of the local file into
+     * In PushMode the transfer operation consists of a PUT of the local file into
      * the remote storage area.
      *
      * If the transfer fails, then a failed TransferResult is returned with a

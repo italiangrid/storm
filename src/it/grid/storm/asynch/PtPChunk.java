@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 
+import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.config.Configuration;
 
 import it.grid.storm.scheduler.Delegable;
@@ -427,6 +428,29 @@ public class PtPChunk implements Delegable, Chooser {
         TSizeInBytes size = chunkData.expectedFileSize();
         TSpaceToken spaceToken = chunkData.spaceToken();
         LocalFile localFile = fileStoRI.getLocalFile();
+        
+        // In case of SRM Storage Area limitation enabled, 
+        // the Storage Area free size is retrieved from the database
+        // and the PtP fails if there is not enougth space.
+        Configuration config = Configuration.getInstance();
+        
+        // @TODO aggiungere il controllo solo se e' abilitato nel namespace
+        // per la Storage Area corrispondente
+        
+        if(true) {
+            SpaceHelper sp = new SpaceHelper();
+            long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
+            if( (sp.isSAFull(log, fileStoRI)) ||
+                    ( (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) ) {
+                
+                log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
+                chunkData.changeStatusSRM_FAILURE("No free space on Storage Area");
+                this.failure = true; //gsm.failedChunk(chunkData);
+                return false;
+            }
+        }
+             
+                
         try {
             //set space!
             boolean successful = localFile.createNewFile();
