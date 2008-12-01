@@ -182,6 +182,52 @@ public class ReservedSpaceCatalog {
 
     return result;
   }
+  
+  
+  /**
+  *
+  * @param spaceToken TSpaceToken
+  * @return SpaceData
+  */
+ public StorageSpaceData getStorageSpaceByAlias(String desc) {
+
+   StorageSpaceData result = null; //new StorageSpaceData();
+   log.debug("Retrieve Storage Space start... ");
+
+   StorageSpaceTO ssTO = null;
+
+   // Retrieve the Data Access Object from the factory
+   try {
+     ssDAO = cf.getStorageSpaceDAO();
+     log.debug("Storage Space DAO retrieved.");
+   }
+   catch (DataAccessException daEx) {
+     log.debug("Error while retrieving StorageSpaceDAO.", daEx);
+   }
+
+   //Get StorageSpaceTO form persistence
+   try {
+       Collection cl = ssDAO.getStorageSpaceByAliasOnly(desc);
+       Iterator iter = cl.iterator();
+       ssTO = ( StorageSpaceTO)iter.next();
+     log.debug("Storage Space retrieved by Token. ");
+     //Build the result
+     if (ssTO != null) {
+       result = new StorageSpaceData(ssTO);
+     }
+   }
+   catch (DataAccessException daEx) {
+     log.debug("Error while retrieving StorageSpace", daEx);
+   }
+
+   return result;
+ }
+ 
+ 
+  
+  
+  
+  
 
   /**
    *
