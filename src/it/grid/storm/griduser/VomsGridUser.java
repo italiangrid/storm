@@ -43,7 +43,7 @@ public class VomsGridUser implements GridUserInterface {
     public static final String RCSID = "$Id: VomsGridUser.java,v 1.32 2007/02/20 15:09:54 lmagnoni Exp $";
 
     private static final Logger log = Logger.getLogger(VomsGridUser.class);
-
+    
     // --- protected members --- //
 
     protected static final Pattern DN_RE = Pattern.compile("^/.+/CN=", Pattern.CASE_INSENSITIVE);
@@ -373,9 +373,9 @@ public class VomsGridUser implements GridUserInterface {
      */
     public VO getMainVo()
     {
-        assert (_hasVoms&& (null==_fqans)):
-                "VomsGridUser asserts VOMS extensions, but the FQANs attributes array is null."; assert (_hasVoms&&
-                (_fqans.length==0)):"VomsGridUser asserts VOMS extensions, but the FQANs attributes array is empty.";
+        //assert (_hasVoms&& (null==_fqans)):
+        //        "VomsGridUser asserts VOMS extensions, but the FQANs attributes array is null."; assert (_hasVoms&&
+        //        (_fqans.length==0)):"VomsGridUser asserts VOMS extensions, but the FQANs attributes array is empty.";
 
         if (hasVoms()) {
             return VO.make(getFqans()[0].getVo());
