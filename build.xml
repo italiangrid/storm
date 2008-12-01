@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-This is the Ant buildfile for the StoRM BE sources.
+This is the Ant buildfile for the StoRM BackEnd component.
 
-Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
+Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
+Riccardo Zappi <riccardo.zappi@cnaf.infn.it> 
 
 You may copy, modify and distribute this file according to the same
 terms as the rest of the StoRM sources.
@@ -23,9 +24,8 @@ and need not be visible to the end-user.
 
 <project basedir="." default="help" name="StoRM">
   <description>
-     Ant buildfile for the StoRM backend server.
+     Ant buildfile for the StoRM BackEnd server.
 
-     $Id: build.xml,v 1.119 2007/05/22 12:52:35 rzappi Exp $
   </description>
 
 
@@ -45,7 +45,7 @@ To compile the BE, run:
 ant clean
 ant build
 
-If you then want to install the BE in /opt/storm, run:
+If you then want to install the BE in /opt/storm/backend, run:
 ant install
 
 Please, use:
@@ -89,6 +89,7 @@ to get a list of the available targets for this buildfile.
   <property name="src.java.dir" location="${src.dir}/src"/>
   <property name="src.jars.dir" location="${src.dir}/lib"/>
   <property name="src.config.dir" location="${src.dir}/etc"/>
+  <property name="src.config.dir.db" location="${src.dir}/etc/db"/>
   <property name="src.sbin.dir" location="${src.dir}/sbin"/>
   <property name="src.sysvinit.dir" location="${src.dir}/etc/init.d"/>
 
@@ -112,6 +113,7 @@ to get a list of the available targets for this buildfile.
   <property name="logdir" location="${localstatedir}/log"/>
   <property name="sbindir" location="${prefix}/sbin"/>
   <property name="sysconfdir" location="${prefix}/etc"/>
+  <property name="confdb" location="${prefix}/etc/db"/>
   <property name="sysvinitdir" location="${sysconfdir}/init.d"/>
   <property name="tmpdir" location="${localstatedir}/tmp"/>
 
@@ -145,7 +147,6 @@ basedir=${basedir}
 
 cvs.checkout.dir=${cvs.checkout.dir}
   Where the CVS sources have been checked out
-
 
 src.dir=${src.dir}
   Root of the source tree; the properties below name
@@ -365,6 +366,8 @@ test.junit.dir
         <include name="QuickServer.jar"/> <!-- Administration Server -->
         <include name="QSAdminGUI.jar"/> <!-- Administration Server GUI -->
 
+  	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
+  
   </fileset>
 
   <fileset id="src.jars.build"
@@ -389,8 +392,21 @@ test.junit.dir
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
     <include name="logrotate.d/storm-backend.logrotate"/>
+
   </fileset>
 
+  <!-- configuration script for DB -->
+  <fileset id="src.config.db"
+	   dir="${src.config.dir.db}">
+  <!-- for MySQL database creation-->
+    <include name="storm_database_config.sh"/>
+	<include name="storm_mysql_tbl.sql"/>
+	<include name="storm_mysql_grant.sql"/>
+	<include name="README"/>
+	<include name="storm_mysql_update_from_1.0.0_to_1.3.2000.sql"/>
+	<include name="storm_mysql_update_from_1.3.2000_to_1.4.0.sql"/>
+  </fileset>	
+	
   <!-- start/stop scripts -->
   <fileset id="src.sysvinit"
      dir="${src.sysvinit.dir}">
@@ -402,6 +418,8 @@ test.junit.dir
      dir="${src.sbin.dir}">
 	<include name="storm-backend-configure"/>
   </fileset>
+	
+ 
 
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
@@ -643,6 +661,7 @@ test.junit.dir
 	<mkdir dir="${logdir}"/>
 	<mkdir dir="${prefix}"/>
 	<mkdir dir="${sbindir}"/>
+  	<mkdir dir="${confdb}"/>
 	<mkdir dir="${sysconfdir}"/>
 	<mkdir dir="${sysvinitdir}"/>
 	<mkdir dir="${tmpdir}"/>
@@ -682,6 +701,12 @@ test.junit.dir
 	  <fileset refid="src.docs.proper"/>
 	  <fileset refid="src.docs.license"/>
 	</copy>
+  	<copy
+  	  todir="${confdb}"
+  	  overwrite="true">
+  	  <fileset refid="src.config.db"/>
+  	</copy>
+  	
 
 	<!-- fix permissions -->
     <chmod perm="0755" type="dir">
