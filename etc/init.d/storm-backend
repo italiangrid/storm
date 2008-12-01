@@ -1,9 +1,9 @@
 #! /bin/bash
 #
-# start/stop StoRM SRMv2 (backend server).
+# start/stop StoRM BackEnd server.
 # 
-# Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
-# for the join EGRID/INFN project StoRM.
+#Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
+#Riccardo Zappi <riccardo.zappi@cnaf.infn.it> 
 #
 # You may copy, modify and distribute this file under the same terms
 # as StoRM itself. 
@@ -130,7 +130,7 @@ done
 if test -z "$STORM_HOME"; then
     for dir in \
         "`dirname $0`/../.." \
-        /opt/storm \
+        /opt/storm/backend \
         /usr/local/storm \
         /home/storm \
         ;
@@ -253,6 +253,7 @@ done
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
 
+ASSERTOPTION=-ea
 ## command server interaction
 
 suspend () {
@@ -291,7 +292,7 @@ start () {
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
     run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
         java \
-        $STORM_BE_JVM_OPTS \
+        $STORM_BE_JVM_OPTS $ASSERTOPTION \
         -cp '$classpath' \
         -Djava.library.path='$STORM_BE_LIBDIR' \
         -Daxis.client.connect.timeout=30000 \

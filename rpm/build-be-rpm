@@ -10,7 +10,7 @@ usage () {
 Usage: $PROG SPECFILE SOURCE [SOURCE ...]
 
 Builds the RPM package(s) driven by SPECFILE from
-the given SOURCEs, using the tempoprary build area specified 
+the given SOURCEs, using the temporary build area specified 
 by the ``%_topdir`` declaration in ``~/.rpmmacros``.
 
 If SOURCE is a file, copy it to the RPM temporary build area.

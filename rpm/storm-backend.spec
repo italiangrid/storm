@@ -1,18 +1,17 @@
 # 
-# RPM spec file for the StoRM BE server.
+# RPM spec file for the StoRM BackEnd server.
 #
-# Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>.
+# Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>.
 # 
 # You may copy, modify and distribute this file under the same
 # terms as the StoRM backend itself.
 #
-# $Id: storm-backend.spec,v 1.53 2007/04/16 16:03:06 aforti Exp $
 #
 
 Name: storm-backend
-Version: 1.3.19
-Release: 02
-Summary: The StoRM SRMv2 server (back-end daemon).
+Version: 1.4.0
+Release: rc1
+Summary: The StoRM BackEnd server.
 
 License: INFN-GRID like, see included file LICENSE.txt
 URL: http://infnforge.cnaf.infn.it/projects/drm
@@ -24,11 +23,11 @@ Source0: %{name}-%{version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
-Prefix: /opt/storm
+Prefix: /opt/storm/backend
 
 
 %changelog
-* Wed 5 Mar 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
+* Wed Mar 5 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - version 1.3.19-02
 - New default ACL capability by Storage Area for the CMS use case.
 - New Root protocol support.
@@ -102,15 +101,14 @@ Prefix: /opt/storm
 
 
 %description
-This package contains the back-end daemon for the StoRM
-SRMv2 server.
+This package contains the StoRM BackEnd server.
 
-The StoRM SRMv2 server provides an SRM interface to any POSIX
+StoRM provides an SRM interface to any POSIX
 filesystem with direct file access ("file:" transport protocol), but
-can take advantage of special features of the GPFS advanced cluster
-filesystem for advance space reservation.
+can take advantage of special features of high performance parallel and cluster file systems, as 
+GPFS from IBM and Lustre from SUN.
 
-The StoRM backend is split into two binary packages:
+The StoRM BackEnd is split into two binary packages:
 'storm-backend-server', which contains the actual server binaries, and
 'storm-backend-jars' which contains the 3rd party .jar libraries the
 server depends upon.
@@ -131,7 +129,7 @@ ant -Dversion="%{version}" \
     install
 
 mkdir -p $RPM_BUILD_ROOT/etc/cron.d
-cp -f $RPM_BUILD_ROOT/opt/storm/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
+cp -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
 
 # server has "./config" hard-coded path for config files
 ln -s etc "$RPM_BUILD_ROOT/%{prefix}/config"
@@ -167,7 +165,7 @@ rm -f "$RPM_BUILD_DIR/filelist.server.%{name}"
 rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 
 %package server
-Summary: The StoRM SRMv2 server (back-end daemon).
+Summary: The StoRM BackEnd server.
 Group: Application/Generic
 
 Requires: storm-backend-jars
@@ -185,13 +183,12 @@ Obsoletes: storm-backend
 
 
 %description server
-This package contains the back-end daemon for the StoRM
-SRMv2 server.
+This package contains the StoRM BackEnd server.
 
-The StoRM SRMv2 server provides an SRM interface to any POSIX
+StoRM provides an SRM interface to any POSIX
 filesystem with direct file access ("file:" transport protocol), but
-can take advantage of special features of the GPFS advanced cluster
-filesystem for advance space reservation.
+can take advantage of special features of high performance parallel and cluster file systems, as 
+GPFS from IBM and Lustre from SUN.
 
 This server depends upon some 3rd party .jar files, which are packed
 separately in the ``storm-backend-jars`` package.
@@ -206,28 +203,28 @@ separately in the ``storm-backend-jars`` package.
 %defattr(-,storm,storm)
 
 # empty directories; nonetheless include in RPM
-%dir /opt/storm/var/log
-%dir /opt/storm/var/tmp
-%dir /opt/storm/lib/storm-backend/jar
+%dir /opt/storm/backend/var/log
+%dir /opt/storm/backend/var/tmp
+%dir /opt/storm/backend/lib/storm-backend/jar
 
 %post server
-echo "The StoRM SRMv2 server is installed but NOT configured yet.
+echo "The StoRM BackEnd server is installed but NOT configured yet.
 You need to launch the storm-backend-configure script, or to use 
 yaim to configure the server.
 "
 
 %package jars
-Summary: The StoRM SRMv2 server (3rd party libraries).
+Summary: The StoRM BackEnd server (3rd party libraries).
 Group: Application/Generic
 
-Prefix: /opt/storm
+Prefix: /opt/storm/backend
 
 Requires: storm-backend-jars
 
 
 %description jars
 This package contains the 3rd party .jar libraries needed to run the
-StoRM SRMv2 back-end daemon.
+StoRM BackEnd server.
 
 
 %files jars -f ../filelist.jars.%{name}
