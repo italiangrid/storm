@@ -24,13 +24,15 @@
 # Should-Stop: $syslog
 # Default-Start:  2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: start/stop the StoRM SRMv2 backend server
+# Short-Description: start/stop the StoRM BackEnd server
 # Description: The StoRM SRMv2 server (back-end daemon).
-#  
-#  The StoRM SRMv2 server provides an SRM interface to any POSIX
+#
+#  StoRM provides an SRM interface to any POSIX
 #  filesystem with direct file access ("file:" transport protocol), but
-#  can take advantage of special features of the GPFS advanced cluster
-#  filesystem for advance space reservation.
+#  can take advantage of special features of high performance parallel and cluster file systems, as 
+#  GPFS from IBM and Lustre from SUN.
+#
+#
 #
 ### END INIT INFO
 
