@@ -4,6 +4,7 @@ import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -42,6 +43,7 @@ import org.apache.log4j.Logger;
 public class RmCommand implements Command {
 
     private final Logger log = Logger.getLogger("synch");
+    private final String funcName = "srmRm"; 
     private final NamespaceInterface namespace;
     private final PtGChunkCatalog getcatalog;
     private final PtPChunkCatalog putcatalog;
@@ -224,6 +226,14 @@ public class RmCommand implements Command {
 
                         log.debug("srmRm: authorized for " + user
                                 + " for file = " + stori.getPFN());
+                        
+                        //Prior to delete the file get the actual file size to update properly the DB
+                        
+                        LocalFile localElement = stori.getLocalFile();
+                        long fileSize = 0;
+                        if(localElement.exists())
+                            fileSize = localElement.getExactSize();
+                        
                         returnStatus = manageAuthorizedRM(lUser, surl, stori);
                         if (returnStatus.getStatusCode() == TStatusCode.SRM_SUCCESS) {
                             globalFailure = false;
@@ -236,6 +246,13 @@ public class RmCommand implements Command {
                                             + numberOfFiles
                                             + " [SURL:] successfully done with [status: "
                                             + returnStatus.toString() + "]");
+                            
+                            
+                            //Update the free size for each storage area
+                            SpaceHelper sp = new SpaceHelper();
+                            sp.increaseFreeSpaceForSA(log, funcName, user, surl, fileSize);
+                            
+                            
                         } else
                             partialSuccess = true;
 

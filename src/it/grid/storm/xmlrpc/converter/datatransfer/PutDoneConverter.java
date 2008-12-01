@@ -11,7 +11,6 @@
 package it.grid.storm.xmlrpc.converter.datatransfer;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -21,8 +20,9 @@ import it.grid.storm.srm.types.*;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
+import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import it.grid.storm.synchcall.data.exception.InvalidPutDoneInputAttributeException;
-import it.grid.storm.synchcall.dataTransfer.PutDoneOutputData;
+
 
 
 import it.grid.storm.xmlrpc.converter.Converter;

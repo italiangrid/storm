@@ -10,17 +10,23 @@ import java.util.ArrayList;
 
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TFileType;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
+import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TStorageSystemInfo;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.catalogs.*;
+import it.grid.storm.common.SpaceHelper;
+import it.grid.storm.common.StorageSpaceData;
+import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.synchcall.command.Command;
@@ -339,6 +345,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command
          * In case of T1D1 Storage Class, an hidden file is created to manage 
          * the migration to tape.
          */
+        VirtualFSInterface fs = null;
+        
         for (int i=0; i<spaceAvailableSURLs.size(); i++) {
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
@@ -352,7 +360,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                 continue;
             }   
             
-            VirtualFSInterface fs = null;
+            
             StorageClassType stype = null;
             fs = stori.getVirtualFileSystem();
             if(fs !=null) {
@@ -396,6 +404,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             log.error("srmPutDone: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"] failed with: [status:"+globalStatus+"]");
 
         }
+        
+        
+        SpaceHelper sh = new SpaceHelper();
+        
+        //Update the used space into Database
+        sh.decreaseFreeSpaceForSA(log, funcName, user, spaceAvailableSURLs);
+        
+        
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(arrayOfFileStatus);
 

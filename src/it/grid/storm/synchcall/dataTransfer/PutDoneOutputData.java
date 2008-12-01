@@ -10,7 +10,7 @@ package it.grid.storm.synchcall.dataTransfer;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
 
-public class PutDoneOutputData
+public class PutDoneOutputData 
 {
     private TReturnStatus returnStatus = null;
     private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;

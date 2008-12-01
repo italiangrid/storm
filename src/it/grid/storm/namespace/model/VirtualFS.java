@@ -1086,6 +1086,15 @@ public class VirtualFS implements VirtualFSInterface {
         StorageSpaceData spaceData = catalog.getStorageSpace(token);
         return spaceData;
     }
+    
+    public StorageSpaceData getSpaceByAlias(String desc) throws NamespaceException {
+
+        //Retrieve Storage Space from Persistence
+        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+        StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(desc);
+        return spaceData;
+    }
+    
 
     public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException {
 

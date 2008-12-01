@@ -2,6 +2,7 @@ package it.grid.storm.namespace;
 
 import java.util.*;
 
+import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.filesystem.*;
 import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
@@ -120,6 +121,10 @@ public interface VirtualFSInterface {
 
     //Return a StoRI representing a new Space
     public TSizeInBytes splitSpace(StoRI spaceOrig, StoRI file, long sizePresumed) throws NamespaceException;
+    
+    public StorageSpaceData getSpaceByAlias(String alias) throws NamespaceException;
+    
+    public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException ;
 
     /**************************************************
      *    Methods Used for Default use
