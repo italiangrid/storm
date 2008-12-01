@@ -28,7 +28,7 @@
 			<xs:element name="default-acl" type="default-aclType" minOccurs="0"/>
 			<xs:element name="quota" type="quotaType" minOccurs="0"/>
 			<xs:element name="trans-prot" type="trans-protType"/>
-			<xs:element name="pool" type="poolType"/>
+			<xs:element name="pool" type="poolType" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="defaults-valuesType">
@@ -58,7 +58,7 @@
 			<xs:element ref="root"/>
 			<xs:element ref="filesystem-driver"/>
 			<xs:element ref="spacesystem-driver"/>
-			<xs:element ref="authorization-source" minOccurs="0"/>
+			<xs:element ref="authorization-source"/>
 			<xs:element name="properties" type="propertiesType"/>
 			<xs:element name="capabilities" type="capabilitiesType"/>
 			<xs:element name="defaults-values" type="defaults-valuesType" minOccurs="0"/>
@@ -116,7 +116,7 @@
 	<xs:element name="port" type="xs:string"/>
 	<xs:complexType name="protType">
 		<xs:sequence>
-			<xs:element name="id" type="xs:integer" nillable="false"/>
+			<xs:element name="id" type="xs:integer" nillable="false" minOccurs="0"/>
 			<xs:element ref="schema"/>
 			<xs:element ref="host" minOccurs="0"/>
 			<xs:element ref="port" minOccurs="0"/>
@@ -209,19 +209,29 @@
 			<xs:enumeration value="TB"/>
 		</xs:restriction>
 	</xs:simpleType>
-	<xs:complexType name="TotalSizeType">
-		<xs:attribute name="unit" type="UnitType" use="required"/>
-		<xs:attribute name="hard-limited" type="xs:boolean" use="required"/>
-	</xs:complexType>
 	<xs:complexType name="propertiesType">
 		<xs:sequence>
 			<xs:element ref="RetentionPolicy"/>
 			<xs:element ref="AccessLatency"/>
 			<xs:element ref="ExpirationMode"/>
-			<xs:element name="TotalOnlineSize">
-			</xs:element>
-			<xs:element name="TotalNearlineSize"/>
+			<xs:element name="TotalOnlineSize" type="TotalOnlineSizeType"/>
+			<xs:element name="TotalNearlineSize" type="TotalNearLineType"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TotalOnlineSizeType">
+		<xs:simpleContent>
+			<xs:extension base="xs:long">
+				<xs:attribute name="unit" type="UnitType" use="optional" default="TB"/>
+				<xs:attribute name="hard-limited" type="xs:boolean" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="TotalNearLineType">
+		<xs:simpleContent>
+			<xs:extension base="xs:long">
+				<xs:attribute name="unit" type="UnitType" use="optional" default="TB"/>
+			</xs:extension>
+		</xs:simpleContent>
 	</xs:complexType>
 	<xs:complexType name="quotaType">
 		<xs:choice>
@@ -263,19 +273,14 @@
 			<xs:enumeration value="RW"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- POOL TYPE -->
 	<xs:complexType name="poolType">
 		<xs:sequence>
-			<xs:element ref="members"/>
 			<xs:element ref="balance-strategy"/>
+			<xs:element ref="members"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:element name="members" type="membersType"/>
-	<xs:complexType name="membersType">
-		<xs:sequence>
-			<xs:element name="member-id" type="xs:integer"/>
-			<xs:element name="weight" type="xs:integer" nillable="false"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:element name="balance-strategy" type="balance-strategyType"/>
 	<xs:simpleType name="balance-strategyType">
 		<xs:restriction base="xs:NMTOKEN">
@@ -286,6 +291,17 @@
 			<xs:enumeration value="metric-2"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:complexType name="membersType">
+		<xs:sequence>
+			<xs:element name="member" minOccurs="1" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:attribute name="member-id" type="xs:integer" use="required"/>
+					<xs:attribute name="weight" type="xs:integer" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- AUTHORIZATION SOURCE ELEMENT -->
 	<xs:element name="authorization-source" type="authorization-sourceType" nillable="false"/>
 	<xs:complexType name="authorization-sourceType">
 		<xs:choice>
