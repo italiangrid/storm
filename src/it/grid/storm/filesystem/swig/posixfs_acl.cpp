@@ -68,7 +68,7 @@ posixfs_acl::from_permission_t(const fs_acl::permission_t perm)
 {
   acl_perm_t result = 0;
 
-  if (perm & 
+  if (perm &
       (PERM_READ_DATA
        |PERM_LIST_DIRECTORY))
     result |= ACL_READ;
@@ -81,7 +81,7 @@ posixfs_acl::from_permission_t(const fs_acl::permission_t perm)
       (PERM_EXECUTE
        |PERM_TRAVERSE_DIRECTORY))
     result |= ACL_EXECUTE;
-  
+
   return result;
 }
 
@@ -100,28 +100,28 @@ posixfs_acl::to_permission_t(const unsigned short perm)
 {
   permission_t result = PERM_NONE;
 
-  if (perm & S_IROTH) 
-    result |= 
+  if (perm & S_IROTH)
+    result |=
       PERM_READ_DATA
       |PERM_LIST_DIRECTORY;
-  if (perm & S_IWOTH) 
-    result |= 
+  if (perm & S_IWOTH)
+    result |=
       PERM_WRITE_DATA
       |PERM_CREATE_SUBDIRECTORY
       |PERM_DELETE_CHILD;
-  if (perm & S_IXOTH) 
-    result |= 
+  if (perm & S_IXOTH)
+    result |=
       PERM_EXECUTE
       |PERM_TRAVERSE_DIRECTORY;
-  
+
   return result;
 }
 
 
-/** Make a new instance of the same class of this object. 
+/** Make a new instance of the same class of this object.
  *
  * <p> Needed in @c load_delete_permission() to instanciate the right
- * kind of object for classes inheriting from this one. 
+ * kind of object for classes inheriting from this one.
  */
 fs_acl*
 posixfs_acl::new_same_class() const
@@ -141,13 +141,13 @@ posixfs_acl::new_same_class() const
 void
 posixfs_acl::load_permission_bits(const string& pathname)
 {
-  struct stat statbuf;
+  struct stat64 statbuf;
   fs::xstat(pathname.c_str(), statbuf);
 
-  
+
   if (S_ISDIR(statbuf.st_mode))
     loaded_from_directory = true;
-  else 
+  else
     loaded_from_directory = false;
 
   const permission_t owner_perm = to_permission_t(statbuf.st_mode>>6);
@@ -172,8 +172,8 @@ posixfs_acl::load_delete_permission(const string& pathname)
   const size_t last_slash = pathname.find_last_of('/');
   const string dirname(pathname, 0, last_slash);
   if (! dirname.empty()) {
-    struct stat statbuf;
-    int rc = stat (dirname.c_str(), &statbuf);
+    struct stat64 statbuf;
+    int rc = stat64(dirname.c_str(), &statbuf);
     if(-1 == rc){
       // error!
       throw_error(errno, pathname, "stat");
@@ -181,7 +181,7 @@ posixfs_acl::load_delete_permission(const string& pathname)
 
     fs_acl* parent_acl = new_same_class();
     parent_acl->load(dirname, false); // avoid recursion up to root dir.
-    
+
     if (statbuf.st_mode & S_ISVTX) {
       // "sticky" bit set, only owner can delete
       if(parent_acl->has_user_perm(get_owner_uid())
@@ -285,14 +285,14 @@ make_perm_from_permset (const acl_permset_t &permset)
  */
 void
 posixfs_acl::load (const string& pathname, const bool delete_permission_too)
-  throw(fs::error, fs::invalid_path, 
-        fs::permission_denied, fs::acl_not_supported, 
+  throw(fs::error, fs::invalid_path,
+        fs::permission_denied, fs::acl_not_supported,
         std::exception)
 {
   const char *const path = pathname.c_str();
 
   acl_t acl = acl_get_file (path, ACL_TYPE_ACCESS);
-  if (NULL == acl) 
+  if (NULL == acl)
     throw_error(errno, pathname, "acl_get_file");
 
   /* "base" ACL info is gotten via the std UNIX permission bits */
@@ -364,7 +364,7 @@ posixfs_acl::load (const string& pathname, const bool delete_permission_too)
 }
 
 
-/** React on errors in add_to_acl() throwing appropriate exceptions. 
+/** React on errors in add_to_acl() throwing appropriate exceptions.
     This is really code from the body of add_to_acl(), factored out for clarity. */
 static void
 add_to_acl__throw(const int err)
@@ -374,7 +374,7 @@ add_to_acl__throw(const int err)
 
   // but if we're running w/o assertions, throw logic_error
   if (EINVAL == errno)
-    throw std::logic_error(__FILE__ 
+    throw std::logic_error(__FILE__
                            ": add_to_acl: invalid acl_p parameter");
 
   // little to do if ENOMEM happens, still...
@@ -385,7 +385,7 @@ add_to_acl__throw(const int err)
   assert ((EINVAL==errno)||(ENOMEM==errno));
 
   // yet, throw logic_error if we're running w/o asserts
-  throw std::logic_error(__FILE__ 
+  throw std::logic_error(__FILE__
                          ": add_to_acl: unexpected system error");
 }
 
@@ -409,7 +409,7 @@ add_to_acl (acl_t *acl_p,
 {
   acl_entry_t entry;
   int rc;
-  
+
   rc = acl_create_entry (acl_p, &entry); // EINVAL, ENOMEM
   if (-1 == rc)
     add_to_acl__throw(errno);
@@ -439,20 +439,20 @@ add_to_acl (acl_t *acl_p,
  *          if some system call failed.
  */
 void
-posixfs_acl::enforce(const string& pathname) 
+posixfs_acl::enforce(const string& pathname)
   const
-  throw(fs::error, fs::invalid_path, 
-        fs::permission_denied, fs::acl_not_supported, 
+  throw(fs::error, fs::invalid_path,
+        fs::permission_denied, fs::acl_not_supported,
         std::exception)
 {
   // create an acl_t (suitable for passing to the libacl functions)
   // containing the ACL specified stored in this object
   acl_t acl = acl_init(size() + 1);
 
-  add_to_acl(&acl, ACL_USER_OBJ, 
+  add_to_acl(&acl, ACL_USER_OBJ,
              get_owner_uid(), from_permission_t(get_owner_perm()));
   add_to_acl(&acl, ACL_GROUP_OBJ,
-             get_group_owner_gid(), 
+             get_group_owner_gid(),
              from_permission_t(get_group_owner_perm()));
   add_to_acl(&acl, ACL_OTHER,
              0, from_permission_t(get_other_perm()));
@@ -460,20 +460,20 @@ posixfs_acl::enforce(const string& pathname)
   for (user_acl_t::const_iterator user = user_acl_begin();
        user != user_acl_end();
        ++user)
-    add_to_acl (&acl, ACL_USER, user->first, 
+    add_to_acl (&acl, ACL_USER, user->first,
                 from_permission_t(user->second));
-  
+
   for (group_acl_t::const_iterator group = group_acl_begin();
        group != group_acl_end();
        ++group)
-    add_to_acl (&acl, ACL_GROUP, group->first, 
+    add_to_acl (&acl, ACL_GROUP, group->first,
                 from_permission_t(group->second));
 
   // add mask if there's any ACE beyond the standard UNIX permissions,
   // or if it has been explicitly set
   if (has_extended_acl() || has_explicit_mask())
     add_to_acl(&acl, ACL_MASK, 0, from_permission_t(get_mask()));
-  
+
   // should have built a correct ACL
   assert (0 == acl_valid(acl));
 
@@ -481,7 +481,7 @@ posixfs_acl::enforce(const string& pathname)
   int rc = acl_set_file(pathname.c_str(), ACL_TYPE_ACCESS, acl);
   if (-1 == rc)
     throw_error(errno, pathname, "acl_set_file");
-  
+
 }
 
 
@@ -489,9 +489,9 @@ posixfs_acl::enforce(const string& pathname)
 /* --- protected methods --- */
 
 /** Throw an exception based on the @c errno system error code. */
-void 
-posixfs_acl::throw_error(const int err, 
-                         const std::string& pathname, 
+void
+posixfs_acl::throw_error(const int err,
+                         const std::string& pathname,
                          const char* const funcname) const
 {
   switch (err) {
@@ -501,7 +501,7 @@ posixfs_acl::throw_error(const int err,
   case ENAMETOOLONG:
     {
       std::ostringstream msg;
-      msg << funcname << ": Invalid filesystem entry '" 
+      msg << funcname << ": Invalid filesystem entry '"
           << pathname << "': " << strerror(err);
       throw fs::invalid_path(msg.str());
     }
@@ -509,7 +509,7 @@ posixfs_acl::throw_error(const int err,
   case EPERM:
     {
       std::ostringstream msg;
-      msg << funcname << ": Cannot read ACL of filesystem entry '" 
+      msg << funcname << ": Cannot read ACL of filesystem entry '"
           << pathname << "': " << strerror(err);
       throw fs::permission_denied(msg.str());
     }
@@ -517,14 +517,14 @@ posixfs_acl::throw_error(const int err,
   case ENOSYS:
     {
       std::ostringstream msg;
-      msg << funcname << ": No support for ACLs on the filesystem where '" 
+      msg << funcname << ": No support for ACLs on the filesystem where '"
           << pathname << "' is located: " << strerror(err);
       throw fs::acl_not_supported(msg.str());
     }
   case ENOSPC:
     {
       std::ostringstream msg;
-      msg << funcname << ": Cannot write ACL on '" 
+      msg << funcname << ": Cannot write ACL on '"
           << pathname << "': " << strerror(err)
           << " (either the filesystem is full, "
              "or the maximum number of ACLs was reached.)";
@@ -533,14 +533,14 @@ posixfs_acl::throw_error(const int err,
   case ENOMEM:
     {
       std::ostringstream msg;
-      msg << funcname << ": Memory allocation error (ACL buffer) for'" 
+      msg << funcname << ": Memory allocation error (ACL buffer) for'"
           << pathname << "': " << strerror(err);
       throw fs::error(msg.str());
     }
   default:
     {
       std::ostringstream msg;
-      msg << funcname << ": BUG: unknown error in " __FILE__ 
+      msg << funcname << ": BUG: unknown error in " __FILE__
         " at line " <<  __LINE__  << ": "
         << strerror(err);
       throw std::logic_error(msg.str());

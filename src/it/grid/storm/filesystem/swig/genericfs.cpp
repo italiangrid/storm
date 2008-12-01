@@ -44,11 +44,11 @@ const char* const RCSID="$Id: genericfs.cpp,v 1.10 2007/04/17 10:30:16 lmagnoni 
  *
  * @throw  fs::error, if a system call fails.
  */
-fs::genericfs::genericfs(const std::string& mntpath) 
+fs::genericfs::genericfs(const std::string& mntpath)
   throw(fs::acl_not_supported, fs::error)
   : mountpoint(mntpath)
 {
-    ; // empty 
+    ; // empty
 }
 
 
@@ -68,14 +68,14 @@ size_t
 fs::genericfs::get_size (const std::string& path)
   throw(fs::error, std::logic_error)
 {
-  struct stat st;
-  xstat(path, st); 
-  
-  // when debugging, stop at this point 
+  struct stat64 st;
+  xstat(path, st);
+
+  // when debugging, stop at this point
   // if called with a directory name
   assert(S_ISREG(st.st_mode));
-  
-  if (S_ISREG(st.st_mode)) 
+
+  if (S_ISREG(st.st_mode))
     // return file size
     return st.st_size;
   else
@@ -84,7 +84,7 @@ fs::genericfs::get_size (const std::string& path)
     {
       std::ostringstream msg;
       msg << "gpfs_get_size(" << path
-          << "): argument is a directory;" 
+          << "): argument is a directory;"
         "cannot return size of a directory.";
       throw std::logic_error(msg.str());
     }
@@ -103,10 +103,10 @@ fs::genericfs::get_size (const std::string& path)
  * @throw  fs::error, if a system call fails.
  */
 time_t
-fs::genericfs::get_last_modification_time (const std::string& path) 
+fs::genericfs::get_last_modification_time (const std::string& path)
   throw(fs::error)
 {
-  struct stat st;
+  struct stat64 st;
   xstat(path, st);
   return st.st_mtime;
 }
@@ -114,24 +114,24 @@ fs::genericfs::get_last_modification_time (const std::string& path)
 /**
  *  Truncate the specified file to the desired size
  * @return 0 if success, -1 if error occours.
- * 
+ *
  * @throw fs::error, if the truncate system call fails.
- */ 
+ */
 
 int
-fs::genericfs::truncate_file (const std::string& filename, 
-                     size_t desired_size) 
+fs::genericfs::truncate_file (const std::string& filename,
+                     size_t desired_size)
   throw(fs::error)
 {
-  int res =  truncate (filename.c_str(), 
+  int res =  truncate (filename.c_str(),
                  desired_size);
-            
-                 
+
+
   if (-1 == res)
     {
       int err = errno;
       std::ostringstream msg;
-      msg << __FILE__ 
+      msg << __FILE__
           << ": truncate(" << filename<<"," << desired_size << ") failed";
       throw system_error(msg.str(), err);
     }
