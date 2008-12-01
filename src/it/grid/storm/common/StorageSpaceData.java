@@ -18,6 +18,7 @@ import java.util.*;
 import org.apache.log4j.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.griduser.*;
+import it.grid.storm.persistence.model.StorageSpaceTO;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.catalogs.*;
 
@@ -117,7 +118,7 @@ public class StorageSpaceData {
       log.error("Error while constructing SpaceType", ex);
     }
 
-    //Alias fo Storage Space (Human readable)
+    //Alias for Storage Space (Human readable)
     this.spaceTokenAlias = ssTO.getAlias();
     if (this.spaceTokenAlias != null) {
       log.debug("StorageSpaceData - spaceTokenAlias: " + this.spaceTokenAlias);
@@ -129,6 +130,8 @@ public class StorageSpaceData {
     //Space Desidered for Storage Space
     try {
       //CHECK HERE! I've used default Size Unit as BYTE!
+        
+      log.debug("StorageSpaceData - size:"+ssTO.getTotalSize());  
       this.spaceDesired = TSizeInBytes.make(ssTO.getTotalSize(), SizeUnit.BYTES);
       if (this.spaceDesired != null) {
         log.debug("StorageSpaceData - spaceDesired: " + this.spaceDesired);
