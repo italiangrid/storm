@@ -8,12 +8,11 @@
 # You may copy, modify and distribute this file under the same terms
 # as StoRM itself. 
 #
-# $Id: storm-backend,v 1.38 2006/11/23 16:13:23 aforti Exp $
 #
 
 # Comments to support chkconfig on RedHat Linux
 # chkconfig: 2345 90 20
-# description: StoRM SRMv2 backend server
+# description: StoRM BackEnd server
 
 # Comments to support LSB init script conventions
 ### BEGIN INIT INFO
