@@ -1,6 +1,15 @@
---
---     Create StoRM MySQL tables.
---
+--###################################################
+--#
+--# Copyright (c) 2008 on behalf of the INFN CNAF 
+--# The Italian National Institute for Nuclear Physics (INFN), 
+--# All rights reserved.
+--#
+--# create StoRM databases
+--#
+--# author: luca.magnoni@cnaf.infn.it
+--# changelog: Add "ON DELETE CASCADE" for requestDirOption.
+--#
+--###################################################
 
 CREATE DATABASE IF NOT EXISTS storm_db;
 USE storm_db;
@@ -11,7 +20,7 @@ CREATE TABLE IF NOT EXISTS db_version (
   minor    int,
   revision int,
   description VARCHAR(100));
-REPLACE INTO db_version (major,minor,revision,description) VALUES (1,3,2000,'05 March 2008');
+REPLACE INTO db_version (major,minor,revision,description) VALUES (1,4,0000,'1 Dec 2008');
 
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,

@@ -15,7 +15,7 @@ if [ -z "$STORM_MYSQL_HOSTNAME" ]; then
 fi
 
 if [ -z "$STORM_DBSCRIPT_DIR" ]; then
-    STORM_DBSCRIPT_DIR=/opt/srmv2storm/etc/db
+    STORM_DBSCRIPT_DIR=/opt/storm/backend/etc/db
 fi
 
 if [ -z "$MYSQL_PASSWORD" ]; then

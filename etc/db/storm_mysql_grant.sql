@@ -1,5 +1,5 @@
 --###################################################
---# Copyright (c) 2005 on behalf of the INFNGRID Project: 
+--# Copyright (c) 2008 on behalf of the INFN CNAF 
 --# The Italian National Institute for Nuclear Physics (INFN), 
 --# All rights reserved.
 --#
