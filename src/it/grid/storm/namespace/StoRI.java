@@ -88,10 +88,16 @@ public interface StoRI {
     public ArrayList getChildren(TDirOption dirOption) throws
         InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
-
+    
+    public ArrayList getFirstLevelChildren(TDirOption dirOption) throws
+       InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+       InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
+    
     public String getAbsolutePath();
 
     public boolean hasJustInTimeACLs();
+    
+    public abstract void porcatroia();
 
     /**
      * Method that returns an ordered list of parent StoRI objects, starting from
@@ -105,5 +111,7 @@ public interface StoRI {
     public void allotSpaceByToken(TSpaceToken token) throws ReservationException, ExpiredSpaceTokenException;
 
     public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize) throws ReservationException, ExpiredSpaceTokenException;
+
+   
 
 }

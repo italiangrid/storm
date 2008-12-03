@@ -732,4 +732,62 @@ public class StoRIImpl
         throw new Exception("NO USE THIS METHOD! <'new StoRI();'> ");
     }
 
+    public ArrayList getFirstLevelChildren(TDirOption dirOption)
+            throws InvalidDescendantsEmptyRequestException,
+            InvalidDescendantsAuthRequestException,
+            InvalidDescendantsPathRequestException,
+            InvalidDescendantsFileRequestException {
+     
+
+        ArrayList pathList = new ArrayList();
+        ArrayList stoRIList = new ArrayList();
+        File fileHandle = new File(getAbsolutePath());
+
+        if (!fileHandle.isDirectory()) {
+            if (fileHandle.isFile()) {
+                log.error("SURL represents a File, not a Directory!");
+                throw new InvalidDescendantsFileRequestException(fileHandle);
+            }
+            else {
+                log.warn("SURL does not exists!");
+                throw new InvalidDescendantsPathRequestException(fileHandle);
+            }
+        }
+        else { //SURL point to an existent directory.
+            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
+            pathList = (ArrayList) pCreator.generateFirstLevelChild(pathList);
+            if (pathList.size() == 0) {
+                log.debug("SURL point to an EMPTY DIRECTORY");
+                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
+            }
+            else { //Creation of StoRI LIST
+                NamespaceInterface namespace = NamespaceDirector.getNamespace();
+                StoRI createdStoRI = null;
+                String childPath;
+                for (int i = 0; i < pathList.size(); i++) {
+                    childPath = (String) pathList.get(i);
+                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
+                    try {
+                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
+                        stoRIList.add(createdStoRI);
+                    }
+                    catch (NamespaceException ex) {
+                        log.error("Error occurred while resolving StoRI by absolute path", ex);
+                    }
+                }
+            }
+        }
+        return stoRIList;
+    }
+        
+        
+        
+        
+
+    public void porcatroia() {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
