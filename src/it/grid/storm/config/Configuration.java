@@ -2514,7 +2514,23 @@ public class Configuration {
         }
     }
 
-
+    
+    /**
+     * Enable write permission on new created directory
+     * for LocalAuthorizationSource usage.
+     * 
+     * @return false by default, otherwise what is specified in the properties
+     */
+    public boolean getEnableWritePermOnDirectory() {
+        String key = "directory.writeperm";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return false;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
+    }
 
 
 
