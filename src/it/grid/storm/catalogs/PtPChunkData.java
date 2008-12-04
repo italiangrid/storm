@@ -245,6 +245,20 @@ public class PtPChunkData implements ChunkData {
     }
 
     /**
+     * Method that sets the status of this request to SRM_FAILURE;
+     * it needs the explanation String which describes the situation in greater detail;
+     * if a null is passed, then an empty String is used as explanation.
+     */
+    public void changeStatusSRM_NOT_SUPPORTED(String explanation) {
+        try {
+            if (explanation==null) explanation="";
+            status = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,explanation);
+        } catch (InvalidTReturnStatusAttributeException e) {
+            log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FAILURE! "+e);
+        }
+    }
+
+    /**
      * Method that sets the status of this request to SRM_INTERNAL_ERROR;
      * it needs the explanation String which describes the situation in greater detail;
      * if a null is passed, then an empty String is used as explanation.

@@ -33,7 +33,7 @@ public interface StoRI {
      * @throws InvalidGetTURLNullPrefixAttributeException
      */
     public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        InvalidGetTURLNullPrefixAttributeException;
+        InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException ;
 
     public TTURL getTURL(Protocol prot);
 

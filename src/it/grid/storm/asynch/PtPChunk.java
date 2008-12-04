@@ -25,6 +25,7 @@ import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 
 import it.grid.storm.srm.types.TOverwriteMode;
 
+import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
@@ -250,6 +251,12 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData.changeStatusSRM_FAILURE("Unable to decide TURL!");
             this.failure = true; //gsm.failedChunk(chunkData);
             log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "+e);
+        } catch (InvalidGetTURLProtocolException e) {
+            //Handle null TURL prefix! This is a programming error: it should not occur!
+            chunkData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
+            this.failure = true; //gsm.failedChunk(chunkData);
+            log.error("ERROR in PtPChunk! No valid transfer protocol found.");
+       
         } catch (Error e) {
             //This is a temporary measure to catch an arror occurring because of the use of deprecated
             //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
@@ -258,6 +265,9 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
             this.failure = true; //gsm.failedChunk(chunkData);
             log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
+       
+        
+        
         }
     }
 

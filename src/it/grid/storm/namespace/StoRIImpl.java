@@ -205,11 +205,12 @@ public class StoRIImpl
 
     /*****************************************************************************
      *  READ METHODs
+     * @throws InvalidGetTURLProtocolException 
      ***************************************************************************/
 
 
     public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        InvalidGetTURLNullPrefixAttributeException {
+        InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException {
 
         if (transferProtocolManaged == null) {
             populateManagedTranferProtocol();
@@ -230,9 +231,11 @@ public class StoRIImpl
            * Retrieve Protocol to build the TURL
            */
             if ( (prefixOfAcceptedTransferProtocols.size() == 0)) {
-                log.debug("<GetTURL> Creating new TURL with DEFAULT TransportPrefix");
+                log.debug("<GetTURL> No matching transfer protocol Found! Returnig Error");
                 //Creation TURL with DEFAULT Transport Prefix
-                protocolPrefix = getDefaultTransferProtocol();
+                //protocolPrefix = getDefaultTransferProtocol();
+                //Change here 
+                throw new InvalidGetTURLProtocolException(prefixOfAcceptedTransferProtocols);
             }
             else { //Within the request there are some protocol preferences
                 int size = prefixOfAcceptedTransferProtocols.size();
