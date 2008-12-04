@@ -1,8 +1,8 @@
 package it.grid.storm.synchcall.command.directory;
 
-import org.apache.log4j.Logger;
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -213,8 +213,14 @@ public class MkdirCommand extends DirectoryCommand implements Command
             // ACL allow user to read-write-list the new directory
             // Call wrapper to set ACL on file created.
             log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  " + "group:g_name:--x");
-            //FilesystemPermission fpX = FilesystemPermission.Traverse;
-            FilesystemPermission fpLIST = FilesystemPermission.ListTraverse;
+
+            //Set permission on directory
+            //In case of local auth source enable also write
+            FilesystemPermission fpLIST = null;
+            if(Configuration.getInstance().getEnableWritePermOnDirectory())
+                fpLIST = FilesystemPermission.ListTraverseWrite;
+            else
+                fpLIST = FilesystemPermission.ListTraverse;
 
             // Check if Jit or AoT
             if (hasJiTACL) {

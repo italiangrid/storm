@@ -263,13 +263,17 @@ public class RmCommand implements Command {
                                 + returnStatus);
                         failure = false;
                     } else {
+                        
                         failure = true;
                         explanation = "User is not authorized to delete the file";
-                        statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
-                        log.error("srmRm: <" + user + "> Removing SURL " + i
-                                + " of " + numberOfFiles
-                                + " [SURL:] failed with [status: "
-                                + returnStatus.toString() + "]");
+                        try {
+                            returnStatus = new TReturnStatus(statusCode, explanation);
+                            log.error("srmRm: <"+user+"> Removing SURL "+i+" of "+numberOfFiles+" [SURL:] failed with [status: "+ returnStatus.toString()+"]");
+                        } catch (InvalidTReturnStatusAttributeException ex1) {
+                            log.error("srmRm: <"+user+"> Removing SURL "+i+" of "+numberOfFiles+" [SURL:] Error creating returnStatus " + ex1);
+                        }
+                        
+                       
                     }
 
                     if (failure) {
