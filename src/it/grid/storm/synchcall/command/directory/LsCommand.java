@@ -34,23 +34,9 @@ import it.grid.storm.namespace.*;
 import java.util.*;
 
 import org.apache.commons.lang.mutable.MutableInt;
-import org.hsqldb.lib.IntValueHashMap;
 
 import it.grid.storm.common.types.SizeUnit;
 
-/**
- *
- * This class is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
- * <p>
- *
- *
- * Authors:
- *     @author lucamag luca.magnoniATcnaf.infn.it
- *
- * @date = Dec 2, 2008
- *
- */
 
 /**
  *
@@ -65,6 +51,7 @@ import it.grid.storm.common.types.SizeUnit;
  * @date = Dec 3, 2008
  *
  */
+
 public class LsCommand extends DirectoryCommand implements Command
 {
     private int                maxEntries = -1;
@@ -402,7 +389,6 @@ public class LsCommand extends DirectoryCommand implements Command
   
         boolean anotherLevel = false;
         
-        
         //Current metaDataPath
         currentElementDetail = new TMetaDataPathDetail();
         
@@ -421,7 +407,8 @@ public class LsCommand extends DirectoryCommand implements Command
             /**
              * 
              *  The recursive idea is:
-             *  - if the StoRI is a directory, calculate the first level children and for each recurse on.
+             *  
+             *  - if the StoRI is a directory, fill up with details, calculate the first level children and for each recurse on.
              *  - it the StoRI is a file, fill up with details and return.
              * 
              * Please note that for each level the same ArrayOfTMetaData is passed as parameter, in order to collect results.
@@ -515,13 +502,9 @@ public class LsCommand extends DirectoryCommand implements Command
                     populateDetailFromFS(stori, currentElementDetail);
 
                     // Add the information into details structure
-
-                    // Add the information into details structure
-
                     numberOfResult.add(1);
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
-                
                 
             }
         }
@@ -697,9 +680,6 @@ public class LsCommand extends DirectoryCommand implements Command
 
         
         // Set lastModificationAtTime
-        //@TODO : Ho messo la data Fissata a Natale 2007
-        //Calendar xmas = new GregorianCalendar(2007, Calendar.DECEMBER, 25);
-        //Date lastModificationTime = xmas.getTime();
         
         Date lastModificationTime = new Date(localElement.getLastModifiedTime());
         elementDetail.setModificationTime(lastModificationTime);
@@ -750,9 +730,8 @@ public class LsCommand extends DirectoryCommand implements Command
             
             if(otherPermission==null)
                 otherPermission=TPermissionMode.NONE;
+
             elementDetail.setOtherPermission(otherPermission);
-
-
 
             // fileType
             elementDetail.setFileType(TFileType.getTFileType("File"));
