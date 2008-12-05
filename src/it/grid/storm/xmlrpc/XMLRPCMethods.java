@@ -89,13 +89,13 @@ public class XMLRPCMethods {
 
     public Map releaseFiles(Map inputParam) {
         
-        return executor.execute(OperationType.PD, inputParam);
+        return executor.execute(OperationType.RF, inputParam);
     
     }
 
     public Map extendFileLifeTime(Map inputParam) {
         
-        return executor.execute(OperationType.PD, inputParam);
+        return executor.execute(OperationType.EFL, inputParam);
 
     }
 
