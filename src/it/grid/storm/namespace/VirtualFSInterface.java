@@ -8,6 +8,7 @@ import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
 
 /**
  * <p>Title: </p>
@@ -121,9 +122,9 @@ public interface VirtualFSInterface {
 
     //Return a StoRI representing a new Space
     public TSizeInBytes splitSpace(StoRI spaceOrig, StoRI file, long sizePresumed) throws NamespaceException;
-    
+
     public StorageSpaceData getSpaceByAlias(String alias) throws NamespaceException;
-    
+
     public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException ;
 
     /**************************************************
@@ -133,5 +134,15 @@ public interface VirtualFSInterface {
     public StoRI createDefaultStoRI() throws NamespaceException;
 
     public long getCreationTime();
+
+    /**************************************************
+     *    VERSION 1.4
+     **************************************************/
+
+    public Balancer getProtocolBalancer(TSpaceToken token) throws NamespaceException;
+
+    public Balancer getProtocolBalancer(TSpaceToken token, Protocol protocol) throws NamespaceException;
+
+
 
 }

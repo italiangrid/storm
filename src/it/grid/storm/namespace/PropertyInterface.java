@@ -30,6 +30,12 @@ public interface PropertyInterface {
 
   public AccessLatency getAccessLatency();
 
+  /**************************************************
+   *    VERSION 1.4
+   **************************************************/
+
+  public boolean isOnlineSpaceLimited();
+
 
   //public TLifeTimeInSeconds getSpaceLifeTimeMAX();
 

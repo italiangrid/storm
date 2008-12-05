@@ -6,6 +6,7 @@ import org.apache.commons.logging.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.namespace.*;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
 
 /**
  * <p>Title: </p>
@@ -138,7 +139,14 @@ public class Capability implements CapabilityInterface {
         return sb.toString();
     }
 
+    /******************************************
+     *           VERSION 1.4                  *
+  *******************************************/
 
+  public Balancer getPool() {
+    /** @todo IMPLEMENT */
+    return null;
+  }
 
   /**
      *

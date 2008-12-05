@@ -1,5 +1,3 @@
-
-
 package it.grid.storm.namespace.config.xml;
 
 import java.util.*;

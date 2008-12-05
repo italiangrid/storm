@@ -6,6 +6,7 @@ import it.grid.storm.namespace.model.Capability.*;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.balancer.Balancer;
 
 /**
  * <p>Title: </p>
@@ -46,5 +47,7 @@ public interface CapabilityInterface {
     public Quota getQuota();
 
     public DefaultACL getDefaultACL();
+
+    public Balancer getPool();
 
 }

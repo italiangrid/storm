@@ -5,9 +5,9 @@
       <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
       <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
       <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
-      <authorization-source>
+      <storage-area-authz>
 				<authz-db>authz-db-LHCb</authz-db>
-	  </authorization-source>
+	  </storage-area-authz>
       <properties>
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>
@@ -71,9 +71,9 @@
       <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
       <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
       <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
-      <authorization-source>
+      <storage-area-authz>
         <fixed>permit-all</fixed>      
-      </authorization-source>
+      </storage-area-authz>
       <properties>
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>

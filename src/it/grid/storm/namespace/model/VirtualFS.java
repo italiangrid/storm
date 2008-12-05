@@ -14,6 +14,7 @@ import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.*;
 import it.grid.storm.namespace.naming.*;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
 
 /**
  * <p>Title: </p>
@@ -1086,7 +1087,7 @@ public class VirtualFS implements VirtualFSInterface {
         StorageSpaceData spaceData = catalog.getStorageSpace(token);
         return spaceData;
     }
-    
+
     public StorageSpaceData getSpaceByAlias(String desc) throws NamespaceException {
 
         //Retrieve Storage Space from Persistence
@@ -1094,7 +1095,7 @@ public class VirtualFS implements VirtualFSInterface {
         StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(desc);
         return spaceData;
     }
-    
+
 
     public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException {
 
@@ -1119,6 +1120,18 @@ public class VirtualFS implements VirtualFSInterface {
         return creationTime;
     }
 
+  /******************************************
+     *           VERSION 1.4                  *
+  *******************************************/
 
+  public Balancer getProtocolBalancer(TSpaceToken token) throws NamespaceException {
+        /** @todo IMPLEMENT */
+    return null;
+  }
+
+  public Balancer getProtocolBalancer(TSpaceToken token, Protocol protocol) throws NamespaceException {
+    /** @todo IMPLEMENT */
+    return null;
+  }
 
 }

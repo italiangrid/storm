@@ -1,10 +1,24 @@
-/*
- * Configuration
+/**
  *
- * Copyright (c) 2005, Riccardo Murri <riccardo.murri@ictp.it>
+ * ************************************************************************
+ * This file is part of the StoRM project.
+ * Copyright (c) 2008 INFN-CNAF.
+ * <p>
  *
- * You may copy, distribute and modify this file under the terms of
- * the INFN GRID licence.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ * ************************************************************************
  *
  */
 package it.grid.storm.config;
@@ -29,16 +43,10 @@ import it.grid.storm.authorization.*;
  * default values, as well as the option of holding multiple values, is specified
  * in each method comment.
  *
- * @author  Riccardo Murri <riccardo.murri@ictp.it>
- * @author  INFN - CNAF Bologna
- * @author  Ezio Corso <ezio.corso@ictp.it>, EGRID - ICTP Trieste
- *
- * @version $Revision: 1.96 $, $Date: 2007/05/11 13:41:34 $
  */
 public class Configuration {
     //String automatically updated by CVS!
-    public static final String RCSID =
-        "$Id: Configuration.java,v 1.96 2007/05/11 13:41:34 ecorso Exp $";
+  //  public static final String RCSID = "$Id: Configuration.java,v 1.96 2007/05/11 13:41:34 ecorso Exp $";
 
     private final Logger applicationRootLogger = Logger.getRootLogger();
     private final Logger logger = Logger.getLogger("configuration"); //specific logger for Configuration!

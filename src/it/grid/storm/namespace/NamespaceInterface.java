@@ -7,6 +7,7 @@ import it.grid.storm.filesystem.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
 
 /**
  * <p>Title: </p>
@@ -333,6 +334,16 @@ public interface NamespaceInterface {
      * @throws NamespaceException
      */
     public VirtualFSInterface resolveVFSbyRoot(String absolutePath) throws NamespaceException;
+
+    /****************************************/
+    /********     VERSION 1.4        *******/
+    /****************************************/
+
+    public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException;
+
+
+
+
 
 
 }

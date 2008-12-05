@@ -217,6 +217,9 @@ public class StoRITest {
     catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
       ex.printStackTrace();
     }
+    catch (InvalidGetTURLProtocolException ex) {
+      /** @todo Handle this exception */
+    }
 
     transProt = TransferProtocol.GSIFTP;
     log.debug("Protocollo : "+transProt);
@@ -227,6 +230,9 @@ public class StoRITest {
     }
     catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
       ex.printStackTrace();
+    }
+    catch (InvalidGetTURLProtocolException ex) {
+      /** @todo Handle this exception */
     }
 
     //int d = NamespaceUtil.computeDistanceFromPath("/cnaf", "/cnaf");

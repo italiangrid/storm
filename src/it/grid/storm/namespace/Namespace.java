@@ -574,6 +574,18 @@ public class Namespace implements NamespaceInterface {
         return approachVFSNames;
     }
 
-
+  /******************************************
+   *           VERSION 1.4                  *
+  *******************************************/
+ /**
+  *
+  * @param spaceToken TSpaceToken
+  * @return VirtualFSInterface
+  * @throws NamespaceException
+  */
+ public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException {
+        /** @todo IMPLEMENT */
+    return null;
+  }
 
 }

@@ -71,6 +71,15 @@ public class Property  implements PropertyInterface {
   }
 
 
+  /******************************************
+   *           VERSION 1.4                  *
+  *******************************************/
+
+  public boolean isOnlineSpaceLimited() {
+        /** @todo IMPLEMENT */
+    return false;
+  }
+
   /**
    *
    * <p>Title: </p>
