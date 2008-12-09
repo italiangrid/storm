@@ -31,6 +31,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
+import it.grid.storm.namespace.VirtualFSInterface;
 
 
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -446,18 +447,23 @@ public class PtPChunk implements Delegable, Chooser {
 
         // @TODO aggiungere il controllo solo se e' abilitato nel namespace
         // per la Storage Area corrispondente
+        VirtualFSInterface fs = fileStoRI.getVirtualFileSystem();
+        
+        try {
+            if(fs.getProperties().isOnlineSpaceLimited()) {
+                SpaceHelper sp = new SpaceHelper();
+                long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
+                if( (sp.isSAFull(log, fileStoRI)) ||
+                        ( (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) ) {
 
-        if(true) {
-            SpaceHelper sp = new SpaceHelper();
-            long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
-            if( (sp.isSAFull(log, fileStoRI)) ||
-                    ( (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) ) {
-
-                log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
-                chunkData.changeStatusSRM_FAILURE("No free space on Storage Area");
-                this.failure = true; //gsm.failedChunk(chunkData);
-                return false;
+                    log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
+                    chunkData.changeStatusSRM_FAILURE("No free space on Storage Area");
+                    this.failure = true; //gsm.failedChunk(chunkData);
+                    return false;
+                }
             }
+        } catch (NamespaceException e1) {
+            log.debug("PtPChunk - Error! Unable to build properties from virtual fs");// TODO Auto-generated catch block
         }
 
 
