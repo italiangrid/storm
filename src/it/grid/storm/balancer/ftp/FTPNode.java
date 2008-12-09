@@ -7,7 +7,6 @@ public class FTPNode extends AbstractNode {
     
     private String hostname;
     private int port;
-    private int weight = 0;;
     
    
     
