@@ -14,22 +14,23 @@ import it.grid.storm.synchcall.data.space.InvalidGetSpaceMetaDataInputAttributeE
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
- * 
+ *
  * This class represents the Type Converter for GetSpaceMetaData function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the GetSpaceMetaDataManager
- * 
+ *
  * @author lucamag
  * @date May 29, 2008
  *
  */
 
-public class GetSpaceMetaDataConverter implements Converter 
+public class GetSpaceMetaDataConverter implements Converter
 {
     /**
      * Logger
@@ -53,7 +54,8 @@ public class GetSpaceMetaDataConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         memberName = new String("authorizationID");
@@ -84,7 +86,7 @@ public class GetSpaceMetaDataConverter implements Converter
 
         // Creation of new Hashtable to return
         Hashtable outputParam = new Hashtable();
-        
+
         //outputData
         GetSpaceMetaDataOutputData outputData = (GetSpaceMetaDataOutputData) data;
 

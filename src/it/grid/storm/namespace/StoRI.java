@@ -46,11 +46,11 @@ public interface StoRI {
     public StFN getStFN();
 
     public String getRelativePath();
-    
+
     public String getRelativeStFN();
 
     public TLifeTimeInSeconds getFileLifeTime();
-    
+
     public Date getFileStartTime();
 
     public StoRIType getStoRIType();
@@ -66,9 +66,9 @@ public interface StoRI {
     public VirtualFSInterface getVirtualFileSystem();
 
     public String getStFNRoot();
-    
+
     public String getStFNPath();
-    
+
     public String getFilename();
 
     public void setStFNRoot(String stfnRoot);
@@ -88,16 +88,15 @@ public interface StoRI {
     public ArrayList getChildren(TDirOption dirOption) throws
         InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
-    
+
     public ArrayList getFirstLevelChildren(TDirOption dirOption) throws
        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
-    
+
     public String getAbsolutePath();
 
     public boolean hasJustInTimeACLs();
-    
-    public abstract void porcatroia();
+
 
     /**
      * Method that returns an ordered list of parent StoRI objects, starting from
@@ -112,6 +111,6 @@ public interface StoRI {
 
     public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize) throws ReservationException, ExpiredSpaceTokenException;
 
-   
+
 
 }

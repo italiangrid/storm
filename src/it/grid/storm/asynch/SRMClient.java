@@ -1,6 +1,6 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -9,6 +9,7 @@ import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.common.types.TransferProtocol;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Interface for the SRM Client functionality needed in StoRM.
@@ -27,7 +28,7 @@ public interface SRMClient {
      * SRMPrepareToPutReply containing the result of the operation, and throws an SRMClient
      * exception in case the operation could not be completed.
      */
-    public SRMPrepareToPutReply prepareToPut(VomsGridUser su, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException;
+    public SRMPrepareToPutReply prepareToPut(GridUserInterface su, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException;
 
     /**
      * Method used to execute an srmStatusOfPutRequest: it requires the request token
@@ -36,12 +37,12 @@ public interface SRMClient {
      * case the operation fails an SRMClientException is thrown containing an explanation
      * String.
      */
-    public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, VomsGridUser gu, TSURL toSURL) throws SRMClientException;
+    public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException;
 
     /**
      * Method used to execute an srmPutDone: it requires the request token, the GridUser that issued the
      * command, and the toSURL that must be putDone. SRMPutDoneReply is returned but in case the
      * operation fails an SRMClientException is thrown containing an explanation String.
      */
-    public SRMPutDoneReply srmPutDone(TRequestToken rt, VomsGridUser gu, TSURL toSURL) throws SRMClientException;
+    public SRMPutDoneReply srmPutDone(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException;
 }

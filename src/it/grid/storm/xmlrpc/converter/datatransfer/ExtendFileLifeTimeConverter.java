@@ -21,6 +21,7 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  *
@@ -59,7 +60,8 @@ public class ExtendFileLifeTimeConverter implements Converter
 
         // Creation of VomsGridUser
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         // (1) authorizationID (never used)
         memberName = new String("authorizationID");

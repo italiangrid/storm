@@ -22,6 +22,7 @@ import it.grid.storm.griduser.Fqan;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
 
 public class RmConverter
 {
@@ -49,7 +50,8 @@ public class RmConverter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         //Inutile
         String member_authID = new String("authorizationID");

@@ -24,6 +24,7 @@ import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserManager;
 
 public class GetSpaceTokensConverter implements Converter
 {
@@ -44,7 +45,8 @@ public class GetSpaceTokensConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         memberName = new String("authorizationID");
@@ -65,9 +67,9 @@ public class GetSpaceTokensConverter implements Converter
 
         // Creation of new Hashtable to return
         Hashtable outputParam = new Hashtable();
-        
+
         GetSpaceTokensOutputData outputData = (GetSpaceTokensOutputData) data;
-        
+
         /* (1) returnStatus */
         TReturnStatus returnStatus = outputData.getStatus();
         if (returnStatus != null) {

@@ -281,13 +281,13 @@ public class LsCommand extends DirectoryCommand implements Command
                         log.info("srmLs: STRUTCTURE size:"+details.size()+" Number of returned entries: "+ numberOfReturnedEntries);
                         log.info("srmLs: STRUTCTURE ARRAY size:"+details.getTMetaDataPathDetail(0)+" Structure:\n"+details.getTMetaDataPathDetail(0).toString());
                         log.info("srmLs: STRUTCTURE ARRAY size:"+details.getTMetaDataPathDetail(0).getArrayOfSubPaths().size()+" Structure:\n"+details.getTMetaDataPathDetail(0).getArrayOfSubPaths());
-                    
+
                     }  else {
                         log.info("srmLs: <"+guser+"> Listing on SURL "+(j+1)+" of "+surlArray.size()+" [SURL:"+surl.toString()+"] failed with [status:"+details.getTMetaDataPathDetail(j).getStatus()+"]");
                     }
-                    
+
                     errorCount+=error;
-                    
+
 
                 } else {
                     fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
@@ -315,7 +315,7 @@ public class LsCommand extends DirectoryCommand implements Command
                     //TOREMOVE
                     //log.debug("StFN : "+surl.sfn().stfn());
                 }
-                
+
                 details.addTMetaDataPathDetail(elementDetail);
             }
 
@@ -336,7 +336,7 @@ public class LsCommand extends DirectoryCommand implements Command
             } else {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
                 log.error("srmLs: <"+guser+"> Request for [SURL:"+inputData.getSurlArray()+"] failed with [status:" + globalStatus.toString()+"]");
-            } 
+            }
         } catch (InvalidTReturnStatusAttributeException e) {
             // Nothing to do, it will never be thrown.
             log.error("srmLs: <"+guser+"> Request for [SURL:"+inputData.getSurlArray()+"] failed.Error creating returnStatus " + e);
@@ -347,9 +347,9 @@ public class LsCommand extends DirectoryCommand implements Command
     }
 
 
-    
+
     /**
-     * 
+     *
      * Recursive function for visiting Directory an TMetaDataPath Creation. Returns the number of
      * file statuses different than SRM_SUCCESS.
      *
@@ -367,31 +367,31 @@ public class LsCommand extends DirectoryCommand implements Command
      * @param currentLevel
      * @param numberOfIterations
      * @return number of errors
-     * 
+     *
      */
-    
+
     private int manageAuthorizedLS(GridUserInterface guser, StoRI stori, ArrayOfTMetaDataPathDetail rootArray,
             TFileStorageType type, boolean allLevelRecursive, int numOfLevels, boolean fullDetailedList,
             int errorCount, int count_maxEntries, int offset, MutableInt numberOfResult, int currentLevel, MutableInt numberOfIterations)
     {
-        
+
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
         //log.debug("srmLs: BFS visit of " + stori.getPFN()+"\n Number of entries: "+numberOfResult+"\n MaxEntriesToReturn: "+
         //          count_maxEntries+"\n NumOfLevel: "+numOfLevels+"\n CurrentLevel: "+currentLevel+"\n Offset: "+offset);
-        
-        
+
+
         // Insert the StoRI into the buffer
         //buffer.addLast(new BufferElement(stori, 0));
 
         LocalFile localElement = null;
         TMetaDataPathDetail currentElementDetail = null;
-  
+
         boolean anotherLevel = false;
-        
+
         //Current metaDataPath
         currentElementDetail = new TMetaDataPathDetail();
-        
+
         ArrayOfTMetaDataPathDetail currentMetaDataArray  = null;
         //Create the annidate array of TMetaDataPathDetails
         currentMetaDataArray =  new ArrayOfTMetaDataPathDetail();
@@ -400,31 +400,31 @@ public class LsCommand extends DirectoryCommand implements Command
 
         //iter++
         numberOfIterations.add(1);
-        
+
         //Check if max number of requests has been reached
         if(numberOfResult.intValue()<count_maxEntries) {
-            
+
             /**
-             * 
+             *
              *  The recursive idea is:
-             *  
+             *
              *  - if the StoRI is a directory, fill up with details, calculate the first level children and for each recurse on.
              *  - it the StoRI is a file, fill up with details and return.
-             * 
+             *
              * Please note that for each level the same ArrayOfTMetaData is passed as parameter, in order to collect results.
              * this Array is referenced in the currentTMetaData element.
-             *  
+             *
              */
-            
+
             localElement = stori.getLocalFile();
-            
+
             // Ls of the current element
             if (localElement.exists()) { // The local element exists in the underlying file system
-                
+
                 if (localElement.isDirectory()) {
 
                     if (numberOfIterations.intValue() >= offset) {
-                        
+
                         // Retrieve information of the directory from the underlying file system
                         populateDetailFromFS(stori, currentElementDetail);
 
@@ -441,18 +441,18 @@ public class LsCommand extends DirectoryCommand implements Command
                         numberOfResult.add(1);
                         rootArray.addTMetaDataPathDetail(currentElementDetail);
                     }
-                    
+
                     anotherLevel = checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel);
                     currentLevel = currentLevel+1;
                     if (anotherLevel) {
                         // Retrieve directory element
                         ArrayList childrenArray = (ArrayList) getFirstLevel(stori);
                         if (childrenArray != null) { //Populate the buffer
-                            
+
                             for (Iterator<StoRI> iter = childrenArray.iterator(); iter.hasNext()&&(numberOfResult.intValue()<count_maxEntries);) {
                                 StoRI item = iter.next();
                                 if(numberOfResult.intValue() >= offset) {
-                                    
+
                                     manageAuthorizedLS(guser, item, currentMetaDataArray, type, allLevelRecursive,
                                                    numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset, numberOfResult, currentLevel, numberOfIterations);
                                 } else
@@ -461,11 +461,11 @@ public class LsCommand extends DirectoryCommand implements Command
                             }
                         } // no valid children
                     } //No More element
-                    
+
                 } else { //The local element is a file
 
                     // Retrieve information on file from underlying file system
-                    
+
                     if (numberOfIterations.intValue() >= offset) {
 
                         populateDetailFromFS(stori, currentElementDetail);
@@ -480,16 +480,16 @@ public class LsCommand extends DirectoryCommand implements Command
                         }
 
                         numberOfResult.add(1);
-                        
+
                         rootArray.addTMetaDataPathDetail(currentElementDetail);
                     } //Just do nothing. Skip this element.
                 }
-                
+
             } else { // The local element does not exists in the underlying file system.
                 log.debug("srmLs: The file does not exists in underlying file system.");
-                
+
                 if (numberOfIterations.intValue() >= offset) {
-                    
+
                     errorCount++;
 
                     // In Any case set SURL value into TMetaDataPathDetail
@@ -505,17 +505,17 @@ public class LsCommand extends DirectoryCommand implements Command
                     numberOfResult.add(1);
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
-                
+
             }
         }
-        
+
         return errorCount;
     }
 
-            
-            
-            
-     
+
+
+
+
 
     /**
      * getChildren
@@ -534,7 +534,7 @@ public class LsCommand extends DirectoryCommand implements Command
         }
         try {
             result = element.getChildren(dirOption);
-            
+
         } catch (InvalidDescendantsFileRequestException ex1) {
             log.debug("srmLs: Unable to retrieve StoRI children !" +ex1);
         } catch (InvalidDescendantsPathRequestException ex1) {
@@ -547,7 +547,7 @@ public class LsCommand extends DirectoryCommand implements Command
         return result;
     }
 
-    
+
     private List getFirstLevel(StoRI element)
     {
         ArrayList result = null;
@@ -559,7 +559,7 @@ public class LsCommand extends DirectoryCommand implements Command
         }
         try {
             result = element.getFirstLevelChildren(dirOption);
-            
+
         } catch (InvalidDescendantsFileRequestException ex1) {
             log.debug("srmLs: Unable to retrieve StoRI children !" +ex1);
         } catch (InvalidDescendantsPathRequestException ex1) {
@@ -572,9 +572,9 @@ public class LsCommand extends DirectoryCommand implements Command
         return result;
     }
 
-    
-    
-    
+
+
+
     /**
      * Set size and status of "localElement" into "elementDetail".
      *
@@ -658,7 +658,7 @@ public class LsCommand extends DirectoryCommand implements Command
          * Comment added to prevent BUG in FS Driver
          *
         */
-        
+
         try {
             FilesystemPermission permission = null;
             if (element.hasJustInTimeACLs())
@@ -666,9 +666,9 @@ public class LsCommand extends DirectoryCommand implements Command
             else
                 permission = localElement.getGroupPermission(guser.getLocalUser());
             if (permission != null) {
-                userPermission = new TUserPermission(new TUserID(guser.getLocalUserName()), TPermissionMode
+                userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()), TPermissionMode
                         .getTPermissionMode(permission));
-                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUserName()), TPermissionMode.getTPermissionMode(permission));
+                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()), TPermissionMode.getTPermissionMode(permission));
                 otherPermission = TPermissionMode.getTPermissionMode(permission);
             }
         } catch (CannotMapUserException e1) {
@@ -676,11 +676,11 @@ public class LsCommand extends DirectoryCommand implements Command
         } catch (InvalidTUserIDAttributeException e) {
             log.error("InvalidTUserIDAttributeException...");
         }
-         
 
-        
+
+
         // Set lastModificationAtTime
-        
+
         Date lastModificationTime = new Date(localElement.getLastModifiedTime());
         elementDetail.setModificationTime(lastModificationTime);
 
@@ -697,15 +697,15 @@ public class LsCommand extends DirectoryCommand implements Command
             // Set UserPermission
             //elementDetail.setOwnerPermission( TUserPermission.makeDirectoryDefault() );
             elementDetail.setOwnerPermission(userPermission);
-            
+
             // Set GroupPermission
             //elementDetail.setGroupPermission( TGroupPermission.makeDirectoryDefault() );
             elementDetail.setGroupPermission(groupPermission);
-            
+
             // Set otherPermission
             //elementDetail.setOtherPermission( TPermissionMode.NONE );
             elementDetail.setOtherPermission(otherPermission);
-            
+
 
 
         } else { // localElement is a file
@@ -713,21 +713,21 @@ public class LsCommand extends DirectoryCommand implements Command
             /**
              * DEFAULT PERMISSION VALUES FOR DIRECTORY
              */
-            
+
 
             /** Set common information (for files and directories) */
             // Set UserPermission
             if(userPermission==null)
                 userPermission= TUserPermission.makeFileDefault();
             elementDetail.setOwnerPermission(userPermission);
-            
+
             // Set GroupPermission
             if(groupPermission==null)
                 groupPermission = TGroupPermission.makeFileDefault();
-            elementDetail.setGroupPermission(groupPermission);  
-            
+            elementDetail.setGroupPermission(groupPermission);
+
             // Set otherPermission
-            
+
             if(otherPermission==null)
                 otherPermission=TPermissionMode.NONE;
 
@@ -790,5 +790,5 @@ public class LsCommand extends DirectoryCommand implements Command
         return result;
     }
 
-  
+
 }

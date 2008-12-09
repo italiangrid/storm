@@ -1,6 +1,6 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.griduser.VomsGridUser;
+
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
@@ -25,6 +25,8 @@ import org.globus.ftp.PerfMarker;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.RetrieveOptions;
 import org.apache.log4j.Logger;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.AbstractGridUser;
 
 /**
  * <p>Title: ThirdPartGridFTPTransferClient </p>
@@ -51,7 +53,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
      * @param destination TTURL
      * @throws GridFTPTransferClientException
      */
-    public void putFile(VomsGridUser gu, TTURL source, TTURL destination) throws GridFTPTransferClientException
+    public void putFile(GridUserInterface gu, TTURL source, TTURL destination) throws GridFTPTransferClientException
     {
 
         log.debug(" --- Third part copy --- ");
@@ -74,7 +76,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
        MarkerListenerImpl listener = new MarkerListenerImpl();
 
         try {
-            InputStream proxy = new ByteArrayInputStream(gu.getUserCredentials().getBytes());
+            InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes());
 	    GSSCredential cred = new GlobusGSSCredentialImpl(new GlobusCredential(proxy), GSSCredential.INITIATE_AND_ACCEPT);
 
 	    log.debug("Created GSS Credential from proxy");

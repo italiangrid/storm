@@ -14,7 +14,7 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Streets;
 
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 
 import it.grid.storm.griduser.CannotMapUserException;
 
@@ -111,7 +111,7 @@ public class PtPChunk implements Delegable, Chooser {
 
     private static Logger log = Logger.getLogger("asynch");
     //DA SOVRASCRIVER CON QUELLO IN CVSSSSS!!!!
-    private VomsGridUser gu=null;        //GridUser that made the request
+    private GridUserInterface gu=null;        //GridUser that made the request
     private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToPutRequest
     private PtPChunkData chunkData=null; //PtPChunkData that holds the specific info for this chunk
     private GlobalStatusManager gsm =null;  //GlobalStatusManager object in charge of computing the global status of the request This chunk belongs to
@@ -125,7 +125,7 @@ public class PtPChunk implements Delegable, Chooser {
      * supplied attributes are null, an InvalidPtPChunkAttributesException
      * is thrown.
      */
-    public PtPChunk(VomsGridUser gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtPChunkAttributesException {
+    public PtPChunk(GridUserInterface gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtPChunkAttributesException {
         boolean ok = (gu!=null) &&
             (rsd!=null) &&
             (chunkData!=null) &&
@@ -256,7 +256,7 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
             this.failure = true; //gsm.failedChunk(chunkData);
             log.error("ERROR in PtPChunk! No valid transfer protocol found.");
-       
+
         } catch (Error e) {
             //This is a temporary measure to catch an arror occurring because of the use of deprecated
             //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
@@ -265,9 +265,9 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
             this.failure = true; //gsm.failedChunk(chunkData);
             log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
-       
-        
-        
+
+
+
         }
     }
 
@@ -438,29 +438,29 @@ public class PtPChunk implements Delegable, Chooser {
         TSizeInBytes size = chunkData.expectedFileSize();
         TSpaceToken spaceToken = chunkData.spaceToken();
         LocalFile localFile = fileStoRI.getLocalFile();
-        
-        // In case of SRM Storage Area limitation enabled, 
+
+        // In case of SRM Storage Area limitation enabled,
         // the Storage Area free size is retrieved from the database
         // and the PtP fails if there is not enougth space.
         Configuration config = Configuration.getInstance();
-        
+
         // @TODO aggiungere il controllo solo se e' abilitato nel namespace
         // per la Storage Area corrispondente
-        
+
         if(true) {
             SpaceHelper sp = new SpaceHelper();
             long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
             if( (sp.isSAFull(log, fileStoRI)) ||
                     ( (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) ) {
-                
+
                 log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
                 chunkData.changeStatusSRM_FAILURE("No free space on Storage Area");
                 this.failure = true; //gsm.failedChunk(chunkData);
                 return false;
             }
         }
-             
-                
+
+
         try {
             //set space!
             boolean successful = localFile.createNewFile();

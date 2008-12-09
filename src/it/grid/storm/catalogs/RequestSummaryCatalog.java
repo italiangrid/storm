@@ -26,6 +26,8 @@ import java.io.FileNotFoundException;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents the RequestSummaryCatalog of StoRM. The rows in the
@@ -45,7 +47,7 @@ public class RequestSummaryCatalog {
 
     private Timer clock = null; //timer thread that will run a task to clean expired requests!
     private TimerTask clockTask = null; //timer task that will remove expired requests and corresponding proxies!
-    
+
     private RequestSummaryCatalog() {
         if (Configuration.getInstance().getExpiredRequestPurging()) {
             clock = new Timer();
@@ -135,9 +137,9 @@ public class RequestSummaryCatalog {
             sb.append("\n");
         }
         //VomsGridUser
-        VomsGridUser auxgu = null;
+        GridUserInterface auxgu = null;
         String auxVomsAttributes = auxTO.vomsAttributes();
-        
+
         String auxClientDN = auxTO.clientDN();
         try {
             //auxgu = loadVomsGridUser(auxClientDN,auxTO.requestToken()); //BEWARE!!! NO VOMS ATTRIBUTES ARE LOADED AS OF TODAY!!!
@@ -170,11 +172,11 @@ public class RequestSummaryCatalog {
      * persistence are NOT loaded!
      */
     //private VomsGridUser loadVomsGridUser(String dn, String rtoken) throws MalformedGridUserException {
-    private VomsGridUser loadVomsGridUser(String dn, String FQANs_string, String rtoken) throws MalformedGridUserException {
-    
+    private GridUserInterface loadVomsGridUser(String dn, String fqans_string, String rtoken) throws MalformedGridUserException {
+
         log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for "+dn+" "+rtoken);
         //set up proxy from file, if it exists!
-        String proxyString = "";
+        String proxyString = null;
         Fqan[] fqans_vector = null;
         try {
             File proxyFile = new File(Configuration.getInstance().getProxyHome() + File.separator + rtoken);
@@ -201,45 +203,54 @@ public class RequestSummaryCatalog {
             //An unexpected error occured: I am including this generic catch because the underlaying filesystem has ACLs, and I do not know how exactly Java behaves!
             log.error("REQUEST SUMMARY CATALOG! There was an unexpected error while attempting to read the file containing the proxy! No proxy has been loaded!");
         }
-        
+
         /**
          * This code is only for the 1.3.18.
          * This is a workaround to get FQANs using the proxy field on request_queue.
-         * From the DB is retrieved a single FQAN string containing all 
+         * From the DB is retrieved a single FQAN string containing all
          * FQAN separeted by the "#" char.
          */
-        if(FQANs_string!="") {
-            String[] fqans_string_array = FQANs_string.split("#");
+        if(fqans_string!="") {
+            String[] fqans_string_array = fqans_string.split("#");
+            /**
             if (fqans_string_array.length!=0) {
          	    fqans_vector = new Fqan[fqans_string_array.length];
                 for(int i=0;i<fqans_string_array.length;i++)
                     fqans_vector[i] = new Fqan(fqans_string_array[i]);
             }
-        }    
-        
-        
-        if ((proxyString!=null) && (proxyString!="") && (dn!=null) && (dn!="")) {
-            //proxy available... the request should be an srmCopy: the only one that needs delegation!
-            log.info("REQUEST SUMMARY CATALOG! Proxy certificate FOUND: request should be an srmCopy.");
-            if(fqans_vector == null)
-            	return VomsGridUser.make(dn,proxyString);
-            else
-            	return VomsGridUser.make(dn, fqans_vector, proxyString);
-        } else if ((dn!=null) && (dn!="")) {
-            //no proxy available... it is not an srmCopy!
-            log.info("REQUEST SUMMARY CATALOG! Proxy certificate NOT found: request CANNOT be an srmCopy.");
-            //return VomsGridUser.make(dn);
-           if(fqans_vector==null)
-        	   return VomsGridUser.make(dn);
-           else
-        	   return VomsGridUser.make(dn,fqans_vector);
-              
-        } else {
-            //both DN and proxy are null or empty!
-            log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials data for request:"+rtoken);
-            log.warn("REQUEST SUMMARY CATALOG! proxy="+proxyString+"; dn="+dn);
-            throw new MalformedGridUserException();
+            **/
         }
+
+        log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " +  dn + " " + fqans_string + " " + proxyString);
+        if ( (dn != null) && (fqans_string != null) && (proxyString != null)) {
+          //all credentials available!
+          log.info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate FOUND for request " +rtoken);
+          return GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_string.split("#"));
+        }
+        else if ( (dn != null) && (fqans_string != null) && (proxyString == null)) {
+          //voms credentials without proxy
+          log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes FOUND for request " + rtoken);
+          return GridUserManager.makeVOMSGridUser(dn, fqans_string.split("#"));
+        }
+        else if ( (dn != null) && (fqans_string == null) && (proxyString != null)) {
+          //NON-voms credentials with proxy
+          log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes FOUND for request " + rtoken);
+          return GridUserManager.makeGridUser(dn, proxyString);
+        }
+        else if ( (dn != null) && (fqans_string == null) && (proxyString == null)) {
+          //NON-voms credentials without proxy
+          log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes FOUND for request " + rtoken);
+          return GridUserManager.makeGridUser(dn);
+        }
+        else {
+          //unmanageble combination!
+          log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials data for request " + rtoken);
+          log.warn("REQUEST SUMMARY CATALOG! proxy=" + fqans_string + "\n dn=" + dn + "\n attributes=" + fqans_string);
+          throw new MalformedGridUserException();
+        }
+
+
+
     }
 
 
@@ -353,9 +364,9 @@ public class RequestSummaryCatalog {
     synchronized public void abortInProgressRequest(TRequestToken rt) {
         if (rt!=null) dao.abortInProgressRequest(rt.toString());
     }
-    
-    
-    
+
+
+
     /**
      * Method used to purge the DB of expired requests, and remove the corresponding
      * proxies if available.

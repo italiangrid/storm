@@ -22,19 +22,19 @@ public interface GridUserInterface {
 	 * Return the local user on wich the GridUser is mapped.
 	 * LocalUser is rapresented into a copmlex type "LocalUser"/ref
 	 * that contsin uid and gid[]
-	 */	
+	 */
 	public LocalUser getLocalUser() throws CannotMapUserException;
-	
+
 	/**
 	 * Return the LocalUser Name String on wich the GridUser is mapped.
 	 * A string formati is needed by current version of native library to enforce ACL.
 	 */
 
-	public String getLocalUserName();
+	//public String getLocalUserName();
 
 	/**
 	 * Return the main Virtual Organization of the User.
-	 * In case of VOMS certificate source for GridUser, the main VO is 
+	 * In case of VOMS certificate source for GridUser, the main VO is
 	 * the 'default' VO, the first VO specified as voms-proxy-init option
 	 */
 	public VO getMainVo();
@@ -47,6 +47,6 @@ public interface GridUserInterface {
 
 	/**
 	 * Return String rapresentation.
-	 */	
+	 */
 	public String toString();
 }

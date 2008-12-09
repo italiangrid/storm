@@ -2,7 +2,7 @@
  * AuthorizationQueryInterface
  *
  * Copyright (c) 2005, Riccardo Murri <riccardo.murri@ictp.it>
- * 
+ *
  * You may copy, distribute and modify this file under the terms of
  * the LICENSE.txt file at the root of the StoRM backend source tree.
  *
@@ -12,8 +12,8 @@
 package it.grid.storm.authorization;
 
 import it.grid.storm.authorization.AuthorizationDecision;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
@@ -56,13 +56,13 @@ public interface AuthorizationQueryInterface {
 	 * should return some unauthorized access error code for
 	 * <em>any</em> request.
 	 */
-	public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser);
+	public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser);
 
 	/**
 	 * Check if user can be allowed read access to the specified file.
 	 */
-	public AuthorizationDecision 
-		canReadFile(final VomsGridUser gridUser, final StoRI file);
+	public AuthorizationDecision
+		canReadFile(final GridUserInterface gridUser, final StoRI file);
 
 	/**
 	 * Check if user can be allowed write access to the specified
@@ -70,8 +70,8 @@ public interface AuthorizationQueryInterface {
 	 * already-existing files, however, it is up to the actual
 	 * implementation to check if the file already exists.
 	 */
-	public AuthorizationDecision 
-		canWriteFile(final VomsGridUser gridUser, final StoRI existingFile);
+	public AuthorizationDecision
+		canWriteFile(final GridUserInterface gridUser, final StoRI existingFile);
 
 	/**
 	 * Check if user can create the named file.  All levels of
@@ -84,8 +84,8 @@ public interface AuthorizationQueryInterface {
 	 * <p>Involved in: <code>SrmCopy</code>,
 	 * <code>srmPrepareToPut</code>
 	 */
-	public AuthorizationDecision 
-		canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile);
+	public AuthorizationDecision
+		canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile);
 
 	/**
 	 * Check if user can change the (Grid-level) ACLs on the specified
@@ -96,8 +96,8 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmChangePermissions</code>.
 	 */
-	public AuthorizationDecision 
-		canChangeAcl(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canChangeAcl(final GridUserInterface gridUser,
 					 final StoRI fileOrDirectory);
 
 	/**
@@ -110,8 +110,8 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmReassignToUser</code>.
 	 */
-	public AuthorizationDecision 
-		canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory);
+	public AuthorizationDecision
+		canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory);
 
 	/**
 	 * Check if user can list a directory contents.  Note that
@@ -123,8 +123,8 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmLs</code>,
 	 */
-	public AuthorizationDecision 
-		canListDirectory(final VomsGridUser gridUser, final StoRI directory);
+	public AuthorizationDecision
+		canListDirectory(final GridUserInterface gridUser, final StoRI directory);
 
 	/**
 	 * Check if user can descend the specified path.  If
@@ -141,8 +141,8 @@ public interface AuthorizationQueryInterface {
 	 * <code>srmMv</code>, <code>srmMkdir</code>, <code>srmRm</code>,
 	 * <code>srmRmdir</code>.
 	 */
-	public AuthorizationDecision 
-		canTraverseDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canTraverseDirectory(final GridUserInterface gridUser,
 							 final StoRI path);
 
 	/**
@@ -154,8 +154,8 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmMv</code>.
 	 */
-	public AuthorizationDecision 
-		canRename(final VomsGridUser gridUser, final StoRI file);
+	public AuthorizationDecision
+		canRename(final GridUserInterface gridUser, final StoRI file);
 
 	/**
 	 * Check if user can delete the specified file or directory.
@@ -166,8 +166,8 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmRm</code>, <code>srmRmdir</code>.
 	 */
-	public AuthorizationDecision 
-		canDelete(final VomsGridUser gridUser, final StoRI file);
+	public AuthorizationDecision
+		canDelete(final GridUserInterface gridUser, final StoRI file);
 
 	/**
 	 * Check if user can create the specified directory.
@@ -178,7 +178,7 @@ public interface AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmMkdir</code>.
 	 */
-	public AuthorizationDecision 
-		canMakeDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canMakeDirectory(final GridUserInterface gridUser,
 						 final StoRI targetDirectory);
 }

@@ -14,6 +14,7 @@ import it.grid.storm.synchcall.data.directory.InvalidLSInputDataAttributeExcepti
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 
 /**
@@ -21,7 +22,7 @@ import it.grid.storm.xmlrpc.converter.Converter;
  * This class is part of the StoRM project.
  * Copyright (c) 2008 INFN-CNAF.
  * <p>
- * 
+ *
  * This class represents the Type Converter for LS function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the LSManager
@@ -65,7 +66,8 @@ public class LsConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");

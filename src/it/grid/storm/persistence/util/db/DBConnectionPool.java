@@ -250,8 +250,9 @@ public class DBConnectionPool implements DataSourceConnectionFactory{
        ssTO.setGuaranteedSize(10000);
        ssTO.setLifetime(1000);
        VO vo = VO.make("testVO");
-       VomsGridUser gu = null;
-       gu = VomsGridUser.make("testUser");
+       GridUserInterface gu = null;
+       gu = GridUserManager.makeGridUser("testUser");
+       //gu = VomsGridUser.make("testUser");
        ssTO.setOwner(gu);
        ssTO.setSpaceFile("test_spaceFile");
        ssTO.setSpaceToken("test_spaceToken");

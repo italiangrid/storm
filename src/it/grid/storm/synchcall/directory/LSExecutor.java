@@ -262,7 +262,7 @@ class LSExecutor
                     error = manageAuthorizedLS(guser, stori, details, fileStorageType, allLevelRecursive,
                             numOfLevels, fullDetailedList, errorCount, count, offset);
 
-                    if (error==0) 
+                    if (error==0)
                         log.info("srmLs: <"+guser+"> Listing on SURL "+(j+1)+" of "+surlArray.size()+" [SURL:"+surl.toString()+"] successfully done with [status:"+details.getTMetaDataPathDetail(j).getStatus()+"].");
                     else
                         log.info("srmLs: <"+guser+"> Listing on SURL "+(j+1)+" of "+surlArray.size()+" [SURL:"+surl.toString()+"] failed with [status:"+details.getTMetaDataPathDetail(j).getStatus()+"]");
@@ -311,7 +311,7 @@ class LSExecutor
             } else {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
                 log.error("srmLs: <"+guser+"> Request for [SURL:"+inputData.getSurlArray()+"] failed with [status:" + globalStatus.toString()+"]");
-            } 
+            }
         } catch (InvalidTReturnStatusAttributeException e) {
             // Nothing to do, it will never be thrown.
             log.error("srmLs: <"+guser+"> Request for [SURL:"+inputData.getSurlArray()+"] failed.Error creating returnStatus " + e);
@@ -581,7 +581,7 @@ class LSExecutor
          * Comment added to prevent BUG in FS Driver
          *
         */
-        
+
         try {
             FilesystemPermission permission = null;
             if (element.hasJustInTimeACLs())
@@ -589,9 +589,9 @@ class LSExecutor
             else
                 permission = localElement.getGroupPermission(guser.getLocalUser());
             if (permission != null) {
-                userPermission = new TUserPermission(new TUserID(guser.getLocalUserName()), TPermissionMode
+                userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()), TPermissionMode
                         .getTPermissionMode(permission));
-                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUserName()), TPermissionMode.getTPermissionMode(permission));
+                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()), TPermissionMode.getTPermissionMode(permission));
                 otherPermission = TPermissionMode.getTPermissionMode(permission);
             }
         } catch (CannotMapUserException e1) {
@@ -599,14 +599,14 @@ class LSExecutor
         } catch (InvalidTUserIDAttributeException e) {
             log.error("InvalidTUserIDAttributeException...");
         }
-         
 
-        
+
+
         // Set lastModificationAtTime
         //@TODO : Ho messo la data Fissata a Natale 2007
         //Calendar xmas = new GregorianCalendar(2007, Calendar.DECEMBER, 25);
         //Date lastModificationTime = xmas.getTime();
-        
+
         Date lastModificationTime = new Date(localElement.getLastModifiedTime());
         elementDetail.setModificationTime(lastModificationTime);
 
@@ -623,15 +623,15 @@ class LSExecutor
             // Set UserPermission
             //elementDetail.setOwnerPermission( TUserPermission.makeDirectoryDefault() );
             elementDetail.setOwnerPermission(userPermission);
-            
+
             // Set GroupPermission
             //elementDetail.setGroupPermission( TGroupPermission.makeDirectoryDefault() );
             elementDetail.setGroupPermission(groupPermission);
-            
+
             // Set otherPermission
             //elementDetail.setOtherPermission( TPermissionMode.NONE );
             elementDetail.setOtherPermission(otherPermission);
-            
+
 
 
         } else { // localElement is a file
@@ -639,21 +639,21 @@ class LSExecutor
             /**
              * DEFAULT PERMISSION VALUES FOR DIRECTORY
              */
-            
+
 
             /** Set common information (for files and directories) */
             // Set UserPermission
             if(userPermission==null)
                 userPermission= TUserPermission.makeFileDefault();
             elementDetail.setOwnerPermission(userPermission);
-            
+
             // Set GroupPermission
             if(groupPermission==null)
                 groupPermission = TGroupPermission.makeFileDefault();
-            elementDetail.setGroupPermission(groupPermission);  
-            
+            elementDetail.setGroupPermission(groupPermission);
+
             // Set otherPermission
-            
+
             if(otherPermission==null)
                 otherPermission=TPermissionMode.NONE;
             elementDetail.setOtherPermission(otherPermission);

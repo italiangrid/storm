@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
 
 public class MkdirConverter
 {
@@ -47,7 +48,8 @@ public class MkdirConverter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");

@@ -2,7 +2,7 @@ package it.grid.storm.synchcall.space;
 
 
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * This class represents an Exception throws if SpaceResData is not well formed. *
@@ -17,7 +17,7 @@ public class InvalidReleaseSpaceAttributesException extends Exception {
     private boolean nullAuth = true;
     private boolean nullToken = true;
 
-    public InvalidReleaseSpaceAttributesException(VomsGridUser guser, TSpaceToken token)
+    public InvalidReleaseSpaceAttributesException(GridUserInterface guser, TSpaceToken token)
     {
 	nullAuth = (guser==null);
 	nullToken = (token==null);

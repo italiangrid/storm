@@ -31,8 +31,8 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.common.types.TransferProtocol;
 
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * SubClass of CopyChunk that handles Push mode, that is, the SRM server that
@@ -60,7 +60,7 @@ public class PushCopyChunk extends CopyChunk {
      * If the supplied attributes are null or the counter is negative, an
      * InvalidCopyChunkAttributesException is thrown.
      */
-    public PushCopyChunk(VomsGridUser gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) throws InvalidCopyChunkAttributesException {
+    public PushCopyChunk(GridUserInterface gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) throws InvalidCopyChunkAttributesException {
         boolean ok = (gu!=null) &&
             (rsd!=null) &&
             (chunkData!=null) &&

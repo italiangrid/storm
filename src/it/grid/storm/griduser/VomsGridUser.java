@@ -1,14 +1,3 @@
-/*
- * VomsGridUser
- *
- * Copyright (c) 2005,2006 Riccardo Murri <riccardo.murri@ictp.it>
- *
- * You may copy, distribute and modify this file under the same terms
- * as StoRM itself; see file LICENSE.txt
- *
- * $Id: VomsGridUser.java,v 1.32 2007/02/20 15:09:54 lmagnoni Exp $
- *
- */
 package it.grid.storm.griduser;
 
 import java.util.regex.Pattern;
@@ -18,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-//import java.security.cert.Certificate;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 
 import it.grid.storm.common.types.VO;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Encapsulates user Grid credentials access, and maps those to a local
@@ -39,11 +29,16 @@ import it.grid.storm.common.types.VO;
  * @version $Revision: 1.32 $
  *
  */
-public class VomsGridUser implements GridUserInterface {
-    public static final String RCSID = "$Id: VomsGridUser.java,v 1.32 2007/02/20 15:09:54 lmagnoni Exp $";
+public class VomsGridUser extends AbstractGridUser implements GridUserInterface {
+
+  private MapperInterface mapper = null;
+  private String[] fqanStrings = null;
+  private ArrayList<Fqan> fqans = new ArrayList<Fqan> ();
+
+
 
     private static final Logger log = Logger.getLogger(VomsGridUser.class);
-    
+
     // --- protected members --- //
 
     protected static final Pattern DN_RE = Pattern.compile("^/.+/CN=", Pattern.CASE_INSENSITIVE);
@@ -76,10 +71,11 @@ public class VomsGridUser implements GridUserInterface {
      * @return A VomsGridUser object, encapsulating the given credentials
      * @see    #VomsGridUser(String, Fqan[], String)
      */
-    public static VomsGridUser make(final String dn, final String proxy)
-    {
-        return new VomsGridUser(dn, new Fqan[0], proxy, new LcmapsMapper());
-    }
+
+//    public static VomsGridUser make(final String dn, final String proxy)
+//    {
+//        return new VomsGridUser(dn, new Fqan[0], proxy, new LcmapsMapper());
+//    }
 
 
     /**
@@ -94,10 +90,10 @@ public class VomsGridUser implements GridUserInterface {
      * @return A VomsGridUser object, encapsulating the given credentials
      * @see    #VomsGridUser(String, Fqan[], String)
      */
-    public static VomsGridUser make(final String dn, final Fqan[] fqans, final String proxy)
-    {
-        return new VomsGridUser(dn, fqans, proxy, new LcmapsMapper());
-    }
+//    public static VomsGridUser make(final String dn, final Fqan[] fqans, final String proxy)
+//    {
+//        return new VomsGridUser(dn, fqans, proxy, new LcmapsMapper());
+//    }
 
 
     /**
@@ -114,10 +110,10 @@ public class VomsGridUser implements GridUserInterface {
      * @return A VomsGridUser object, encapsulating the given credentials
      * @see    #VomsGridUser(String, Fqan[], String)
      */
-    public static VomsGridUser make(final String dn, final Fqan[] fqans)
-    {
-        return new VomsGridUser(dn, fqans, null, new LcmapsMapper());
-    }
+//    public static VomsGridUser make(final String dn, final Fqan[] fqans)
+//    {
+//        return new VomsGridUser(dn, fqans, null, new LcmapsMapper());
+//    }
 
 
     /**
@@ -134,12 +130,12 @@ public class VomsGridUser implements GridUserInterface {
      * @return A VomsGridUser object, encapsulating the given credentials
      * @see    #VomsGridUser(String, Fqan[], String)
      */
-    public static VomsGridUser make(final String dn)
-    {
-	log.debug(" VomsGridUser making with DN = "+dn);
-        return VomsGridUser.make(dn, new Fqan[0], null);
-    }
-    
+//    public static VomsGridUser make(final String dn)
+//    {
+//	log.debug(" VomsGridUser making with DN = "+dn);
+//        return VomsGridUser.make(dn, new Fqan[0], null);
+//    }
+
     /**
      * Factory method taking a XML structure.
      *
@@ -151,22 +147,23 @@ public class VomsGridUser implements GridUserInterface {
      * @return A VomsGridUser object, encapsulating the given credentials
      * @see    #VomsGridUser(String, Fqan[], String)
      */
+/**
     public static VomsGridUser decode(Map inputParam)
     {
         // Member name for VomsGridUser Creation
         String member_DN = new String("userDN");
         String member_Fqans = new String("userFQANS");
-        
+
         // Get DN and FQANs[]
         String DN = (String) inputParam.get(member_DN);
-        
+
         List fqans_vector = null;
         try {
         	fqans_vector = Arrays.asList((Object[]) inputParam.get(member_Fqans));
         } catch (NullPointerException e ) {
         	//log.debug("Empty FQAN[] found.");
         }
-        
+
         // Destination Fqans array
         Fqan[] fqans = null;
 
@@ -184,7 +181,7 @@ public class VomsGridUser implements GridUserInterface {
                 fqans[i] = fq;
             }
         }
-        
+
         // Setting up VomsGridUser
         if (DN != null) {
             log.debug("DN: " + DN);
@@ -198,7 +195,7 @@ public class VomsGridUser implements GridUserInterface {
         }
         return null;
     }
-
+**/
     // --- constructors --- //
 
     /**
@@ -243,33 +240,18 @@ public class VomsGridUser implements GridUserInterface {
      * local account credentials.
      *
      */
+/**
     protected VomsGridUser(final String dn, final Fqan[] fqans, final String pem, final MapperInterface mapper)
     // throws InvalidSubjectDnSyntax, InvalidFqanSyntax
     {
         assert (null!=dn); assert (null!=fqans); assert (null!=mapper);
-        
+
         for (int i = 0; i < fqans.length; i++)
         	log.debug("VomsGridSUser with FQANs:"+fqans[i]);
-        
+
         NDC.push("VomsGridUser constructor");
 
         String trimmedDn = dn.trim();
-        /*
-           // check that Subject DN begins with a slash and contains
-           // a "CN=..." field
-           if (! DN_RE.matcher(trimmedDn).matches())
-         throw new
-          InvalidSubjectDnSyntax(trimmedDn,
-           "subject DN does not match '^/.+/CN=' regexp.");
-
-           // check that FQANs conform to the syntax specified in:
-           // http://grid.racf.bnl.gov/GUMS/components/business/apidocs/gov/bnl/gums/FQAN.html
-           for (int i = 0; i < fqans.length; i++)
-         if (! FQAN_RE.matcher(fqans[i]).matches())
-          throw new
-           InvalidFqanSyntax(fqans[i],
-          "FQAN does not conform to spec");
-         */
         _certificateSubjectDn = trimmedDn;
 
         _fqans = fqans;
@@ -287,9 +269,75 @@ public class VomsGridUser implements GridUserInterface {
 
         NDC.pop();
     }
-
+**/
     // --- public accessor methods --- //
 
+
+    VomsGridUser(Class mapperClass) {
+        super(mapperClass);
+    }
+
+    VomsGridUser(Class mapper, String distinguishedName) {
+        super(mapper);
+        this.setDistinguishedName(distinguishedName);
+    }
+
+
+    VomsGridUser(Class mapper, String distinguishedName, String proxy) {
+        super(mapper);
+        this.setDistinguishedName(distinguishedName);
+        this.setProxyString(proxy);
+    }
+
+    VomsGridUser(Class mapper, String distinguishedName, String proxy, String[] fqans) {
+        super(mapper);
+        this.setDistinguishedName(distinguishedName);
+        this.setProxyString(proxy);
+        this.setFqanStrings(fqans);
+    }
+
+    void setFqanStrings(String[] fqans) {
+        this.fqanStrings = fqans;
+    }
+
+
+    void setFqans(List<Fqan> fqans) {
+        this.fqans = new ArrayList<Fqan>(fqans);
+    }
+
+   public void addFqan(Fqan fqan) {
+       this.fqans.add(fqan);
+   }
+
+    public List<Fqan> getFqansList() {
+        if (fqans.size()==0) {
+            fqans = new ArrayList<Fqan>(populateFqanList());
+        }
+        return fqans;
+    }
+
+    private List<Fqan> populateFqanList() {
+        ArrayList<Fqan> result = new ArrayList<Fqan>();
+        if (fqanStrings!=null) {
+            for (int i=0; i<fqanStrings.length; i++) {
+                result.add(new Fqan(fqanStrings[i]));
+            }
+        }
+        return result;
+    }
+
+
+    private String[] getFqanStrings() {
+
+        // For a set or list
+        int count = 0;
+        String[] results = new String[fqans.size()];
+        for (Iterator it = fqans.iterator(); it.hasNext(); ) {
+            results[count] = (String) it.next();
+            count++;
+        }
+        return results;
+    }
 
     /**
      * Return <code>true</code> if any VOMS attributes are stored in
@@ -412,12 +460,12 @@ public class VomsGridUser implements GridUserInterface {
     {
         String[] parts = getDn().split("/CN=", 3);
         //return parts[0]+"/CN="+parts[1];
-        
+
         //This heuristics does not works for DN with multiple CN field!
         //As the one from new CERN CA...
         //It's better to return the entire DN
         return getDn();
-        
+
     }
 
 
@@ -435,7 +483,7 @@ public class VomsGridUser implements GridUserInterface {
 
             // call LCMAPS and do the mapping
             String[] fqanStrings = new String[_fqans.length];
-                       
+
 	    for (int i = 0; i<_fqans.length; i++) {
                 fqanStrings[i] = _fqans[i].toString();
             }
@@ -463,22 +511,6 @@ public class VomsGridUser implements GridUserInterface {
         return _localUser;
     }
 
-
-    /**
-     * Return LocalUser's UID as a String.
-     * Used in the current implementation of the filesystem wrapper interface.
-     *
-     * @deprecated  This really belongs to LocalUser.
-     */
-    public String getLocalUserName()
-    {
-        try {
-            return Integer.toString(getLocalUser().getUid());
-        }
-        catch (CannotMapUserException e) {
-            return "storm";
-        }
-    }
 
 
     /**

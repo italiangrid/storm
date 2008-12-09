@@ -2,7 +2,7 @@
  * AbstractAuthorizationSource
  *
  * Copyright (c) 2005, Riccardo Murri <riccardo.murri@ictp.it>
- * 
+ *
  * You may copy, distribute and modify this file under the terms of
  * the LICENSE.txt file at the root of the StoRM backend source tree.
  *
@@ -14,8 +14,8 @@ package it.grid.storm.authorization.sources;
 
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.AuthorizationQueryInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
@@ -31,53 +31,53 @@ import it.grid.storm.namespace.StoRI;
 public class AbstractAuthorizationSource
 	implements AuthorizationQueryInterface {
 
-	public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+	public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
 		return AuthorizationDecision.NotApplicable;
 	}
 
-	public AuthorizationDecision 
-		canReadFile(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canReadFile(final GridUserInterface gridUser, final StoRI file) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+	public AuthorizationDecision
+		canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile) {
+	public AuthorizationDecision
+		canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile) {
 		return AuthorizationDecision.NotApplicable;
 	}
 
-	public AuthorizationDecision 
-		canChangeAcl(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canChangeAcl(final GridUserInterface gridUser,
 					 final StoRI fileOrDirectory) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+	public AuthorizationDecision
+		canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
 		return AuthorizationDecision.NotApplicable;
 	}
 
-	public AuthorizationDecision 
-		canListDirectory(final VomsGridUser gridUser, final StoRI directory) {
+	public AuthorizationDecision
+		canListDirectory(final GridUserInterface gridUser, final StoRI directory) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canTraverseDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canTraverseDirectory(final GridUserInterface gridUser,
 							 final StoRI directory) {
 		return AuthorizationDecision.NotApplicable;
 	}
 
-	public AuthorizationDecision 
-		canRename(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canRename(final GridUserInterface gridUser, final StoRI file) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canDelete(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canDelete(final GridUserInterface gridUser, final StoRI file) {
 		return AuthorizationDecision.NotApplicable;
 	}
-	public AuthorizationDecision 
-		canMakeDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canMakeDirectory(final GridUserInterface gridUser,
 						 final StoRI targetDirectory) {
 		return AuthorizationDecision.NotApplicable;
 	}

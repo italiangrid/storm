@@ -17,7 +17,7 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.griduser.VomsGridUser;
+
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -30,6 +30,7 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents StoRMs PtGChunkCatalog: it collects PtGChunkData and
@@ -273,7 +274,7 @@ public class PtGChunkCatalog {
      * If there are no chunks associated to the given GridUser and Colelction of
      * TSURLs, then an empty Collection is returned and a messagge gets logged.
 	 */
-	synchronized public Collection lookupReducedPtGChunkData(VomsGridUser gu, Collection c) {
+	synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
         Object[] surlsobj = (new ArrayList(c)).toArray();
         int n = surlsobj.length;
         String[] surls = new String[n];
@@ -404,7 +405,7 @@ public class PtGChunkCatalog {
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! The underlaying DAO logs proper error messagges.
 	 */
-	synchronized public void add(PtGChunkData chunkData, VomsGridUser gu) {
+	synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());

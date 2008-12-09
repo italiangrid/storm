@@ -6,8 +6,6 @@ import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Streets;
 
-import it.grid.storm.griduser.VomsGridUser;
-
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.CopyChunkData;
@@ -18,6 +16,7 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
@@ -36,7 +35,7 @@ public abstract class CopyChunk implements Delegable, Chooser {
     protected int n=-1;                     //Integer representing a progressive counter of the chunks being handled.
     protected CopyChunkData chunkData=null; //PtPChunkData that holds the specific info for this chunk
     protected RequestSummaryData rsd=null;  //RequestSummaryData containing all the statistics for the originating srmPrepareToPutRequest
-    protected VomsGridUser gu=null;         //GridUser that made the request
+    protected GridUserInterface gu=null;         //GridUser that made the request
     protected GlobalStatusManager gsm = null;
     protected boolean failure = false; //boolean that indicates if this chunks state is failure
 

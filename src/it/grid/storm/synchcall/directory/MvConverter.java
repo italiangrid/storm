@@ -23,6 +23,7 @@ import it.grid.storm.griduser.Fqan;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
 
 public class MvConverter
 {
@@ -48,7 +49,8 @@ public class MvConverter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");
@@ -61,7 +63,7 @@ public class MvConverter
         } catch (InvalidTSURLAttributesException e1) {
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
-        
+
         /* (3) toSURL*/
         TSURL toSURL = null;
         try {
@@ -69,7 +71,7 @@ public class MvConverter
         } catch (InvalidTSURLAttributesException e1) {
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
-        
+
         /* (4) TExtraInfoArray */
         ArrayOfTExtraInfo storageSystemInfo = null;
         try {
@@ -97,7 +99,7 @@ public class MvConverter
         log.debug("SrmMv: Converter :Call received :Creation of XMLRPC Output Structure! ");
         // Output structure to return to xmlrpc client
         Map outputParam = new HashMap();
-        TReturnStatus status = outputData.getStatus();    
+        TReturnStatus status = outputData.getStatus();
         status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
         //Return Output Structure

@@ -33,6 +33,7 @@ import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 public class AbortRequestConverter implements Converter
 {
@@ -50,11 +51,12 @@ public class AbortRequestConverter implements Converter
     {
         AbortRequestInputData inputData = null;
         String memberName;
-        
+
 
         // Creation of VomsGridUser
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         // (1) authorizationID (never used)
         memberName = new String("authorizationID");

@@ -26,6 +26,7 @@ import it.grid.storm.synchcall.data.exception.InvalidPutDoneInputAttributeExcept
 
 
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 public class PutDoneConverter implements Converter
 {
@@ -46,7 +47,8 @@ public class PutDoneConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         memberName = new String("authorizationID");
@@ -86,23 +88,23 @@ public class PutDoneConverter implements Converter
     public Map convertFromOutputData(OutputData absData)
     {
         log.debug("PutDoneConverter - Creation of XMLRPC Output Structure!");
-           
+
         Map outputParam = new HashMap();
-        PutDoneOutputData outputData = (PutDoneOutputData) absData; 
-        
-        
+        PutDoneOutputData outputData = (PutDoneOutputData) absData;
+
+
         /* (1) returnStatus */
         TReturnStatus returnStatus = outputData.getReturnStatus();
         if (returnStatus != null) {
             returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
         }
-        
+
         /* (2) arrayOfFileStatuses */
         ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData. getArrayOfFileStatuses();
         if (arrayOfFileStatuses != null) {
             arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
         }
-        
+
         log.debug("PutDoneConverter - Sending: " + outputParam.toString());
 
         // Return global structure.

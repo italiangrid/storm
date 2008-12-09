@@ -19,15 +19,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  * This class is part of the StoRM project.
- * 
+ *
  * This class represents the Type Converter for Rm function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the RmManager
- * 
- * Copyright: Copyright (c) 2008 
+ *
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
  *
  * @author lucamag
@@ -61,7 +62,8 @@ public class RmConverter implements Converter {
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         // Inutile
         String member_authID = new String("authorizationID");

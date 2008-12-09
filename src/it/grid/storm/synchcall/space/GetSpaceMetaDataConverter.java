@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserManager;
 
 public class GetSpaceMetaDataConverter
 {
@@ -44,7 +45,8 @@ public class GetSpaceMetaDataConverter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         memberName = new String("authorizationID");

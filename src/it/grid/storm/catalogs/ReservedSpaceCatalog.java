@@ -23,6 +23,7 @@ import it.grid.storm.common.*;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserFactory;
 
 /**
  *
@@ -34,7 +35,7 @@ public class ReservedSpaceCatalog {
    */
   private static final Logger log = Logger.getLogger("catalogs");
   private static HashSet voSA_spaceTokenSet = new HashSet();
-  private static final VomsGridUser fake_user = VomsGridUser.make("StoRM_admin");
+  private static GridUserInterface fake_user;
   private DAOFactory cf;
   private StorageSpaceDAO ssDAO;
   private Configuration config;
@@ -46,6 +47,8 @@ public class ReservedSpaceCatalog {
     log.debug("Building Reserve Space Catalog...");
     //Binding to the persistence component
     cf = PersistenceDirector.getDAOFactory();
+    //fake_user = GridUserFactory.make("StoRM_admin");
+
   }
 
   public void addStorageSpace(StorageSpaceData ssd) throws NoDataFoundException, InvalidRetrievedDataException,
@@ -182,8 +185,8 @@ public class ReservedSpaceCatalog {
 
     return result;
   }
-  
-  
+
+
   /**
   *
   * @param spaceToken TSpaceToken
@@ -222,12 +225,12 @@ public class ReservedSpaceCatalog {
 
    return result;
  }
- 
- 
-  
-  
-  
-  
+
+
+
+
+
+
 
   /**
    *
@@ -287,7 +290,7 @@ public class ReservedSpaceCatalog {
    * @param spaceAlias String
    * @return ArrayOfTSpaceToken
    */
-  public ArrayOfTSpaceToken getSpaceTokens(VomsGridUser user, String spaceAlias) {
+  public ArrayOfTSpaceToken getSpaceTokens(GridUserInterface user, String spaceAlias) {
     ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
     log.debug("Retrieving space tokens...");
@@ -539,7 +542,7 @@ public class ReservedSpaceCatalog {
   public void createVOSA_Token(String spaceTokenAlias, TSizeInBytes totalOnLineSize, String spaceFileName) {
 
     ArrayOfTSpaceToken tokenArray;
-    
+
     /*
      * Build the storage space Data
      *
@@ -685,7 +688,7 @@ public class ReservedSpaceCatalog {
    */
    public void FAKEpurgeOldVOSA_token() {
 	return;
-   } 
+   }
    public void purgeOldVOSA_token() {
     log.debug("VO SA: garbage collecting obsolete VOSA_token");
 

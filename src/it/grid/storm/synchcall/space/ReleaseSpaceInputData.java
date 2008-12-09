@@ -4,7 +4,8 @@ package it.grid.storm.synchcall.space;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStorageSystemInfo;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+//import it.grid.storm.griduser.VomsGridUser;
 
 /**
  * This class represents the SpaceReservationData associated with the SRM request, that is
@@ -22,12 +23,12 @@ import it.grid.storm.griduser.VomsGridUser;
 
 public class ReleaseSpaceInputData {
 
-    private VomsGridUser auth = null;
+    private GridUserInterface auth = null;
     private TSpaceToken spaceToken = null;
     private ArrayOfTExtraInfo storageInfo = null;
     private boolean forceFileRelease = false;
 
-    public ReleaseSpaceInputData(VomsGridUser auth, TSpaceToken spaceToken, ArrayOfTExtraInfo storageInfo,
+    public ReleaseSpaceInputData(GridUserInterface auth, TSpaceToken spaceToken, ArrayOfTExtraInfo storageInfo,
 			    boolean forceFileRelease) throws InvalidReleaseSpaceAttributesException
     {
 
@@ -46,7 +47,7 @@ public class ReleaseSpaceInputData {
     /**
      * Method that returns UserID specify in SRM request.
      */
-    public VomsGridUser getUser()
+    public GridUserInterface getUser()
     {
         	return auth;
     }

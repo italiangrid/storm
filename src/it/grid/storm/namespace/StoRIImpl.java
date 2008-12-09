@@ -205,7 +205,7 @@ public class StoRIImpl
 
     /*****************************************************************************
      *  READ METHODs
-     * @throws InvalidGetTURLProtocolException 
+     * @throws InvalidGetTURLProtocolException
      ***************************************************************************/
 
 
@@ -234,7 +234,7 @@ public class StoRIImpl
                 log.debug("<GetTURL> No matching transfer protocol Found! Returnig Error");
                 //Creation TURL with DEFAULT Transport Prefix
                 //protocolPrefix = getDefaultTransferProtocol();
-                //Change here 
+                //Change here
                 throw new InvalidGetTURLProtocolException(prefixOfAcceptedTransferProtocols);
             }
             else { //Within the request there are some protocol preferences
@@ -740,7 +740,7 @@ public class StoRIImpl
             InvalidDescendantsAuthRequestException,
             InvalidDescendantsPathRequestException,
             InvalidDescendantsFileRequestException {
-     
+
 
         ArrayList pathList = new ArrayList();
         ArrayList stoRIList = new ArrayList();
@@ -783,14 +783,7 @@ public class StoRIImpl
         }
         return stoRIList;
     }
-        
-        
-        
-        
 
-    public void porcatroia() {
-        // TODO Auto-generated method stub
-        
-    }
+
 
 }

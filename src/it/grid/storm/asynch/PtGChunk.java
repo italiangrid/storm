@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Streets;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.catalogs.RequestSummaryData;
@@ -39,6 +39,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents a chunk of an srmPrepareToGet request: it handles a single
@@ -116,7 +117,7 @@ public class PtGChunk implements Delegable, Chooser {
 
     private static Logger log = Logger.getLogger("asynch");
 
-    private VomsGridUser gu=null;        //GridUser that made the request
+    private GridUserInterface gu=null;        //GridUser that made the request
     private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest
     private PtGChunkData chunkData=null; //PtGChunkData that holds the specific info for this chunk
     private Calendar start = null; //Calendar used for jit tracking
@@ -128,7 +129,7 @@ public class PtGChunk implements Delegable, Chooser {
      * PtGChunkData about this chunk. If the supplied attributes are null,
      * an InvalidPtGChunkAttributesException is thrown.
      */
-    public PtGChunk(VomsGridUser gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
+    public PtGChunk(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
         boolean ok = (gu!=null) &&
             (rsd!=null) &&
             (chunkData!=null) &&

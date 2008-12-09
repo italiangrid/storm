@@ -34,6 +34,7 @@ import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesOutputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortFilesInputDataAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 public class AbortFilesConverter implements Converter
 {
@@ -54,7 +55,8 @@ public class AbortFilesConverter implements Converter
 
         // Creation of VomsGridUser
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         // (1) authorizationID (never used)
         memberName = new String("authorizationID");
@@ -86,7 +88,7 @@ public class AbortFilesConverter implements Converter
             e.printStackTrace();
         }
         log.debug("AbortFilesInputData Created!");
-        
+
         return inputData;
     }
 

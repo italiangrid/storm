@@ -14,15 +14,16 @@ import it.grid.storm.synchcall.data.directory.InvalidRmdirInputAttributeExceptio
 import it.grid.storm.synchcall.data.directory.RmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  * This class is part of the StoRM project.
- * 
+ *
  * This class represents the Type Converter for Rmdir function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the RmdirManager
- * 
- * Copyright: Copyright (c) 2008 
+ *
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
  *
  * @author lucamag
@@ -31,7 +32,7 @@ import it.grid.storm.xmlrpc.converter.Converter;
  */
 
 public class RmdirConverter implements Converter {
-    
+
     /**
      * Logger
      */
@@ -55,7 +56,8 @@ public class RmdirConverter implements Converter {
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");
@@ -101,7 +103,7 @@ public class RmdirConverter implements Converter {
     public Map convertFromOutputData(OutputData outputData)
     {
         log.debug("srmRm: RmdirConverter :Call received :Creation of XMLRPC Output Structure! ");
-        
+
         // Output structure to return to xmlrpc client
         Map outputParam = new HashMap();
         RmdirOutputData rmdirOutputData = (RmdirOutputData) outputData;

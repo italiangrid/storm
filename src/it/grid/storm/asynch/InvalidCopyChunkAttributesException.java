@@ -2,7 +2,7 @@ package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.CopyChunkData;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
@@ -27,7 +27,7 @@ public class InvalidCopyChunkAttributesException extends Exception {
      * CopyChunkData, as well as the int counter, that caused the exception
      * to be thrown.
      */
-    public InvalidCopyChunkAttributesException(VomsGridUser gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) {
+    public InvalidCopyChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) {
         nullGu = (gu==null);
         nullRsd = (rsd==null);
         nullChunkData = (chunkData==null);

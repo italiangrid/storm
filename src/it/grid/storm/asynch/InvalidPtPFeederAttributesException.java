@@ -1,7 +1,7 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents an Exception thrown when a PtPFeeder could not be created
@@ -21,7 +21,7 @@ public class InvalidPtPFeederAttributesException extends Exception {
      * Public constructor that requires the RequestSummaryData, the GridUser and
      * the GlobalStatusManager that caused the exception to be thrown.
      */
-    public InvalidPtPFeederAttributesException(RequestSummaryData rsd, VomsGridUser gu, GlobalStatusManager gsm) {
+    public InvalidPtPFeederAttributesException(RequestSummaryData rsd, GridUserInterface gu, GlobalStatusManager gsm) {
         nullRequestSummaryData = (rsd==null);
         nullGridUser = (gu==null);
         nullGlobalStatusManager = (gsm==null);

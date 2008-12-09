@@ -17,6 +17,8 @@ import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * This class represents the Type Converter for ReleaseSpace function .
@@ -48,30 +50,31 @@ public class ReleaseSpaceConverter implements Converter {
     {
     	log.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
     	log.debug("ReleaseSpaceConverter: Input Structure toString: "+inputParam.toString());
-    
+
     	/* Creationd of SpaceResData, INPUT STRUCTURE for */
     	/* SpaceReservationManager!			  */
     	ReleaseSpaceInputData inputData = null;
-    
+
     	// Member name definition for inputParam struct , from SRM V2.1
     	String member_authID = new String("authorizationID");
     	String member_token = new String("spaceToken");
     	String member_sysInfo = new String("storageSystemInfo");
     	String member_force = new String("forceFileRelease");
-    
+
         // String member_DN = new String("authorizationID");
-    
+
     	/* Get parameter value from struct, if defined! */
     	/* Creation of GridUser into inputStructure */
-    	VomsGridUser guser = null;
-    	guser = VomsGridUser.decode(inputParam);
-        
+    	GridUserInterface guser = null;
+    	guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
+
         /* (1) authorizationID (never used) */
         String authID = (String) inputParam.get(member_authID);
-        
+
         /* (2) spaceToken */
         TSpaceToken spaceToken = TSpaceToken.decode(inputParam,TSpaceToken.PNAME_SPACETOKEN);
-        
+
         /*
         String tokenString = (String)inputParam.get(member_token);
     	if (tokenString!=null) {
@@ -86,7 +89,7 @@ public class ReleaseSpaceConverter implements Converter {
     	    }
     	}
          */
-        
+
     	/* (3) StorageSystemInfo */
         ArrayOfTExtraInfo storageSystemInfo;
         try {
@@ -95,12 +98,12 @@ public class ReleaseSpaceConverter implements Converter {
         catch (InvalidArrayOfTExtraInfoAttributeException e) {
             storageSystemInfo = null;
         }
-    	
+
     	/* (4) ForceFileRelease */
     	Boolean force = (Boolean)inputParam.get(member_force);
         if (force == null)
             force = new Boolean(false);
-    
+
     	/* Creation of ReleaseSpaceInputStructure */
     	try {
     	    inputData = new ReleaseSpaceInputData(guser, spaceToken, storageSystemInfo, force.booleanValue());
@@ -108,7 +111,7 @@ public class ReleaseSpaceConverter implements Converter {
     	catch (InvalidReleaseSpaceAttributesException e) {
     	    log.error("Error Creating inputData for ReleaseSpace"+e);
     	}
-    
+
     	//Return ReleaseSpaceData Data Created
     	return inputData;
 
@@ -118,13 +121,13 @@ public class ReleaseSpaceConverter implements Converter {
     public Map convertFromOutputData(OutputData data) {
     	log.debug("releaseSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
         ReleaseSpaceOutputData outputData = (ReleaseSpaceOutputData) data;
-        
+
     	//Creation of new Hashtable to return
     	Map outputParam = new HashMap();
-    	
+
     	TReturnStatus returnStatus = outputData.getStatus();
         returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-      
+
     	//Return output Parameter structure
     	return outputParam;
     }

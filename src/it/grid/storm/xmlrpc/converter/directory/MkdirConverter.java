@@ -14,10 +14,11 @@ import it.grid.storm.synchcall.data.directory.InvalidMkdirInputAttributeExceptio
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
  *
  * @author lucamag
@@ -51,7 +52,8 @@ public class MkdirConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");
@@ -88,7 +90,7 @@ public class MkdirConverter implements Converter
         log.debug("SrmMkdir: Converter :Call received :Creation of XMLRPC Output Structure! ");
 
         Map outputParam = new HashMap();
-        
+
         MkdirOutputData odata = (MkdirOutputData) outputData;
         TReturnStatus outputStatus = odata.getStatus();
 

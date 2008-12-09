@@ -9,7 +9,7 @@ import java.util.List;
  * This class is part of the StoRM project.
  * Copyright (c) 2008 INFN-CNAF.
  * <p>
- * 
+ *
  * This class implements a concrete strategy to provide a RoundRobin policy.
  *
  * Authors:
@@ -20,19 +20,19 @@ import java.util.List;
  */
 
 public class GFTPLoadStrategy <E extends Node> extends RoundRobinStrategy<E> {
-    
 
-    public GFTPLoadStrategy(List<E> pool) { 
+
+    public GFTPLoadStrategy(List<E> pool) {
         super(pool);
-    }    
-        
+    }
+
     public E getNextElement() {
         //Reset index if over the pool size.
         // % Not used to avoid overflow.
         int min = -1;
         int minIndex = 0;
         for(E node:nodePool){
-            
+
             //This cast should not be done here
             int ftpProc = ((FTPNode)node).getFTPProc();
             if( (ftpProc!=-1) &&
@@ -41,15 +41,15 @@ public class GFTPLoadStrategy <E extends Node> extends RoundRobinStrategy<E> {
                 minIndex = nodePool.indexOf(node);
             }
         }
-        
+
         return nodePool.get(minIndex);
 
     }
 
     public void notifyChangeInPool() {
         //Nothing to do
-        
+
     }
-    
+
 
 }

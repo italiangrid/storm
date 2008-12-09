@@ -14,12 +14,13 @@ import it.grid.storm.synchcall.data.directory.InvalidMvInputAttributeException;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
- * 
+ *
  * This class represents the Type Converter for SrmMv function .
  * This class have get an input data from xmlrpc call anc convert it into a
  * StoRM Type that can be used to invoke the MvExecutor.
@@ -53,7 +54,8 @@ public class MvConverter implements Converter
 
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String member_authID = new String("authorizationID");
@@ -66,7 +68,7 @@ public class MvConverter implements Converter
         } catch (InvalidTSURLAttributesException e1) {
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
-        
+
         /* (3) toSURL*/
         TSURL toSURL = null;
         try {
@@ -74,7 +76,7 @@ public class MvConverter implements Converter
         } catch (InvalidTSURLAttributesException e1) {
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
-        
+
         /* (4) TExtraInfoArray */
         ArrayOfTExtraInfo storageSystemInfo = null;
         try {
@@ -103,7 +105,7 @@ public class MvConverter implements Converter
         // Output structure to return to xmlrpc client
         Map outputParam = new HashMap();
         MvOutputData outputData = (MvOutputData) data;
-        TReturnStatus status = outputData.getStatus();    
+        TReturnStatus status = outputData.getStatus();
         status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
         //Return Output Structure

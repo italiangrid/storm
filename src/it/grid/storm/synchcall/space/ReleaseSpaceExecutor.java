@@ -10,7 +10,7 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserException;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
@@ -50,7 +50,7 @@ public class ReleaseSpaceExecutor
          * Check input parameter.
          *
          *  Validate ReleaseSpaceInputData.
-         *  The check is done at this level to separate 
+         *  The check is done at this level to separate
          *  internal StoRM logic from xmlrpc specific operation.
          */
 
@@ -61,11 +61,11 @@ public class ReleaseSpaceExecutor
             return outputData;
         }
 
-        /** 
-         *  Check if GridUser in InputData is not null, 
+        /**
+         *  Check if GridUser in InputData is not null,
          *  otherwise return with an error message.
          */
-        VomsGridUser user = (VomsGridUser) inputData.getUser();
+        GridUserInterface user = inputData.getUser();
         if (user == null) {
             log.debug("Release Space: Unable to get user credential. ");
             returnStatus = manageStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential");
@@ -101,8 +101,8 @@ public class ReleaseSpaceExecutor
         log.debug("ReleaseExecutor: space data not null retrieved.");
 
         /**
-         * With forceFileRelease = false, 
-         * the space is not released if there are still file pinned on it. 
+         * With forceFileRelease = false,
+         * the space is not released if there are still file pinned on it.
          */
         if (!forceFileRelease) {
             /**
@@ -143,8 +143,8 @@ public class ReleaseSpaceExecutor
         	 log.info("srmReleaseSpace: <"+user+"> Request for [spacetoken:"+inputData.getSpaceToken()+"] successfully done with: [status:"+returnStatus+"]");
         else
         	 log.error("srmReleaseSpace: <"+user+"> Request for [spacetoken:"+inputData.getSpaceToken()+"] for failed with: [status:"+returnStatus+"]");
-        
-        
+
+
         return outputData;
     }
 
@@ -197,5 +197,5 @@ public class ReleaseSpaceExecutor
         }
         return returnStatus;
     }
-             
+
 }

@@ -19,6 +19,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 
 public class PingConverter
 {
@@ -32,7 +33,8 @@ public class PingConverter
 
         /* Retrieve the Requestor */
         GridUserInterface requestor = null;
-        requestor = VomsGridUser.decode(inputParam);
+        requestor = GridUserManager.decode(inputParam);
+        //requestor = VomsGridUser.decode(inputParam);
 
         /* Retrieve the String AuthorizationID */
         String authorizationID = (String) inputParam.get("authorizationID");

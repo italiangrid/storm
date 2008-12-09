@@ -27,6 +27,7 @@ import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.griduser.GridUserManager;
 
 public class AbortRequestConverter
 {
@@ -44,11 +45,12 @@ public class AbortRequestConverter
     {
         AbortRequestInputData inputData = null;
         String memberName;
-        
+
 
         // Creation of VomsGridUser
         GridUserInterface guser = null;
-        guser = VomsGridUser.decode(inputParam);
+        guser = GridUserManager.decode(inputParam);
+        //guser = VomsGridUser.decode(inputParam);
 
         // (1) authorizationID (never used)
         memberName = new String("authorizationID");

@@ -6,10 +6,10 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.StoRI;
 
 import org.apache.log4j.Logger;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  *
@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 
 
 public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
- 
+
 
     // --- private --- //
 
@@ -45,8 +45,8 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
 
 
     private AuthorizationDecision ExamineAuthorization(final String whoCalls,
-            final VomsGridUser gridUser, 
-            final StoRI fileOrDirectory, 
+            final GridUserInterface gridUser,
+            final StoRI fileOrDirectory,
             final FilesystemPermission queryPerm,
             final boolean ancestor) {
 
@@ -115,55 +115,55 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
 
     // --- public --- //
 
-    public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+    public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
         return __response;
     }
 
-    public AuthorizationDecision canReadFile(final VomsGridUser gridUser, final StoRI file) {
+    public AuthorizationDecision canReadFile(final GridUserInterface gridUser, final StoRI file) {
 
-        return ExamineAuthorization("canReadFile", gridUser, file, 
+        return ExamineAuthorization("canReadFile", gridUser, file,
                                     FilesystemPermission.Read, THIS);
 
     }
 
-    public AuthorizationDecision canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+    public AuthorizationDecision canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
 
-        return ExamineAuthorization("canWriteFile", gridUser, existingFile, 
+        return ExamineAuthorization("canWriteFile", gridUser, existingFile,
                                     FilesystemPermission.Write, THIS);
 
     }
 
-    public AuthorizationDecision canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile) {
+    public AuthorizationDecision canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile) {
         // puedo crear un fichero si puedo escribir en el directorio
         //
 
-        return ExamineAuthorization("canCreateNewFile", gridUser, targetFile, 
+        return ExamineAuthorization("canCreateNewFile", gridUser, targetFile,
                                     FilesystemPermission.Write, PARENT);
 
     }
 
-    public AuthorizationDecision canChangeAcl(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+    public AuthorizationDecision canChangeAcl(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
         return __response;
     }
 
-    public AuthorizationDecision canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+    public AuthorizationDecision canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
         return __response;
     }
 
-    public AuthorizationDecision canListDirectory(final VomsGridUser gridUser, final StoRI targetDirectory) {
-        return ExamineAuthorization("canListDirectory", gridUser, targetDirectory, 
+    public AuthorizationDecision canListDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
+        return ExamineAuthorization("canListDirectory", gridUser, targetDirectory,
                                     FilesystemPermission.List, THIS);
 
     }
 
-    public AuthorizationDecision canTraverseDirectory(final VomsGridUser gridUser, final StoRI targetDirectory) {
+    public AuthorizationDecision canTraverseDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
 
-        return ExamineAuthorization("canTraverseDirectory", gridUser, targetDirectory, 
+        return ExamineAuthorization("canTraverseDirectory", gridUser, targetDirectory,
                                     FilesystemPermission.Traverse, THIS);
 
     }
 
-    public AuthorizationDecision canRename(final VomsGridUser gridUser, final StoRI file) {
+    public AuthorizationDecision canRename(final GridUserInterface gridUser, final StoRI file) {
         // renombrar un fichero podemos implementarlo como:
         // 1. poder leer la entrada del directorio
         // 2. poder escribir la entrada del directorio
@@ -173,16 +173,16 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
 
     }
 
-    public AuthorizationDecision canDelete(final VomsGridUser gridUser, final StoRI file) {
+    public AuthorizationDecision canDelete(final GridUserInterface gridUser, final StoRI file) {
         // para que se pueda borrar un objeto, miro si puedo leer y escribir en el padre
-        // 
+        //
 
         return ExamineAuthorization("canDelete", gridUser, file,
                                     FilesystemPermission.ReadWrite, PARENT);
 
     }
 
-    public AuthorizationDecision canMakeDirectory(final VomsGridUser gridUser, final StoRI targetDirectory) {
+    public AuthorizationDecision canMakeDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
 
         return ExamineAuthorization("canMakeDirectory", gridUser, targetDirectory,
                                     FilesystemPermission.Write, PARENT);

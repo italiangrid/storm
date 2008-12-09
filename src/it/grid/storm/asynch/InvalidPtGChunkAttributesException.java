@@ -2,7 +2,8 @@ package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.PtGChunkData;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+//import it.grid.storm.griduser.VomsGridUser;
 
 /**
  * This class represents an Exceptin thrown when a PtGChunk is created with
@@ -21,11 +22,11 @@ public class InvalidPtGChunkAttributesException extends Exception {
     private boolean nullGlobalStatusManager = true; //true if gsm is null
 
     /**
-     * Constructor that requires the GridUser, RequestSummaryData, 
+     * Constructor that requires the GridUser, RequestSummaryData,
      * PtGChunkData and GlobalStatusManager that caused the exception to be
      * thrown.
      */
-    public InvalidPtGChunkAttributesException(VomsGridUser gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) {
+    public InvalidPtGChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) {
         nullGu = (gu==null);
         nullRsd = (rsd==null);
         nullChunkData = (chunkData==null);
