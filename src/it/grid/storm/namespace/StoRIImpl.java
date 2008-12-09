@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.commons.logging.*;
+
+import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.catalogs.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.filesystem.*;
@@ -250,24 +253,41 @@ public class StoRIImpl
                 }
             }
             if (protocolPrefix != null) {
-              resultTURL = buildTURL(protocolPrefix, getPFN());
+              resultTURL = buildTURL(protocolPrefix, getPFN(), vfs);
             }
             else { //No match found!
-                    log.error("NO MATCH with Protocol Preferences and Procol Managed!");
-                    /**
-                     * @todo : Manage this exceptional situation!!!
-                     */
+                    log.error("stori:No match with Protocol Preferences and Procol Managed!");
+                    throw new InvalidGetTURLProtocolException(prefixOfAcceptedTransferProtocols); 
                 }
         }
         return resultTURL;
     }
 
 
-    private static TTURL buildTURL(TransportPrefix transportPrefix, PFN physicalFN) throws InvalidProtocolForTURLException {
+    private static TTURL buildTURL(TransportPrefix transportPrefix, PFN physicalFN, VirtualFSInterface vfs) throws InvalidProtocolForTURLException {
 
       TTURL result = null;
       Protocol protocol = transportPrefix.getProtocol();
+      
       Authority authority = transportPrefix.getAuthority();
+      //From 1.4, Balancer can be used, at least for GSIFTP protocol, 
+      //to manage pool of servers (authority)
+      // If this is the case, ask the balancer which is the right server
+      
+      //@todo Change protocol with an enum patter, more tape safe!
+      try {
+        if (vfs.getProtocolBalancer(protocol) != null) {
+              Balancer<FTPNode> bal = new Balancer<FTPNode>();
+              FTPNode node = bal.getNextElement();
+              authority = new Authority(node.getHostName(), node.getPort());
+          }
+    } catch (NamespaceException e) {
+        //log.debug("Error getting the protocol balancer.");
+    }
+          
+      
+      
+      
       switch (protocol.getProtocolIndex())  {
         case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
         case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
