@@ -33,6 +33,7 @@ import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.catalogs.*;
 import it.grid.storm.common.StorageSpaceData;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
@@ -45,7 +46,10 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
     //TODO DEFINE THE TIMEOUT FROM CONFIGURATION
     // CMQ sotto i 3 minuti per discorso tcp timeout?
-    private static int maxLoopTimes = 100;
+    
+    static Configuration  config        = Configuration.getInstance();
+    private static int maxLoopTimes = config.getMaxLoop();
+    //private static int maxLoopTimes = 100;
     
     private NamespaceInterface namespace;
     	
@@ -275,14 +279,24 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     log.debug("Abort: I'm waiting...");
                     //this.wait(1000);
                     //Wait for 1 second
-                    long start =  System.currentTimeMillis();
-                    long index = 0;
-                    while(index<start+1000)
-                        index = System.currentTimeMillis();
+                    //long start =  System.currentTimeMillis();
+                    //long index = 0;
+                    //while(index<start+1000)
+                    //    index = System.currentTimeMillis();
                // } catch (InterruptedException e) {
                //     // TODO Auto-generated catch block
                //     e.printStackTrace();
                // }
+                    
+                    
+                    try {
+                        long numMillisecondsToSleep = 100; // 1 seconds
+                        Thread.sleep(numMillisecondsToSleep);
+                    } catch (InterruptedException e) {
+
+                    }
+                    
+                    
                     log.debug("PtPAbortExecutor: Wake up! It's time to work...");
             }
             

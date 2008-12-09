@@ -23,6 +23,7 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.catalogs.*;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
@@ -32,8 +33,9 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
     
     //TODO DEFINE THE TIMEOUT FROM CONFIGURATION
     // CMQ sotto i 3 minuti per discorso tcp timeout?
-    
-    private static int maxLoopTimes = 100;
+    static Configuration  config        = Configuration.getInstance();
+    private static int maxLoopTimes = config.getMaxLoop();
+    //private static int maxLoopTimes = 100;
     
     private static final Logger log = Logger.getLogger("dataTransfer");
     private RequestSummaryCatalog summaryCat = null;
@@ -248,10 +250,20 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                 //Sleep 1 Second
                 log.debug("PtGAbortExecutor: I'm waiting...");
                 //Wait for 1 second
-                long start =  System.currentTimeMillis();
-                long index = 0;
-                while(index<start+1000)
-                    index = System.currentTimeMillis();
+                //long start =  System.currentTimeMillis();
+                //long index = 0;
+                //while(index<start+1000)
+                //    index = System.currentTimeMillis();
+                
+                try {
+                    long numMillisecondsToSleep = 100; // 0.1 seconds
+                    Thread.sleep(numMillisecondsToSleep);
+                } catch (InterruptedException e) {
+
+                }
+                
+                
+                
                 log.debug("PtGAbortExecutor: Wake up! It's time to work...");
             }
             

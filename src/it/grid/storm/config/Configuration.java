@@ -2541,7 +2541,18 @@ public class Configuration {
     }
 
 
+    public int getMaxLoop() {
+        String key = "abort.maxloop";
+        if (!cr.getConfiguration().containsKey(key)) {
+          //return default
+          return 1;
+        } else {
+          //load from external source
+          return cr.getConfiguration().getInt(key);
+        }
 
+    }
+    
     public String toString() {
         StringBuffer sb = new StringBuffer();
         try {
