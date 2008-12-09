@@ -190,6 +190,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         // the two boolean variables "requestFailure" and "requestSuccess" are correctly set.
         
         for (int i = 0; i < num_SURLs; i++) {
+            
             TSURL surl = (TSURL) listOfSURLs.get(i);
             log.debug(funcName + "Checking SURL[" + i + "]: " + surl.toString());
 
@@ -276,6 +277,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         // NEW: if the SA is T1D1, an hidden file is created.
         VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
         for (int i=0; i<spaceAvailableSURLs.size(); i++) {
+            
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
             StoRI stori = null;
@@ -301,11 +303,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                 }
                 volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
             }
-            
-            
-            
-            
-            
             
             
             
@@ -348,6 +345,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         VirtualFSInterface fs = null;
         
         for (int i=0; i<spaceAvailableSURLs.size(); i++) {
+            
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
             StoRI stori = null;
@@ -394,6 +392,22 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                     log.debug("T1D1Plugin error in managing the file migration.");
                     
             }
+        
+            
+            /**
+             * If Storage Area hard limit is enabled, update space on DB  
+             */
+            try {
+                if ( fs.getProperties().isOnlineSpaceLimited()) {
+                    SpaceHelper sh = new SpaceHelper();
+                    //Update the used space into Database
+                    sh.decreaseFreeSpaceForSA(log, funcName, user, spaceAvailableSURLs);
+                }
+            } catch (NamespaceException e) {
+                log.warn(funcName+"Not able to build the virtual fs properties for checking Storage Area size enforcement!");
+            }
+        
+        
         }
         
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
@@ -406,11 +420,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         }
         
         
-        SpaceHelper sh = new SpaceHelper();
         
-        //Update the used space into Database
-        sh.decreaseFreeSpaceForSA(log, funcName, user, spaceAvailableSURLs);
-        
+    
         
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(arrayOfFileStatus);

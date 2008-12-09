@@ -35,9 +35,9 @@ import it.grid.storm.catalogs.*;
 import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
-import it.grid.storm.synchcall.space.ReserveSpaceExecutor;
 import it.grid.storm.griduser.CannotMapUserException;
 
 public class PtPAbortExecutor implements AbortExecutorInterface {
@@ -399,7 +399,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
                 TSpaceToken sToken = chunkData.spaceToken();
                 TReturnStatus status;
-                ReserveSpaceExecutor rexec = new ReserveSpaceExecutor();
+                ReserveSpaceCommand rexec = new ReserveSpaceCommand();
                 
                 //Space Token specified in the request
                 log.debug("PtPAbortExecutor: Space token found.");
