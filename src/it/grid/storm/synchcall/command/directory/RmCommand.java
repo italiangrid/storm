@@ -14,6 +14,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -237,8 +238,7 @@ public class RmCommand implements Command {
                         returnStatus = manageAuthorizedRM(lUser, surl, stori);
                         if (returnStatus.getStatusCode() == TStatusCode.SRM_SUCCESS) {
                             globalFailure = false;
-                            log
-                                    .info("srmRm: <"
+                            log.info("srmRm: <"
                                             + user
                                             + "> Removing SURL "
                                             + i
@@ -247,10 +247,21 @@ public class RmCommand implements Command {
                                             + " [SURL:] successfully done with [status: "
                                             + returnStatus.toString() + "]");
                             
-                            
-                            //Update the free size for each storage area
-                            SpaceHelper sp = new SpaceHelper();
-                            sp.increaseFreeSpaceForSA(log, funcName, user, surl, fileSize);
+                            /**
+                             * If Storage Area hard limit is enabled, update space on DB  
+                             */
+                            try {
+                                VirtualFSInterface fs = stori.getVirtualFileSystem();
+                                if ( (fs!=null) && ( fs.getProperties().isOnlineSpaceLimited()) ){
+                                    SpaceHelper sh = new SpaceHelper();
+                                    //Update the used space into Database
+                                    sh.increaseFreeSpaceForSA(log, funcName, user, surl, fileSize);
+                                }
+                            } catch (NamespaceException e) {
+                                log.warn(funcName+"Not able to build the virtual fs properties for checking Storage Area size enforcement!");
+                            }
+                          
+                           
                             
                             
                         } else
