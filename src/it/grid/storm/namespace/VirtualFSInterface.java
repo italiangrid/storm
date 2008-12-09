@@ -143,6 +143,7 @@ public interface VirtualFSInterface {
 
     public Balancer getProtocolBalancer(TSpaceToken token, Protocol protocol) throws NamespaceException;
 
+    public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException;
 
 
 }
