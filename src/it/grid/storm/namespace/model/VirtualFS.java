@@ -1134,4 +1134,9 @@ public class VirtualFS implements VirtualFSInterface {
     return null;
   }
 
+  public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException {
+    /** @todo IMPLEMENT */
+    return null;
+  }
+
 }
