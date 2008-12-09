@@ -12,35 +12,16 @@
 package it.grid.storm.xmlrpc;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.common.TypeConverterFactoryImpl;
-import org.apache.xmlrpc.server.PropertyHandlerMapping;
-import org.apache.xmlrpc.server.XmlRpcServer;
-import org.apache.xmlrpc.webserver.WebServer;
 
-import it.grid.storm.common.HostLookup;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.*;
-import it.grid.storm.synchcall.directory.*;
-import it.grid.storm.synchcall.discovery.DiscoveryManager;
-import it.grid.storm.synchcall.discovery.DiscoveryManagerImpl;
-import it.grid.storm.synchcall.discovery.PingConverter;
-import it.grid.storm.synchcall.discovery.PingInputData;
-import it.grid.storm.synchcall.discovery.PingOutputData;
-import it.grid.storm.synchcall.space.*;
-import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.dataTransfer.*;
-import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ConveterFactory;
 import it.grid.storm.health.BookKeeper;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.common.OperationType;
-import it.grid.storm.health.LogEvent;
 
 public class XMLRPCMethods {
     /**
