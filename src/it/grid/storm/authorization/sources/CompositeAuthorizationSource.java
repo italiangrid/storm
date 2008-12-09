@@ -15,8 +15,8 @@
  * methods; to get the real Java source file, preprocess this one
  * with:
  *
- *    cpp -P -C -o CompositeAuthorizationSource.java \
- *        CompositeAuthorizationSource.jappo
+ *    cpp -P -C -o CompositeAuthorizationSource.java  *        CompositeAuthorizationSource.jappo
+o
  *
  * Or you can use the Jappo Java preprocessor (see
  * http://jappo.opensourcefinland.org/), which has cpp-compatible
@@ -128,8 +128,8 @@ public class CompositeAuthorizationSource
     // file in CVS... I could find no way of doing this other than
     // preprocessor macros...
     //
-    // cpp -P -C CompositeAuthorizationSource.jappo \
-    //     -o CompositeAuthorizationSource.java
+    // cpp -P -C CompositeAuthorizationSource.jappo     //     -o CompositeAuthorizationSource.java
+
     //
     // WARNING: do not end macro with a ';'
     // or 'javac' will complain about
