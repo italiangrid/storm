@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import org.apache.log4j.*;
 import it.grid.storm.asynch.AdvancedPicker;
 
-import it.grid.storm.synchcall.SynchCallServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.config.Configuration;
