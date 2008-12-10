@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2006 U (http://www.altova.com) by pestastronzi (prova-del-programma) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 	<xs:element name="aclMode">
 		<xs:simpleType>
@@ -223,7 +222,7 @@
 		<xs:simpleContent>
 			<xs:extension base="xs:long">
 				<xs:attribute name="unit" type="UnitType" use="optional" default="TB"/>
-				<xs:attribute name="hard-limited" type="xs:boolean" use="required"/>
+				<xs:attribute name="limited-size" type="xs:boolean" use="required"/>
 			</xs:extension>
 		</xs:simpleContent>
 	</xs:complexType>

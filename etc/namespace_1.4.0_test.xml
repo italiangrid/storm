@@ -12,7 +12,7 @@
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>
           <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" hard-limited="true">500</TotalOnlineSize>
+          <TotalOnlineSize unit="GB" limited-size="true">500</TotalOnlineSize>
           <TotalNearlineSize unit="GB">0</TotalNearlineSize>
       </properties>
       <capabilities>
@@ -78,7 +78,7 @@
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>
           <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" hard-limited="false">500</TotalOnlineSize>
+          <TotalOnlineSize unit="GB" limited-size="false">500</TotalOnlineSize>
           <TotalNearlineSize unit="GB">0</TotalNearlineSize>
       </properties>
       <capabilities>
