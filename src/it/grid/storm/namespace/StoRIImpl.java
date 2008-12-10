@@ -276,15 +276,15 @@ public class StoRIImpl
       
       //@todo Change protocol with an enum patter, more tape safe!
       try {
-        if (vfs.getProtocolBalancer(protocol) != null) {
+          if (vfs.getProtocolBalancer(protocol) != null) {
               Balancer<FTPNode> bal = new Balancer<FTPNode>();
               FTPNode node = bal.getNextElement();
               authority = new Authority(node.getHostName(), node.getPort());
           }
-    } catch (NamespaceException e) {
-        //log.debug("Error getting the protocol balancer.");
-    }
-          
+      } catch (NamespaceException e) {
+          //log.debug("Error getting the protocol balancer.");
+      }
+
       
       
       
