@@ -6,6 +6,7 @@ import java.util.Map;
 import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.authz.sa.*;
 import it.grid.storm.authz.sa.test.MockSpaceAuthz;
+import it.grid.storm.srm.types.TSpaceToken;
 
 
 public class AuthzDirector {
@@ -48,7 +49,7 @@ public class AuthzDirector {
      * PUBLIC METHODS
      */
 
-    public static SpaceAuthzInterface getSpaceAuthz(String token) {
+    public static SpaceAuthzInterface getSpaceAuthz(TSpaceToken token) {
         /** @todo IMPLEMENT */
         SpaceAuthzInterface spaceAuthz = new MockSpaceAuthz();
         return spaceAuthz;
