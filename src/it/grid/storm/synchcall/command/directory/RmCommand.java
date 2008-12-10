@@ -2,12 +2,16 @@ package it.grid.storm.synchcall.command.directory;
 
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -21,6 +25,7 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.data.InputData;
@@ -101,7 +106,7 @@ public class RmCommand implements Command {
          * Check if GridUser in RMInputData is not null, otherwise return with
          * an error message.
          */
-        VomsGridUser user = (VomsGridUser) inputData.getUser();
+        GridUserInterface user = (GridUserInterface) inputData.getUser();
         if (user == null) {
             log.debug("srmRm: Unable to get user credential. ");
             try {
@@ -218,6 +223,40 @@ public class RmCommand implements Command {
                         failure = true;
                     }
                 }
+                
+                
+                if(!failure) {
+                    
+                    /**
+                     * From version 1.4
+                     * Add the control for Storage Area 
+                     * using the new authz for space component.
+                     */
+                    
+                    SpaceHelper sp = new SpaceHelper();
+                    TSpaceToken token = sp.getTokenFromStoRI(log, stori);
+                    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+                    
+                    if( ! (spaceAuth.authorize(user, SRMSpaceRequest.RM)) ) { 
+                        //User not authorized to perform RM request on the storage area
+                        log.debug("srmRm: User not authorized to perform srmRm request on the storage area: "+token);
+                        try {
+                            globalStatus = new TReturnStatus(
+                                    TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                    ": User not authorized to perform srmRm request on the storage area: " +token);
+                            log.error("srmRm: <> Request for [SURL:+] failed with [status: "
+                                    + globalStatus.toString() + "]");
+                        } catch (InvalidTReturnStatusAttributeException ex1) {
+                            log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
+                        }
+
+                        outputData.setStatus(globalStatus);
+                        outputData.setSurlStatus(null);
+
+                        return outputData;
+                    }
+                }
+                
 
                 if (!failure) {
                     AuthorizationDecision deleteAuth = AuthorizationCollector

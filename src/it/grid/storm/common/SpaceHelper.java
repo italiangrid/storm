@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -16,6 +17,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
 
 public class SpaceHelper {
     
@@ -33,7 +35,7 @@ public class SpaceHelper {
      */
     
     private void updateFreeSpaceForSA(Logger log,
-            String funcName,VomsGridUser user, TSURL surl, int operation, long filesize) {
+            String funcName,GridUserInterface user, TSURL surl, int operation, long filesize) {
         
         VirtualFSInterface fs = null;
         
@@ -184,7 +186,7 @@ public class SpaceHelper {
      * @param fileSize
      */
     public void increaseFreeSpaceForSA(Logger log,
-            String funcName,VomsGridUser user, TSURL surl, long fileSize) {
+            String funcName,GridUserInterface user, TSURL surl, long fileSize) {
         
         updateFreeSpaceForSA(log, funcName, user, surl, SpaceHelper.ADD, fileSize);
     
@@ -240,6 +242,31 @@ public class SpaceHelper {
             return spaceData.getUnusedSizes().value();
         else 
             return -1 ;
+        
+    }
+    
+    public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
+        
+        log.debug("SpaceHelper: getting space token from StoRI");
+        TSpaceToken token = TSpaceToken.makeEmpty();
+        VirtualFSInterface fs = stori.getVirtualFileSystem();
+        
+        // Get StorageSpaceData from the database
+        String SSDesc;
+        StorageSpaceData spaceData = null;
+
+        try {
+            SSDesc = fs.getSpaceTokenDescription();
+            spaceData = fs.getSpaceByAlias(SSDesc);
+
+        } catch (NamespaceException e1) {
+            log.error("Unable to create storage space data", e1);
+        }
+        
+        if(spaceData != null) 
+            token = spaceData.getSpaceToken();
+        
+        return token;
         
     }
 

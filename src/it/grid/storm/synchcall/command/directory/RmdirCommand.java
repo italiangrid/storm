@@ -1,16 +1,17 @@
 package it.grid.storm.synchcall.command.directory;
 
-import org.apache.log4j.Logger;
-//import com.sun.org.apache.xml.internal.utils.NameSpace;
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.common.SRMConstants;
+import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -18,6 +19,7 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DirectoryCommand;
@@ -153,7 +155,41 @@ public class RmdirCommand extends DirectoryCommand implements Command
         if (recursive == null) recursive = new Boolean(SRMConstants.recursiveFlag);
 
         // Grid User Identity
-        VomsGridUser user = (VomsGridUser) guser;
+        GridUserInterface user =  guser;
+        
+        
+        /**
+         * From version 1.4
+         * Add the control for Storage Area 
+         * using the new authz for space component.
+         */
+        
+        SpaceHelper sp = new SpaceHelper();
+        TSpaceToken token = sp.getTokenFromStoRI(log, stori);
+        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+        
+        if( ! (spaceAuth.authorize(user, SRMSpaceRequest.RMD)) ) { 
+            //User not authorized to perform RM request on the storage area
+            log.debug("srmRmdir: User not authorized to perform srmRmdir request on the storage area: "+token);
+            try {
+                returnStatus = new TReturnStatus(
+                        TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                        ": User not authorized to perform srmRmdir request on the storage area: " +token);
+                log.error("srmRmdir: <> Request for [SURL:"+surl+"] failed with [status: "
+                        + returnStatus.toString() + "]");
+            } catch (InvalidTReturnStatusAttributeException ex1) {
+                log.error("srmRmdir: <> Request for [SURL="+surl+"] failed. Error creating returnStatus " + ex1);
+            }
+            try {
+                outData  = new RmdirOutputData(returnStatus);
+            } catch (InvalidRmOutputAttributeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return outData;
+           
+        }
+        
         
      
         boolean failure = false;

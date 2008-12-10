@@ -2,6 +2,10 @@ package it.grid.storm.synchcall.command.directory;
 
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
@@ -15,6 +19,7 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DirectoryCommand;
@@ -131,6 +136,40 @@ public class MkdirCommand extends DirectoryCommand implements Command
          * Construction of AuthZ request
          */
         VomsGridUser user = (VomsGridUser) guser;
+        
+        
+        /**
+         * From version 1.4
+         * Add the control for Storage Area 
+         * using the new authz for space component.
+         */
+        
+        SpaceHelper sp = new SpaceHelper();
+        TSpaceToken token = sp.getTokenFromStoRI(log, stori);
+        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+        
+        if( ! (spaceAuth.authorize(guser, SRMSpaceRequest.MD)) ) { 
+            //User not authorized to perform RM request on the storage area
+            log.debug("srmMkdir: User not authorized to perform srmMkdir request on the storage area: "+token);
+            try {
+                returnStatus = new TReturnStatus(
+                        TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                        ": User not authorized to perform srmMkdir request on the storage area: " +token);
+                log.error("srmMkdir: <> Request for [SURL:"+surl+"] failed with [status: "
+                        + returnStatus.toString() + "]");
+            } catch (InvalidTReturnStatusAttributeException ex1) {
+                log.error("srmMkdir: <> Request for [SURL:"+surl+"] failed. Error creating returnStatus " + ex1);
+            }
+
+            outData = new MkdirOutputData(returnStatus);
+            return outData;
+        }
+        
+        
+        
+        
+        
+        
         AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canMakeDirectory(user, stori);
 
         if ((mkdirAuth != null) && (mkdirAuth.isPermit())) {
@@ -167,6 +206,12 @@ public class MkdirCommand extends DirectoryCommand implements Command
         boolean failure = false;
         String explanation = "";
         TStatusCode statusCode = TStatusCode.EMPTY;
+        
+        
+        
+        
+        
+        
 
         LocalFile parent = file.getParentFile();
         if (parent != null) {

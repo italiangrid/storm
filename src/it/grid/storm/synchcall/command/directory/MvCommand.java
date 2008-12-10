@@ -3,8 +3,12 @@ package it.grid.storm.synchcall.command.directory;
 import org.apache.log4j.Logger;
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -18,6 +22,7 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DirectoryCommand;
@@ -155,6 +160,35 @@ public class MvCommand extends DirectoryCommand implements Command
             return outputData;
         }
 
+        
+        /**
+         * From version 1.4
+         * Add the control for Storage Area 
+         * using the new authz for space component.
+         */
+        
+        SpaceHelper sp = new SpaceHelper();
+        TSpaceToken token = sp.getTokenFromStoRI(log, fromStori);
+        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+        
+        if( ! (spaceAuth.authorize(guser, SRMSpaceRequest.MV)) ) { 
+            //User not authorized to perform RM request on the storage area
+            log.debug("srmMv: User not authorized to perform srmMv request on the storage area: "+token);
+            try {
+                returnStatus = new TReturnStatus(
+                        TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                        ": User not authorized to perform srmMv request on the storage area: " +token);
+                log.error("srmMv: <> Request for [fromSURL:"+fromSURL+"] failed with [status: "
+                        + returnStatus.toString() + "]");
+            } catch (InvalidTReturnStatusAttributeException ex1) {
+                log.error("srmMv: <> Request for [fromSURL:"+fromSURL+"] failed. Error creating returnStatus " + ex1);
+            }
+
+            outputData.setStatus(returnStatus);
+            return outputData;
+        }
+        
+        
         // Get ACL mode from StoRI (AoT or JiT)
         boolean hasJiTACL = fromStori.hasJustInTimeACLs();
 
