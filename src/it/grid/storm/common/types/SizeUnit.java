@@ -14,9 +14,11 @@ public abstract class SizeUnit implements Serializable {
 
     public static SizeUnit createSizeUnit(String unit) {
       String input = unit.toLowerCase();
-      if (input.equals("byte")) return SizeUnit.BYTES;
-      if (input.equals("kb")) return SizeUnit.KILOBYTES;
-      if (input.equals("mb")) return SizeUnit.MEGABYTES;
+      if (input.toLowerCase().equals("byte")) return SizeUnit.BYTES;
+      if (input.toLowerCase().equals("kb")) return SizeUnit.KILOBYTES;
+      if (input.toLowerCase().equals("mb")) return SizeUnit.MEGABYTES;
+      if (input.toLowerCase().equals("gb")) return SizeUnit.GIGABYTES;
+      if (input.toLowerCase().equals("tb")) return SizeUnit.TERABYTES;
       return SizeUnit.EMPTY;
     }
 
@@ -61,6 +63,35 @@ public abstract class SizeUnit implements Serializable {
             return 3;
         }
     };
+
+    public static SizeUnit GIGABYTES = new SizeUnit() {
+        public double conversionFactor() {
+            return SizeUnit.MEGABYTES.conversionFactor()*1024;
+        }
+
+        public String toString() {
+            return "GB";
+        }
+
+        public int hashCode() {
+            return 4;
+        }
+    };
+
+    public static SizeUnit TERABYTES = new SizeUnit() {
+    public double conversionFactor() {
+        return SizeUnit.GIGABYTES.conversionFactor()*1024;
+    }
+
+    public String toString() {
+        return "TB";
+    }
+
+    public int hashCode() {
+        return 5;
+    }
+};
+
 
     public static SizeUnit EMPTY = new SizeUnit() {
         public double conversionFactor() {

@@ -301,7 +301,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          String name;
          String fsType;
          Class driver;
-         String authorizationSource;
+         String storageAreaAuthz;
          PropertyInterface prop;
          CapabilityInterface cap;
          DefaultValuesInterface defValues;
@@ -341,9 +341,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              vfs.setSpaceSystemDriver(driver);
              verboseLog("VFS(" + name + ").spaceDriver [CLASS Name] = '" + driver.getName() + "'");
 
-             authorizationSource = parserUtil.getAuthorizationSource(name);
-             vfs.setAuthZSource(authorizationSource);
-             verboseLog("VFS(" + name + ").authorization-source = '" + authorizationSource + "'");
+             storageAreaAuthz = parserUtil.getStorageAreaAuthz(name);
+             vfs.setSAAuthzSource(storageAreaAuthz);
+             // TODO vfs.setSAAuthzType();
+             verboseLog("VFS(" + name + ").storage-area-authz = '" + storageAreaAuthz + "'");
 
              prop = buildProperties(name);
              vfs.setProperties(prop);
@@ -387,6 +388,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
        long onlineSize = parserUtil.getOnlineSpaceSize(fsName);
        prop.setTotalOnlineSize(unitType, onlineSize);
        verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceSize = '" + onlineSize + " "+unitType+"'");
+
+       boolean hasLimitedSize = parserUtil.getOnlineSpaceLimitedSize(fsName);
+       prop.setLimitedSize(hasLimitedSize);
+       verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceLimitedSize = '" + hasLimitedSize + "'");
 
        return prop;
      }

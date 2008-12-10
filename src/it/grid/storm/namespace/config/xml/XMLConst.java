@@ -23,6 +23,7 @@ public interface XMLConst {
     public final char PROT_SUB_PATTERN = '§';
     public final char APPRULE_SUB_PATTERN = '^';
     public final char ACL_ENTRY_SUB_PATTERN = '~';
+    public final char MEMBER_SUB_PATTERN = '*';
 
     /**
      * ELEMENTS
@@ -61,7 +62,7 @@ public interface XMLConst {
     public String FS_STORAGE_CLASS = FILESYSTEM + ".storage-class";
     public String FS_DRIVER = FILESYSTEM + ".filesystem-driver";
     public String FS_SPACE_DRIVER = FILESYSTEM + ".spacesystem-driver";
-    public String FS_AUTHZ_SOURCE = FILESYSTEM + ".authorization-source";
+    public String FS_AUTHZ = FILESYSTEM + ".storage-area-authz"; //1.4.0
     public String FS_DEFAULTVALUES = FILESYSTEM + ".defaults-values";
     public String FS_CAPABILITIES = FILESYSTEM + ".capabilities";
     public String FS_PROPERTIES = FILESYSTEM + ".properties";
@@ -78,6 +79,9 @@ public interface XMLConst {
     public String APP_SPACE_REL_PATH = APP_RULE + ".space-rel-path";
 
     //#########     Level-4     #########
+    //    STORAGE-AREA-AUTHZ
+    public String SA_AUTHZ_FIXED = FS_AUTHZ + ".fixed"; //1.4.0
+    public String SA_AUTHZ_DB = FS_AUTHZ + ".authz-db"; //1.4.0
     //    DEFAULTS-VALUES-TYPE
     public String DEF_SPACE = FS_DEFAULTVALUES + ".space";
     public String DEF_SPACE_LT = DEF_SPACE + "[@lifetime]";
@@ -93,6 +97,7 @@ public interface XMLConst {
     public String EXPIRATION_MODE = FS_PROPERTIES + ".ExpirationMode";
     public String ONLINE_SIZE = FS_PROPERTIES + ".TotalOnlineSize";
     public String ONLINE_SIZE_UNIT = ONLINE_SIZE + "[@unit]";
+    public String LIMITED_SIZE = ONLINE_SIZE + "[@limited-size]"; //1.4.0
     public String NEARLINE_SIZE = FS_PROPERTIES + ".TotalNearlineSize";
     public String NEARLINE_SIZE_UNIT = NEARLINE_SIZE + "[@unit]";
     //    CAPABILITIES-TYPE
@@ -104,6 +109,8 @@ public interface XMLConst {
     //    SUBJECTS-TYPE
     public String APP_DN = APP_SUBJECTS + ".dn";
     public String APP_VO_NAME = APP_SUBJECTS + ".vo-name";
+    //    PROTOCOL POOL DEFINITION
+    public String POOL = FS_CAPABILITIES + ".pool"; //1.4.0
 
     //#########     Level-5     #########
     //    DEFAULT_ACL
@@ -129,11 +136,24 @@ public interface XMLConst {
     public String QUOTA_DEVICE = QUOTA_PROPERTIES + ".device";
 
     //    PROT-TYPE
+    public String PROT_ID = PROTOCOL + ".id";    //1.4.0
     public String PROT_SCHEMA = PROTOCOL + ".schema";
     public String PROT_HOST = PROTOCOL + ".host";
     public String PROT_PORT = PROTOCOL + ".port";
 
+    //    POOL DETAILS
+    public String BALANCE_STRATEGY = POOL + ".balance-strategy";    //1.4.0
+    public String POOL_MEMBERS = POOL + ".members";    //1.4.0
+
+
     //#########     Level-7     #########
+    //    POOL MEMBER
+    public String POOL_MEMBER_COUNTING = POOL_MEMBERS + ".member"; //1.4.0
+    public String POOL_MEMBER_NUDE = POOL_MEMBERS + ".member"; //1.4.0
+    public String POOL_MEMBER = POOL_MEMBER_NUDE + "(" + MEMBER_SUB_PATTERN + ")"; //1.4.0
+    public String POOL_MEMBER_ID = POOL_MEMBER + "[@member-id]"; //1.4.0
+    public String POOL_MEMBER_WEIGHT = POOL_MEMBER + "[@weight]"; //1.4.0
+
     //    QUOTA-TYPE-ID
     public String FILE_SET_ID = QUOTA_TYPE + ".filesetID";
     public String GROUP_ID = QUOTA_TYPE + ".groupID";
@@ -142,7 +162,7 @@ public interface XMLConst {
     //#####################################
     // OPTIONAL ELEMENT and DEFAULT VALUES
     //#####################################
-    public final String DEFAULT_UNIT_TYPE = "Byte";
+    public final String DEFAULT_UNIT_TYPE = "TB";
     public final String DEFAULT_AUTHZ_SOURCE = "PermitAll";
     public final String DEFAULT_STORAGE_CLASS = "T0D1";
 
@@ -168,7 +188,7 @@ public interface XMLConst {
 
     public String getSpaceDriver(String nameOfFS) throws NamespaceException;
 
-    public String getAuthorizationSource(String nameOfFS) throws NamespaceException;
+    public String getStorageAreaAuthz(String nameOfFS) throws NamespaceException; //Modified in 1.4.0
 
     public String getDefaultSpaceType(String nameOfFS) throws NamespaceException;
 
@@ -222,6 +242,8 @@ public interface XMLConst {
 
     public String getProtName(String nameOfFS, int numOfProt) throws NamespaceException;
 
+    public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException;  //1.4.0
+
     public String getProtSchema(String nameOfFS, String protName) throws NamespaceException;
 
     public String getProtHost(String nameOfFS, String protName) throws NamespaceException;
@@ -236,11 +258,23 @@ public interface XMLConst {
 
     public String getOnlineSpaceUnitType(String nameOfFS) throws NamespaceException;
 
+    public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException;  //1.4.0
+
     public long getOnlineSpaceSize(String nameOfFS) throws NamespaceException;
 
     public String getNearlineSpaceUnitType(String nameOfFS) throws NamespaceException;
 
     public long getNearlineSpaceSize(String nameOfFS) throws NamespaceException;
+
+    public boolean getPoolDefined(String nameOfFS) throws NamespaceException;  //1.4.0
+
+    public String getBalancerStrategy(String nameOfFS) throws NamespaceException;  //1.4.0
+
+    public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException;  //1.4.0
+
+    public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException;  //1.4.0
+
+    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException;  //1.4.0
 
     public int getNumberOfMappingRule() throws NamespaceException;
 

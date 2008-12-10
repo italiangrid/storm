@@ -43,7 +43,6 @@ public class VirtualFS implements VirtualFSInterface {
     DefaultValuesInterface defValue = null;
     CapabilityInterface capabilities = null;
     PropertyInterface properties = null;
-    String authorizationSourceClassName = null;
     Hashtable protocols = null;
     genericfs genericFS = null;
     SpaceSystem spaceSystem = null;
@@ -51,6 +50,8 @@ public class VirtualFS implements VirtualFSInterface {
     List mappingRules = new ArrayList();
     Configuration config;
     StorageClassType storageClass = null;
+    SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
+    String saAuthzSourceName = null;
 
     //For debug purpose only
     public long creationTime = System.currentTimeMillis();
@@ -115,10 +116,11 @@ public class VirtualFS implements VirtualFSInterface {
       this.properties = prop;
     }
 
-
-    public void setAuthZSource(String authorizationSource) {
-      this.authorizationSourceClassName = authorizationSource;
+/**
+    public void setStorageAreaAuthz(String saAuthzSourceName) {
+      this.saAuthzSourceName = saAuthzSourceName;
     }
+**/
 
     public void setSpaceSystemDriver(Class spaceDriver) {
         this.spaceSystemDriver = spaceDriver;
@@ -139,6 +141,16 @@ public class VirtualFS implements VirtualFSInterface {
 
     public void addMappingRule(MappingRule mappingRule) {
         mappingRules.add(mappingRule);
+    }
+
+
+    public void setSAAuthzType(SAAuthzType saAuthzType) {
+      this.saAuthzType = saAuthzType;
+    }
+
+
+    public void setSAAuthzSource(String authzSourceName) {
+      this.saAuthzSourceName = authzSourceName;
     }
 
 
@@ -168,9 +180,11 @@ public class VirtualFS implements VirtualFSInterface {
       return this.storageClass;
     }
 
-    public String getAuthorizationSource() throws NamespaceException {
-      return this.authorizationSourceClassName;
+/**
+    public String getStorageAreaAuthz() throws NamespaceException {
+      return this.saAuthzSourceName;
     }
+**/
 
     public PropertyInterface getProperties() throws NamespaceException {
       return this.properties;
@@ -1124,19 +1138,26 @@ public class VirtualFS implements VirtualFSInterface {
      *           VERSION 1.4                  *
   *******************************************/
 
-  public Balancer getProtocolBalancer(TSpaceToken token) throws NamespaceException {
-        /** @todo IMPLEMENT */
-    return null;
-  }
-
-  public Balancer getProtocolBalancer(TSpaceToken token, Protocol protocol) throws NamespaceException {
-    /** @todo IMPLEMENT */
-    return null;
-  }
-
   public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException {
-    /** @todo IMPLEMENT */
-    return null;
+    return this.capabilities.getPool();
+  }
+
+  public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {
+    return saAuthzType;
+  }
+
+  public String getStorageAreaAuthzDB() throws NamespaceException {
+    if (getStorageAreaAuthzType().equals(SAAuthzType.AUTHZDB))
+      return saAuthzSourceName;
+    else
+      throw new NamespaceException("Required AUTHZ-DB, but it is UNDEFINED.");
+  }
+
+  public String getStorageAreaAuthzFixed() throws NamespaceException {
+    if (getStorageAreaAuthzType().equals(SAAuthzType.FIXED))
+      return saAuthzSourceName;
+    else
+      throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
   }
 
 }

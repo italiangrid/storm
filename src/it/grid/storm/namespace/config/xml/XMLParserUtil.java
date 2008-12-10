@@ -61,6 +61,9 @@ public class XMLParserUtil implements XMLConst {
         else if (element.indexOf(XMLConst.ACL_ENTRY_SUB_PATTERN) != -1) {
           return XMLConst.ACL_ENTRY_SUB_PATTERN;
         }
+        else if (element.indexOf(XMLConst.MEMBER_SUB_PATTERN) != -1) {
+          return XMLConst.MEMBER_SUB_PATTERN;
+        }
         return ' ';
     }
 
@@ -79,12 +82,13 @@ public class XMLParserUtil implements XMLConst {
       return result;
     }
 
+  /**
     public String getAuthorizationSource(String nameOfFS) throws NamespaceException {
       int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
       String result = null;
       //Optional element
-      if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ_SOURCE))) {
-        result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ_SOURCE));
+      if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ))) {
+        result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ));
       }
       else { //Default value needed.
         result = XMLConst.DEFAULT_AUTHZ_SOURCE;
@@ -92,6 +96,7 @@ public class XMLParserUtil implements XMLConst {
       }
       return result;
     }
+**/
 
 /**
     public boolean getQuotaCheck(String nameOfFS) throws NamespaceException {
@@ -822,6 +827,65 @@ public class XMLParserUtil implements XMLConst {
 
 
     //return getStringProperty(substituteNumberInACLEntryElement(nameOfFS, aclEntryNumber, XMLConst.PERMISSIONS));
+  }
+
+
+ /** **********************************
+  *   VERSION 1.4.0
+ ***************************************/
+
+  public String getStorageAreaAuthz(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ));
+  }
+
+  public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException {
+    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
+  }
+
+  public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    boolean result = false;
+    result = getBooleanProperty(substituteNumberInFSElement(numOfFS, XMLConst.LIMITED_SIZE));
+    return result;
+  }
+
+  public boolean getPoolDefined(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    boolean result = false;
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL)))
+      result = true;
+    return result;
+  }
+
+  public String getBalancerStrategy(String nameOfFS) throws NamespaceException {
+    String result = null;
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL))) {
+      result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.BALANCE_STRATEGY));
+    } else {
+      throw new NamespaceException("Unable to find the element '"+XMLConst.BALANCE_STRATEGY+
+                                   "' for the VFS:'"+nameOfFS+"'");
+    }
+      return result;
+  }
+
+  public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    if (numOfFS == -1) {
+        throw new NamespaceException("FS named '" + nameOfFS + "' does not exist in config");
+    }
+    String memberCount = substitutionNumber(XMLConst.POOL_MEMBER_COUNTING, XMLConst.MEMBER_SUB_PATTERN, numOfFS);
+    //log.debug( configuration.getString(protCount));
+        return getPropertyNumber(memberCount);
+  }
+
+  public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException {
+    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_ID));
+  }
+
+  public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException {
+    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
   }
 
 }

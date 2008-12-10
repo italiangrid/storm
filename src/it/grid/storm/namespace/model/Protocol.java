@@ -34,7 +34,7 @@ public class Protocol {
      * @param protocolName String
      * @param protocolSchema String
      */
-    public Protocol(int protocolIndex, String protocolName, String protocolScheme, int defaultPort) {
+    private Protocol(int protocolIndex, String protocolName, String protocolScheme, int defaultPort) {
         this.protocolIndex = protocolIndex;
         this.protocolName = protocolName;
         this.scheme = protocolScheme;

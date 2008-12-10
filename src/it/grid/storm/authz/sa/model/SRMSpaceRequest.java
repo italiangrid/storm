@@ -19,11 +19,14 @@ public class SRMSpaceRequest {
   MODIFY_SPACE_ACL (M)
 **/
 
+    //Operations to SPACE+SURL
     public final static SRMSpaceRequest PTP = new SRMSpaceRequest("srmPrepareToPut", "PTP", new String[]{"W"});
     public final static SRMSpaceRequest PTG = new SRMSpaceRequest("srmPrepareToGet", "PTG", new String[]{"R","C"});
     public final static SRMSpaceRequest BOL = new SRMSpaceRequest("srmBringOnLine", "BOL", new String[]{"S","C"});
     public final static SRMSpaceRequest CPto = new SRMSpaceRequest("srmCopy to", "CPto", new String[]{"W"});
     public final static SRMSpaceRequest CPfrom = new SRMSpaceRequest("srmCopy from", "CPfrom", new String[]{"R","C"});
+
+    //Space Operations
     public final static SRMSpaceRequest PFS = new SRMSpaceRequest("srmPurgeFromSpace", "PFS", new String[]{"P"});
     public final static SRMSpaceRequest RS = new SRMSpaceRequest("srmReleaseSpace", "RS", new String[]{"D"});
     public final static SRMSpaceRequest QS = new SRMSpaceRequest("srmGetSpaceMetadata", "QS", new String[]{"Q","U"});

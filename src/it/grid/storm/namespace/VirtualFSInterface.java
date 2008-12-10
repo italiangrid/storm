@@ -46,7 +46,7 @@ public interface VirtualFSInterface {
 
     public SpaceSystem getSpaceSystemDriverInstance() throws NamespaceException;
 
-    public String getAuthorizationSource() throws NamespaceException;
+   // public String getStorageAreaAuthz() throws NamespaceException;
 
     public boolean isApproachableByUser(GridUserInterface user) throws NamespaceException;
 
@@ -139,9 +139,11 @@ public interface VirtualFSInterface {
      *    VERSION 1.4
      **************************************************/
 
-    public Balancer getProtocolBalancer(TSpaceToken token) throws NamespaceException;
+    public SAAuthzType getStorageAreaAuthzType() throws NamespaceException;
 
-    public Balancer getProtocolBalancer(TSpaceToken token, Protocol protocol) throws NamespaceException;
+    public String getStorageAreaAuthzDB() throws NamespaceException;
+
+    public String getStorageAreaAuthzFixed() throws NamespaceException;
 
     public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException;
 
