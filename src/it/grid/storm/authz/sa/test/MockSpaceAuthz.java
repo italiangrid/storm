@@ -19,7 +19,6 @@ public class MockSpaceAuthz implements SpaceAuthzInterface {
    * @param guser GridUserInterface
    * @param srmSpaceOp SRMSpaceRequest
    * @return boolean
-   * @todo Implement this it.grid.storm.authz.SpaceAuthzInterface method
    */
   public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
     log.debug("MOCK Space Authz : Authorize = Always TRUE");
@@ -39,7 +38,6 @@ public class MockSpaceAuthz implements SpaceAuthzInterface {
    * setAuthzDB
    *
    * @param authzDB AuthzDBInterface
-   * @todo Implement this it.grid.storm.authz.SpaceAuthzInterface method
    */
   public void setAuthzDB(AuthzDBInterface authzDB) {
      log.debug("MOCK Space Authz : Set Authz DB :D ");
