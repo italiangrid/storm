@@ -445,12 +445,10 @@ public class PtPChunk implements Delegable, Chooser {
         // and the PtP fails if there is not enougth space.
         Configuration config = Configuration.getInstance();
 
-        // @TODO aggiungere il controllo solo se e' abilitato nel namespace
-        // per la Storage Area corrispondente
         VirtualFSInterface fs = fileStoRI.getVirtualFileSystem();
         
         try {
-            if(fs.getProperties().isOnlineSpaceLimited()) {
+            if( (fs!=null) && (fs.getProperties().isOnlineSpaceLimited())) {
                 SpaceHelper sp = new SpaceHelper();
                 long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
                 if( (sp.isSAFull(log, fileStoRI)) ||
