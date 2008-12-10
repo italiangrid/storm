@@ -398,7 +398,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command
              * If Storage Area hard limit is enabled, update space on DB  
              */
             try {
-                if ( fs.getProperties().isOnlineSpaceLimited()) {
+                if ( (fs!=null) &&  (fs.getProperties().isOnlineSpaceLimited()) ) {
                     SpaceHelper sh = new SpaceHelper();
                     //Update the used space into Database
                     sh.decreaseFreeSpaceForSA(log, funcName, user, spaceAvailableSURLs);
