@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import java.util.Map;
 import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.authz.sa.*;
+import it.grid.storm.authz.sa.test.MockSpaceAuthz;
 
 
 public class AuthzDirector {
@@ -49,7 +50,8 @@ public class AuthzDirector {
 
     public static SpaceAuthzInterface getSpaceAuthz(String token) {
         /** @todo IMPLEMENT */
-        return null;
+        SpaceAuthzInterface spaceAuthz = new MockSpaceAuthz();
+        return spaceAuthz;
     }
 
 
