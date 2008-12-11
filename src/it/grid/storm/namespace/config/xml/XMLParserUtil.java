@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.commons.configuration.*;
 import org.apache.commons.logging.*;
 import it.grid.storm.namespace.*;
+import it.grid.storm.namespace.model.SAAuthzType;
 
 /**
  * <p>Title: </p>
@@ -508,6 +509,7 @@ public class XMLParserUtil implements XMLConst {
         return result.toString();
     }
 
+
     private String substituteNumberInFSElement(int numberOfFS, String element) throws NamespaceException {
         int numFS = getNumberOfFS();
         if (numberOfFS > numFS) {
@@ -548,6 +550,23 @@ public class XMLParserUtil implements XMLConst {
         new_element = substitutionNumber(new_element, XMLConst.PROT_SUB_PATTERN, numberOfProtocol);
         return new_element;
     }
+
+
+    private String substituteNumberInMembersElement(String nameOfFS, int numberOfMember, String element) throws
+        NamespaceException {
+        int numFS = getFSNumber(nameOfFS);
+        if (numFS == -1) {
+            throw new NamespaceException("Virtual File system (" + nameOfFS + ") does not exists");
+        }
+        int numMembers = getNumberOfPoolMembers(nameOfFS);
+        if (numberOfMember > numMembers) {
+            throw new NamespaceException("Invalid pointing of Member within VFS");
+        }
+        String new_element = substitutionNumber(element, XMLConst.FS_SUB_PATTERN, numFS);
+        new_element = substitutionNumber(new_element, XMLConst.MEMBER_SUB_PATTERN, numberOfMember);
+        return new_element;
+    }
+
 
     private String substituteNumberInMAPElement(int numberOfMapRule, String element) throws NamespaceException {
         int numMapRule = getNumberOfMappingRule();
@@ -839,8 +858,30 @@ public class XMLParserUtil implements XMLConst {
     return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ));
   }
 
-  public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException {
-    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
+  public SAAuthzType getStorageAreaAuthzType(String nameOfFS) throws NamespaceException {
+    if (getStorageAreaAuthzFixedDefined(nameOfFS)) return SAAuthzType.FIXED;
+    if (getStorageAreaAuthzDBDefined(nameOfFS)) return SAAuthzType.AUTHZDB;
+    throw new NamespaceException("Unable to find the SAAuthzType in "+nameOfFS);
+  }
+
+  public boolean getStorageAreaAuthzFixedDefined(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    boolean result = false;
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.SA_AUTHZ_FIXED)))
+      result = true;
+    return result;
+  }
+
+  public boolean getStorageAreaAuthzDBDefined(String nameOfFS) throws NamespaceException {
+    int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+    boolean result = false;
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.SA_AUTHZ_DB)))
+      result = true;
+    return result;
+  }
+
+  public int getProtId(String nameOfFS, int numOfMember) throws NamespaceException {
+    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfMember, XMLConst.PROT_ID));
   }
 
   public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException {
@@ -881,11 +922,12 @@ public class XMLParserUtil implements XMLConst {
   }
 
   public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException {
-    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_ID));
+    return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_ID));
   }
 
   public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException {
-    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
+    return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
   }
+
 
 }

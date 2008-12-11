@@ -15,6 +15,7 @@ package it.grid.storm.namespace.model;
 public class Protocol {
 
     private int protocolIndex = -1;
+
     private String protocolServiceName;
     private String protocolName;
     private String scheme;
@@ -45,6 +46,8 @@ public class Protocol {
     public int getProtocolIndex(){
       return protocolIndex;
     }
+
+
 
     //Only get method for Name
     public String getProtocolName() {

@@ -3,6 +3,7 @@ package it.grid.storm.namespace.config.xml;
 import java.util.*;
 
 import it.grid.storm.namespace.*;
+import it.grid.storm.namespace.model.SAAuthzType;
 
 /**
  * <p>Title: </p>
@@ -189,6 +190,12 @@ public interface XMLConst {
     public String getSpaceDriver(String nameOfFS) throws NamespaceException;
 
     public String getStorageAreaAuthz(String nameOfFS) throws NamespaceException; //Modified in 1.4.0
+
+    public boolean getStorageAreaAuthzFixedDefined(String nameOfFS) throws NamespaceException; //1.4.0
+
+    public boolean getStorageAreaAuthzDBDefined(String nameOfFS) throws NamespaceException; //1.4.0
+
+    public SAAuthzType getStorageAreaAuthzType(String nameOfFS) throws NamespaceException; //1.4.0
 
     public String getDefaultSpaceType(String nameOfFS) throws NamespaceException;
 

@@ -43,7 +43,7 @@ public class Authority {
         this.port = port;
     }
 
-    private String getHostPort() {
+    private String getHostnameAndPort() {
         StringBuffer result = new StringBuffer();
         if (hostname != null) {
             result.append(hostname);
@@ -56,7 +56,7 @@ public class Authority {
     }
 
     public String toString() {
-        return getHostPort();
+        return getHostnameAndPort();
     }
 
 }

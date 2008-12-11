@@ -3,9 +3,7 @@ package it.grid.storm.namespace.model;
 import java.util.*;
 
 import org.apache.commons.logging.*;
-import it.grid.storm.common.types.*;
 import it.grid.storm.namespace.*;
-import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
 
 /**
@@ -26,7 +24,7 @@ public class Capability implements CapabilityInterface {
     private Log log = NamespaceDirector.getLogger();
     private ACLMode aclMode = ACLMode.UNDEF;
     private Quota quota = null;
-    private Vector transfProtocols; // Array of Protocols, Only one for type!
+    private List<TransportProtocol> transfProtocols; // List of TransportProtocol.
     private DefaultACL defaultACL = new DefaultACL();
 
     /**
@@ -55,9 +53,9 @@ public class Capability implements CapabilityInterface {
      *
      * @param prot Protocol
      */
-    public void addProtocol(TransportPrefix trasfProt) {
+    public void addTransportProtocol(TransportProtocol trasfProt) {
         if (transfProtocols == null) {
-            transfProtocols = new Vector();
+            transfProtocols = new ArrayList<TransportProtocol>();
         }
         transfProtocols.add(trasfProt);
     }
@@ -134,7 +132,7 @@ public class Capability implements CapabilityInterface {
         sb.append("  Cap.Protocol : " + sep);
         Iterator scan = transfProtocols.iterator();
         while (scan.hasNext()) {
-            sb.append("    " + (TransportPrefix) scan.next() + sep);
+            sb.append("    " + (TransportProtocol) scan.next() + sep);
         }
         return sb.toString();
     }

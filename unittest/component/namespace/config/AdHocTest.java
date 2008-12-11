@@ -13,7 +13,7 @@ import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.model.TransportPrefix;
+import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -399,10 +399,10 @@ private void testPrintAPPROACHABLERULE_Configuration() {
 
 
  private void testTrasferProtocol(){
-   TransportPrefix tp;
-   tp = new TransportPrefix(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it"));
+   TransportProtocol tp;
+   tp = new TransportProtocol(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it"));
    log.debug(tp);
-   tp = new TransportPrefix(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it",12345));
+   tp = new TransportProtocol(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it",12345));
    log.debug(tp);
  }
 
@@ -479,7 +479,7 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     catch (NamespaceException ex) {
     }
     if (prot!=null) {
-      log.debug((TransportPrefix)prot.firstElement());
+      log.debug((TransportProtocol)prot.firstElement());
     }
   }
 

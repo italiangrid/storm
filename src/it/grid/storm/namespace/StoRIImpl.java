@@ -219,7 +219,7 @@ public class StoRIImpl
             populateManagedTranferProtocol();
         }
 
-        TransportPrefix protocolPrefix = null;
+        TransportProtocol protocolPrefix = null;
         TTURL resultTURL = null;
 
         boolean found = false;
@@ -257,23 +257,23 @@ public class StoRIImpl
             }
             else { //No match found!
                     log.error("stori:No match with Protocol Preferences and Procol Managed!");
-                    throw new InvalidGetTURLProtocolException(prefixOfAcceptedTransferProtocols); 
+                    throw new InvalidGetTURLProtocolException(prefixOfAcceptedTransferProtocols);
                 }
         }
         return resultTURL;
     }
 
 
-    private static TTURL buildTURL(TransportPrefix transportPrefix, PFN physicalFN, VirtualFSInterface vfs) throws InvalidProtocolForTURLException {
+    private static TTURL buildTURL(TransportProtocol transportPrefix, PFN physicalFN, VirtualFSInterface vfs) throws InvalidProtocolForTURLException {
 
       TTURL result = null;
       Protocol protocol = transportPrefix.getProtocol();
-      
+
       Authority authority = transportPrefix.getAuthority();
-      //From 1.4, Balancer can be used, at least for GSIFTP protocol, 
+      //From 1.4, Balancer can be used, at least for GSIFTP protocol,
       //to manage pool of servers (authority)
       // If this is the case, ask the balancer which is the right server
-      
+
       //@todo Change protocol with an enum patter, more tape safe!
       try {
           if (vfs.getProtocolBalancer(protocol) != null) {
@@ -285,9 +285,9 @@ public class StoRIImpl
           //log.debug("Error getting the protocol balancer.");
       }
 
-      
-      
-      
+
+
+
       switch (protocol.getProtocolIndex())  {
         case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
         case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
@@ -300,24 +300,6 @@ public class StoRIImpl
       return result;
     }
 
-
-
-    public TTURL getTURL(Protocol prot) {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        /**
-         * @todo : search within vector the existence of Prot
-         */
-        return null;
-    }
-
-    public List getTURLs() {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        return transferProtocolManaged;
-    }
 
     public TSURL getSURL() {
         /**
@@ -728,21 +710,15 @@ public class StoRIImpl
         }
     }
 
-    private TransportPrefix getDefaultTransferProtocol() {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        return (TransportPrefix) transferProtocolManaged.firstElement();
-    }
 
-    private TransportPrefix retrieveTrasferProtocolByProtocolScheme(String scheme) {
-        TransportPrefix result = null;
+    private TransportProtocol retrieveTrasferProtocolByProtocolScheme(String scheme) {
+        TransportProtocol result = null;
         if (transferProtocolManaged == null) {
             populateManagedTranferProtocol();
         }
         int size = transferProtocolManaged.size();
         for (int i = 0; i < size; i++) {
-            result = (TransportPrefix) transferProtocolManaged.elementAt(i);
+            result = (TransportProtocol) transferProtocolManaged.elementAt(i);
             String schemeAllowed = result.getProtocol().getSchema();
             if (schemeAllowed.toLowerCase().equals(scheme.toLowerCase())) {
                 break;
