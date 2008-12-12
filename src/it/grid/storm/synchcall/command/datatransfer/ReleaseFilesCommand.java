@@ -255,7 +255,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         
         // Update the DB
         if (!(surlToRelease.isEmpty()))
-            dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(surlToRelease);
+            dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(surlToRelease,requestToken);
         
         
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {

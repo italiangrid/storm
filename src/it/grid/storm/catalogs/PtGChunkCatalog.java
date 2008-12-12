@@ -439,7 +439,7 @@ public class PtGChunkCatalog {
      * are not transited. In case of any error nothing is done, but proper error
      * messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks) {
+    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks, TRequestToken token) {
         List aux = new ArrayList();
         long[] auxlong = null;
         ReducedPtGChunkData auxData = null;
@@ -450,7 +450,7 @@ public class PtGChunkCatalog {
         int n = aux.size();
         auxlong = new long[n];
         for (int i=0; i<n; i++) auxlong[i] = ((Long)aux.get(i)).longValue();
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong);
+        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong,token);
     }
 
     /**

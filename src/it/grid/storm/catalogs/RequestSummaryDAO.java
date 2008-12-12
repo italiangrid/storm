@@ -904,7 +904,7 @@ public class RequestSummaryDAO {
                 //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
                 
                 
-                //DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ; 
+                //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ; 
 
 
                 
