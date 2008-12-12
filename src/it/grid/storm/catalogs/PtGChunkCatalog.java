@@ -187,7 +187,7 @@ public class PtGChunkCatalog {
             sb.append(e);
         }
         //transferProtocols
-        TURLPrefix transferProtocols = TransferProtocolListConverter.getInstance().toSTORM(auxTO.protocolList());
+        TURLPrefix transferProtocols = TransferProtocolListConverter.toSTORM(auxTO.protocolList());
         if (transferProtocols.size()==0) {
             sb.append("\nEmpty list of TransferProtocols or could not translate TransferProtocols!");
             transferProtocols = null; //fail construction of PtGChunkData!
@@ -413,7 +413,7 @@ public class PtGChunkCatalog {
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
         to.setNumLevel(chunkData.dirOption().getNumLevel());
-        to.setProtocolList(TransferProtocolListConverter.getInstance().toDB(chunkData.transferProtocols()));
+        to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.desiredProtocols()));
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
         to.setErrString(chunkData.status().getExplanation());
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!
