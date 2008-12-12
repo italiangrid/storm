@@ -189,23 +189,23 @@ public class PtGChunk implements Delegable, Chooser {
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      */
     private void manageIsPermit(StoRI fileStoRI) {
-        
+
         /**
          * From version 1.4
-         * Add the control for Storage Area 
+         * Add the control for Storage Area
          * using the new authz for space component.
          */
-        
+
         SpaceHelper sp = new SpaceHelper();
         TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-        
+
         if(spaceAuth.authorize(gu, SRMSpaceRequest.PTG)) {
-        
+
             LocalFile localFile = fileStoRI.getLocalFile();
             try {
                 LocalUser localUser = gu.getLocalUser();
-                TTURL turl = fileStoRI.getTURL(chunkData.transferProtocols());
+                TTURL turl = fileStoRI.getTURL(chunkData.desiredProtocols());
                 if ((!localFile.exists()) || (localFile.isDirectory())) {
                     //File does not exist, or it is a directory! Fail request with SRM_INVALID_PATH!
                     chunkData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
@@ -257,7 +257,7 @@ public class PtGChunk implements Delegable, Chooser {
                 failure = true; //gsm.failedChunk(chunkData);
                 log.error("ERROR in PtGChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
             }
-        
+
         } else {
             chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Read access to "+chunkData.fromSURL()+" in Storage Area: "+token+" denied!");
             this.failure = true; //gsm.failedChunk(chunkData);

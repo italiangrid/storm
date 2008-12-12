@@ -368,13 +368,13 @@ public class PtPChunkCatalog {
             }
         }
         //overwriteOption!
-        TOverwriteMode overwriteOption = OverwriteModeConverter.getInstance().toSTORM(auxTO.overwriteOption()); 
+        TOverwriteMode overwriteOption = OverwriteModeConverter.getInstance().toSTORM(auxTO.overwriteOption());
         if (overwriteOption==TOverwriteMode.EMPTY) {
             sb.append("\nTOverwriteMode could not be translated from its String representation! String: "+auxTO.overwriteOption());
             overwriteOption=null;
         }
         //transferProtocols
-        TURLPrefix transferProtocols = TransferProtocolListConverter.getInstance().toSTORM(auxTO.protocolList());
+        TURLPrefix transferProtocols = TransferProtocolListConverter.toSTORM(auxTO.protocolList());
         if (transferProtocols.size()==0) {
             sb.append("\nEmpty list of TransferProtocols or could not translate TransferProtocols!");
             transferProtocols = null; //fail construction of PtPChunkData!
@@ -488,7 +488,7 @@ public class PtPChunkCatalog {
      * Beware, that the chunks may be part of requests that have finished, or that
      * still have not finished because other chunks are being processed.
      *
-     * 
+     *
      */
     synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(TSURL surl,String explanation) {
         if (explanation==null) explanation="";

@@ -56,8 +56,6 @@ public interface VirtualFSInterface {
 
     public PropertyInterface getProperties() throws NamespaceException;
 
-    public List getProtocols() throws NamespaceException;
-
     public List getMappingRules() throws NamespaceException;
 
     /**************************************************

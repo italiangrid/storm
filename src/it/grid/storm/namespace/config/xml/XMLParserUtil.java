@@ -880,8 +880,12 @@ public class XMLParserUtil implements XMLConst {
     return result;
   }
 
-  public int getProtId(String nameOfFS, int numOfMember) throws NamespaceException {
-    return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfMember, XMLConst.PROT_ID));
+  public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException {
+   // int numOfProt = getProtNumberByName(nameOfFS, protName);
+       if (isPresent(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID)))
+         return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
+       else
+         return -1;
   }
 
   public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException {

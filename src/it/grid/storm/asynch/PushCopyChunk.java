@@ -33,6 +33,7 @@ import it.grid.storm.common.types.TransferProtocol;
 
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.Protocol;
 
 /**
  * SubClass of CopyChunk that handles Push mode, that is, the SRM server that
@@ -102,9 +103,10 @@ public class PushCopyChunk extends CopyChunk {
             //create new RequestSummaryData for PtGChunk
             RequestSummaryData ptgrsd = new RequestSummaryData(TRequestType.PREPARE_TO_GET,localrt,gu);
             //create new PtGChunkData and ask the catalog to add it to persistence
-            TURLPrefix auxPrefix = new TURLPrefix(); auxPrefix.addTransferProtocol(TransferProtocol.FILE);
+            TURLPrefix turlPrefix = new TURLPrefix();
+            turlPrefix.addProtocol(Protocol.FILE);
             PtGChunkData ptgChunkData = new PtGChunkData(localrt,chunkData.fromSURL(),
-                chunkData.lifetime(), new TDirOption(false,false,0),auxPrefix,
+                chunkData.lifetime(), new TDirOption(false,false,0),turlPrefix,
                 TSizeInBytes.makeEmpty(),
                 new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,"PushCopyChunk has queued this local srmPrepareToGet operation; srmCopy request "+chunkData.requestToken()),
                 TTURL.makeEmpty()

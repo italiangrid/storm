@@ -234,7 +234,7 @@ public final class PtGFeeder implements Delegable {
                         childStoRI.getSURL(),
                         auxChunkData.lifeTime(),
                         notDir,
-                        auxChunkData.transferProtocols(),
+                        auxChunkData.desiredProtocols(),
                         auxChunkData.fileSize(),
                         auxChunkData.status(),
                         auxChunkData.transferURL()

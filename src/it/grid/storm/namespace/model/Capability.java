@@ -24,7 +24,12 @@ public class Capability implements CapabilityInterface {
     private Log log = NamespaceDirector.getLogger();
     private ACLMode aclMode = ACLMode.UNDEF;
     private Quota quota = null;
-    private List<TransportProtocol> transfProtocols; // List of TransportProtocol.
+    // List of TransportProtocol by Protocol.
+    private Map<Protocol, TransportProtocol> transpProtocolsByScheme = new Hashtable<Protocol,TransportProtocol>();
+    // List of TransportProtocol by Protocol.
+    private Map<Integer, TransportProtocol> transpProtocolsByID = new Hashtable<Integer,TransportProtocol>();
+    //List of ProtocolPool.
+    private Map<Protocol, ProtocolPool> protocolPoolsByScheme = new Hashtable<Protocol,ProtocolPool>(); ;
     private DefaultACL defaultACL = new DefaultACL();
 
     /**
@@ -53,11 +58,12 @@ public class Capability implements CapabilityInterface {
      *
      * @param prot Protocol
      */
-    public void addTransportProtocol(TransportProtocol trasfProt) {
-        if (transfProtocols == null) {
-            transfProtocols = new ArrayList<TransportProtocol>();
-        }
-        transfProtocols.add(trasfProt);
+    public void addTransportProtocolByScheme(Protocol protocol, TransportProtocol trasfProt) {
+        transpProtocolsByScheme.put(protocol,trasfProt);
+    }
+
+    public void addTransportProtocolByID(int protocolIndex, TransportProtocol trasfProt) {
+        transpProtocolsByID.put(new Integer(protocolIndex),trasfProt);
     }
 
     /**
@@ -103,14 +109,7 @@ public class Capability implements CapabilityInterface {
       return this.defaultACL;
     }
 
-    /**
-     * getManagedProtocols
-     *
-     * @return Collection
-     */
-    public List getManagedProtocols() {
-        return this.transfProtocols;
-    }
+
 
     /*****************************************************************************
      *  BUSINESS METHODs
@@ -130,10 +129,26 @@ public class Capability implements CapabilityInterface {
         String sep = System.getProperty("line.separator");
         sb.append(sep + "  Cap.aclMode : '" + this.aclMode + "'" + sep);
         sb.append("  Cap.Protocol : " + sep);
-        Iterator scan = transfProtocols.iterator();
-        while (scan.hasNext()) {
-            sb.append("    " + (TransportProtocol) scan.next() + sep);
+
+        /**
+        for (Map.Entry entry : m.entrySet()) {
+          String key = entry.getKey();
+          Vector value = entry.getValue();
         }
+        **/
+
+       // Print TransportProtocol
+       int count = 0;
+       for (Map.Entry<Protocol, TransportProtocol> transP : transpProtocolsByScheme.entrySet()) {
+         count++;
+         sb.append("[TP("+count+")] " + (transP.getKey() + ": " + transP.getValue()));
+       }
+       // Print ProtocolPool
+       count = 0;
+       for (Map.Entry<Protocol, ProtocolPool> protPool : protocolPoolsByScheme.entrySet()) {
+         count++;
+         sb.append("[TP("+count+")] " + (protPool.getKey() + ": " + protPool.getValue()));
+       }
         return sb.toString();
     }
 
@@ -141,10 +156,26 @@ public class Capability implements CapabilityInterface {
      *           VERSION 1.4                  *
   *******************************************/
 
-  public Balancer getPool() {
+  public Balancer getPoolByScheme(Protocol protocol) {
     /** @todo IMPLEMENT */
     return null;
   }
+
+  public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
+    /** @todo IMPLEMENT */
+    return null;
+  }
+
+  public List<Protocol> getAllManagedProtocols() {
+    /** @todo IMPLEMENT */
+    return null;
+  }
+
+  public boolean isPooledProtocol(Protocol protocol) {
+    /** @todo IMPLEMENT */
+    return false;
+  }
+
 
   /**
      *

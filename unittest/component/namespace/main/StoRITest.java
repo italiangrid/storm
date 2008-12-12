@@ -206,13 +206,13 @@ public class StoRITest {
     log.debug("StFN Root = "+stori.getStFNRoot());
     log.debug("StFN Relative StFN Path = "+stori.getRelativePath());
     log.debug("Type = "+stori.getStoRIType());
-    TURLPrefix prefix = new TURLPrefix();
-    TransferProtocol transProt = TransferProtocol.FILE;
+    TURLPrefix turlPrefix = new TURLPrefix();
+    Protocol prot = Protocol.FILE;
     //TransferProtocol transProt = TransferProtocol.RFIO;
-    log.debug("Protocollo : "+transProt);
-    prefix.addTransferProtocol(transProt);
+    log.debug("Protocollo : "+prot);
+    turlPrefix.addProtocol(prot);
     try {
-      log.debug( "TURL : " + stori.getTURL( prefix ) );
+      log.debug( "TURL : " + stori.getTURL( turlPrefix ) );
     }
     catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
       ex.printStackTrace();
@@ -221,12 +221,12 @@ public class StoRITest {
       /** @todo Handle this exception */
     }
 
-    transProt = TransferProtocol.GSIFTP;
-    log.debug("Protocollo : "+transProt);
-    prefix = new TURLPrefix();
-    prefix.addTransferProtocol(transProt);
+    prot = Protocol.GSIFTP;
+    log.debug("Protocollo : "+prot);
+    turlPrefix = new TURLPrefix();
+    turlPrefix.addProtocol(prot);
     try {
-      log.debug( "TURL : " + stori.getTURL( prefix ) );
+      log.debug( "TURL : " + stori.getTURL( turlPrefix ) );
     }
     catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
       ex.printStackTrace();

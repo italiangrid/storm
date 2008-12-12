@@ -400,10 +400,6 @@ public class VirtualFS implements VirtualFSInterface {
         return this.capabilities;
     }
 
-    public List getProtocols() throws NamespaceException {
-        return ( (this.capabilities).getManagedProtocols());
-    }
-
     public String getRootPath() throws NamespaceException {
         return this.rootPath;
     }
@@ -1139,7 +1135,7 @@ public class VirtualFS implements VirtualFSInterface {
   *******************************************/
 
   public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException {
-    return this.capabilities.getPool();
+    return this.capabilities.getPoolByScheme(protocol);
   }
 
   public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {

@@ -4,8 +4,8 @@ import it.grid.storm.namespace.naming.*;
 
 public class TransportProtocol {
 
-    private Protocol protocol = null;
     private int protocolID = -1;
+    private Protocol protocol = null;
     private Authority service = null;
 
     public TransportProtocol(Protocol protocol, Authority service) {

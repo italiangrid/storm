@@ -7,6 +7,8 @@ import it.grid.storm.srm.types.*;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.balancer.Balancer;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.TransportProtocol;
 
 /**
  * <p>Title: </p>
@@ -22,7 +24,14 @@ import it.grid.storm.balancer.Balancer;
  */
 public interface CapabilityInterface {
 
-    public List getManagedProtocols();
+    public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol);
+
+    public List<Protocol> getAllManagedProtocols();
+
+    public boolean isPooledProtocol(Protocol protocol);
+
+    public Balancer getPoolByScheme(Protocol protocol);
+
 
     public ACLMode getACLMode();
 
@@ -48,6 +57,5 @@ public interface CapabilityInterface {
 
     public DefaultACL getDefaultACL();
 
-    public Balancer getPool();
 
 }

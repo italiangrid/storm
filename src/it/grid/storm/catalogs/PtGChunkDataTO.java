@@ -4,6 +4,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.TURLPrefix;
 import java.util.List;
+import it.grid.storm.namespace.model.Protocol;
 
 /**
  * Class that represents a row in the Persistence Layer: this is all raw data
@@ -36,9 +37,9 @@ public class PtGChunkDataTO {
     private boolean empty = true;
 
     public PtGChunkDataTO() {
-        TURLPrefix aux = new TURLPrefix();
-        aux.addTransferProtocol(TransferProtocol.GSIFTP);
-        this.protocolList = TransferProtocolListConverter.getInstance().toDB(aux);
+        TURLPrefix protocolPreferences = new TURLPrefix();
+        protocolPreferences.addProtocol(Protocol.GSIFTP);
+        this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
         this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
         this.dirOption = false;
         this.allLevelRecursive = false;

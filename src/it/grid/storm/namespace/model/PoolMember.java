@@ -4,7 +4,7 @@ public class PoolMember {
 
   private int memberID;
   private int memberWeight;
-  private Protocol memberProtocol;
+  private TransportProtocol memberProtocol;
 
   public PoolMember(int memberID, int weight) {
     this.memberID = memberID;
@@ -19,11 +19,11 @@ public class PoolMember {
     return this.memberWeight;
   }
 
-  public void setMemberProtocol(Protocol protocol) {
+  public void setMemberProtocol(TransportProtocol protocol) {
     this.memberProtocol = protocol;
   }
 
-  public Protocol getMemeberProtocol() {
+  public TransportProtocol getMemeberProtocol() {
     return this.memberProtocol;
   }
 

@@ -463,7 +463,7 @@ private void testPrintAPPROACHABLERULE_Configuration() {
   private void testGetTrasferProtocol(){
     VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
     try {
-      Vector prot = new Vector(vfs.getCapabilities().getManagedProtocols());
+      Vector prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
       log.debug(prot);
     }
     catch (NamespaceException ex) {
@@ -474,7 +474,7 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
     Vector prot = null;
     try {
-      prot = new Vector(vfs.getCapabilities().getManagedProtocols());
+      prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
     }
     catch (NamespaceException ex) {
     }

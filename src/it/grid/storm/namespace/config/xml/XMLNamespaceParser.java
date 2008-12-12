@@ -505,7 +505,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          String schema;
          String name;
          for (int i = 0; i < nrProtocols; i++) {
-             protocolIndex = parserUtil.getProtId(fsName, i); //1.4.0
+             protocolIndex = parserUtil.getProtId(fsName, i); //1.4.0 (Return -1 if ID is not present)
              name = parserUtil.getProtName(fsName, i);
              schema = parserUtil.getProtSchema(fsName, name);
              protocol = Protocol.getProtocol(schema);
@@ -531,7 +531,11 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              transportProt = new TransportProtocol(protocol, service);
              transportProt.setProtocolID(protocolIndex); //1.4.0
              verboseLog("VFS(" + fsName + ").Capabilities.protocol("+i+") = '" + transportProt + "'");
-             cap.addTransportProtocol(transportProt);
+             cap.addTransportProtocolByScheme(protocol,transportProt);
+             if (protocolIndex!=-1) {
+               cap.addTransportProtocolByID(protocolIndex,transportProt);
+             }
+
          }
 
          /**
