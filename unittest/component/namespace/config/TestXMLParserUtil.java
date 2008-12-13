@@ -240,9 +240,9 @@ public class TestXMLParserUtil extends TestCase {
 
   public void testGetProtHost() throws NamespaceException {
     String nameOfFS = "";
-    String protName = "";
+    int numOfProt = 0;
     String expectedReturn = null;
-    String actualReturn = parserUtil.getProtHost(nameOfFS, protName);
+    String actualReturn = parserUtil.getProtHost(nameOfFS, numOfProt);
     assertEquals("return value", expectedReturn, actualReturn);
     /**@todo fill in the test code*/
   }
@@ -267,18 +267,18 @@ public class TestXMLParserUtil extends TestCase {
 
   public void testGetProtPort() throws NamespaceException {
     String nameOfFS = "";
-    String protName = "";
+    int numOfProt = 0;
     String expectedReturn = "8444";
-    String actualReturn = parserUtil.getProtPort(nameOfFS, protName);
+    String actualReturn = parserUtil.getProtPort(nameOfFS, numOfProt);
     assertEquals("return value", expectedReturn, actualReturn);
     /**@todo fill in the test code*/
   }
 
   public void testGetProtSchema() throws NamespaceException {
     String nameOfFS = "";
-    String protName = "";
+    int numOfProt = 0;
     String expectedReturn = null;
-    String actualReturn = parserUtil.getProtSchema(nameOfFS, protName);
+    String actualReturn = parserUtil.getProtSchema(nameOfFS, numOfProt);
     assertEquals("return value", expectedReturn, actualReturn);
     /**@todo fill in the test code*/
   }

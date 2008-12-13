@@ -315,7 +315,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     ssTO.setGuaranteedSize(1000000);
     VO vo = VO.make("VOCiccio");
     GridUserInterface gu = null;
-    gu = GridUserManager.makeGridUser("Ciccio");
+    gu = GridUserManager.makeStoRMGridUser();
     //gu = VomsGridUsermake("Ciccio");
 
     ssTO.setOwner(gu);

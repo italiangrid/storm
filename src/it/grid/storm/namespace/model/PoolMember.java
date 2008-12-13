@@ -27,4 +27,10 @@ public class PoolMember {
     return this.memberProtocol;
   }
 
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
+    sb.append(memberProtocol + " --> Weight: "+this.memberWeight );
+    return sb.toString();
+  }
+
 }

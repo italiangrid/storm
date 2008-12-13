@@ -200,7 +200,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory{
 
   public static void main(String[] args) {
     DataBaseStrategy db = DataBaseStrategy.MYSQL;
-    db.setDbUrl("testbed006");
+    db.setDbUrl("localhost");
     db.setDbName("storm_be_ISAM");
     db.setDbUsr("storm");
     db.setDbPwd("storm");
@@ -251,12 +251,15 @@ public class DBConnectionPool implements DataSourceConnectionFactory{
        ssTO.setLifetime(1000);
        VO vo = VO.make("testVO");
        GridUserInterface gu = null;
-       gu = GridUserManager.makeGridUser("testUser");
+       gu = GridUserManager.makeGridUser("/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it");
        //gu = VomsGridUser.make("testUser");
        ssTO.setOwner(gu);
        ssTO.setSpaceFile("test_spaceFile");
        ssTO.setSpaceToken("test_spaceToken");
        ssTO.setSpaceType("volatile");
+
+
+
 
 
       }

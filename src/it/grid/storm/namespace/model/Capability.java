@@ -89,7 +89,17 @@ public class Capability implements CapabilityInterface {
       Balancer balancer = null;
       if (protocol.equals(Protocol.GSIFTP)) {
         balancer = new Balancer<FTPNode>();
-        balancer.setStrategy(StrategyType.valueOf(protPool.getBalanceStrategy()));
+        StrategyType strat = null;
+        if (protPool.getBalanceStrategy().equals("round-robin"))
+          strat = StrategyType.ROUNDROBIN;
+        else if (protPool.getBalanceStrategy().equals("random"))
+          strat = StrategyType.ROUNDROBIN;
+        else if (protPool.getBalanceStrategy().equals("weight"))
+          strat = StrategyType.ROUNDROBIN;
+        else  {
+          log.error("The current version manage only 'round-robin', 'random' and 'weight' strategy");
+        }
+        balancer.setStrategy(strat);
         for (PoolMember member: protPool.getPoolMembers()) {
           String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
           int port =  member.getMemeberProtocol().getAuthority().getServicePort();

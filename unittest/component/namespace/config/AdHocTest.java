@@ -22,7 +22,6 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceInterface;
 
 /**
@@ -50,7 +49,7 @@ public class AdHocTest {
   private void init()
   {
     String path = System.getProperty("user.dir") + File.separator + "etc";
-    String filename = "namespace_test.xml";
+    String filename = "namespace_1.4.0_test.xml";
     int refresh = 3;
 
     boolean jdk14Logger = (log instanceof Jdk14Logger);
@@ -69,6 +68,7 @@ public class AdHocTest {
       PropertyConfigurator.configure(logConfigFile);
     }
 
+    //PersistenceDirector p;
 
 
     NamespaceLoader loader = new XMLNamespaceLoader(path, filename, refresh, false);

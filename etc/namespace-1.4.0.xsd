@@ -280,7 +280,7 @@
 			<xs:element ref="members"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:element name="members" type="membersType"/>
+	<xs:element name="members" type="membersType" nillable="false"/>
 	<xs:element name="balance-strategy" type="balance-strategyType"/>
 	<xs:simpleType name="balance-strategyType">
 		<xs:restriction base="xs:NMTOKEN">
@@ -294,10 +294,14 @@
 	<xs:complexType name="membersType">
 		<xs:sequence>
 			<xs:element name="member" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:attribute name="member-id" type="xs:integer" use="required"/>
-					<xs:attribute name="weight" type="xs:integer" use="required"/>
-				</xs:complexType>
+			   <xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="member-id" type="xs:integer" use="required"/>
+							<xs:attribute name="weight" type="xs:integer" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>		
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>

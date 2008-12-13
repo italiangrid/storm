@@ -346,7 +346,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              vfs.setSAAuthzType(saAuthzType);
              verboseLog("VFS(" + name + ").storage-area-authz.TYPE = '" + saAuthzType + "'");
 
-             storageAreaAuthz = parserUtil.getStorageAreaAuthz(name);
+             storageAreaAuthz = parserUtil.getStorageAreaAuthz(name, saAuthzType);
              vfs.setSAAuthzSource(storageAreaAuthz);
              verboseLog("VFS(" + name + ").storage-area-authz = '" + storageAreaAuthz + "'");
 
@@ -504,14 +504,14 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          String servicePortValue;
          String schema;
          String name;
-         for (int i = 0; i < nrProtocols; i++) {
-             protocolIndex = parserUtil.getProtId(fsName, i); //1.4.0 (Return -1 if ID is not present)
-             name = parserUtil.getProtName(fsName, i);
-             schema = parserUtil.getProtSchema(fsName, name);
+         for (int protCounter = 0; protCounter < nrProtocols; protCounter++) {
+             protocolIndex = parserUtil.getProtId(fsName, protCounter); //1.4.0 (Return -1 if ID is not present)
+             name = parserUtil.getProtName(fsName, protCounter);
+             schema = parserUtil.getProtSchema(fsName, protCounter);
              protocol = Protocol.getProtocol(schema);
              protocol.setProtocolServiceName(name);
-             serviceHostName = parserUtil.getProtHost(fsName, name);
-             servicePortValue = parserUtil.getProtPort(fsName, name);
+             serviceHostName = parserUtil.getProtHost(fsName, protCounter);
+             servicePortValue = parserUtil.getProtPort(fsName, protCounter);
              int portIntValue = -1;
              service = null;
              if (servicePortValue != null) {
@@ -530,7 +530,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              }
              transportProt = new TransportProtocol(protocol, service);
              transportProt.setProtocolID(protocolIndex); //1.4.0
-             verboseLog("VFS(" + fsName + ").Capabilities.protocol("+i+") = '" + transportProt + "'");
+             verboseLog("VFS(" + fsName + ").Capabilities.protocol("+protCounter+") = '" + transportProt + "'");
              cap.addTransportProtocolByScheme(protocol,transportProt);
              if (protocolIndex!=-1) {
                cap.addTransportProtocolByID(protocolIndex,transportProt);
@@ -541,7 +541,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          /**
           * PROTOCOL POOL
           */
-         String balanceStrategy = parserUtil.getBalancerStrategy(fsName);
+         boolean isPresentPool = parserUtil.getPoolDefined(fsName);
+         if (isPresentPool) {
+           String balanceStrategy = parserUtil.getBalancerStrategy(fsName);
          ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
          PoolMember poolMember;
          int nrMembers = parserUtil.getNumberOfPoolMembers(fsName);
@@ -549,7 +551,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          int protIndex;
          int memberWeight;
          for (int i = 0; i < nrMembers; i++) {
-           protIndex = parserUtil.getProtId(fsName, i);
+           protIndex = parserUtil.getMemberID(fsName, i);
            tProtMember = cap.getProtocolByID(protIndex);
            if (tProtMember != null) { //Protocol with ID=protIndex exists!
              memberWeight = parserUtil.getMemberWeight(fsName, i);
@@ -577,7 +579,12 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          }
          protPool.setBalanceStrategy(balanceStrategy);
          protPool.setPoolMembers(poolMembers);
+         log.debug("PROTOCOL POOL:"+protPool);
          cap.addProtocolPoolBySchema(prot,protPool);
+         } else {
+           log.debug("Pool is not defined in VFS "+fsName);
+         }
+
          return cap;
      }
 

@@ -24,6 +24,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.GridUserFactory;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  *
@@ -35,8 +36,7 @@ public class ReservedSpaceCatalog {
    */
   private static final Logger log = Logger.getLogger("catalogs");
   private static HashSet voSA_spaceTokenSet = new HashSet();
-  private static GridUserInterface fake_user;
-  private DAOFactory cf;
+  private DAOFactory daoFactory;
   private StorageSpaceDAO ssDAO;
   private Configuration config;
 
@@ -46,8 +46,7 @@ public class ReservedSpaceCatalog {
   public ReservedSpaceCatalog() {
     log.debug("Building Reserve Space Catalog...");
     //Binding to the persistence component
-    cf = PersistenceDirector.getDAOFactory();
-    //fake_user = GridUserFactory.make("StoRM_admin");
+    daoFactory = PersistenceDirector.getDAOFactory();
 
   }
 
@@ -61,7 +60,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -96,7 +95,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -131,7 +130,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -163,7 +162,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -201,7 +200,7 @@ public class ReservedSpaceCatalog {
 
    // Retrieve the Data Access Object from the factory
    try {
-     ssDAO = cf.getStorageSpaceDAO();
+     ssDAO = daoFactory.getStorageSpaceDAO();
      log.debug("Storage Space DAO retrieved.");
    }
    catch (DataAccessException daEx) {
@@ -246,7 +245,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -297,7 +296,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -347,7 +346,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -437,7 +436,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -467,7 +466,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -548,14 +547,14 @@ public class ReservedSpaceCatalog {
      *
      * A Fake Grid User is needed
      */
-
+     GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
 
     //Try with fake user, if it does not work remove it and use different method
 
     // First, check if the same VOSpaceArea already exists
 
     //tokenArray = this.getSpaceTokensByAlias(spaceTokenAlias);
-    tokenArray = this.getSpaceTokens(fake_user, spaceTokenAlias);
+    tokenArray = this.getSpaceTokens(stormServiceUser, spaceTokenAlias);
 
     if (tokenArray.size() == 0) {
       //the VOSpaceArea does not exist yet
@@ -573,7 +572,7 @@ public class ReservedSpaceCatalog {
       StorageSpaceData ssd = null;
 
       try {
-        ssd = new StorageSpaceData(fake_user, TSpaceType.VOSPACE, spaceTokenAlias, totalOnLineSize,
+        ssd = new StorageSpaceData(stormServiceUser, TSpaceType.VOSPACE, spaceTokenAlias, totalOnLineSize,
                                    totalOnLineSize, null, null, null, sfname);
       }
       catch (InvalidSpaceDataAttributesException e) {
@@ -697,8 +696,10 @@ public class ReservedSpaceCatalog {
       log.debug("VO SA token REGISTRED:" + ( (TSpaceToken) iter.next()).getValue());
     }
 
+    GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
+
     //Remove obsolete space
-    ArrayOfTSpaceToken token_a = this.getSpaceTokens(fake_user, null);
+    ArrayOfTSpaceToken token_a = this.getSpaceTokens(stormServiceUser, null);
     for (int i = 0; i < token_a.size(); i++) {
       log.debug("VO SA token IN CATALOG:" + token_a.getTSpaceToken(i).getValue());
     }
@@ -710,7 +711,7 @@ public class ReservedSpaceCatalog {
           //This VOSA_token is no more used, removing it from persistence
           TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
           log.debug("VO SA token " + tokenToRemove + " is no more used, removing it from persistence.");
-          this.release(ReservedSpaceCatalog.fake_user, tokenToRemove);
+          this.release(stormServiceUser, tokenToRemove);
         }
       }
     }

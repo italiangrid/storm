@@ -189,7 +189,7 @@ public interface XMLConst {
 
     public String getSpaceDriver(String nameOfFS) throws NamespaceException;
 
-    public String getStorageAreaAuthz(String nameOfFS) throws NamespaceException; //Modified in 1.4.0
+    public String getStorageAreaAuthz(String nameOfFS, SAAuthzType type) throws NamespaceException; //Modified in 1.4.0
 
     public boolean getStorageAreaAuthzFixedDefined(String nameOfFS) throws NamespaceException; //1.4.0
 
@@ -251,11 +251,11 @@ public interface XMLConst {
 
     public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException;  //1.4.0
 
-    public String getProtSchema(String nameOfFS, String protName) throws NamespaceException;
+    public String getProtSchema(String nameOfFS, int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
-    public String getProtHost(String nameOfFS, String protName) throws NamespaceException;
+    public String getProtHost(String nameOfFS,  int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
-    public String getProtPort(String nameOfFS, String protName) throws NamespaceException;
+    public String getProtPort(String nameOfFS,  int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
     public String getRetentionPolicyType(String nameOfFS) throws NamespaceException;
 

@@ -87,6 +87,14 @@ public class GridUserManager {
         return result;
     }
 
+    public static GridUserInterface makeStoRMGridUser() {
+      GridUserInterface result = null;
+      String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it";
+      //String[] fqans = {""};
+      result = userFactory.createGridUser(dn);
+      return result;
+    }
+
     public static GridUserInterface decode(Map inputParam) {
         GridUserInterface result = null;
         result = userFactory.decode(inputParam);

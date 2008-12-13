@@ -21,11 +21,11 @@ import it.grid.storm.namespace.model.SAAuthzType;
  */
 public class XMLParserUtil implements XMLConst {
 
-    private Configuration configuration;
+    private HierarchicalConfiguration configuration;
     private Log log = LogFactory.getLog(XMLParserUtil.class);
 
     public XMLParserUtil(Configuration config) {
-        this.configuration = config;
+        this.configuration = (HierarchicalConfiguration) config;
     }
 
     /*****************************************************************************
@@ -274,18 +274,15 @@ public class XMLParserUtil implements XMLConst {
         return retrieveNumberByName(nameOfProt, collElem);
     }
 
-    public String getProtSchema(String nameOfFS, String protName) throws NamespaceException {
-        int numOfProt = getProtNumberByName(nameOfFS, protName);
+    public String getProtSchema(String nameOfFS, int numOfProt) throws NamespaceException {
         return getStringProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_SCHEMA));
     }
 
-    public String getProtHost(String nameOfFS, String protName) throws NamespaceException {
-        int numOfProt = getProtNumberByName(nameOfFS, protName);
-        return getStringProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_HOST));
+    public String getProtHost(String nameOfFS, int numOfProt) throws NamespaceException {
+                return getStringProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_HOST));
     }
 
-    public String getProtPort(String nameOfFS, String protName) throws NamespaceException {
-        int numOfProt = getProtNumberByName(nameOfFS, protName);
+    public String getProtPort(String nameOfFS, int numOfProt) throws NamespaceException {
         return getStringProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_PORT));
     }
 
@@ -853,9 +850,13 @@ public class XMLParserUtil implements XMLConst {
   *   VERSION 1.4.0
  ***************************************/
 
-  public String getStorageAreaAuthz(String nameOfFS) throws NamespaceException {
+  public String getStorageAreaAuthz(String nameOfFS, SAAuthzType type) throws NamespaceException {
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ));
+    if (type.equals(SAAuthzType.FIXED)) {
+      return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.SA_AUTHZ_FIXED));
+    } else {
+      return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.SA_AUTHZ_DB));
+    }
   }
 
   public SAAuthzType getStorageAreaAuthzType(String nameOfFS) throws NamespaceException {
@@ -882,10 +883,12 @@ public class XMLParserUtil implements XMLConst {
 
   public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException {
    // int numOfProt = getProtNumberByName(nameOfFS, protName);
-       if (isPresent(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID)))
-         return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
-       else
-         return -1;
+   String protId = substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID);
+   //log.debug("ProtID : "+protId);
+   if (isPresent(protId))
+     return getIntProperty(substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
+   else
+     return -1;
   }
 
   public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException {
@@ -898,7 +901,7 @@ public class XMLParserUtil implements XMLConst {
   public boolean getPoolDefined(String nameOfFS) throws NamespaceException {
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
     boolean result = false;
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL)))
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.BALANCE_STRATEGY)))
       result = true;
     return result;
   }
@@ -906,7 +909,7 @@ public class XMLParserUtil implements XMLConst {
   public String getBalancerStrategy(String nameOfFS) throws NamespaceException {
     String result = null;
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL))) {
+    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.BALANCE_STRATEGY))) {
       result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.BALANCE_STRATEGY));
     } else {
       throw new NamespaceException("Unable to find the element '"+XMLConst.BALANCE_STRATEGY+
@@ -920,9 +923,22 @@ public class XMLParserUtil implements XMLConst {
     if (numOfFS == -1) {
         throw new NamespaceException("FS named '" + nameOfFS + "' does not exist in config");
     }
-    String memberCount = substitutionNumber(XMLConst.POOL_MEMBER_COUNTING, XMLConst.MEMBER_SUB_PATTERN, numOfFS);
-    //log.debug( configuration.getString(protCount));
-        return getPropertyNumber(memberCount);
+
+    String subTree = substituteNumberInFSElement(numOfFS, XMLConst.POOL);
+    //log.debug("SubTree :" + subTree);
+    HierarchicalConfiguration sub = configuration.configurationAt(subTree);
+    Object members = sub.getProperty("members.member");
+    int numOfMembers = -1;
+    if (members!=null) {
+      if (members instanceof Collection) {
+        numOfMembers = ((Collection)members).size();
+      } else {
+        numOfMembers = 1;
+      }
+    } else {
+      log.error("Mmmm");
+    }
+    return numOfMembers;
   }
 
   public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException {
