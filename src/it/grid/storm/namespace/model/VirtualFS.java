@@ -15,6 +15,7 @@ import it.grid.storm.namespace.*;
 import it.grid.storm.namespace.naming.*;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -1134,8 +1135,12 @@ public class VirtualFS implements VirtualFSInterface {
      *           VERSION 1.4                  *
   *******************************************/
 
-  public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException {
+  public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException {
     return this.capabilities.getPoolByScheme(protocol);
+  }
+
+  public boolean isPoolDefined(Protocol protocol) throws NamespaceException {
+    return this.capabilities.isPooledProtocol(protocol);
   }
 
   public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {
@@ -1155,5 +1160,7 @@ public class VirtualFS implements VirtualFSInterface {
     else
       throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
   }
+
+
 
 }

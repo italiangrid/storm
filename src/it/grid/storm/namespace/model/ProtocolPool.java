@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class ProtocolPool {
 
+  private Protocol poolType = Protocol.EMPTY;
   private String balanceStrategy;
   private List<PoolMember> poolMembers = new ArrayList<PoolMember>();
 
@@ -19,12 +20,24 @@ public class ProtocolPool {
     return this.balanceStrategy;
   }
 
-  public void addPoolMember(PoolMember member) {
-    poolMembers.add(member);
+  public void setPoolType(Protocol poolType) {
+    this.poolType = poolType;
+  }
+
+  public Protocol getPoolType() {
+    return this.poolType;
+  }
+
+  public void setPoolMembers(List<PoolMember> poolMembers) {
+    this.poolMembers = poolMembers;
   }
 
   public List<PoolMember> getPoolMembers() {
     return this.poolMembers;
+  }
+
+  public void addPoolMember(PoolMember member) {
+    poolMembers.add(member);
   }
 
 }

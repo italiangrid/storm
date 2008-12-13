@@ -9,6 +9,7 @@ import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -143,7 +144,9 @@ public interface VirtualFSInterface {
 
     public String getStorageAreaAuthzFixed() throws NamespaceException;
 
-    public Balancer getProtocolBalancer(Protocol protocol) throws NamespaceException;
+    public boolean isPoolDefined(Protocol protocol) throws NamespaceException;
+
+    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException;
 
 
 }

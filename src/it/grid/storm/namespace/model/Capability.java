@@ -5,6 +5,9 @@ import java.util.*;
 import org.apache.commons.logging.*;
 import it.grid.storm.namespace.*;
 import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.ftp.FTPNode;
+import it.grid.storm.balancer.StrategyType;
 
 /**
  * <p>Title: </p>
@@ -29,7 +32,10 @@ public class Capability implements CapabilityInterface {
     // List of TransportProtocol by Protocol.
     private Map<Integer, TransportProtocol> transpProtocolsByID = new Hashtable<Integer,TransportProtocol>();
     //List of ProtocolPool.
-    private Map<Protocol, ProtocolPool> protocolPoolsByScheme = new Hashtable<Protocol,ProtocolPool>(); ;
+    private Map<Protocol, ProtocolPool> protocolPoolsByScheme = new Hashtable<Protocol,ProtocolPool>();
+    //List of Balancer.
+    private Map<Protocol, Balancer<? extends Node>> balancerByScheme = new Hashtable<Protocol,Balancer<? extends Node>>();
+
     private DefaultACL defaultACL = new DefaultACL();
 
     /**
@@ -66,11 +72,6 @@ public class Capability implements CapabilityInterface {
         transpProtocolsByID.put(new Integer(protocolIndex),trasfProt);
     }
 
-    /**
-     * addACL Entry
-     *
-     * @param prot Protocol
-     */
     public void addACLEntry(ACLEntry aclEntry) {
         if (defaultACL == null) {
             defaultACL = new DefaultACL();
@@ -78,12 +79,28 @@ public class Capability implements CapabilityInterface {
         defaultACL.addACLEntry(aclEntry);
     }
 
-    /**
-     *
-     * @param quota Quota
-     */
     public void setQuota(Quota quota) {
       this.quota = quota;
+    }
+
+    public void addProtocolPoolBySchema(Protocol protocol, ProtocolPool protPool) {
+      protocolPoolsByScheme.put(protocol, protPool);
+      //Building Balancer and put it into Map of Balancers
+      Balancer balancer = null;
+      if (protocol.equals(Protocol.GSIFTP)) {
+        balancer = new Balancer<FTPNode>();
+        balancer.setStrategy(StrategyType.valueOf(protPool.getBalanceStrategy()));
+        for (PoolMember member: protPool.getPoolMembers()) {
+          String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
+          int port =  member.getMemeberProtocol().getAuthority().getServicePort();
+          int weight = member.getMemberWeight();
+          FTPNode ftpNode = new FTPNode(hostname, port, weight);
+          balancer.addElement(ftpNode);
+        }
+        balancerByScheme.put(protocol,balancer);
+      } else {
+        log.error("The current version manage only GSIFTP POOL.");
+      }
     }
 
     /*****************************************************************************
@@ -156,9 +173,13 @@ public class Capability implements CapabilityInterface {
      *           VERSION 1.4                  *
   *******************************************/
 
-  public Balancer getPoolByScheme(Protocol protocol) {
-    /** @todo IMPLEMENT */
-    return null;
+  public Balancer<? extends Node> getPoolByScheme(Protocol protocol) {
+    Balancer balancer = null;
+    boolean isPresent = balancerByScheme.containsKey(protocol);
+    if (isPresent) {
+      balancer = balancerByScheme.get(protocol);
+    }
+    return balancer;
   }
 
   public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
@@ -176,6 +197,14 @@ public class Capability implements CapabilityInterface {
     return false;
   }
 
+  public TransportProtocol getProtocolByID(int id) {
+    TransportProtocol tProt = null;
+    boolean isPresent = transpProtocolsByID.containsKey(id); //Use of generics AUTO-BOXING
+    if (isPresent) {
+      tProt = transpProtocolsByID.get(id);
+    }
+    return tProt;
+  }
 
   /**
      *

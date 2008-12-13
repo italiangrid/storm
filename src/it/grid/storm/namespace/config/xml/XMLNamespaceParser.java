@@ -545,15 +545,39 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
          PoolMember poolMember;
          int nrMembers = parserUtil.getNumberOfPoolMembers(fsName);
+         TransportProtocol tProtMember;
          int protIndex;
          int memberWeight;
          for (int i = 0; i < nrMembers; i++) {
            protIndex = parserUtil.getProtId(fsName, i);
-           memberWeight = parserUtil.getMemberWeight(fsName, i);
-           poolMember = new PoolMember(protIndex,memberWeight);
-           poolMembers.add(poolMember);
+           tProtMember = cap.getProtocolByID(protIndex);
+           if (tProtMember != null) { //Protocol with ID=protIndex exists!
+             memberWeight = parserUtil.getMemberWeight(fsName, i);
+             poolMember = new PoolMember(protIndex, memberWeight);
+             poolMember.setMemberProtocol(tProtMember);
+             poolMembers.add(poolMember);
+           } else {
+             log.error("POOL Building: Protocol with index "+protIndex+" does not exists in the VFS :"+fsName);
+             throw new NamespaceException("POOL Building: Protocol with index "+protIndex+" does not exists in the VFS :"+fsName);
+           }
          }
-
+         ProtocolPool protPool = new ProtocolPool();
+         //Check Protocol Homogeneity
+         Protocol prot = Protocol.EMPTY;
+         if (!(poolMembers.isEmpty())) {
+           prot = poolMembers.get(0).getMemeberProtocol().getProtocol();
+           for (PoolMember m: poolMembers) {
+             if (!(m.getMemeberProtocol().getProtocol().equals(prot))) {
+               throw new NamespaceException("POOL Defined is NOT HOMOGENEOUS!");
+             }
+           }
+           log.debug("Pool defined is homogeneous ("+prot+") with "+poolMembers.size()+" elements");
+         } else {
+           throw new NamespaceException("POOL Defined is EMPTY!");
+         }
+         protPool.setBalanceStrategy(balanceStrategy);
+         protPool.setPoolMembers(poolMembers);
+         cap.addProtocolPoolBySchema(prot,protPool);
          return cap;
      }
 
