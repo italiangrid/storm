@@ -67,4 +67,18 @@ public class TransportProtocol {
         return getURIRoot();
     }
 
+    public boolean equals(Object other) {
+      boolean result = false;
+      if (other instanceof TransportProtocol) {
+        TransportProtocol otherTP = (TransportProtocol)other;
+        if (otherTP.getProtocol().equals(this.getProtocol())) { //Protocol is equal
+          //Check if the Authority is equal.
+          if (otherTP.getAuthority().equals(this.getAuthority())) {
+            result = true;
+          }
+        }
+      }
+      return result;
+    }
+
 }

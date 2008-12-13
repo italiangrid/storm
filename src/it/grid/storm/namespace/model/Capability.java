@@ -183,18 +183,22 @@ public class Capability implements CapabilityInterface {
   }
 
   public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
-    /** @todo IMPLEMENT */
-    return null;
+    List<TransportProtocol> result = new ArrayList<TransportProtocol>();
+    result.addAll(transpProtocolsByScheme.values());
+    result.addAll(transpProtocolsByID.values());
+    return result;
   }
 
   public List<Protocol> getAllManagedProtocols() {
-    /** @todo IMPLEMENT */
-    return null;
+    List<Protocol> result = new ArrayList<Protocol>();
+    result.addAll(transpProtocolsByScheme.keySet());
+    return result;
   }
 
   public boolean isPooledProtocol(Protocol protocol) {
-    /** @todo IMPLEMENT */
-    return false;
+    boolean result = false;
+    result = protocolPoolsByScheme.containsKey(protocol);
+    return result;
   }
 
   public TransportProtocol getProtocolByID(int id) {
