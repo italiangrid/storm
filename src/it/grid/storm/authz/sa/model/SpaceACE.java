@@ -5,7 +5,7 @@ import java.util.*;
 public class SpaceACE {
 
     private SubjectType subjectType;
-    private String subject;
+    private String subjectPattern;
     private List<SpacePermission> spacePermission = new ArrayList();
     private AceType aceType;
 
@@ -16,8 +16,8 @@ public class SpaceACE {
         this.subjectType = subjectType;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setSubjectPattern(String subject) {
+        this.subjectPattern = subject;
     }
 
     public void addSpacePermission(SpacePermission spacePermission) {
@@ -32,8 +32,8 @@ public class SpaceACE {
         return this.subjectType;
     }
 
-    public String getSubject() {
-        return this.subject;
+    public String getSubjectPattern() {
+        return this.subjectPattern;
     }
 
     public List<SpacePermission> getSpacePermissions() {
@@ -50,7 +50,7 @@ public class SpaceACE {
             SpacePermission item = (SpacePermission) iter.next();
             spacePermissionStr+=item.toString();
         }
-        return "SpaceACE : "+this.getSubjectType()+":"+this.getSubject()+":"+spacePermissionStr+":"+this.aceType;
+        return "SpaceACE : "+this.getSubjectType()+":"+this.getSubjectPattern()+":"+spacePermissionStr+":"+this.aceType;
     }
 
 }

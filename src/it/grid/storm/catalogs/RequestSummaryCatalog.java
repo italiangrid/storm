@@ -9,7 +9,7 @@ import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.griduser.Fqan;
+import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.config.Configuration;
 
@@ -177,7 +177,7 @@ public class RequestSummaryCatalog {
         log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for "+dn+" "+rtoken);
         //set up proxy from file, if it exists!
         String proxyString = null;
-        Fqan[] fqans_vector = null;
+        FQAN[] fqans_vector = null;
         try {
             File proxyFile = new File(Configuration.getInstance().getProxyHome() + File.separator + rtoken);
             if (proxyFile.exists()) {

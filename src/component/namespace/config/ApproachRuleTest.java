@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.Fqan;
+import it.grid.storm.griduser.FQAN;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.griduser.GridUserManager;
 import java.util.Arrays;

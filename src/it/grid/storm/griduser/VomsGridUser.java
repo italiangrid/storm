@@ -33,7 +33,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
   private MapperInterface mapper = null;
   private String[] fqanStrings = null;
-  private ArrayList<Fqan> fqans = new ArrayList<Fqan> ();
+  private ArrayList<FQAN> fqans = new ArrayList<FQAN> ();
 
 
 
@@ -50,7 +50,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
     protected String _certificateSubjectDn;
     protected boolean _hasVoms;
-    protected Fqan[] _fqans;
+    protected FQAN[] _fqans;
 
     protected boolean _hasBeenMapped;
     protected LocalUser _localUser;
@@ -301,26 +301,26 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     }
 
 
-    void setFqans(List<Fqan> fqans) {
-        this.fqans = new ArrayList<Fqan>(fqans);
+    void setFqans(List<FQAN> fqans) {
+        this.fqans = new ArrayList<FQAN>(fqans);
     }
 
-   public void addFqan(Fqan fqan) {
+   public void addFqan(FQAN fqan) {
        this.fqans.add(fqan);
    }
 
-    public List<Fqan> getFqansList() {
+    public List<FQAN> getFqansList() {
         if (fqans.size()==0) {
-            fqans = new ArrayList<Fqan>(populateFqanList());
+            fqans = new ArrayList<FQAN>(populateFqanList());
         }
         return fqans;
     }
 
-    private List<Fqan> populateFqanList() {
-        ArrayList<Fqan> result = new ArrayList<Fqan>();
+    private List<FQAN> populateFqanList() {
+        ArrayList<FQAN> result = new ArrayList<FQAN>();
         if (fqanStrings!=null) {
             for (int i=0; i<fqanStrings.length; i++) {
-                result.add(new Fqan(fqanStrings[i]));
+                result.add(new FQAN(fqanStrings[i]));
             }
         }
         return result;
@@ -402,7 +402,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
      * @return  Array holding all FQANs stored in the object,
      *          empty array if no VOMS extensions are stored in this object.
      */
-    public Fqan[] getFqans()
+    public FQAN[] getFqans()
     {
         return _fqans;
     }
