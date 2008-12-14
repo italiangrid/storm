@@ -532,6 +532,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              transportProt.setProtocolID(protocolIndex); //1.4.0
              verboseLog("VFS(" + fsName + ").Capabilities.protocol("+protCounter+") = '" + transportProt + "'");
              cap.addTransportProtocolByScheme(protocol,transportProt);
+             cap.addTransportProtocol(transportProt);
              if (protocolIndex!=-1) {
                cap.addTransportProtocolByID(protocolIndex,transportProt);
              }

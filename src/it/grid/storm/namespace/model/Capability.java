@@ -31,6 +31,8 @@ public class Capability implements CapabilityInterface {
     private Map<Protocol, TransportProtocol> transpProtocolsByScheme = new Hashtable<Protocol,TransportProtocol>();
     // List of TransportProtocol by Protocol.
     private Map<Integer, TransportProtocol> transpProtocolsByID = new Hashtable<Integer,TransportProtocol>();
+    // List of TransportProtocol by Entering order.
+    private List<TransportProtocol> transpProtocolsList = new ArrayList<TransportProtocol>();
     //List of ProtocolPool.
     private Map<Protocol, ProtocolPool> protocolPoolsByScheme = new Hashtable<Protocol,ProtocolPool>();
     //List of Balancer.
@@ -71,6 +73,11 @@ public class Capability implements CapabilityInterface {
     public void addTransportProtocolByID(int protocolIndex, TransportProtocol trasfProt) {
         transpProtocolsByID.put(new Integer(protocolIndex),trasfProt);
     }
+
+    public void addTransportProtocol(TransportProtocol trasfProt) {
+        transpProtocolsList.add(trasfProt);
+    }
+
 
     public void addACLEntry(ACLEntry aclEntry) {
         if (defaultACL == null) {
@@ -194,8 +201,11 @@ public class Capability implements CapabilityInterface {
 
   public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
     List<TransportProtocol> result = new ArrayList<TransportProtocol>();
-    result.addAll(transpProtocolsByScheme.values());
-    result.addAll(transpProtocolsByID.values());
+    for (TransportProtocol tp: transpProtocolsList) {
+      if (tp.getProtocol().equals(protocol)) {
+        result.add(tp);
+      }
+    }
     return result;
   }
 

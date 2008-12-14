@@ -2,17 +2,18 @@ package it.grid.storm.balancer.ftp;
 
 import it.grid.storm.balancer.AbstractNode;
 import it.infn.bo.FMC.CurrentProcs;
+import it.grid.storm.namespace.model.Protocol;
 
 public class FTPNode extends AbstractNode {
-    
+
     private String hostname;
     private int port;
-    
-   
-    
-    
+
+
+
+
     public FTPNode() {
-       
+
     }
 
     public FTPNode(String hostname, int port, int weight) {
@@ -52,24 +53,32 @@ public class FTPNode extends AbstractNode {
 
 
 
-    
+
     public void setWeight(int w) {
         //Weight between 1 and 100
-        weight = w%100;        
+        weight = w%100;
     }
-    
-    
+
+
   //TODO
-    //Gestire la validita' dell'informazione 
-    //facendo una cache 
-    //Vedere se si puo' generalizzare il concetto di metrica 
+    //Gestire la validita' dell'informazione
+    //facendo una cache
+    //Vedere se si puo' generalizzare il concetto di metrica
     //con Map<String, Obj metric>
-    
+
     public int getFTPProc() {
         int nprocs =  0 ;
         nprocs = new CurrentProcs().getN(this.getHostName());
         nprocs = (nprocs<0) ? -1 : nprocs;
         return nprocs;
+    }
+
+    public String toString() {
+      StringBuffer sb = new StringBuffer();
+      sb.append(Protocol.GSIFTP.getProtocolPrefix());
+      sb.append(this.hostname);
+      sb.append(":"+this.port);
+      return sb.toString();
     }
 
 }

@@ -293,17 +293,15 @@
 	</xs:simpleType>
 	<xs:complexType name="membersType">
 		<xs:sequence>
-			<xs:element name="member" maxOccurs="unbounded">
-			   <xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="xs:string">
-							<xs:attribute name="member-id" type="xs:integer" use="required"/>
-							<xs:attribute name="weight" type="xs:integer" use="required"/>
-						</xs:extension>
-					</xs:simpleContent>
-				</xs:complexType>		
-			</xs:element>
+			<xs:element name="member" maxOccurs="unbounded" type="memberType" />
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="memberType">
+		 <xs:sequence>
+            <xs:element name="weight" type="xs:integer" minOccurs="0" maxOccurs="1" nillable="false">
+            </xs:element>		 
+		 </xs:sequence>
+		<xs:attribute name="member-id" type="xs:integer" use="required"/>		
 	</xs:complexType>
 	<!-- AUTHORIZATION SOURCE ELEMENT -->
 	<xs:element name="storage-area-authz" type="StorageArea-Authz-Type" nillable="false"/>

@@ -927,7 +927,7 @@ public class XMLParserUtil implements XMLConst {
     String subTree = substituteNumberInFSElement(numOfFS, XMLConst.POOL);
     //log.debug("SubTree :" + subTree);
     HierarchicalConfiguration sub = configuration.configurationAt(subTree);
-    Object members = sub.getProperty("members.member");
+    Object members = sub.getProperty("members.member[@member-id]");
     int numOfMembers = -1;
     if (members!=null) {
       if (members instanceof Collection) {

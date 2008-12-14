@@ -17,11 +17,11 @@ import java.util.LinkedList;
  * @param <E>
  */
 public class Balancer<E extends Node> {
-    
+
     private LinkedList<E> pool = null; //Set of Element to balance
     private Strategy<E> strategy = null; //Balancing Policy
-    
-    
+
+
     /**
      * @param pool
      * @param strategy
@@ -30,7 +30,7 @@ public class Balancer<E extends Node> {
         //Base strategy
         this(StrategyType.ROUNDROBIN);
     }
-    
+
     public Balancer(StrategyType tp) {
         pool = new LinkedList<E>();
         this.strategy =  StrategyFactory.getStrategy(tp, pool);
@@ -41,13 +41,13 @@ public class Balancer<E extends Node> {
         //element.setWeight(0);
         pool.add(element);
         strategy.notifyChangeInPool();
-        
+
     }
-        
+
     /**
-     * 
+     *
      * Peso compreso da 1 a 10?
-     * 
+     *
      * @param element
      * @param weight
      */
@@ -55,19 +55,19 @@ public class Balancer<E extends Node> {
         element.setWeight(weight);
         pool.add(element);
         strategy.notifyChangeInPool();
-           
+
     }
-    
-    
-    
+
+
+
     /**
-     *  
+     *
      * @param element
      */
-    
+
     public void removeElement(E element) {
         int index = pool.indexOf(element);
-        while(index!=-1) {       
+        while(index!=-1) {
             pool.remove(element);
             index = pool.indexOf(element);
         }
@@ -76,31 +76,31 @@ public class Balancer<E extends Node> {
 
     /**
      * Method that choose the next element.
-     * 
-     * @return Element 
+     *
+     * @return Element
      */
     public E getNextElement() {
         return strategy.getNextElement();
     }
 
-     
+
     public void setStrategy(StrategyType type) {
         this.strategy =  StrategyFactory.getStrategy(type,pool);
     }
-    
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append("Balancer\n");
-        sb.append("Strategy: "+strategy+"\n");
-        sb.append("Node pool:\n");
+        sb.append("BALANCER\n");
+        sb.append(" STRATEGY: "+strategy+"\n");
         int index = 0;
         for(E e:pool) {
-            sb.append("Node: "+ index++ +"\n");
-            //sb.append("Hostname: "+e.getHostName()+"\n");        
-            sb.append("Weight: "+e.getWeight()+"\n");
+            sb.append(" NODE("+ index+++") = ");
+            sb.append(" "+e);
+            //sb.append("Hostname: "+e.getHostName()+"\n");
+            sb.append(" --> WEIGHT: "+e.getWeight()+"\n");
         }
-        
+
         return sb.toString();
     }
-    
+
 }

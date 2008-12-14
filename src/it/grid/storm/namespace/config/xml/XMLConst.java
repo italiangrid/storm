@@ -153,7 +153,7 @@ public interface XMLConst {
     public String POOL_MEMBER_NUDE = POOL_MEMBERS + ".member"; //1.4.0
     public String POOL_MEMBER = POOL_MEMBER_NUDE + "(" + MEMBER_SUB_PATTERN + ")"; //1.4.0
     public String POOL_MEMBER_ID = POOL_MEMBER + "[@member-id]"; //1.4.0
-    public String POOL_MEMBER_WEIGHT = POOL_MEMBER + "[@weight]"; //1.4.0
+    public String POOL_MEMBER_WEIGHT = POOL_MEMBER + ".weight"; //1.4.0
 
     //    QUOTA-TYPE-ID
     public String FILE_SET_ID = QUOTA_TYPE + ".filesetID";

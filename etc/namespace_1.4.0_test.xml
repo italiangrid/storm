@@ -54,9 +54,9 @@
         <pool>
 			<balance-strategy>round-robin</balance-strategy>
 			<members>
-				<member member-id="0"  weight="10" >primo</member>
-				<member member-id="1"  weight="20" >secondo</member>
-				<member member-id="2"  weight="10" >terzo</member>
+				<member member-id="0"><weight>10</weight></member>
+				<member member-id="1"><weight>20</weight></member>
+				<member member-id="2"><weight>30</weight></member>
 			</members>
 		</pool>
      </capabilities>
