@@ -2,6 +2,7 @@ package it.grid.storm.authz.sa.model;
 
 import it.grid.storm.authz.sa.conf.*;
 import org.apache.commons.logging.Log;
+import it.grid.storm.griduser.FQAN;
 import it.grid.storm.authz.AuthzDirector;
 
 public class EGEEFQANMatchingRule extends FQANMatchingRule {
@@ -37,14 +38,7 @@ public class EGEEFQANMatchingRule extends FQANMatchingRule {
 
   }
 
-  public static void main(String[] args) {
-    try {
-      EGEEFQANMatchingRule test = new EGEEFQANMatchingRule("/atlas/*/Role=sgm");
-    }
-    catch (AuthzDBReaderException ex) {
 
-    }
-  }
 
 }
 

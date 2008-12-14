@@ -9,7 +9,7 @@ import it.grid.storm.griduser.FQAN;
 
 public abstract class FQANMatchingRule {
 
-  protected final Log log = AuthzDirector.getLogger();
+  protected Log log = AuthzDirector.getLogger();
   protected static final String ADMIT_ALL = ".*";
   protected String groupPatternMatching = null;
   protected String rolePatternMatching = null;
