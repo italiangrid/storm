@@ -63,13 +63,13 @@ public class GridUserManager {
      * PUBLIC and STATIC methods
      */
 
-    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, String[] fqans) {
+    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, FQAN[] fqans) {
         GridUserInterface result = null;
         result = userFactory.createGridUser(dn, fqans, proxy);
         return result;
     }
 
-    public static GridUserInterface makeVOMSGridUser(String dn, String[] fqans) {
+    public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans) {
         GridUserInterface result = null;
         result = userFactory.createGridUser(dn, fqans);
         return result;
@@ -90,7 +90,6 @@ public class GridUserManager {
     public static GridUserInterface makeStoRMGridUser() {
       GridUserInterface result = null;
       String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it";
-      //String[] fqans = {""};
       result = userFactory.createGridUser(dn);
       return result;
     }

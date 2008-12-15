@@ -212,25 +212,24 @@ public class RequestSummaryCatalog {
          */
         if(fqans_string!="") {
             String[] fqans_string_array = fqans_string.split("#");
-            /**
             if (fqans_string_array.length!=0) {
-         	    fqans_vector = new Fqan[fqans_string_array.length];
+                    fqans_vector = new FQAN[fqans_string_array.length];
                 for(int i=0;i<fqans_string_array.length;i++)
-                    fqans_vector[i] = new Fqan(fqans_string_array[i]);
+                    fqans_vector[i] = new FQAN(fqans_string_array[i]);
             }
-            **/
         }
+
 
         log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " +  dn + " " + fqans_string + " " + proxyString);
         if ( (dn != null) && (fqans_string != null) && (proxyString != null)) {
           //all credentials available!
           log.info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate FOUND for request " +rtoken);
-          return GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_string.split("#"));
+          return GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_vector);
         }
         else if ( (dn != null) && (fqans_string != null) && (proxyString == null)) {
           //voms credentials without proxy
           log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes FOUND for request " + rtoken);
-          return GridUserManager.makeVOMSGridUser(dn, fqans_string.split("#"));
+          return GridUserManager.makeVOMSGridUser(dn, fqans_vector);
         }
         else if ( (dn != null) && (fqans_string == null) && (proxyString != null)) {
           //NON-voms credentials with proxy

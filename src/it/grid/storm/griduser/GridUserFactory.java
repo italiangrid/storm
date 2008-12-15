@@ -15,6 +15,8 @@ package it.grid.storm.griduser;
 import java.util.Vector;
 import org.apache.commons.logging.Log;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * <p>Title: </p>
@@ -79,7 +81,7 @@ public class GridUserFactory {
         GridUser user = null;
 
         user = new GridUser(defaultMapperClass, distinguishName);
-
+        log.debug("Created new Grid User (NO VOMS) : "+user);
         return user;
     }
 
@@ -95,6 +97,7 @@ public class GridUserFactory {
         user = new GridUser(defaultMapperClass, distinguishName);
         user.setProxyString(proxyString);
 
+        log.debug("Created new Grid User (NO VOMS con PROXY) : "+user);
         return user;
     }
 
@@ -104,11 +107,11 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    GridUserInterface createGridUser(String distinguishName, String[] fqanString) {
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans) {
         GridUserInterface user = null;
 
-        user = new VomsGridUser(defaultMapperClass, distinguishName, distinguishName, fqanString );
-
+        user = new VomsGridUser(defaultMapperClass, distinguishName, distinguishName, fqans );
+        log.debug("Created new Grid User (VOMS USER) : "+user);
         return user;
     }
 
@@ -118,9 +121,10 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    GridUserInterface createGridUser(String distinguishName, String[] fqanString, String proxyString) {
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString) {
         GridUserInterface user = null;
 
+        log.debug("**** NULL METHOD **** Created new Grid User (VOMS USER) : "+user);
         return user;
     }
 
@@ -135,74 +139,61 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    GridUserInterface createGridUser(String distinguishName, String[] fqanString, String proxyString,
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString,
                                             MapperInterface userMapper) {
         GridUserInterface user = null;
-
+        log.debug("**** NULL METHOD **** Created new Grid User (VOMS USER) : "+user);
         return user;
     }
 
-    /**
-     * Factory method taking a XML structure.
-     *
-     * <p> As no proxy certificate is passed, {@link
-     * #getUserCredentials()} will return <code>null</code> for
-     * objects constructed this way.
-     *
-     * @param inputParam The XML structure
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-    GridUserInterface decode(Map inputParam) {
+    public GridUserInterface decode(Map inputParam)
+    {
         // Member name for VomsGridUser Creation
         String member_DN = new String("userDN");
         String member_Fqans = new String("userFQANS");
 
         // Get DN and FQANs[]
-        String dn = (String) inputParam.get(member_DN);
+        String dnString = (String) inputParam.get(member_DN);
 
-        if (dn != null) {
-            log.debug("DN: " + dn);
-            //Retrieve FQANs
-            Vector fqans_vector = (Vector) inputParam.get(member_Fqans);
+        List fqansList = null;
+        try {
+                fqansList = Arrays.asList((Object[]) inputParam.get(member_Fqans));
+        } catch (NullPointerException e ) {
+                //log.debug("Empty FQAN[] found.");
+        }
 
-            if (fqans_vector != null) {
-                //===== VOMS GRID USER =====
-                // Define FQAN[]
-                //Fqan[] fqans = new Fqan[fqans_vector.size()];
+        // Destination Fqans array
+        FQAN[] fqans = null;
 
-                log.debug("fqans_vector Size: " + fqans_vector.size());
+        if (fqansList != null) {
+            // Define FQAN[]
+            fqans = new FQAN[fqansList.size()];
+            log.debug("fqans_vector Size: " + fqansList.size());
 
-                //Convert Vector into array of Strings
-                String[] fqans = (String[])fqans_vector.toArray(new String[fqans_vector.size()]);
+            for (int i=0; i<fqansList.size(); i++) {
+                String fqan_string = (String) fqansList.get(i);
+                log.debug("FQAN[" + i + "]:" + fqan_string);
+                // Create Fqan
+                FQAN fq = new FQAN(fqan_string);
+                // Add this into Array of Fqans
+                fqans[i] = fq;
+            }
+        }
 
-                /**
-                 * Why convert fqan vector in an array of Fqan when the mapping works with an array of String?
-                 *
-                for (int i = 0; i < fqans_vector.size(); i++) {
-                    String fqan_string = (String) fqans_vector.get(i);
-                    log.debug("FQAN[" + i + "]:" + fqan_string);
-                    // Create Fqan
-                    Fqan fq = new Fqan(fqan_string);
-                    // Add this into Array of Fqans
-                    fqans[i] = fq;
-                }
-}               **/
-
-                //Create VOMS Grid User
+        // Setting up VomsGridUser
+        if (dnString != null) {
+            log.debug("DN: " + dnString);
+            // Creation of srm GridUser type
+            if (fqansList != null) {
                 log.debug("VomsGU with FQAN");
-                return createGridUser(dn, fqans);
+                return createGridUser(dnString, fqans);
+            } else {
+                return createGridUser(dnString);
             }
-            else {
-                //===== Normal GRID USER =====
-                return createGridUser(dn);
-            }
-
         }
-        else {
-            return null;
-        }
+        return null;
     }
+
 
 
     /**

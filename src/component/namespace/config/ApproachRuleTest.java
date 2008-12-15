@@ -309,8 +309,8 @@ public class ApproachRuleTest {
    String dnString = "/C=UK/O=eScience/OU=Bristol/L=IS/CN=jon wakelin";
    String fqanString = "/infngrid/Role=NULL/Capability=NULL";
    //Fqan[] fqan = { new Fqan(fqanString) };
-   String[] fqan = {fqanString};
-   fakeVOMSUser = (VomsGridUser)GridUserManager.makeVOMSGridUser(dnString,fqan);
+   FQAN[] fqans = { new FQAN(fqanString) };
+   fakeVOMSUser = (VomsGridUser)GridUserManager.makeVOMSGridUser(dnString,fqans);
    //fakeVOMSUser = VomsGridUser.make(dnString, fqan);
 
    log.debug("Fake VOMS User : "+fakeVOMSUser);

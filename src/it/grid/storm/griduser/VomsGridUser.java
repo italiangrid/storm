@@ -13,6 +13,8 @@ import org.apache.log4j.NDC;
 import it.grid.storm.common.types.VO;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Collections;
+import java.util.Collection;
 
 /**
  * Encapsulates user Grid credentials access, and maps those to a local
@@ -58,220 +60,8 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     /** To map Grid credentials to local UNIX account credentials. */
     protected MapperInterface _mapper;
 
-    // --- public factory methods --- //
 
-    /**
-     * Factory method taking explicit subject DN and the PEM-encoded
-     * proxy certificate chain.  See
-     * {@link #VomsGridUser(String, Fqan[], String)} for a discussion
-     * of the constructor parameters.
-     *
-     * @param dn     The user identity (subject DN)
-     * @param proxy  A string containing the PEM-encoded certificate chain.
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-
-//    public static VomsGridUser make(final String dn, final String proxy)
-//    {
-//        return new VomsGridUser(dn, new Fqan[0], proxy, new LcmapsMapper());
-//    }
-
-
-    /**
-     * Factory method taking explicit subject DN and FQANs (VOMS
-     * attributes), and the PEM-encoded * proxy certificate chain.
-     * See {@link #VomsGridUser(String, Fqan[], String)} for a discussion
-     * of the constructor parameters.
-     *
-     * @param dn     The user identity (subject DN)
-     * @param fqans  An array of VOMS attributes
-     * @param proxy  A string containing the PEM-encoded certificate chain.
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-//    public static VomsGridUser make(final String dn, final Fqan[] fqans, final String proxy)
-//    {
-//        return new VomsGridUser(dn, fqans, proxy, new LcmapsMapper());
-//    }
-
-
-    /**
-     * Factory method taking explicit subject DN and FQANs (VOMS attributes).
-     * See {@link #VomsGridUser(String, Fqan[], String)} for a discussion
-     * of the constructor parameters.
-     *
-     * <p> As no proxy certificate is passed, {@link
-     * #getUserCredentials()} will return <code>null</code> for
-     * objects constructed this way.
-     *
-     * @param dn     The user identity (subject DN)
-     * @param fqans  An array of VOMS attributes
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-//    public static VomsGridUser make(final String dn, final Fqan[] fqans)
-//    {
-//        return new VomsGridUser(dn, fqans, null, new LcmapsMapper());
-//    }
-
-
-    /**
-     * Factory method taking explicit subject DN.
-     *
-     * See {@link #VomsGridUser(String, Fqan[], String)} for a
-     * discussion of the constructor parameters.
-     *
-     * <p> As no proxy certificate is passed, {@link
-     * #getUserCredentials()} will return <code>null</code> for
-     * objects constructed this way.
-     *
-     * @param dn     The user identity (subject DN)
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-//    public static VomsGridUser make(final String dn)
-//    {
-//	log.debug(" VomsGridUser making with DN = "+dn);
-//        return VomsGridUser.make(dn, new Fqan[0], null);
-//    }
-
-    /**
-     * Factory method taking a XML structure.
-     *
-     * <p> As no proxy certificate is passed, {@link
-     * #getUserCredentials()} will return <code>null</code> for
-     * objects constructed this way.
-     *
-     * @param inputParam The XML structure
-     * @return A VomsGridUser object, encapsulating the given credentials
-     * @see    #VomsGridUser(String, Fqan[], String)
-     */
-/**
-    public static VomsGridUser decode(Map inputParam)
-    {
-        // Member name for VomsGridUser Creation
-        String member_DN = new String("userDN");
-        String member_Fqans = new String("userFQANS");
-
-        // Get DN and FQANs[]
-        String DN = (String) inputParam.get(member_DN);
-
-        List fqans_vector = null;
-        try {
-        	fqans_vector = Arrays.asList((Object[]) inputParam.get(member_Fqans));
-        } catch (NullPointerException e ) {
-        	//log.debug("Empty FQAN[] found.");
-        }
-
-        // Destination Fqans array
-        Fqan[] fqans = null;
-
-        if (fqans_vector != null) {
-            // Define FQAN[]
-            fqans = new Fqan[fqans_vector.size()];
-            log.debug("fqans_vector Size: " + fqans_vector.size());
-
-            for (int i=0; i<fqans_vector.size(); i++) {
-                String fqan_string = (String) fqans_vector.get(i);
-                log.debug("FQAN[" + i + "]:" + fqan_string);
-                // Create Fqan
-                Fqan fq = new Fqan(fqan_string);
-                // Add this into Array of Fqans
-                fqans[i] = fq;
-            }
-        }
-
-        // Setting up VomsGridUser
-        if (DN != null) {
-            log.debug("DN: " + DN);
-            // Creation of srm GridUser type
-            if (fqans_vector != null) {
-                log.debug("VomsGU with FQAN");
-                return VomsGridUser.make(DN, fqans);
-            } else {
-                return VomsGridUser.make(DN);
-            }
-        }
-        return null;
-    }
-**/
-    // --- constructors --- //
-
-    /**
-     * Constructor taking explicit DN and FQANs values.
-     *
-     * <p> As no proxy certificate is passed, {@link
-     * #getUserCredentials()} will return <code>null</code> for
-     * objects constructed this way.
-     *
-     * <p> This constructor will perform the following syntax checks on
-     * the passed data: <em>(XXX: currently commented out!)</em>
-     * <ul>
-     *
-     * <li> The <code>dn</code> argument must begin with
-     * '<code>/</code>' and contain at least one occurence of the
-     * "CN=..." field;
-     *
-     * <li> Each of the members of the <code>fqan</code> array must
-     * match the regular expression
-     * <code>/([a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)*[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9](/[\\w-]+)*(/Role=[\\w-]+)?(/Capability=[\\w-]+)?</code>
-     * - see
-     * http://grid.racf.bnl.gov/GUMS/components/business/apidocs/gov/bnl/gums/FQAN.html
-     * </ul>
-     *
-     * <p> The passed <code>pem</code> string parameter should have
-     * exactly the same contents as the PEM-encoded proxy/certificate;
-     * in particular, it may contain more than one certificate: from
-     * the first one we take the Subject DN and the time validity
-     * interval; the VOMS library will extract attributes from
-     * anywhere in the cahin and verify that the chain is valid.
-     *
-     * <p> Indeed, VOMS use cases actually need the whole certificate
-     * chain, e.g., the proxy that gets propagated to a WN has no VOMS
-     * extensions in it; the VOMS ACs are higher up in the chain, in
-     * the proxy the user made with <code>voms-proxy-init</code>.
-     *
-     * @param dn     The user identity (subject DN)
-     * @param fqans  An array of VOMS attributes
-     * @param pem    A string containing the PEM-encoded proxy certificate
-     * @param mapper A {@link it.grid.storm.griduser.MapperInterface}
-     * implementation, that will be used to map Grid credentials onto
-     * local account credentials.
-     *
-     */
-/**
-    protected VomsGridUser(final String dn, final Fqan[] fqans, final String pem, final MapperInterface mapper)
-    // throws InvalidSubjectDnSyntax, InvalidFqanSyntax
-    {
-        assert (null!=dn); assert (null!=fqans); assert (null!=mapper);
-
-        for (int i = 0; i < fqans.length; i++)
-        	log.debug("VomsGridSUser with FQANs:"+fqans[i]);
-
-        NDC.push("VomsGridUser constructor");
-
-        String trimmedDn = dn.trim();
-        _certificateSubjectDn = trimmedDn;
-
-        _fqans = fqans;
-        _hasVoms = false;
-        if (0!=_fqans.length) {
-            _hasVoms = true;
-        }
-
-        _hasBeenMapped = false;
-        _localUser = null;
-
-        _pemEncodedCertificateChain = pem;
-
-        _mapper = mapper;
-
-        NDC.pop();
-    }
-**/
     // --- public accessor methods --- //
-
 
     VomsGridUser(Class mapperClass) {
         super(mapperClass);
@@ -289,11 +79,13 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         this.setProxyString(proxy);
     }
 
-    VomsGridUser(Class mapper, String distinguishedName, String proxy, String[] fqans) {
+    VomsGridUser(Class mapper, String distinguishedName, String proxy, FQAN[] fqansArray) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
         this.setProxyString(proxy);
-        this.setFqanStrings(fqans);
+        //this.setFqanStrings(fqans);
+        this.fqans = (ArrayList<FQAN>)Arrays.asList(fqansArray);
+        this.fqanStrings = (String[]) this.fqans.toArray();
     }
 
     void setFqanStrings(String[] fqans) {
@@ -327,17 +119,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     }
 
 
-    private String[] getFqanStrings() {
-
-        // For a set or list
-        int count = 0;
-        String[] results = new String[fqans.size()];
-        for (Iterator it = fqans.iterator(); it.hasNext(); ) {
-            results[count] = (String) it.next();
-            count++;
-        }
-        return results;
-    }
 
     /**
      * Return <code>true</code> if any VOMS attributes are stored in
@@ -357,26 +138,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     }
 
 
-    /**
-     * Return <code>true</code> if <code>dn</code> is the subject DN
-     * of the user certificate that issued the proxy certificate that
-     * was used to build this object.
-     *
-     * <p> A heuristics is used to determine the Holder DN from the
-     * stored subject DN; see the comments in {@link
-     * #getPermanentIdentifier()}.
-     *
-     * @return <code>true</code> if <code>dn</code> is the subject DN
-     *         of the user certificate that issued the proxy certificate
-     *         that was used to build this object.
-     *
-     * @see #getPermanentIdentifier()
-     *
-     */
-    public boolean matchesDn(final String dn)
-    {
-        return (new ExactDnMatch()).match(getPermanentIdentifier(), dn);
-    }
 
 
     /**
@@ -434,39 +195,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     }
 
 
-    /**
-     * Return the (maybe guessed) Holder DN, that is, the certificate
-     * subject DN that uniquely identifies the user person on the
-     * Grid.
-     *
-     * <p> Since we have no direct access to the (proxy) certificate,
-     * then we adopt the heuristics of truncating the stored subject
-     * DN after the first 'CN=...' field.  One example that will
-     * certainly break this is certificates that have "/Email=..." or
-     * "/serialNumber=..."  after the "/CN=..." field (see, for
-     * instance, ...).  But the whole idea of passing just a string
-     * instead of the true DN, which is a sequence of ASN.1 objects,
-     * is flawed...
-     *
-     * @todo FIXME: until I don't know if this heuristics is good, I'm
-     * keeping this method private.  One example that will certainly
-     * break this is certificates that have "/Email=..." or
-     * "/serialNumber=..." after the "/CN=..." field (see, for
-     * instance, ...).  But the whole idea of passing just a string
-     * instead of the true DN, which is a sequence of ASN.1 objects,
-     * is flawed...
-     */
-    private String getPermanentIdentifier()
-    {
-        String[] parts = getDn().split("/CN=", 3);
-        //return parts[0]+"/CN="+parts[1];
-
-        //This heuristics does not works for DN with multiple CN field!
-        //As the one from new CERN CA...
-        //It's better to return the entire DN
-        return getDn();
-
-    }
 
 
     /**
@@ -478,7 +206,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     public LocalUser getLocalUser() throws CannotMapUserException
     {
         if (null==_localUser) {
-            //NDC.push("VomsGridUser.getLocalUser");
+
             log.debug("VomsGridUser.getLocalUser");
 
             // call LCMAPS and do the mapping
@@ -488,7 +216,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
                 fqanStrings[i] = _fqans[i].toString();
             }
             try {
-	        _localUser = _mapper.map(getPermanentIdentifier(), fqanStrings);
+	        _localUser = _mapper.map(getDn(), fqanStrings);
            }
             catch (CannotMapUserException x) {
                 // log the operation that failed
