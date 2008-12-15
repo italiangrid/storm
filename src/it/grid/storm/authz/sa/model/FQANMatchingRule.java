@@ -16,7 +16,7 @@ public abstract class FQANMatchingRule {
   protected Pattern groupPattern = null;
   protected Pattern rolePattern = null;
 
-  abstract void validateMR() throws AuthzDBReaderException;
+  abstract boolean validateMR() throws AuthzDBReaderException;
 
   public boolean match(FQAN fqan) {
     boolean result = false;

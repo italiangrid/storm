@@ -56,7 +56,11 @@ public class FQAN {
     }
 
     public String getGroup() {
-      return "/"+vo+group;
+      StringBuffer sb = new StringBuffer();
+      sb.append("/");
+      sb.append(vo);
+      if (group!=null) sb.append(group);
+      return sb.toString();
     }
 
     public String getSubGroup() {

@@ -50,7 +50,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
     protected String _pemEncodedCertificateChain;
 
-    protected String _certificateSubjectDn;
     protected boolean _hasVoms;
     protected FQAN[] _fqans;
 
@@ -102,25 +101,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
        this.fqans.add(fqan);
    }
 
-/**
-    public List<FQAN> getFqansList() {
-        if (fqans.size()==0) {
-            fqans = new ArrayList<FQAN>(populateFqanList());
-        }
-        return fqans;
-    }
 
-    private List<FQAN> populateFqanList() {
-        ArrayList<FQAN> result = new ArrayList<FQAN>();
-        if (fqanStrings!=null) {
-            for (int i=0; i<fqanStrings.length; i++) {
-                result.add(new FQAN(fqanStrings[i]));
-            }
-        }
-        return result;
-    }
-
-**/
 
     /**
      * Return <code>true</code> if any VOMS attributes are stored in
@@ -140,23 +121,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     }
 
 
-
-
-    /**
-     * Return the DN that is stored in this object (see {@link
-     * #getPermanentIdentifier()}.  <em>Beware,</em> it may be a proxy
-     * DN, containing appended 'CN=...'  fields, so always use {@link
-     * matchesDn} for comparison purposes.
-     *
-     * @return  The DN of the certificate that is stored in this object.
-     *
-     * @see #getPermanentIdentifier()
-     *
-     */
-    public String getDn()
-    {
-        return _certificateSubjectDn;
-    }
 
 
     /**
@@ -222,7 +186,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
            }
             catch (CannotMapUserException x) {
                 // log the operation that failed
-                log.error("Error in mapping '"+_certificateSubjectDn+"' to a local user: "+x.getMessage());
+                log.error("Error in mapping '"+getDn()+"' to a local user: "+x.getMessage());
                 // re-thorw same exception
                 throw x;
             }

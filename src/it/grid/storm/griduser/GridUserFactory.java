@@ -12,7 +12,6 @@
 
 package it.grid.storm.griduser;
 
-import java.util.Vector;
 import org.apache.commons.logging.Log;
 import java.util.Map;
 import java.util.Arrays;
@@ -157,9 +156,10 @@ public class GridUserFactory {
 
         List fqansList = null;
         try {
-                fqansList = Arrays.asList((Object[]) inputParam.get(member_Fqans));
-        } catch (NullPointerException e ) {
-                //log.debug("Empty FQAN[] found.");
+          fqansList = Arrays.asList( (Object[]) inputParam.get(member_Fqans));
+        }
+        catch (NullPointerException e) {
+          log.debug("Empty FQAN[] found."+e);
         }
 
         // Destination Fqans array

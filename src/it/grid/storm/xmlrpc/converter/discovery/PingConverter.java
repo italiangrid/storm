@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import java.util.HashSet;
 
 public class PingConverter implements Converter
 {
@@ -34,7 +35,7 @@ public class PingConverter implements Converter
 
     public InputData convertToInputData(Map inputParam)
     {
-        log.debug("Ping: input converter started. InputParam "+inputParam);
+        log.debug("Ping: input converter started. InputParam ");
 
         /* Retrieve the Requestor */
         GridUserInterface requestor = null;

@@ -97,12 +97,6 @@ public class GridUserManager {
 
     public static GridUserInterface decode(Map inputParam) {
         GridUserInterface result = null;
-        // For keys of a map
-        for (Iterator it = inputParam.keySet().iterator(); it.hasNext(); ) {
-          String key = (String) it.next();
-          String value = (String) inputParam.get(key);
-          log.debug(" InputParam (KEY = "+key+ " - VALUE = "+value+" )" );
-        }
         result = userFactory.decode(inputParam);
         return result;
 

@@ -3,57 +3,80 @@ package it.grid.storm.authz.sa.model;
 import it.grid.storm.authz.sa.conf.*;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 
 public class EGEEFQANMatchingRule extends FQANMatchingRule {
 
-  static private Pattern fqanWildcardPattern = Pattern.compile("/[\\w-\\.]+(/[\\w-\\.]+)*(/Role=[\\w-\\.]+)?(/Capability=[\\w-\\.]+)?");
+  //To verify the Regular Expression visit the site "http://www.fileformat.info/tool/regex.htm"
+  static private Pattern fqanWildcardPattern = Pattern.compile("/[\\w-\\.]+(((/[\\w-\\.]+)*)|(/\\u002A))(/Role=(([\\w-\\.]+)|(\\u002A)))?");
 
-
+  private String fqanRE = null;
   private String voName = null;
   private String groupPattern = null;
   private String rolePattern = null;
+  private boolean checkFormedness;
+
+  /**
+   * CONSTRUCTOR
+   **/
+
+  public EGEEFQANMatchingRule(String fqanRE) throws AuthzDBReaderException {
+          this(fqanRE, true);
+  }
 
 
-  public EGEEFQANMatchingRule(String regularExpressionRule) throws AuthzDBReaderException {
-    if (regularExpressionRule!=null) {
-    /**
-         StringTokenizer stk = new StringTokenizer(regularExpressionRule, "/");
-         int tokens = stk.countTokens();
-         if (tokens>1) {
+  public EGEEFQANMatchingRule(String fqanRE, boolean checkFormedness) throws AuthzDBReaderException {
+    this.checkFormedness = checkFormedness;
+    this.fqanRE = fqanRE;
+    if (validateMR())
+      generatePattern();
+  }
 
-         } else
-     **/
-     } else {
 
-    }
+  /**
+   * PRIVATE SETTER
+   **/
 
-    if ( (regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
-      init("*", "*");
-    }
-    else { //Split the rule into the attribute rules
-      String[] rules = regularExpressionRule.split("Role=");
-      if (rules != null) {
-        groupPatternMatching = rules[0];
-        if (rules.length > 1) {
-          rolePatternMatching = rules[1];
-        }
+  private void generatePattern() {
+      StringTokenizer stk = new StringTokenizer(this.fqanRE, "/");
+      int tokens = stk.countTokens();
+      this.voName = stk.nextToken();
+      if (!stk.hasMoreTokens()) {
+        groupPattern = null;
+        rolePattern = null;
+      } else { //building (sub)group pattern
+
       }
-    }
+
+
+      if (tokens > 1) {
+
+      }
   }
 
-  private void init(String groupPatternMatching, String rolePatternMatching) throws AuthzDBReaderException{
-    this.groupPatternMatching = groupPatternMatching;
-    this.rolePatternMatching = rolePatternMatching;
-    validateMR();
-  }
+
+
+
+
 
   /**
    * validateMR
    */
-  void validateMR() throws AuthzDBReaderException {
-
+  protected boolean validateMR() throws AuthzDBReaderException {
+    // Matches to the specification.
+    Matcher m = fqanWildcardPattern.matcher(this.fqanRE);
+    if (!m.matches()) {
+      if (checkFormedness)
+        throw new IllegalArgumentException("FQAN '" + this.fqanRE +
+            "' is malformed (syntax: /VO[(/subgroup(s)|*)]][/Role=(role|*)])");
+      else
+        return false;
+      }
+    return true;
   }
+
+
 
 
 

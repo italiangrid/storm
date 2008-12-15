@@ -48,13 +48,28 @@ public class AuthzTest {
       }
     }
 
+    public void testEGEEFQAN_MR(String fqanRE) {
+      try {
+        EGEEFQANMatchingRule fqanMR = new EGEEFQANMatchingRule(fqanRE);
+        log.debug("fqanMR = " );
+
+      }
+      catch (Exception ex) {
+        log.error("AHH" + ex);
+      }
+    }
+
 
     public static void main(String[] args) {
       AuthzTest test = new AuthzTest();
       test.init();
+
       test.testFQAN("/atlas/ciccio/Role=sgm");
       test.testFQAN("/atlas/ciccio");
       test.testFQAN("Role=sgm");
+
+      test.testEGEEFQAN_MR("");
+
     }
 
 }
