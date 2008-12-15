@@ -34,7 +34,7 @@ public class PingConverter implements Converter
 
     public InputData convertToInputData(Map inputParam)
     {
-        log.debug("Ping: input converter started.");
+        log.debug("Ping: input converter started. InputParam "+inputParam);
 
         /* Retrieve the Requestor */
         GridUserInterface requestor = null;
