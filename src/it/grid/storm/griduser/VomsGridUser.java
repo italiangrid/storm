@@ -85,13 +85,14 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         this.setProxyString(proxy);
         //this.setFqanStrings(fqans);
         this.fqans = Arrays.asList(fqansArray);
-        this.fqanStrings = (String[]) this.fqans.toArray();
+        //this.fqanStrings = (String[]) this.fqans.toArray();
     }
 
+/**
     void setFqanStrings(String[] fqans) {
         this.fqanStrings = fqans;
     }
-
+**/
 
     void setFqans(List<FQAN> fqans) {
         this.fqans = new ArrayList<FQAN>(fqans);
@@ -101,6 +102,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
        this.fqans.add(fqan);
    }
 
+/**
     public List<FQAN> getFqansList() {
         if (fqans.size()==0) {
             fqans = new ArrayList<FQAN>(populateFqanList());
@@ -118,7 +120,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         return result;
     }
 
-
+**/
 
     /**
      * Return <code>true</code> if any VOMS attributes are stored in
