@@ -33,20 +33,16 @@ import java.util.Collection;
  */
 public class VomsGridUser extends AbstractGridUser implements GridUserInterface {
 
-    private MapperInterface mapper = null;
-    private String[] fqanStrings = null;
-    private List<FQAN> fqans = new ArrayList<FQAN> ();
-
-
-
     private static final Logger log = Logger.getLogger(VomsGridUser.class);
+
+    private MapperInterface mapper = null;
+    private List<FQAN> fqans = new ArrayList<FQAN> ();
 
     // --- protected members --- //
 
-    protected static final Pattern DN_RE = Pattern.compile("^/.+/CN=", Pattern.CASE_INSENSITIVE);
+    // protected static final Pattern DN_RE = Pattern.compile("^/.+/CN=", Pattern.CASE_INSENSITIVE);
     // see http://grid.racf.bnl.gov/GUMS/components/business/apidocs/gov/bnl/gums/FQAN.html
-    protected static final Pattern FQAN_RE = Pattern.compile("^/([a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)*[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9](/[\\w-]+)*(/Role=[\\w-]+)?(/Capability=[\\w-]+)?$",
-            Pattern.CASE_INSENSITIVE);
+    //protected static final Pattern FQAN_RE = Pattern.compile("^/([a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)*[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9](/[\\w-]+)*(/Role=[\\w-]+)?(/Capability=[\\w-]+)?$",Pattern.CASE_INSENSITIVE);
 
     protected String _pemEncodedCertificateChain;
 
@@ -87,11 +83,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         //this.fqanStrings = (String[]) this.fqans.toArray();
     }
 
-/**
-    void setFqanStrings(String[] fqans) {
-        this.fqanStrings = fqans;
-    }
-**/
 
     void setFqans(List<FQAN> fqans) {
         this.fqans = new ArrayList<FQAN>(fqans);
