@@ -17,6 +17,7 @@ import it.grid.storm.config.Configuration;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * <p>Title: </p>
@@ -96,6 +97,12 @@ public class GridUserManager {
 
     public static GridUserInterface decode(Map inputParam) {
         GridUserInterface result = null;
+        // For keys of a map
+        for (Iterator it = inputParam.keySet().iterator(); it.hasNext(); ) {
+          String key = (String) it.next();
+          String value = (String) inputParam.get(key);
+          log.debug(" InputParam (KEY = "+key+ " - VALUE = "+value+" )" );
+        }
         result = userFactory.decode(inputParam);
         return result;
 
