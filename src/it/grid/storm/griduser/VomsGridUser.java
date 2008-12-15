@@ -33,9 +33,9 @@ import java.util.Collection;
  */
 public class VomsGridUser extends AbstractGridUser implements GridUserInterface {
 
-  private MapperInterface mapper = null;
-  private String[] fqanStrings = null;
-  private ArrayList<FQAN> fqans = new ArrayList<FQAN> ();
+    private MapperInterface mapper = null;
+    private String[] fqanStrings = null;
+    private List<FQAN> fqans = new ArrayList<FQAN> ();
 
 
 
@@ -84,7 +84,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         this.setDistinguishedName(distinguishedName);
         this.setProxyString(proxy);
         //this.setFqanStrings(fqans);
-        this.fqans = (ArrayList<FQAN>)Arrays.asList(fqansArray);
+        this.fqans = Arrays.asList(fqansArray);
         this.fqanStrings = (String[]) this.fqans.toArray();
     }
 
