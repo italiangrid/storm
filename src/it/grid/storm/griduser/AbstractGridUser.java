@@ -35,11 +35,11 @@ public abstract class AbstractGridUser implements GridUserInterface {
     protected static Log log = LogFactory.getLog("griduser");
     protected DistinguishedName subjectDN = null;
     protected String proxyString = null;
-    protected Class userMapperClass = null;
+    protected MapperInterface userMapperClass = null;
     protected LocalUser localUser = null;
 
 
-    protected AbstractGridUser(Class mapperClass) {
+    protected AbstractGridUser(MapperInterface mapperClass) {
         this.userMapperClass = mapperClass;
     }
 
@@ -50,7 +50,7 @@ public abstract class AbstractGridUser implements GridUserInterface {
      *
      * @param mapper MapperInterface
      */
-    void setUserMapper(Class mapperClass) {
+    void setUserMapper(MapperInterface mapperClass) {
         this.userMapperClass = mapperClass;
     }
 

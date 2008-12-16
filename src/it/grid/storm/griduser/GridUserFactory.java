@@ -33,7 +33,7 @@ public class GridUserFactory {
 
     private static final Log log = GridUserManager.log;
     private String defaultMapperClassName = GridUserManager.getDefaultMapperClassName();
-    private Class defaultMapperClass = null;
+    private MapperInterface defaultMapperClass = null;
 
 
     private static GridUserFactory instance = null;
@@ -237,10 +237,10 @@ public class GridUserFactory {
      * @return Class
      * @throws GridUserException
      */
-    private Class makeMapperClass(String mapperClassName) throws GridUserException {
+    private MapperInterface makeMapperClass(String mapperClassName) throws GridUserException {
 
+        MapperInterface mapper = null;
         Class mapperClass = null;
-
         if (mapperClassName == null) {
             throw new GridUserException("Cannot load Mapper Driver without a valid Mapper Driver Class Name!");
         }
@@ -265,8 +265,18 @@ public class GridUserFactory {
         if (!found) {
             throw new GridUserException("Cannot load Mapper Driver instance without a valid Mapper Driver Class Name!");
         }
-
-        return mapperClass;
+        try {
+            mapper = (MapperInterface) mapperClass.newInstance();
+        }
+        catch (IllegalAccessException ex) {
+            log.error("makeMapperClass EXCEPTION. "+ex);
+            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"+mapperClassName+"'");
+        }
+        catch (InstantiationException ex) {
+            log.error("makeMapperClass EXCEPTION. "+ex);
+            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"+mapperClassName+"'");
+        }
+        return mapper; //mapperClass;
     }
 
 

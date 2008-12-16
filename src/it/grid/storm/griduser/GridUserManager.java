@@ -17,7 +17,7 @@ import it.grid.storm.config.Configuration;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import java.util.Map;
-import java.util.Iterator;
+
 
 /**
  * <p>Title: </p>

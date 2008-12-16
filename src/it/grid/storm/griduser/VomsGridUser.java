@@ -22,40 +22,35 @@ import it.grid.storm.common.types.VO;
  */
 public class VomsGridUser extends AbstractGridUser implements GridUserInterface {
 
-    private static final Logger log = Logger.getLogger(VomsGridUser.class);
 
-    private MapperInterface mapper = null;
     private List<FQAN> fqans = new ArrayList<FQAN> ();
+    private List<String> fqansString = new ArrayList<String>();
 
-    // --- protected members --- //
-    protected String _pemEncodedCertificateChain;
+    String[] fqanStrings = getFQANsString();
 
-
-    /** To map Grid credentials to local UNIX account credentials. */
-    protected MapperInterface _mapper;
 
 
     // --- public accessor methods --- //
 
-    VomsGridUser(Class mapperClass) {
+    VomsGridUser(MapperInterface mapperClass) {
         super(mapperClass);
     }
 
 
-    VomsGridUser(Class mapper, String distinguishedName) {
+    VomsGridUser(MapperInterface mapper, String distinguishedName) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
     }
 
 
-    VomsGridUser(Class mapper, String distinguishedName, String proxy) {
+    VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
         this.setProxyString(proxy);
     }
 
 
-    VomsGridUser(Class mapper, String distinguishedName, String proxy, FQAN[] fqansArray) {
+    VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy, FQAN[] fqansArray) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
         this.setProxyString(proxy);
@@ -108,43 +103,32 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
 
     /**
-     * Returns the local POSIX user this Grid user is mapped onto.
+     * Return the local user on wich the GridUser is mapped.
      *
-     * @return  LocalUser object holding the local credentials
-     *          this grid user is mapped onto.
+     * @throws CannotMapUserException
+     * @return LocalUser
      */
-    public LocalUser getLocalUser() throws CannotMapUserException
-    {
-        if (null==localUser) {
+    public LocalUser getLocalUser() throws CannotMapUserException {
+        if (null == localUser) {
 
             log.debug("VomsGridUser.getLocalUser");
 
             // call LCMAPS and do the mapping
             String[] fqanStrings = getFQANsString();
 
-
             try {
-	        localUser = _mapper.map(getDn(), fqanStrings);
-           }
-            catch (CannotMapUserException x) {
+                localUser = userMapperClass.map(getDn(), fqanStrings);
+            }
+            catch (CannotMapUserException ex) {
                 // log the operation that failed
-                log.error("Error in mapping '"+getDn()+"' to a local user: "+x.getMessage());
+                log.error("Error in mapping '" + this +"' to a local user: " + ex.getMessage());
                 // re-thorw same exception
-                throw x;
-            }
-            catch (Exception e) {
-                //catch any exception that the C code may throw
-                throw new CannotMapUserException("Got problem from native C code! " + e);
-            }
-            catch (Error err) {
-                //THIS IS A TEMPORARY SOLUTION TO CATCH A SIGFAULT IN NATIVE C CODE!
-                throw new CannotMapUserException("FATAL ERROR! GOT A Java ERROR WHEN CALLING NATIVE c CODE! "+err);
+                throw ex;
             }
         }
-        if (localUser==null)
-            throw new CannotMapUserException("Null local user!");
         return localUser;
     }
+
 
 
 

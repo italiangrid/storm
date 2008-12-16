@@ -31,11 +31,11 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
 
     private MapperInterface mapper = null;
 
-    GridUser(Class mapper) {
+    GridUser(MapperInterface mapper) {
         super(mapper);
     }
 
-    GridUser(Class mapper, String distinguishedName) {
+    GridUser(MapperInterface mapper, String distinguishedName) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
     }
@@ -63,8 +63,8 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
     public LocalUser getLocalUser() throws CannotMapUserException {
         if ( localUser == null ) {
             try {
-                mapper = GridUserFactory.getInstance().makeMapperInstance(this.userMapperClass);
-                localUser = mapper.map(getDn(), null);
+
+                localUser = userMapperClass.map(getDn(), null);
            }
             catch (CannotMapUserException ex) {
                 // log the operation that failed
