@@ -9,7 +9,6 @@ import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
 import it.grid.storm.catalogs.NoDataFoundException;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;

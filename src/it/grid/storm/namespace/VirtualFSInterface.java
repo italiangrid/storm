@@ -2,11 +2,11 @@ package it.grid.storm.namespace;
 
 import java.util.*;
 
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.filesystem.*;
 import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;

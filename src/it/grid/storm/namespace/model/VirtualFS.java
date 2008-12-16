@@ -13,6 +13,7 @@ import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.*;
 import it.grid.storm.namespace.naming.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;

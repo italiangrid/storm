@@ -159,7 +159,7 @@ public class StorageSpaceTO implements Serializable, Comparable {
    *
    * @param spaceData SpaceData
    */
-  public StorageSpaceTO(it.grid.storm.common.StorageSpaceData spaceData)
+  public StorageSpaceTO(it.grid.storm.space.StorageSpaceData spaceData)
   {
   if (spaceData!=null)
     {

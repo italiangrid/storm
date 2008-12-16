@@ -5,10 +5,10 @@ import java.io.File;
 import org.apache.log4j.Logger;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;

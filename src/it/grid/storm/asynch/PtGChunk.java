@@ -36,12 +36,12 @@ import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.griduser.GridUserInterface;

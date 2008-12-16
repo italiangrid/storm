@@ -2,8 +2,8 @@ package it.grid.storm.synchcall.command.space;
 
 import java.util.ArrayList;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;

@@ -18,6 +18,7 @@ import it.grid.storm.persistence.*;
 import it.grid.storm.persistence.dao.*;
 import it.grid.storm.persistence.exceptions.*;
 import it.grid.storm.persistence.model.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.common.*;
 import it.grid.storm.config.Configuration;
@@ -35,7 +36,7 @@ public class ReservedSpaceCatalog {
    *Logger.
    */
   private static final Logger log = Logger.getLogger("catalogs");
-  private static HashSet voSA_spaceTokenSet = new HashSet();
+  public static HashSet voSA_spaceTokenSet = new HashSet();
   private DAOFactory daoFactory;
   private StorageSpaceDAO ssDAO;
   private Configuration config;
@@ -263,25 +264,7 @@ public class ReservedSpaceCatalog {
 
   }
 
-  /**
-   * Returns the spaceTokens associated to the 'user' AND 'spaceAlias'. If 'spaceAlias' is NULL or
-   * an empty string then this method returns all the space tokens this 'user' owns.
-   * @param user VomsGridUser user.
-   * @param spaceAlias User space token description.
-   */
-  private Boolean isDedfaultSpaceToken(TSpaceToken token) {
-    Boolean found = false;
-
-    this.config = Configuration.getInstance();
-    List tokens = config.getListOfDefaultSpaceToken();
-    for (int i = 0; i < tokens.size(); i++) {
-      if ( ( (String) tokens.get(i)).toLowerCase().equals(token.getValue().toLowerCase())) {
-        found = true;
-      }
-    }
-
-    return found;
-  }
+ 
 
   /**
    *
@@ -627,30 +610,31 @@ public class ReservedSpaceCatalog {
         log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " is already up to date.");
         voSA_spaceTokenSet.add(token);
 
-      }
-      else {
+      } else {
         //If the new data has been modified, update the data into the catalog
         log.debug("VOSpaceArea for space token description " + spaceTokenAlias +
                   " is different in some parameters. Updating the catalog.");
         try {
-          catalog_ssd.setGuaranteedSize(totalOnLineSize);
-          catalog_ssd.setDesiredSize(totalOnLineSize);
-          catalog_ssd.setTotalSize(totalOnLineSize);
 
-          //WARNIGN THIS WILL UPDATE THE FREE SIZE
-          catalog_ssd.setUnusedSize(totalOnLineSize);
-          PFN sfn = null;
-          try {
-            sfn = PFN.make(spaceFileName);
-          }
-          catch (InvalidPFNAttributeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          catalog_ssd.setSpaceFileName(sfn);
+            catalog_ssd.setGuaranteedSize(totalOnLineSize);
+            catalog_ssd.setDesiredSize(totalOnLineSize);
+            catalog_ssd.setTotalSize(totalOnLineSize);
 
-          this.updateAllStorageSpace(catalog_ssd);
-          voSA_spaceTokenSet.add(token);
+            //WARNIGN THIS WILL UPDATE THE FREE SIZE
+            catalog_ssd.setUnusedSize(totalOnLineSize);
+            
+            PFN sfn = null;
+            try {
+                sfn = PFN.make(spaceFileName);
+            }
+            catch (InvalidPFNAttributeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catalog_ssd.setSpaceFileName(sfn);
+
+            this.updateAllStorageSpace(catalog_ssd);
+            voSA_spaceTokenSet.add(token);
 
         }
         catch (NoDataFoundException e) {

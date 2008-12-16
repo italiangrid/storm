@@ -7,12 +7,13 @@
 package it.grid.storm.wrapper;
 
 import java.io.*;
+
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 
 import org.apache.log4j.Logger;

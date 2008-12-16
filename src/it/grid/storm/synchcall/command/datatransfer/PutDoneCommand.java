@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 
+import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -24,8 +26,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.catalogs.*;
-import it.grid.storm.common.SpaceHelper;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;

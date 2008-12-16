@@ -11,7 +11,7 @@
 
 
 
-package it.grid.storm.common;
+package it.grid.storm.space;
 
 import java.util.*;
 

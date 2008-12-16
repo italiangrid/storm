@@ -6,7 +6,6 @@ import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 
-import it.grid.storm.common.SpaceHelper;
 import it.grid.storm.config.Configuration;
 
 import it.grid.storm.scheduler.Delegable;
@@ -23,6 +22,7 @@ import it.grid.storm.catalogs.PtPChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TOverwriteMode;
 
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;

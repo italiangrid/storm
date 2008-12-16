@@ -4,6 +4,20 @@ import it.grid.storm.balancer.AbstractNode;
 import it.infn.bo.FMC.CurrentProcs;
 import it.grid.storm.namespace.model.Protocol;
 
+/**
+ *
+ * This class is part of the StoRM project.
+ * Copyright (c) 2008 INFN-CNAF.
+ * <p>
+ *
+ *
+ * Authors:
+ *     @author lucamag luca.magnoniATcnaf.infn.it
+ *
+ * @date = Dec 15, 2008
+ *
+ */
+
 public class FTPNode extends AbstractNode {
 
     private String hostname;
