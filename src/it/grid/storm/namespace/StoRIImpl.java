@@ -263,7 +263,7 @@ public class StoRIImpl
       Authority authority = null;
       try {
           if (vfs.getProtocolBalancer(pooledProtocol) != null) {
-              Balancer<? extends Node> bal = new Balancer();
+              Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
               if (pooledProtocol.equals(Protocol.GSIFTP)) {
                 FTPNode node = (FTPNode) bal.getNextElement();
                 authority = new Authority(node.getHostName(), node.getPort());

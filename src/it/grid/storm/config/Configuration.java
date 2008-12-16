@@ -833,7 +833,7 @@ public class Configuration {
                 +" were ignored because of errors (see log)";
             logger.fatal(msg);
             throw new RuntimeException(msg);
-        }
+        } 
         return result;
     }
 
@@ -870,9 +870,10 @@ public class Configuration {
         //
         // XXX: should define its own exception
         String algorithmName = value;
-        if (-1 == algorithmName.indexOf('.'))
+        if (-1 == algorithmName.indexOf('.')) {
             // unqualified name, prepend 'it.grid.storm.authorization.sources'
             algorithmName = "it.grid.storm.authorization.combiners." + algorithmName;
+        }
         try {
             return Class.forName(algorithmName);
         }

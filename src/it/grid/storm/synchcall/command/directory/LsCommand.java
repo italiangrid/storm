@@ -266,7 +266,9 @@ public class LsCommand extends DirectoryCommand implements Command
             // Check for authorization and execute Ls.
             VomsGridUser user = (VomsGridUser) guser;
             if (!failure) {
+                
                 lsAuth = AuthorizationCollector.getInstance().canListDirectory(user, stori);
+                
                 if (lsAuth.isPermit()) {
                     log.debug("srmLs: Ls authorized for user [" + user + "] and PFN = [" + stori.getPFN() + "]");
                     int error=0;

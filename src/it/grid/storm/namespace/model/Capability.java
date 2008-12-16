@@ -111,6 +111,8 @@ public class Capability implements CapabilityInterface {
           String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
           int port =  member.getMemeberProtocol().getAuthority().getServicePort();
           int weight = member.getMemberWeight();
+          
+          log.debug("toooreemove member ppol: "+hostname );
           FTPNode ftpNode = new FTPNode(hostname, port, weight);
           balancer.addElement(ftpNode);
         }

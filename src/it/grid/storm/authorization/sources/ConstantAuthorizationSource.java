@@ -14,7 +14,7 @@ package it.grid.storm.authorization.sources;
 
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.sources.AbstractAuthorizationSource;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
 
 
@@ -49,53 +49,53 @@ public class ConstantAuthorizationSource
 		__response = response;
 	}
 
-	public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+	public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
 		return __response;
 	}
 
 	public AuthorizationDecision 
-		canReadFile(final VomsGridUser gridUser, final StoRI file) {
+		canReadFile(final GridUserInterface gridUser, final StoRI file) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+		canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile) {
+		canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile) {
 		return __response;
 	}
 
 	public AuthorizationDecision 
-		canChangeAcl(final VomsGridUser gridUser, 
+		canChangeAcl(final GridUserInterface gridUser, 
 					 final StoRI fileOrDirectory) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+		canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
 		return __response;
 	}
 
 	public AuthorizationDecision 
-		canListDirectory(final VomsGridUser gridUser, final StoRI directory) {
+		canListDirectory(final GridUserInterface gridUser, final StoRI directory) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canTraverseDirectory(final VomsGridUser gridUser, 
+		canTraverseDirectory(final GridUserInterface gridUser, 
 							 final StoRI directory) {
 		return __response;
 	}
 
 	public AuthorizationDecision 
-		canRename(final VomsGridUser gridUser, final StoRI file) {
+		canRename(final GridUserInterface gridUser, final StoRI file) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canDelete(final VomsGridUser gridUser, final StoRI file) {
+		canDelete(final GridUserInterface gridUser, final StoRI file) {
 		return __response;
 	}
 	public AuthorizationDecision 
-		canMakeDirectory(final VomsGridUser gridUser, 
+		canMakeDirectory(final GridUserInterface gridUser, 
 						 final StoRI targetDirectory) {
 		return __response;
 	}

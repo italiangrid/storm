@@ -31,7 +31,7 @@ public class RoundRobinStrategy <E extends Node> extends AbstractStrategy<E> {
         
         index = (index >= nodePool.size()) ? 0 : index ;
         
-        return (nodePool.get(index++));    
+        return (nodePool.get(index++)); 
 
     }
 

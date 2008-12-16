@@ -1,9 +1,9 @@
 /* (Despite its name, this is -*- Java -*- )
- *
+ * 
  * CompositeAuthorizationSource
  *
  * Copyright (c) 2005, Riccardo Murri <riccardo.murri@ictp.it>
- *
+ * 
  * You may copy, distribute and modify this file under the terms of
  * the LICENSE.txt file at the root of the StoRM backend source tree.
  *
@@ -14,7 +14,7 @@
  * This source file uses cpp macros to code some nearly-identical
  * methods; to get the real Java source file, preprocess this one
  * with:
- *
+ *   
  *    cpp -P -C -o CompositeAuthorizationSource.java  *        CompositeAuthorizationSource.jappo
 o
  *
@@ -29,17 +29,17 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.AuthorizationQueryInterface;
 import it.grid.storm.authorization.DecisionCombiningAlgorithm;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
-import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
  * Queries a list of sources and takes a final decision according to
- * a chosen <code>DecisionCombiningAlgorithm</code>.
+ * a chosen <code>DecisionCombiningAlgorithm</code>. 
  *
  * <p>Is a Composite for the <code>AuthorizationQueryInterface</code>,
  * as its whole prupose is to act as a single
@@ -71,10 +71,10 @@ public class CompositeAuthorizationSource
     // --- public --- //
 
     /** Constructor, taking the combining algorithm and list of other
-     * authorization sources.
+     * authorization sources.  
      *
      * <p>The list of authorization sources is not copied, rather used
-     * directly.
+     * directly. 
      */
     public CompositeAuthorizationSource(Class algorithmClass,
                                         Collection sources)
@@ -127,7 +127,7 @@ public class CompositeAuthorizationSource
     // to this file is in the CompositeAuthorizationSource.java.cpp
     // file in CVS... I could find no way of doing this other than
     // preprocessor macros...
-    //
+    // 
     // cpp -P -C CompositeAuthorizationSource.jappo     //     -o CompositeAuthorizationSource.java
 
     //
