@@ -190,8 +190,8 @@ if [ "$ENABLE_SSL"x == yesx ];
     if [ -z "$SSL_TRUST_STORE_PWD" -o -z "$SSL_KEY_STORE_PWD" ]; then
         die 6 "The SSL Keystore and Truststore need to be protected by password!"
     fi
-    setenv_if_not_set SSL_TRUST_STORE "/opt/storm/etc/ecar.ts"
-    setenv_if_not_set SSL_KEY_STORE "/opt/storm/etc/ecar.p12"
+    setenv_if_not_set SSL_TRUST_STORE "/opt/storm/backend/etc/ecar.ts"
+    setenv_if_not_set SSL_KEY_STORE "/opt/storm/backend/etc/ecar.p12"
     setenv_if_not_set SSL_KEY_STORE_TYPE "PKCS12"
     export STORM_SSL_OPTIONS="-Djavax.net.ssl.trustStore=\"$SSL_TRUST_STORE\" \
 -Djavax.net.ssl.keyStore=\"$SSL_KEY_STORE\" \
