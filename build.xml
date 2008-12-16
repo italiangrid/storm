@@ -777,6 +777,9 @@ test.junit.dir
 		prefix="storm-backend-${version}/">
 		<!-- all relevant directories -->
 		<exclude name="build/**"/>
+        <exclude name="etc/storm_test.properties"/>
+      	<exclude name="etc/adminserver-config.xml"/>
+        <exclude name="etc/adminserver-log.properties"/>
 		<include name="LICENSE.txt"/>
 		<include name="ACKNOWLEDGEMENTS.txt"/>
 		<include name="build.xml"/>
