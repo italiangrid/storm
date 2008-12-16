@@ -3,7 +3,6 @@ package it.grid.storm.griduser;
 
 import java.util.Arrays;
 import java.util.List;
-import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import it.grid.storm.common.types.VO;
 
@@ -25,8 +24,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
     private List<FQAN> fqans = new ArrayList<FQAN> ();
     private List<String> fqansString = new ArrayList<String>();
-
-    String[] fqanStrings = getFQANsString();
+    private String[] fqanStrings = null;
 
 
 
@@ -62,12 +60,20 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
 
     void setFqans(List<FQAN> fqans) {
         this.fqans = new ArrayList<FQAN> (fqans);
+        for (FQAN fqan: fqans) {
+            this.fqansString.add(fqan.toString());
+        }
+        this.fqanStrings = fqansString.toArray(new String[0]);
     }
 
     public void addFqan(FQAN fqan) {
         this.fqans.add(fqan);
+        this.fqansString.add(fqan.toString());
     }
 
+    public List<FQAN> getFQANsList() {
+        return this.fqans;
+    }
 
     // --- GETTER Methods --- //
 
@@ -114,7 +120,8 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
             log.debug("VomsGridUser.getLocalUser");
 
             // call LCMAPS and do the mapping
-            String[] fqanStrings = getFQANsString();
+            if ((fqanStrings==null)||fqanStrings.length==0)
+                this.fqanStrings = getFQANsString();
 
             try {
                 localUser = userMapperClass.map(getDn(), fqanStrings);
