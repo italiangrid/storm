@@ -138,6 +138,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
      *
      * @return VO
      */
-    public abstract VO getMainVo();
+    public abstract VO getVO();
 
 }

@@ -249,7 +249,6 @@ public class DBConnectionPool implements DataSourceConnectionFactory{
        ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
        ssTO.setGuaranteedSize(10000);
        ssTO.setLifetime(1000);
-       VO vo = VO.make("testVO");
        GridUserInterface gu = null;
        gu = GridUserManager.makeGridUser("/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it");
        //gu = VomsGridUser.make("testUser");

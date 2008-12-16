@@ -18,6 +18,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.*;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.griduser.VomsGridUser;
 
 public class StorageSpaceSQLHelper extends SQLHelper{
 
@@ -90,10 +91,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
         builder.addColumnAndData((String)COLS.get("ownerName"),
                                  format(ssTO.getOwnerName()));
       }
-      if (ssTO.getOwner().getMainVo() != null) {
-        builder.addColumnAndData((String)COLS.get("ownerVO"),
-                                 format(ssTO.getOwner().getMainVo().toString()));
-      }
+      builder.addColumnAndData((String)COLS.get("ownerVO"),format(getVOName(ssTO.getOwner())));
       if (ssTO.getAlias() != null) {
         builder.addColumnAndData((String)COLS.get("alias"),
                                 format(ssTO.getAlias()));
@@ -137,6 +135,17 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     }
     String sql = buildSQL(builder);
     return sql;
+  }
+
+  // ************ HELPER Method *************** //
+  private String getVOName(GridUserInterface maker) {
+      String voStr = VO.makeNoVo().getValue();
+      if (maker!=null) {
+          if (maker instanceof VomsGridUser) {
+              voStr = ( (VomsGridUser) maker).getVO().getValue();
+          }
+      }
+      return voStr;
   }
 
   /**

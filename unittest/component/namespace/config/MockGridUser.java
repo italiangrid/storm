@@ -5,7 +5,7 @@ import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
-
+import it.grid.storm.griduser.DistinguishedName;
 
 /**
  * <p>Title: </p>
@@ -20,6 +20,14 @@ import it.grid.storm.griduser.LocalUser;
  * @version 1.0
  */
 public class MockGridUser implements GridUserInterface {
+
+
+    DistinguishedName dn = null;
+
+    public MockGridUser() {
+        this.dn = new DistinguishedName("CN=Riccardo Zappi,OU=Cnaf");
+    }
+
   /**
    * Get GridUser Domain Name.
    *
@@ -61,7 +69,15 @@ public class MockGridUser implements GridUserInterface {
    * @return VO
    * @todo Implement this it.grid.storm.griduser.GridUserInterface method
    */
-  public VO getMainVo() {
+  public VO getVO() {
     return VO.make("stormdev");
   }
+
+    public DistinguishedName getDistinguishedName() {
+        return null;
+    }
+
+    public String toString() {
+        return "";
+    }
 }

@@ -1,9 +1,9 @@
-/* 
+/*
  * LcmapsMapper
  *
  * Copyright (c) 2005,2006 Riccardo Murri <riccardo.murri@ictp.it>
- * 
- * You may copy, distribute and modify this file under the terms 
+ *
+ * You may copy, distribute and modify this file under the terms
  * listed in the fikle LICENSE.txt
  *
  * $Id: LcmapsMapper.java,v 1.6 2007/05/16 09:46:20 lmagnoni Exp $
@@ -18,7 +18,7 @@ import it.grid.storm.griduser.MapperInterface;
 import it.grid.storm.griduser.swig.localuser_info;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+
 
 
 /** Map Grid credentials to local account credentials. Implements a
@@ -41,17 +41,17 @@ public class LcmapsMapper implements MapperInterface {
      *   Subject: Re: Is LCMAPS thread-safe?
      *   Date: Wed, 15 Mar 2006 15:17:15 +0100
      *   To: Riccardo Murri <riccardo.murri@ictp.it>
-     *   Cc: Gerben Venekamp <venekamp@nikhef.nl>, 
+     *   Cc: Gerben Venekamp <venekamp@nikhef.nl>,
      *       Oscar Koeroo <okoeroo@nikhef.nl>
      *
      *   Riccardo Murri wrote:
-     *   >one more question on LCMAPS: is LCMAPS 1.2.8 thread-safe? 
+     *   >one more question on LCMAPS: is LCMAPS 1.2.8 thread-safe?
      *   Unfortunately, no...
-     *   
-     *   >need to serialize calls to 
+     *
+     *   >need to serialize calls to
      *   >lcmaps_return_poolindex_without_gsi()?
      *   So, yes.
-     *   
+     *
      *   Cheers,
      *   Martijn
      * </pre>
@@ -69,11 +69,11 @@ public class LcmapsMapper implements MapperInterface {
      * @throws {@link it.grid.storm.griduser.CannotMapUserExcpetion} if
      * some error with LCMAPS occurs.
      */
-    public LocalUser  map(final String dn, final String[] fqans) 
-        throws CannotMapUserException 
+    public LocalUser  map(final String dn, final String[] fqans)
+        throws CannotMapUserException
     {
     	log.debug("Asking LCMAPS for mapping : "+dn+"-"+fqans.toString());
-    	
+
         localuser_info lui = null;
         try {
             synchronized(lock) {
@@ -84,7 +84,7 @@ public class LcmapsMapper implements MapperInterface {
 //                log.debug("gids[0]:..."+lui.getGids()[0]);
 //                log.debug("Ngids:..."+lui.getNgids());
 //                log.debug("Mapper returns");
-                
+
             }
             // the following code is effectively unreachable,
             // as localuser_info will _never_ return null, but
@@ -107,15 +107,15 @@ public class LcmapsMapper implements MapperInterface {
 
             if (null == lcmapsLogFile)
                 lcmapsLogFile = "";
-            String errorMessage = "LCMAPS failure: " 
-                + x.getMessage() 
+            String errorMessage = "LCMAPS failure: "
+                + x.getMessage()
                 + " -- see LCMAPS log file "
                 + lcmapsLogFile
                 + " for details.";
             log.error(errorMessage);
             throw new CannotMapUserException(errorMessage);
         }
-        //Syncronization on this added by Luca 
+        //Syncronization on this added by Luca
         //to create the LocalUser lcmaps must be queried.
         //Without synchrnonization may be this is the reasons for the JVM crash?
         //due to lcmaps non thread safet
@@ -125,7 +125,7 @@ public class LcmapsMapper implements MapperInterface {
 //        log.debug("Ngids:..."+lui.getNgids());
 //        log.debug("Mapper returns");
         return new LocalUser(lui.getUid(), lui.getGids(), lui.getNgids());
-        
+
     }
 
     public LcmapsMapper() {

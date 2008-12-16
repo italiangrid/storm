@@ -43,7 +43,7 @@ public class DistinguishedName {
 
         "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it"
         "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti"
-        
+
         New in StoRM 1.4: service certificate support (please note the '/' char into the CN value...)
         "/DC=org/DC=doegrids/OU=Services/CN=sam/cdfsam1.cr.cnaf.infn.it"
      */
@@ -62,16 +62,16 @@ public class DistinguishedName {
 
     private X500Principal x500DN = null;
 
-    public DistinguishedName(String proxyDn) {
-        if (proxyDn!=null) {
-            this.distinguishedName = proxyDn;
+    public DistinguishedName(String stringDN) {
+        if (stringDN!=null) {
+            this.distinguishedName = stringDN;
             //Check the format of DN
             int slashIndex = distinguishedName.indexOf('/');
             int commaIndex = distinguishedName.indexOf(',');
             if (slashIndex>-1) parseDNslahed();
             if (commaIndex>-1) parseDNcommed();
             buildX500DN();
-            
+
         } else {
             this.distinguishedName = "empty";
         }
@@ -120,26 +120,26 @@ public class DistinguishedName {
     }
 
     private void parseDNslahed() {
-        
+
         /**
          * New parser.
          * Split by / doesn't work since DN could contain attributes with a '/' char as valid value.
-         * 
+         *
          * The idea is start from the end of the DN string:
-         * 
+         *
          *  - get last index of '=' char
          *  - get last index of '\' char on the left of the '='
          *  - Substring from the index obtained.
          *  - Add the resulting substring as an attribute-value pair of the DN
          *  - Cycle on each pair
-         *  
-         * In this way, at the end of the cycle the List will contains the whole set of attribute-value 
-         * pairs composing the DN, in the reverse order. 
-         * Then, a reverse add to a string buffer, separated with ',' , compose the 
+         *
+         * In this way, at the end of the cycle the List will contains the whole set of attribute-value
+         * pairs composing the DN, in the reverse order.
+         * Then, a reverse add to a string buffer, separated with ',' , compose the
          * final DN representation in comma separated String.
-         * 
+         *
          */
-        
+
         ArrayList<String> list = new ArrayList<String>();
         String DN = this.distinguishedName;
         boolean stop = false;
@@ -152,41 +152,41 @@ public class DistinguishedName {
                 stop = true;
                 continue;
             }
-            
+
             String tmpDN = DN.substring(0,indexOfEq);
             //Get index of the first '/' char on the left of the '='
             int indexOfAttr = tmpDN.lastIndexOf('/');
 
-            //the substring from the indexOfAttr obtained to end of the String 
+            //the substring from the indexOfAttr obtained to end of the String
             //is a attr-value pair!
             // Add it to the results List.
             list.add(DN.substring(indexOfAttr+1, DN.length()));
-            
-            //Cut the result from the working DN string, and iterate. 
+
+            //Cut the result from the working DN string, and iterate.
             DN = DN.substring(0,indexOfAttr);
         }
 
         StringBuffer sb = new StringBuffer();
         String[] attributes =  new String[list.size()];
-        
+
         //Create a string representation of the DN.
-        //Note that the result List contains attribute-value pair Strings in 
+        //Note that the result List contains attribute-value pair Strings in
         //reverse order!
-        
+
         for (int i=0;i<list.size();i++) {
-            if(i==list.size()-1) 
+            if(i==list.size()-1)
                 sb.append(list.get(list.size()-1-i));
-            else        
+            else
                 sb.append(list.get(list.size()-1-i)+",");
-            
+
             //Prepare the array for attributes evaluation
             attributes[i] = list.get((list.size()-1-i));
         }
-       
-            
+
+
         canonizedProxyDN =  sb.toString();
         assignAttributes(attributes);
-        
+
     }
 
     private void parseDNcommed() {

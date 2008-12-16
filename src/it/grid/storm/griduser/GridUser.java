@@ -48,7 +48,7 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
      *
      * @return VO
      */
-    public VO getMainVo() {
+    public VO getVO() {
         VO vo = VO.makeNoVo();
         return vo;
     }
@@ -78,7 +78,7 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
 
 
     public String toString() {
-        return "Grid User (no VOMS) : '"+getDistinguishedName().getX500DN_rfc1779()+"'";
+        return "Grid User (no VOMS): '"+getDistinguishedName().getX500DN_rfc1779()+"'";
     }
 
 }

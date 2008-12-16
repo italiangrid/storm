@@ -1,20 +1,11 @@
 package it.grid.storm.griduser;
 
-import java.util.regex.Pattern;
+
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-
-import it.grid.storm.common.types.VO;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Collections;
-import java.util.Collection;
+import it.grid.storm.common.types.VO;
 
 /**
  * Encapsulates user Grid credentials access, and maps those to a local
@@ -27,8 +18,6 @@ import java.util.Collection;
  * @todo implement a flyweight pattern, so that we don't have 1'000
  * different GridUser objects for 1'000 requests from the same user...
  *
- * @author  Riccardo Murri <riccardo.murri@ictp.it>, EGRID Project, ICTP
- * @version $Revision: 1.32 $
  *
  */
 public class VomsGridUser extends AbstractGridUser implements GridUserInterface {
@@ -39,18 +28,8 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     private List<FQAN> fqans = new ArrayList<FQAN> ();
 
     // --- protected members --- //
-
-    // protected static final Pattern DN_RE = Pattern.compile("^/.+/CN=", Pattern.CASE_INSENSITIVE);
-    // see http://grid.racf.bnl.gov/GUMS/components/business/apidocs/gov/bnl/gums/FQAN.html
-    //protected static final Pattern FQAN_RE = Pattern.compile("^/([a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)*[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9](/[\\w-]+)*(/Role=[\\w-]+)?(/Capability=[\\w-]+)?$",Pattern.CASE_INSENSITIVE);
-
     protected String _pemEncodedCertificateChain;
 
-    protected boolean _hasVoms;
-    protected FQAN[] _fqans;
-
-    protected boolean _hasBeenMapped;
-    protected LocalUser _localUser;
 
     /** To map Grid credentials to local UNIX account credentials. */
     protected MapperInterface _mapper;
@@ -61,6 +40,7 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
     VomsGridUser(Class mapperClass) {
         super(mapperClass);
     }
+
 
     VomsGridUser(Class mapper, String distinguishedName) {
         super(mapper);
@@ -74,24 +54,36 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         this.setProxyString(proxy);
     }
 
+
     VomsGridUser(Class mapper, String distinguishedName, String proxy, FQAN[] fqansArray) {
         super(mapper);
         this.setDistinguishedName(distinguishedName);
         this.setProxyString(proxy);
-        //this.setFqanStrings(fqans);
         this.fqans = Arrays.asList(fqansArray);
-        //this.fqanStrings = (String[]) this.fqans.toArray();
     }
 
+
+    // --- SETTER Methods --- //
 
     void setFqans(List<FQAN> fqans) {
-        this.fqans = new ArrayList<FQAN>(fqans);
+        this.fqans = new ArrayList<FQAN> (fqans);
     }
 
-   public void addFqan(FQAN fqan) {
-       this.fqans.add(fqan);
-   }
+    public void addFqan(FQAN fqan) {
+        this.fqans.add(fqan);
+    }
 
+
+    // --- GETTER Methods --- //
+
+    public String[] getFQANsString() {
+        String[] fqansString = new String[fqans.size()];
+        for (int count = 0; count<fqans.size(); count++ ) {
+            FQAN fqan = fqans.get(count);
+            fqansString[count] = fqan.toString();
+        }
+        return fqansString;
+    }
 
 
     /**
@@ -108,47 +100,8 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
      */
     public boolean hasVoms()
     {
-        return _hasVoms;
-    }
-
-
-
-
-    /**
-     * Returns an array holding all FQANs stored in the object.
-     *
-     * @return  Array holding all FQANs stored in the object,
-     *          empty array if no VOMS extensions are stored in this object.
-     */
-    public FQAN[] getFqans()
-    {
-        return _fqans;
-    }
-
-
-    /**
-     * Get the "main" VO name.  By convention, the main VO is the
-     * first in the list of VOMS attributes.
-     *
-     * @return      The name of the first VO in the FQAN list, or
-     *              <code>null</code> if no VOMS attributes are present.
-     * @deprecated  It is not yet clear whether this convention (that the first
-     *              VO in the list of VOMS attributes is the "main" one) is
-     *              in effect or if its use would break some software.  Until
-     *              status is ascertained, please refrain from using it.
-     */
-    public VO getMainVo()
-    {
-        //assert (_hasVoms&& (null==_fqans)):
-        //        "VomsGridUser asserts VOMS extensions, but the FQANs attributes array is null."; assert (_hasVoms&&
-        //        (_fqans.length==0)):"VomsGridUser asserts VOMS extensions, but the FQANs attributes array is empty.";
-
-        if (hasVoms()) {
-            return VO.make(getFqans()[0].getVo());
-        }
-        else {
-            return null;
-        }
+        if ((this.fqans!=null)&&(this.fqans.size()>0)) return true;
+        else return false;
     }
 
 
@@ -162,18 +115,16 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
      */
     public LocalUser getLocalUser() throws CannotMapUserException
     {
-        if (null==_localUser) {
+        if (null==localUser) {
 
             log.debug("VomsGridUser.getLocalUser");
 
             // call LCMAPS and do the mapping
-            String[] fqanStrings = new String[_fqans.length];
+            String[] fqanStrings = getFQANsString();
 
-	    for (int i = 0; i<_fqans.length; i++) {
-                fqanStrings[i] = _fqans[i].toString();
-            }
+
             try {
-	        _localUser = _mapper.map(getDn(), fqanStrings);
+	        localUser = _mapper.map(getDn(), fqanStrings);
            }
             catch (CannotMapUserException x) {
                 // log the operation that failed
@@ -189,11 +140,10 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
                 //THIS IS A TEMPORARY SOLUTION TO CATCH A SIGFAULT IN NATIVE C CODE!
                 throw new CannotMapUserException("FATAL ERROR! GOT A Java ERROR WHEN CALLING NATIVE c CODE! "+err);
             }
-
-            //NDC.pop();
         }
-        if (_localUser==null) throw new CannotMapUserException("Null local user!");
-        return _localUser;
+        if (localUser==null)
+            throw new CannotMapUserException("Null local user!");
+        return localUser;
     }
 
 
@@ -204,25 +154,24 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
      */
     public String toString()
     {
-        return "VomsGridUser:\""+getDn()+"\"";
+        StringBuffer sb = new StringBuffer();
+        sb.append("Grid User (VOMS) = ");
+        sb.append(" DN:'"+getDistinguishedName().getX500DN_rfc1779()+"'");
+        sb.append(" FQANS:"+fqans);
+        return sb.toString();
     }
 
 
-    /**
-     * Return the certificate chain passed as argument to constructor.
-     * See {@link VomsGridUser(String)} for details on this string
-     * contents.
-     *
-     * @return The string passed as <code>pem</code> parameter to the
-     *          {@link #VomsGridUser(String, Fqan[], String)} constructor; in
-     *          particular, this can be <code>null</code> if factory methods
-     *          omitting the PEM-encoded certificate chain were used.
-     *
-     * @see #VomsGridUser(String)
-     * @see #VomsGridUser(String, Fqan[])
-     */
-    public String getUserCredentials()
-    {
-        return _pemEncodedCertificateChain;
+
+
+    public VO getVO() {
+        VO result = VO.makeNoVo();
+        if ( (fqans != null) && (fqans.size() > 0)) {
+            FQAN firstFQAN = fqans.get(0);
+            String voName = firstFQAN.getVo();
+            result = VO.make(voName);
+        }
+        return result;
     }
+
 }
