@@ -4,7 +4,7 @@
 # Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>.
 # 
 # You may copy, modify and distribute this file under the same
-# terms as the StoRM backend itself.
+# terms as the StoRM BackEnd itself.
 #
 #
 
@@ -13,9 +13,9 @@ Version: 1.4.0
 Release: rc1
 Summary: The StoRM BackEnd server.
 
-License: INFN-GRID like, see included file LICENSE.txt
-URL: http://infnforge.cnaf.infn.it/projects/drm
-Vendor: MIUR EGRID project / INFN FIRB Grid.It Project (2004)
+License: Apache License, Version 2.0. See included file LICENSE.txt
+URL: http://www.apache.org/licenses/LICENSE-2.0
+Vendor: INFN - CNAF (2008)
 Packager: Luca Magnoni <luca.magnoni@cnaf.infn.it> 
 
 Group: Application/Generic
@@ -27,6 +27,12 @@ Prefix: /opt/storm/backend
 
 
 %changelog
+
+
+
+* Mon Dec 15 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
+- version 1.4.0-rc1
+
 * Wed Mar 5 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - version 1.3.19-02
 - New default ACL capability by Storage Area for the CMS use case.
@@ -131,12 +137,11 @@ ant -Dversion="%{version}" \
 mkdir -p $RPM_BUILD_ROOT/etc/cron.d
 cp -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
 
-# server has "./config" hard-coded path for config files
-ln -s etc "$RPM_BUILD_ROOT/%{prefix}/config"
+# NOT NEEDED FROM 1.4 server has "./config" hard-coded path for config files
+#ln -s etc "$RPM_BUILD_ROOT/%{prefix}/config"
 
 # i can't find out how to do this in ant w/out too much pain...
-ln -sf ../etc/init.d/storm-backend \
-  "$RPM_BUILD_ROOT/%{prefix}/bin/storm-backend"
+ln -sf "$RPM_BUILD_ROOT/%{prefix}/etc/init.d/storm-backend"  /etc/init.d/storm-backend
 
 # make file list from install dir contents
 # (this is getting intricated; I hope the lists stabilizes soon)
@@ -174,7 +179,7 @@ Requires: storm-backend-jars
 Requires: nc
 # Not really necessary...
 #Requires: gpfs.base
-Requires: glite-security-lcmaps-interface-without-gsi
+#Requires: glite-security-lcmaps-interface-without-gsi
 Requires: glite-security-lcmaps-plugins-basic
 Requires: glite-security-lcmaps-plugins-voms
 Requires: vdt_globus_sdk
