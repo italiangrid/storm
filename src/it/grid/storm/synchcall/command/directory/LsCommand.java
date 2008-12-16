@@ -280,10 +280,6 @@ public class LsCommand extends DirectoryCommand implements Command
 
                     if (error==0)  {
                         log.info("srmLs: <"+guser+"> Listing on SURL "+(j+1)+" of "+surlArray.size()+" [SURL:"+surl.toString()+"] successfully done with [status:"+details.getTMetaDataPathDetail(j).getStatus()+"].");
-                        log.info("srmLs: STRUTCTURE size:"+details.size()+" Number of returned entries: "+ numberOfReturnedEntries);
-                        log.info("srmLs: STRUTCTURE ARRAY size:"+details.getTMetaDataPathDetail(0)+" Structure:\n"+details.getTMetaDataPathDetail(0).toString());
-                        log.info("srmLs: STRUTCTURE ARRAY size:"+details.getTMetaDataPathDetail(0).getArrayOfSubPaths().size()+" Structure:\n"+details.getTMetaDataPathDetail(0).getArrayOfSubPaths());
-
                     }  else {
                         log.info("srmLs: <"+guser+"> Listing on SURL "+(j+1)+" of "+surlArray.size()+" [SURL:"+surl.toString()+"] failed with [status:"+details.getTMetaDataPathDetail(j).getStatus()+"]");
                     }
