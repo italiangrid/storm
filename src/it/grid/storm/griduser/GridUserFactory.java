@@ -108,8 +108,7 @@ public class GridUserFactory {
      */
     GridUserInterface createGridUser(String distinguishName, FQAN[] fqans) {
         GridUserInterface user = null;
-
-        user = new VomsGridUser(defaultMapperClass, distinguishName, distinguishName, fqans );
+        user = new VomsGridUser(defaultMapperClass, distinguishName, null, fqans );
         log.debug("Created new Grid User (VOMS USER) : "+user);
         return user;
     }
@@ -122,8 +121,8 @@ public class GridUserFactory {
      */
     GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString) {
         GridUserInterface user = null;
-
-        log.debug("**** NULL METHOD **** Created new Grid User (VOMS USER) : "+user);
+        user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans );
+        log.debug("Created new Grid User (VOMS USER) : "+user);
         return user;
     }
 
@@ -138,8 +137,7 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString,
-                                            MapperInterface userMapper) {
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString, MapperInterface userMapper) {
         GridUserInterface user = null;
         log.debug("**** NULL METHOD **** Created new Grid User (VOMS USER) : "+user);
         return user;

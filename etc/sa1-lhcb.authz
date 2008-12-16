@@ -1,0 +1,15 @@
+# Authorization DB for SA "pinco pallo" of VO "LHCb"
+
+Version 4.01, Release Candidate
+Type: EGEE-III standard
+
+ace.1=dn:/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti:DURWSCP:ALLOW
+ace.2=dn:/O=GermanGrid/OU=DESY/CN=Tigran Mkrtchyan:S:ALLOW
+ace.3=fqan:EVERYONE:RQ:ALLOW
+ace.4=fqan:EVERYONE:S:DENY
+ace.5=fqan:dteam/Role=production:RSWQP:ALLOW
+ace.6=fqan:dteam/Role=lcgamin:DURWSPQM:ALLOW
+ace.7=fqan:dteam/Role=NULL:RSQ:ALLOW
+ace.8=fqan:EVERYONE:DURWSPQMC:DENY
+
+
