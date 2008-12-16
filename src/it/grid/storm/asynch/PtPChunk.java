@@ -232,6 +232,14 @@ public class PtPChunk implements Delegable, Chooser {
         
         SpaceHelper sp = new SpaceHelper();
         TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+        
+        
+        /**
+         * @FIXME
+         * The SpaceAuth have do be built without get the token, but using the StoRI- 
+         * 
+         */
+        
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
         
         if(spaceAuth.authorize(gu, SRMSpaceRequest.PTP)) { 
