@@ -32,7 +32,7 @@ import java.util.List;
 public class GridUserFactory {
 
     private static final Log log = GridUserManager.log;
-    private String defaultMapperClassName = GridUserManager.getDefaultMapperClassName();
+    private String defaultMapperClassName = GridUserManager.getMapperClassName();
     private MapperInterface defaultMapperClass = null;
 
 

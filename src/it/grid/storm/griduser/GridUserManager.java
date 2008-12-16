@@ -53,10 +53,10 @@ public class GridUserManager {
     }
 
 
-    static String getDefaultMapperClassName() {
+    public static String getMapperClassName() {
         String className = null;
-        //className = config.getUserMapperClassName();
-        className = "it.grid.storm.griduser.LcmapsMapper";
+        className = config.getGridUserMapperClassname();
+        //className = "it.grid.storm.griduser.LcmapsMapper";
         return className;
     }
 

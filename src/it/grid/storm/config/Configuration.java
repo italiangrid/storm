@@ -2523,11 +2523,11 @@ public class Configuration {
         }
     }
 
-    
+
     /**
      * Enable write permission on new created directory
      * for LocalAuthorizationSource usage.
-     * 
+     *
      * @return false by default, otherwise what is specified in the properties
      */
     public boolean getEnableWritePermOnDirectory() {
@@ -2551,9 +2551,29 @@ public class Configuration {
           //load from external source
           return cr.getConfiguration().getInt(key);
         }
-
     }
-    
+
+    /**
+     * Method used to retrieve the ClassName for the User Mapper Class
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead, that is "it.grid.storm.griduser.LcmapsMapper"
+     *
+     * key="griduser.mapper.classname";
+     */
+    public String getGridUserMapperClassname() {
+        String key = "griduser.mapper.classname";
+        if (!cr.getConfiguration().containsKey(key)) {
+          //return default
+          return "it.grid.storm.griduser.LcmapsMapper";
+      } else {
+        //load from external source
+        return cr.getConfiguration().getString(key);
+      }
+    }
+
+
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
         try {
