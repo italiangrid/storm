@@ -10,7 +10,7 @@
 
 Name: storm-backend
 Version: 1.4.0
-Release: rc1
+Release: rc1.sl4
 Summary: The StoRM BackEnd server.
 
 License: Apache License, Version 2.0. See included file LICENSE.txt
@@ -32,6 +32,7 @@ Prefix: /opt/storm/backend
 
 * Mon Dec 15 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - version 1.4.0-rc1
+- http://storm.forge.cnaf.infn.it/documentation/changelog
 
 * Wed Mar 5 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - version 1.3.19-02
@@ -135,13 +136,13 @@ ant -Dversion="%{version}" \
     install
 
 mkdir -p $RPM_BUILD_ROOT/etc/cron.d
-cp -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
-
+mv -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
 # NOT NEEDED FROM 1.4 server has "./config" hard-coded path for config files
 #ln -s etc "$RPM_BUILD_ROOT/%{prefix}/config"
 
 # i can't find out how to do this in ant w/out too much pain...
-ln -sf "$RPM_BUILD_ROOT/%{prefix}/etc/init.d/storm-backend"  /etc/init.d/storm-backend
+mkdir -p $RPM_BUILD_ROOT/etc/init.d
+ln -sf %{prefix}/etc/init.d/storm-backend "$RPM_BUILD_ROOT/etc/init.d/storm-backend"
 
 # make file list from install dir contents
 # (this is getting intricated; I hope the lists stabilizes soon)
@@ -202,6 +203,7 @@ separately in the ``storm-backend-jars`` package.
 %files server -f ../filelist.server.%{name}
 #%{prefix}/etc/logrotate.d/storm-backend.logrotate
 /etc/cron.d/storm-backend.cron
+/etc/init.d/storm-backend
 #%defattr(-,root,root)
 # Temp solution... find another way to make the directories readable by the
 # user running StoRM... i.e. the user may not be "storm"
