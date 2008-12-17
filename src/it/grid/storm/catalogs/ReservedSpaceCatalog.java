@@ -530,7 +530,7 @@ public class ReservedSpaceCatalog {
      *
      * A Fake Grid User is needed
      */
-     GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
+     GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
 
     //Try with fake user, if it does not work remove it and use different method
 
