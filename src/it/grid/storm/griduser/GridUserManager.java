@@ -94,6 +94,14 @@ public class GridUserManager {
       result = userFactory.createGridUser(dn);
       return result;
     }
+   
+    public static GridUserInterface makeSAGridUser() {
+        GridUserInterface result = null;
+        String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm";
+        result = userFactory.createGridUser(dn);
+        return result;
+      }
+    
 
     public static GridUserInterface decode(Map inputParam) {
         GridUserInterface result = null;
