@@ -6,7 +6,7 @@ import java.util.TimerTask;
 import org.apache.log4j.*;
 import it.grid.storm.asynch.AdvancedPicker;
 
-import it.grid.storm.synchcall.SynchCallServer;
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.config.ConfigReader;
@@ -22,10 +22,15 @@ import it.grid.storm.health.HealthDirector;
  * @date    March 28th, 2005
  * @version 7.0
  */
+
+
 public class StoRM {
     private AdvancedPicker picker = null; //Picker of StoRM
 
-    private SynchCallServer xmlrpcServer=null;           //Synchronous calls server of StoRM!
+    //private SynchCallServer xmlrpcServer=null;   //Synchronous calls server of StoRM!
+    //
+    private XMLRPCHttpServer  xmlrpcServer= null;
+        
     private StringBuffer welcome = welcomeText(); //Text that displays general info about StoRM project
     private StringBuffer defaultConfig = defaultText(); //Text that displays StoRM built in values
     private static final Logger log = Logger.getLogger("stormBoot");
@@ -87,7 +92,8 @@ public class StoRM {
 
         //
         this.picker = new AdvancedPicker();
-	this.xmlrpcServer = new SynchCallServer();
+	//this.xmlrpcServer = new SynchCallServer();
+        this.xmlrpcServer = new XMLRPCHttpServer();
     }
 
     /**

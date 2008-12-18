@@ -17,7 +17,7 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.griduser.VomsGridUser;
+
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -30,6 +30,7 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents StoRMs PtGChunkCatalog: it collects PtGChunkData and
@@ -186,7 +187,7 @@ public class PtGChunkCatalog {
             sb.append(e);
         }
         //transferProtocols
-        TURLPrefix transferProtocols = TransferProtocolListConverter.getInstance().toSTORM(auxTO.protocolList());
+        TURLPrefix transferProtocols = TransferProtocolListConverter.toSTORM(auxTO.protocolList());
         if (transferProtocols.size()==0) {
             sb.append("\nEmpty list of TransferProtocols or could not translate TransferProtocols!");
             transferProtocols = null; //fail construction of PtGChunkData!
@@ -273,7 +274,7 @@ public class PtGChunkCatalog {
      * If there are no chunks associated to the given GridUser and Colelction of
      * TSURLs, then an empty Collection is returned and a messagge gets logged.
 	 */
-	synchronized public Collection lookupReducedPtGChunkData(VomsGridUser gu, Collection c) {
+	synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
         Object[] surlsobj = (new ArrayList(c)).toArray();
         int n = surlsobj.length;
         String[] surls = new String[n];
@@ -404,7 +405,7 @@ public class PtGChunkCatalog {
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! The underlaying DAO logs proper error messagges.
 	 */
-	synchronized public void add(PtGChunkData chunkData, VomsGridUser gu) {
+	synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());
@@ -412,7 +413,7 @@ public class PtGChunkCatalog {
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
         to.setNumLevel(chunkData.dirOption().getNumLevel());
-        to.setProtocolList(TransferProtocolListConverter.getInstance().toDB(chunkData.transferProtocols()));
+        to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.desiredProtocols()));
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
         to.setErrString(chunkData.status().getExplanation());
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!
@@ -438,7 +439,7 @@ public class PtGChunkCatalog {
      * are not transited. In case of any error nothing is done, but proper error
      * messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks) {
+    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks, TRequestToken token) {
         List aux = new ArrayList();
         long[] auxlong = null;
         ReducedPtGChunkData auxData = null;
@@ -449,7 +450,7 @@ public class PtGChunkCatalog {
         int n = aux.size();
         auxlong = new long[n];
         for (int i=0; i<n; i++) auxlong[i] = ((Long)aux.get(i)).longValue();
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong);
+        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong,token);
     }
 
     /**

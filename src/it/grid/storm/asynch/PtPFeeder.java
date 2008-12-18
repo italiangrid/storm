@@ -13,11 +13,11 @@ import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkData;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.common.types.EndPoint;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * This class represents a PrepareToPut Feeder: the Feeder that will handle the
@@ -45,7 +45,7 @@ public final class PtPFeeder implements Delegable {
 
     private static Logger log = Logger.getLogger("asynch");
     private RequestSummaryData rsd = null; //RequestSummaryData this PtPFeeder refers to.
-    private VomsGridUser gu = null; //GridUser for this PtPFeeder.
+    private GridUserInterface gu = null; //GridUser for this PtPFeeder.
     private GlobalStatusManager gsm = null; //Overall request status.
 
     /**

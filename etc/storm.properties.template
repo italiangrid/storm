@@ -4,14 +4,14 @@
 storm.machinenames=@HOSTNAME@
 # BEWARE! storm.machinenames is a list of comma separated strings
 # identifying the various names of the FE. For example:
-# storm.machinenames=egrid-7.egrid.it,fe.egrid.it,storm.egrid.it
+# storm.machinenames=frontend-1.cnaf.infn.it,frontend-2.cnaf.infn.it,storm.cnaf.infn.it
 
 storm.service.hostname=@HOSTNAME@
 storm.service.port=8444
 fe.port = 8444
 storm.service.inQueryForm=true
 storm.service.endpoint=/srm/managerv2
-proxy.home=/opt/storm/var/proxies
+proxy.home=/opt/storm/backend/var/proxies
 
 # ============================
 # FE/BE communication RDBMS
@@ -24,6 +24,7 @@ asynch.picker.db.passwd = @DB_PASSWD@
 # SYNCHCALL Component parameter
 # ============================
 synchcall.directoryManager.maxLsEntry=2000
+synchcall.xmlrpc.maxthread=100
 
 # ============================
 # BE-private RDBMS
@@ -39,8 +40,7 @@ persistence.db.pool.maxWait = 50
 # =======================
 # Authorization Component
 # =======================
-# authorization.sources = ECARAuthorizationSource
-# ecar.sea=https://egrid-lfc-01.pd.infn.it:8859/
+authorization.sources = PermitAllAuthorizationSource
 
 # =======================
 # Default Lifetime
@@ -59,3 +59,30 @@ fileLifetime.default=259200
 # The value specified below is 1 day.
 SRM22Client.PinLifeTime=259200
 
+
+
+# ========================================================
+# Polling time in seconds for pick up new requests from DB
+# ========================================================
+
+asynch.PickingTimeInterval = 2
+
+
+# ===================
+# GridFTP parameter
+# ===================
+
+extraslashes.gsiftp=/
+
+
+# ===================
+# Garbage Collector parameter
+# ===================
+#Time interval for request garbage collection
+#purge.interval=21600
+#
+#Number of requests removed at each run
+#purge.size=1000
+#
+#Time after that the GC consider a _terminated_ request as garbage
+#expired.request.time=3600

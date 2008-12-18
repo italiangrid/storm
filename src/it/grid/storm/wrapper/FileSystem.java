@@ -7,16 +7,18 @@
 package it.grid.storm.wrapper;
 
 import java.io.*;
+
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 
 import org.apache.log4j.Logger;
 import java.io.File;
+import it.grid.storm.griduser.CannotMapUserException;
 
 public class FileSystem {
     /**
@@ -332,43 +334,48 @@ public class FileSystem {
 
 
     public void addReadACL(PFN fileName, GridUserInterface guser) throws InvalidFileException,
-	    InvalidExecCommandException, InvalidAclFormatException
-    {
+	    InvalidExecCommandException, InvalidAclFormatException,
+      CannotMapUserException {
 	log.debug("<FileSystem>:addReadACL start...");
-	this.addAcl(fileName, guser.getLocalUserName(), ACL.R.toString());
+        String userName = guser.getLocalUser().getLocalUserName();
+	this.addAcl(fileName, userName, ACL.R.toString());
     }
 
 
     public void addWriteACL(PFN fileName, GridUserInterface guser) throws InvalidFileException,
-	    InvalidExecCommandException, InvalidAclFormatException
-    {
+	    InvalidExecCommandException, InvalidAclFormatException,
+      CannotMapUserException {
 	log.debug("<FileSystem>:addWriteACL start...");
-	this.addAcl(fileName, guser.getLocalUserName(), ACL.W.toString());
+        String userName = guser.getLocalUser().getLocalUserName();
+	this.addAcl(fileName, userName, ACL.W.toString());
     }
 
 
     public void addExecuteACL(PFN fileName, GridUserInterface guser) throws InvalidFileException,
-	    InvalidExecCommandException, InvalidAclFormatException
-    {
+	    InvalidExecCommandException, InvalidAclFormatException,
+      CannotMapUserException {
 
 	log.debug("<FileSystem>:addExecuteACL start...");
-	this.addAcl(fileName, guser.getLocalUserName(), ACL.X.toString());
+        String userName = guser.getLocalUser().getLocalUserName();
+	this.addAcl(fileName, userName, ACL.X.toString());
     }
 
 
     public void addReadWriteACL(PFN fileName, GridUserInterface guser) throws InvalidFileException,
-	    InvalidExecCommandException, InvalidAclFormatException
-    {
+	    InvalidExecCommandException, InvalidAclFormatException,
+      CannotMapUserException {
 	log.debug("<FileSystem>:addReadWriteACL start...");
-	this.addAcl(fileName, guser.getLocalUserName(), ACL.RW.toString());
+        String userName = guser.getLocalUser().getLocalUserName();
+	this.addAcl(fileName, userName, ACL.RW.toString());
     }
 
 
     public void addReadWriteExecACL(PFN fileName, GridUserInterface guser) throws InvalidFileException,
-	    InvalidExecCommandException, InvalidAclFormatException
-    {
+	    InvalidExecCommandException, InvalidAclFormatException,
+      CannotMapUserException {
 	log.debug("<FileSystem>:addReadWriteExecACL start...");
-	this.addAcl(fileName, guser.getLocalUserName(), ACL.RWX.toString());
+        String userName = guser.getLocalUser().getLocalUserName();
+	this.addAcl(fileName, userName, ACL.RWX.toString());
     }
 
 
@@ -413,9 +420,8 @@ public class FileSystem {
     }
 
 
-    public void removeAllUserAcls(PFN path, GridUserInterface user) throws InvalidFileException,
-	    InvalidExecCommandException
-    {
+    public void removeAllUserAcls(PFN path, GridUserInterface guser) throws InvalidFileException,
+	    InvalidExecCommandException, CannotMapUserException {
 
 	int ret = 0;
 	String tempDir;
@@ -431,7 +437,8 @@ public class FileSystem {
 
 	//removeAclWrap.removeAcl(Thread.currentThread().getName(), path.getValue(), user.getLocalUserName());
 
-	removeAclWrap.removeAcl(tempDir, path.getValue(), user.getLocalUserName());
+        String userName = guser.getLocalUser().getLocalUserName();
+	removeAclWrap.removeAcl(tempDir, path.getValue(), userName);
 
 	if (ret==-1) {
 	    log.warn("<FileSistem>:removeAllUserAcls throws InvFile EX");
@@ -495,14 +502,13 @@ public class FileSystem {
     }
 
 
-    public String getAclForUser(PFN pfn, GridUserInterface guser) throws InvalidFileException
-    {
+    public String getAclForUser(PFN pfn, GridUserInterface guser) throws InvalidFileException, CannotMapUserException {
 	String acl_for_user = null;
 	String complete_acl = null;
 	String[] s_array;
 	boolean OWNER = false;
 	Integer uid = null;
-	String localuserName = guser.getLocalUserName();
+	String localUserName = guser.getLocalUser().getLocalUserName();
 	//TOREMOVE IT
 	//PATH FOR OLD NATIVE LIBRARY!!!
 	//if(localuserName.indexOf("100")!=-1)
@@ -510,8 +516,8 @@ public class FileSystem {
 
 	//Patch for get username from uid
 	try {
-	    uid = new Integer(localuserName);
-	    localuserName = parser.getNameByUID(uid.intValue());
+	    uid = new Integer(localUserName);
+	    localUserName = parser.getNameByUID(uid.intValue());
 	}
 	catch (NumberFormatException e) {
 	    log.debug("Not Integer UID found.");
@@ -522,13 +528,13 @@ public class FileSystem {
 	complete_acl = this.getAcl(pfn);
 
 	log.debug("<FileSystem>:getAclForUser result: "+complete_acl);
-	log.debug("<FS:>getLocalUserName: "+guser.getLocalUserName()+" patched :"+localuserName);
+	log.debug("<FS:>getLocalUserName: "+localUserName);
 
 	if (complete_acl!=null) {
 	    s_array = complete_acl.split("\n");
 	    for (int i = 0; i<s_array.length; i++) {
 
-		if ( (s_array[i].indexOf(localuserName)!=-1)&& (s_array[i].indexOf("owner")!=-1)) {
+		if ( (s_array[i].indexOf(localUserName)!=-1)&& (s_array[i].indexOf("owner")!=-1)) {
 		    OWNER = true;
 		    acl_for_user = s_array[i];
 		}
@@ -538,7 +544,7 @@ public class FileSystem {
 		    }
 		}
 
-		if (s_array[i].indexOf(localuserName)!=-1) {
+		if (s_array[i].indexOf(localUserName)!=-1) {
 		    acl_for_user = s_array[i];
 		}
 

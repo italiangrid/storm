@@ -29,7 +29,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.AuthorizationQueryInterface;
 import it.grid.storm.authorization.DecisionCombiningAlgorithm;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
 
 import java.util.Collection;
@@ -150,59 +150,59 @@ public class CompositeAuthorizationSource
         return algo.getDecision()
         
 
-    public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+    public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
         evaluation_schema(canUseStormAtAll(gridUser));
     }
 
     public AuthorizationDecision 
-        canReadFile(final VomsGridUser gridUser, final StoRI file) {
+        canReadFile(final GridUserInterface gridUser, final StoRI file) {
       evaluation_schema(canReadFile(gridUser, file));
     }
 
     public AuthorizationDecision 
-        canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+        canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
       evaluation_schema(canWriteFile(gridUser, existingFile));
     }
 
     public AuthorizationDecision 
-        canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile){
+        canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile){
       evaluation_schema(canCreateNewFile(gridUser, targetFile));
     }
 
     public AuthorizationDecision 
-        canChangeAcl(final VomsGridUser gridUser, 
+        canChangeAcl(final GridUserInterface gridUser, 
                      final StoRI fileOrDirectory) {
       evaluation_schema(canChangeAcl(gridUser, fileOrDirectory));
     }
 
     public AuthorizationDecision 
-        canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+        canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
       evaluation_schema(canGiveaway(gridUser, fileOrDirectory));
     }
 
     public AuthorizationDecision 
-        canListDirectory(final VomsGridUser gridUser, final StoRI directory) {
+        canListDirectory(final GridUserInterface gridUser, final StoRI directory) {
       evaluation_schema(canListDirectory(gridUser, directory));
     }
 
     public AuthorizationDecision 
-        canTraverseDirectory(final VomsGridUser gridUser, 
+        canTraverseDirectory(final GridUserInterface gridUser, 
                              final StoRI directory) {
       evaluation_schema(canTraverseDirectory(gridUser, directory));
     }
 
     public AuthorizationDecision 
-        canRename(final VomsGridUser gridUser, final StoRI file) {
+        canRename(final GridUserInterface gridUser, final StoRI file) {
       evaluation_schema(canRename(gridUser, file));
     }
 
     public AuthorizationDecision 
-        canDelete(final VomsGridUser gridUser, final StoRI file) {
+        canDelete(final GridUserInterface gridUser, final StoRI file) {
       evaluation_schema(canDelete(gridUser, file));
     }
 
     public AuthorizationDecision 
-        canMakeDirectory(final VomsGridUser gridUser, 
+        canMakeDirectory(final GridUserInterface gridUser, 
                          final StoRI targetDirectory) {
       evaluation_schema(canMakeDirectory(gridUser, targetDirectory));
     }

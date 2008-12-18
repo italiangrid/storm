@@ -1,9 +1,9 @@
-/* 
+/*
  * LocalUser
  *
  * Copyright (c) 2005,2006 Riccardo Murri <riccardo.murri@ictp.it>
- * 
- * You may copy, distribute and modify this file under the terms 
+ *
+ * You may copy, distribute and modify this file under the terms
  * listed in the fikle LICENSE.txt
  *
  * $Id: LocalUser.java,v 1.9 2006/06/27 11:59:07 ecorso Exp $
@@ -115,14 +115,25 @@ public class LocalUser {
         }
         return sb.toString();
     }
-    
-    
+
+
+    /**
+     * Return the LocalUser Name String on wich the GridUser is mapped.
+     * A string format is needed by current version of native library to enforce ACL.
+     */
+
+    public String getLocalUserName() {
+      return Integer.toString(getUid());
+    }
+
+
+
     // --- public accessor methods --- //
-    
+
     public int getUid() {
 		return __uid;
     }
-    
+
     /**
      * Return an array holding the GIDs; the primary GID is at index 0.
      * If no supplementary GIDs were provided at construction time, then

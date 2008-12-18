@@ -1,7 +1,7 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Interface that represents a GridFTP client: it supplies functionality to execute
@@ -22,5 +22,5 @@ public interface GridFTPTransferClient {
      * If any problem does not allow the transfer to proceed, a GridFTPTransferClientException is
      * thrown containing a String that explains what went wrong.
      */
-    public void putFile(VomsGridUser gu, TTURL local, TTURL remote) throws GridFTPTransferClientException;
+    public void putFile(GridUserInterface gu, TTURL local, TTURL remote) throws GridFTPTransferClientException;
 }

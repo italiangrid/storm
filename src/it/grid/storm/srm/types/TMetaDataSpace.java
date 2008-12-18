@@ -18,8 +18,9 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import it.grid.storm.common.StorageSpaceData;
 import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.space.StorageSpaceData;
+
 import org.apache.log4j.Logger;
 
 public class TMetaDataSpace implements Serializable

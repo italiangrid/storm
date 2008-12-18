@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Streets;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.catalogs.RequestSummaryData;
@@ -29,16 +29,22 @@ import it.grid.storm.namespace.NamespaceException;
 
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * Class that represents a chunk of an srmPrepareToGet request: it handles a single
@@ -116,7 +122,7 @@ public class PtGChunk implements Delegable, Chooser {
 
     private static Logger log = Logger.getLogger("asynch");
 
-    private VomsGridUser gu=null;        //GridUser that made the request
+    private GridUserInterface gu=null;        //GridUser that made the request
     private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest
     private PtGChunkData chunkData=null; //PtGChunkData that holds the specific info for this chunk
     private Calendar start = null; //Calendar used for jit tracking
@@ -128,7 +134,7 @@ public class PtGChunk implements Delegable, Chooser {
      * PtGChunkData about this chunk. If the supplied attributes are null,
      * an InvalidPtGChunkAttributesException is thrown.
      */
-    public PtGChunk(VomsGridUser gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
+    public PtGChunk(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
         boolean ok = (gu!=null) &&
             (rsd!=null) &&
             (chunkData!=null) &&
@@ -183,60 +189,79 @@ public class PtGChunk implements Delegable, Chooser {
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      */
     private void manageIsPermit(StoRI fileStoRI) {
-        LocalFile localFile = fileStoRI.getLocalFile();
-        try {
-            LocalUser localUser = gu.getLocalUser();
-            TTURL turl = fileStoRI.getTURL(chunkData.transferProtocols());
-            if ((!localFile.exists()) || (localFile.isDirectory())) {
-                //File does not exist, or it is a directory! Fail request with SRM_INVALID_PATH!
-                chunkData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
-                failure = true; //gsm.failedChunk(chunkData);
-                log.debug("ANOMALY in PtGChunk! PolicyCollector confirms read rights on file, yet file does not exist physically! Or, an srmPrepareToGet was attempted on a directory!");
-            } else {
-                //File exists and it is not a directory
-                boolean canTraverse = managePermitTraverseStep(fileStoRI,localUser);
-                if (canTraverse) {
-                    boolean canRead = managePermitReadFileStep(fileStoRI,localFile,localUser,turl);
-                    if (!canRead) {
-                        //roll back Read, and Traverse
+
+        /**
+         * From version 1.4
+         * Add the control for Storage Area
+         * using the new authz for space component.
+         */
+
+        SpaceHelper sp = new SpaceHelper();
+        TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+
+        if(spaceAuth.authorize(gu, SRMSpaceRequest.PTG)) {
+
+            LocalFile localFile = fileStoRI.getLocalFile();
+            try {
+                LocalUser localUser = gu.getLocalUser();
+                TTURL turl = fileStoRI.getTURL(chunkData.desiredProtocols());
+                if ((!localFile.exists()) || (localFile.isDirectory())) {
+                    //File does not exist, or it is a directory! Fail request with SRM_INVALID_PATH!
+                    chunkData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
+                    failure = true; //gsm.failedChunk(chunkData);
+                    log.debug("ANOMALY in PtGChunk! PolicyCollector confirms read rights on file, yet file does not exist physically! Or, an srmPrepareToGet was attempted on a directory!");
+                } else {
+                    //File exists and it is not a directory
+                    boolean canTraverse = managePermitTraverseStep(fileStoRI,localUser);
+                    if (canTraverse) {
+                        boolean canRead = managePermitReadFileStep(fileStoRI,localFile,localUser,turl);
+                        if (!canRead) {
+                            //roll back Read, and Traverse
+                            //URGENT!
+                        }
+                    } else {
+                        //roll back Traverse
                         //URGENT!
                     }
-                } else {
-                    //roll back Traverse
-                    //URGENT!
                 }
+            } catch (SecurityException e) {
+                //The check for existence of the File failed because there is a SecurityManager installed that
+                //denies read privileges for that File! Perhaps the local system administrator of StoRM set
+                //up Java policies that contrast policies described by the PolicyCollector! There is a conflict here!
+                chunkData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
+                failure = true; //gsm.failedChunk(chunkData);
+                log.error("ATTENTION in PtGChunk! PtGChunk received a SecurityException from Java SecurityManager; StoRM cannot check-existence or check-if-directory for: "+localFile.toString()+"; exception: "+e);
+            } catch (CannotMapUserException e) {
+                //StoRM could not get LocalUser corresponding to GridUser! So ACL cannot be tracked!
+                chunkData.changeStatusSRM_FAILURE("Unable to find local user for "+gu.getDn());
+                failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtGChunk! Unable to find LocalUser for "+gu.getDn()+"! GridUser object returned: "+e);
+            } catch (InvalidGetTURLNullPrefixAttributeException e) {
+                //Handle null TURL prefix! This is a programming error: it should not occur!
+                chunkData.changeStatusSRM_FAILURE("Unable to decide TURL!");
+                failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtGChunk! Null TURLPrefix in PtGChunkData caused StoRI to be unable to establish TTURL! StoRI object returned: "+e);
+            } catch (Exception e) {
+                //There could be unexpected runtime errors given the fact that we have an ACL enabled filesystem!
+                //I do not know the behaviour of Java File class!!!
+                chunkData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
+                failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtGChunk! StoRM process got an unexpected error! "+e);
+            } catch (Error e) {
+                //This is a temporary measure to catch an arror occurring because of the use of deprecated
+                //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
+                //a specific account instead of a pool account, and the VomsGridUser class handles the situation
+                //through a deprecated getEnv method!
+                chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+                failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtGChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
             }
-        } catch (SecurityException e) {
-            //The check for existence of the File failed because there is a SecurityManager installed that
-            //denies read privileges for that File! Perhaps the local system administrator of StoRM set
-            //up Java policies that contrast policies described by the PolicyCollector! There is a conflict here!
-            chunkData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
-            failure = true; //gsm.failedChunk(chunkData);
-            log.error("ATTENTION in PtGChunk! PtGChunk received a SecurityException from Java SecurityManager; StoRM cannot check-existence or check-if-directory for: "+localFile.toString()+"; exception: "+e);
-        } catch (CannotMapUserException e) {
-            //StoRM could not get LocalUser corresponding to GridUser! So ACL cannot be tracked!
-            chunkData.changeStatusSRM_FAILURE("Unable to find local user for "+gu.getDn());
-            failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! Unable to find LocalUser for "+gu.getDn()+"! GridUser object returned: "+e);
-        } catch (InvalidGetTURLNullPrefixAttributeException e) {
-            //Handle null TURL prefix! This is a programming error: it should not occur!
-            chunkData.changeStatusSRM_FAILURE("Unable to decide TURL!");
-            failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! Null TURLPrefix in PtGChunkData caused StoRI to be unable to establish TTURL! StoRI object returned: "+e);
-        } catch (Exception e) {
-            //There could be unexpected runtime errors given the fact that we have an ACL enabled filesystem!
-            //I do not know the behaviour of Java File class!!!
-            chunkData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
-            failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! StoRM process got an unexpected error! "+e);
-        } catch (Error e) {
-            //This is a temporary measure to catch an arror occurring because of the use of deprecated
-            //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
-            //a specific account instead of a pool account, and the VomsGridUser class handles the situation
-            //through a deprecated getEnv method!
-            chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
-            failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
+
+        } else {
+            chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Read access to "+chunkData.fromSURL()+" in Storage Area: "+token+" denied!");
+            this.failure = true; //gsm.failedChunk(chunkData);
+            log.debug("Read access to "+chunkData.fromSURL()+" in Storage Area: "+token+" denied!");
         }
     }
 

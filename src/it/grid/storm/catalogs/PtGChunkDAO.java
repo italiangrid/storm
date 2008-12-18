@@ -821,6 +821,48 @@ public class PtGChunkDAO {
             close(stmt);
         }
     }
+    
+    
+    
+    public void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids, TRequestToken token) {
+        if(token == null)
+            transitSRM_FILE_PINNEDtoSRM_RELEASED(ids);
+        else {
+            /*
+             * If a request token as been specified, only the related Get requests have to be 
+             * released.
+             * This is done adding the r.r_token="..." clause in the where subquery.
+             * 
+             */
+            checkConnection();
+            String str = "UPDATE "+
+                "status_Get s JOIN (request_Get rg, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "+
+                "SET s.statusCode=? "+
+                "WHERE s.statusCode=? AND r.r_token="+token.toString()+" AND s.ID IN " +
+                makeWhereString(ids);
+            PreparedStatement stmt = null;
+            try {
+                stmt = con.prepareStatement(str);
+                logWarnings(con.getWarnings());
+                stmt.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
+                logWarnings(stmt.getWarnings());
+                stmt.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+                logWarnings(stmt.getWarnings());
+                log.debug("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: "+stmt.toString());
+                int count = stmt.executeUpdate();
+                logWarnings(stmt.getWarnings());
+                if (count==0) log.debug("PtG CHUNK DAO! No chunk of PtG request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                else log.info("PtG CHUNK DAO! "+count+" chunks of PtG requests were transited from SRM_FILE_PINNED to SRM_RELEASED.");
+            } catch (SQLException e) {
+                log.error("PtG CHUNK DAO! Unable to transit chunks from SRM_FILE_PINNED to SRM_RELEASED! "+e);
+            } finally {
+                close(stmt);
+            }
+        }
+
+    }
+    
+    
 
     /**
      * Method that returns a String containing all IDs.

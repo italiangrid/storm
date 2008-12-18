@@ -2,7 +2,8 @@ package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.PtPChunkData;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+
 
 /**
  * This class represents an Exceptin thrown when a PtPChunk is created with
@@ -23,7 +24,7 @@ public class InvalidPtPChunkAttributesException extends Exception {
      * Constructor that requires the GridUser, RequestSummaryData,
      * PtPChunkData and OverallRequest, that caused the exception to be thrown.
      */
-    public InvalidPtPChunkAttributesException(VomsGridUser gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager or) {
+    public InvalidPtPChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager or) {
         nullGu = (gu==null);
         nullRsd = (rsd==null);
         nullChunkData = (chunkData==null);

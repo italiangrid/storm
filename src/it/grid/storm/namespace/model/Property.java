@@ -17,6 +17,7 @@ public class Property  implements PropertyInterface {
   private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
   private ExpirationMode expirationMode = ExpirationMode.UNKNOWN;
   private AccessLatency accessLatency = AccessLatency.UNKNOWN;
+  private boolean hasLimitedSize = false;
 
   public TSizeInBytes getTotalOnlineSize() {
     return totalOnlineSize;
@@ -70,6 +71,17 @@ public class Property  implements PropertyInterface {
     this.expirationMode = ExpirationMode.getExpirationMode(expirationMode);
   }
 
+  public void setLimitedSize(boolean limitedSize) throws NamespaceException {
+    this.hasLimitedSize = limitedSize;
+  }
+
+  /******************************************
+   *           VERSION 1.4                  *
+  *******************************************/
+
+  public boolean isOnlineSpaceLimited() {
+    return hasLimitedSize;
+  }
 
   /**
    *
@@ -104,6 +116,7 @@ public class Property  implements PropertyInterface {
     public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1024);
     public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1048576);
     public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1073741824);
+    public final static SizeUnitType TB = new SizeUnitType("TB", 4, 1073741824*1024);
     public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1, -1);
 
     private SizeUnitType(String sizeTypeName, int ordinal, long size) {
@@ -122,6 +135,7 @@ public class Property  implements PropertyInterface {
       if (unitType.equals(SizeUnitType.KB.sizeTypeName)) result = SizeUnitType.KB;
       if (unitType.equals(SizeUnitType.MB.sizeTypeName)) result = SizeUnitType.MB;
       if (unitType.equals(SizeUnitType.GB.sizeTypeName)) result = SizeUnitType.GB;
+      if (unitType.equals(SizeUnitType.TB.sizeTypeName)) result = SizeUnitType.TB;
       return result;
     }
 

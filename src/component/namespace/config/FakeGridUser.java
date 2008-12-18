@@ -62,7 +62,12 @@ public class FakeGridUser implements GridUserInterface {
      * @return VO
      * @todo Implement this it.grid.storm.griduser.GridUserInterface method
      */
-    public VO getMainVo() {
+
+    public DistinguishedName getDistinguishedName() {
         return null;
+    }
+
+    public String toString() {
+        return "";
     }
 }

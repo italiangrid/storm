@@ -120,31 +120,38 @@ public class ApproachableRule implements Comparable{
          VomsGridUser vomsUser = null;
          DistinguishedName dn = new DistinguishedName(dnString);
          boolean dnMatch = dnMatchingRule.match(dn);
-         if (!dnMatch) {
+         if (!dnMatch) {  //DN doesn't match!
+           return false;
+         } else { // DN Match.
+           // ----  Check if VOMS Attributes are required ----
+           if (!vomsCertRequired) {
+             return true;  //VOMS Attributes aren't required.
+           } else {
+             //  VOMS Attribute required.
+             // ----  Check if gUSER is a USER with VOMS Attributes ----
+             if (gUser instanceof VomsGridUser) {
+               vomsUser = (VomsGridUser)gUser;
+               log.debug("Grid User Requestor   : "+vomsUser.toString());
+               log.debug("  holds a VOMS cert ? : "+vomsUser.hasVoms());
+               String voName = vomsUser.getVO().getValue();
+             } else {
+               // The subject does not hold a VOMS Certificate (which is mandatory!)
+                 return false;
+             }
+
+
+             if (vomsUser.hasVoms()) {
+                 boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
+                 if (voNameMatch) {
+                   return true;
+                 }
+             } else {
+
+             }
+
+           }
            return false;
          }
-         // Here DN is Matching
-         if (!vomsCertRequired) {
-           return true;
-         }
-         // Check
-         /**
-          * @todo Casting to VomsGridUser as well user is a normal Grid User.
-          * Change it!
-          */
-         vomsUser = (VomsGridUser)gUser;
-         log.debug("Grid User Requestor   : "+vomsUser.toString());
-         log.debug("  holds a VOMS cert ? : "+vomsUser.hasVoms());
-         if (vomsUser.hasVoms()) {
-             boolean voNameMatch = voNameMatchingRule.match(vomsUser.getMainVo().getValue());
-             if (voNameMatch) {
-               return true;
-             }
-         } else {
-             // The subject does not hold a VOMS Certificate (which is mandatory!)
-             return false;
-         }
-         return false;
     }
 
 

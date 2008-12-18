@@ -86,7 +86,8 @@ defines += -DHAVE_STDIO_FILEBUF
 
 
 # largefile support
-defines += -D_LARGEFILE_SOURCE
+#defines += -D_LARGEFILE_SOURCE
++defines += -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 
 # compile GPFS code?

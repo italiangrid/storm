@@ -19,34 +19,26 @@ import it.grid.storm.common.types.VO;
 public interface GridUserInterface {
 
 	/**
-	 * Return the local user on wich the GridUser is mapped.
-	 * LocalUser is rapresented into a copmlex type "LocalUser"/ref
-	 * that contsin uid and gid[]
-	 */	
+	 * Return the Local User where the GridUser is mapped.
+	 */
 	public LocalUser getLocalUser() throws CannotMapUserException;
-	
-	/**
-	 * Return the LocalUser Name String on wich the GridUser is mapped.
-	 * A string formati is needed by current version of native library to enforce ACL.
-	 */
 
-	public String getLocalUserName();
-
-	/**
-	 * Return the main Virtual Organization of the User.
-	 * In case of VOMS certificate source for GridUser, the main VO is 
-	 * the 'default' VO, the first VO specified as voms-proxy-init option
-	 */
-	public VO getMainVo();
 
 	/**
 	 * Get GridUser Domain Name.
-	 * Used for metadada pouprose.
+	 * Used for metadada purpose.
 	 */
 	public String getDn();
 
-	/**
+
+        /**
+         * Get GridUser Domain Name.
+         * Used for metadada pouprose.
+	 */
+        public DistinguishedName getDistinguishedName();
+
+        /**
 	 * Return String rapresentation.
-	 */	
+	 */
 	public String toString();
 }

@@ -22,6 +22,7 @@
 
 
 #include "fs_errors.hpp"
+#include <errno.h>
 
 #include <cstdlib> // wait()'s W*() macros
 #include <iostream>

@@ -18,11 +18,14 @@ import it.grid.storm.persistence.*;
 import it.grid.storm.persistence.dao.*;
 import it.grid.storm.persistence.exceptions.*;
 import it.grid.storm.persistence.model.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.common.*;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserFactory;
+import it.grid.storm.griduser.GridUserManager;
 
 /**
  *
@@ -33,9 +36,8 @@ public class ReservedSpaceCatalog {
    *Logger.
    */
   private static final Logger log = Logger.getLogger("catalogs");
-  private static HashSet voSA_spaceTokenSet = new HashSet();
-  private static final VomsGridUser fake_user = VomsGridUser.make("StoRM_admin");
-  private DAOFactory cf;
+  public static HashSet voSA_spaceTokenSet = new HashSet();
+  private DAOFactory daoFactory;
   private StorageSpaceDAO ssDAO;
   private Configuration config;
 
@@ -45,7 +47,8 @@ public class ReservedSpaceCatalog {
   public ReservedSpaceCatalog() {
     log.debug("Building Reserve Space Catalog...");
     //Binding to the persistence component
-    cf = PersistenceDirector.getDAOFactory();
+    daoFactory = PersistenceDirector.getDAOFactory();
+
   }
 
   public void addStorageSpace(StorageSpaceData ssd) throws NoDataFoundException, InvalidRetrievedDataException,
@@ -58,7 +61,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -93,7 +96,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -128,7 +131,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -160,7 +163,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -183,6 +186,52 @@ public class ReservedSpaceCatalog {
     return result;
   }
 
+
+  /**
+  *
+  * @param spaceToken TSpaceToken
+  * @return SpaceData
+  */
+ public StorageSpaceData getStorageSpaceByAlias(String desc) {
+
+   StorageSpaceData result = null; //new StorageSpaceData();
+   log.debug("Retrieve Storage Space start... ");
+
+   StorageSpaceTO ssTO = null;
+
+   // Retrieve the Data Access Object from the factory
+   try {
+     ssDAO = daoFactory.getStorageSpaceDAO();
+     log.debug("Storage Space DAO retrieved.");
+   }
+   catch (DataAccessException daEx) {
+     log.debug("Error while retrieving StorageSpaceDAO.", daEx);
+   }
+
+   //Get StorageSpaceTO form persistence
+   try {
+       Collection cl = ssDAO.getStorageSpaceByAliasOnly(desc);
+       Iterator iter = cl.iterator();
+       ssTO = ( StorageSpaceTO)iter.next();
+     log.debug("Storage Space retrieved by Token. ");
+     //Build the result
+     if (ssTO != null) {
+       result = new StorageSpaceData(ssTO);
+     }
+   }
+   catch (DataAccessException daEx) {
+     log.debug("Error while retrieving StorageSpace", daEx);
+   }
+
+   return result;
+ }
+
+
+
+
+
+
+
   /**
    *
    * @param spaceToken TSpaceToken
@@ -197,7 +246,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -215,25 +264,7 @@ public class ReservedSpaceCatalog {
 
   }
 
-  /**
-   * Returns the spaceTokens associated to the 'user' AND 'spaceAlias'. If 'spaceAlias' is NULL or
-   * an empty string then this method returns all the space tokens this 'user' owns.
-   * @param user VomsGridUser user.
-   * @param spaceAlias User space token description.
-   */
-  private Boolean isDedfaultSpaceToken(TSpaceToken token) {
-    Boolean found = false;
-
-    this.config = Configuration.getInstance();
-    List tokens = config.getListOfDefaultSpaceToken();
-    for (int i = 0; i < tokens.size(); i++) {
-      if ( ( (String) tokens.get(i)).toLowerCase().equals(token.getValue().toLowerCase())) {
-        found = true;
-      }
-    }
-
-    return found;
-  }
+ 
 
   /**
    *
@@ -241,14 +272,14 @@ public class ReservedSpaceCatalog {
    * @param spaceAlias String
    * @return ArrayOfTSpaceToken
    */
-  public ArrayOfTSpaceToken getSpaceTokens(VomsGridUser user, String spaceAlias) {
+  public ArrayOfTSpaceToken getSpaceTokens(GridUserInterface user, String spaceAlias) {
     ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
     log.debug("Retrieving space tokens...");
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -298,7 +329,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -388,7 +419,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -418,7 +449,7 @@ public class ReservedSpaceCatalog {
 
     // Retrieve the Data Access Object from the factory
     try {
-      ssDAO = cf.getStorageSpaceDAO();
+      ssDAO = daoFactory.getStorageSpaceDAO();
       log.debug("Storage Space DAO retrieved.");
     }
     catch (DataAccessException daEx) {
@@ -493,20 +524,20 @@ public class ReservedSpaceCatalog {
   public void createVOSA_Token(String spaceTokenAlias, TSizeInBytes totalOnLineSize, String spaceFileName) {
 
     ArrayOfTSpaceToken tokenArray;
-    
+
     /*
      * Build the storage space Data
      *
      * A Fake Grid User is needed
      */
-
+     GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
 
     //Try with fake user, if it does not work remove it and use different method
 
     // First, check if the same VOSpaceArea already exists
 
     //tokenArray = this.getSpaceTokensByAlias(spaceTokenAlias);
-    tokenArray = this.getSpaceTokens(fake_user, spaceTokenAlias);
+    tokenArray = this.getSpaceTokens(stormServiceUser, spaceTokenAlias);
 
     if (tokenArray.size() == 0) {
       //the VOSpaceArea does not exist yet
@@ -524,7 +555,7 @@ public class ReservedSpaceCatalog {
       StorageSpaceData ssd = null;
 
       try {
-        ssd = new StorageSpaceData(fake_user, TSpaceType.VOSPACE, spaceTokenAlias, totalOnLineSize,
+        ssd = new StorageSpaceData(stormServiceUser, TSpaceType.VOSPACE, spaceTokenAlias, totalOnLineSize,
                                    totalOnLineSize, null, null, null, sfname);
       }
       catch (InvalidSpaceDataAttributesException e) {
@@ -579,30 +610,31 @@ public class ReservedSpaceCatalog {
         log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " is already up to date.");
         voSA_spaceTokenSet.add(token);
 
-      }
-      else {
+      } else {
         //If the new data has been modified, update the data into the catalog
         log.debug("VOSpaceArea for space token description " + spaceTokenAlias +
                   " is different in some parameters. Updating the catalog.");
         try {
-          catalog_ssd.setGuaranteedSize(totalOnLineSize);
-          catalog_ssd.setDesiredSize(totalOnLineSize);
-          catalog_ssd.setTotalSize(totalOnLineSize);
 
-          //WARNIGN THIS WILL UPDATE THE FREE SIZE
-          catalog_ssd.setUnusedSize(totalOnLineSize);
-          PFN sfn = null;
-          try {
-            sfn = PFN.make(spaceFileName);
-          }
-          catch (InvalidPFNAttributeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          catalog_ssd.setSpaceFileName(sfn);
+            catalog_ssd.setGuaranteedSize(totalOnLineSize);
+            catalog_ssd.setDesiredSize(totalOnLineSize);
+            catalog_ssd.setTotalSize(totalOnLineSize);
 
-          this.updateAllStorageSpace(catalog_ssd);
-          voSA_spaceTokenSet.add(token);
+            //WARNIGN THIS WILL UPDATE THE FREE SIZE
+            catalog_ssd.setUnusedSize(totalOnLineSize);
+            
+            PFN sfn = null;
+            try {
+                sfn = PFN.make(spaceFileName);
+            }
+            catch (InvalidPFNAttributeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catalog_ssd.setSpaceFileName(sfn);
+
+            this.updateAllStorageSpace(catalog_ssd);
+            voSA_spaceTokenSet.add(token);
 
         }
         catch (NoDataFoundException e) {
@@ -639,7 +671,7 @@ public class ReservedSpaceCatalog {
    */
    public void FAKEpurgeOldVOSA_token() {
 	return;
-   } 
+   }
    public void purgeOldVOSA_token() {
     log.debug("VO SA: garbage collecting obsolete VOSA_token");
 
@@ -648,8 +680,10 @@ public class ReservedSpaceCatalog {
       log.debug("VO SA token REGISTRED:" + ( (TSpaceToken) iter.next()).getValue());
     }
 
+    GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
+
     //Remove obsolete space
-    ArrayOfTSpaceToken token_a = this.getSpaceTokens(fake_user, null);
+    ArrayOfTSpaceToken token_a = this.getSpaceTokens(stormServiceUser, null);
     for (int i = 0; i < token_a.size(); i++) {
       log.debug("VO SA token IN CATALOG:" + token_a.getTSpaceToken(i).getValue());
     }
@@ -661,7 +695,7 @@ public class ReservedSpaceCatalog {
           //This VOSA_token is no more used, removing it from persistence
           TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
           log.debug("VO SA token " + tokenToRemove + " is no more used, removing it from persistence.");
-          this.release(ReservedSpaceCatalog.fake_user, tokenToRemove);
+          this.release(stormServiceUser, tokenToRemove);
         }
       }
     }

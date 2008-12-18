@@ -1,7 +1,7 @@
 /* AuthorizationCollector
  *
  * Copyright (c) 2005, Riccardo Murri <riccardo.murri@ictp.it>
- * 
+ *
  * You may copy, distribute and modify this file under the terms of
  * the LICENSE.txt file at the root of the StoRM backend source tree.
  *
@@ -16,13 +16,14 @@ import it.grid.storm.authorization.AuthorizationQueryInterface;
 import it.grid.storm.authorization.DecisionCombiningAlgorithm;
 import it.grid.storm.authorization.sources.CompositeAuthorizationSource;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.griduser.GridUserInterface;
 
 
 /**
  * Queries a list of <code>AuthorizationSource</code>s and returns a
- * final decision.  
+ * final decision.
  *
  * <p>This is an interface to a tree of
  * <code>AuthorizationSource</code>s, where each leaf of the tree is a
@@ -85,7 +86,7 @@ public class AuthorizationCollector
 	 * should return some unauthorized access error code for
 	 * <em>any</em> request.
 	 */
-	public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+	public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
 		return rootNode.canUseStormAtAll(gridUser);
 	}
 
@@ -93,8 +94,8 @@ public class AuthorizationCollector
 	/**
 	 * Check if user can be allowed read access to the specified file.
 	 */
-	public AuthorizationDecision 
-		canReadFile(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canReadFile(final GridUserInterface gridUser, final StoRI file) {
 		return rootNode.canReadFile(gridUser, file);
 	}
 
@@ -105,8 +106,8 @@ public class AuthorizationCollector
 	 * already-existing files, however, it is up to the actual
 	 * implementation to check if the file already exists.
 	 */
-	public AuthorizationDecision 
-		canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+	public AuthorizationDecision
+		canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
 		return rootNode.canWriteFile(gridUser, existingFile);
 	}
 
@@ -122,8 +123,8 @@ public class AuthorizationCollector
 	 * <p>Involved in: <code>SrmCopy</code>,
 	 * <code>srmPrepareToPut</code>
 	 */
-	public AuthorizationDecision 
-		canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile) {
+	public AuthorizationDecision
+		canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile) {
 		return rootNode.canCreateNewFile(gridUser, targetFile);
 	}
 
@@ -137,8 +138,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmChangePermissions</code>.
 	 */
-	public AuthorizationDecision 
-		canChangeAcl(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canChangeAcl(final GridUserInterface gridUser,
 					 final StoRI fileOrDirectory) {
 		return rootNode.canChangeAcl(gridUser, fileOrDirectory);
 	}
@@ -154,8 +155,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmReassignToUser</code>.
 	 */
-	public AuthorizationDecision 
-		canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+	public AuthorizationDecision
+		canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
 		return rootNode.canGiveaway(gridUser, fileOrDirectory);
 	}
 
@@ -170,8 +171,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmLs</code>,
 	 */
-	public AuthorizationDecision 
-		canListDirectory(final VomsGridUser gridUser, final StoRI directory) {
+	public AuthorizationDecision
+		canListDirectory(final GridUserInterface gridUser, final StoRI directory) {
 		return rootNode.canListDirectory(gridUser, directory);
 	}
 
@@ -191,8 +192,8 @@ public class AuthorizationCollector
 	 * <code>srmMv</code>, <code>srmMkdir</code>, <code>srmRm</code>,
 	 * <code>srmRmdir</code>.
 	 */
-	public AuthorizationDecision 
-		canTraverseDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canTraverseDirectory(final GridUserInterface gridUser,
 							 final StoRI path) {
 		return rootNode.canTraverseDirectory(gridUser, path);
 	}
@@ -207,8 +208,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmMv</code>.
 	 */
-	public AuthorizationDecision 
-		canRename(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canRename(final GridUserInterface gridUser, final StoRI file) {
 		return rootNode.canRename(gridUser, file);
 	}
 
@@ -222,8 +223,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmRm</code>, <code>srmRmdir</code>.
 	 */
-	public AuthorizationDecision 
-		canDelete(final VomsGridUser gridUser, final StoRI file) {
+	public AuthorizationDecision
+		canDelete(final GridUserInterface gridUser, final StoRI file) {
 		return rootNode.canDelete(gridUser, file);
 	}
 
@@ -237,8 +238,8 @@ public class AuthorizationCollector
 	 *
 	 * <p>Involved in: <code>srmMkdir</code>.
 	 */
-	public AuthorizationDecision 
-		canMakeDirectory(final VomsGridUser gridUser, 
+	public AuthorizationDecision
+		canMakeDirectory(final GridUserInterface gridUser,
 						 final StoRI targetDirectory) {
 		return rootNode.canMakeDirectory(gridUser, targetDirectory);
 	}

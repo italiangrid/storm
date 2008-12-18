@@ -2,7 +2,6 @@ package it.grid.storm.asynch;
 
 import org.apache.log4j.Logger;
 
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -42,6 +41,8 @@ import javax.xml.rpc.soap.SOAPFaultException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.AbstractGridUser;
 
 /**
  * Class that represents a first implementation of an SRMClient.
@@ -74,7 +75,7 @@ public class NaiveSRMClient implements SRMClient {
      * specific ways of behaving such as leaving the specific file status blank until a
      * status for the whole request is completed, etc.
      */
-    public SRMPrepareToPutReply prepareToPut(VomsGridUser gu, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException {
+    public SRMPrepareToPutReply prepareToPut(GridUserInterface gu, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException {
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -176,7 +177,7 @@ public class NaiveSRMClient implements SRMClient {
      * and the toSURL of the request. An SRMStatusOfPutRequestReply is returned, but in
      * case the operation fails an SRMClientException is thrown containing an explanation
      * String.
-     * 
+     *
      * This client is said to be naive, because given the reply from an SRMStatusOfPutRequest,
      * the client checks the srm field of the specific file to obtain both the TURL and the
      * status of the request, _ignoring_ the overall request status.
@@ -185,7 +186,7 @@ public class NaiveSRMClient implements SRMClient {
      * specific ways of behaving such as leaving the specific file status blank until a
      * status for the whole request is completed, etc.
      */
-     public SRMStatusOfPutRequestReply statusOfPutRequest(it.grid.storm.srm.types.TRequestToken rt, VomsGridUser gu, it.grid.storm.srm.types.TSURL toSURL) throws SRMClientException{
+     public SRMStatusOfPutRequestReply statusOfPutRequest(it.grid.storm.srm.types.TRequestToken rt, GridUserInterface gu, it.grid.storm.srm.types.TSURL toSURL) throws SRMClientException{
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -254,7 +255,7 @@ public class NaiveSRMClient implements SRMClient {
      * Method that returns an SRMPutDoneReply containing TReturnStatus with TStatusCode.SRM_SUCCESS,
      * and explanation string "DUMMY SUCCESS".
      */
-    public SRMPutDoneReply srmPutDone(TRequestToken rt, VomsGridUser gu, TSURL toSURL) throws SRMClientException {
+    public SRMPutDoneReply srmPutDone(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException {
         return null;
 /*        try {
             return new SRMPutDoneReply(new it.grid.storm.srm.types.TReturnStatus(it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS,"DUMMY SUCCESS"));
@@ -267,7 +268,7 @@ public class NaiveSRMClient implements SRMClient {
      * Private auxiliary method that sets up a secure GSI connection for the given
      * GridUser to the specfied toSURL. The method returns the service interface.
      */
-    private srmClientStubs.ISRM setUpGSI(VomsGridUser gu, it.grid.storm.srm.types.TSURL toSURL) throws javax.xml.rpc.ServiceException,
+    private srmClientStubs.ISRM setUpGSI(GridUserInterface gu, it.grid.storm.srm.types.TSURL toSURL) throws javax.xml.rpc.ServiceException,
     GlobusCredentialException, GSSException, it.grid.storm.srm.types.InvalidTUserIDAttributeException {
         //get web service, setting HTTP and HTTPG as transport!
         Util.registerTransport();
@@ -281,8 +282,9 @@ public class NaiveSRMClient implements SRMClient {
         srmClientStubs.ISRM _srm = sRMService.getsrm();
 
         //set proxy in stub
-        if (gu.getUserCredentials()==null) log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
-        InputStream proxy = new ByteArrayInputStream(gu.getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
+        if (((AbstractGridUser)gu).getUserCredentials()==null)
+          log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
         GSSCredential globusProxy = new GlobusGSSCredentialImpl(new GlobusCredential(proxy) , GSSCredential.INITIATE_AND_ACCEPT); //GSSCredential containing the proxy!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS,globusProxy); //set the proxy to be used during GSI connection!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_AUTHORIZATION,NoAuthorization.getInstance()); //set the authorization that will be performed by the web service for the supplied credentails!

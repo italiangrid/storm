@@ -13,7 +13,7 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Streets;
 
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 
 import it.grid.storm.griduser.CannotMapUserException;
 
@@ -22,13 +22,17 @@ import it.grid.storm.catalogs.PtPChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TOverwriteMode;
 
+import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.DefaultValues.SpaceDefault;
 
 
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -38,6 +42,9 @@ import it.grid.storm.srm.types.TTURL;
 
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 
 
 import java.io.IOException;
@@ -109,7 +116,7 @@ public class PtPChunk implements Delegable, Chooser {
 
     private static Logger log = Logger.getLogger("asynch");
     //DA SOVRASCRIVER CON QUELLO IN CVSSSSS!!!!
-    private VomsGridUser gu=null;        //GridUser that made the request
+    private GridUserInterface gu=null;        //GridUser that made the request
     private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToPutRequest
     private PtPChunkData chunkData=null; //PtPChunkData that holds the specific info for this chunk
     private GlobalStatusManager gsm =null;  //GlobalStatusManager object in charge of computing the global status of the request This chunk belongs to
@@ -123,7 +130,7 @@ public class PtPChunk implements Delegable, Chooser {
      * supplied attributes are null, an InvalidPtPChunkAttributesException
      * is thrown.
      */
-    public PtPChunk(VomsGridUser gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtPChunkAttributesException {
+    public PtPChunk(GridUserInterface gu, RequestSummaryData rsd, PtPChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtPChunkAttributesException {
         boolean ok = (gu!=null) &&
             (rsd!=null) &&
             (chunkData!=null) &&
@@ -216,47 +223,87 @@ public class PtPChunk implements Delegable, Chooser {
      * Private method that handles the case of Permit on Create and Write rights!
      */
     private void managePermit(StoRI fileStoRI) {
-        try {
-            TTURL auxTURL = fileStoRI.getTURL(chunkData.transferProtocols());
-            LocalUser localUser = gu.getLocalUser();
-            //set right permissions to trasverse to file
-            boolean ok1 = managePermitTraverseStep(fileStoRI,localUser);
-            if (ok1) {
-                //Use any reserved space which implies the existence of a file!
-                boolean ok2 = managePermitReserveSpaceStep(fileStoRI);
-                if (ok2) {
-                    //set right permission on file!
-                    boolean ok3 = managePermitSetFileStep(fileStoRI,localUser,auxTURL);
-                    if (!ok3) {
+        
+        /**
+         * From version 1.4
+         * Add the control for Storage Area 
+         * using the new authz for space component.
+         */
+        
+        SpaceHelper sp = new SpaceHelper();
+        TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+        
+        
+        /**
+         * @FIXME
+         * The SpaceAuth have do be built without get the token, but using the StoRI- 
+         * 
+         */
+        
+        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+        
+        if(spaceAuth.authorize(gu, SRMSpaceRequest.PTP)) { 
+
+            try {
+                TTURL auxTURL = fileStoRI.getTURL(chunkData.transferProtocols());
+                LocalUser localUser = gu.getLocalUser();
+
+
+
+                //set right permissions to trasverse to file
+                boolean ok1 = managePermitTraverseStep(fileStoRI,localUser);
+                if (ok1) {
+                    //Use any reserved space which implies the existence of a file!
+                    boolean ok2 = managePermitReserveSpaceStep(fileStoRI);
+                    if (ok2) {
+                        //set right permission on file!
+                        boolean ok3 = managePermitSetFileStep(fileStoRI,localUser,auxTURL);
+                        if (!ok3) {
+                            //URGENT!!!
+                            //roll back! ok3, ok2 and ok1
+                        }
+                    } else {
                         //URGENT!!!
-                        //roll back! ok3, ok2 and ok1
+                        //roll back! ok2 and ok1
                     }
                 } else {
                     //URGENT!!!
-                    //roll back! ok2 and ok1
+                    //roll back ok1!
                 }
-            } else {
-                //URGENT!!!
-                //roll back ok1!
+            } catch (CannotMapUserException e) {
+                //While setting up the ACL, the local mapping of the grid credentials failed!
+                chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+                this.failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
+            } catch (InvalidGetTURLNullPrefixAttributeException e) {
+                //Handle null TURL prefix! This is a programming error: it should not occur!
+                chunkData.changeStatusSRM_FAILURE("Unable to decide TURL!");
+                this.failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "+e);
+            } catch (InvalidGetTURLProtocolException e) {
+                //Handle null TURL prefix! This is a programming error: it should not occur!
+                chunkData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
+                this.failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtPChunk! No valid transfer protocol found.");
+
+            } catch (Error e) {
+                //This is a temporary measure to catch an arror occurring because of the use of deprecated
+                //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
+                //a specific account instead of a pool account, and the VomsGridUser class handles the situation
+                //through a deprecated getEnv method!
+                chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+                this.failure = true; //gsm.failedChunk(chunkData);
+                log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
+
+
+
             }
-        } catch (CannotMapUserException e) {
-            //While setting up the ACL, the local mapping of the grid credentials failed!
-            chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+        
+        } else  { /* Not Authorized for the storage area */
+            
+            chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access for "+chunkData.toSURL()+" in Storage Area: "+token+" denied!");
             this.failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
-        } catch (InvalidGetTURLNullPrefixAttributeException e) {
-            //Handle null TURL prefix! This is a programming error: it should not occur!
-            chunkData.changeStatusSRM_FAILURE("Unable to decide TURL!");
-            this.failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "+e);
-        } catch (Error e) {
-            //This is a temporary measure to catch an arror occurring because of the use of deprecated
-            //method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
-            //a specific account instead of a pool account, and the VomsGridUser class handles the situation
-            //through a deprecated getEnv method!
-            chunkData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
-            this.failure = true; //gsm.failedChunk(chunkData);
-            log.error("ERROR in PtPChunk! There was a failure in mapping "+gu.getDn()+" to a local user! Error returned: "+e);
+            log.debug("Create/Write access for "+chunkData.toSURL()+" in Storage Area: "+token+" denied!"); //info
         }
     }
 
@@ -427,6 +474,32 @@ public class PtPChunk implements Delegable, Chooser {
         TSizeInBytes size = chunkData.expectedFileSize();
         TSpaceToken spaceToken = chunkData.spaceToken();
         LocalFile localFile = fileStoRI.getLocalFile();
+
+        // In case of SRM Storage Area limitation enabled,
+        // the Storage Area free size is retrieved from the database
+        // and the PtP fails if there is not enougth space.
+        Configuration config = Configuration.getInstance();
+
+        VirtualFSInterface fs = fileStoRI.getVirtualFileSystem();
+        
+        try {
+            if( (fs!=null) && (fs.getProperties().isOnlineSpaceLimited())) {
+                SpaceHelper sp = new SpaceHelper();
+                long freeSpace = sp.getSAFreeSpace(log, fileStoRI);
+                if( (sp.isSAFull(log, fileStoRI)) ||
+                        ( (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) ) {
+
+                    log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
+                    chunkData.changeStatusSRM_FAILURE("No free space on Storage Area");
+                    this.failure = true; //gsm.failedChunk(chunkData);
+                    return false;
+                }
+            }
+        } catch (NamespaceException e1) {
+            log.debug("PtPChunk - Error! Unable to build properties from virtual fs");// TODO Auto-generated catch block
+        }
+
+
         try {
             //set space!
             boolean successful = localFile.createNewFile();

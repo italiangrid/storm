@@ -1,11 +1,10 @@
 # /etc/sysconfig/storm-backend
 #
-# $Id: storm-backend,v 1.10 2006/06/28 20:57:39 amessina Exp $
 #
 
 # root of all other StoRM-related directories
 # (individual portions may be overridden later)
-#export STORM_HOME=/opt/storm
+#export STORM_HOME=/opt/storm/backend
 
 # user that will own the StoRM BE process
 export STORM_BE_USER=root
@@ -57,22 +56,22 @@ export STORM_BE_USER=root
 #export LCMAPS_DEBUG_LEVEL=2
 
 # if ENABLE_SSL != yes, the following SSL_* options are ignored.
-export ENABLE_SSL=yes
+#export ENABLE_SSL=yes
 
 # Path to the keystore containing trusted CA
-export SSL_TRUST_STORE="/opt/storm/etc/ecar.ts"
+#export SSL_TRUST_STORE="/opt/storm/etc/ecar.ts"
 
 # password of the trusted keystore
-export SSL_TRUST_STORE_PWD="truststore_pwd"
+#export SSL_TRUST_STORE_PWD="truststore_pwd"
 
 # Path to the key store
-export SSL_KEY_STORE="/opt/storm/etc/ecar.p12"
+#export SSL_KEY_STORE="/opt/storm/etc/ecar.p12"
 
 # password of the keystore containing the private and
 # public key used by ecar.
-export SSL_KEY_STORE_PWD="keystore_pwd"
+#export SSL_KEY_STORE_PWD="keystore_pwd"
 
 # Type of the keystore containing public and
 # private key used by ecar.
-export SSL_KEY_STORE_TYPE=PKCS12
+#export SSL_KEY_STORE_TYPE=PKCS12
 

@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.commons.logging.*;
+
+import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.catalogs.*;
 import it.grid.storm.common.types.*;
 import it.grid.storm.filesystem.*;
@@ -11,6 +14,7 @@ import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
 import it.grid.storm.namespace.naming.*;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -39,7 +43,11 @@ public class StoRIImpl
     private SpaceSystem spaceDriver;
     private StoRIType type;
 
-    private Vector transferProtocolManaged = null;
+    private Capability capability;
+
+
+
+    // private Vector transferProtocolManaged = null;
 
     // Elements of Name of StoRI
     private String stfn;
@@ -61,9 +69,15 @@ public class StoRIImpl
 
 
     public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule, String relativeStFN, StoRIType type) {
-        if (vfs != null) {
-            this.vfs = vfs;
+      if (vfs != null) {
+        this.vfs = vfs;
+        try {
+          this.capability = (Capability) vfs.getCapabilities();
         }
+        catch (NamespaceException ex) {
+          log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
+        }
+      }
         else {
             log.fatal("!!! StoRI built without VFS!!?!");
         }
@@ -114,24 +128,6 @@ public class StoRIImpl
 
         }
         else {
-            /**
-                     //retrieve the Mapping rule that is winner
-                     log.debug("No winner rule passed to StoRI constructor.");
-                     try {
-             log.debug(" VFS passed is " + vfs.getAliasName() + " holds " + vfs.getMappingRules().size() + " mapping rules.");
-                String stfnPath = NamespaceUtil.getStFNPath(relativeStFN);
-                winnerRule = NamespaceDirector.getNamespace().getWinnerRule(stfnPath);
-                //Check on winner Rule
-                if (winnerRule!=null) {
-                  this.stfnRoot = winnerRule.getStFNRoot();
-                } else {
-             log.error("!!! StoRI built with a VFS not compatible with Mapping Rule (MAPRULE : "+winnerRule.getRuleName() +")");
-                }
-                     }
-                     catch (NamespaceException ex) {
-                log.error(" VFS attribute reading error.");
-                     }
-             **/
             log.warn("StoRI built without MAPPIG RULE!!");
         }
         /**
@@ -149,7 +145,12 @@ public class StoRIImpl
 
     public StoRIImpl(VirtualFSInterface vfs, String stfnStr, TLifeTimeInSeconds lifetime, StoRIType type) {
         this.vfs = vfs;
-
+        try {
+          this.capability = (Capability) vfs.getCapabilities();
+        }
+        catch (NamespaceException ex) {
+          log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
+        }
         //Relative path has to be a path in a relative form! (without "/" at begins)
         if (relativePath != null) {
             if (relativePath.startsWith(NamingConst.SEPARATOR)) {
@@ -182,14 +183,6 @@ public class StoRIImpl
 
     }
 
-    public StoRIImpl() {
-        try {
-            testInit();
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
 
     public void setStoRIType(StoRIType type) {
         this.type = type;
@@ -205,66 +198,89 @@ public class StoRIImpl
 
     /*****************************************************************************
      *  READ METHODs
+     * @throws InvalidGetTURLProtocolException
      ***************************************************************************/
 
 
-    public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        InvalidGetTURLNullPrefixAttributeException {
+    public TTURL getTURL(TURLPrefix desiredProtocols) throws InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException {
 
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-
-        TransportPrefix protocolPrefix = null;
+        //TransportProtocol protocolPrefix = null;
         TTURL resultTURL = null;
 
-        boolean found = false;
-
-        if (prefixOfAcceptedTransferProtocols == null) {
+        if (desiredProtocols == null) {
             log.error("<GetTURL> request with NULL prefixOfAcceptedTransferProtocol!");
-            throw new InvalidGetTURLNullPrefixAttributeException(prefixOfAcceptedTransferProtocols);
+            throw new InvalidGetTURLNullPrefixAttributeException(desiredProtocols);
         }
         else {
 
           /**
            * Retrieve Protocol to build the TURL
            */
-            if ( (prefixOfAcceptedTransferProtocols.size() == 0)) {
-                log.debug("<GetTURL> Creating new TURL with DEFAULT TransportPrefix");
+            if ( (desiredProtocols.size() == 0)) {
+                log.debug("<GetTURL> No matching transfer protocol Found! Returnig Error");
                 //Creation TURL with DEFAULT Transport Prefix
-                protocolPrefix = getDefaultTransferProtocol();
+                //protocolPrefix = getDefaultTransferProtocol();
+                //Change here
+                throw new InvalidGetTURLProtocolException(desiredProtocols);
             }
             else { //Within the request there are some protocol preferences
-                int size = prefixOfAcceptedTransferProtocols.size();
-                boolean prefixFound = false;
-                TransferProtocol tp = null;
-                for (int i = 0; i < size && !prefixFound; i++) {
-                    tp = prefixOfAcceptedTransferProtocols.getTransferProtocol(i);
-                    String scheme = tp.getValue();
-                    protocolPrefix = retrieveTrasferProtocolByProtocolScheme(scheme);
-                    if (protocolPrefix!=null)
-                        prefixFound = true;
+                //Calculate the intersection between Desired Protocols and Available Protocols
+                ArrayList<Protocol> desiredP = new ArrayList<Protocol>(desiredProtocols.getDesiredProtocols());
+                ArrayList<Protocol> availableP = new ArrayList<Protocol> (this.capability.getAllManagedProtocols());
+                desiredP.retainAll(availableP);
+                if (desiredP.isEmpty()) {
+                  //No match found!
+                    log.error("stori:No match with Protocol Preferences and Protocol Managed!");
+                    throw new InvalidGetTURLProtocolException(desiredProtocols);
+                } else {
+                  log.debug("Protocol matching.. Intersection size:"+desiredP.size());
+                  Protocol firstMatch = desiredP.get(0);
+                  log.debug("Selected Protocol (the first) :"+firstMatch);
+                  boolean pooledProtocol = capability.isPooledProtocol(firstMatch);
+                  Authority authority = null;
+                  if (pooledProtocol) { //POOLED PROTOCOL
+                    log.debug("The protocol selected is in POOL Configuration");
+                    authority = getPooledAuthority(firstMatch);
+                  } else { //SINGLE PROTOCOL
+                    log.debug("The protocol selected is in NON-POOL Configuration");
+                    TransportProtocol transProt = null;
+                    List<TransportProtocol> protList = capability.getManagedProtocolByScheme(firstMatch);
+                    if (protList.size()>1) { //Strange case
+                      log.warn("More than one protocol "+firstMatch+" defined but NOT in POOL Configuration. Taking the first one.");
+                    }
+                    transProt = protList.get(0);
+                    authority = transProt.getAuthority();
+                  }
+                  resultTURL = buildTURL(firstMatch, authority, getPFN());
                 }
             }
-            if (protocolPrefix != null) {
-              resultTURL = buildTURL(protocolPrefix, getPFN());
-            }
-            else { //No match found!
-                    log.error("NO MATCH with Protocol Preferences and Procol Managed!");
-                    /**
-                     * @todo : Manage this exceptional situation!!!
-                     */
-                }
         }
         return resultTURL;
     }
 
 
-    private static TTURL buildTURL(TransportPrefix transportPrefix, PFN physicalFN) throws InvalidProtocolForTURLException {
+    private Authority getPooledAuthority(Protocol pooledProtocol) {
+      Authority authority = null;
+      try {
+          if (vfs.getProtocolBalancer(pooledProtocol) != null) {
+              Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
+              if (pooledProtocol.equals(Protocol.GSIFTP)) {
+                FTPNode node = (FTPNode) bal.getNextElement();
+                authority = new Authority(node.getHostName(), node.getPort());
+              } else {
+                log.error("Unable to manage pool with protocol different from GSIFTP.");
+              }
+          }
+      } catch (NamespaceException e) {
+          log.error("Error getting the protocol balancer.");
+      }
+      return authority;
+    }
 
+
+
+    private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
       TTURL result = null;
-      Protocol protocol = transportPrefix.getProtocol();
-      Authority authority = transportPrefix.getAuthority();
       switch (protocol.getProtocolIndex())  {
         case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
         case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
@@ -277,24 +293,6 @@ public class StoRIImpl
       return result;
     }
 
-
-
-    public TTURL getTURL(Protocol prot) {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        /**
-         * @todo : search within vector the existence of Prot
-         */
-        return null;
-    }
-
-    public List getTURLs() {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        return transferProtocolManaged;
-    }
 
     public TSURL getSURL() {
         /**
@@ -695,41 +693,75 @@ public class StoRIImpl
         return result;
     }
 
-    private void populateManagedTranferProtocol() {
-        try {
-            transferProtocolManaged = new Vector(vfs.getCapabilities().getManagedProtocols());
-            log.debug("Managed Transfer Protocol by StoRI : " + transferProtocolManaged);
-        }
-        catch (NamespaceException ex) {
-            log.error("Error while retrieving managed Transfer Protocol", ex);
-        }
-    }
 
-    private TransportPrefix getDefaultTransferProtocol() {
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        return (TransportPrefix) transferProtocolManaged.firstElement();
-    }
+    private TransportProtocol retrieveTrasferProtocolByProtocolScheme(Protocol protocol) {
+        TransportProtocol result = null;
+        Capability capability = null;
+        //Retrieve CAPABILITY Element
 
-    private TransportPrefix retrieveTrasferProtocolByProtocolScheme(String scheme) {
-        TransportPrefix result = null;
-        if (transferProtocolManaged == null) {
-            populateManagedTranferProtocol();
-        }
-        int size = transferProtocolManaged.size();
-        for (int i = 0; i < size; i++) {
-            result = (TransportPrefix) transferProtocolManaged.elementAt(i);
-            String schemeAllowed = result.getProtocol().getSchema();
-            if (schemeAllowed.toLowerCase().equals(scheme.toLowerCase())) {
-                break;
-            }
+        //Retrieve LIST of TRANSFER PROTOCOL
+        List<TransportProtocol> listTransProt = capability.getManagedProtocolByScheme(protocol);
+        if (listTransProt.isEmpty())
+          log.error("ERROR: protocol with protocol "+protocol+" is not supported in the VFS :"+getVFSName());
+        else {
+          //Take the first element of the list
+          result = listTransProt.get(0);
+          if (listTransProt.size()>1)
+            log.warn("ATTENTION: Pool managed as a single element!");
         }
         return result;
     }
 
-    private void testInit() throws Exception {
-        throw new Exception("NO USE THIS METHOD! <'new StoRI();'> ");
+
+    public ArrayList getFirstLevelChildren(TDirOption dirOption)
+            throws InvalidDescendantsEmptyRequestException,
+            InvalidDescendantsAuthRequestException,
+            InvalidDescendantsPathRequestException,
+            InvalidDescendantsFileRequestException {
+
+
+        ArrayList pathList = new ArrayList();
+        ArrayList stoRIList = new ArrayList();
+        File fileHandle = new File(getAbsolutePath());
+
+        if (!fileHandle.isDirectory()) {
+            if (fileHandle.isFile()) {
+                log.error("SURL represents a File, not a Directory!");
+                throw new InvalidDescendantsFileRequestException(fileHandle);
+            }
+            else {
+                log.warn("SURL does not exists!");
+                throw new InvalidDescendantsPathRequestException(fileHandle);
+            }
+        }
+        else { //SURL point to an existent directory.
+            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
+            pathList = (ArrayList) pCreator.generateFirstLevelChild(pathList);
+            if (pathList.size() == 0) {
+                log.debug("SURL point to an EMPTY DIRECTORY");
+                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
+            }
+            else { //Creation of StoRI LIST
+                NamespaceInterface namespace = NamespaceDirector.getNamespace();
+                StoRI createdStoRI = null;
+                String childPath;
+                for (int i = 0; i < pathList.size(); i++) {
+                    childPath = (String) pathList.get(i);
+                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
+                    try {
+                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
+                        stoRIList.add(createdStoRI);
+                    }
+                    catch (NamespaceException ex) {
+                        log.error("Error occurred while resolving StoRI by absolute path", ex);
+                    }
+                }
+            }
+        }
+        return stoRIList;
     }
+
+
 
 }

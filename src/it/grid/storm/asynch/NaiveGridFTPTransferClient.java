@@ -20,6 +20,8 @@ import org.ietf.jgss.GSSException;
 import java.io.*;
 
 import org.apache.log4j.Logger;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.AbstractGridUser;
 
 /**
  * This class represents a GridFTP client; it is naive in that it makes no use
@@ -47,14 +49,14 @@ public class NaiveGridFTPTransferClient implements GridFTPTransferClient {
      * proxy; a generic input/output problem occured; the GridFTP server reported some
      * problems; there were client side problems.
      */
-    public void putFile(VomsGridUser gu, TTURL local, TTURL remote) throws GridFTPTransferClientException {
+    public void putFile(GridUserInterface gu, TTURL local, TTURL remote) throws GridFTPTransferClientException {
         boolean localIsFile = (local.protocol()==TransferProtocol.FILE);
         boolean remoteIsGSIFTP = (remote.protocol()==TransferProtocol.GSIFTP);
         if (!localIsFile || !remoteIsGSIFTP) throw new GridFTPTransferClientException("Unsupported local/remote protocol: local-is-file="+localIsFile+", remote-is-GSIFTP="+remoteIsGSIFTP);
         String fullLocalFile = "/"+local.tfn().pfn().getValue();
         String fullRemoteFile = "/"+remote.tfn().pfn().getValue();
         try {
-            InputStream proxy = new ByteArrayInputStream(gu.getUserCredentials().getBytes());
+            InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes());
             int remotePort = 2811;
             if (!remote.tfn().port().isEmpty()) remotePort = remote.tfn().port().toInt();
             GridFTPClient client = new GridFTPClient(remote.tfn().machine().getValue(),remotePort);

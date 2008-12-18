@@ -1,29 +1,20 @@
 package component.namespace.config;
 
 import java.io.*;
+import java.util.*;
 
 import org.apache.commons.logging.*;
 import org.apache.commons.logging.impl.*;
 import org.apache.log4j.*;
+import it.grid.storm.balancer.*;
+import it.grid.storm.common.types.*;
+import it.grid.storm.griduser.*;
+import it.grid.storm.namespace.*;
 import it.grid.storm.namespace.config.*;
 import it.grid.storm.namespace.config.xml.*;
-import java.util.*;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.model.Protocol;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.model.TransportPrefix;
-import it.grid.storm.namespace.model.Authority;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.naming.NamespaceUtil;
-import it.grid.storm.common.types.StFN;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.model.*;
+import it.grid.storm.namespace.naming.*;
+import it.grid.storm.srm.types.*;
 
 /**
  * <p>Title: </p>
@@ -50,7 +41,7 @@ public class AdHocTest {
   private void init()
   {
     String path = System.getProperty("user.dir") + File.separator + "etc";
-    String filename = "namespace_test.xml";
+    String filename = "namespace_1.4.0_test.xml";
     int refresh = 3;
 
     boolean jdk14Logger = (log instanceof Jdk14Logger);
@@ -69,6 +60,7 @@ public class AdHocTest {
       PropertyConfigurator.configure(logConfigFile);
     }
 
+    //PersistenceDirector p;
 
 
     NamespaceLoader loader = new XMLNamespaceLoader(path, filename, refresh, false);
@@ -399,10 +391,10 @@ private void testPrintAPPROACHABLERULE_Configuration() {
 
 
  private void testTrasferProtocol(){
-   TransportPrefix tp;
-   tp = new TransportPrefix(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it"));
+   TransportProtocol tp;
+   tp = new TransportProtocol(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it"));
    log.debug(tp);
-   tp = new TransportPrefix(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it",12345));
+   tp = new TransportProtocol(Protocol.GSIFTP,new Authority("testbed006.cnaf.infn.it",12345));
    log.debug(tp);
  }
 
@@ -463,7 +455,7 @@ private void testPrintAPPROACHABLERULE_Configuration() {
   private void testGetTrasferProtocol(){
     VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
     try {
-      Vector prot = new Vector(vfs.getCapabilities().getManagedProtocols());
+      Vector prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
       log.debug(prot);
     }
     catch (NamespaceException ex) {
@@ -474,12 +466,12 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
     Vector prot = null;
     try {
-      prot = new Vector(vfs.getCapabilities().getManagedProtocols());
+      prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
     }
     catch (NamespaceException ex) {
     }
     if (prot!=null) {
-      log.debug((TransportPrefix)prot.firstElement());
+      log.debug((TransportProtocol)prot.firstElement());
     }
   }
 
@@ -497,13 +489,161 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     log.debug(" SPACE FN : "+spaceFN);
   }
 
+  //******************************************************** 1.4.0 ************
+  private void testGetProtocolBalancer() {
+     VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+     Balancer<? extends Node> balancer = null;
+    try {
+      balancer = vfs.getProtocolBalancer(Protocol.GSIFTP);
+    }
+    catch (NamespaceException ex) {
+      log.error("AHH!",ex);
+    }
+    log.debug(" BALANCER : "+balancer);
+  }
+
+  private void testIsPoolDefined() {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    boolean result = false;
+   try {
+     result = vfs.isPoolDefined(Protocol.GSIFTP);
+   }
+   catch (NamespaceException ex) {
+     log.error("AHH!",ex);
+   }
+   log.debug(" POOL GSIFTP Defined ? = "+result);
+  }
+
+
+  private void testGetSATYpe() {
+  VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+  SAAuthzType saType = SAAuthzType.UNKNOWN;
+  try {
+    saType = vfs.getStorageAreaAuthzType();
+  }
+  catch (NamespaceException ex) {
+    log.error("AHH!",ex);
+  }
+  log.debug(" POOL GSIFTP Defined ? = "+saType);
+}
+
+private void testGetAuthzDB() {
+  VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+  String authzDB = null;
+  try {
+    authzDB = vfs.getStorageAreaAuthzDB();
+  }
+  catch (NamespaceException ex) {
+    log.error("AHH!", ex);
+  }
+  log.debug(" Authz-DB ? = " + authzDB);
+}
+
+private void testGetAuthzFIXED() {
+  VirtualFSInterface vfs = parser.getVFS("LHCB-FS");
+  String authzFixed = null;
+  try {
+    authzFixed = vfs.getStorageAreaAuthzFixed();
+  }
+  catch (NamespaceException ex) {
+    log.error("AHH!", ex);
+  }
+  log.debug(" Authz-Fixed ? = " + authzFixed);
+}
+
+
+private void testIsOnlineSpaceLimited() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    PropertyInterface prop = vfs.getProperties();
+    boolean result = prop.isOnlineSpaceLimited();
+    log.debug("Online Limited in VFS ("+vfsName+")?" + result);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
+
+private  void testGetProtocolByID() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    CapabilityInterface capabilities = vfs.getCapabilities();
+    TransportProtocol tp = capabilities.getProtocolByID(0);
+    log.debug("Transport Protocol (0) di VFS ("+vfsName+")?" + tp);
+    tp = capabilities.getProtocolByID(1);
+    log.debug("Transport Protocol (1) di VFS ("+vfsName+")?" + tp);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
+
+private  void testGetPoolByScheme() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    CapabilityInterface capabilities = vfs.getCapabilities();
+    Balancer<? extends Node> balancer = capabilities.getPoolByScheme(Protocol.GSIFTP);
+    log.debug("Balancer per GSIFTP di VFS ("+vfsName+")?" + balancer);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
+
+private  void testIsPooledProtocol() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    CapabilityInterface capabilities = vfs.getCapabilities();
+    boolean result = capabilities.isPooledProtocol(Protocol.GSIFTP);
+    log.debug("GSIFTP è Pooled in VFS ("+vfsName+")?" + result);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
+
+private  void testGetAllManagedProtocol() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    CapabilityInterface capabilities = vfs.getCapabilities();
+    ArrayList<Protocol> listProt = new ArrayList<Protocol>(capabilities.getAllManagedProtocols());
+    log.debug("List di protocolli in VFS ("+vfsName+")?" + listProt);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
+
+private  void testGetManagedProtocolByScheme() {
+  try {
+    VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
+    String vfsName = vfs.getAliasName();
+    CapabilityInterface capabilities = vfs.getCapabilities();
+    ArrayList<TransportProtocol> listTProt = new ArrayList<TransportProtocol>(capabilities.getManagedProtocolByScheme(Protocol.GSIFTP));
+    log.debug("List di T.protocolli di GSIFTP in VFS ("+vfsName+")?" + listTProt);
+  }
+  catch (NamespaceException ex1) {
+    log.error("AHAAH : "+ex1);
+  }
+}
+
   public static void main(String[] args) {
     AdHocTest test = new AdHocTest();
     test.init();
 
     //test.numberOfVFS();
     //test.numberOfMappingRule();
-    test.numberOfApproachRule();
+    //test.numberOfApproachRule();
     //test.scanVFSName();
     //test.retrieveVFSByName("cnaf-FS");
     //test.retrieveVFSByName("scrath-FS");
@@ -526,7 +666,7 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     //test.allProperties();
     //test.testPrintVFSSConfiguration();
     //test.testPrintMAPPINGRULE_Configuration();
-    test.testPrintAPPROACHABLERULE_Configuration();
+    //test.testPrintAPPROACHABLERULE_Configuration();
     //test.testTrasferProtocol();
     //test.testAllVFSRoots();
     //test.testAllMappingRuleStFNRoot();
@@ -535,8 +675,19 @@ private void testPrintAPPROACHABLERULE_Configuration() {
     //test.testGetTrasferProtocol();
     //test.testGetDefaultProtocol();
     //test.testSpaceFileName();
-
+    //test.testGetProtocolBalancer(); //VFS v1.4.0
+    //test.testIsPoolDefined(); //VFS v1.4.0
+    //test.testGetSATYpe(); //VFS v1.4.0
+    //test.testGetAuthzDB(); //VFS v1.4.0
+    //test.testGetAuthzFIXED(); //VFS v1.4.0
+    test.testGetManagedProtocolByScheme(); //CAPABILITY v1.4.0
+    test.testGetAllManagedProtocol(); //CAPABILITY v1.4.0
+    //test.testIsPooledProtocol(); //CAPABILITY v1.4.0
+    //test.testGetPoolByScheme(); //CAPABILITY v1.4.0
+    //test.testGetProtocolByID(); //CAPABILITY v1.4.0
+    //test.testIsOnlineSpaceLimited(); //PROPERTY v1.4.0
   }
+
 
 
 

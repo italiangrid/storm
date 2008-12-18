@@ -43,7 +43,7 @@ public class Authority {
         this.port = port;
     }
 
-    private String getHostPort() {
+    private String getHostnameAndPort() {
         StringBuffer result = new StringBuffer();
         if (hostname != null) {
             result.append(hostname);
@@ -56,7 +56,21 @@ public class Authority {
     }
 
     public String toString() {
-        return getHostPort();
+        return getHostnameAndPort();
+    }
+
+    public boolean equals(Object other) {
+      boolean result = false;
+      if (other instanceof Authority) {
+        Authority otherA = (Authority)other;
+        if (otherA.getServiceHostname().equals(this.getServiceHostname())) { //Hostname is equal
+          //Check if the Port is equal.
+          if (otherA.getServicePort()==this.getServicePort()) {
+            result = true;
+          }
+        }
+      }
+      return result;
     }
 
 }

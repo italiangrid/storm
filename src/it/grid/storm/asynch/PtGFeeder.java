@@ -30,9 +30,10 @@ import it.grid.storm.common.types.EndPoint;
 
 import it.grid.storm.catalogs.InvalidPtGChunkDataAttributesException;
 
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * This class represents a PrepareToGet Feeder: the Feeder that will handle the
@@ -91,7 +92,7 @@ public final class PtGFeeder implements Delegable {
 
     private static Logger log = Logger.getLogger("asynch");
     private RequestSummaryData rsd = null; //RequestSummaryData this PtGFeeder refers to.
-    private VomsGridUser gu = null; //GridUser for this PtGFeeder.
+    private GridUserInterface gu = null; //GridUser for this PtGFeeder.
     private GlobalStatusManager gsm = null; //Overall request status.
 
     /**
@@ -233,7 +234,7 @@ public final class PtGFeeder implements Delegable {
                         childStoRI.getSURL(),
                         auxChunkData.lifeTime(),
                         notDir,
-                        auxChunkData.transferProtocols(),
+                        auxChunkData.desiredProtocols(),
                         auxChunkData.fileSize(),
                         auxChunkData.status(),
                         auxChunkData.transferURL()

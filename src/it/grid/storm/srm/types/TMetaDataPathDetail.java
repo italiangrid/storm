@@ -333,8 +333,14 @@ public class TMetaDataPathDetail
      */
     public ArrayOfTMetaDataPathDetail getArrayOfSubPaths()
     {
-        return null;
+        return arrayOfSubPaths;
     }
+    
+    public void  setArrayOfSubPaths(ArrayOfTMetaDataPathDetail array)
+    {
+        arrayOfSubPaths = array;
+    }
+    
 
     /**
      * Encode method, used to encode a TMetaDataPathDetail object  into a structured 
@@ -404,5 +410,12 @@ public class TMetaDataPathDetail
 
         //Add Hastable to global vector
         list.add(param);
+    }
+    
+    
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(stfn.toString() +"\n");
+        return sb.toString();
     }
 }

@@ -15,8 +15,8 @@
  * methods; to get the real Java source file, preprocess this one
  * with:
  *   
- *    cpp -P -C -o CompositeAuthorizationSource.java \
- *        CompositeAuthorizationSource.jappo
+ *    cpp -P -C -o CompositeAuthorizationSource.java  *        CompositeAuthorizationSource.jappo
+o
  *
  * Or you can use the Jappo Java preprocessor (see
  * http://jappo.opensourcefinland.org/), which has cpp-compatible
@@ -29,7 +29,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.AuthorizationQueryInterface;
 import it.grid.storm.authorization.DecisionCombiningAlgorithm;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
 
 import java.util.Collection;
@@ -128,66 +128,66 @@ public class CompositeAuthorizationSource
     // file in CVS... I could find no way of doing this other than
     // preprocessor macros...
     // 
-    // cpp -P -C CompositeAuthorizationSource.jappo \
-    //     -o CompositeAuthorizationSource.java
+    // cpp -P -C CompositeAuthorizationSource.jappo     //     -o CompositeAuthorizationSource.java
+
     //
     // WARNING: do not end macro with a ';'
     // or 'javac' will complain about
     // unreachable statements and fail!!
     //
-    public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+    public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
         assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canUseStormAtAll(gridUser)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canReadFile(final VomsGridUser gridUser, final StoRI file) {
+        canReadFile(final GridUserInterface gridUser, final StoRI file) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canReadFile(gridUser, file)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canWriteFile(final VomsGridUser gridUser, final StoRI existingFile) {
+        canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canWriteFile(gridUser, existingFile)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canCreateNewFile(final VomsGridUser gridUser, final StoRI targetFile){
+        canCreateNewFile(final GridUserInterface gridUser, final StoRI targetFile){
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canCreateNewFile(gridUser, targetFile)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canChangeAcl(final VomsGridUser gridUser,
+        canChangeAcl(final GridUserInterface gridUser,
                      final StoRI fileOrDirectory) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canChangeAcl(gridUser, fileOrDirectory)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+        canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canGiveaway(gridUser, fileOrDirectory)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canListDirectory(final VomsGridUser gridUser, final StoRI directory) {
+        canListDirectory(final GridUserInterface gridUser, final StoRI directory) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canListDirectory(gridUser, directory)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canTraverseDirectory(final VomsGridUser gridUser,
+        canTraverseDirectory(final GridUserInterface gridUser,
                              final StoRI directory) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canTraverseDirectory(gridUser, directory)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canRename(final VomsGridUser gridUser, final StoRI file) {
+        canRename(final GridUserInterface gridUser, final StoRI file) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canRename(gridUser, file)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canDelete(final VomsGridUser gridUser, final StoRI file) {
+        canDelete(final GridUserInterface gridUser, final StoRI file) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canDelete(gridUser, file)); return algo.getDecision();
     }
 
     public AuthorizationDecision
-        canMakeDirectory(final VomsGridUser gridUser,
+        canMakeDirectory(final GridUserInterface gridUser,
                          final StoRI targetDirectory) {
       assert (null != sources) : "Null this.sources list in CompositeAuthorizationSource"; DecisionCombiningAlgorithm algo; try { algo = (DecisionCombiningAlgorithm) decisionCombinerClass.newInstance(); } catch (Exception x) { throw new RuntimeException(x); } for(Iterator i=sources.iterator(); i.hasNext() && !algo.isDecisionTaken();) algo.combine(((AuthorizationQueryInterface) i.next()).canMakeDirectory(gridUser, targetDirectory)); return algo.getDecision();
     }

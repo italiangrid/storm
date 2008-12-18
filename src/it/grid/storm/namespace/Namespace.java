@@ -466,7 +466,13 @@ public class Namespace implements NamespaceInterface {
         /**
          * @todo Instead of Local User name, extract from DN the NAME_SURNAME
          */
-        String userName = user.getLocalUserName();
+        String userName = null;
+        try {
+          userName = user.getLocalUser().getLocalUserName();
+        }
+        catch (CannotMapUserException ex) {
+            log.error("Cannot map user.");
+        }
         if (userName == null) {
             userName = "unknown";
         }
@@ -574,6 +580,18 @@ public class Namespace implements NamespaceInterface {
         return approachVFSNames;
     }
 
-
+  /******************************************
+   *           VERSION 1.4                  *
+  *******************************************/
+ /**
+  *
+  * @param spaceToken TSpaceToken
+  * @return VirtualFSInterface
+  * @throws NamespaceException
+  */
+ public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException {
+        /** @todo IMPLEMENT */
+    return null;
+  }
 
 }

@@ -13,7 +13,10 @@ import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.*;
 import it.grid.storm.namespace.naming.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -42,7 +45,6 @@ public class VirtualFS implements VirtualFSInterface {
     DefaultValuesInterface defValue = null;
     CapabilityInterface capabilities = null;
     PropertyInterface properties = null;
-    String authorizationSourceClassName = null;
     Hashtable protocols = null;
     genericfs genericFS = null;
     SpaceSystem spaceSystem = null;
@@ -50,6 +52,8 @@ public class VirtualFS implements VirtualFSInterface {
     List mappingRules = new ArrayList();
     Configuration config;
     StorageClassType storageClass = null;
+    SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
+    String saAuthzSourceName = null;
 
     //For debug purpose only
     public long creationTime = System.currentTimeMillis();
@@ -114,10 +118,11 @@ public class VirtualFS implements VirtualFSInterface {
       this.properties = prop;
     }
 
-
-    public void setAuthZSource(String authorizationSource) {
-      this.authorizationSourceClassName = authorizationSource;
+/**
+    public void setStorageAreaAuthz(String saAuthzSourceName) {
+      this.saAuthzSourceName = saAuthzSourceName;
     }
+**/
 
     public void setSpaceSystemDriver(Class spaceDriver) {
         this.spaceSystemDriver = spaceDriver;
@@ -138,6 +143,16 @@ public class VirtualFS implements VirtualFSInterface {
 
     public void addMappingRule(MappingRule mappingRule) {
         mappingRules.add(mappingRule);
+    }
+
+
+    public void setSAAuthzType(SAAuthzType saAuthzType) {
+      this.saAuthzType = saAuthzType;
+    }
+
+
+    public void setSAAuthzSource(String authzSourceName) {
+      this.saAuthzSourceName = authzSourceName;
     }
 
 
@@ -167,9 +182,11 @@ public class VirtualFS implements VirtualFSInterface {
       return this.storageClass;
     }
 
-    public String getAuthorizationSource() throws NamespaceException {
-      return this.authorizationSourceClassName;
+/**
+    public String getStorageAreaAuthz() throws NamespaceException {
+      return this.saAuthzSourceName;
     }
+**/
 
     public PropertyInterface getProperties() throws NamespaceException {
       return this.properties;
@@ -383,10 +400,6 @@ public class VirtualFS implements VirtualFSInterface {
 
     public CapabilityInterface getCapabilities() throws NamespaceException {
         return this.capabilities;
-    }
-
-    public List getProtocols() throws NamespaceException {
-        return ( (this.capabilities).getManagedProtocols());
     }
 
     public String getRootPath() throws NamespaceException {
@@ -1087,6 +1100,15 @@ public class VirtualFS implements VirtualFSInterface {
         return spaceData;
     }
 
+    public StorageSpaceData getSpaceByAlias(String desc) throws NamespaceException {
+
+        //Retrieve Storage Space from Persistence
+        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+        StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(desc);
+        return spaceData;
+    }
+
+
     public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException {
 
         //Retrieve Storage Space from Persistence
@@ -1109,6 +1131,36 @@ public class VirtualFS implements VirtualFSInterface {
     public long getCreationTime() {
         return creationTime;
     }
+
+  /******************************************
+     *           VERSION 1.4                  *
+  *******************************************/
+
+  public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException {
+    return this.capabilities.getPoolByScheme(protocol);
+  }
+
+  public boolean isPoolDefined(Protocol protocol) throws NamespaceException {
+    return this.capabilities.isPooledProtocol(protocol);
+  }
+
+  public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {
+    return saAuthzType;
+  }
+
+  public String getStorageAreaAuthzDB() throws NamespaceException {
+    if (getStorageAreaAuthzType().equals(SAAuthzType.AUTHZDB))
+      return saAuthzSourceName;
+    else
+      throw new NamespaceException("Required AUTHZ-DB, but it is UNDEFINED.");
+  }
+
+  public String getStorageAreaAuthzFixed() throws NamespaceException {
+    if (getStorageAreaAuthzType().equals(SAAuthzType.FIXED))
+      return saAuthzSourceName;
+    else
+      throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
+  }
 
 
 

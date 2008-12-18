@@ -72,6 +72,8 @@ public class FilesystemPermission implements java.io.Serializable
 
     /** Permission to list directory contents. */
     final static int LIST_DIRECTORY = fs_acl.permission_flags.PERM_LIST_DIRECTORY;
+    
+    
 
     /** Permission to create a child subdirectory. */
     final static int CREATE_SUBDIRECTORY = fs_acl.permission_flags.PERM_CREATE_SUBDIRECTORY;
@@ -111,6 +113,11 @@ public class FilesystemPermission implements java.io.Serializable
     /** Permission to list and traverse directory. */
     public final static FilesystemPermission ListTraverse =
         new FilesystemPermission(LIST_DIRECTORY|TRAVERSE_DIRECTORY);
+    
+    /** Permission to list, traverse and write directory. */
+    public final static FilesystemPermission ListTraverseWrite =
+        new FilesystemPermission(LIST_DIRECTORY|TRAVERSE_DIRECTORY|WRITE_DATA);
+ 
 
     /** No permission at all. */
     public final static FilesystemPermission None = new FilesystemPermission(FilesystemPermission.NONE);

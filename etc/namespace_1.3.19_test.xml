@@ -1,0 +1,110 @@
+<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.3.19.xsd" version="1.3.19">
+  <filesystems>
+    <filesystem name="CNAF-FS" fs_type="gpfs">
+      <space-token-description>LHCb_DST</space-token-description>
+      <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <default-acl>
+          <acl-entry><groupName>cmsprd</groupName><permissions>RW</permissions></acl-entry>
+        </default-acl>
+        <quota enabled="true">
+          <properties>
+            <quotaType>
+              <filesetID>Cnaf</filesetID>
+            </quotaType>
+            <device>gpfs_storm</device>
+            </properties>
+        </quota>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+    <filesystem name="LHCB-FS" fs_type="gpfs">
+      <space-token-description>LHCb_DST</space-token-description>
+      <storage-class>T1D1</storage-class>
+      <root>/storage/gpfs_storm/grid/lcg/lhcb</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <authorization-source>permit-all</authorization-source>
+      <properties>
+          <RetentionPolicy>replica</RetentionPolicy>
+          <AccessLatency>online</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB">500</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <default-acl>
+          <acl-entry><groupName>cmsprd</groupName><permissions>RW</permissions></acl-entry>
+          <acl-entry><groupName>cms</groupName><permissions>R</permissions></acl-entry>
+          <acl-entry><groupName>cmssupersburo</groupName><permissions>RW</permissions></acl-entry>
+        </default-acl>
+        <quota enabled="true">
+            <properties-file>filename</properties-file>
+        </quota>
+        <trans-prot>
+          <prot name="gsiftp">
+            <schema>gsiftp</schema>
+            <host>storm01.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+        </trans-prot>
+     </capabilities>
+      <defaults-values>
+        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
+        <file lifetime="3600" type="volatile"/>
+      </defaults-values>
+    </filesystem>
+  </filesystems>
+  <mapping-rules>
+    <map-rule name="cnaf-maprule">
+      <stfn-root>/cnaf</stfn-root>
+      <mapped-fs>CNAF-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="lhcb-maprule">
+      <stfn-root>/lhcb</stfn-root>
+      <mapped-fs>LHCB-FS</mapped-fs>
+    </map-rule>
+  </mapping-rules>
+  <approachable-rules>
+    <app-rule name="rule-1">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>infngrid</vo-name>
+      </subjects>
+      <approachable-fs>ciccio-FS, cnaf-FS*</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+    <app-rule name="rule-2">
+      <subjects>
+        <dn>*</dn>
+      </subjects>
+      <approachable-fs>scratch-FS</approachable-fs>
+      <space-rel-path>/</space-rel-path>
+    </app-rule>
+  </approachable-rules>
+</namespace>

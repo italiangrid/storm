@@ -6,7 +6,10 @@ import it.grid.storm.filesystem.*;
 import it.grid.storm.filesystem.swig.*;
 import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.*;
+import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -44,7 +47,7 @@ public interface VirtualFSInterface {
 
     public SpaceSystem getSpaceSystemDriverInstance() throws NamespaceException;
 
-    public String getAuthorizationSource() throws NamespaceException;
+   // public String getStorageAreaAuthz() throws NamespaceException;
 
     public boolean isApproachableByUser(GridUserInterface user) throws NamespaceException;
 
@@ -53,8 +56,6 @@ public interface VirtualFSInterface {
     public CapabilityInterface getCapabilities() throws NamespaceException;
 
     public PropertyInterface getProperties() throws NamespaceException;
-
-    public List getProtocols() throws NamespaceException;
 
     public List getMappingRules() throws NamespaceException;
 
@@ -121,6 +122,10 @@ public interface VirtualFSInterface {
     //Return a StoRI representing a new Space
     public TSizeInBytes splitSpace(StoRI spaceOrig, StoRI file, long sizePresumed) throws NamespaceException;
 
+    public StorageSpaceData getSpaceByAlias(String alias) throws NamespaceException;
+
+    public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException ;
+
     /**************************************************
      *    Methods Used for Default use
      **************************************************/
@@ -128,5 +133,20 @@ public interface VirtualFSInterface {
     public StoRI createDefaultStoRI() throws NamespaceException;
 
     public long getCreationTime();
+
+    /**************************************************
+     *    VERSION 1.4
+     **************************************************/
+
+    public SAAuthzType getStorageAreaAuthzType() throws NamespaceException;
+
+    public String getStorageAreaAuthzDB() throws NamespaceException;
+
+    public String getStorageAreaAuthzFixed() throws NamespaceException;
+
+    public boolean isPoolDefined(Protocol protocol) throws NamespaceException;
+
+    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException;
+
 
 }

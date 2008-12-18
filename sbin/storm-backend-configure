@@ -99,7 +99,7 @@ function group_exists () {
 }
 
 function normalize_dirpath () {
-    cd "$1" && pwd -P && cd -
+    cd "$1" && pwd -P && cd - > /dev/null
 }
 
 # download_and_extract URL FILE [FILE ...]
@@ -204,7 +204,7 @@ fi
 
 ## download missing jar files
 download_and_extract \
-    http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-3.1.11.tar.gz/from/http://na.mirror.garr.it/mirrors/MySQL/ \
+    http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-3.1.11.tar.gz/from/http://mi.mirror.garr.it/mirrors/MySQL/ \
     "$STORM_BE_JARDIR"/mysql-connector-java-3.1.11-bin.jar
 
 

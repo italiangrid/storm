@@ -48,6 +48,10 @@ public class DNMatchingRule {
     private Pattern commonNamePattern = null;
     private Pattern domainComponentPattern = null;
 
+   public DNMatchingRule() {
+     init("*", "*", "*", "*", "*", "*");
+   }
+
     /**
      * Constructor with implicit Pattern String
      *

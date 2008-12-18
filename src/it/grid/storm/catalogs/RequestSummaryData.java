@@ -2,7 +2,8 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
-import it.grid.storm.griduser.VomsGridUser;
+//import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * This class represents the SummaryData associated with the SRM request. It
@@ -17,10 +18,10 @@ public class RequestSummaryData  {
 
     private TRequestType requestType = null;    //request type of SRM request
     private TRequestToken requestToken = null;  //TRequestToken of SRM request
-    private VomsGridUser gu = null; //VomsGridUser that issued This request
+    private GridUserInterface gu = null; //VomsGridUser that issued This request
     private long id = -1;           //long representing This object in persistence
 
-    public RequestSummaryData(TRequestType rtype, TRequestToken rtoken, VomsGridUser gu) throws InvalidRequestSummaryDataAttributesException {
+    public RequestSummaryData(TRequestType rtype, TRequestToken rtoken, GridUserInterface gu) throws InvalidRequestSummaryDataAttributesException {
         boolean ok = rtype!=null &&
             rtoken!=null &&
             gu!=null;
@@ -47,7 +48,7 @@ public class RequestSummaryData  {
     /**
      * Method that returns the VomsGridUser that issued this request
      */
-    public VomsGridUser gridUser() {
+    public GridUserInterface gridUser() {
         return gu;
     }
 

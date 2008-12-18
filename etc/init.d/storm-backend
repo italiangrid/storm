@@ -1,19 +1,18 @@
 #! /bin/bash
 #
-# start/stop StoRM SRMv2 (backend server).
+# start/stop StoRM BackEnd server.
 # 
-# Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
-# for the join EGRID/INFN project StoRM.
+#Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
+#Riccardo Zappi <riccardo.zappi@cnaf.infn.it> 
 #
 # You may copy, modify and distribute this file under the same terms
 # as StoRM itself. 
 #
-# $Id: storm-backend,v 1.38 2006/11/23 16:13:23 aforti Exp $
 #
 
 # Comments to support chkconfig on RedHat Linux
 # chkconfig: 2345 90 20
-# description: StoRM SRMv2 backend server
+# description: StoRM BackEnd server
 
 # Comments to support LSB init script conventions
 ### BEGIN INIT INFO
@@ -24,13 +23,15 @@
 # Should-Stop: $syslog
 # Default-Start:  2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: start/stop the StoRM SRMv2 backend server
-# Description: The StoRM SRMv2 server (back-end daemon).
-#  
-#  The StoRM SRMv2 server provides an SRM interface to any POSIX
+# Short-Description: start/stop the StoRM BackEnd server
+# Description: The StoRM BackEnd server.
+#
+#  StoRM provides an SRM interface to any POSIX
 #  filesystem with direct file access ("file:" transport protocol), but
-#  can take advantage of special features of the GPFS advanced cluster
-#  filesystem for advance space reservation.
+#  can take advantage of special features of high performance parallel and cluster file systems, as 
+#  GPFS from IBM and Lustre from SUN.
+#
+#
 #
 ### END INIT INFO
 
@@ -106,7 +107,7 @@ function group_exists () {
 }
 
 function normalize_dirpath () {
-    cd "$1" && pwd -P && cd -
+    cd "$1" && pwd -P && cd - > /dev/null
 }
 
 
@@ -130,7 +131,7 @@ done
 if test -z "$STORM_HOME"; then
     for dir in \
         "`dirname $0`/../.." \
-        /opt/storm \
+        /opt/storm/backend \
         /usr/local/storm \
         /home/storm \
         ;
@@ -189,8 +190,8 @@ if [ "$ENABLE_SSL"x == yesx ];
     if [ -z "$SSL_TRUST_STORE_PWD" -o -z "$SSL_KEY_STORE_PWD" ]; then
         die 6 "The SSL Keystore and Truststore need to be protected by password!"
     fi
-    setenv_if_not_set SSL_TRUST_STORE "/opt/storm/etc/ecar.ts"
-    setenv_if_not_set SSL_KEY_STORE "/opt/storm/etc/ecar.p12"
+    setenv_if_not_set SSL_TRUST_STORE "/opt/storm/backend/etc/ecar.ts"
+    setenv_if_not_set SSL_KEY_STORE "/opt/storm/backend/etc/ecar.p12"
     setenv_if_not_set SSL_KEY_STORE_TYPE "PKCS12"
     export STORM_SSL_OPTIONS="-Djavax.net.ssl.trustStore=\"$SSL_TRUST_STORE\" \
 -Djavax.net.ssl.keyStore=\"$SSL_KEY_STORE\" \
@@ -253,6 +254,7 @@ done
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
 
+ASSERTOPTION=-ea
 ## command server interaction
 
 suspend () {
@@ -291,7 +293,7 @@ start () {
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
     run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
         java \
-        $STORM_BE_JVM_OPTS \
+        $STORM_BE_JVM_OPTS $ASSERTOPTION \
         -cp '$classpath' \
         -Djava.library.path='$STORM_BE_LIBDIR' \
         -Daxis.client.connect.timeout=30000 \

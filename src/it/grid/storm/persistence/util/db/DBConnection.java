@@ -57,7 +57,7 @@ public class DBConnection implements DataSourceConnectionFactory
     Connection result = null;
     try
     {
-      getConnection();
+      result = getConnection();
     }
     catch (SQLException sqle)
     {

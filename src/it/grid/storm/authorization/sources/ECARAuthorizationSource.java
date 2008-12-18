@@ -6,12 +6,13 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authorization.AuthorizationQueryInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.TSURL;
 
 import java.util.Iterator;
 import java.util.Collection;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.VomsGridUser;
 
 /**
  * Class implementing AuthorizationQueryInterface and that interacts with the
@@ -28,40 +29,40 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
     /**
      * This method always returns NotApplicable: ECAR by itself cannot supply a
      * meaningful answer.
-     * 
+     *
 	 * Please see AuthorizationQueryInterface for general contract.
 	 */
-    public AuthorizationDecision canUseStormAtAll(final VomsGridUser gridUser) {
+    public AuthorizationDecision canUseStormAtAll(final GridUserInterface gridUser) {
         return AuthorizationDecision.NotApplicable;
     }
 
     /**
      * This method always returns NotApplicable: ECAR by itself cannot supply a
      * meaningful answer.
-     * 
+     *
 	 * Please see AuthorizationQueryInterface for general contract.
 	 */
-    public AuthorizationDecision canChangeAcl(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+    public AuthorizationDecision canChangeAcl(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
         return AuthorizationDecision.NotApplicable;
     }
 
     /**
      * This method always returns NotApplicable: ECAR by itself cannot supply a
      * meaningful answer.
-     * 
+     *
 	 * Please see AuthorizationQueryInterface for general contract.
      */
-    public AuthorizationDecision canGiveaway(final VomsGridUser gridUser, final StoRI fileOrDirectory) {
+    public AuthorizationDecision canGiveaway(final GridUserInterface gridUser, final StoRI fileOrDirectory) {
         return AuthorizationDecision.NotApplicable;
     }
 
     /**
      * This method always returns NotApplicable: ECAR by itself cannot supply a
      * meaningful answer.
-     * 
+     *
 	 * Please see AuthorizationQueryInterface for general contract.
 	 */
-    public AuthorizationDecision canRename(VomsGridUser gridUser, StoRI file) {
+    public AuthorizationDecision canRename(GridUserInterface gridUser, StoRI file) {
         return AuthorizationDecision.NotApplicable;
     }
 
@@ -75,7 +76,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
      * NOTICE: it is also makes sure that there is Traverse permission on all
      * involved intermediary directories.
 	 */
-    public AuthorizationDecision canReadFile(VomsGridUser gridUser, StoRI file) {
+    public AuthorizationDecision canReadFile(GridUserInterface gridUser, StoRI file) {
         return doExtendedCheck(gridUser,file.getSURL(),FilesystemPermission.Read,file.getSURL(),"Read Authorization","Read");
     }
 
@@ -89,7 +90,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
      * NOTICE: it also makes sure that there is Traverse permission on all
      * involved intermediary directories.
 	 */
-    public AuthorizationDecision canWriteFile(VomsGridUser gridUser, StoRI existingFile) {
+    public AuthorizationDecision canWriteFile(GridUserInterface gridUser, StoRI existingFile) {
         return doExtendedCheck(gridUser,existingFile.getSURL(),FilesystemPermission.Write,existingFile.getSURL(),"Write Authorization","Write");
     }
 
@@ -104,7 +105,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
 	 * <p>Involved in: <code>SrmCopy</code>,
 	 * <code>srmPrepareToPut</code>
 	 */
-    public AuthorizationDecision canCreateNewFile(VomsGridUser gridUser, StoRI targetFile) {
+    public AuthorizationDecision canCreateNewFile(GridUserInterface gridUser, StoRI targetFile) {
         return doExtendedCheck(gridUser,targetFile.getSURL(),FilesystemPermission.Create,targetFile.getSURL().getParent(),"Create Authorization","Create");
     }
 
@@ -113,7 +114,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
      * looks for the Traverse permission on all intermidiary directories. It also requires
      * a logString that identifies the calling method, to improve logging of operations.
      */
-    private AuthorizationDecision doExtendedCheck(VomsGridUser gridUser, TSURL file, FilesystemPermission mainPermission, TSURL mainTarget, String logString, String logPermissionString) {
+    private AuthorizationDecision doExtendedCheck(GridUserInterface gridUser, TSURL file, FilesystemPermission mainPermission, TSURL mainTarget, String logString, String logPermissionString) {
         log.info("ECAR Authorization Source: "+logString+" invoked for "+gridUser.getDn()+" on SURL "+file.toString());
         TSURL parent = null; //TSURL representing a parent directory
         boolean ok = true; //boolean _true_ as long as _all_ currently tested permissions are true.
@@ -126,7 +127,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
             while (ok && i.hasNext()) {
                 parent = (TSURL) i.next();
                 log.debug("ECAR Authorization Source - "+logString+" - asking for Traverse on "+parent.toString());
-                ok = ok && client.canAccess(translate.logicalName(parent), translate.permission(FilesystemPermission.Traverse), translate.user(gridUser));
+                ok = ok && client.canAccess(translate.logicalName(parent), translate.permission(FilesystemPermission.Traverse), translate.user((VomsGridUser)gridUser));
                 log.debug("ECAR Authorization Source - "+logString+" - reply from ECAR: "+ok);
             } //end while
             if (!ok) {
@@ -134,7 +135,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
                 return AuthorizationDecision.Deny;
             }
             log.debug("ECAR Authorization Source - "+logString+" - asking for "+logPermissionString+" on "+mainTarget.toString());
-            ok = client.canAccess(translate.logicalName(mainTarget), translate.permission(mainPermission), translate.user(gridUser));
+            ok = client.canAccess(translate.logicalName(mainTarget), translate.permission(mainPermission), translate.user((VomsGridUser)gridUser));
             log.debug("ECAR Authorization Source - "+logString+" - reply from ECAR: "+ok);
             client.close();
             if (!ok) {
@@ -191,7 +192,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmLs</code>,
 	 */
-    public AuthorizationDecision canListDirectory(VomsGridUser gridUser, StoRI directory) {
+    public AuthorizationDecision canListDirectory(GridUserInterface gridUser, StoRI directory) {
         return doCheck(gridUser,directory.getSURL(),FilesystemPermission.ListDirectory,"ListDirectory Authorization","ListDirectory");
     }
 
@@ -210,7 +211,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
 	 * <code>srmMv</code>, <code>srmMkdir</code>, <code>srmRm</code>,
 	 * <code>srmRmdir</code>.
 	 */
-    public AuthorizationDecision canTraverseDirectory(VomsGridUser gridUser, StoRI path) {
+    public AuthorizationDecision canTraverseDirectory(GridUserInterface gridUser, StoRI path) {
         return doCheck(gridUser,path.getSURL(),FilesystemPermission.Traverse,"TraverseDirectory Authorization","Traverse");
     }
 
@@ -223,7 +224,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmRm</code>, <code>srmRmdir</code>.
 	 */
-    public AuthorizationDecision canDelete(VomsGridUser gridUser, StoRI file) {
+    public AuthorizationDecision canDelete(GridUserInterface gridUser, StoRI file) {
         return doCheck(gridUser,file.getSURL(),FilesystemPermission.Delete,"Delete Authorization","Delete");
     }
 
@@ -236,7 +237,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
 	 *
 	 * <p>Involved in: <code>srmMkdir</code>.
 	 */
-    public AuthorizationDecision canMakeDirectory(VomsGridUser gridUser, StoRI targetDirectory) {
+    public AuthorizationDecision canMakeDirectory(GridUserInterface gridUser, StoRI targetDirectory) {
         return doCheck(gridUser,targetDirectory.getSURL().getParent(),FilesystemPermission.CreateSubdirectory,"MakeDirectory Authorization","CreateSubdirectory");
     }
 
@@ -245,7 +246,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
      * looks for the Traverse permission on all intermidiary directories. It also requires
      * a logString that identifies the calling method, to improve logging of operations.
      */
-    private AuthorizationDecision doCheck(VomsGridUser gridUser, TSURL file, FilesystemPermission mainPermission, String logString, String logPermissionString) {
+    private AuthorizationDecision doCheck(GridUserInterface gridUser, TSURL file, FilesystemPermission mainPermission, String logString, String logPermissionString) {
         log.info("ECAR Authorization Source: "+logString+" invoked for "+gridUser.getDn()+" on file "+file.toString());
         TSURL parent = null; //TSURL representing a parent directory
         boolean ok = true; //boolean _true_ as long as _all_ currently tested permissions are true.
@@ -255,7 +256,7 @@ public class ECARAuthorizationSource implements AuthorizationQueryInterface {
             ECARTranslator translate = new ECARTranslator(); //translator containing all logic to convert from StoRM object model to ECAR web service data representation
             String lfnTrans = translate.logicalName(file);
             int permTrans = translate.permission(mainPermission);
-            String userTrans = translate.user(gridUser);
+            String userTrans = translate.user((VomsGridUser)gridUser);
             log.info("ECAR Authorization Source - "+logString+" - asking for "+permTrans+" on "+lfnTrans+" for user "+userTrans);
             ok = client.canAccess(lfnTrans,permTrans,userTrans);
             log.info("ECAR Authorization Source - "+logString+" - reply from ECAR: "+ok);

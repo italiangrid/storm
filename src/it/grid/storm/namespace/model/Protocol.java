@@ -15,9 +15,10 @@ package it.grid.storm.namespace.model;
 public class Protocol {
 
     private int protocolIndex = -1;
+
     private String protocolServiceName;
     private String protocolName;
-    private String scheme;
+    private String schema;
     private int defaultPort = -1;
 
     public final static Protocol FILE = new Protocol(1, "FILE", "file", -1);
@@ -34,10 +35,10 @@ public class Protocol {
      * @param protocolName String
      * @param protocolSchema String
      */
-    public Protocol(int protocolIndex, String protocolName, String protocolScheme, int defaultPort) {
+    private Protocol(int protocolIndex, String protocolName, String protocolScheme, int defaultPort) {
         this.protocolIndex = protocolIndex;
         this.protocolName = protocolName;
-        this.scheme = protocolScheme;
+        this.schema = protocolScheme;
         this.defaultPort = defaultPort;
     }
 
@@ -46,6 +47,8 @@ public class Protocol {
       return protocolIndex;
     }
 
+
+
     //Only get method for Name
     public String getProtocolName() {
         return protocolName;
@@ -53,12 +56,12 @@ public class Protocol {
 
     //Only get method for Schema
     public String getSchema() {
-        return scheme;
+        return schema;
     }
 
     //Only get method for Schema
     public String getProtocolPrefix() {
-      return this.scheme + "://";
+      return this.schema + "://";
     }
 
     public void setProtocolServiceName(String serviceName) {

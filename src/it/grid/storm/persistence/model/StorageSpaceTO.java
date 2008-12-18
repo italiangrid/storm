@@ -18,6 +18,8 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.config.DefaultValue;
 import it.grid.storm.common.*;
 import org.apache.log4j.Logger;
+import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.common.types.VO;
 
 /**
  *
@@ -74,7 +76,8 @@ public class StorageSpaceTO implements Serializable, Comparable {
     //Always exists a creator!
     this.owner = maker;
     this.ownerName = maker.getDn();
-    this.voName = (maker.getMainVo()).getValue();
+    this.voName = getVOName(maker);
+
     //No Alias (or Token description) is setted
     this.alias = null;
 
@@ -99,7 +102,7 @@ public class StorageSpaceTO implements Serializable, Comparable {
       //Always exists a creator!
   this.owner = maker;
   this.ownerName = maker.getDn();
-  this.voName = (maker.getMainVo()).getValue();
+  this.voName = getVOName(maker);
   //No Alias (or Token description) is setted
   this.alias = alias;
 
@@ -142,7 +145,7 @@ public class StorageSpaceTO implements Serializable, Comparable {
   {
     this.owner = maker;
     this.ownerName = maker.getDn();
-    this.voName = (maker.getMainVo()).getValue();
+    this.voName = getVOName(maker);
     this.spaceType = type;
     this.alias = alias;
     this.spaceToken = spaceToken;
@@ -156,7 +159,7 @@ public class StorageSpaceTO implements Serializable, Comparable {
    *
    * @param spaceData SpaceData
    */
-  public StorageSpaceTO(it.grid.storm.common.StorageSpaceData spaceData)
+  public StorageSpaceTO(it.grid.storm.space.StorageSpaceData spaceData)
   {
   if (spaceData!=null)
     {
@@ -165,9 +168,7 @@ public class StorageSpaceTO implements Serializable, Comparable {
       if (spaceData.getUser()!=null)
       {
         this.ownerName = (spaceData.getUser()).getDn();
-        //@todo Manage case of non VOMS user.
-        if(spaceData.getUser().getMainVo()!=null)
-          this.voName = ( (spaceData.getUser()).getMainVo()).getValue();
+        this.voName = getVOName(spaceData.getUser());
       }
       if (spaceData.getSpaceType()!=null)
         this.spaceType = (spaceData.getSpaceType()).getValue();
@@ -190,12 +191,20 @@ public class StorageSpaceTO implements Serializable, Comparable {
 
       if (spaceData.getLifeTime() != null)
         this.lifetime = spaceData.getLifeTime().value();
-      
+
       if (spaceData.getDate() != null)
     	this.created = spaceData.getDate();
     }
   }
 
+  // ************ HELPER Method *************** //
+  private String getVOName(GridUserInterface maker) {
+      String voStr = VO.makeNoVo().getValue();
+      if (maker instanceof VomsGridUser) {
+          voStr = ( (VomsGridUser) maker).getVO().getValue();
+      }
+      return voStr;
+  }
 
   // ********************** Accessor Methods ********************** //
 

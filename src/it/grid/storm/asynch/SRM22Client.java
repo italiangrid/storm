@@ -2,7 +2,6 @@ package it.grid.storm.asynch;
 
 import org.apache.log4j.Logger;
 
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -45,6 +44,8 @@ import javax.xml.rpc.soap.SOAPFaultException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import javax.xml.rpc.ServiceException;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.AbstractGridUser;
 
 /**
  * Class that represents a first implementation of an SRMClient.
@@ -76,7 +77,7 @@ public class SRM22Client implements SRMClient {
      * web service is incomprehensible or malformed, an SRMClientException is thrown with
      * appropriate error messagges.
      */
-    public SRMPrepareToPutReply prepareToPut(VomsGridUser gu, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException {
+    public SRMPrepareToPutReply prepareToPut(GridUserInterface gu, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException {
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -208,7 +209,7 @@ public class SRM22Client implements SRMClient {
      * and the toSURL of the request. An SRMStatusOfPutRequestReply is returned, but in
      * case the operation fails an SRMClientException is thrown containing an explanation
      * String.
-     * 
+     *
      * The client checks the overall status, and provided it is in either of
      * SRM_REQUEST_QUEUED, SRM_REQUEST_INPROGESS, SRM_SUCCESS, SRM_PARTIAL_SUCCESS
      * it will go and attempt retrieving the specific file status. If it is successful
@@ -219,7 +220,7 @@ public class SRM22Client implements SRMClient {
      * web service is incomprehensible or malformed, an SRMClientException is thrown
      * with appropriate error messagges.
      */
-     public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, VomsGridUser gu, TSURL toSURL) throws SRMClientException{
+     public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException{
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -309,7 +310,7 @@ public class SRM22Client implements SRMClient {
      * status instead. The overall status is also returned in case the received array (containing file specific
      * status) is null or has length equals to 0 (zero).
      */
-    public SRMPutDoneReply srmPutDone(TRequestToken rt, VomsGridUser gu, TSURL toSURL) throws SRMClientException {
+    public SRMPutDoneReply srmPutDone(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException {
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -396,7 +397,7 @@ public class SRM22Client implements SRMClient {
      * Private auxiliary method that sets up a secure GSI connection for the given
      * GridUser to the specfied toSURL. The method returns the service interface.
      */
-    private ISRM setUpGSI(VomsGridUser gu, TSURL toSURL) throws ServiceException,
+    private ISRM setUpGSI(GridUserInterface gu, TSURL toSURL) throws ServiceException,
     GlobusCredentialException, GSSException, InvalidTUserIDAttributeException {
         //get web service, setting HTTP and HTTPG as transport!
         Util.registerTransport();
@@ -410,8 +411,8 @@ public class SRM22Client implements SRMClient {
         srmClientStubs.ISRM _srm = sRMService.getsrm();
 
         //set proxy in stub
-        if (gu.getUserCredentials()==null) log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
-        InputStream proxy = new ByteArrayInputStream(gu.getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
+        if (((AbstractGridUser)gu).getUserCredentials()==null) log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
         GSSCredential globusProxy = new GlobusGSSCredentialImpl(new GlobusCredential(proxy) , GSSCredential.INITIATE_AND_ACCEPT); //GSSCredential containing the proxy!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS,globusProxy); //set the proxy to be used during GSI connection!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_AUTHORIZATION,HostAuthorization.getInstance()); //set the authorization that will be performed by the web service for the supplied credentails!

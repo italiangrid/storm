@@ -17,7 +17,6 @@ import java.sql.*;
 import org.apache.log4j.Logger;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 
 
 /**
@@ -88,8 +87,8 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
   }
 
     /**
-    * Returns a Collection of StorageSpaceTO owned by 'user' and with the specified 
-    * alias ('spaceAlias'). 'spaceAlias' can be NULL or empty and in these cases a Collection 
+    * Returns a Collection of StorageSpaceTO owned by 'user' and with the specified
+    * alias ('spaceAlias'). 'spaceAlias' can be NULL or empty and in these cases a Collection
     * of all the StorageSpaceTO owned by 'user' is returned.
     *
     * @param owner VomsGridUser.
@@ -98,7 +97,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     * @throws DataAccessException
     * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
     */
-    public Collection getStorageSpaceByOwner(VomsGridUser owner, String spaceAlias) throws DataAccessException
+    public Collection getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias) throws DataAccessException
     {
         StorageSpaceTO ssTO = null;
         Collection result = new LinkedList();
@@ -125,13 +124,13 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
             throw new DataAccessException("Error while executing DB query", e);
         }
         releaseConnection(res, stat, conn);
-        
+
         return result;
     }
 
-    
+
     /**
-     * Returns a Collection of StorageSpaceTO with the specified 
+     * Returns a Collection of StorageSpaceTO with the specified
      * alias ('spaceAlias'). 'spaceAlias' can not be be NULL or empty.
      * @param spaceAlias String.
      * @return Collection of StorageSpaceTO.
@@ -165,12 +164,12 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
              throw new DataAccessException("Error while executing DB query", e);
          }
          releaseConnection(res, stat, conn);
-         
+
          return result;
      }
-    
-    
-    
+
+
+
   /**
    * getStorageSpaceByToken
    *
@@ -224,7 +223,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
    * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
    */
   public void removeStorageSpace(GridUserInterface user, String spaceToken) throws DataAccessException {
-    String query = helper.removeByTokenQuery((VomsGridUser) user, spaceToken);
+    String query = helper.removeByTokenQuery(user, spaceToken);
     log.debug("query = " + query);
     Connection conn = getConnection();
     int res = -1;
@@ -259,7 +258,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     log.debug("query = " + query);
     Connection conn = getConnection();
     int res = -1;
-    Statement stat = getStatement(conn); 
+    Statement stat = getStatement(conn);
     try {
         res = stat.executeUpdate(query);
         log.debug("Number of rows removed: " + res);
@@ -273,7 +272,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     }
     releaseConnection(null, stat, conn);
   }
-  
+
 
   /**
    *
@@ -304,7 +303,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
       }
       releaseConnection(null, stat, conn);
   }
-  
+
   /**
   *
   * @param ss StorageSpaceTO
@@ -337,7 +336,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
 
   /**
    * Method used to retrieve the set of StorageTO for expired space.
-   * @param long timeInSecond 
+   * @param long timeInSecond
    * @return Collection of transfer object
    */
     public Collection getExpired(long currentTimeInSecond) throws DataAccessException {
@@ -366,7 +365,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
             throw new DataAccessException("Error while executing DB query", e);
         }
         releaseConnection(res, stat, conn);
-        
+
         return result;
   }
 

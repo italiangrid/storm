@@ -1,4 +1,21 @@
-Copyright (c) 2005 The Abdus Salam ICTP and INFN. All rights reserved.
+*****************************************************************************
+ 
+ Copyright (c) 2008 INFN-CNAF and the Abdus Salam ICTP. All rights reserved.
+
+
+ Licensed under the Apache License, Version 2.0 (the "License"); 
+ you may not use this file except in compliance with the License. 
+ You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+ Unless required by applicable law or agreed to in writing, software 
+ distributed under the License is distributed on an "AS IS" BASIS, 
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ See the License for the specific language governing permissions and 
+ limitations under the License.
+
+******************************************************************************
 
 Redistribution and use of this software, whether in source or binary
 form and whether modified or not, are permitted subject to the following
@@ -15,9 +32,11 @@ conditions:
    The end-user documentation must reproduce the following
    acknowledgements: 
    
-     - ``This product includes software developed by the Abdus Salam
-       ICTP (http://www.ictp.it/) under the EGRID project, and INFN
+     - ``This product includes software developed by the INFN
        (http://www.infn.it/)'';
+   
+     - ``This product includes software developed by the Abdus Salam
+       ICTP (http://www.ictp.it/) under the EGRID project'';
 
      - ``This product includes software developed by the
        Globus Project (http://www.globus.org/)'';
@@ -35,7 +54,7 @@ conditions:
    software itself.
 
 3. The name "StoRM", may not be used to endorse or promote software,
-   or products derived therefrom, excep with prior written permission
+   or products derived therefrom, except with prior written permission
    by INFN and the Abdus Salam ICTP.
 
 4. You are under no obligation to provide anyone with any bug fixes,
@@ -69,21 +88,19 @@ conditions:
 
 The Abdus Salam ICTP developments were partially funded by by the
 Italian Ministry of University and Research, under EGRID project.
-
-
 For more information on the Abdus Salam ICTP, please see http://www.ictp.it/
-For more information on the INFN Grid, please see http://grid.infn.it/
+For more information on the INFN CNAF, please see http://cnaf.infn.it/
 
 ------
 
 
-The StoRM BE server comes bundled with software developed by third
+The StoRM Backend server comes bundled with software developed by third
 parties; separate license agreements apply to this third-party
 software, and they are reproduced below.
 
 Although we have made every effort to guarantee that the following
 list is up-to-date and accurate, errors may have crept in; please
-inform us if you think we didn't give acknoledge your software
+inform us if you think we didn't give acknowledge your software
 appropriately. 
 
 

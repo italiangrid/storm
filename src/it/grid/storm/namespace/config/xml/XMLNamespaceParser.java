@@ -1,5 +1,3 @@
-
-
 package it.grid.storm.namespace.config.xml;
 
 import java.util.*;
@@ -166,7 +164,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
                 result = true;
             }
             else {
-                log.warn("Namespace does not semantically valid!, so no load perfermed!");
+                log.warn("Namespace does not semantically valid!, so no load performed!");
                 vfss = vfssSAVED;
                 maprules = maprulesSAVED;
                 apprules = apprulesSAVED;
@@ -303,10 +301,11 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          String name;
          String fsType;
          Class driver;
-         String authorizationSource;
+         String storageAreaAuthz;
          PropertyInterface prop;
          CapabilityInterface cap;
          DefaultValuesInterface defValues;
+         SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
 
          for (int i = 0; i < nrOfVFS; i++) {
              //Building VFS
@@ -343,9 +342,13 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              vfs.setSpaceSystemDriver(driver);
              verboseLog("VFS(" + name + ").spaceDriver [CLASS Name] = '" + driver.getName() + "'");
 
-             authorizationSource = parserUtil.getAuthorizationSource(name);
-             vfs.setAuthZSource(authorizationSource);
-             verboseLog("VFS(" + name + ").authorization-source = '" + authorizationSource + "'");
+             saAuthzType = parserUtil.getStorageAreaAuthzType(name);
+             vfs.setSAAuthzType(saAuthzType);
+             verboseLog("VFS(" + name + ").storage-area-authz.TYPE = '" + saAuthzType + "'");
+
+             storageAreaAuthz = parserUtil.getStorageAreaAuthz(name, saAuthzType);
+             vfs.setSAAuthzSource(storageAreaAuthz);
+             verboseLog("VFS(" + name + ").storage-area-authz = '" + storageAreaAuthz + "'");
 
              prop = buildProperties(name);
              vfs.setProperties(prop);
@@ -389,6 +392,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
        long onlineSize = parserUtil.getOnlineSpaceSize(fsName);
        prop.setTotalOnlineSize(unitType, onlineSize);
        verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceSize = '" + onlineSize + " "+unitType+"'");
+
+       boolean hasLimitedSize = parserUtil.getOnlineSpaceLimitedSize(fsName);
+       prop.setLimitedSize(hasLimitedSize);
+       verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceLimitedSize = '" + hasLimitedSize + "'");
 
        return prop;
      }
@@ -491,18 +498,20 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          int nrProtocols = parserUtil.getNumberOfProt(fsName);
          Protocol protocol;
          Authority service;
-         TransportPrefix transfProt;
+         TransportProtocol transportProt;
+         int protocolIndex;
          String serviceHostName;
          String servicePortValue;
          String schema;
          String name;
-         for (int i = 0; i < nrProtocols; i++) {
-             name = parserUtil.getProtName(fsName, i);
-             schema = parserUtil.getProtSchema(fsName, name);
+         for (int protCounter = 0; protCounter < nrProtocols; protCounter++) {
+             protocolIndex = parserUtil.getProtId(fsName, protCounter); //1.4.0 (Return -1 if ID is not present)
+             name = parserUtil.getProtName(fsName, protCounter);
+             schema = parserUtil.getProtSchema(fsName, protCounter);
              protocol = Protocol.getProtocol(schema);
              protocol.setProtocolServiceName(name);
-             serviceHostName = parserUtil.getProtHost(fsName, name);
-             servicePortValue = parserUtil.getProtPort(fsName, name);
+             serviceHostName = parserUtil.getProtHost(fsName, protCounter);
+             servicePortValue = parserUtil.getProtPort(fsName, protCounter);
              int portIntValue = -1;
              service = null;
              if (servicePortValue != null) {
@@ -519,12 +528,69 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
                  service = new Authority(serviceHostName);
                  //log.debug("SERVICE : "+service);
              }
-             transfProt = new TransportPrefix(protocol, service);
-             verboseLog("VFS(" + fsName + ").Capabilities.protocol("+i+") = '" + transfProt + "'");
-             cap.addProtocol(transfProt);
+             transportProt = new TransportProtocol(protocol, service);
+             transportProt.setProtocolID(protocolIndex); //1.4.0
+             verboseLog("VFS(" + fsName + ").Capabilities.protocol("+protCounter+") = '" + transportProt + "'");
+             cap.addTransportProtocolByScheme(protocol,transportProt);
+             cap.addTransportProtocol(transportProt);
+             if (protocolIndex!=-1) {
+               cap.addTransportProtocolByID(protocolIndex,transportProt);
+             }
+
          }
+
+         /**
+          * PROTOCOL POOL
+          */
+         boolean isPresentPool = parserUtil.getPoolDefined(fsName);
+         if (isPresentPool) {
+           String balanceStrategy = parserUtil.getBalancerStrategy(fsName);
+         ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
+         PoolMember poolMember;
+         int nrMembers = parserUtil.getNumberOfPoolMembers(fsName);
+         TransportProtocol tProtMember;
+         int protIndex;
+         int memberWeight;
+         for (int i = 0; i < nrMembers; i++) {
+           protIndex = parserUtil.getMemberID(fsName, i);
+           tProtMember = cap.getProtocolByID(protIndex);
+           if (tProtMember != null) { //Protocol with ID=protIndex exists!
+             memberWeight = parserUtil.getMemberWeight(fsName, i);
+             poolMember = new PoolMember(protIndex, memberWeight);
+             poolMember.setMemberProtocol(tProtMember);
+             poolMembers.add(poolMember);
+           } else {
+             log.error("POOL Building: Protocol with index "+protIndex+" does not exists in the VFS :"+fsName);
+             throw new NamespaceException("POOL Building: Protocol with index "+protIndex+" does not exists in the VFS :"+fsName);
+           }
+         }
+         ProtocolPool protPool = new ProtocolPool();
+         //Check Protocol Homogeneity
+         Protocol prot = Protocol.EMPTY;
+         if (!(poolMembers.isEmpty())) {
+           prot = poolMembers.get(0).getMemeberProtocol().getProtocol();
+           for (PoolMember m: poolMembers) {
+             if (!(m.getMemeberProtocol().getProtocol().equals(prot))) {
+               throw new NamespaceException("POOL Defined is NOT HOMOGENEOUS!");
+             }
+           }
+           log.debug("Pool defined is homogeneous ("+prot+") with "+poolMembers.size()+" elements");
+         } else {
+           throw new NamespaceException("POOL Defined is EMPTY!");
+         }
+         protPool.setBalanceStrategy(balanceStrategy);
+         protPool.setPoolMembers(poolMembers);
+         log.debug("PROTOCOL POOL:"+protPool);
+         cap.addProtocolPoolBySchema(prot,protPool);
+         } else {
+           log.debug("Pool is not defined in VFS "+fsName);
+         }
+
          return cap;
      }
+
+
+
 
      //*******************  DEFAULT VALUES ***************************
 

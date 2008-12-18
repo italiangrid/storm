@@ -891,11 +891,33 @@ public class RequestSummaryDAO {
                 log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" expired requests.");
                 close(ps);
                 //REMOVE ORPHANED DIR OPTION 
-                stmt = 
-                        "DELETE FROM request_DirOption "+
-                        "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
-                        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
-                        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
+                
+                //WARNING!! The subquery "WHERE ID NOT IN ..."  does not work for more than 1000 entries
+                //for a bug of MySQL, fixed in 5.1
+                //http://forums.mysql.com/read.php?121,143298,201486 
+                //Change using left inner join
+                
+                //stmt = 
+                //        "DELETE FROM request_DirOption "+
+                //       "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
+                //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
+                //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
+                
+                
+                //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ; 
+
+
+                
+                
+                 stmt =  "DELETE request_DirOption FROM request_DirOption "+
+                         " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID" +
+                         " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID " +
+                         " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID" +
+                         " WHERE request_Copy.request_DirOptionID IS NULL AND" +
+                         " request_Get.request_DirOptionID IS NULL AND" +
+                         " request_BoL.request_DirOptionID IS NULL;"; 
+                     
+                
                 ps = con.prepareStatement(stmt);
                 logWarnings(con.getWarnings());
                 log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);

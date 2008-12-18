@@ -12,10 +12,13 @@ import java.text.ParsePosition;
 
 import it.grid.storm.srm.types.TSpaceType;
 import it.grid.storm.common.types.VO;
-import it.grid.storm.griduser.*;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.*;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.griduser.VomsGridUser;
 
 public class StorageSpaceSQLHelper extends SQLHelper{
 
@@ -88,10 +91,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
         builder.addColumnAndData((String)COLS.get("ownerName"),
                                  format(ssTO.getOwnerName()));
       }
-      if (ssTO.getOwner().getMainVo() != null) {
-        builder.addColumnAndData((String)COLS.get("ownerVO"),
-                                 format(ssTO.getOwner().getMainVo().toString()));
-      }
+      builder.addColumnAndData((String)COLS.get("ownerVO"),format(getVOName(ssTO.getOwner())));
       if (ssTO.getAlias() != null) {
         builder.addColumnAndData((String)COLS.get("alias"),
                                 format(ssTO.getAlias()));
@@ -137,6 +137,17 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     return sql;
   }
 
+  // ************ HELPER Method *************** //
+  private String getVOName(GridUserInterface maker) {
+      String voStr = VO.makeNoVo().getValue();
+      if (maker!=null) {
+          if (maker instanceof VomsGridUser) {
+              voStr = ( (VomsGridUser) maker).getVO().getValue();
+          }
+      }
+      return voStr;
+  }
+
   /**
    *
    *
@@ -148,27 +159,27 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     //SELECT * FROM `storage_space` where space_token="6D4E8533-0B01-F1F2-7F00-0001B8273F51";
     return "SELECT * FROM `storage_space` where space_token='"+token+"'";
   }
-  
+
   /**
-   * Returns the SQL string for selecting all columns from the table 'storage_space' in the 
+   * Returns the SQL string for selecting all columns from the table 'storage_space' in the
    * 'storm_be_ISAM' database matching 'user' and 'spaceAlias'. 'spaceAlias' can be NULL or empty.
    * @param user VomsGridUser.
    * @param spaceAlias String.
    * @return String.
    */
-  public String selectBySpaceAliasQuery(VomsGridUser user, String spaceAlias)
+  public String selectBySpaceAliasQuery(GridUserInterface user, String spaceAlias)
   {
     String dn = user.getDn();
-    
+
     if ((spaceAlias==null) || (spaceAlias.length()==0))
       return "SELECT * FROM `storage_space` where userdn='" + dn + "'";
-    
+
     return "SELECT * FROM `storage_space` where userdn='" + dn + "' AND alias='" + spaceAlias + "'";
   }
-  
-  
+
+
   /**
-   * Returns the SQL string for selecting all columns from the table 'storage_space' in the 
+   * Returns the SQL string for selecting all columns from the table 'storage_space' in the
    * 'storm_be_ISAM' database matching 'user' and 'spaceAlias'. 'spaceAlias' can be NULL or empty.
    * @param user VomsGridUser.
    * @param spaceAlias String.
@@ -180,25 +191,25 @@ public class StorageSpaceSQLHelper extends SQLHelper{
        * This is to distinguish  a client reseve space with  a VOSpaceArea both with the same token.
        * Only the one made by the namespace process contains a fake dn
        */
-      
+
        return "SELECT * FROM `storage_space` where alias='" + spaceAlias + "'";
   }
-  
-  
-  
-  
-  
+
+
+
+
+
   /**
    * This metod return the SQL query to evaluate all expired space reservation requests.
    * @param time Current time (in second) to compare to the reservationTime + lifetime
    * @return String SQL query
    */
   public String selectExpiredQuery(long currentTimeInSecond)  {
-	  return "SELECT * FROM `storage_space` where (UNIX_TIMESTAMP(created)+lifetime< "+currentTimeInSecond+")";	  
+	  return "SELECT * FROM `storage_space` where (UNIX_TIMESTAMP(created)+lifetime< "+currentTimeInSecond+")";
   }
-  
-  
-  
+
+
+
   /**
    * Returns the SQL query for removing a row from the table 'storage_space' in the 'storm_be_ISAM' database
    * matching 'userDN' and 'spaceToken'.
@@ -206,10 +217,10 @@ public class StorageSpaceSQLHelper extends SQLHelper{
    * @param spaceToken
    * @return
    */
-  public String removeByTokenQuery(VomsGridUser user, String spaceToken) {
+  public String removeByTokenQuery(GridUserInterface user, String spaceToken) {
       return "DELETE FROM `storage_space` WHERE ((USERDN='" + user.getDn()+ "') AND (SPACE_TOKEN='" + spaceToken  + "'))";
   }
-  
+
   /**
    * Returns the SQL query for removing a row from the table 'storage_space' in the 'storm_be_ISAM' database
    * matching 'spaceToken'.
@@ -231,7 +242,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     //UPDATE `storm_be_isam`.`storage_space` SET `free_size`=1123 WHERE `SS_ID`=1;
     return "UPDATE `storage_space` SET `free_size`="+freeSpace+" WHERE space_token='"+token+"'";
   }
-  
+
   /**
   *
   * @param token String
@@ -246,7 +257,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
    //UPDATE `storm_be_isam`.`storage_space` SET `free_size`=1123 WHERE `SS_ID`=1;
    return "UPDATE `storage_space` SET `alias`='"+alias+"', `total_size`='"+size+"', `guar_size`='"+size+"', `free_size`='"+size+"', `space_file`='"+filename+"' WHERE space_token='"+token+"'";
  }
-  
+
   /**
    *
    * @param res ResultSet
@@ -256,16 +267,17 @@ public class StorageSpaceSQLHelper extends SQLHelper{
   {
     StorageSpaceTO ssTO = new StorageSpaceTO();
     GridUserInterface guser = null;
-    String DN;
+    String dn;
 
     try {
       ssTO.setStorageSpaceId(new Long(res.getLong("SS_ID")));
 
-      DN = res.getString("USERDN");
-      guser = VomsGridUser.make(DN);
+      dn = res.getString("USERDN");
+      guser = GridUserManager.makeGridUser(dn);
+      //guser = VomsGridUser.make(DN);
 
       ssTO.setOwner(guser);
-      ssTO.setOwnerName(DN);
+      ssTO.setOwnerName(dn);
       ssTO.setVoName(res.getString("VOGROUP"));
       ssTO.setAlias(res.getString("ALIAS"));
       ssTO.setSpaceToken(res.getString("SPACE_TOKEN"));
@@ -275,7 +287,7 @@ public class StorageSpaceSQLHelper extends SQLHelper{
       SimpleDateFormat creationDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       creationDate = creationDateFormat.parse(strCreationDate, new ParsePosition(0));
       ssTO.setCreated(creationDate);
-      
+
       ssTO.setTotalSize(res.getLong("TOTAL_SIZE"));
       ssTO.setGuaranteedSize(res.getLong("GUAR_SIZE"));
       ssTO.setUnusedSize(res.getLong("FREE_SIZE"));
@@ -311,8 +323,9 @@ public class StorageSpaceSQLHelper extends SQLHelper{
     ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
     ssTO.setGuaranteedSize(1000000);
     VO vo = VO.make("VOCiccio");
-    VomsGridUser gu = null;
-    gu = VomsGridUser.make("Ciccio");
+    GridUserInterface gu = null;
+    gu = GridUserManager.makeStoRMGridUser();
+    //gu = VomsGridUsermake("Ciccio");
 
     ssTO.setOwner(gu);
     ssTO.setOwnerName("Ciccio");

@@ -4,7 +4,7 @@ import it.grid.storm.namespace.model.*;
 
 public abstract class SRMURL {
 
-    protected TransportPrefix transfProtocol;
+    protected TransportProtocol transfProtocol;
     protected SRMURLType surlType = null;
     protected String queryString;
     protected String path;
@@ -14,7 +14,7 @@ public abstract class SRMURL {
 
     protected String hostName;
 
-    public SRMURL(final TransportPrefix protocol,
+    public SRMURL(final TransportProtocol protocol,
                   final String path,
                   final String queryString) {
         if (protocol.getAuthority() == null) {
@@ -37,7 +37,7 @@ public abstract class SRMURL {
     public SRMURL(Protocol protocol, String hostname, int port, String servicePath, String queryString) {
         this.hostName = hostname;
         Authority service = new Authority(hostname, port);
-        this.transfProtocol = new TransportPrefix(protocol, service);
+        this.transfProtocol = new TransportProtocol(protocol, service);
         //The path and the query string must to be expressed in absolute form!
         if (servicePath != null) {
             this.path = makeInAbsoluteForm(servicePath);
@@ -54,7 +54,7 @@ public abstract class SRMURL {
     public SRMURL(Protocol protocol, String hostname, int port, String stfn) {
         this.hostName = hostname;
         Authority service = new Authority(hostname, port);
-        this.transfProtocol = new TransportPrefix(protocol, service);
+        this.transfProtocol = new TransportProtocol(protocol, service);
         //The path and the query string must to be expressed in absolute form!
         if (stfn != null) {
             this.path = makeInAbsoluteForm(stfn);

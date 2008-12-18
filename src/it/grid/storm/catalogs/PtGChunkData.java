@@ -35,7 +35,7 @@ public class PtGChunkData implements ChunkData {
     private TSURL fromSURL;               //SURL that the srm command wants to get
     private TLifeTimeInSeconds lifeTime;  //requested lifetime of TURL: it is the pin time!
     private TDirOption dirOption;         //specifies if the request regards a directory and related info
-    private TURLPrefix transferProtocols; //list of desired transport protocols for fromSURL
+    private TURLPrefix desiredProtocols; //list of desired transport protocols for fromSURL
     private TSizeInBytes fileSize;        //size of file
     private TReturnStatus status;         //return status for this chunk of request
     private TTURL transferURL;            //TURL for picking up the requested file
@@ -44,27 +44,27 @@ public class PtGChunkData implements ChunkData {
 
     public PtGChunkData(TRequestToken requestToken, TSURL fromSURL,
         TLifeTimeInSeconds lifeTime, TDirOption dirOption,
-        TURLPrefix transferProtocols, TSizeInBytes fileSize,
+        TURLPrefix desiredProtocols, TSizeInBytes fileSize,
         TReturnStatus status,TTURL transferURL)
         throws InvalidPtGChunkDataAttributesException {
         boolean ok = requestToken!=null &&
             fromSURL!=null &&
             lifeTime!=null &&
             dirOption!=null &&
-            transferProtocols!=null &&
+            desiredProtocols!=null &&
             fileSize!=null &&
             status!=null &&
             transferURL!=null;
 
         if (!ok) throw new InvalidPtGChunkDataAttributesException(requestToken,
-            fromSURL,lifeTime,dirOption,transferProtocols,fileSize,status,
+            fromSURL,lifeTime,dirOption,desiredProtocols,fileSize,status,
             transferURL);
 
         this.requestToken = requestToken;
         this.fromSURL = fromSURL;
         this.lifeTime = lifeTime;
         this.dirOption=dirOption;
-        this.transferProtocols=transferProtocols;
+        this.desiredProtocols=desiredProtocols;
         this.fileSize=fileSize;
         this.status=status;
         this.transferURL=transferURL;
@@ -119,8 +119,8 @@ public class PtGChunkData implements ChunkData {
      * Method that returns a TURLPrefix containing the transfer protocols desired
      * for this chunk of the srm request.
      */
-    public TURLPrefix transferProtocols() {
-        return transferProtocols;
+    public TURLPrefix desiredProtocols() {
+        return desiredProtocols;
     }
 
     /**
@@ -165,7 +165,7 @@ public class PtGChunkData implements ChunkData {
 	public void setTransferURL(TTURL turl) {
         if (turl!=null) transferURL = turl;
     }
-    
+
     /**
      * Method used to set the Status associated to this chunk.
      * If status is null, then nothing gets set!
@@ -173,8 +173,8 @@ public class PtGChunkData implements ChunkData {
     public void setStatus(TReturnStatus newstat) {
         if (newstat!=null) status = newstat;
     }
-    
-    
+
+
 
     /**
      * Method that sets the status of this request to SRM_REQUEST_QUEUED;
@@ -327,7 +327,7 @@ public class PtGChunkData implements ChunkData {
         sb.append("fromSURL="); sb.append(fromSURL); sb.append("; ");
         sb.append("lifeTime="); sb.append(lifeTime); sb.append("; ");
         sb.append("dirOption="); sb.append(dirOption); sb.append("; ");
-        sb.append("transferProtocols="); sb.append(transferProtocols); sb.append("; ");
+        sb.append("desiredProtocols="); sb.append(desiredProtocols); sb.append("; ");
         sb.append("fileSize="); sb.append(fileSize); sb.append("; ");
         sb.append("status="); sb.append(status); sb.append("; ");
         sb.append("transferURL="); sb.append(transferURL);
@@ -341,7 +341,7 @@ public class PtGChunkData implements ChunkData {
         hash = 37*hash + fromSURL.hashCode();
         hash = 37*hash + lifeTime.hashCode();
         hash = 37*hash + dirOption.hashCode();
-        hash = 37*hash + transferProtocols.hashCode();
+        hash = 37*hash + desiredProtocols.hashCode();
         hash = 37*hash + fileSize.hashCode();
         hash = 37*hash + status.hashCode();
         hash = 37*hash + transferURL.hashCode();
@@ -357,7 +357,7 @@ public class PtGChunkData implements ChunkData {
             fromSURL.equals(cd.fromSURL) &&
             lifeTime.equals(cd.lifeTime) &&
             dirOption.equals(cd.dirOption) &&
-            transferProtocols.equals(cd.transferProtocols) &&
+            desiredProtocols.equals(cd.desiredProtocols) &&
             fileSize.equals(cd.fileSize) &&
             status.equals(cd.status) &&
             transferURL.equals(cd.transferURL);

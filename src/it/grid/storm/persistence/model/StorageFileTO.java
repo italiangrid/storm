@@ -7,7 +7,8 @@ import java.util.*;
 import it.grid.storm.srm.types.*;
 import org.apache.log4j.Logger;
 import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.Fqan;
+import it.grid.storm.griduser.FQAN;
+import it.grid.storm.common.types.VO;
 
 
 public class StorageFileTO implements Serializable, Comparable {
@@ -64,11 +65,10 @@ public class StorageFileTO implements Serializable, Comparable {
     this.ownerName = owner.getDn();
     boolean voms = owner.hasVoms();
     if (voms) {
-      Fqan[] fqans = owner.getFqans();
-      this.voName = fqans[0].getVo();
+        this.voName = owner.getVO().getValue();
     }
     else {
-      this.voName = "NO_VO";
+      this.voName = VO.makeNoVo().getValue();
     }
 
     this.name = name;
@@ -106,14 +106,11 @@ public class StorageFileTO implements Serializable, Comparable {
     this.owner = owner;
     this.ownerName = owner.getDn();
     boolean voms = owner.hasVoms();
-    if (voms)
-    {
-      Fqan[] fqans = owner.getFqans();
-      this.voName = fqans[0].getVo();
+    if (voms) {
+        this.voName = owner.getVO().getValue();
     }
-    else
-    {
-      this.voName = "NO_VO";
+    else {
+      this.voName = VO.makeNoVo().getValue();
     }
   }
 

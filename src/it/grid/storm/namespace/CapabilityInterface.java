@@ -3,9 +3,12 @@ package it.grid.storm.namespace;
 import java.util.*;
 
 import it.grid.storm.namespace.model.Capability.*;
-import it.grid.storm.srm.types.*;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.balancer.Balancer;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.TransportProtocol;
+import it.grid.storm.balancer.Node;
 
 /**
  * <p>Title: </p>
@@ -21,7 +24,15 @@ import it.grid.storm.namespace.model.DefaultACL;
  */
 public interface CapabilityInterface {
 
-    public List getManagedProtocols();
+    public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol);
+
+    public List<Protocol> getAllManagedProtocols();
+
+    public boolean isPooledProtocol(Protocol protocol);
+
+    public Balancer<? extends Node> getPoolByScheme(Protocol protocol);
+
+    public TransportProtocol getProtocolByID(int id);
 
     public ACLMode getACLMode();
 
@@ -46,5 +57,6 @@ public interface CapabilityInterface {
     public Quota getQuota();
 
     public DefaultACL getDefaultACL();
+
 
 }

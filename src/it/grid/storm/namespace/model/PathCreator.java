@@ -51,5 +51,27 @@ public class PathCreator {
         //Return List only when visit is finished!!
         return list;
     }
+    
+    
+    public Collection generateFirstLevelChild(ArrayList list) {
+
+        if (file.isDirectory() && (recursive || level > 0)) {
+            array = file.list();
+            if(array != null) {
+                for (int i = 0; i < array.length; i++) {
+                    log.debug("Analizzando dir = " + array[i]);
+                    if(!(array[i].startsWith("."))) {
+                        PathCreator path = new PathCreator(new File(file, array[i]), recursive, level - 1);
+                        path.generateChild(list);
+                    }
+                }
+            }
+            
+        } else {
+            list.add(file.toString());
+        }
+        //Return List only when visit is finished!!
+        return list;
+    }
 
 }
