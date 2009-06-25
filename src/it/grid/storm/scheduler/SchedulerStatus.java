@@ -50,119 +50,120 @@ public class SchedulerStatus {
 
     protected SchedulerStatus(String name)
     {
-	this.name = name;
+        this.name = name;
     }
 
 
     public int getActiveCount()
     {
-	return activeCount;
+        return activeCount;
     }
 
 
     public long getCompletedTaskCount()
     {
-	return completedTaskCount;
+        return completedTaskCount;
     }
 
 
     public int getCorePoolSize()
     {
-	return corePoolSize;
+        return corePoolSize;
     }
 
 
     public int getLargestPoolSize()
     {
-	return largestPoolSize;
+        return largestPoolSize;
     }
 
 
     public int getMaxPoolSize()
     {
-	return maxPoolSize;
+        return maxPoolSize;
     }
 
 
     public int getPoolSize()
     {
-	return poolSize;
+        return poolSize;
     }
 
 
     public long getTaskCount()
     {
-	return taskCount;
+        return taskCount;
     }
 
 
     public int getQueueSize() {
-      return this.queueSize;
+        return this.queueSize;
     }
 
     public int getRemainingSize() {
-      return this.remainingCapacity;
+        return this.remainingCapacity;
     }
 
 
     protected void setActiveCount(int activeCount)
     {
-	this.activeCount = activeCount;
+        this.activeCount = activeCount;
     }
 
 
     protected void setCompletedTaskCount(long completedTaskCount)
     {
-	this.completedTaskCount = completedTaskCount;
+        this.completedTaskCount = completedTaskCount;
     }
 
 
     protected void setCorePoolSize(int corePoolSize)
     {
-	this.corePoolSize = corePoolSize;
+        this.corePoolSize = corePoolSize;
     }
 
 
     protected void setLargestPoolSize(int largestPoolSize)
     {
-	this.largestPoolSize = largestPoolSize;
+        this.largestPoolSize = largestPoolSize;
     }
 
 
     protected void setMaxPoolSize(int maxPoolSize)
     {
-	this.maxPoolSize = maxPoolSize;
+        this.maxPoolSize = maxPoolSize;
     }
 
 
     protected void setPoolSize(int poolSize)
     {
-	this.poolSize = poolSize;
+        this.poolSize = poolSize;
     }
 
 
     protected void setTaskCount(long taskCount)
     {
-	this.taskCount = taskCount;
+        this.taskCount = taskCount;
     }
 
     protected void setQueueSize(int queueSize) {
-      this.queueSize = queueSize;
+        this.queueSize = queueSize;
     }
 
     protected void setRemainingCapacity(int remainingCapacity) {
-      this.remainingCapacity = remainingCapacity;
+        this.remainingCapacity = remainingCapacity;
     }
 
+    @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append("WorkerPool (Sched-Name=");
-      sb.append(this.name);
-      sb.append(") = [core:"+corePoolSize+" ; largest:"+maxPoolSize+" ; size:"+poolSize+"]" +"/n");
-      sb.append( "Queue (Sched-Name=" );
-      sb.append( this.name );
-      sb.append( ") = [size:" + queueSize + " ; remaining capacity:" + remainingCapacity + "]" );
-      return sb.toString();
+        StringBuffer sb = new StringBuffer();
+        sb.append("WorkerPool (Sched-Name=");
+        sb.append(this.name);
+        sb.append(") = [core:"+corePoolSize+" ; largest:"+maxPoolSize+" ; size:"+poolSize+"]" +"\n");
+        sb.append( "Queue (Sched-Name=" );
+        sb.append( this.name );
+        sb.append( ") = [size:" + queueSize + " ; remaining capacity:" + remainingCapacity + "]" );
+        return sb.toString();
     }
 
 

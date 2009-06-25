@@ -13,7 +13,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 
-public class AbortRequestInputData implements InputData
+public class AbortRequestInputData extends AbortGeneralInputData
 {
     private GridUserInterface auth = null;
     private TRequestToken reqToken = null;

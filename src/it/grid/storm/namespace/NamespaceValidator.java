@@ -1,12 +1,14 @@
 package it.grid.storm.namespace;
 
-import java.io.*;
+import it.grid.storm.config.Configuration;
 
-import org.apache.commons.logging.*;
-import org.apache.xerces.parsers.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-import it.grid.storm.config.*;
+import java.io.File;
+
+import org.apache.xerces.parsers.SAXParser;
+import org.slf4j.Logger;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * <p>Title: </p>
@@ -24,7 +26,7 @@ public class NamespaceValidator {
 
     private static String schemaURL;
     private static String namespaceFile;
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
 
     public NamespaceValidator() {
         //String configPath = Configuration.getInstance().getNamespaceConfigPath() + File.separator;
@@ -80,7 +82,7 @@ public class NamespaceValidator {
         sb.append("# Please check it. " + "\n");
         sb.append("# The error is : " + handler.saxParseException.getMessage() + "\n");
         sb.append("#   at line : " + handler.saxParseException.getLineNumber() +
-                  ", column " + handler.saxParseException.getColumnNumber() + "\n");
+                ", column " + handler.saxParseException.getColumnNumber() + "\n");
         sb.append("#   in entity : " + handler.saxParseException.getSystemId() + "\n");
         sb.append("##############################################" + "\n");
         System.out.println(sb.toString());
@@ -89,10 +91,11 @@ public class NamespaceValidator {
     }
 
     private class Validator
-        extends DefaultHandler {
+    extends DefaultHandler {
         public boolean validationError = false;
         public SAXParseException saxParseException = null;
 
+        @Override
         public void error(SAXParseException exception) throws SAXException {
 
             log.error("ERROR : " + exception.getMessage());
@@ -103,6 +106,7 @@ public class NamespaceValidator {
             saxParseException = exception;
         }
 
+        @Override
         public void fatalError(SAXParseException exception) throws SAXException {
 
             log.error("FATAL ERROR: " + exception.getMessage());
@@ -113,6 +117,7 @@ public class NamespaceValidator {
             saxParseException = exception;
         }
 
+        @Override
         public void warning(SAXParseException exception) throws SAXException {
 
             log.error("Warning: " + exception.getMessage());

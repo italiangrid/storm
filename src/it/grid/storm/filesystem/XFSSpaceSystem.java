@@ -1,9 +1,9 @@
 package it.grid.storm.filesystem;
 
 import it.grid.storm.filesystem.swig.xfs;
-import it.grid.storm.filesystem.swig.genericfs;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a SpaceSystem that is able to use native XFS support
@@ -16,10 +16,12 @@ import org.apache.log4j.Logger;
 public class XFSSpaceSystem implements SpaceSystem {
 
     private xfs fs = null; //instance of filesystem that will be used to invoke native operation!
-    private static Logger log = Logger.getLogger("filesystem");
+    private static Logger log = LoggerFactory.getLogger(XFSSpaceSystem.class);
 
     public XFSSpaceSystem(String mountpoint) throws SpaceSystemException {
-        if (mountpoint==null) throw new SpaceSystemException("Supplied mountpoint is null!");
+        if (mountpoint==null) {
+            throw new SpaceSystemException("Supplied mountpoint is null!");
+        }
         try {
             this.fs = new xfs(mountpoint);
         } catch (Exception e) {
@@ -73,6 +75,7 @@ public class XFSSpaceSystem implements SpaceSystem {
         throw new ReservationException(explanation);
     }
 
+    @Override
     public String toString() {
         return "XFSSpaceSystem";
     }

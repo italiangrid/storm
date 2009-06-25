@@ -8,15 +8,15 @@
 package it.grid.storm.srm.types;
 
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TTransferParameters
 {
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(TTransferParameters.class);
 
     public static String PNAME_transferParameters = "transferParameters";
 
@@ -49,7 +49,9 @@ public class TTransferParameters
     {
         Map param;
         param = (Map) inputParam.get(fieldName);
-        if (param == null) return null;
+        if (param == null) {
+            return null;
+        }
 
         return TTransferParameters.decode(param);
     }
@@ -74,11 +76,11 @@ public class TTransferParameters
         memberName = new String("arrayOfClientNetworks");
         //vector = (Hashtable) param.get(memberName);
         try {
-        	vector = Arrays.asList((Object[]) param.get(memberName));
+            vector = Arrays.asList((Object[]) param.get(memberName));
         } catch (NullPointerException e) {
-        	//log.warn("Empty SURL array found!");
+            //log.warn("Empty SURL array found!");
         }
-        
+
         if (vector != null) {
             int arraySize = vector.size();
             clientNetworks = new String[arraySize];
@@ -90,9 +92,9 @@ public class TTransferParameters
         memberName = new String("arrayOfTransferProtocols");
         //vector = (Hashtable) param.get(memberName);
         try {
-        	vector = Arrays.asList((Object[]) param.get(memberName));
+            vector = Arrays.asList((Object[]) param.get(memberName));
         } catch (NullPointerException e) {
-        	//log.warn("Empty SURL array found!");
+            //log.warn("Empty SURL array found!");
         }
         if (vector != null) {
             int arraySize = vector.size();

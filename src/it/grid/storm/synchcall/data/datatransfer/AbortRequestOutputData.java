@@ -10,7 +10,7 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
 
-public class AbortRequestOutputData implements OutputData
+public class AbortRequestOutputData extends AbortGeneralOutputData
 {
     private TReturnStatus returnStatus = null;
 

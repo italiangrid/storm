@@ -24,11 +24,14 @@
 package it.grid.storm.config;
 
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import org.apache.log4j.*;
-import it.grid.storm.authorization.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton holding all configuration values that any other object
@@ -44,12 +47,11 @@ import it.grid.storm.authorization.*;
  * in each method comment.
  *
  */
-public class Configuration {
-    //String automatically updated by CVS!
-  //  public static final String RCSID = "$Id: Configuration.java,v 1.96 2007/05/11 13:41:34 ecorso Exp $";
 
-    private final Logger applicationRootLogger = Logger.getRootLogger();
-    private final Logger logger = Logger.getLogger("configuration"); //specific logger for Configuration!
+
+public class Configuration {
+
+    private final Logger logger = LoggerFactory.getLogger(Configuration.class);
     private ConfigReader cr = new ConfigReader(); //set an empty ConfigReader as default
     private static Configuration instance = new Configuration (); //only instance of this configuration class
 
@@ -60,7 +62,7 @@ public class Configuration {
      * Returns the sole instance of the Configuration class.
      */
     public static Configuration getInstance() {
-        return instance;
+        return Configuration.instance;
     }
 
     /**
@@ -68,20 +70,10 @@ public class Configuration {
      * empty ConfigReader is used instead.
      */
     public void setConfigReader(ConfigReader cr) {
-        if (cr!=null) this.cr = cr;
+        if (cr!=null) {
+            this.cr = cr;
+        }
     }
-
-    /**
-     * Returns the Log4J root logger instance.
-     */
-    public Logger getApplicationRootLogger () {
-        return applicationRootLogger;
-    }
-
-
-
-
-
 
 
 
@@ -338,7 +330,7 @@ public class Configuration {
         String key = "pinLifetime.minimum";
         if (!cr.getConfiguration().containsKey(key)) {
             //return default
-            return 30;
+            return 259200;
         } else {
             //load from external source
             return cr.getConfiguration().getLong(key);
@@ -361,7 +353,7 @@ public class Configuration {
         String key = "pinLifetime.maximum";
         if (!cr.getConfiguration().containsKey(key)) {
             //return default
-            return 144000;
+            return 1814400;
         } else {
             //load from external source
             return cr.getConfiguration().getLong(key);
@@ -430,7 +422,7 @@ public class Configuration {
         String key = "asynch.PickingInitialDelay";
         if (!cr.getConfiguration().containsKey(key)) {
             //return default
-            return 5;
+            return 1;
         } else {
             //load from external source
             return cr.getConfiguration().getLong(key);
@@ -450,7 +442,7 @@ public class Configuration {
         String key = "asynch.PickingTimeInterval";
         if (!cr.getConfiguration().containsKey(key)) {
             //return default
-            return 15;
+            return 2;
         } else {
             //load from external source
             return cr.getConfiguration().getLong(key);
@@ -470,7 +462,7 @@ public class Configuration {
         String key = "asynch.PickingMaxBatchSize";
         if (!cr.getConfiguration().containsKey(key)) {
             //return default
-            return 30;
+            return 100;
         } else {
             //load from external source
             return cr.getConfiguration().getInt(key);
@@ -621,8 +613,8 @@ public class Configuration {
             List names = cr.getConfiguration().getList(key); //split around commas!
 
             //for (int i=0; i<names.size(); i++) {
-            	//names[i] = names[i].trim().toLowerCase(); //for each bit remove leading and trailing spaces! And make it lower case!
-            	//System.out.println("Default space token:"+names.get(i));
+            //names[i] = names[i].trim().toLowerCase(); //for each bit remove leading and trailing spaces! And make it lower case!
+            //System.out.println("Default space token:"+names.get(i));
             //}
 
             //return Arrays.asList(names);
@@ -700,7 +692,9 @@ public class Configuration {
             //String[] names = cr.getConfiguration().getString(key).split(";"); //split around commas!
             List names = cr.getConfiguration().getList(key); //split around commas!
 
-            for (int i=0; i<names.size(); i++) names.set(i, ((String) names.get(i)).trim().toLowerCase()); //for each bit remove leading and trailing spaces! And make it lower case!
+            for (int i=0; i<names.size(); i++) {
+                names.set(i, ((String) names.get(i)).trim().toLowerCase()); //for each bit remove leading and trailing spaces! And make it lower case!
+            }
             return names;
         }
     }
@@ -726,7 +720,9 @@ public class Configuration {
         } else {
             //load from external source
             String[] names = cr.getConfiguration().getString(key).split(";"); //split around commas!
-            for (int i=0; i<names.length; i++) names[i] = names[i].trim().toLowerCase(); //for each bit remove leading and trailing spaces! And make it lower case!
+            for (int i=0; i<names.length; i++) {
+                names[i] = names[i].trim().toLowerCase(); //for each bit remove leading and trailing spaces! And make it lower case!
+            }
             return Arrays.asList(names);
         }
     }
@@ -787,43 +783,41 @@ public class Configuration {
             .trim()
             .split("\\s*,\\s*");
 
-        for (int i=0; i < authorizationSources.length; i++) {
-            String configValue = authorizationSources[i];
-            String sourceName = configValue;
-            if (-1 == sourceName.indexOf('.'))
+        for (String configValue : authorizationSources) {
+            if (-1 == configValue.indexOf('.')) {
                 // unqualified name, prepend 'it.grid.storm.authorization.sources'
-                sourceName = "it.grid.storm.authorization.sources." + sourceName;
+                configValue = "it.grid.storm.authorization.sources." + configValue;
+            }
             try {
-                Class sourceClass = Class.forName(sourceName);
-                result.add((AuthorizationQueryInterface)
-                           sourceClass.newInstance());
+                Class sourceClass = Class.forName(configValue);
+                result.add(sourceClass.newInstance());
             }
             catch (ClassNotFoundException e) {
                 logger.error("Cannot find class '"
-                             + sourceName
-                             + " to handle '"
-                             + configValue
-                             + "' (from configuration value "
-                             + "'authorization.sources'): "
-                             + e.getMessage());
+                        + configValue
+                        + " to handle '"
+                        + configValue
+                        + "' (from configuration value "
+                        + "'authorization.sources'): "
+                        + e.getMessage());
                 logger.warn("Ignoring authorization source '"+configValue+"'");
             }
             catch (InstantiationException e) {
                 logger.error("Cannot instanciate class '"
-                             + sourceName
-                             + " as an instance of AuthorizationQueryInterface"
-                             + " (from configuration value "
-                             + "'authorization.sources'): "
-                             + e.getMessage());
+                        + configValue
+                        + " as an instance of AuthorizationQueryInterface"
+                        + " (from configuration value "
+                        + "'authorization.sources'): "
+                        + e.getMessage());
                 logger.warn("Ignoring authorization source '"+configValue+"'");
             }
             catch (IllegalAccessException e) {
                 logger.error("Cannot instanciate class '"
-                             + sourceName
-                             + " as an instance of AuthorizationQueryInterface"
-                             + " (from configuration value "
-                             + "'authorization.sources'): "
-                             + e.getMessage());
+                        + configValue
+                        + " as an instance of AuthorizationQueryInterface"
+                        + " (from configuration value "
+                        + "'authorization.sources'): "
+                        + e.getMessage());
                 logger.warn("Ignoring authorization source '"+configValue+"'");
             }
         }
@@ -831,9 +825,9 @@ public class Configuration {
             String msg = "Abort: No AuthorizationSource could be loaded; "
                 +"all configuration values in 'authorization.sources'"
                 +" were ignored because of errors (see log)";
-            logger.fatal(msg);
+            logger.error(msg);
             throw new RuntimeException(msg);
-        } 
+        }
         return result;
     }
 
@@ -885,7 +879,7 @@ public class Configuration {
                 + "' (from configuration key "
                 + "'authorization.combining.algorithm'): "
                 + e.getMessage();
-            logger.fatal(msg);
+            logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
     }
@@ -925,7 +919,7 @@ public class Configuration {
         if(!config_file.endsWith(java.io.File.separator))  //original: if(!config.endsWith("/"))
             config = config + java.io.File.separator;
         return config;
-        */
+         */
     }
 
     /**
@@ -944,8 +938,9 @@ public class Configuration {
         String dirValue = "";
         dirValue = cr.configurationDirectory();
         String config_file = dirValue;
-        if(!config_file.endsWith(java.io.File.separator))    //original statement: if(!config_file.endsWith("/"))
+        if(!config_file.endsWith(java.io.File.separator)) {
             config_file = config_file + java.io.File.separator;
+        }
         config_file = config_file + "namespace.xml";
         return config_file;
     }
@@ -1316,16 +1311,16 @@ public class Configuration {
         }
     }
 
-     /**
-      * Method used by the Synch Component to set the maximum number of entries
-      * to return for the srmLs functionality.
-      *
-      * If no value is found in the configuration medium, then the default value
-      * is returned instead.
-      *
-      * key="synchcall.directoryManager.maxLsEntry"; default value=500;
-      * @return int
-      */
+    /**
+     * Method used by the Synch Component to set the maximum number of entries
+     * to return for the srmLs functionality.
+     *
+     * If no value is found in the configuration medium, then the default value
+     * is returned instead.
+     *
+     * key="synchcall.directoryManager.maxLsEntry"; default value=500;
+     * @return int
+     */
     public int get_LS_MaxNumberOfEntry() {
         String key = "synchcall.directoryManager.maxLsEntry";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -1473,16 +1468,16 @@ public class Configuration {
      * If no value is found in the configuration medium, then the default value
      * is returned instead.
      *
-    *   Scheduler component uses a thread pool.
-    *   Scheduler pool will automatically adjust the pool size according to the
-    *   bounds set by corePoolSize and maximumPoolSize. When a new task is submitted
-    *   in method execute, and fewer than corePoolSize threads are running, a new thread
-    *   is created to handle the request, even if other worker threads are idle.
-    *   If there are more than corePoolSize but less than maximumPoolSize threads
-    *   running, a new thread will be created only if the queue is full.
-    *   By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool.
-    *
-    *   corePoolSize - the number of threads to keep in the pool, even if they are idle.
+     *   Scheduler component uses a thread pool.
+     *   Scheduler pool will automatically adjust the pool size according to the
+     *   bounds set by corePoolSize and maximumPoolSize. When a new task is submitted
+     *   in method execute, and fewer than corePoolSize threads are running, a new thread
+     *   is created to handle the request, even if other worker threads are idle.
+     *   If there are more than corePoolSize but less than maximumPoolSize threads
+     *   running, a new thread will be created only if the queue is full.
+     *   By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool.
+     *
+     *   corePoolSize - the number of threads to keep in the pool, even if they are idle.
      *
      *  key="scheduler.chunksched.ptg.workerCorePoolSize"; default value=10;
      */
@@ -1868,7 +1863,7 @@ public class Configuration {
      * @return String
      */
     public String getNamespaceConfigPath() {
-      return cr.configurationDirectory();
+        return cr.configurationDirectory();
     }
 
 
@@ -1878,28 +1873,28 @@ public class Configuration {
      * @return String
      */
     public String getNamespaceConfigFilename() {
-      String key = "namespace.filename";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "namespace.xml";
-      }
-      else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "namespace.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "namespace.xml";
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
 
     public int getNamespaceConfigRefreshRateInSeconds() {
-      String key = "namespace.refreshrate";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 3;
-      }
-      else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "namespace.refreshrate";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 3;
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
 
     }
 
@@ -1920,12 +1915,12 @@ public class Configuration {
     public boolean getNamespaceAutomaticReloading() {
         String key = "namespace.automatic-config-reload";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return false;
+            //return default
+            return false;
         } else {
-          //load from external source
-          return cr.getConfiguration().getBoolean(key);
-      }
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
     }
 
 
@@ -1941,14 +1936,14 @@ public class Configuration {
      * key="ecar.sea"; default value="https://egrid-2.egrid.it:8859"
      */
     public String getECARServiceEndPoint() {
-      String key = "ecar.sea";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "https://egrid-2.egrid.it:8859";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "ecar.sea";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "https://egrid-2.egrid.it:8859";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
     /**
@@ -1960,14 +1955,14 @@ public class Configuration {
      * key="fe.port"; default value="8444"
      */
     public int getFEPort() {
-      String key = "fe.port";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 8444;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "fe.port";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 8444;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -1980,14 +1975,14 @@ public class Configuration {
      * key="NaiveGridFTP.TimeOut"; default value="15000"
      */
     public int getGridFTPTimeOut() {
-      String key = "NaiveGridFTP.TimeOut";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 15000;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "NaiveGridFTP.TimeOut";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 15000;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2000,14 +1995,14 @@ public class Configuration {
      * key="SRM22Client.PinLifeTime"; default value="300"
      */
     public int getSRM22ClientPinLifeTime() {
-      String key = "SRM22Client.PinLifeTime";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 300;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "SRM22Client.PinLifeTime";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 259200;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
 
@@ -2078,17 +2073,17 @@ public class Configuration {
         }
     }
 
-   public int getServicePort() {
-       String key = "storm.service.port";
-       int defaultValue = getFEPort();
-       if (!cr.getConfiguration().containsKey(key)) {
-           //return default
-           return defaultValue;
-       }
-       else {
-           //load from external source
-           return cr.getConfiguration().getInt(key);
-       }
+    public int getServicePort() {
+        String key = "storm.service.port";
+        int defaultValue = getFEPort();
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return defaultValue;
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2101,14 +2096,14 @@ public class Configuration {
      * key="proxy.home"; default value="/opt/storm/var/proxies"
      */
     public String getProxyHome() {
-      String key = "proxy.home";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "/opt/storm/var/proxies";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "proxy.home";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "/opt/storm/var/proxies";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
     /**
@@ -2122,14 +2117,14 @@ public class Configuration {
      * key="automatic.directory.creation"; default value=false
      */
     public boolean getAutomaticDirectoryCreation() {
-      String key = "automatic.directory.creation";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return false;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getBoolean(key);
-      }
+        String key = "automatic.directory.creation";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return false;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
     }
 
     /**
@@ -2142,14 +2137,14 @@ public class Configuration {
      * key="default.overwrite"; default value="A"
      */
     public String getDefaultOverwriteMode() {
-      String key = "default.overwrite";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "A";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "default.overwrite";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "A";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
     /**
@@ -2162,14 +2157,14 @@ public class Configuration {
      * key="default.storagetype"; default value="V"
      */
     public String getDefaultFileStorageType() {
-      String key = "default.storagetype";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "V";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "default.storagetype";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "V";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
     /**
@@ -2182,14 +2177,14 @@ public class Configuration {
      * key="purge.size"; default value=500
      */
     public int getPurgeBatchSize() {
-      String key = "purge.size";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 500;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "purge.size";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 500;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2207,14 +2202,14 @@ public class Configuration {
      * 7 * 24 * 60 * 60 seconds)
      */
     public long getExpiredRequestTime() {
-      String key = "expired.request.time";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 7*24*60*60;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "expired.request.time";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 7*24*60*60;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2227,14 +2222,14 @@ public class Configuration {
      * key="purge.delay"; default value=10
      */
     public int getRequestPurgerDelay() {
-      String key = "purge.delay";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 10;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "purge.delay";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 10;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2247,14 +2242,14 @@ public class Configuration {
      * key="purge.interval"; default value=3600 (1 hour)
      */
     public int getRequestPurgerPeriod() {
-      String key = "purge.interval";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 3600;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "purge.interval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 3600;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -2291,14 +2286,14 @@ public class Configuration {
      * value = "/" ==> file:////
      */
     public String getExtraSlashesForFileTURL() {
-      String key = "extraslashes.file";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "extraslashes.file";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
 
@@ -2314,14 +2309,14 @@ public class Configuration {
      * value = "/" ==> 'rfio://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForRFIOTURL() {
-      String key = "extraslashes.rfio";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+        String key = "extraslashes.rfio";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
 
@@ -2337,15 +2332,15 @@ public class Configuration {
      * value = "/" ==> 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForGsiFTPTURL() {
-      String key = "extraslashes.gsiftp";
-      if ( !cr.getConfiguration().containsKey( key ) ) {
-        //return default
-        return "";
-      }
-      else {
-        //load from external source
-        return cr.getConfiguration().getString( key );
-      }
+        String key = "extraslashes.gsiftp";
+        if ( !cr.getConfiguration().containsKey( key ) ) {
+            //return default
+            return "";
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getString( key );
+        }
     }
 
 
@@ -2361,15 +2356,15 @@ public class Configuration {
      * value = "" ==> 'root://<hostname>:port<PhysicalFN>'
      */
     public String getExtraSlashesForROOTTURL() {
-      String key = "extraslashes.root";
-      if ( !cr.getConfiguration().containsKey( key ) ) {
-        //return default
-        return "/";
-      }
-      else {
-        //load from external source
-        return cr.getConfiguration().getString( key );
-      }
+        String key = "extraslashes.root";
+        if ( !cr.getConfiguration().containsKey( key ) ) {
+            //return default
+            return "/";
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getString( key );
+        }
     }
 
     /**
@@ -2384,34 +2379,15 @@ public class Configuration {
      * value = "/" ==> 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getPingValuesPropertiesFilename() {
-      String key = "ping-properties.filename";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return "ping-values.properties";
-      }
-      else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
-    }
-
-    /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File Name
-     *
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     *
-     * key="health.log-properties.filename";
-     */
-    public String getHealthLogPropertiesFile() {
-        String key = "health.log-properties.filename";
+        String key = "ping-properties.filename";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return "log4j.properties";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+            //return default
+            return "ping-values.properties";
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
 
@@ -2426,12 +2402,12 @@ public class Configuration {
     public String getHealthElectrocardiogramFile() {
         String key = "health.electrocardiogram.filename";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return "./var/log/hearthbeat.log";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+            //return default
+            return "./var/log/hearthbeat.log";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
 
     /**
@@ -2442,16 +2418,37 @@ public class Configuration {
      *
      * key="health.bookkeeping.filename";
      */
-    public String getBookKeepingFile() {
-        String key = "health.bookkeeping.filename";
+    public String getBookKeepingLogFile() {
+        String key = "health.bookkeeping.log.filename";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return "./var/log/bookkeeping.log";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+            //return default
+            return "./var/log/bookkeeping.log";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
     }
+
+
+    /**
+     * Method used by HEALTH component to retrieve the LOG4j Properties File Name
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead.
+     *
+     * key="health.performance.log.filename";
+     */
+    public String getPerformanceMonitoringLogFile() {
+        String key = "health.performance.log.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return "./var/log/performance.log";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
 
     /**
      * Method used by RequestSummaryCatalog to establish the time interval in
@@ -2460,19 +2457,102 @@ public class Configuration {
      * If no value is found in the configuration medium, then the default one is
      * used instead.
      *
+     * key="health.performance.log.verbosity"; default value=1 (0..3)
+     */
+    public int getPerformanceLogVerbosity() {
+        String key = "health.performance.log.verbosity";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 1;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+
+    /**
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead.
+     *
      * key="health.electrocardiogram.period"; default value=60 (1 min)
      */
     public int getHearthbeatPeriod() {
-      String key = "health.electrocardiogram.period";
-      if (!cr.getConfiguration().containsKey(key)) {
-        //return default
-        return 60;
-      } else {
-        //load from external source
-        return cr.getConfiguration().getInt(key);
-      }
+        String key = "health.electrocardiogram.period";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 60;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
+    /**
+     * getPerformanceGlancePeriod
+     * 
+     * @return int
+     * 
+     * If no value is found in the configuration medium, then the default one is
+     * used instead.
+     *
+     * key="health.performance.glance.timeInterval"; default value=15 (15 sec)
+     */
+    public int getPerformanceGlanceTimeInterval() {
+        String key = "health.performance.glance.timeInterval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 15;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+
+    /**
+     * getPerformanceGlancePeriod
+     * 
+     * @return int
+     * 
+     * If no value is found in the configuration medium, then the default one is
+     * used instead.
+     *
+     * key="health.performance.logbook.timeInterval"; default value=20 (20 sec)
+     */
+    public int getPerformanceLogbookTimeInterval() {
+        String key = "health.performance.logbook.timeInterval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 15;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    /**
+     * getPerformanceMeasuring
+     *
+     * @return boolean
+     *
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead.
+     *
+     * key="health.performance.mesauring.enabled"; default value=false
+     */
+    public boolean getPerformanceMeasuring() {
+        String key = "health.performance.mesauring.enabled";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return false;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
+    }
 
 
     /**
@@ -2491,12 +2571,12 @@ public class Configuration {
     public boolean getBookKeepingEnabled() {
         String key = "health.bookkeeping.enabled";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return false;
+            //return default
+            return false;
         } else {
-          //load from external source
-          return cr.getConfiguration().getBoolean(key);
-      }
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
     }
 
 
@@ -2545,11 +2625,11 @@ public class Configuration {
     public int getMaxLoop() {
         String key = "abort.maxloop";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return 1;
+            //return default
+            return 10;
         } else {
-          //load from external source
-          return cr.getConfiguration().getInt(key);
+            //load from external source
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -2564,27 +2644,70 @@ public class Configuration {
     public String getGridUserMapperClassname() {
         String key = "griduser.mapper.classname";
         if (!cr.getConfiguration().containsKey(key)) {
-          //return default
-          return "it.grid.storm.griduser.LcmapsMapper";
-      } else {
-        //load from external source
-        return cr.getConfiguration().getString(key);
-      }
+            //return default
+            return "it.grid.storm.griduser.LcmapsMapper";
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+
+    /**
+     * Method used to retrieve the default path where the AuthzDB file are stored
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead, that is the "configuration directory"
+     *
+     * key="authzdb.path";
+     */
+    public String getAuthzDBPath() {
+        String key = "authzdb.path";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return cr.configurationDirectory();
+        } else {
+            //load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+
+    /**
+     * Method used to retrieve the default refresh rate of the AuthzDB files
+     *
+     * If no value is found in the configuration medium, then the default one is
+     * used instead, that is the "5 sec"
+     *
+     * key="authzdb.refreshrate";
+     */
+    public int getRefreshRateAuthzDBfilesInSeconds() {
+        String key = "authzdb.refreshrate";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return 5;
+        }
+        else {
+            //load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
 
 
+
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         try {
-            Class c = instance.getClass(); //This class!!!
+            Class c = Configuration.instance.getClass(); //This class!!!
             Method m[] = c.getDeclaredMethods();
 
             Object aux = null;
             for (int i=0; i<m.length; i++) {
                 if (  (m[i].getName().substring(0,3).equals("get"))   && (!m[i].getName().equals("getInstance"))  ) {
                     sb.append(m[i].getName()); sb.append(" == ");
-                    aux = m[i].invoke(instance,null);
+                    aux = m[i].invoke(Configuration.instance,null);
                     sb.append(aux); sb.append("\n");
                 }
             }
@@ -2594,5 +2717,30 @@ public class Configuration {
             return partialOutput ;
         }
     }
+
+    /**
+     * This is the FLAG to support or not the checksum in the srmLS sull detailed list.
+     * Since the checksum is calculated run time each time and LS request in full detailed is done,
+     * it could be quite expensive for large file.
+     * Since FTS can use both srmls and gridftp based checksum, the support has been
+     * made optional. Default is false.
+     */
+    public boolean getChecksumEnabled() {
+        String key = "checksum.support";
+        if (!cr.getConfiguration().containsKey(key)) {
+            //return default
+            return false;
+        } else {
+            //load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
+    
+    }
+
+
+
+
+
+
 
 }

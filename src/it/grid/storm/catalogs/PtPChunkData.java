@@ -1,20 +1,20 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TStorageSystemInfo;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TTURL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a PrepareToPutChunkData, that is part of a multifile
@@ -30,7 +30,7 @@ import it.grid.storm.common.types.TURLPrefix;
  * @version 2.0
  */
 public class PtPChunkData implements ChunkData {
-    private static final Logger log = Logger.getLogger("asynch"); //Logger of error messages! Common to all Asynch package!
+    private static final Logger log = LoggerFactory.getLogger(PtPChunkData.class);
 
     private long primaryKey = -1;             //long representing the primary key for the persistence layer, in the status_Put table!
     private TRequestToken requestToken;       //This is the requestToken of the multifile srm request to which this chunk belongs
@@ -50,26 +50,28 @@ public class PtPChunkData implements ChunkData {
 
 
     public PtPChunkData(TRequestToken requestToken, TSURL toSURL,
-        TLifeTimeInSeconds pinLifetime, TLifeTimeInSeconds fileLifetime,
-        TFileStorageType fileStorageType, TSpaceToken spaceToken,
-        TSizeInBytes expectedFileSize, TURLPrefix transferProtocols,
-        TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL)
-        throws InvalidPtPChunkDataAttributesException {
+            TLifeTimeInSeconds pinLifetime, TLifeTimeInSeconds fileLifetime,
+            TFileStorageType fileStorageType, TSpaceToken spaceToken,
+            TSizeInBytes expectedFileSize, TURLPrefix transferProtocols,
+            TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL)
+    throws InvalidPtPChunkDataAttributesException {
         boolean ok = requestToken!=null &&
-            toSURL!=null &&
-            pinLifetime!=null &&
-            fileLifetime!=null &&
-            fileStorageType!=null &&
-            spaceToken!=null &&
-            expectedFileSize!=null &&
-            transferProtocols!=null &&
-            overwriteOption!=null &&
-            status!=null &&
-            transferURL!=null;
+        toSURL!=null &&
+        pinLifetime!=null &&
+        fileLifetime!=null &&
+        fileStorageType!=null &&
+        spaceToken!=null &&
+        expectedFileSize!=null &&
+        transferProtocols!=null &&
+        overwriteOption!=null &&
+        status!=null &&
+        transferURL!=null;
 
-        if (!ok) throw new InvalidPtPChunkDataAttributesException(requestToken,toSURL,
-            pinLifetime,fileLifetime,fileStorageType,spaceToken,expectedFileSize,
-            transferProtocols,overwriteOption,status,transferURL);
+        if (!ok) {
+            throw new InvalidPtPChunkDataAttributesException(requestToken,toSURL,
+                    pinLifetime,fileLifetime,fileStorageType,spaceToken,expectedFileSize,
+                    transferProtocols,overwriteOption,status,transferURL);
+        }
         this.requestToken = requestToken;
         this.toSURL = toSURL;
         this.pinLifetime = pinLifetime;
@@ -96,13 +98,15 @@ public class PtPChunkData implements ChunkData {
     public void setPrimaryKey(long l) {
         primaryKey = l;
     }
-    
+
     /**
      * Method used to set the Status associated to this chunk.
      * If status is null, then nothing gets set!
      */
     public void setStatus(TReturnStatus newstat) {
-        if (newstat!=null) status = newstat;
+        if (newstat!=null) {
+            status = newstat;
+        }
     }
 
     /**
@@ -170,8 +174,10 @@ public class PtPChunkData implements ChunkData {
      * Method used to set the transferURL associated to the SURL of this chunk.
      * If TTURL is null, then nothing gets set!
      */
-	public void setTransferURL(final TTURL turl) {
-        if (turl!=null) transferURL = turl;
+    public void setTransferURL(final TTURL turl) {
+        if (turl!=null) {
+            transferURL = turl;
+        }
     }
 
     /**
@@ -181,7 +187,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_REQUEST_QUEUED(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_QUEUED! "+e);
@@ -195,7 +203,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_REQUEST_INPROGRESS(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_INPROGRESS! "+e);
@@ -209,7 +219,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_SPACE_AVAILABLE(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_SPACE_AVAILABLE,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SPACE_AVAILABLE! "+e);
@@ -223,7 +235,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_SUCCESS(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_SUCCESS,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SUCSESS! "+e);
@@ -237,7 +251,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_FAILURE(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_FAILURE,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FAILURE! "+e);
@@ -251,7 +267,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_NOT_SUPPORTED(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FAILURE! "+e);
@@ -265,7 +283,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_INTERNAL_ERROR(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INTERNAL_ERROR! "+e);
@@ -279,7 +299,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_INVALID_REQUEST(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_REQUEST! "+e);
@@ -293,7 +315,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_AUTHORIZATION_FAILURE! "+e);
@@ -307,7 +331,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_DUPLICATION_ERROR(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_DUPLICATION_ERROR! "+e);
@@ -321,7 +347,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_INVALID_PATH(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_PATH! "+e);
@@ -335,7 +363,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_FILE_BUSY(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_FILE_BUSY,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FILE_BUSY! "+e);
@@ -349,7 +379,9 @@ public class PtPChunkData implements ChunkData {
      */
     public void changeStatusSRM_ABORTED(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_ABORTED,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_ABORTED! "+e);
@@ -360,6 +392,7 @@ public class PtPChunkData implements ChunkData {
 
 
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("PtPChunkData\n");
@@ -378,6 +411,7 @@ public class PtPChunkData implements ChunkData {
         return sb.toString();
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = 37*hash + new Long(primaryKey).hashCode();
@@ -395,21 +429,26 @@ public class PtPChunkData implements ChunkData {
         return hash;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof PtPChunkData)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof PtPChunkData)) {
+            return false;
+        }
         PtPChunkData cd = (PtPChunkData) o;
         return (primaryKey==cd.primaryKey) &&
-            requestToken.equals(cd.requestToken) &&
-            toSURL.equals(cd.toSURL) &&
-            pinLifetime.equals(cd.pinLifetime) &&
-            fileLifetime.equals(cd.fileLifetime) &&
-            fileStorageType.equals(cd.fileStorageType) &&
-            spaceToken.equals(cd.spaceToken) &&
-            expectedFileSize.equals(cd.expectedFileSize) &&
-            transferProtocols.equals(cd.transferProtocols) &&
-            overwriteOption.equals(cd.overwriteOption) &&
-            status.equals(cd.status) &&
-            transferURL.equals(cd.transferURL);
+        requestToken.equals(cd.requestToken) &&
+        toSURL.equals(cd.toSURL) &&
+        pinLifetime.equals(cd.pinLifetime) &&
+        fileLifetime.equals(cd.fileLifetime) &&
+        fileStorageType.equals(cd.fileStorageType) &&
+        spaceToken.equals(cd.spaceToken) &&
+        expectedFileSize.equals(cd.expectedFileSize) &&
+        transferProtocols.equals(cd.transferProtocols) &&
+        overwriteOption.equals(cd.overwriteOption) &&
+        status.equals(cd.status) &&
+        transferURL.equals(cd.transferURL);
     }
 }

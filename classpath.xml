@@ -5,6 +5,7 @@
   <!--load properties about jar filenames -->
   <property file="${build.external-jars.filenames}"/>
 
+  <target name="init" />	
 
   <target name="make-local-repository" depends="init">
     <mkdir dir="${external-jars.local-repository.path}"/>

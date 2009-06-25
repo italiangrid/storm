@@ -1,11 +1,5 @@
 package it.grid.storm.space;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import it.grid.storm.catalogs.InvalidRetrievedDataException;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
@@ -19,7 +13,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -32,33 +25,54 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
+ * <p>
+ * 
+ * This class implements a Space Manager.
+ * 
+ * Authors:
+ * 
+ * @author lucamag
+ * 
+ */
+
+
 public class SpaceHelper {
-    
+
     private static final int ADD = 0;
     private static final int REMOVE  = 1;
     private Configuration config;
-    
-    
-    
+    private static final Logger log = LoggerFactory.getLogger(SpaceHelper.class);
+
+
     public SpaceHelper() {
         config = Configuration.getInstance();
     }
-    
+
     /**
      * @param log
      * @param funcName
      * @param user
      * @param surl
      */
-    
+
     private void updateFreeSpaceForSA(Logger log,
             String funcName,GridUserInterface user, TSURL surl, int operation, long filesize) {
-        
+
         VirtualFSInterface fs = null;
-        
-                
-        log.debug(funcName+"Updating Storage Area free size on db"); 
-        
+        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+
+
+        log.debug(funcName+"Updating Storage Area free size on db");
+
         StoRI stori = null;
         // Retrieve the StoRI associate to the SURL
         try {
@@ -78,7 +92,7 @@ public class SpaceHelper {
 
         try {
             SSDesc = fs.getSpaceTokenDescription();
-            spaceData = fs.getSpaceByAlias(SSDesc);
+            spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
         } catch (NamespaceException e1) {
             log.error("Unable to create storage space data", e1);
@@ -88,37 +102,39 @@ public class SpaceHelper {
         // Get the localELement to know the real file size, if exists
         LocalFile localElement = stori.getLocalFile();
 
-        if ((spaceData != null) && ((localElement.exists()) || operation == SpaceHelper.ADD)) {
+        if ((spaceData != null) && ((localElement.exists()) || (operation == SpaceHelper.ADD))) {
 
             //IF PutDone, calculate the real fileSize
-            if(operation == SpaceHelper.REMOVE)
+            if(operation == SpaceHelper.REMOVE) {
                 filesize = localElement.getExactSize();
-            //else in case of RM the filesize is passed from the client
-            
+                //else in case of RM the filesize is passed from the client
+            }
+
             TSizeInBytes unusedSize = TSizeInBytes.makeEmpty();
             unusedSize = spaceData.getUnusedSizes();
-            
+
             long remainingSize = unusedSize.value();
-            
-            if(operation == SpaceHelper.REMOVE)
+
+            if(operation == SpaceHelper.REMOVE) {
                 remainingSize = unusedSize.value() - filesize;
-            else if (operation == SpaceHelper.ADD) {
+            } else if (operation == SpaceHelper.ADD) {
                 //The new remaining size cannot be greater than the total size
                 remainingSize = unusedSize.value() + filesize;
                 //Use Storage Area Total Size as upper limit for the new Unused Size
                 long totalSize =  spaceData.getDesiredSize().value();
-                remainingSize = (remainingSize > totalSize ) ? totalSize : remainingSize; 
+                remainingSize = (remainingSize > totalSize ) ? totalSize : remainingSize;
             }
-            
+
             //Prevent negative value
-            if(remainingSize<0)
+            if(remainingSize<0) {
                 remainingSize = 0;
+            }
 
             // Update the unused space size with new value
             TSizeInBytes newUnSize = unusedSize;
             try {
                 newUnSize = TSizeInBytes
-                        .make(remainingSize, SizeUnit.BYTES);
+                .make(remainingSize, SizeUnit.BYTES);
             } catch (InvalidTSizeAttributesException ex) {
                 log.error(funcName+ "Unable to create  new free size, so the previous one are used ",ex);
             }
@@ -129,7 +145,7 @@ public class SpaceHelper {
                 fs.storeSpaceByToken(spaceData);
             } catch (NamespaceException e) {
                 log.error(funcName + "Unable to update the new free size.",
-                          e);
+                        e);
             }
 
             log.info(funcName + "Storage Area free size updated to: "
@@ -142,8 +158,8 @@ public class SpaceHelper {
         }
 
 
-       
-    
+
+
     }
 
     /**
@@ -158,11 +174,12 @@ public class SpaceHelper {
      */
 
 
-    
-    public void decreaseFreeSpaceForSA(Logger log,
-            String funcName,VomsGridUser user, ArrayList spaceAvailableSURLs) {
 
-        
+    public void decreaseFreeSpaceForSA(Logger log,
+            String funcName, GridUserInterface user,
+            ArrayList spaceAvailableSURLs) {
+
+
 
         // Update the Storage Area Free size into the DB for each PtPReducedChunkData specified
 
@@ -174,12 +191,12 @@ public class SpaceHelper {
             TSURL surl = chunkData.toSURL();
 
             updateFreeSpaceForSA(log, funcName, user, surl, SpaceHelper.REMOVE, 0);
-        
+
         }
 
     }
-    
-    
+
+
     /**
      * @param log
      * @param funcName
@@ -187,12 +204,12 @@ public class SpaceHelper {
      * @param surl
      */
     public void decreaseFreeSpaceForSA(Logger log,
-            String funcName,VomsGridUser user, TSURL surl) {
-        
+            String funcName, GridUserInterface user, TSURL surl) {
+
         updateFreeSpaceForSA(log, funcName, user, surl, SpaceHelper.REMOVE, 0);
-    
+
     }
-    
+
     /**
      * Increase the free Storage Area free space in case of file removal
      * The file size have to be passed as parameter since the file does not exists anymore.
@@ -204,25 +221,26 @@ public class SpaceHelper {
      */
     public void increaseFreeSpaceForSA(Logger log,
             String funcName,GridUserInterface user, TSURL surl, long fileSize) {
-        
+
         updateFreeSpaceForSA(log, funcName, user, surl, SpaceHelper.ADD, fileSize);
-    
+
     }
-    
-    
+
+
     public boolean isSAFull(Logger log, StoRI stori) {
-      
+
         log.debug("Checking if the Storage Area is full");
-        
+
         VirtualFSInterface fs = stori.getVirtualFileSystem();
-        
+        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+
         // Get StorageSpaceData from the database
         String SSDesc;
         StorageSpaceData spaceData = null;
 
         try {
             SSDesc = fs.getSpaceTokenDescription();
-            spaceData = fs.getSpaceByAlias(SSDesc);
+            spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
         } catch (NamespaceException e1) {
             log.error("Unable to create storage space data", e1);
@@ -232,42 +250,48 @@ public class SpaceHelper {
         if ((spaceData != null) && (spaceData.getUnusedSizes().value() == 0) ) {
             log.debug("UnusedSize="+spaceData.getUnusedSizes().value());
             return true;
-        } else 
+        } else {
             return false;
-        
+        }
+
     }
-    
-    public long getSAFreeSpace (Logger log, StoRI stori) {   
+
+    public long getSAFreeSpace (Logger log, StoRI stori) {
         log.debug("Checking if the Storage Area is full");
-        
+
         VirtualFSInterface fs = stori.getVirtualFileSystem();
-        
+        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+
         // Get StorageSpaceData from the database
         String SSDesc;
         StorageSpaceData spaceData = null;
 
         try {
             SSDesc = fs.getSpaceTokenDescription();
-            spaceData = fs.getSpaceByAlias(SSDesc);
+            spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
         } catch (NamespaceException e1) {
             log.error("Unable to create storage space data", e1);
             return -1;
         }
-        
-        if(spaceData != null)
+
+        if(spaceData != null) {
             return spaceData.getUnusedSizes().value();
-        else 
+        } else {
             return -1 ;
-        
+        }
+
     }
-    
+
     public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
-        
+
         log.debug("SpaceHelper: getting space token from StoRI");
         TSpaceToken token = TSpaceToken.makeEmpty();
         VirtualFSInterface fs = stori.getVirtualFileSystem();
-        
+
+        /**
+             OLD STYLE, that is for each request there is a query to DB
+
         // Get StorageSpaceData from the database
         String SSDesc;
         StorageSpaceData spaceData = null;
@@ -279,38 +303,48 @@ public class SpaceHelper {
         } catch (NamespaceException e1) {
             log.error("Unable to create storage space data", e1);
         }
-        
-        if(spaceData != null) 
+
+        if(spaceData != null)
             token = spaceData.getSpaceToken();
-        
+         **/
+
+        // NEW STYLE
+
+        try {
+            token = fs.getSpaceToken();
+        } catch (NamespaceException e) {
+            log.warn("Unable to retrieve SpaceToken for stori:'"+stori+"'");
+
+        }
+
         return token;
-        
+
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * Returns the spaceTokens associated to the 'user' AND 'spaceAlias'. If 'spaceAlias' is NULL or
      * an empty string then this method returns all the space tokens this 'user' owns.
      * @param user VomsGridUser user.
      * @param spaceAlias User space token description.
      */
-    private Boolean isDedfaultSpaceToken(TSpaceToken token) {
-      Boolean found = false;
+    private Boolean isDefaultSpaceToken(TSpaceToken token) {
+        Boolean found = false;
 
-      this.config = Configuration.getInstance();
-      List<String >tokens = config.getListOfDefaultSpaceToken();
-      for (int i = 0; i < tokens.size(); i++) {
-        if ( ( tokens.get(i)).toLowerCase().equals(token.getValue().toLowerCase())) {
-          found = true;
+        config = Configuration.getInstance();
+        List<String >tokens = config.getListOfDefaultSpaceToken();
+        for (int i = 0; i < tokens.size(); i++) {
+            if ( ( tokens.get(i)).toLowerCase().equals(token.getValue().toLowerCase())) {
+                found = true;
+            }
         }
-      }
 
-      return found;
+        return found;
     }
 
-    
+
     /**
      * This method is used by the namespace parser component to
      * insert a new Space Token Description data into the space catalog.
@@ -329,33 +363,37 @@ public class SpaceHelper {
      * @param spaceFileName the space file name will be used to get the free size. It is the StFNRoot.
      */
 
+    public TSpaceToken createVOSA_Token(String spaceTokenAlias, TSizeInBytes totalOnLineSize, String spaceFileName) {
 
-    public void createVOSA_Token(Logger log, String spaceTokenAlias, TSizeInBytes totalOnLineSize, String spaceFileName) {
-        
-        ReservedSpaceCatalog spacec =  new ReservedSpaceCatalog();
-
+        TSpaceToken spaceToken = null;
         ArrayOfTSpaceToken tokenArray;
+        ReservedSpaceCatalog spacec = new ReservedSpaceCatalog();
 
         /*
          * Build the storage space Data
-         *
-         * A Fake Grid User is needed
+         * 
+         * A default Storage Area OWNER will be used, that is the same of StoRM
+         * service.
          */
-        GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
+        GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
 
+        // Try with fake user, if it does not work remove it and use different
+        // method
 
-        //tokenArray = this.getSpaceTokensByAlias(spaceTokenAlias);
-        tokenArray = spacec.getSpaceTokens(stormServiceUser, spaceTokenAlias);
+        // First, check if the same VOSpaceArea already exists
+
+        // tokenArray = this.getSpaceTokensByAlias(spaceTokenAlias);
+        // tokenArray = this.getSpaceTokens(stormServiceUser, spaceTokenAlias);
+        tokenArray = spacec.getSpaceTokensByAlias(spaceTokenAlias);
 
         if (tokenArray.size() == 0) {
-            //the VOSpaceArea does not exist yet
-            log.debug("VoSpaceArea " + spaceTokenAlias + " still does not exists. Start creation process.");
+            // the VOSpaceArea does not exist yet
+            SpaceHelper.log.debug("VoSpaceArea " + spaceTokenAlias + " still does not exists. Start creation process.");
 
             PFN sfname = null;
             try {
                 sfname = PFN.make(spaceFileName);
-            }
-            catch (InvalidPFNAttributeException e1) {
+            } catch (InvalidPFNAttributeException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
@@ -364,9 +402,9 @@ public class SpaceHelper {
 
             try {
                 ssd = new StorageSpaceData(stormServiceUser, TSpaceType.VOSPACE, spaceTokenAlias, totalOnLineSize,
-                                           totalOnLineSize, null, null, null, sfname);
-            }
-            catch (InvalidSpaceDataAttributesException e) {
+                        totalOnLineSize, null, null, null, sfname);
+                spaceToken = ssd.getSpaceToken();
+            } catch (InvalidSpaceDataAttributesException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -374,37 +412,35 @@ public class SpaceHelper {
             try {
 
                 spacec.addStorageSpace(ssd);
-                //Track into global set to remove obsolete SA_token
-                ReservedSpaceCatalog.voSA_spaceTokenSet.add(ssd.getSpaceToken());
+                // Track into global set to remove obsolete SA_token
+                ReservedSpaceCatalog.voSA_spaceTokenSet.add(spaceToken);
 
-            }
-            catch (NoDataFoundException e) {
+            } catch (NoDataFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }
-            catch (InvalidRetrievedDataException e) {
+            } catch (InvalidRetrievedDataException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }
-            catch (MultipleDataEntriesException e) {
+            } catch (MultipleDataEntriesException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
-        }
-        else {
-            //the VOspaceArea already exists. Compare new data and data already present
+        } else {
+            // the VOspaceArea already exists. Compare new data and data already
+            // present
             // to check if the parameter has changed or not, and
-            //then perform update operation into catalog if it is needed.
-            log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " already present into  DB.");
+            // then perform update operation into catalog if it is needed.
+            SpaceHelper.log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " already present into  DB.");
 
             boolean equal = false;
-            TSpaceToken token = tokenArray.getTSpaceToken(0);
-            StorageSpaceData catalog_ssd = spacec.getStorageSpace(token);
+            spaceToken = tokenArray.getTSpaceToken(0);
+            StorageSpaceData catalog_ssd = spacec.getStorageSpace(spaceToken);
 
             if (catalog_ssd != null) {
 
-                if (catalog_ssd.getSpaceTokenAlias().equals(spaceTokenAlias)
+                if (catalog_ssd.getUser().getDn().equals(stormServiceUser.getDn())
+                        && (catalog_ssd.getSpaceTokenAlias().equals(spaceTokenAlias))
                         && (catalog_ssd.getGuaranteedSize().value() == totalOnLineSize.value())
                         && (catalog_ssd.getSpaceFileName().toString().equals(spaceFileName))) {
                     equal = true;
@@ -412,67 +448,67 @@ public class SpaceHelper {
 
             }
 
-            //false otherwise
+            // false otherwise
             if (equal) {
-                //Do nothing if equals, everythings are already present into the DB
-                log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " is already up to date.");
-                ReservedSpaceCatalog.voSA_spaceTokenSet.add(token);
+                // Do nothing if equals, everythings are already present into
+                // the DB
+                SpaceHelper.log.debug("VOSpaceArea for space token description " + spaceTokenAlias + " is already up to date.");
+                ReservedSpaceCatalog.voSA_spaceTokenSet.add(spaceToken);
 
             } else {
-                //If the new data has been modified, update the data into the catalog
-                log.debug("VOSpaceArea for space token description " + spaceTokenAlias +
-                " is different in some parameters. Updating the catalog.");
+                // If the new data has been modified, update the data into the
+                // catalog
+                SpaceHelper.log.debug("VOSpaceArea for space token description " + spaceTokenAlias
+                        + " is different in some parameters. Updating the catalog.");
                 try {
-
+                    catalog_ssd.setUser(stormServiceUser);
                     catalog_ssd.setGuaranteedSize(totalOnLineSize);
                     catalog_ssd.setDesiredSize(totalOnLineSize);
                     catalog_ssd.setTotalSize(totalOnLineSize);
 
-                    //WARNIGN THIS WILL UPDATE THE FREE SIZE
+                    // WARNIGN THIS WILL UPDATE THE FREE SIZE
                     catalog_ssd.setUnusedSize(totalOnLineSize);
 
                     PFN sfn = null;
                     try {
                         sfn = PFN.make(spaceFileName);
-                    }
-                    catch (InvalidPFNAttributeException e) {
+                    } catch (InvalidPFNAttributeException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                     catalog_ssd.setSpaceFileName(sfn);
 
                     spacec.updateAllStorageSpace(catalog_ssd);
-                    ReservedSpaceCatalog.voSA_spaceTokenSet.add(token);
+                    ReservedSpaceCatalog.voSA_spaceTokenSet.add(spaceToken);
 
-                }
-                catch (NoDataFoundException e) {
+                } catch (NoDataFoundException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                }
-                catch (InvalidRetrievedDataException e) {
+                } catch (InvalidRetrievedDataException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                }
-                catch (MultipleDataEntriesException e) {
+                } catch (MultipleDataEntriesException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
 
             }
 
-            //Warning. CHeck if there are multiple token with same alisa, this is not allowed
+            // Warning. CHeck if there are multiple token with same alisa, this
+            // is not allowed
             if (tokenArray.size() > 1) {
-                log.error("Error: multiple Space Token found for the same space Alias: " + spaceTokenAlias +
-                ". Only one has been evaluated!");
-        }
+                SpaceHelper.log.error("Error: multiple Space Token found for the same space Alias: " + spaceTokenAlias
+                        + ". Only one has been evaluated!");
+            }
 
-      }
+        }
+        return spaceToken;
 
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * This method should be use at the end of the namespace
      * insert process (through the createVO_SA_token(...)) to remmove
@@ -480,45 +516,51 @@ public class SpaceHelper {
      * namsespace.xml configuration
      *
      */
-     public void purgeOldVOSA_token(Logger log) {
-         ReservedSpaceCatalog spacec =  new ReservedSpaceCatalog();
-         log.debug("VO SA: garbage collecting obsolete VOSA_token");
+    public void purgeOldVOSA_token() {
+        purgeOldVOSA_token(SpaceHelper.log);
+    }
 
-         Iterator iter = ReservedSpaceCatalog.voSA_spaceTokenSet.iterator();
-         while (iter.hasNext()) {
-             log.debug("VO SA token REGISTRED:" + ( (TSpaceToken) iter.next()).getValue());
-         }
+    public void purgeOldVOSA_token(Logger log) {
+        ReservedSpaceCatalog spacec =  new ReservedSpaceCatalog();
+        log.debug("VO SA: garbage collecting obsolete VOSA_token");
 
-         GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
+        Iterator iter = ReservedSpaceCatalog.voSA_spaceTokenSet.iterator();
+        while (iter.hasNext()) {
+            log.debug("VO SA token REGISTRED:" + ( (TSpaceToken) iter.next()).getValue());
+        }
 
-         //Remove obsolete space
-         ArrayOfTSpaceToken token_a = spacec.getSpaceTokens(stormServiceUser, null);
-         for (int i = 0; i < token_a.size(); i++) {
-             log.debug("VO SA token IN CATALOG:" + token_a.getTSpaceToken(i).getValue());
-         }
+        GridUserInterface stormServiceUser = GridUserManager.makeStoRMGridUser();
 
-         if (token_a != null) {
-             for (int i = 0; i < token_a.size(); i++) {
+        //Remove obsolete space
+        ArrayOfTSpaceToken token_a = spacec.getSpaceTokens(stormServiceUser, null);
+        for (int i = 0; i < token_a.size(); i++) {
+            log.debug("VO SA token IN CATALOG:" + token_a.getTSpaceToken(i).getValue());
+        }
 
-                 if (!ReservedSpaceCatalog.voSA_spaceTokenSet.contains(token_a.getTSpaceToken(i))) {
-                     //This VOSA_token is no more used, removing it from persistence
-                     TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
-                     log.debug("VO SA token " + tokenToRemove + " is no more used, removing it from persistence.");
-                     spacec.release(stormServiceUser, tokenToRemove);
-                 }
-             }
-         }
-         else {
-             log.warn("Space Catalog garbage SA_Token: no SA TOKENs specified. Please check your namespace.xml file.");
-         }
+        if (token_a != null) {
+            for (int i = 0; i < token_a.size(); i++) {
 
-         ReservedSpaceCatalog.voSA_spaceTokenSet.clear();
+                if (!ReservedSpaceCatalog.voSA_spaceTokenSet.contains(token_a.getTSpaceToken(i))) {
+                    //This VOSA_token is no more used, removing it from persistence
+                    TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
+                    log.debug("VO SA token " + tokenToRemove + " is no more used, removing it from persistence.");
+                    spacec.release(stormServiceUser, tokenToRemove);
+                }
+            }
+        }
+        else {
+            log.warn("Space Catalog garbage SA_Token: no SA TOKENs specified. Please check your namespace.xml file.");
+        }
+
+        ReservedSpaceCatalog.voSA_spaceTokenSet.clear();
 
     }
 
-    
-    
-    
-    
+
+
+
+
+
+
 
 }

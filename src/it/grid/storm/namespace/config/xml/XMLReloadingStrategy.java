@@ -1,9 +1,10 @@
 package it.grid.storm.namespace.config.xml;
 
-import java.io.*;
+import java.io.File;
 
-import org.apache.commons.configuration.reloading.*;
-import org.apache.commons.logging.*;
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -17,11 +18,10 @@ import org.apache.commons.logging.*;
  * @author Riccardo Zappi
  * @version 1.0
  */
-public class XMLReloadingStrategy
-    extends FileChangedReloadingStrategy {
+public class XMLReloadingStrategy extends FileChangedReloadingStrategy {
 
     private boolean notifing = false;
-    private Log log = LogFactory.getLog(XMLReloadingStrategy.class);
+    private Logger log = LoggerFactory.getLogger(XMLReloadingStrategy.class);
 
     private boolean verbosity;
     private long reloadingTime;
@@ -46,6 +46,7 @@ public class XMLReloadingStrategy
 
     }
 
+    @Override
     public boolean reloadingRequired() {
 
         boolean reloading = false;
@@ -65,6 +66,7 @@ public class XMLReloadingStrategy
         return reloading;
     }
 
+    @Override
     public void reloadingPerformed() {
         updateLastModified();
         this.reloadingTime = System.currentTimeMillis();
@@ -76,6 +78,7 @@ public class XMLReloadingStrategy
      *
      * @return a flag whether the configuration has changed
      */
+    @Override
     protected boolean hasChanged() {
         //log.debug("Checking if Namespace Configuration is changed..");
         File file = getConfigurationFile();

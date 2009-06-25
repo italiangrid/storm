@@ -1,20 +1,24 @@
 package it.grid.storm.xmlrpc.converter.directory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.srm.types.ArrayOfTExtraInfo;
+import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.InvalidMvInputAttributeException;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.GridUserManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project.
@@ -35,7 +39,7 @@ public class MvConverter implements Converter
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(MvConverter.class);
 
     public MvConverter()
     {
@@ -44,7 +48,7 @@ public class MvConverter implements Converter
     /**
      * This method return a MvInputData created from input Map
      * structure of an xmlrpc SrmMv v2.2 call.
-    */
+     */
     public InputData convertToInputData(Map inputParam)
     {
         log.debug("SrmMv: Converter :Call received :Creation of MvInputData = " + inputParam.size());

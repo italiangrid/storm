@@ -1,22 +1,21 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.Chooser;
-import it.grid.storm.scheduler.Streets;
-
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.CopyChunkData;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.scheduler.Chooser;
+import it.grid.storm.scheduler.Delegable;
+import it.grid.storm.scheduler.Streets;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TTURL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -40,7 +39,7 @@ public abstract class CopyChunk implements Delegable, Chooser {
     protected boolean failure = false; //boolean that indicates if this chunks state is failure
 
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(CopyChunk.class);
 
     /**
      * Method used in a callback fashion in the scheduler for separately handling
@@ -105,7 +104,9 @@ public abstract class CopyChunk implements Delegable, Chooser {
                 } else {
                     //The put operation was problematic!
                     String message = "PUT part of srmCopy failed! ";
-                    if (putResult.successful()) message = message + putResult.status().toString();
+                    if (putResult.successful()) {
+                        message = message + putResult.status().toString();
+                    }
                     log.error(message);
                     chunkData.changeStatusSRM_FAILURE("PUT part of srmCopy failed! "+message);
                     this.failure = true; //gsm.failedChunk(chunkData);
@@ -113,7 +114,9 @@ public abstract class CopyChunk implements Delegable, Chooser {
             } else {
                 //the get operation was problematic!
                 String message = "GET part of srmCopy failed! ";
-                if (getResult.successful()) message = message + getResult.status().toString();
+                if (getResult.successful()) {
+                    message = message + getResult.status().toString();
+                }
                 log.error(message);
                 chunkData.changeStatusSRM_FAILURE(message);
                 this.failure = true; //gsm.failedChunk(chunkData);
@@ -126,7 +129,11 @@ public abstract class CopyChunk implements Delegable, Chooser {
         }
         //update statistics and status! It is the same for both normal completion and exception throwing!
         CopyChunkCatalog.getInstance().update(chunkData);
-        if (this.failure) gsm.failedChunk(chunkData); else gsm.successfulChunk(chunkData);
+        if (this.failure) {
+            gsm.failedChunk(chunkData);
+        } else {
+            gsm.successfulChunk(chunkData);
+        }
     }
 
     /**
@@ -172,7 +179,9 @@ public abstract class CopyChunk implements Delegable, Chooser {
          * explaining the failure.
          */
         public TransferResult(String failureExplanation) {
-            if (failureExplanation==null) failureExplanation="";
+            if (failureExplanation==null) {
+                failureExplanation="";
+            }
             this.successful = false;
             this.failureExplanation = failureExplanation;
         }
@@ -241,7 +250,9 @@ public abstract class CopyChunk implements Delegable, Chooser {
          * String; if it is null, an empty String is used instead.
          */
         public GetOperationResult (String failureExplanation) {
-            if (failureExplanation==null) failureExplanation="";
+            if (failureExplanation==null) {
+                failureExplanation="";
+            }
             this.successful = false;
             this.failureExplanation = failureExplanation;
         }
@@ -288,6 +299,7 @@ public abstract class CopyChunk implements Delegable, Chooser {
             return rt;
         }
 
+        @Override
         public String toString() {
             return "GetOperationResult: successful="+successful+"; status="+status+"; getTURL="+getTURL+"; filesize="+filesize+"; requestToken="+rt;
         }
@@ -324,14 +336,16 @@ public abstract class CopyChunk implements Delegable, Chooser {
             } else {
                 this.successful = false;
             }
-       }
+        }
 
         /**
          * Constructor to make a failed PutOperationResult containing a failureExplanation
          * String; if it is null, an empty String is used instead.
          */
         public PutOperationResult(String failureExplanation) {
-            if (failureExplanation==null) failureExplanation="";
+            if (failureExplanation==null) {
+                failureExplanation="";
+            }
             this.successful = false;
             this.failureExplanation = failureExplanation;
         }
@@ -371,6 +385,7 @@ public abstract class CopyChunk implements Delegable, Chooser {
             return this.rt;
         }
 
+        @Override
         public String toString() {
             return "PutOperationResult: successful="+successful+"; status="+status+"; putTURL="+putTURL+"; failureExplanation="+failureExplanation;
         }

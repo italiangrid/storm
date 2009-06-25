@@ -1,14 +1,17 @@
 package it.grid.storm.namespace.model;
 
-import java.util.*;
-
-import it.grid.storm.namespace.*;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.DNMatchingRule;
+import it.grid.storm.griduser.DistinguishedName;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.griduser.VomsGridUser;
-import org.apache.commons.logging.Log;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+
+import java.util.List;
+import java.util.Vector;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -24,7 +27,7 @@ import org.apache.commons.logging.Log;
  */
 public class ApproachableRule implements Comparable{
 
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
 
     private String ruleName = null;
     private SubjectRules subjectRules = null;
@@ -116,45 +119,46 @@ public class ApproachableRule implements Comparable{
      * @return boolean
      */
     public boolean match(GridUserInterface gUser) {
-         String dnString = gUser.getDn();
-         VomsGridUser vomsUser = null;
-         DistinguishedName dn = new DistinguishedName(dnString);
-         boolean dnMatch = dnMatchingRule.match(dn);
-         if (!dnMatch) {  //DN doesn't match!
-           return false;
-         } else { // DN Match.
-           // ----  Check if VOMS Attributes are required ----
-           if (!vomsCertRequired) {
-             return true;  //VOMS Attributes aren't required.
-           } else {
-             //  VOMS Attribute required.
-             // ----  Check if gUSER is a USER with VOMS Attributes ----
-             if (gUser instanceof VomsGridUser) {
-               vomsUser = (VomsGridUser)gUser;
-               log.debug("Grid User Requestor   : "+vomsUser.toString());
-               log.debug("  holds a VOMS cert ? : "+vomsUser.hasVoms());
-               String voName = vomsUser.getVO().getValue();
-             } else {
-               // The subject does not hold a VOMS Certificate (which is mandatory!)
-                 return false;
-             }
+        String dnString = gUser.getDn();
+        VomsGridUser vomsUser = null;
+        DistinguishedName dn = new DistinguishedName(dnString);
+        boolean dnMatch = dnMatchingRule.match(dn);
+        if (!dnMatch) {  //DN doesn't match!
+            return false;
+        } else { // DN Match.
+            // ----  Check if VOMS Attributes are required ----
+            if (!vomsCertRequired) {
+                return true;  //VOMS Attributes aren't required.
+            } else {
+                //  VOMS Attribute required.
+                // ----  Check if gUSER is a USER with VOMS Attributes ----
+                if (gUser instanceof VomsGridUser) {
+                    vomsUser = (VomsGridUser)gUser;
+                    log.debug("Grid User Requestor   : "+vomsUser.toString());
+                    log.debug("  holds a VOMS cert ? : "+vomsUser.hasVoms());
+                    String voName = vomsUser.getVO().getValue();
+                } else {
+                    // The subject does not hold a VOMS Certificate (which is mandatory!)
+                    return false;
+                }
 
 
-             if (vomsUser.hasVoms()) {
-                 boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
-                 if (voNameMatch) {
-                   return true;
-                 }
-             } else {
+                if (vomsUser.hasVoms()) {
+                    boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
+                    if (voNameMatch) {
+                        return true;
+                    }
+                } else {
 
-             }
+                }
 
-           }
-           return false;
-         }
+            }
+            return false;
+        }
     }
 
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
@@ -173,26 +177,27 @@ public class ApproachableRule implements Comparable{
     }
 
 
-  public int compareTo( Object o ) {
-    int result = 1;
-    if ( o instanceof ApproachableRule ) {
-      ApproachableRule other = ( ApproachableRule ) o;
-      result = (this.getRuleName()).compareTo(other.getRuleName());
+    public int compareTo( Object o ) {
+        int result = 1;
+        if ( o instanceof ApproachableRule ) {
+            ApproachableRule other = ( ApproachableRule ) o;
+            result = (this.getRuleName()).compareTo(other.getRuleName());
+        }
+        return result;
     }
-    return result;
-  }
 
 
-  public boolean equals( Object o) {
-    boolean result = false;
-    if ( o instanceof ApproachableRule ) {
-      ApproachableRule other = ( ApproachableRule ) o;
-      if ( other.getRuleName().equals( this.getRuleName() ) ) {
-        result = true;
-      }
+    @Override
+    public boolean equals( Object o) {
+        boolean result = false;
+        if ( o instanceof ApproachableRule ) {
+            ApproachableRule other = ( ApproachableRule ) o;
+            if ( other.getRuleName().equals( this.getRuleName() ) ) {
+                result = true;
+            }
+        }
+        return result;
     }
-    return result;
-  }
 
 
 }

@@ -25,6 +25,8 @@ public interface StorageSpaceDAO {
 
   public Collection getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias) throws DataAccessException;
 
+  public Collection getStorageSpaceBySpaceType(String stype) throws DataAccessException;
+
   public Collection getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException;
 
   public StorageSpaceTO getStorageSpaceByToken(String token) throws DataAccessException;

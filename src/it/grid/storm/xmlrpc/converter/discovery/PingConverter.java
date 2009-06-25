@@ -10,8 +10,9 @@
 
 package it.grid.storm.xmlrpc.converter.discovery;
 
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.TExtraInfo;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
@@ -21,15 +22,12 @@ import it.grid.storm.xmlrpc.converter.Converter;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.GridUserManager;
-import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PingConverter implements Converter
 {
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(PingConverter.class);
 
     public PingConverter() {}
 
@@ -57,12 +55,14 @@ public class PingConverter implements Converter
         Hashtable outputParam = new Hashtable();
         PingOutputData outputData = (PingOutputData) data;
         String versionInfo = outputData.getVersionInfo();
-        if (versionInfo != null)
+        if (versionInfo != null) {
             outputParam.put("varsionInfo", versionInfo);
+        }
 
         ArrayOfTExtraInfo extraInfoArray = outputData.getExtraInfoArray();
-        if (extraInfoArray != null)
+        if (extraInfoArray != null) {
             extraInfoArray.encode(outputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
+        }
 
         log.debug("Ping: output converter has finished.");
 

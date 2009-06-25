@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # start/stop StoRM BackEnd server.
 # 
@@ -26,22 +26,25 @@
 # Short-Description: start/stop the StoRM BackEnd server
 # Description: The StoRM BackEnd server.
 #
-#  StoRM provides an SRM interface to any POSIX
-#  filesystem with direct file access ("file:" transport protocol), but
-#  can take advantage of special features of high performance parallel and cluster file systems, as 
-#  GPFS from IBM and Lustre from SUN.
+#  StoRM provides an SRM interface to any POSIX filesystem with direct file 
+#  access ("file:" transport protocol), but can take advantage of special 
+#  features of high performance parallel and cluster file systems, as GPFS 
+#  from IBM and Lustre from SUN.
 #
 #
 #
 ### END INIT INFO
 
+
 INITSCRIPT="`basename $0`"
 
 NAME=storm-backend
-DESC="StoRM SRMv2 backend server"
+DESC="StoRM BackEnd server"
 UMASK="077"
 STORM_BE_USER="storm"
 GPFS_PATH=/usr/lpp/mmfs/bin
+PIDFILE=/var/run/${NAME}.pid
+LOCKFILE=/var/lock/subsys/${NAME}
 
 ## useful functions
 
@@ -65,6 +68,7 @@ if [ -f /lib/lsb/init-functions ]; then
 else
     alias log_success_msg="echo SUCCESS! '$@'"
     alias log_failure_msg="echo FAILURE! '$@'"
+	alias log_warning_msg="echo WARNING! '$@'"
 fi
 
 function die () {
@@ -363,6 +367,27 @@ stop () {
     log_success_msg "Stopping $DESC"
 }
 
+## status -----------------------------------
+
+status(){
+
+   pslist=$( ps -af | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
+    if [ -n "$pslist" ]; then
+        log_success_msg "StoRM-BE (pid $pslist) is running"
+        return 0
+    fi
+    if [ -f $PIDFILE ]; then
+        log_warning_msg "StoRM-BE dead but pid file exists"
+        return 1
+    fi
+    if [ -f $LOCKFILE ]; then
+        log_warning_msg "StoRM-BE dead but subsys locked"
+        return 2
+    fi
+    log_success_msg "StoRM-BE is stopped"
+    return 3
+}
+
 
 ## main
 
@@ -393,15 +418,17 @@ case "$1" in
     ;;
     # stop Picker
     suspend) suspend ;;
+	
     # start Picker and XmlRpcServer
-    resume) resume ;;
+	resume) resume ;;
     # query status (only RH systems)
     # FIXME: this cannot work until the BE has a proper UNIX startup...
     # the 'status' function uses 'pidof' to search, and our process has
     # has process name 'java'...
-    #status) status "`basename $0`" ;;
+    status) status;;
+	
     *)
-        die 2 "Usage: $0 {start|stop|restart|force-reload|status|suspend|resume}"
+        die 2 "Usage: $0 {start|stop|restart|force-reload|status}"
         ;;
 esac
 

@@ -1,13 +1,14 @@
 package it.grid.storm.authz.sa.conf;
 
+import it.grid.storm.authz.AuthzDirector;
+
 import org.apache.commons.configuration.event.ConfigurationEvent;
 import org.apache.commons.configuration.event.ConfigurationListener;
-import org.apache.commons.logging.Log;
-import it.grid.storm.authz.AuthzDirector;
+import org.slf4j.Logger;
 
 public class FileAuthzDBListener implements ConfigurationListener {
 
-    private final Log log = AuthzDirector.getLogger();
+    private final Logger log = AuthzDirector.getLogger();
     private String authzFileName;
 
     public FileAuthzDBListener(String authzFileName) {

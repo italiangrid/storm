@@ -16,16 +16,13 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import it.grid.storm.common.types.StFN;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import it.grid.storm.srm.types.*;
-import it.grid.storm.common.types.StFN;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TMetaDataPathDetail
 {
@@ -312,11 +309,27 @@ public class TMetaDataPathDetail
     }
 
     /**
+     * 
+     * @param checkSumType
+     */
+    public void setCheckSumType(TCheckSumType checkSumType) {
+        this.checkSumType = checkSumType;
+    }
+
+    /**
      * Method that get CHECKSUMTYPE
      */
     public TCheckSumType getCheckSumType()
     {
         return checkSumType;
+    }
+
+    /**
+     * 
+     * @param checkSumValue
+     */
+    public void setCheckSumValue(TCheckSumValue checkSumValue) {
+        this.checkSumValue = checkSumValue;
     }
 
     /**
@@ -327,6 +340,8 @@ public class TMetaDataPathDetail
         return checkSumValue;
     }
 
+
+
     /**
      * Method that get TMetaDataPathDetails
      * @TODO
@@ -335,15 +350,15 @@ public class TMetaDataPathDetail
     {
         return arrayOfSubPaths;
     }
-    
+
     public void  setArrayOfSubPaths(ArrayOfTMetaDataPathDetail array)
     {
         arrayOfSubPaths = array;
     }
-    
+
 
     /**
-     * Encode method, used to encode a TMetaDataPathDetail object  into a structured 
+     * Encode method, used to encode a TMetaDataPathDetail object  into a structured
      * paramter (Hashtable), used for communicate to the FE component thourgh xmlrpc.
      * @param param Hashtable that must contain structures results
      * @param name name for the TMetaData field
@@ -353,66 +368,85 @@ public class TMetaDataPathDetail
         Map param = new HashMap();
 
         /* (1) StFN */
-        if (this.stfn != null)
+        if (this.stfn != null) {
             this.stfn.encode(param, StFN.PNAME_PATH);
+        }
         /* (2) TReturnStatus */
-        if (this.retStatus != null)
+        if (this.retStatus != null) {
             this.retStatus.encode(param, TReturnStatus.PNAME_STATUS);
+        }
         /* (3) Size */
-        if (this.size != null)
+        if (this.size != null) {
             this.size.encode(param, TSizeInBytes.PNAME_SIZE);
+        }
         /* (4) createdAtTime */
-        if (this.createdAtTime != null)
+        if (this.createdAtTime != null) {
             param.put("createdAtTime", dateFormat.format(createdAtTime));
+        }
         /* (5) lastModificationTime */
-        if (this.lastModificationAtTime != null)
+        if (this.lastModificationAtTime != null) {
             // param.put("lastModificationTime", lastModificationAtTime.toString());
             param.put("lastModificationTime", dateFormat.format(lastModificationAtTime));
+        }
         /* (6) fileStorageType */
-        if (this.fileStorageType != null)
+        if (this.fileStorageType != null) {
             this.fileStorageType.encode(param, TFileStorageType.PNAME_FILESTORAGETYPE);
+        }
         /* (7) TRetentionPolicyInfo */
-        if (this.retentionPolicyInfo != null)
+        if (this.retentionPolicyInfo != null) {
             this.retentionPolicyInfo.encode(param, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+        }
         /* (8) fileLocality */
-        if (this.fileLocality != null)
+        if (this.fileLocality != null) {
             this.fileLocality.encode(param, TFileLocality.PNAME_FILELOCALITY);
+        }
         /* (9) ArrayOfTSpaceToken */
-        if (this.tokenArray != null)
+        if (this.tokenArray != null) {
             this.tokenArray.encode(param, ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
+        }
         /* (10) TFileType */
-        if (this.type != null)
+        if (this.type != null) {
             this.type.encode(param, TFileType.PNAME_TYPE);
+        }
         /* (11) lifeTimeAssigned */
-        if (this.lifetimeAssigned != null)
+        if (this.lifetimeAssigned != null) {
             this.lifetimeAssigned.encode(param, TLifeTimeInSeconds.PNAME_LIFETIMEASSIGNED);
+        }
         /* (12) lifeTimeLeft */
-        if (this.lifetimeLeft != null)
+        if (this.lifetimeLeft != null) {
             this.lifetimeLeft.encode(param, TLifeTimeInSeconds.PNAME_LIFETIMELEFT);
+        }
         /* (13) TUserPermission ownerPermission */
-        if (this.ownerPermission != null)
+        if (this.ownerPermission != null) {
             this.ownerPermission.encode(param, TUserPermission.PNAME_OWNERPERMISSION);
+        }
         /* (14) TGroupPermission groupPermission */
-        if (this.groupPermission != null)
+        if (this.groupPermission != null) {
             this.groupPermission.encode(param, TGroupPermission.PNAME_GROUPPERMISSION);
+        }
         /* (15) TPermissionMode otherPermission */
-        if (this.otherPermission != null)
+        if (this.otherPermission != null) {
             this.otherPermission.encode(param, TPermissionMode.PNAME_OTHERPERMISSION);
+        }
         /* (16) TCheckSumType */
-        if (this.checkSumType != null)
+        if (this.checkSumType != null) {
             this.checkSumType.encode(param, TCheckSumType.PNAME_CHECKSUMTYPE);
+        }
         /* (17) TCheckSumValue */
-        if (this.checkSumValue != null)
+        if (this.checkSumValue != null) {
             this.checkSumValue.encode(param, TCheckSumValue.PNAME_CHECKSUMVALUE);
+        }
         /* (18) ArrayOfTMetaDataPathDetails arrayOfSubPaths */
-        if (this.arrayOfSubPaths != null)
+        if (this.arrayOfSubPaths != null) {
             this.arrayOfSubPaths.encode(param, ArrayOfTMetaDataPathDetail.PNAME_ARRAYOFSUBPATHS);
+        }
 
         //Add Hastable to global vector
         list.add(param);
     }
-    
-    
+
+
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(stfn.toString() +"\n");

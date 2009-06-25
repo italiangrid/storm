@@ -10,7 +10,8 @@ import java.util.List;
  * Copyright (c) 2008 INFN-CNAF.
  * <p>
  *
- * This class implements a concrete strategy to provide a RoundRobin policy.
+ * This class implements a concrete strategy to provide a policy based on the number 
+ * of active FTP processes.
  *
  * Authors:
  *     @author lucamag luca.magnoniATcnaf.infn.it

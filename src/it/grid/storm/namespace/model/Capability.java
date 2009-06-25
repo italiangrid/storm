@@ -1,13 +1,19 @@
 package it.grid.storm.namespace.model;
 
-import java.util.*;
-
-import org.apache.commons.logging.*;
-import it.grid.storm.namespace.*;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.balancer.StrategyType;
+import it.grid.storm.balancer.ftp.FTPNode;
+import it.grid.storm.namespace.CapabilityInterface;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -24,7 +30,7 @@ import it.grid.storm.balancer.StrategyType;
 
 public class Capability implements CapabilityInterface {
 
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
     private ACLMode aclMode = ACLMode.UNDEF;
     private Quota quota = null;
     // List of TransportProtocol by Protocol.
@@ -87,39 +93,39 @@ public class Capability implements CapabilityInterface {
     }
 
     public void setQuota(Quota quota) {
-      this.quota = quota;
+        this.quota = quota;
     }
 
     public void addProtocolPoolBySchema(Protocol protocol, ProtocolPool protPool) {
-      protocolPoolsByScheme.put(protocol, protPool);
-      //Building Balancer and put it into Map of Balancers
-      Balancer balancer = null;
-      if (protocol.equals(Protocol.GSIFTP)) {
-        balancer = new Balancer<FTPNode>();
-        StrategyType strat = null;
-        if (protPool.getBalanceStrategy().equals("round-robin"))
-          strat = StrategyType.ROUNDROBIN;
-        else if (protPool.getBalanceStrategy().equals("random"))
-          strat = StrategyType.ROUNDROBIN;
-        else if (protPool.getBalanceStrategy().equals("weight"))
-          strat = StrategyType.ROUNDROBIN;
-        else  {
-          log.error("The current version manage only 'round-robin', 'random' and 'weight' strategy");
+        protocolPoolsByScheme.put(protocol, protPool);
+        //Building Balancer and put it into Map of Balancers
+        Balancer balancer = null;
+        if (protocol.equals(Protocol.GSIFTP)) {
+            balancer = new Balancer<FTPNode>();
+            StrategyType strat = null;
+            if (protPool.getBalanceStrategy().equals("round-robin")) {
+                strat = StrategyType.ROUNDROBIN;
+            } else if (protPool.getBalanceStrategy().equals("random")) {
+                strat = StrategyType.ROUNDROBIN;
+            } else if (protPool.getBalanceStrategy().equals("weight")) {
+                strat = StrategyType.ROUNDROBIN;
+            } else  {
+                log.error("The current version manage only 'round-robin', 'random' and 'weight' strategy");
+            }
+            balancer.setStrategy(strat);
+            for (PoolMember member: protPool.getPoolMembers()) {
+                String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
+                int port =  member.getMemeberProtocol().getAuthority().getServicePort();
+                int weight = member.getMemberWeight();
+
+                log.debug("toooreemove member ppol: "+hostname );
+                FTPNode ftpNode = new FTPNode(hostname, port, weight);
+                balancer.addElement(ftpNode);
+            }
+            balancerByScheme.put(protocol,balancer);
+        } else {
+            log.error("The current version manage only GSIFTP POOL.");
         }
-        balancer.setStrategy(strat);
-        for (PoolMember member: protPool.getPoolMembers()) {
-          String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
-          int port =  member.getMemeberProtocol().getAuthority().getServicePort();
-          int weight = member.getMemberWeight();
-          
-          log.debug("toooreemove member ppol: "+hostname );
-          FTPNode ftpNode = new FTPNode(hostname, port, weight);
-          balancer.addElement(ftpNode);
-        }
-        balancerByScheme.put(protocol,balancer);
-      } else {
-        log.error("The current version manage only GSIFTP POOL.");
-      }
     }
 
     /*****************************************************************************
@@ -137,12 +143,12 @@ public class Capability implements CapabilityInterface {
 
 
     public Quota getQuota() {
-      return this.quota;
+        return this.quota;
     }
 
 
     public DefaultACL getDefaultACL() {
-      return this.defaultACL;
+        return this.defaultACL;
     }
 
 
@@ -160,6 +166,7 @@ public class Capability implements CapabilityInterface {
         return result;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
@@ -171,68 +178,68 @@ public class Capability implements CapabilityInterface {
           String key = entry.getKey();
           Vector value = entry.getValue();
         }
-        **/
+         **/
 
-       // Print TransportProtocol
-       int count = 0;
-       for (Map.Entry<Protocol, TransportProtocol> transP : transpProtocolsByScheme.entrySet()) {
-         count++;
-         sb.append("[TP("+count+")] " + (transP.getKey() + ": " + transP.getValue()));
-       }
-       // Print ProtocolPool
-       count = 0;
-       for (Map.Entry<Protocol, ProtocolPool> protPool : protocolPoolsByScheme.entrySet()) {
-         count++;
-         sb.append("[TP("+count+")] " + (protPool.getKey() + ": " + protPool.getValue()));
-       }
+        // Print TransportProtocol
+        int count = 0;
+        for (Map.Entry<Protocol, TransportProtocol> transP : transpProtocolsByScheme.entrySet()) {
+            count++;
+            sb.append("[TP("+count+")] " + (transP.getKey() + ": " + transP.getValue()));
+        }
+        // Print ProtocolPool
+        count = 0;
+        for (Map.Entry<Protocol, ProtocolPool> protPool : protocolPoolsByScheme.entrySet()) {
+            count++;
+            sb.append("[TP("+count+")] " + (protPool.getKey() + ": " + protPool.getValue()));
+        }
         return sb.toString();
     }
 
     /******************************************
      *           VERSION 1.4                  *
-  *******************************************/
+     *******************************************/
 
-  public Balancer<? extends Node> getPoolByScheme(Protocol protocol) {
-    Balancer balancer = null;
-    boolean isPresent = balancerByScheme.containsKey(protocol);
-    if (isPresent) {
-      balancer = balancerByScheme.get(protocol);
+    public Balancer<? extends Node> getPoolByScheme(Protocol protocol) {
+        Balancer balancer = null;
+        boolean isPresent = balancerByScheme.containsKey(protocol);
+        if (isPresent) {
+            balancer = balancerByScheme.get(protocol);
+        }
+        return balancer;
     }
-    return balancer;
-  }
 
-  public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
-    List<TransportProtocol> result = new ArrayList<TransportProtocol>();
-    for (TransportProtocol tp: transpProtocolsList) {
-      if (tp.getProtocol().equals(protocol)) {
-        result.add(tp);
-      }
+    public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
+        List<TransportProtocol> result = new ArrayList<TransportProtocol>();
+        for (TransportProtocol tp: transpProtocolsList) {
+            if (tp.getProtocol().equals(protocol)) {
+                result.add(tp);
+            }
+        }
+        return result;
     }
-    return result;
-  }
 
-  public List<Protocol> getAllManagedProtocols() {
-    List<Protocol> result = new ArrayList<Protocol>();
-    result.addAll(transpProtocolsByScheme.keySet());
-    return result;
-  }
-
-  public boolean isPooledProtocol(Protocol protocol) {
-    boolean result = false;
-    result = protocolPoolsByScheme.containsKey(protocol);
-    return result;
-  }
-
-  public TransportProtocol getProtocolByID(int id) {
-    TransportProtocol tProt = null;
-    boolean isPresent = transpProtocolsByID.containsKey(id); //Use of generics AUTO-BOXING
-    if (isPresent) {
-      tProt = transpProtocolsByID.get(id);
+    public List<Protocol> getAllManagedProtocols() {
+        List<Protocol> result = new ArrayList<Protocol>();
+        result.addAll(transpProtocolsByScheme.keySet());
+        return result;
     }
-    return tProt;
-  }
 
-  /**
+    public boolean isPooledProtocol(Protocol protocol) {
+        boolean result = false;
+        result = protocolPoolsByScheme.containsKey(protocol);
+        return result;
+    }
+
+    public TransportProtocol getProtocolByID(int id) {
+        TransportProtocol tProt = null;
+        boolean isPresent = transpProtocolsByID.containsKey(id); //Use of generics AUTO-BOXING
+        if (isPresent) {
+            tProt = transpProtocolsByID.get(id);
+        }
+        return tProt;
+    }
+
+    /**
      *
      * <p>Title: </p>
      *
@@ -269,10 +276,12 @@ public class Capability implements CapabilityInterface {
             return result;
         }
 
+        @Override
         public String toString() {
             return aclMode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;

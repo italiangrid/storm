@@ -1,7 +1,9 @@
 package it.grid.storm.filesystem;
 
-import org.apache.log4j.Logger;
-import java.io.*;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a SpaceSystem that always acknowledges a successful space reservation; it is meant to be
@@ -14,10 +16,12 @@ import java.io.*;
 public class MockSpaceSystem implements SpaceSystem {
 
     private String mountpoint = ""; //String representing the local mount point, that is the root from which This SpaceSystem operates!
-    private static Logger log = Logger.getLogger("filesystem");
+    private static Logger log = LoggerFactory.getLogger(MockSpaceSystem.class);
 
     public MockSpaceSystem(String mountpoint) throws SpaceSystemException {
-        if (mountpoint==null) throw new SpaceSystemException("Supplied mountpoint is null!");
+        if (mountpoint==null) {
+            throw new SpaceSystemException("Supplied mountpoint is null!");
+        }
         this.mountpoint = mountpoint;
     }
 
@@ -31,8 +35,8 @@ public class MockSpaceSystem implements SpaceSystem {
             localFile.createNewFile();
         }
         catch (IOException ex) {
-           log.error("IO exception while creating local File named : "+pathToFile, ex);
-           throw new ReservationException("IO exception while creating local File named : "+pathToFile);
+            log.error("IO exception while creating local File named : "+pathToFile, ex);
+            throw new ReservationException("IO exception while creating local File named : "+pathToFile);
         }
         catch (SecurityException sec_ex) {
             log.error("Security exception while creating local File named : "+pathToFile, sec_ex);
@@ -71,6 +75,7 @@ public class MockSpaceSystem implements SpaceSystem {
         throw new ReservationException(explanation);
     }
 
+    @Override
     public String toString() {
         return "MockSpaceSystem";
     }

@@ -1,13 +1,14 @@
 package it.grid.storm.griduser;
 
-import org.apache.commons.logging.Log;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.BufferedReader;
+
+import org.slf4j.Logger;
 
 public class SimpleUserMapper implements MapperInterface {
 
-    private static final Log log = GridUserManager.log;
+    private static final Logger log = GridUserManager.log;
 
     public SimpleUserMapper() {
     }

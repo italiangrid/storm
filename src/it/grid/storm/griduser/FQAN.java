@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * representation of an FQAN.
  *
  */
-public class FQAN {
+public class FQAN implements SubjectAttribute {
 
   static private Pattern fqanPattern = Pattern.compile("/[\\w-\\.]+(/[\\w-\\.]+)*(/Role=[\\w-\\.]+)?(/Capability=[\\w-\\.]+)?");
   private String fqan;
@@ -160,9 +160,7 @@ public class FQAN {
         throw new IllegalArgumentException("The capability '" + capability + "' is malformed");
       }
       this.capability = capability;
-      if ("NULL".equalsIgnoreCase(capability)) {
-        this.capability = null;
-      }
+     
     }
 
 

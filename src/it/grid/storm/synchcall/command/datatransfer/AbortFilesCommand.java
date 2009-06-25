@@ -9,7 +9,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.asynch.SchedulerFacade;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.Scheduler;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -30,11 +30,13 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class AbortFilesCommand extends DataTransferCommand implements Command
 {
-    private static final Logger log = Logger.getLogger("dataTransfer");
+    private static final Logger log = LoggerFactory.getLogger(AbortFilesCommand.class);
     private RequestSummaryCatalog summaryCat = null;
     private Scheduler scheduler = null;
     private AdvancedPicker advancedPicker = null;
@@ -51,15 +53,15 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
     public AbortRequestOutputData execute(AbortRequestInputData inputData) {
 
-        log.debug("srmAbort: AbortExecutor input request:"+inputData);
+        AbortFilesCommand.log.debug("srmAbort: AbortExecutor input request:"+inputData);
 
         //Create the AbortFiles input data with the null SURLArray from
         //the AbortRequest input data.
         AbortGeneralInputData newInputData = AbortGeneralInputData.make(inputData);
-        log.debug("srmAbort: abortExecutor: GeneralInputData created.");
+        AbortFilesCommand.log.debug("srmAbort: abortExecutor: GeneralInputData created.");
 
         //Call the Abort* executor
-        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute((InputData)newInputData);
+        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute(newInputData);
 
         //Creat a AbortRequestOutputData to send to the syncall server from
         //the general AbortFilesOutputData
@@ -73,7 +75,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         AbortGeneralInputData newInputData = AbortGeneralInputData.make(inputData);
 
         //Call the Abort* executor
-        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute ((InputData)newInputData);
+        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute (newInputData);
 
         //Creat a AbortFilesOutputData to send to the syncall server from
         //the general AbortGeneralOutputData
@@ -94,8 +96,8 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         summaryCat = RequestSummaryCatalog.getInstance();
         scheduler = SchedulerFacade.getInstance().crusherScheduler();
         advancedPicker = new AdvancedPicker();
-        AbortGeneralOutputData outputData = new AbortGeneralOutputData();
-        AbortGeneralInputData inputData = (AbortGeneralInputData) data;
+        AbortFilesOutputData outputData = new AbortFilesOutputData();
+        AbortFilesInputData inputData = (AbortFilesInputData) data;
 
         boolean requestFailure, requestSuccess;
         //Risultato Parziale
@@ -107,35 +109,36 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         TReturnStatus globalStatus = null;
         ArrayOfTSURLReturnStatus arrayOfTSURLReturnStatus = null;
 
-        log.debug("Started AbortRequest function.");
+        AbortFilesCommand.log.debug("Started AbortRequest function.");
 
         /******************** Check for malformed request: missing mandatory input parameters ****************/
 
         requestFailure = false;
-        if (inputData == null)
+        if (inputData == null) {
             requestFailure = true;
-        else if (inputData.getRequestToken() == null)
+        } else if (inputData.getRequestToken() == null) {
             requestFailure = true;
-        else if((inputData.getType() == AbortGeneralInputData.ABORT_FILES)&&(inputData.getArrayOfSURLs() == null))
+        } else if((inputData.getType() == AbortGeneralInputData.ABORT_FILES)&&(inputData.getArrayOfSURLs() == null)) {
             requestFailure = true;
+        }
 
         if (requestFailure) {
-            log.debug("SrmAbortRequest: Invalid input parameter specified");
+            AbortFilesCommand.log.debug("SrmAbortRequest: Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
+            AbortFilesCommand.log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
             return outputData;
         }
 
         /********************** Check user authentication and authorization ******************************/
-        VomsGridUser user = (VomsGridUser) inputData.getUser();
+        GridUserInterface user = inputData.getUser();
         if (user == null) {
-            log.error("srmAbortRequest : the user field is NULL");
+            AbortFilesCommand.log.error("srmAbortRequest : the user field is NULL");
             globalStatus = manageStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
+            AbortFilesCommand.log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
             return outputData;
         }
 
@@ -155,7 +158,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             return outputData;
         }
 
-        **/
+         **/
 
         /********************************** Start to manage the request ***********************************/
 
@@ -182,7 +185,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
         TRequestToken requestToken = inputData.getRequestToken();
         ArrayOfSURLs surlArray  = inputData.getArrayOfSURLs();
-        log.debug("srmAbortRequest: requestToken=" + requestToken.toString());
+        AbortFilesCommand.log.debug("srmAbortRequest: requestToken=" + requestToken.toString());
 
 
         /******************************   PHASE (1) LOOKING INTO PENDING DB AND ADVANCED PICKER   ***************************/
@@ -208,7 +211,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
         if(inputData.getType() == AbortGeneralInputData.ABORT_REQUEST) {
             //SrmAbortRequest case
-            log.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
+            AbortFilesCommand.log.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
             //TODO REMOVE THIS COMMENT!
@@ -217,7 +220,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
         } else if(inputData.getType() == AbortGeneralInputData.ABORT_FILES) {
             //SrmAbortFiles case
-            log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
+            AbortFilesCommand.log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
             //TODO REMOVE THIS COMMENT!
@@ -228,7 +231,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         }
 
         if(res == false){
-            log.debug("Phase (1.A) AbortRequest: Token not found.");
+            AbortFilesCommand.log.debug("Phase (1.A) AbortRequest: Token not found.");
         } else {
             /**
              *  Request Successfully Aborted.
@@ -243,13 +246,13 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
                     TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
                     surlRetStatus.setSurl(surlArray.getTSURL(i));
                     surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,"File request aborted."));
-                    log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+(i+1)+" of "+surlArray.size()+" [SURL:"+surlArray.getTSURL(i)+"] successfully done with [status: "+surlRetStatus.getStatus()+"]");
+                    AbortFilesCommand.log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+(i+1)+" of "+surlArray.size()+" [SURL:"+surlArray.getTSURL(i)+"] successfully done with [status: "+surlRetStatus.getStatus()+"]");
                     arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
                 }
-                log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] successfully done with [status: "+globalStatus+"]");
+                AbortFilesCommand.log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] successfully done with [status: "+globalStatus+"]");
             } else {
                 outputData.setArrayOfFileStatuses(null);
-                log.info("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
+                AbortFilesCommand.log.info("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
             }
             return outputData;
         }
@@ -265,7 +268,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
          */
 
         if(inputData.getType() == AbortGeneralInputData.ABORT_REQUEST) {
-            log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
+            AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
             //TODO REMOVE THIS COMMENT!
@@ -273,7 +276,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             res = false;
 
         } else if(inputData.getType() == AbortGeneralInputData.ABORT_FILES) {
-            log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
+            AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
             //TODO REMOVE THIS COMMENT!
@@ -282,7 +285,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         }
 
         if(res == false){
-            log.debug("Phase (1.B) AbortRequest: Token not found.");
+            AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: Token not found.");
         } else {
 
             /**
@@ -297,13 +300,13 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
                     TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
                     surlRetStatus.setSurl(surlArray.getTSURL(i));
                     surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,"File request aborted."));
-                    log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+(i+1)+" of "+surlArray.size()+" [SURL:"+surlArray.getTSURL(i)+"] successfully done with [status: "+surlRetStatus.getStatus()+"]");
+                    AbortFilesCommand.log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+(i+1)+" of "+surlArray.size()+" [SURL:"+surlArray.getTSURL(i)+"] successfully done with [status: "+surlRetStatus.getStatus()+"]");
                     arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
                 }
-                log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] successfully done with [status: "+globalStatus+"]");
+                AbortFilesCommand.log.info("srmAbortFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] successfully done with [status: "+globalStatus+"]");
             } else {
-                    outputData.setArrayOfFileStatuses(null);
-                    log.info("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
+                outputData.setArrayOfFileStatuses(null);
+                AbortFilesCommand.log.info("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
             }
             return outputData;
 
@@ -318,7 +321,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
          */
 
         //TODO REMOVE THIS COMMENT!
-/*
+        /*
         if((surlArray == null)&&(scheduler.remove(requestToken)) {
             log.debug("Phase (2) AbortRequest: Token FOUND.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
@@ -331,7 +334,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             log.debug("Phase (2) AbortRequest: Token not found.");
         }
 
-*/
+         */
         /*************   PHASE (3) [WAIT END AND MANAGE ROLLBACK] OR [SEND ABORT TO COPY]   *************/
 
         //First of all, identify the request type.
@@ -356,16 +359,16 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             return executor.doIt(inputData);
         } else {
             //This case is really possibile?
-            log.debug("This case is really possibile?");
-            log.debug("SrmAbortRequest : Invalid input parameter specified");
+            AbortFilesCommand.log.debug("This case is really possibile?");
+            AbortFilesCommand.log.debug("SrmAbortRequest : Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token. Abort only works for PtG, PtP and Copy.");
-            log.error("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            AbortFilesCommand.log.error("srmAbortRequest: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
             return outputData;
         }
 
-/*
+        /*
         if(requestFailure) {
             log.error("SrmAbortRequest : Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Request Token does not referes to existing known requests.");
@@ -373,23 +376,23 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             outputData.setArrayOfFileStatuses(null);
             return outputData;
         }
-*/
+         */
     }
 
     /**
-    *
-    * @param statusCode statusCode
-    * @param explanation explanation string
-    * @return returnStatus returnStatus
-    */
-   private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-       TReturnStatus returnStatus = null;
-       try {
-           returnStatus = new TReturnStatus(statusCode, explanation);
-       } catch (InvalidTReturnStatusAttributeException ex1) {
-           log.debug("AbortExecutor : Error creating returnStatus " + ex1);
-       }
-       return returnStatus;
-   }
+     *
+     * @param statusCode statusCode
+     * @param explanation explanation string
+     * @return returnStatus returnStatus
+     */
+    private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
+        TReturnStatus returnStatus = null;
+        try {
+            returnStatus = new TReturnStatus(statusCode, explanation);
+        } catch (InvalidTReturnStatusAttributeException ex1) {
+            AbortFilesCommand.log.debug("AbortExecutor : Error creating returnStatus " + ex1);
+        }
+        return returnStatus;
+    }
 
 }

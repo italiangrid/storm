@@ -912,7 +912,6 @@ For the following files:
   commons-pool-1.2.jar
   dom.jar
   jaxrpc.jar
-  log4j-1.2.8.jar
   mail.jar
   odmg-3.0.jar
   saaj.jar

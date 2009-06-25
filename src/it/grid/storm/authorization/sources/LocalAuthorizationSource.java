@@ -5,11 +5,12 @@ import it.grid.storm.authorization.AuthorizationQueryInterface;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.StoRI;
 
-import org.apache.log4j.Logger;
-import it.grid.storm.griduser.GridUserInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,7 +32,7 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
 
     // --- private --- //
 
-    static private Logger log = Logger.getLogger("LocalAuthorizationSource");
+    static private Logger log = LoggerFactory.getLogger(LocalAuthorizationSource.class);
 
 
     // examine parent or file itself
@@ -51,7 +52,7 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
             final boolean ancestor) {
 
         log.debug("Local Authorization Source: " + whoCalls + " invoked for " + gridUser.getDn()
-                  + " on SURL " + fileOrDirectory.toString());
+                + " on SURL " + fileOrDirectory.toString());
 
         LocalUser lu;
         try {
@@ -105,8 +106,9 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
         }
 
         log.debug("Local Authorization Source: canAccess gives "+auth);
-        if ( auth )
+        if ( auth ) {
             return AuthorizationDecision.Permit;
+        }
 
         return AuthorizationDecision.Deny;
     }
@@ -122,14 +124,14 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
     public AuthorizationDecision canReadFile(final GridUserInterface gridUser, final StoRI file) {
 
         return ExamineAuthorization("canReadFile", gridUser, file,
-                                    FilesystemPermission.Read, THIS);
+                FilesystemPermission.Read, THIS);
 
     }
 
     public AuthorizationDecision canWriteFile(final GridUserInterface gridUser, final StoRI existingFile) {
 
         return ExamineAuthorization("canWriteFile", gridUser, existingFile,
-                                    FilesystemPermission.Write, THIS);
+                FilesystemPermission.Write, THIS);
 
     }
 
@@ -138,7 +140,7 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
         //
 
         return ExamineAuthorization("canCreateNewFile", gridUser, targetFile,
-                                    FilesystemPermission.Write, PARENT);
+                FilesystemPermission.Write, PARENT);
 
     }
 
@@ -152,14 +154,14 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
 
     public AuthorizationDecision canListDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
         return ExamineAuthorization("canListDirectory", gridUser, targetDirectory,
-                                    FilesystemPermission.List, THIS);
+                FilesystemPermission.List, THIS);
 
     }
 
     public AuthorizationDecision canTraverseDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
 
         return ExamineAuthorization("canTraverseDirectory", gridUser, targetDirectory,
-                                    FilesystemPermission.Traverse, THIS);
+                FilesystemPermission.Traverse, THIS);
 
     }
 
@@ -169,7 +171,7 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
         // 2. poder escribir la entrada del directorio
 
         return ExamineAuthorization("canRename", gridUser, file,
-                                    FilesystemPermission.ReadWrite, PARENT);
+                FilesystemPermission.ReadWrite, PARENT);
 
     }
 
@@ -178,14 +180,14 @@ public class LocalAuthorizationSource implements AuthorizationQueryInterface  {
         //
 
         return ExamineAuthorization("canDelete", gridUser, file,
-                                    FilesystemPermission.ReadWrite, PARENT);
+                FilesystemPermission.ReadWrite, PARENT);
 
     }
 
     public AuthorizationDecision canMakeDirectory(final GridUserInterface gridUser, final StoRI targetDirectory) {
 
         return ExamineAuthorization("canMakeDirectory", gridUser, targetDirectory,
-                                    FilesystemPermission.Write, PARENT);
+                FilesystemPermission.Write, PARENT);
 
     }
 

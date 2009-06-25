@@ -1,14 +1,15 @@
 package component.scheduler;
 
 
-import it.grid.storm.scheduler.Delegable;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import it.grid.storm.scheduler.Chooser;
+import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * 
  * <p>Title: </p>
  *
  * <p>Description: </p>
@@ -22,42 +23,42 @@ import it.grid.storm.scheduler.Streets;
  */
 public class Mock_COPYChunk implements Delegable, Chooser {
 
-  private static Log log = LogFactory.getLog(TestMemoryProfiler.class);
-  private String name;
-  private long duration;
+    private static Logger log = LoggerFactory.getLogger(TestMemoryProfiler.class);
+    private String name;
+    private long duration;
 
-  public Mock_COPYChunk(String name, long duration)
-  {
-    this.name = name;
-    this.duration = duration;
-  }
-
-  /**
-   * doIt
-   *
-   */
-  public void doIt() {
-    try {
-      Thread.sleep(this.duration);
+    public Mock_COPYChunk(String name, long duration)
+    {
+        this.name = name;
+        this.duration = duration;
     }
-    catch (InterruptedException ex) {
-       ex.printStackTrace();
 
+    /**
+     * doIt
+     *
+     */
+    public void doIt() {
+        try {
+            Thread.sleep(this.duration);
+        }
+        catch (InterruptedException ex) {
+            ex.printStackTrace();
+
+        }
     }
-  }
 
 
-  /**
-   * getName
-   *
-   * @return String
-   */
-  public String getName() {
-    return this.name;
-  }
+    /**
+     * getName
+     *
+     * @return String
+     */
+    public String getName() {
+        return this.name;
+    }
 
 
-  public void choose(Streets s) {
-    s.ptgStreet(this);
-  }
+    public void choose(Streets s) {
+        s.ptgStreet(this);
+    }
 }

@@ -41,7 +41,7 @@ public class SRMSpaceRequest {
 
     private String description;
     private String srmOp;
-    private List<SpacePermission> spaceOps;
+    private List<SpaceAccessMask> spaceOps;
 
     /**
      * SRMOperation
@@ -51,7 +51,7 @@ public class SRMSpaceRequest {
         this.srmOp = srmOp;
         this.spaceOps = new ArrayList();
         for (int i = 0; i < spaceOps.length; i++) {
-           this.spaceOps.add(SpacePermission.getSpaceOperation(spaceOps[i]));
+           this.spaceOps.add(SpaceAccessMask.getSpaceOperation(spaceOps[i]));
         }
     }
 
@@ -59,7 +59,7 @@ public class SRMSpaceRequest {
         String result;
         String spaceOpsStr ="";
         for (Iterator iter = spaceOps.iterator(); iter.hasNext(); ) {
-            SpacePermission item = (SpacePermission) iter.next();
+            SpaceAccessMask item = (SpaceAccessMask) iter.next();
             spaceOpsStr = spaceOpsStr + item.toString();
         }
         result = this.srmOp + " : " + this.description + " = " + spaceOpsStr;

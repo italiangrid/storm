@@ -2,7 +2,9 @@ package it.grid.storm.common;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GUID Value Object.
@@ -13,7 +15,7 @@ import org.apache.log4j.Logger;
 
 public class GUID implements Serializable {
 
-    private static final Logger log = Logger.getLogger("persistence");
+    private static final Logger log = LoggerFactory.getLogger(GUID.class);
 
     private byte guidValue[] = new byte[16];
 
@@ -62,13 +64,15 @@ public class GUID implements Serializable {
      */
     private String getHexString( byte val ) {
         String hexString;
-        if ( val < 0 )
+        if ( val < 0 ) {
             hexString = Integer.toHexString(val + 256 );
-        else
+        } else {
             hexString = Integer.toHexString( val );
+        }
 
-        if ( hexString.length()<2 )
+        if ( hexString.length()<2 ) {
             return "0" + hexString.toUpperCase();
+        }
         return hexString.toUpperCase();
     }
 
@@ -80,8 +84,9 @@ public class GUID implements Serializable {
      * @param startPos The point in the main byte array these should go.
      */
     private void setByteValues( byte[] lg, int startPos, int count ) {
-        for( int i=0; i<count; i++ )
+        for( int i=0; i<count; i++ ) {
             guidValue[i+startPos] = lg[i];
+        }
     }
 
     /**
@@ -129,7 +134,7 @@ public class GUID implements Serializable {
             setByteValues( lg, 14, 2 );
 
         } catch (Exception e) {
-          log.error("Error while generating a GUID", e);
+            log.error("Error while generating a GUID", e);
         }
     }
 
@@ -150,6 +155,7 @@ public class GUID implements Serializable {
      *
      * @return the string format
      */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
 

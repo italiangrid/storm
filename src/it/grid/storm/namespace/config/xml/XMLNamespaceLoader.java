@@ -1,13 +1,22 @@
 package it.grid.storm.namespace.config.xml;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import it.grid.storm.namespace.NamespaceValidator;
+import it.grid.storm.namespace.config.NamespaceLoader;
 
-import org.apache.commons.configuration.*;
-import org.apache.commons.logging.*;
-import it.grid.storm.namespace.*;
-import it.grid.storm.namespace.config.*;
+import java.io.File;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -22,9 +31,9 @@ import it.grid.storm.namespace.config.*;
  * @version 1.0
  */
 public class XMLNamespaceLoader
-    extends Observable implements NamespaceLoader {
+extends Observable implements NamespaceLoader {
 
-    private static Log log = LogFactory.getLog(XMLNamespaceLoader.class);
+    private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
 
     public String filename;
     public String path;
@@ -111,14 +120,15 @@ public class XMLNamespaceLoader
     /**
      * The setChanged() protected method must overridden to make it public
      */
+    @Override
     public synchronized void setChanged() {
         super.setChanged();
     }
 
     private void init(String namespaceFileName, int refresh) {
         System.out.println("Reading Namespace configuration file " + namespaceFileName +
-                           " and setting refresh rate to " + refresh +
-                           " seconds.");
+                " and setting refresh rate to " + refresh +
+        " seconds.");
 
         //create reloading strategy for refresh
         xmlStrategy = new XMLReloadingStrategy();
@@ -177,7 +187,7 @@ public class XMLNamespaceLoader
             System.err.println("*****************************************************");
             System.err.println("   ATTENTION! Unable to load Namespace Configuration!");
             System.err.println("*****************************************************");
-            log.fatal(this, cex);
+            log.error(this.toString());
         }
 
     }
@@ -214,7 +224,7 @@ public class XMLNamespaceLoader
      * @version 1.0
      */
     private class Peeper
-        extends TimerTask {
+    extends TimerTask {
 
         private XMLReloadingStrategy reloadingStrategy;
 
@@ -225,6 +235,7 @@ public class XMLNamespaceLoader
             this.observed = obs;
         }
 
+        @Override
         public void run() {
             //log.debug(" The glange of peeper..");
             reloadingStrategy = (XMLReloadingStrategy) config.getReloadingStrategy();

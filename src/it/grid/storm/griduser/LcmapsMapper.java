@@ -12,13 +12,10 @@
 package it.grid.storm.griduser;
 
 
-import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.MapperInterface;
 import it.grid.storm.griduser.swig.localuser_info;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Map Grid credentials to local account credentials. Implements a
@@ -28,6 +25,14 @@ import org.apache.log4j.Logger;
  * invoke LCMAPS to do the actual mapping.
  */
 public class LcmapsMapper implements MapperInterface {
+
+    /** To synchronize on LCMAPS invocation. */
+    private static Object lock = new Object();
+
+    /** To log LCMAPS failures. */
+    private static final Logger log = LoggerFactory.getLogger(LcmapsMapper.class);
+
+
     /** Factory method, taking user certificate subject DN and an
      * array of VOMS FQANs.  Returns a new LocalUser object holding
      * the local credentials (UID, GIDs) of the POSIX account the
@@ -69,21 +74,32 @@ public class LcmapsMapper implements MapperInterface {
      * @throws {@link it.grid.storm.griduser.CannotMapUserExcpetion} if
      * some error with LCMAPS occurs.
      */
-    public LocalUser  map(final String dn, final String[] fqans)
-        throws CannotMapUserException
+
+    public LcmapsMapper() {
+        // nothing to do;
+    }
+
+
+    public LocalUser map(final String dn, String[] fqans)
+    throws CannotMapUserException
     {
-    	log.debug("Asking LCMAPS for mapping : "+dn+"-"+fqans.toString());
+        LcmapsMapper.log.debug("Asking LCMAPS for mapping : "+dn+"-"+fqans);
+        if (fqans == null) {
+            // LcmapsMapper.log.debug("FQAN e' null!");
+            String[] tmp = { "" };
+            fqans = tmp;
+        }
 
         localuser_info lui = null;
         try {
-            synchronized(lock) {
+            synchronized(LcmapsMapper.lock) {
                 lui = new localuser_info(dn, fqans);
-//                log.debug("lcmaps plugin now works3...");
-//                log.debug("guid:..."+lui.getUid());
-//                log.debug("gids:..."+lui.getGids());
-//                log.debug("gids[0]:..."+lui.getGids()[0]);
-//                log.debug("Ngids:..."+lui.getNgids());
-//                log.debug("Mapper returns");
+                //                log.debug("lcmaps plugin now works3...");
+                //                log.debug("guid:..."+lui.getUid());
+                //                log.debug("gids:..."+lui.getGids());
+                //                log.debug("gids[0]:..."+lui.getGids()[0]);
+                //                log.debug("Ngids:..."+lui.getNgids());
+                //                log.debug("Mapper returns");
 
             }
             // the following code is effectively unreachable,
@@ -99,42 +115,36 @@ public class LcmapsMapper implements MapperInterface {
             // exception _is_ thrown, so the following is never
             // reached, in case of error.
             //
-            if(null == lui)
+            if(null == lui) {
                 throw new CannotMapUserException("BUG in LcmapsMapper.java, line 86");
+            }
         }
         catch (CannotMapUserException x) {
             String lcmapsLogFile = System.getenv("LCMAPS_LOG_FILE"); // un-deprecated in Java 5
 
-            if (null == lcmapsLogFile)
+            if (null == lcmapsLogFile) {
                 lcmapsLogFile = "";
+            }
             String errorMessage = "LCMAPS failure: "
                 + x.getMessage()
                 + " -- see LCMAPS log file "
                 + lcmapsLogFile
                 + " for details.";
-            log.error(errorMessage);
+            LcmapsMapper.log.error(errorMessage);
             throw new CannotMapUserException(errorMessage);
         }
         //Syncronization on this added by Luca
         //to create the LocalUser lcmaps must be queried.
         //Without synchrnonization may be this is the reasons for the JVM crash?
         //due to lcmaps non thread safet
-//        log.debug("lcmaps plugin now works1...");
-//        log.debug("guid:..."+lui.getUid());
-//        log.debug("gids:..."+lui.getGids());
-//        log.debug("Ngids:..."+lui.getNgids());
-//        log.debug("Mapper returns");
+        //        log.debug("lcmaps plugin now works1...");
+        //        log.debug("guid:..."+lui.getUid());
+        //        log.debug("gids:..."+lui.getGids());
+        //        log.debug("Ngids:..."+lui.getNgids());
+        //        log.debug("Mapper returns");
         return new LocalUser(lui.getUid(), lui.getGids(), lui.getNgids());
 
     }
 
-    public LcmapsMapper() {
-        // nothing to do;
-    }
 
-    /** To synchronize on LCMAPS invocation. */
-    private static Object lock = new Object();
-
-    /** To log LCMAPS failures. */
-    private static final Logger log = Logger.getLogger(LcmapsMapper.class);
 }

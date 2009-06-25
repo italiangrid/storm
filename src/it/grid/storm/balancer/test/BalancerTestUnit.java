@@ -22,9 +22,9 @@ public class BalancerTestUnit {
         FTPNode nd3 = new FTPNode();
         nd3.setHostname("host3");
 
-        //bl.addElementWithWeight(nd1,2);
-        //bl.addElementWithWeight(nd2,8);
-        //bl.addElementWithWeight(nd3,4);
+        bl.addElement(nd1);
+        bl.addElement(nd2);
+        bl.addElement(nd3);
 
 
 

@@ -1,23 +1,22 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
+import it.grid.storm.catalogs.CopyChunkCatalog;
+import it.grid.storm.catalogs.CopyChunkData;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.common.types.EndPoint;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.scheduler.Delegable;
+import it.grid.storm.scheduler.SchedulerException;
+import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import it.grid.storm.config.Configuration;
-
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.SchedulerException;
-
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.CopyChunkCatalog;
-import it.grid.storm.catalogs.CopyChunkData;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.griduser.GridUserInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -48,7 +47,7 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public final class CopyFeeder implements Delegable {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(CopyFeeder.class);
     private RequestSummaryData rsd = null; //RequestSummaryData this PtPFeeder refers to.
     private GridUserInterface gu = null; //GridUser for this PtPFeeder.
     private GlobalStatusManager gsm = null; //Overall request status.
@@ -59,8 +58,12 @@ public final class CopyFeeder implements Delegable {
      * InvalidCopyFeederAttributesException is thrown.
      */
     public CopyFeeder(RequestSummaryData rsd) throws InvalidCopyFeederAttributesException {
-        if (rsd==null) throw new InvalidCopyFeederAttributesException(null,null,null);
-        if (rsd.gridUser()==null) throw new InvalidCopyFeederAttributesException(rsd,null,null);
+        if (rsd==null) {
+            throw new InvalidCopyFeederAttributesException(null,null,null);
+        }
+        if (rsd.gridUser()==null) {
+            throw new InvalidCopyFeederAttributesException(rsd,null,null);
+        }
         try {
             this.gu = rsd.gridUser();
             this.rsd = rsd;
@@ -191,9 +194,15 @@ public final class CopyFeeder implements Delegable {
         int stormPort = Configuration.getInstance().getFEPort();
         log.debug("COPY FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
         log.debug("COPY FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) return false;
-        if (stormPort!=port) return false;
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) return false;
+        if (!stormNames.contains(machine)) {
+            return false;
+        }
+        if (stormPort!=port) {
+            return false;
+        }
+        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
+            return false;
+        }
         return true;
     }
 
@@ -202,6 +211,6 @@ public final class CopyFeeder implements Delegable {
      * token!
      */
     public String getName() {
-       return "CopyFeeder of request: "+rsd.requestToken();
+        return "CopyFeeder of request: "+rsd.requestToken();
     }
 }

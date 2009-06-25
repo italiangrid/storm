@@ -1,46 +1,42 @@
 
 package it.grid.storm.catalogs;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.Calendar;
-
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.InvalidTTURLAttributesException;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.common.types.PFN;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TTURL;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -56,7 +52,7 @@ import it.grid.storm.filesystem.LocalFile;
  * @version 3.0
  */
 public class PtPChunkCatalog {
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(PtPChunkCatalog.class);
     private static final PtPChunkCatalog cat = new PtPChunkCatalog(); //only instance of PtPChunkCatalog present in StoRM!
     private final PtPChunkDAO dao = PtPChunkDAO.getInstance();
     private final Timer transiter = new Timer(); //Timer object in charge of transiting expired requests from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED!
@@ -72,13 +68,16 @@ public class PtPChunkCatalog {
      * any JiT entry gets removed, except those on traverse for the parent directory;
      * finally any volatile entry gets removed too.
      */
-	private PtPChunkCatalog() {
+    private PtPChunkCatalog() {
         TimerTask transitTask = new TimerTask() {
+            @Override
             public void run() {
                 List ids = transitExpiredSRM_SPACE_AVAILABLE();
                 if (!ids.isEmpty()) {
                     List reduced = fetchReducedPtPChunkDataFor(ids);
-                    if (reduced.isEmpty()) log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! No data could be translated from persitence for PtP Chunks with ID "+ids);
+                    if (reduced.isEmpty()) {
+                        log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! No data could be translated from persitence for PtP Chunks with ID "+ids);
+                    }
                     ReducedPtPChunkData auxReduced = null;
                     StoRI auxStoRI = null;
                     PFN auxPFN = null;
@@ -95,11 +94,13 @@ public class PtPChunkCatalog {
                                 log.info("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. Deleting file "+auxPFN);
                                 auxFile = NamespaceDirector.getNamespace().resolveStoRIbyPFN(auxPFN).getLocalFile();
                                 boolean ok = auxFile.delete();
-                                if (!ok) throw new Exception("Java File deletion failed!");
+                                if (!ok) {
+                                    throw new Exception("Java File deletion failed!");
+                                }
                             } catch (Exception e) {
                                 //log exceptions
                                 log.error("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. Request status transited to SRM_FILE_LIFETIME_EXPIRED but physical file "+auxPFN+" could NOT be deleted!");
-                                log.error(e);
+                                log.error(e.getMessage(),e);
                             }
                             //
                             //remove any Jit
@@ -126,9 +127,9 @@ public class PtPChunkCatalog {
 
 
 
-	/**
-	 * Method that returns a Collection of PtPChunkData Objects matching the
-	 * supplied TRequestToken.
+    /**
+     * Method that returns a Collection of PtPChunkData Objects matching the
+     * supplied TRequestToken.
      *
      * If any of the data associated to the TRequestToken is not well formed and
      * so does not allow a PtPChunkData Object to be created, then that part of
@@ -144,8 +145,8 @@ public class PtPChunkCatalog {
      * chunks in the request, and aborted chunks should not be picked up for
      * processing!
      *
-	 */
-	synchronized public Collection lookup(final TRequestToken rt) {
+     */
+    synchronized public Collection lookup(final TRequestToken rt) {
         Collection c = dao.find(rt);
         log.debug("PtPChunkCatalog: retrieved data "+c);
         List list = new ArrayList();
@@ -157,15 +158,17 @@ public class PtPChunkCatalog {
             for (Iterator i = c.iterator(); i.hasNext(); ) {
                 auxTO = (PtPChunkDataTO) i.next();
                 aux = makeOne(auxTO,rt);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
         }
         log.debug("PtPChunkCatalog: returning "+ list +"\n\n");
         return list;
     }
 
-	/**
-	 * Method that returns a Collection of ReducedPtPChunkData Objects associated
+    /**
+     * Method that returns a Collection of ReducedPtPChunkData Objects associated
      * to the supplied TRequestToken.
      *
      * If any of the data retrieved for a given chunk is not well formed and so
@@ -177,8 +180,8 @@ public class PtPChunkCatalog {
      * empty Collection is returned and a messagge gets logged.
      *
      * All ReducedChunks, regardless of their status, are returned.
-	 */
-	synchronized public Collection lookupReducedPtPChunkData(TRequestToken rt) {
+     */
+    synchronized public Collection lookupReducedPtPChunkData(TRequestToken rt) {
         Collection cl = dao.findReduced(rt.getValue());
         log.debug("PtP CHUNK CATALOG: retrieved data "+cl);
         List list = new ArrayList();
@@ -190,7 +193,9 @@ public class PtPChunkCatalog {
             for (Iterator i = cl.iterator(); i.hasNext(); ) {
                 auxTO = (ReducedPtPChunkDataTO) i.next();
                 aux = makeReducedPtPChunkData(auxTO);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
             log.debug("PtP CHUNK CATALOG: returning "+ list);
         }
@@ -198,7 +203,7 @@ public class PtPChunkCatalog {
     }
 
     /**
-	 * Method that returns a Collection of ReducedPtPChunkData Objects
+     * Method that returns a Collection of ReducedPtPChunkData Objects
      * corresponding to each of the IDs contained inthe supplied List of
      * Long objects.
      *
@@ -222,7 +227,9 @@ public class PtPChunkCatalog {
             for (Iterator i = cl.iterator(); i.hasNext(); ) {
                 auxTO = (ReducedPtPChunkDataTO) i.next();
                 aux = makeReducedPtPChunkData(auxTO);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
             log.debug("PtP CHUNK CATALOG: returning "+ list);
         }
@@ -243,11 +250,13 @@ public class PtPChunkCatalog {
         TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
         if (code==TStatusCode.EMPTY) {
             sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else try {
-            status = new TReturnStatus(code,auxTO.errString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
+        } else {
+            try {
+                status = new TReturnStatus(code,auxTO.errString());
+            } catch (InvalidTReturnStatusAttributeException e) {
+                sb.append("\n");
+                sb.append(e);
+            }
         }
         //fileStorageType
         TFileStorageType fileStorageType = FileStorageTypeConverter.getInstance().toSTORM(auxTO.fileStorageType());
@@ -270,7 +279,7 @@ public class PtPChunkCatalog {
             aux.setPrimaryKey(auxTO.primaryKey());
         } catch (InvalidReducedPtPChunkDataAttributesException e) {
             log.warn("PtP CHUNK CATALOG! Retrieved malformed Reduced PtP chunk data from persistence: dropping reduced chunk...");
-            log.warn(e);
+            log.warn(e.getMessage(),e);
             log.warn(sb.toString());
         }
         //end...
@@ -290,7 +299,9 @@ public class PtPChunkCatalog {
         if (auxTO == null) {
             log.warn("PtP CHUNK CATALOG! Empty TO found in persistence for specified request: "+inputChunk.primaryKey());
             return null;
-        } else return makeOne(auxTO,inputChunk.requestToken());
+        } else {
+            return makeOne(auxTO,inputChunk.requestToken());
+        }
     }
 
 
@@ -340,7 +351,9 @@ public class PtPChunkCatalog {
         TSizeInBytes expectedFileSize=null;
         TSizeInBytes emptySize = TSizeInBytes.makeEmpty();
         long sizeTranslation = SizeInBytesIntConverter.getInstance().toStoRM(auxTO.expectedFileSize());
-        if (emptySize.value()==sizeTranslation) expectedFileSize = emptySize; else {
+        if (emptySize.value()==sizeTranslation) {
+            expectedFileSize = emptySize;
+        } else {
             try {
                 expectedFileSize = TSizeInBytes.make(auxTO.expectedFileSize(),SizeUnit.BYTES);
             } catch (InvalidTSizeAttributesException e) {
@@ -359,7 +372,9 @@ public class PtPChunkCatalog {
         TSpaceToken spaceToken=null;
         TSpaceToken emptyToken = TSpaceToken.makeEmpty();
         String spaceTokenTranslation = SpaceTokenStringConverter.getInstance().toStoRM(auxTO.spaceToken()); //convert empty string representation of DPM into StoRM representation;
-        if (emptyToken.toString().equals(spaceTokenTranslation)) spaceToken = emptyToken; else {
+        if (emptyToken.toString().equals(spaceTokenTranslation)) {
+            spaceToken = emptyToken;
+        } else {
             try {
                 spaceToken = TSpaceToken.make(spaceTokenTranslation);
             } catch (InvalidTSpaceTokenAttributesException e) {
@@ -384,11 +399,13 @@ public class PtPChunkCatalog {
         TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
         if (code==TStatusCode.EMPTY) {
             sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else try {
-            status = new TReturnStatus(code,auxTO.errString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
+        } else {
+            try {
+                status = new TReturnStatus(code,auxTO.errString());
+            } catch (InvalidTReturnStatusAttributeException e) {
+                sb.append("\n");
+                sb.append(e);
+            }
         }
         //transferURL
         TTURL transferURL = TTURL.makeEmpty(); //whatever is read is just meaningless because PtP will fill it in!!! So create an Empty TTURL by default! Vital to avoid problems with unknown DPM NULL/EMPTY logic policy!
@@ -400,7 +417,7 @@ public class PtPChunkCatalog {
         } catch (InvalidPtPChunkDataAttributesException e) {
             dao.signalMalformedPtPChunk(auxTO);
             log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data from persistence. Dropping chunk from request: "+rt);
-            log.warn(e);
+            log.warn(e.getMessage(), e);
             log.warn(sb.toString());
         }
         //end...
@@ -471,7 +488,9 @@ public class PtPChunkCatalog {
         }
         int n = aux.size();
         auxlong = new long[n];
-        for (int i=0; i<n; i++) auxlong[i] = ((Long)aux.get(i)).longValue();
+        for (int i=0; i<n; i++) {
+            auxlong[i] = ((Long)aux.get(i)).longValue();
+        }
         dao.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(auxlong);
     }
 
@@ -491,7 +510,9 @@ public class PtPChunkCatalog {
      *
      */
     synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(TSURL surl,String explanation) {
-        if (explanation==null) explanation="";
+        if (explanation==null) {
+            explanation="";
+        }
         dao.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl.toString(),explanation);
     }
 

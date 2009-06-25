@@ -1,17 +1,17 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TReturnStatus;
-
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TStatusCode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a CopyChunkData, that is part of a multifile Copy srm
@@ -26,7 +26,7 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
  * @version 2.0
  */
 public class CopyChunkData implements ChunkData {
-    private static final Logger log = Logger.getLogger("asynch"); //Logger of error messages! Common to all Asynch package!
+    private static final Logger log = LoggerFactory.getLogger(CopyChunkData.class);
 
     private long primaryKey = -1; //long representing the primary key for the persistence layer!
     private TRequestToken requestToken;  //This is the requestToken of the multifile srm request to which this chunk belongs
@@ -39,22 +39,24 @@ public class CopyChunkData implements ChunkData {
     private TReturnStatus status;             //return status for this chunk of request
 
     public CopyChunkData(TRequestToken requestToken, TSURL fromSURL, TSURL toSURL,
-        TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
-        TSpaceToken spaceToken, TOverwriteMode overwriteOption, TReturnStatus status)
-        throws InvalidCopyChunkDataAttributesException {
+            TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
+            TSpaceToken spaceToken, TOverwriteMode overwriteOption, TReturnStatus status)
+    throws InvalidCopyChunkDataAttributesException {
 
         boolean ok = requestToken!=null &&
-            fromSURL!=null &&
-            toSURL!=null &&
-            lifetime!=null &&
-            fileStorageType!=null &&
-            spaceToken!=null &&
-            overwriteOption!=null &&
-            status!=null;
+        fromSURL!=null &&
+        toSURL!=null &&
+        lifetime!=null &&
+        fileStorageType!=null &&
+        spaceToken!=null &&
+        overwriteOption!=null &&
+        status!=null;
 
-        if (!ok) throw new InvalidCopyChunkDataAttributesException(requestToken,
-            fromSURL,toSURL,lifetime,fileStorageType,spaceToken,overwriteOption,
-            status);
+        if (!ok) {
+            throw new InvalidCopyChunkDataAttributesException(requestToken,
+                    fromSURL,toSURL,lifetime,fileStorageType,spaceToken,overwriteOption,
+                    status);
+        }
 
         this.requestToken = requestToken;
         this.fromSURL = fromSURL;
@@ -131,7 +133,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_REQUEST_QUEUED(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_QUEUED! "+e);
@@ -145,7 +149,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_INVALID_REQUEST(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_REQUEST! "+e);
@@ -159,7 +165,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_UNAUTHORISED_ACCESS! "+e);
@@ -173,7 +181,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_SUCCESS(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_SUCCESS,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SUCCESS! "+e);
@@ -187,7 +197,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_FAILURE(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_FAILURE,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FAILURE! "+e);
@@ -201,7 +213,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_NOT_SUPPORTED(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_NOT_SUPPORTED! "+e);
@@ -215,7 +229,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_DUPLICATION_ERROR(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_DUPLICATION_ERROR! "+e);
@@ -229,7 +245,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_REQUEST_INPROGRESS(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_INPROGRESS! "+e);
@@ -243,7 +261,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_INTERNAL_ERROR(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INTERNAL_ERROR! "+e);
@@ -257,7 +277,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_FATAL_INTERNAL_ERROR(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_FATAL_INTERNAL_ERROR,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FATAL_INTERNAL_ERROR! "+e);
@@ -271,7 +293,9 @@ public class CopyChunkData implements ChunkData {
      */
     public void changeStatusSRM_INVALID_PATH(String explanation) {
         try {
-            if (explanation==null) explanation="";
+            if (explanation==null) {
+                explanation="";
+            }
             status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,explanation);
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_PATH! "+e);
@@ -280,6 +304,7 @@ public class CopyChunkData implements ChunkData {
 
 
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("CopyChunkData\n");
@@ -295,6 +320,7 @@ public class CopyChunkData implements ChunkData {
         return sb.toString();
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = 37*hash + new Long(primaryKey).hashCode();
@@ -309,18 +335,23 @@ public class CopyChunkData implements ChunkData {
         return hash;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof CopyChunkData)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof CopyChunkData)) {
+            return false;
+        }
         CopyChunkData cd = (CopyChunkData) o;
         return (primaryKey==cd.primaryKey) &&
-            requestToken.equals(cd.requestToken) &&
-            fromSURL.equals(cd.fromSURL) &&
-            toSURL.equals(cd.toSURL) &&
-            lifetime.equals(cd.lifetime) &&
-            fileStorageType.equals(cd.fileStorageType) &&
-            spaceToken.equals(cd.spaceToken) &&
-            overwriteOption.equals(cd.overwriteOption) &&
-            status.equals(cd.status);
+        requestToken.equals(cd.requestToken) &&
+        fromSURL.equals(cd.fromSURL) &&
+        toSURL.equals(cd.toSURL) &&
+        lifetime.equals(cd.lifetime) &&
+        fileStorageType.equals(cd.fileStorageType) &&
+        spaceToken.equals(cd.spaceToken) &&
+        overwriteOption.equals(cd.overwriteOption) &&
+        status.equals(cd.status);
     }
 }

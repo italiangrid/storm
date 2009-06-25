@@ -1,36 +1,34 @@
 package it.grid.storm.catalogs;
 
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.InvalidTTURLAttributesException;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TTURL;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-
-import it.grid.storm.srm.types.TDirOption;
-import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.InvalidTTURLAttributesException;
-import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.griduser.GridUserInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents StoRMs PtGChunkCatalog: it collects PtGChunkData and
@@ -42,7 +40,7 @@ import it.grid.storm.griduser.GridUserInterface;
  * @version 4.0
  */
 public class PtGChunkCatalog {
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(PtGChunkCatalog.class);
     private static final PtGChunkCatalog cat = new PtGChunkCatalog(); //only instance of PtGChunkCatalog present in StoRM!
     private final PtGChunkDAO dao = PtGChunkDAO.getInstance();
     private final Timer transiter = new Timer(); //Timer object in charge of transiting expired requests from SRM_FILE_PINNED to SRM_RELEASED!
@@ -54,8 +52,9 @@ public class PtGChunkCatalog {
      * check and transit requests whose pinLifetime has expired and are in
      * SRM_FILE_PINNED, to SRM_RELEASED.
      */
-	private PtGChunkCatalog() {
+    private PtGChunkCatalog() {
         TimerTask transitTask = new TimerTask() {
+            @Override
             public void run() {
                 transitExpiredSRM_FILE_PINNED();
             }
@@ -72,9 +71,9 @@ public class PtGChunkCatalog {
 
 
 
-	/**
-	 * Method that returns a Collection of PtGChunkData Objects matching the
-	 * supplied TRequestToken.
+    /**
+     * Method that returns a Collection of PtGChunkData Objects matching the
+     * supplied TRequestToken.
      *
      * If any of the data associated to the TRequestToken is not well formed and
      * so does not allow a PtGChunkData Object to be created, then that part of
@@ -83,8 +82,8 @@ public class PtGChunkCatalog {
      *
      * If there are no chunks to process then an empty Collection is returned,
      * and a messagge gets logged.
-	 */
-	synchronized public Collection lookup(TRequestToken rt) {
+     */
+    synchronized public Collection lookup(TRequestToken rt) {
         Collection c = dao.find(rt);
         log.debug("PtG CHUNK CATALOG: retrieved data "+c);
         List list = new ArrayList();
@@ -96,7 +95,9 @@ public class PtGChunkCatalog {
             for (Iterator i = c.iterator(); i.hasNext(); ) {
                 auxTO = (PtGChunkDataTO) i.next();
                 aux = makeOne(auxTO,rt);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
         }
         log.debug("PtG CHUNK CATALOG: returning "+ list);
@@ -135,11 +136,13 @@ public class PtGChunkCatalog {
             TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
             if (code==TStatusCode.EMPTY) {
                 //sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-            } else try {
-                status = new TReturnStatus(code,auxTO.errString());
-            } catch (InvalidTReturnStatusAttributeException e) {
-                //sb.append("\n");
-                //sb.append(e);
+            } else {
+                try {
+                    status = new TReturnStatus(code,auxTO.errString());
+                } catch (InvalidTReturnStatusAttributeException e) {
+                    //sb.append("\n");
+                    //sb.append(e);
+                }
             }
             inputChunk.setStatus(status);
 
@@ -205,11 +208,13 @@ public class PtGChunkCatalog {
         TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
         if (code==TStatusCode.EMPTY) {
             sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else try {
-            status = new TReturnStatus(code,auxTO.errString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
+        } else {
+            try {
+                status = new TReturnStatus(code,auxTO.errString());
+            } catch (InvalidTReturnStatusAttributeException e) {
+                sb.append("\n");
+                sb.append(e);
+            }
         }
         //transferURL
         TTURL transferURL = TTURL.makeEmpty(); //whatever is read is just meaningless because PtG will fill it in!!! So create an Empty TTURL by default! Vital to avoid problems with unknown DPM NULL/EMPTY logic policy!
@@ -221,7 +226,7 @@ public class PtGChunkCatalog {
         } catch (InvalidPtGChunkDataAttributesException e) {
             dao.signalMalformedPtGChunk(auxTO);
             log.warn("PtG CHUNK CATALOG! Retrieved malformed PtG chunk data from persistence. Dropping chunk from request "+rt);
-            log.warn(e);
+            log.warn(e.getMessage(), e);
             log.warn(sb.toString());
         }
         //end...
@@ -231,8 +236,8 @@ public class PtGChunkCatalog {
 
 
 
-	/**
-	 * Method that returns a Collection of ReducedPtGChunkData Objects associated
+    /**
+     * Method that returns a Collection of ReducedPtGChunkData Objects associated
      * to the supplied TRequestToken.
      *
      * If any of the data retrieved for a given chunk is not well formed and so
@@ -242,8 +247,8 @@ public class PtGChunkCatalog {
      *
      * If there are no chunks associated to the given TRequestToken, then an
      * empty Collection is returned and a messagge gets logged.
-	 */
-	synchronized public Collection lookupReducedPtGChunkData(TRequestToken rt) {
+     */
+    synchronized public Collection lookupReducedPtGChunkData(TRequestToken rt) {
         Collection cl = dao.findReduced(rt.getValue());
         log.debug("PtG CHUNK CATALOG: retrieved data "+cl);
         List list = new ArrayList();
@@ -255,15 +260,17 @@ public class PtGChunkCatalog {
             for (Iterator i = cl.iterator(); i.hasNext(); ) {
                 auxTO = (ReducedPtGChunkDataTO) i.next();
                 aux = makeReducedPtGChunkData(auxTO);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
             log.debug("PtG CHUNK CATALOG: returning "+ list);
         }
         return list;
     }
 
-	/**
-	 * Method that returns a Collection of ReducedPtGChunkData Objects matching
+    /**
+     * Method that returns a Collection of ReducedPtGChunkData Objects matching
      * the supplied GridUser and Collection of TSURLs.
      *
      * If any of the data retrieved for a given chunk is not well formed and so
@@ -273,12 +280,14 @@ public class PtGChunkCatalog {
      *
      * If there are no chunks associated to the given GridUser and Colelction of
      * TSURLs, then an empty Collection is returned and a messagge gets logged.
-	 */
-	synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
+     */
+    synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
         Object[] surlsobj = (new ArrayList(c)).toArray();
         int n = surlsobj.length;
         String[] surls = new String[n];
-        for (int i=0; i<n; i++) surls[i] = ((TSURL)surlsobj[i]).toString();
+        for (int i=0; i<n; i++) {
+            surls[i] = ((TSURL)surlsobj[i]).toString();
+        }
         Collection cl = dao.findReduced(gu.getDn(),surls);
         log.debug("PtG CHUNK CATALOG: retrieved data "+cl);
         List list = new ArrayList();
@@ -290,7 +299,9 @@ public class PtGChunkCatalog {
             for (Iterator i = cl.iterator(); i.hasNext(); ) {
                 auxTO = (ReducedPtGChunkDataTO) i.next();
                 aux = makeReducedPtGChunkData(auxTO);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
             log.debug("PtG CHUNK CATALOG: returning "+ list);
         }
@@ -311,11 +322,13 @@ public class PtGChunkCatalog {
         TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
         if (code==TStatusCode.EMPTY) {
             sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else try {
-            status = new TReturnStatus(code,auxTO.errString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
+        } else {
+            try {
+                status = new TReturnStatus(code,auxTO.errString());
+            } catch (InvalidTReturnStatusAttributeException e) {
+                sb.append("\n");
+                sb.append(e);
+            }
         }
         //make ReducedPtGChunkData
         ReducedPtGChunkData aux=null;
@@ -324,7 +337,7 @@ public class PtGChunkCatalog {
             aux.setPrimaryKey(auxTO.primaryKey());
         } catch (InvalidReducedPtGChunkDataAttributesException e) {
             log.warn("PtG CHUNK CATALOG! Retrieved malformed Reduced PtG chunk data from persistence: dropping reduced chunk...");
-            log.warn(e);
+            log.warn(e.getMessage(), e);
             log.warn(sb.toString());
         }
         //end...
@@ -360,8 +373,8 @@ public class PtGChunkCatalog {
 
 
 
-	/**
-	 * Method used to add into Persistence a new entry. The supplied PtGChunkData
+    /**
+     * Method used to add into Persistence a new entry. The supplied PtGChunkData
      * gets the primary key changed to the value assigned in Persistence.
      *
      * This method is intended to be used by a recursive PtG request: the parent
@@ -376,8 +389,8 @@ public class PtGChunkCatalog {
      *
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! Proper messages get logged by underlaying DAO.
-	 */
-	synchronized public void addChild(PtGChunkData chunkData) {
+     */
+    synchronized public void addChild(PtGChunkData chunkData) {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString()); //needed for now to find ID of request! Must be changed soon!
         to.setFromSURL(chunkData.fromSURL().toString());
@@ -390,8 +403,8 @@ public class PtGChunkCatalog {
         chunkData.setPrimaryKey(to.primaryKey()); //set the assigned PrimaryKey!
     }
 
-	/**
-	 * Method used to add into Persistence a new entry. The supplied PtGChunkData
+    /**
+     * Method used to add into Persistence a new entry. The supplied PtGChunkData
      * gets the primary key changed to the value assigned in the Persistence. The
      * method requires the GridUser to whom associate the added request.
      *
@@ -404,8 +417,8 @@ public class PtGChunkCatalog {
      *
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! The underlaying DAO logs proper error messagges.
-	 */
-	synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
+     */
+    synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());
@@ -449,7 +462,9 @@ public class PtGChunkCatalog {
         }
         int n = aux.size();
         auxlong = new long[n];
-        for (int i=0; i<n; i++) auxlong[i] = ((Long)aux.get(i)).longValue();
+        for (int i=0; i<n; i++) {
+            auxlong[i] = ((Long)aux.get(i)).longValue();
+        }
         dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong,token);
     }
 
@@ -467,7 +482,9 @@ public class PtGChunkCatalog {
      * still have not finished because other chunks are being processed.
      */
     synchronized public void transitSRM_FILE_PINNEDtoSRM_ABORTED(TSURL surl,String explanation) {
-        if (explanation==null) explanation="";
+        if (explanation==null) {
+            explanation="";
+        }
         dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.toString(),explanation);
         //PinnedFilesCatalog.getInstance().removeAllJit(surl);
         //PinnedfilesCatalog.getInstance().removeVolatile(surl);

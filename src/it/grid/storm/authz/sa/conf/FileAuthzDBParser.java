@@ -1,32 +1,40 @@
 package it.grid.storm.authz.sa.conf;
 
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.sa.AuthzDBInterface;
+import it.grid.storm.authz.sa.AuthzDBReaderInterface;
+
 import java.util.Observable;
 import java.util.Observer;
 
-import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.sa.AuthzDBInterface;
-import it.grid.storm.authz.sa.AuthzDBReaderInterface;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.logging.Log;
-import it.grid.storm.authz.SpaceAuthzInterface;
+import org.slf4j.Logger;
 
 
 public class FileAuthzDBParser implements Observer {
 
     private FileAuthzDBReader fileReader;
-    private PropertiesConfiguration authzFileDBProperties;
-    private AuthzDBInterface authzFileDB;
+    private final PropertiesConfiguration authzFileDBProperties;
+    private final AuthzDBInterface authzFileDB;
     private SpaceAuthzInterface spaceAuthz = null;
 
-    private final Log log = AuthzDirector.getLogger();
+    private final Logger log = AuthzDirector.getLogger();
 
 
     public FileAuthzDBParser(SpaceAuthzInterface spaceAuthz, AuthzDBReaderInterface reader, boolean verboseLogging) {
         this.spaceAuthz = spaceAuthz;
-        authzFileDBProperties = (PropertiesConfiguration) reader.getAuthzDB();
+        
+        ////////TEMPORARY FIX 
+        //////// THIS METHOD HAS BEEN COMMENTED TO MAKE EVERYTHING COMPILE
+        authzFileDBProperties = null;
+        // authzFileDBProperties = reader.getAuthzDB();
+        
         if (reader instanceof FileAuthzDBReader) {
             fileReader = (FileAuthzDBReader) reader;
-            fileReader.setObserver(this);
+            //////// TEMPORARY FIX 
+            //////// THIS METHOD HAS BEEN COMMENTED TO MAKE EVERYTHING COMPILE
+            //fileReader.setObserver(this);
         }
         else {
             log.error("FileAuthzDBParser initialized with a invalid Reader.");
@@ -42,7 +50,7 @@ public class FileAuthzDBParser implements Observer {
      * @return AuthzDBInterface
      */
     private AuthzDBInterface parseAuthzDBFile(PropertiesConfiguration authzFileDBProperties) {
-        /** @todo IMPLEMENT */
+        log.debug("PARSING AUTHZ DB FILE");
         return null;
     }
 
@@ -52,14 +60,20 @@ public class FileAuthzDBParser implements Observer {
 
     public void update(Observable observed, Object arg) {
         log.debug(arg + " Refreshing Namespace Memory Cache .. ");
-        FileAuthzDBReader reader = (FileAuthzDBReader) observed;
+        ////////TEMPORARY FIX 
+        //////// THIS METHOD HAS BEEN COMMENTED TO MAKE EVERYTHING COMPILE
+        //FileAuthzDBReader reader = (FileAuthzDBReader) observed;
 
         /**
          * @todo: Refreshing della copia Cache di AuthzDB memorizzata in SpaceAuthz
          */
-
-        reader.setNotifyManaged();
+        ////////TEMPORARY FIX 
+        //////// THIS METHOD HAS BEEN COMMENTED TO MAKE EVERYTHING COMPILE
+        //reader.setNotifyManaged();
         log.debug(" ... Cache Refreshing ended");
     }
+    
+    
+    
 
 }

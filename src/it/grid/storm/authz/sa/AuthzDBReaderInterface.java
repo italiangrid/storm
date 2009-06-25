@@ -1,20 +1,19 @@
 package it.grid.storm.authz.sa;
 
-import org.apache.commons.configuration.PropertiesConfiguration;
+import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 
-
-import it.grid.storm.authz.sa.conf.*;
+import java.util.List;
 
 public interface AuthzDBReaderInterface {
 
-    public void setAutomaticReload(boolean autoReload, int timeIntervalInSeconds);
+    public void addAuthzDB(String dbFileName)  throws AuthzDBReaderException;
 
-    public void bindDB(String dbName)  throws AuthzDBReaderException;
+    public List<String> getAuthzDBNames();
 
-    public void loadAuthZDB() throws AuthzDBReaderException;
+    public void onChangeAuthzDB(String authzDBName) throws AuthzDBReaderException;
 
-    public PropertiesConfiguration getAuthzDB();
+    public AuthzDBInterface getAuthzDB(String authzDBName) throws AuthzDBReaderException;
 
-    public void printAuthzDB();
+    public long getLastParsed(String dbFileName) throws AuthzDBReaderException;
 
 }

@@ -8,7 +8,6 @@
 
 package it.grid.storm.griduser;
 
-import it.grid.storm.common.types.VO;
 
 /**
  * Common Interface for GridUser.
@@ -35,7 +34,7 @@ public interface GridUserInterface {
          * Get GridUser Domain Name.
          * Used for metadada pouprose.
 	 */
-        public DistinguishedName getDistinguishedName();
+    public DistinguishedName getDistinguishedName();
 
         /**
 	 * Return String rapresentation.

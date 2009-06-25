@@ -1,11 +1,7 @@
 package it.grid.storm.xmlrpc.converter.space;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -16,9 +12,12 @@ import it.grid.storm.synchcall.data.space.InvalidReleaseSpaceAttributesException
 import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.griduser.GridUserInterface;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents the Type Converter for ReleaseSpace function .
@@ -35,7 +34,7 @@ public class ReleaseSpaceConverter implements Converter {
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(ReleaseSpaceConverter.class);
 
     public ReleaseSpaceConverter()
     {};
@@ -48,25 +47,25 @@ public class ReleaseSpaceConverter implements Converter {
 
     public InputData convertToInputData(Map inputParam)
     {
-    	log.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
-    	log.debug("ReleaseSpaceConverter: Input Structure toString: "+inputParam.toString());
+        log.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
+        log.debug("ReleaseSpaceConverter: Input Structure toString: "+inputParam.toString());
 
-    	/* Creationd of SpaceResData, INPUT STRUCTURE for */
-    	/* SpaceReservationManager!			  */
-    	ReleaseSpaceInputData inputData = null;
+        /* Creationd of SpaceResData, INPUT STRUCTURE for */
+        /* SpaceReservationManager!			  */
+        ReleaseSpaceInputData inputData = null;
 
-    	// Member name definition for inputParam struct , from SRM V2.1
-    	String member_authID = new String("authorizationID");
-    	String member_token = new String("spaceToken");
-    	String member_sysInfo = new String("storageSystemInfo");
-    	String member_force = new String("forceFileRelease");
+        // Member name definition for inputParam struct , from SRM V2.1
+        String member_authID = new String("authorizationID");
+        String member_token = new String("spaceToken");
+        String member_sysInfo = new String("storageSystemInfo");
+        String member_force = new String("forceFileRelease");
 
         // String member_DN = new String("authorizationID");
 
-    	/* Get parameter value from struct, if defined! */
-    	/* Creation of GridUser into inputStructure */
-    	GridUserInterface guser = null;
-    	guser = GridUserManager.decode(inputParam);
+        /* Get parameter value from struct, if defined! */
+        /* Creation of GridUser into inputStructure */
+        GridUserInterface guser = null;
+        guser = GridUserManager.decode(inputParam);
         //guser = VomsGridUser.decode(inputParam);
 
         /* (1) authorizationID (never used) */
@@ -90,7 +89,7 @@ public class ReleaseSpaceConverter implements Converter {
     	}
          */
 
-    	/* (3) StorageSystemInfo */
+        /* (3) StorageSystemInfo */
         ArrayOfTExtraInfo storageSystemInfo;
         try {
             storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
@@ -99,36 +98,37 @@ public class ReleaseSpaceConverter implements Converter {
             storageSystemInfo = null;
         }
 
-    	/* (4) ForceFileRelease */
-    	Boolean force = (Boolean)inputParam.get(member_force);
-        if (force == null)
+        /* (4) ForceFileRelease */
+        Boolean force = (Boolean)inputParam.get(member_force);
+        if (force == null) {
             force = new Boolean(false);
+        }
 
-    	/* Creation of ReleaseSpaceInputStructure */
-    	try {
-    	    inputData = new ReleaseSpaceInputData(guser, spaceToken, storageSystemInfo, force.booleanValue());
-    	}
-    	catch (InvalidReleaseSpaceAttributesException e) {
-    	    log.error("Error Creating inputData for ReleaseSpace"+e);
-    	}
+        /* Creation of ReleaseSpaceInputStructure */
+        try {
+            inputData = new ReleaseSpaceInputData(guser, spaceToken, storageSystemInfo, force.booleanValue());
+        }
+        catch (InvalidReleaseSpaceAttributesException e) {
+            log.error("Error Creating inputData for ReleaseSpace"+e);
+        }
 
-    	//Return ReleaseSpaceData Data Created
-    	return inputData;
+        //Return ReleaseSpaceData Data Created
+        return inputData;
 
     }
 
 
     public Map convertFromOutputData(OutputData data) {
-    	log.debug("releaseSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
+        log.debug("releaseSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
         ReleaseSpaceOutputData outputData = (ReleaseSpaceOutputData) data;
 
-    	//Creation of new Hashtable to return
-    	Map outputParam = new HashMap();
+        //Creation of new Hashtable to return
+        Map outputParam = new HashMap();
 
-    	TReturnStatus returnStatus = outputData.getStatus();
+        TReturnStatus returnStatus = outputData.getStatus();
         returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
-    	//Return output Parameter structure
-    	return outputParam;
+        //Return output Parameter structure
+        return outputParam;
     }
 }

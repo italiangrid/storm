@@ -1,10 +1,13 @@
 package it.grid.storm.srm.types;
 
+import it.grid.storm.common.types.InvalidPFNAttributeException;
+import it.grid.storm.common.types.InvalidTFNAttributesException;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.TFN;
 import it.grid.storm.common.types.TransferProtocol;
-
-import it.grid.storm.common.types.*;
 import it.grid.storm.namespace.NamespaceDirector;
-import org.apache.commons.logging.Log;
+
+import org.slf4j.Logger;
 
 /**
  * This class represents a TURL, that is a Transfer URL. It is made up of a TransferProtocol and
@@ -16,7 +19,7 @@ import org.apache.commons.logging.Log;
  */
 public class TTURL {
 
-    private static Log log = NamespaceDirector.getLogger();
+    private static Logger log = NamespaceDirector.getLogger();
     private TransferProtocol tp;
     private TFN tfn;
     private boolean empty = true; //boolean true if this is an empty object
@@ -24,14 +27,14 @@ public class TTURL {
     private TTURL(TransferProtocol tp, TFN tfn, boolean empty) {
         this.tp = tp;
         this.tfn = tfn;
-	    this.empty = empty ;
+        this.empty = empty ;
     }
 
     /**
      * Static method that returns an empty TTURL.
      */
     public static TTURL makeEmpty() {
-	    return new TTURL(TransferProtocol.EMPTY, TFN.makeEmpty(), true);
+        return new TTURL(TransferProtocol.EMPTY, TFN.makeEmpty(), true);
     }
 
     /**
@@ -39,8 +42,10 @@ public class TTURL {
      * or empty, an InvalidTURLAttributesException is thrown.
      */
     public static TTURL make(TransferProtocol tp,TFN tfn) throws InvalidTTURLAttributesException {
-        if ((tp==null) || (tfn==null) || (tp==TransferProtocol.EMPTY) || (tfn.isEmpty())) throw new InvalidTTURLAttributesException(tp,tfn);
-	    return new TTURL(tp, tfn, false);
+        if ((tp==null) || (tfn==null) || (tp==TransferProtocol.EMPTY) || (tfn.isEmpty())) {
+            throw new InvalidTTURLAttributesException(tp,tfn);
+        }
+        return new TTURL(tp, tfn, false);
     }
 
     /**
@@ -48,10 +53,13 @@ public class TTURL {
      * or malformed then an InvalidTTURLAttributesException is thrown.
      */
     public static TTURL makeFromString(String s) throws InvalidTTURLAttributesException {
-        if (s==null)
-          throw new InvalidTTURLAttributesException(null,null);
+        if (s==null) {
+            throw new InvalidTTURLAttributesException(null,null);
+        }
         int separator = s.indexOf("://"); //first occurence of ://
-        if ((separator==-1) || (separator==0)) throw new InvalidTTURLAttributesException(null,null); //separator not found or right at the beginning!
+        if ((separator==-1) || (separator==0)) {
+            throw new InvalidTTURLAttributesException(null,null); //separator not found or right at the beginning!
+        }
         String tpString = s.substring(0,separator);
         TransferProtocol tp = null;
         try {
@@ -59,7 +67,9 @@ public class TTURL {
         } catch (IllegalArgumentException e) {
             //do nothing - tp remains null and that is fine!
         }
-        if ((separator+3) > (s.length())) throw new InvalidTTURLAttributesException(tp,null); //separator found at the end!
+        if ((separator+3) > (s.length())) {
+            throw new InvalidTTURLAttributesException(tp,null); //separator found at the end!
+        }
         String tfnString = s.substring(separator+3,s.length());
         TFN tfn = null;
         if (tfnString.startsWith("/")) {
@@ -89,7 +99,7 @@ public class TTURL {
      * Method that returns true if this object is an empty TTURL
      */
     public boolean isEmpty() {
-    	return empty;
+        return empty;
     }
 
     /**
@@ -97,7 +107,9 @@ public class TTURL {
      * TTURL, then an empty TransferProtocol is returned.
      */
     public TransferProtocol protocol() {
-        if (empty) return TransferProtocol.EMPTY;
+        if (empty) {
+            return TransferProtocol.EMPTY;
+        }
         return tp;
     }
 
@@ -106,33 +118,48 @@ public class TTURL {
      * empty TFN is returned.
      */
     public TFN tfn() {
-        if (empty) return TFN.makeEmpty();
+        if (empty) {
+            return TFN.makeEmpty();
+        }
         return tfn;
     }
 
 
 
+    @Override
     public String toString() {
-        if (empty) return "Empty TTURL";
+        if (empty) {
+            return "Empty TTURL";
+        }
         return tp+"://"+tfn;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof TTURL)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof TTURL)) {
+            return false;
+        }
         TTURL turlo = (TTURL) o;
-        if (empty && turlo.empty) return true;
+        if (empty && turlo.empty) {
+            return true;
+        }
         return (!empty) && (!turlo.empty) && tp.equals(turlo.tp) && tfn.equals(turlo.tfn);
     }
 
+    @Override
     public int hashCode() {
-        if (empty) return 0;
+        if (empty) {
+            return 0;
+        }
         int hash = 17;
         hash = 37*hash + tp.hashCode();
         hash = 37*hash + tfn.hashCode();
         return hash;
     }
-/*
+    /*
     public static void main(String[] args) {
         //testing empty TTURL
         System.out.println("Testing empty TTURL objects...");

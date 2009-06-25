@@ -1,13 +1,19 @@
 package it.grid.storm.namespace;
 
-import java.util.*;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.StFN;
+import it.grid.storm.filesystem.Space;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TTURL;
 
-import it.grid.storm.common.types.*;
-import it.grid.storm.filesystem.*;
-import it.grid.storm.griduser.*;
-import it.grid.storm.namespace.model.*;
-import it.grid.storm.srm.types.*;
-import it.grid.storm.balancer.Balancer;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Title: </p>
@@ -49,6 +55,15 @@ import it.grid.storm.balancer.Balancer;
  */
 public interface NamespaceInterface {
 
+    
+    /**
+     * getAllDefinedVFS
+     * 
+     * @return List<VirtualFSInterface> : Return a List of VirtualFS cointaing all the istances defined within Namespace
+     * @throws NamespaceException
+     */
+    public Collection<VirtualFSInterface> getAllDefinedVFS() throws NamespaceException;
+    
     /**
      *
      *
@@ -326,6 +341,7 @@ public interface NamespaceInterface {
     public Set getListOfVFSName(GridUserInterface gUser);
 
     public String getNamespaceVersion() throws NamespaceException;
+ 
 
     /**
      *
@@ -341,7 +357,13 @@ public interface NamespaceInterface {
 
     public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException;
 
-
+    /**
+     * @param surlString : pass the SURL in String format as it comes from the FE.
+     * @param user
+     * @return
+     * @throws NamespaceException
+     */
+    public boolean isStfnFittingSomewhere(String surlString, GridUserInterface user) throws NamespaceException;
 
 
 

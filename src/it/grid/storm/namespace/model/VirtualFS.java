@@ -1,22 +1,48 @@
 package it.grid.storm.namespace.model;
 
-import java.lang.reflect.*;
-import java.util.*;
-
-import org.apache.commons.logging.*;
-import it.grid.storm.catalogs.*;
-import it.grid.storm.common.*;
-import it.grid.storm.common.types.*;
-import it.grid.storm.config.*;
-import it.grid.storm.filesystem.*;
-import it.grid.storm.filesystem.swig.*;
-import it.grid.storm.griduser.*;
-import it.grid.storm.namespace.*;
-import it.grid.storm.namespace.naming.*;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.common.GUID;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.Filesystem;
+import it.grid.storm.filesystem.GPFSSpaceSystem;
+import it.grid.storm.filesystem.InvalidSpaceAttributesException;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.MockSpaceSystem;
+import it.grid.storm.filesystem.ReservationException;
+import it.grid.storm.filesystem.Space;
+import it.grid.storm.filesystem.SpaceSystem;
+import it.grid.storm.filesystem.XFSSpaceSystem;
+import it.grid.storm.filesystem.swig.genericfs;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.CapabilityInterface;
+import it.grid.storm.namespace.DefaultValuesInterface;
+import it.grid.storm.namespace.ExpiredSpaceTokenException;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.PropertyInterface;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.StoRIImpl;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.naming.NamespaceUtil;
+import it.grid.storm.namespace.naming.NamingConst;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TSpaceType;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -32,7 +58,7 @@ import it.grid.storm.balancer.Node;
  */
 public class VirtualFS implements VirtualFSInterface {
 
-    private Log log = NamespaceDirector.getLogger();
+    private final Logger log = NamespaceDirector.getLogger();
 
     String aliasName = null;
     String type = null;
@@ -52,6 +78,7 @@ public class VirtualFS implements VirtualFSInterface {
     List mappingRules = new ArrayList();
     Configuration config;
     StorageClassType storageClass = null;
+    TSpaceToken spaceToken;
     SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
     String saAuthzSourceName = null;
 
@@ -64,20 +91,20 @@ public class VirtualFS implements VirtualFSInterface {
     }
 
     public VirtualFS(String aliasName, String type, String rootPath, String spaceTokenDescription,
-                     StorageClassType storageClass, Class fsDriver,
-                     Class spaceDriver, PropertyInterface properties, DefaultValuesInterface defaultValue,
-                     CapabilityInterface capabilities) throws NamespaceException {
-      this.aliasName = aliasName;
-      this.type = type;
-      this.rootPath = rootPath;
-      this.spaceTokenDescription = spaceTokenDescription;
-      this.storageClass = storageClass;
-      this.fsDriver = fsDriver;
-      this.spaceSystemDriver = spaceDriver;
-      this.defValue = defaultValue;
-      this.capabilities = capabilities;
-      this.properties = properties;
-      buildStoRIRoot(rootPath);
+            StorageClassType storageClass, Class fsDriver,
+            Class spaceDriver, PropertyInterface properties, DefaultValuesInterface defaultValue,
+            CapabilityInterface capabilities) throws NamespaceException {
+        this.aliasName = aliasName;
+        this.type = type;
+        this.rootPath = rootPath;
+        this.spaceTokenDescription = spaceTokenDescription;
+        this.storageClass = storageClass;
+        this.fsDriver = fsDriver;
+        this.spaceSystemDriver = spaceDriver;
+        this.defValue = defaultValue;
+        this.capabilities = capabilities;
+        this.properties = properties;
+        buildStoRIRoot(rootPath);
 
     }
 
@@ -106,23 +133,23 @@ public class VirtualFS implements VirtualFSInterface {
     }
 
     public void setSpaceTokenDescription(String spaceTokenDescription) {
-      this.spaceTokenDescription = spaceTokenDescription;
+        this.spaceTokenDescription = spaceTokenDescription;
     }
 
 
     public void setStorageClassType(StorageClassType storageClass) {
-      this.storageClass = storageClass;
+        this.storageClass = storageClass;
     }
 
     public void setProperties(PropertyInterface prop) {
-      this.properties = prop;
+        this.properties = prop;
     }
 
-/**
+    /**
     public void setStorageAreaAuthz(String saAuthzSourceName) {
       this.saAuthzSourceName = saAuthzSourceName;
     }
-**/
+     **/
 
     public void setSpaceSystemDriver(Class spaceDriver) {
         this.spaceSystemDriver = spaceDriver;
@@ -146,13 +173,18 @@ public class VirtualFS implements VirtualFSInterface {
     }
 
 
+    public void setSpaceToken(TSpaceToken spaceToken) {
+        this.spaceToken = spaceToken;
+    }
+
+
     public void setSAAuthzType(SAAuthzType saAuthzType) {
-      this.saAuthzType = saAuthzType;
+        this.saAuthzType = saAuthzType;
     }
 
 
     public void setSAAuthzSource(String authzSourceName) {
-      this.saAuthzSourceName = authzSourceName;
+        this.saAuthzSourceName = authzSourceName;
     }
 
 
@@ -171,62 +203,62 @@ public class VirtualFS implements VirtualFSInterface {
      ****************************************************************************/
 
     public String getFSType() throws NamespaceException {
-      return this.type;
+        return this.type;
     }
 
     public String getSpaceTokenDescription() throws NamespaceException {
-      return this.spaceTokenDescription;
+        return this.spaceTokenDescription;
     }
 
     public StorageClassType getStorageClassType() throws NamespaceException {
-      return this.storageClass;
+        return this.storageClass;
     }
 
-/**
+    /**
     public String getStorageAreaAuthz() throws NamespaceException {
       return this.saAuthzSourceName;
     }
-**/
+     **/
 
     public PropertyInterface getProperties() throws NamespaceException {
-      return this.properties;
+        return this.properties;
     }
 
 
     public TSizeInBytes getUsedOnlineSpace() throws NamespaceException {
-      TSizeInBytes result = TSizeInBytes.makeEmpty();
-      /**
-     * @todo : This method must contact Space Manager (or who for him) to
-     * retrieve the real situation
-     *
-     * @todo : Contact Space Catalog to retrieve the logical space occupied.
-     * This space must to be equal to space occupied in underlying FS.
-       */
-      return result;
+        TSizeInBytes result = TSizeInBytes.makeEmpty();
+        /**
+         * @todo : This method must contact Space Manager (or who for him) to
+         * retrieve the real situation
+         *
+         * @todo : Contact Space Catalog to retrieve the logical space occupied.
+         * This space must to be equal to space occupied in underlying FS.
+         */
+        return result;
     }
 
     public TSizeInBytes getAvailableOnlineSpace() throws NamespaceException {
-      TSizeInBytes result = TSizeInBytes.makeEmpty();
-    /**
-   * @todo : This method must contact Space Manager (or who for him) to
-   * retrieve the real situation
-   *
-   * @todo : Contact Space Catalog to retrieve the logical space occupied.
-   * This space must to be equal to space occupied in underlying FS.
-     */
-    return result;
+        TSizeInBytes result = TSizeInBytes.makeEmpty();
+        /**
+         * @todo : This method must contact Space Manager (or who for him) to
+         * retrieve the real situation
+         *
+         * @todo : Contact Space Catalog to retrieve the logical space occupied.
+         * This space must to be equal to space occupied in underlying FS.
+         */
+        return result;
 
     }
 
     public TSizeInBytes getUsedNearlineSpace() throws NamespaceException {
-      TSizeInBytes result = TSizeInBytes.makeEmpty();
-      return result;
+        TSizeInBytes result = TSizeInBytes.makeEmpty();
+        return result;
     }
 
 
     public TSizeInBytes getAvailableNearlineSpace() throws NamespaceException {
-      return properties.getTotalNearlineSize();
-  }
+        return properties.getTotalNearlineSize();
+    }
 
     public String getAliasName() throws NamespaceException {
         return this.aliasName;
@@ -264,7 +296,7 @@ public class VirtualFS implements VirtualFSInterface {
         Class fsArgumentsClass[] = new Class[1];
         fsArgumentsClass[0] = String.class;
         Object[] fsArguments = new Object[] {
-            this.rootPath};
+                this.rootPath};
         Constructor fsConstructor = null;
         try {
             fsConstructor = fsDriver.getConstructor(fsArgumentsClass);
@@ -340,14 +372,14 @@ public class VirtualFS implements VirtualFSInterface {
         //Check if SpaceSystem is MockSpaceSystem used for Posix FS
         //Check if SpaceSystem is MockSpaceSystem used for XFS FS
         if ( (this.spaceSystemDriver.getName().equals(GPFSSpaceSystem.class.getName())) ||
-            (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName())) ||
-            (this.spaceSystemDriver.getName().equals(XFSSpaceSystem.class.getName()))) {
+                (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName())) ||
+                (this.spaceSystemDriver.getName().equals(XFSSpaceSystem.class.getName()))) {
 
             //The class type argument is the mount point of GPFS file system
             Class ssArgumentsClass[] = new Class[1];
             ssArgumentsClass[0] = String.class;
             Object[] ssArguments = new Object[] {
-                this.rootPath};
+                    this.rootPath};
 
             Constructor ssConstructor = null;
             try {
@@ -459,10 +491,11 @@ public class VirtualFS implements VirtualFSInterface {
 
         StorageSpaceData ssd = catalog.getStorageSpace(token);
 
-        if ((ssd!=null) && (ssd.getSpaceType().equals(TSpaceType.VOSPACE)))
+        if ((ssd!=null) && (ssd.getSpaceType().equals(TSpaceType.VOSPACE))) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
     public void makeSilhouetteForFile(StoRI stori, TSizeInBytes presumedSize) throws NamespaceException {
@@ -503,11 +536,11 @@ public class VirtualFS implements VirtualFSInterface {
         //Get the default space size
         TSizeInBytes defaultFileSize = null;
         try {
-        	defaultFileSize = TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES );
-	    }
-	    catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
-	        log.debug("Invalid size created.");
-	    }
+            defaultFileSize = TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES );
+        }
+        catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
+            log.debug("Invalid size created.");
+        }
 
 
         /**
@@ -515,21 +548,21 @@ public class VirtualFS implements VirtualFSInterface {
          */
         Boolean found =  isVOSAToken(token);
 
-	    /**
-	     * In case of DEFAULT SPACE TOKENspecified
-	     * do nothing and create a simple silhouette for the file...
-	     */
+        /**
+         * In case of DEFAULT SPACE TOKENspecified
+         * do nothing and create a simple silhouette for the file...
+         */
 
         if(found) {
-        	//The minimum size between the one specifed and the default.
-        	//makeSilhouetteForFile(file, ((sizePresumed.value()<defaultFileSize.value())?sizePresumed:defaultFileSize));
-        	try {
-				file.allotSpaceForFile(sizePresumed);
-			} catch (ReservationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	return;
+            //The minimum size between the one specifed and the default.
+            //makeSilhouetteForFile(file, ((sizePresumed.value()<defaultFileSize.value())?sizePresumed:defaultFileSize));
+            try {
+                file.allotSpaceForFile(sizePresumed);
+            } catch (ReservationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
         }
 
         /**
@@ -547,7 +580,7 @@ public class VirtualFS implements VirtualFSInterface {
 
         //      Check here if Space Reservation is expired
         if (spaceData.isExpired()) {
-        	throw new ExpiredSpaceTokenException("Space Token Expired :" + token);
+            throw new ExpiredSpaceTokenException("Space Token Expired :" + token);
         }
 
         //Compute space to use
@@ -599,8 +632,8 @@ public class VirtualFS implements VirtualFSInterface {
             StoRI spaceFile = retrieveSpaceFileByPFN(pfn, totalSize);
 
             if( (!(spaceFile.getLocalFile().exists())) || (spaceFile.getLocalFile().isDirectory()) ) {
-            	log.error("Unable to get  the correct space file!spaceFile does not exsists or it is a directory.");
-            	return;
+                log.error("Unable to get  the correct space file!spaceFile does not exsists or it is a directory.");
+                return;
             }
 
             /**
@@ -673,11 +706,11 @@ public class VirtualFS implements VirtualFSInterface {
         //Get the default space size
         TSizeInBytes defaultFileSize = null;
         try {
-        	defaultFileSize = TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES );
-	    }
-	    catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
-	        log.debug("Invalid size created.");
-	    }
+            defaultFileSize = TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES );
+        }
+        catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
+            log.debug("Invalid size created.");
+        }
 
 
 
@@ -691,75 +724,75 @@ public class VirtualFS implements VirtualFSInterface {
         }
 
         /**
-	     * First of all, Check if it's default or not
-	     */
+         * First of all, Check if it's default or not
+         */
 
-	    //if(spaceData.getSpaceType()== StorageSpaceData.DEFAULT) {
-	    if(isVOSAToken(token)) {
-	    	//ADD HERE THE LOGIC TO MANAGE DEFAULT SPACE RESERVATION
-	        /**
-		     * Check if a DEFAULT SPACE TOKEN is specified.
-		     * IN that case do nothing and create a simple silhouette for the file...
-		     *
-		     *
-		     * TOREMOVE. The space data will contains this information!!!
-		     * i METADATA non venfgono agrgiornati, sara fatta una funzionalita' nella getspacemetadatacatalog che in
-		     * caso di query sul defaulr space token vada a vedre la quota sul file system.
-		     *
-		     */
+        //if(spaceData.getSpaceType()== StorageSpaceData.DEFAULT) {
+        if(isVOSAToken(token)) {
+            //ADD HERE THE LOGIC TO MANAGE DEFAULT SPACE RESERVATION
+            /**
+             * Check if a DEFAULT SPACE TOKEN is specified.
+             * IN that case do nothing and create a simple silhouette for the file...
+             *
+             *
+             * TOREMOVE. The space data will contains this information!!!
+             * i METADATA non venfgono agrgiornati, sara fatta una funzionalita' nella getspacemetadatacatalog che in
+             * caso di query sul defaulr space token vada a vedre la quota sul file system.
+             *
+             */
             //WARNING, This double check have to be removed, the firs should be fdone on teh space type
-		    Boolean found = isVOSAToken(token);
-		    if(found) {
-		    	try {
-					file.allotSpaceForFile(defaultFileSize);
-				} catch (ReservationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	        	return;
-	        }
+            Boolean found = isVOSAToken(token);
+            if(found) {
+                try {
+                    file.allotSpaceForFile(defaultFileSize);
+                } catch (ReservationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                return;
+            }
 
 
-	    } else {
-	    	 /**
-	         * Token for Dynamic space reservation specified.
-	         * Go ahead in the old way, look into the space reservation catalog, ...
-	         */
+        } else {
+            /**
+             * Token for Dynamic space reservation specified.
+             * Go ahead in the old way, look into the space reservation catalog, ...
+             */
 
 
-	        // Check here if Space Reservation is expired
-	        //Add control if it is default?
+            // Check here if Space Reservation is expired
+            //Add control if it is default?
 
-	        if (spaceData.isExpired()) {
-	        	throw new NamespaceException("Space Token Expired :" + token);
-	        }
+            if (spaceData.isExpired()) {
+                throw new NamespaceException("Space Token Expired :" + token);
+            }
 
 
-	        //Compute space to use
-	        TSizeInBytes totalSpaceSize = spaceData.getTotalSize();
-	        log.debug("Total Space : " + totalSpaceSize);
-	        TSizeInBytes guarSpaceSize = spaceData.getGuaranteedSize();
-	        log.debug("Guaranteed Space : " + guarSpaceSize);
-	        TSizeInBytes usedSpaceSize = spaceData.getActualUsedSpace();
-	        log.debug("Used Space : " + usedSpaceSize);
-	        TSizeInBytes unusedSpaceSize = spaceData.getUnusedSizes();
-	        log.debug("Unused Space : " + unusedSpaceSize);
+            //Compute space to use
+            TSizeInBytes totalSpaceSize = spaceData.getTotalSize();
+            log.debug("Total Space : " + totalSpaceSize);
+            TSizeInBytes guarSpaceSize = spaceData.getGuaranteedSize();
+            log.debug("Guaranteed Space : " + guarSpaceSize);
+            TSizeInBytes usedSpaceSize = spaceData.getActualUsedSpace();
+            log.debug("Used Space : " + usedSpaceSize);
+            TSizeInBytes unusedSpaceSize = spaceData.getUnusedSizes();
+            log.debug("Unused Space : " + unusedSpaceSize);
 
-		    if(defaultFileSize.value() <= (unusedSpaceSize.value()/2)) {
-		    	log.debug("UseAllSpaceForFile size:"+defaultFileSize);
-		    	useSpaceForFile(token, file, defaultFileSize );
-		    } else {
-		    	TSizeInBytes fileSizeToUse = null;
-		    	try {
-		    		fileSizeToUse = TSizeInBytes.make(unusedSpaceSize.value()/2, SizeUnit.BYTES );
-			    }
-			    catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
-			        log.debug("Invalid size created.");
-			    }
-			    log.debug("UseAllSpaceForFile size:"+fileSizeToUse );
-		    	useSpaceForFile(token, file, fileSizeToUse);
-		    }
-	/*
+            if(defaultFileSize.value() <= (unusedSpaceSize.value()/2)) {
+                log.debug("UseAllSpaceForFile size:"+defaultFileSize);
+                useSpaceForFile(token, file, defaultFileSize );
+            } else {
+                TSizeInBytes fileSizeToUse = null;
+                try {
+                    fileSizeToUse = TSizeInBytes.make(unusedSpaceSize.value()/2, SizeUnit.BYTES );
+                }
+                catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
+                    log.debug("Invalid size created.");
+                }
+                log.debug("UseAllSpaceForFile size:"+fileSizeToUse );
+                useSpaceForFile(token, file, fileSizeToUse);
+            }
+            /*
 	        //Retrieve the Space File
 	        PFN pfn = spaceData.getSpaceFileName();
 	        StoRI spaceFile = retrieveSpaceFileByPFN(pfn, totalSpaceSize.value());
@@ -787,11 +820,11 @@ public class VirtualFS implements VirtualFSInterface {
 
 	        //Update the catalogs
 	        storeSpaceByToken(spaceData);
-	*/
+             */
 
 
 
-	    }
+        }
 
 
     }
@@ -893,7 +926,7 @@ public class VirtualFS implements VirtualFSInterface {
             try {
                 newSize = TSizeInBytes.make(sizePresumed, SizeUnit.BYTES);
                 file = createSpace(NamespaceUtil.extractRelativePath(this.getRootPath(), file.getAbsolutePath()),
-                                   sizePresumed);
+                        sizePresumed);
                 file.getSpace().allot();
             }
             catch (InvalidTSizeAttributesException ex) {
@@ -921,42 +954,42 @@ public class VirtualFS implements VirtualFSInterface {
              */
 
             if(sizePresumed <= (realSize/2)) {
-	           	log.debug("SplitSpace Case (1)");
+                log.debug("SplitSpace Case (1)");
 
-	           	//Truncate
-	           	log.debug("SplitSpace: "+spaceOrig.getAbsolutePath()+" truncating file to size:"+(realSize-sizePresumed));
-	           	spaceOrig.getSpace().getSpaceFile().truncateFile((realSize-sizePresumed));
+                //Truncate
+                log.debug("SplitSpace: "+spaceOrig.getAbsolutePath()+" truncating file to size:"+(realSize-sizePresumed));
+                spaceOrig.getSpace().getSpaceFile().truncateFile((realSize-sizePresumed));
 
-	            //Allocate space for file
-	            try {
-	                newSize = TSizeInBytes.make(sizePresumed, SizeUnit.BYTES);
-	                file = createSpace(NamespaceUtil.extractRelativePath(this.getRootPath(), file.getAbsolutePath()),
-	                                   sizePresumed);
-	                file.getSpace().allot();
-	            }
-	            catch (InvalidTSizeAttributesException ex) {
-	                log.error("Unable to create UNUsed Space Size, so use EMPTY size ", ex);
-	            }
-	            catch (it.grid.storm.filesystem.ReservationException e2) {
-	                log.error("Unable to create space into File System");
-	            }
+                //Allocate space for file
+                try {
+                    newSize = TSizeInBytes.make(sizePresumed, SizeUnit.BYTES);
+                    file = createSpace(NamespaceUtil.extractRelativePath(this.getRootPath(), file.getAbsolutePath()),
+                            sizePresumed);
+                    file.getSpace().allot();
+                }
+                catch (InvalidTSizeAttributesException ex) {
+                    log.error("Unable to create UNUsed Space Size, so use EMPTY size ", ex);
+                }
+                catch (it.grid.storm.filesystem.ReservationException e2) {
+                    log.error("Unable to create space into File System");
+                }
 
             } else {
-            	log.debug("SplitSpace Case (2)");
+                log.debug("SplitSpace Case (2)");
 
 
                 //Truncate the orig space to the new file size, and rename it
 
-            	//Truncate
-             	spaceOrig.getSpace().getSpaceFile().truncateFile((sizePresumed));
+                //Truncate
+                spaceOrig.getSpace().getSpaceFile().truncateFile((sizePresumed));
 
-             	//Rename Space to the File Name to the name of LocalFile in file
+                //Rename Space to the File Name to the name of LocalFile in file
                 spaceOrig.getLocalFile().renameTo(file.getAbsolutePath());
                 log.debug("VFS  : fileabspath:" + file.getAbsolutePath());
 
 
                 //Allocate space original
-             	long remainingSize = realSize - sizePresumed;
+                long remainingSize = realSize - sizePresumed;
 
                 try {
                     newSize = TSizeInBytes.make(remainingSize, SizeUnit.BYTES);
@@ -1022,6 +1055,7 @@ public class VirtualFS implements VirtualFSInterface {
         return null;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
@@ -1078,9 +1112,9 @@ public class VirtualFS implements VirtualFSInterface {
      **/
 
     private Space createSpace(TSizeInBytes guarSize,
-                              TSizeInBytes totalSize,
-                              LocalFile file,
-                              SpaceSystem spaceSystem) throws NamespaceException {
+            TSizeInBytes totalSize,
+            LocalFile file,
+            SpaceSystem spaceSystem) throws NamespaceException {
         Space space = null;
         try {
             space = new Space(guarSize, totalSize, file, spaceSystem);
@@ -1132,35 +1166,41 @@ public class VirtualFS implements VirtualFSInterface {
         return creationTime;
     }
 
-  /******************************************
+    /******************************************
      *           VERSION 1.4                  *
-  *******************************************/
+     *******************************************/
 
-  public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException {
-    return this.capabilities.getPoolByScheme(protocol);
-  }
+    public TSpaceToken getSpaceToken() throws NamespaceException {
+        return this.spaceToken;
+    }
 
-  public boolean isPoolDefined(Protocol protocol) throws NamespaceException {
-    return this.capabilities.isPooledProtocol(protocol);
-  }
+    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException {
+        return this.capabilities.getPoolByScheme(protocol);
+    }
 
-  public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {
-    return saAuthzType;
-  }
+    public boolean isPoolDefined(Protocol protocol) throws NamespaceException {
+        return this.capabilities.isPooledProtocol(protocol);
+    }
 
-  public String getStorageAreaAuthzDB() throws NamespaceException {
-    if (getStorageAreaAuthzType().equals(SAAuthzType.AUTHZDB))
-      return saAuthzSourceName;
-    else
-      throw new NamespaceException("Required AUTHZ-DB, but it is UNDEFINED.");
-  }
+    public SAAuthzType getStorageAreaAuthzType() throws NamespaceException {
+        return saAuthzType;
+    }
 
-  public String getStorageAreaAuthzFixed() throws NamespaceException {
-    if (getStorageAreaAuthzType().equals(SAAuthzType.FIXED))
-      return saAuthzSourceName;
-    else
-      throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
-  }
+    public String getStorageAreaAuthzDB() throws NamespaceException {
+        if (getStorageAreaAuthzType().equals(SAAuthzType.AUTHZDB)) {
+            return saAuthzSourceName;
+        } else {
+            throw new NamespaceException("Required AUTHZ-DB, but it is UNDEFINED.");
+        }
+    }
+
+    public String getStorageAreaAuthzFixed() throws NamespaceException {
+        if (getStorageAreaAuthzType().equals(SAAuthzType.FIXED)) {
+            return saAuthzSourceName;
+        } else {
+            throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
+        }
+    }
 
 
 

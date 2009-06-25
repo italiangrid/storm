@@ -196,6 +196,23 @@ public class StorageSpaceSQLHelper extends SQLHelper{
   }
 
 
+  /**
+   * Returns the SQL string for selecting all columns from the table 'storage_space' in the
+   * 'storm_be_ISAM' database matching 'voname'.
+   * @param voname string
+   * @return String.
+   */
+  public String selectBySpaceType(String voname)
+  {
+      /*
+       * This is to distinguish  a client reseve space with  a VOSpaceArea both with the same token.
+       * Only the one made by the namespace process contains a fake dn
+       */
+
+       return "SELECT * FROM `storage_space` where SPACE_TYPE='" + voname + "'";
+  }
+
+
 
 
 

@@ -94,7 +94,7 @@ public class Balancer<E extends Node> {
         sb.append(" STRATEGY: "+strategy+"\n");
         int index = 0;
         for(E e:pool) {
-            sb.append(" NODE("+ index+++") = ");
+            sb.append(" NODE("+ index++ +") = ");
             sb.append(" "+e);
             //sb.append("Hostname: "+e.getHostName()+"\n");
             sb.append(" --> WEIGHT: "+e.getWeight()+"\n");

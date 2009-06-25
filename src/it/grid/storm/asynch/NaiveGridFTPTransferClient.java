@@ -1,27 +1,28 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.TTURL;
 
-import org.globus.ftp.GridFTPClient;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.globus.ftp.FeatureList;
+import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.Session;
 import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.ServerException;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.globus.gsi.gssapi.GlobusGSSException;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
-import java.io.*;
-
-import org.apache.log4j.Logger;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.AbstractGridUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a GridFTP client; it is naive in that it makes no use
@@ -38,7 +39,7 @@ import it.grid.storm.griduser.AbstractGridUser;
  */
 public class NaiveGridFTPTransferClient implements GridFTPTransferClient {
 
-    private static final Logger log = Logger.getLogger("NaiveGridFTPClient");
+    private static final Logger log = LoggerFactory.getLogger(NaiveGridFTPTransferClient.class);
 
     /**
      * Implementation of inherited put method: it executes a put of a file as per contract
@@ -52,13 +53,17 @@ public class NaiveGridFTPTransferClient implements GridFTPTransferClient {
     public void putFile(GridUserInterface gu, TTURL local, TTURL remote) throws GridFTPTransferClientException {
         boolean localIsFile = (local.protocol()==TransferProtocol.FILE);
         boolean remoteIsGSIFTP = (remote.protocol()==TransferProtocol.GSIFTP);
-        if (!localIsFile || !remoteIsGSIFTP) throw new GridFTPTransferClientException("Unsupported local/remote protocol: local-is-file="+localIsFile+", remote-is-GSIFTP="+remoteIsGSIFTP);
+        if (!localIsFile || !remoteIsGSIFTP) {
+            throw new GridFTPTransferClientException("Unsupported local/remote protocol: local-is-file="+localIsFile+", remote-is-GSIFTP="+remoteIsGSIFTP);
+        }
         String fullLocalFile = "/"+local.tfn().pfn().getValue();
         String fullRemoteFile = "/"+remote.tfn().pfn().getValue();
         try {
             InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes());
             int remotePort = 2811;
-            if (!remote.tfn().port().isEmpty()) remotePort = remote.tfn().port().toInt();
+            if (!remote.tfn().port().isEmpty()) {
+                remotePort = remote.tfn().port().toInt();
+            }
             GridFTPClient client = new GridFTPClient(remote.tfn().machine().getValue(),remotePort);
             client.authenticate(new GlobusGSSCredentialImpl(new GlobusCredential(proxy) , GSSCredential.INITIATE_AND_ACCEPT));
             client.setType(Session.TYPE_IMAGE);
@@ -71,8 +76,8 @@ public class NaiveGridFTPTransferClient implements GridFTPTransferClient {
             client.setClientWaitParams(Configuration.getInstance().getGridFTPTimeOut(),Session.DEFAULT_WAIT_DELAY);
             client.put(new File(fullLocalFile), fullRemoteFile, false);
             client.close();
-        //} catch (InvalidTUserIDAttributeException e) {
-        //    throw new GridFTPTransferClientException("No proxy found!");
+            //} catch (InvalidTUserIDAttributeException e) {
+            //    throw new GridFTPTransferClientException("No proxy found!");
         } catch (IOException e) {
             throw new GridFTPTransferClientException(e.toString());
         } catch (ServerException e) {

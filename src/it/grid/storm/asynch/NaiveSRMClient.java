@@ -1,48 +1,36 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.common.types.TransferProtocol;
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
 
-import srmClientStubs.*;
-
-import org.apache.axis.types.URI;
-import org.apache.axis.types.UnsignedLong;
-import org.apache.axis.configuration.SimpleProvider;
-import org.apache.axis.SimpleTargetedChain;
-import org.apache.axis.transport.http.HTTPSender;
-
-import org.globus.axis.transport.GSIHTTPSender;
-import org.globus.axis.transport.GSIHTTPTransport;
-import org.globus.axis.util.Util;
-
-import org.globus.gsi.gssapi.auth.NoAuthorization;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.globus.gsi.gssapi.GlobusGSSException;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
-
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import javax.xml.rpc.Stub;
 import javax.xml.rpc.soap.SOAPFaultException;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.AbstractGridUser;
+import org.apache.axis.SimpleTargetedChain;
+import org.apache.axis.configuration.SimpleProvider;
+import org.apache.axis.transport.http.HTTPSender;
+import org.globus.axis.transport.GSIHTTPSender;
+import org.globus.axis.transport.GSIHTTPTransport;
+import org.globus.axis.util.Util;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.globus.gsi.gssapi.auth.NoAuthorization;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a first implementation of an SRMClient.
@@ -53,7 +41,7 @@ import it.grid.storm.griduser.AbstractGridUser;
  */
 public class NaiveSRMClient implements SRMClient {
 
-    private static Logger log = Logger.getLogger("srmclient");
+    private static Logger log = LoggerFactory.getLogger(NaiveSRMClient.class);
 
     /**
      * Method used to execute an srmPrepareToPut.
@@ -186,7 +174,7 @@ public class NaiveSRMClient implements SRMClient {
      * specific ways of behaving such as leaving the specific file status blank until a
      * status for the whole request is completed, etc.
      */
-     public SRMStatusOfPutRequestReply statusOfPutRequest(it.grid.storm.srm.types.TRequestToken rt, GridUserInterface gu, it.grid.storm.srm.types.TSURL toSURL) throws SRMClientException{
+    public SRMStatusOfPutRequestReply statusOfPutRequest(it.grid.storm.srm.types.TRequestToken rt, GridUserInterface gu, it.grid.storm.srm.types.TSURL toSURL) throws SRMClientException{
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -257,7 +245,7 @@ public class NaiveSRMClient implements SRMClient {
      */
     public SRMPutDoneReply srmPutDone(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException {
         return null;
-/*        try {
+        /*        try {
             return new SRMPutDoneReply(new it.grid.storm.srm.types.TReturnStatus(it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS,"DUMMY SUCCESS"));
         } catch (Exception e) {
             throw new SRMClientException();
@@ -282,8 +270,9 @@ public class NaiveSRMClient implements SRMClient {
         srmClientStubs.ISRM _srm = sRMService.getsrm();
 
         //set proxy in stub
-        if (((AbstractGridUser)gu).getUserCredentials()==null)
-          log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        if (((AbstractGridUser)gu).getUserCredentials()==null) {
+            log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        }
         InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
         GSSCredential globusProxy = new GlobusGSSCredentialImpl(new GlobusCredential(proxy) , GSSCredential.INITIATE_AND_ACCEPT); //GSSCredential containing the proxy!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS,globusProxy); //set the proxy to be used during GSI connection!
@@ -301,7 +290,7 @@ public class NaiveSRMClient implements SRMClient {
     /**
      * Private method that returns a String representation of srmClientStubs.SrmPrepareToPutResponse
      */
-/*    private String srmPtPResponseToString(srmClientStubs.SrmPrepareToPutResponse response) {
+    /*    private String srmPtPResponseToString(srmClientStubs.SrmPrepareToPutResponse response) {
         StringBuffer sb = new StringBuffer();
         if (response==null) {
             sb.append("srmClientStubs.SrmPrepareToPutResponse is null!");
@@ -385,5 +374,5 @@ public class NaiveSRMClient implements SRMClient {
         }
         return sb.toString();
     }
-*/
+     */
 }

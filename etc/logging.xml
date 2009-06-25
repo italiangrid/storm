@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="PROCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${storm.log.dir}/storm-backend.log
+		</File>
+		<ImmediateFlush>true</ImmediateFlush>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%date{HH:mm:ss.SSS} - %level [%thread] - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+	<appender name="HEARTBEAT"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${storm.log.dir}/heartbeat.log
+		</File>
+		<ImmediateFlush>true</ImmediateFlush>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>[%d{ISO8601}]: %m%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="BOOKKEEPING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${storm.log.dir}/bookkeeping.log</File>
+        <ImmediateFlush>true</ImmediateFlush>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>[%d{ISO8601}]: %m%n</Pattern>
+        </layout>
+    </appender>
+    
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    	<layout class="ch.qos.logback.classic.PatternLayout">
+      		<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+    	</layout>
+  	</appender>
+
+	<logger name="it.grid.storm" additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="PROCESS" />
+	</logger>
+
+	<logger name="health" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="HEARTBEAT" />
+	</logger>
+
+	<logger name="bookkeeping" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="BOOKKEEPING" />
+	</logger>
+
+	<root level="ERROR">
+	    <appender-ref ref="PROCESS" />
+	</root>
+
+
+     
+</configuration>

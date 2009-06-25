@@ -1,11 +1,11 @@
 package it.grid.storm.persistence.model;
 
-import java.io.Serializable;
-import java.util.logging.Logger;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
-import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.info.model.VOInfoStatusData;
+import it.grid.storm.persistence.PersistenceDirector;
+
+import java.io.Serializable;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -27,7 +27,7 @@ import it.grid.storm.info.model.VOInfoStatusData;
  */
 public class VOInfoStatusTO implements Serializable, Comparable {
 
-    private static final Log log = PersistenceDirector.getLogger();
+    private static final Logger log = PersistenceDirector.getLogger();
 
     private String voInfoLocalIdentifier = null;
     private long usedSpaceNearLine = -1L;
@@ -52,7 +52,7 @@ public class VOInfoStatusTO implements Serializable, Comparable {
      * @param maker User
      */
     public VOInfoStatusTO(String voInfoLocalIdentifier) {
-       this.voInfoLocalIdentifier = voInfoLocalIdentifier;
+        this.voInfoLocalIdentifier = voInfoLocalIdentifier;
     }
 
 

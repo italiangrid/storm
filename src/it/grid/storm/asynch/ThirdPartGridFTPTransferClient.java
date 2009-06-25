@@ -1,32 +1,33 @@
 package it.grid.storm.asynch;
 
 
-import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.TTURL;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.globus.ftp.ByteRangeList;
 import org.globus.ftp.GridFTPClient;
-import org.globus.ftp.Session;
+import org.globus.ftp.GridFTPRestartMarker;
+import org.globus.ftp.GridFTPSession;
+import org.globus.ftp.Marker;
+import org.globus.ftp.MarkerListener;
+import org.globus.ftp.PerfMarker;
+import org.globus.ftp.RetrieveOptions;
 import org.globus.ftp.exception.ClientException;
+import org.globus.ftp.exception.PerfMarkerException;
 import org.globus.ftp.exception.ServerException;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.globus.gsi.gssapi.GlobusGSSException;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
-import java.io.*;
-import org.globus.ftp.MarkerListener;
-import org.globus.ftp.ByteRangeList;
-import org.globus.ftp.Marker;
-import org.globus.ftp.GridFTPRestartMarker;
-import org.globus.ftp.exception.PerfMarkerException;
-import org.globus.ftp.PerfMarker;
-import org.globus.ftp.GridFTPSession;
-import org.globus.ftp.RetrieveOptions;
-import org.apache.log4j.Logger;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.AbstractGridUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: ThirdPartGridFTPTransferClient </p>
@@ -44,7 +45,7 @@ import it.grid.storm.griduser.AbstractGridUser;
 
 public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(ThirdPartGridFTPTransferClient.class);
 
     /**
      *
@@ -69,69 +70,69 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
         String fullSourceFile = "/"+source.tfn().pfn().getValue();
         String fullDestinationFile = "/"+destination.tfn().pfn().getValue();
 
-       log.debug("source file: "+fullSourceFile);
-       log.debug("destin file: "+fullDestinationFile);
+        log.debug("source file: "+fullSourceFile);
+        log.debug("destin file: "+fullDestinationFile);
 
-       //Smart implementation of Marker Listener
-       MarkerListenerImpl listener = new MarkerListenerImpl();
+        //Smart implementation of Marker Listener
+        MarkerListenerImpl listener = new MarkerListenerImpl();
 
         try {
             InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes());
-	    GSSCredential cred = new GlobusGSSCredentialImpl(new GlobusCredential(proxy), GSSCredential.INITIATE_AND_ACCEPT);
+            GSSCredential cred = new GlobusGSSCredentialImpl(new GlobusCredential(proxy), GSSCredential.INITIATE_AND_ACCEPT);
 
-	    log.debug("Created GSS Credential from proxy");
+            log.debug("Created GSS Credential from proxy");
 
-	    //Set up of remote Source GridFTP
-	    String remoteSourceHost = source.tfn().machine().getValue();
-	    int remoteSourcePort = source.tfn().port().toInt();
-	    log.debug("remote source GridFTP : "+remoteSourceHost+":"+remoteSourcePort);
+            //Set up of remote Source GridFTP
+            String remoteSourceHost = source.tfn().machine().getValue();
+            int remoteSourcePort = source.tfn().port().toInt();
+            log.debug("remote source GridFTP : "+remoteSourceHost+":"+remoteSourcePort);
             GridFTPClient sourceClient = new GridFTPClient(remoteSourceHost, remoteSourcePort);
             setParams(sourceClient,cred);
 
             //Set up of remote Destination GridFTP
-	    String remoteDestinationHost = destination.tfn().machine().getValue();
-	    int remoteDestinationPort = destination.tfn().port().toInt();
-	    log.debug("remote destination GridFTP : "+remoteDestinationHost+":"+remoteDestinationPort);
-	    GridFTPClient destClient = new GridFTPClient(remoteDestinationHost, remoteDestinationPort);
+            String remoteDestinationHost = destination.tfn().machine().getValue();
+            int remoteDestinationPort = destination.tfn().port().toInt();
+            log.debug("remote destination GridFTP : "+remoteDestinationHost+":"+remoteDestinationPort);
+            GridFTPClient destClient = new GridFTPClient(remoteDestinationHost, remoteDestinationPort);
             setParams(destClient,cred);
 
             //Retrieve Parallelism of transfer from Configuration file
-	    //org.globus.ftp.test.gridftp.parallelism=6
+            //org.globus.ftp.test.gridftp.parallelism=6
             int parallelism = 6;
-	    sourceClient.setOptions(new RetrieveOptions(parallelism));
+            sourceClient.setOptions(new RetrieveOptions(parallelism));
             log.debug(" Transfer parallelism : "+parallelism);
 
-             //Execute the transfer
-	    log.debug(" Starting transfer ... ");
+            //Execute the transfer
+            log.debug(" Starting transfer ... ");
             sourceClient.extendedTransfer(fullSourceFile, destClient, fullDestinationFile, listener);
             log.debug(" ... transfer ended.");
 
-	    //Close the session of transfer
-	    sourceClient.close();
+            //Close the session of transfer
+            sourceClient.close();
             destClient.close();
-	}
+        }
         catch (IOException e) {
-	    log.warn("IO Except",e);
+            log.warn("IO Except",e);
             throw new GridFTPTransferClientException(e.toString());
         }
         catch (ServerException e) {
-	    log.warn("Server Except",e);
+            log.warn("Server Except",e);
             throw new GridFTPTransferClientException(e.toString());
         }
         catch (ClientException e) {
-	    log.warn("Client Except",e);
+            log.warn("Client Except",e);
             throw new GridFTPTransferClientException(e.toString());
         }
         catch (GlobusCredentialException e) {
-	    log.warn("Credential Except",e);
+            log.warn("Credential Except",e);
             throw new GridFTPTransferClientException(e.toString());
         }
         catch (GSSException e) {
-	    log.warn("GSS Except",e);
+            log.warn("GSS Except",e);
             throw new GridFTPTransferClientException(e.toString());
         }
         catch (Exception e) {
-	    log.warn("Generic Except",e);
+            log.warn("Generic Except",e);
             //Catch any runtime exception!
             throw new GridFTPTransferClientException("Unexpected runtime error in ThirdPartGridFTPTransferClient! "+e);
         }
@@ -139,27 +140,27 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 
 
     void setParams(GridFTPClient client, GSSCredential cred)
-	  throws Exception{
-	  client.authenticate(cred);
-	  client.setProtectionBufferSize(16384);
-	  client.setType(GridFTPSession.TYPE_IMAGE);
-	  client.setMode(GridFTPSession.MODE_EBLOCK);
-      }
+    throws Exception{
+        client.authenticate(cred);
+        client.setProtectionBufferSize(16384);
+        client.setType(GridFTPSession.TYPE_IMAGE);
+        client.setMode(GridFTPSession.MODE_EBLOCK);
+    }
 
 
-      /**
-       *
-       * <p>Title: </p>
-       *
-       * <p>Description: </p>
-       *
-       * <p>Copyright: Copyright (c) 2005</p>
-       *
-       * <p>Company: </p>
-       *
-       * @author not attributable
-       * @version 1.0
-       */
+    /**
+     *
+     * <p>Title: </p>
+     *
+     * <p>Description: </p>
+     *
+     * <p>Copyright: Copyright (c) 2005</p>
+     *
+     * <p>Company: </p>
+     *
+     * @author not attributable
+     * @version 1.0
+     */
     class MarkerListenerImpl implements MarkerListener {
 
         public ByteRangeList list;

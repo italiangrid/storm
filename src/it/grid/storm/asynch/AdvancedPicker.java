@@ -1,25 +1,24 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.scheduler.Scheduler;
+import it.grid.storm.scheduler.SchedulerException;
+import it.grid.storm.scheduler.SchedulerStatus;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TRequestType;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.scheduler.Scheduler;
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.SchedulerException;
-import it.grid.storm.scheduler.SchedulerStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is in charge of periodically polling the DB for newly added
@@ -31,7 +30,7 @@ import it.grid.storm.scheduler.SchedulerStatus;
  */
 public class AdvancedPicker {
 
-    private static final Logger log = Logger.getLogger("asynch");
+    private static final Logger log = LoggerFactory.getLogger(AdvancedPicker.class);
 
     private Scheduler s = SchedulerFacade.getInstance().crusherScheduler(); //link to scheduler that handles Feeder taks in StoRM!
     private Timer retriever = null;  //Timer object in charge of retrieving info from the DB!
@@ -50,7 +49,9 @@ public class AdvancedPicker {
      */
     public void stopIt() {
         log.debug("ADVANCED PICKER: stopped");
-        if (retriever!=null) retriever.cancel();
+        if (retriever!=null) {
+            retriever.cancel();
+        }
     }
 
     /**
@@ -59,9 +60,12 @@ public class AdvancedPicker {
      */
     public void startIt() {
         log.debug("ADVANCED PICKER: started");
-        if (retriever!=null) retriever.cancel();
+        if (retriever!=null) {
+            retriever.cancel();
+        }
         retriever = new Timer();
         retrievingTask = new TimerTask() {
+            @Override
             public void run() {
                 retrieve();
             }
@@ -101,13 +105,14 @@ public class AdvancedPicker {
 
         int crusherCapacity = -1;
         SchedulerStatus status = s.getStatus(0);
-        log.debug(status);
+        log.debug(status.toString());
         crusherCapacity = status.getRemainingSize();
 
         Collection c = RequestSummaryCatalog.getInstance().fetchNewRequests(crusherCapacity);
-        if (c.isEmpty()) log.debug("ADVANCED PICKER: no request to dispatch.");
-        else {
-          log.info( "ADVANCED PICKER: dispatching " + c.size() + " requests." );
+        if (c.isEmpty()) {
+            log.debug("ADVANCED PICKER: no request to dispatch.");
+        } else {
+            log.info( "ADVANCED PICKER: dispatching " + c.size() + " requests." );
         }
         RequestSummaryData rsd = null;
         TRequestType rtype = null;
@@ -118,8 +123,11 @@ public class AdvancedPicker {
             rt = rsd.requestToken();
             if ((abort) && rt.equals(abortToken)) {
                 //abort
-                if (abortSURLS==null) RequestSummaryCatalog.getInstance().abortInProgressRequest(abortToken);
-                else RequestSummaryCatalog.getInstance().abortChunksOfInProgressRequest(abortToken,abortSURLS);
+                if (abortSURLS==null) {
+                    RequestSummaryCatalog.getInstance().abortInProgressRequest(abortToken);
+                } else {
+                    RequestSummaryCatalog.getInstance().abortChunksOfInProgressRequest(abortToken,abortSURLS);
+                }
                 abortToken = null; //BE CAREFUL!!! FIRST set abortToken to null, and THEN set the flag to false!
                 abortSURLS = null;
                 abort = false;
@@ -127,13 +135,13 @@ public class AdvancedPicker {
                 //process it
                 try {
                     if (rtype==TRequestType.PREPARE_TO_GET) {
-                      s.schedule( new PtGFeeder( rsd ) );
+                        s.schedule( new PtGFeeder( rsd ) );
                     }
                     else if (rtype==TRequestType.PREPARE_TO_PUT) {
-                      s.schedule( new PtPFeeder( rsd ) );
+                        s.schedule( new PtPFeeder( rsd ) );
                     }
                     else if (rtype==TRequestType.COPY) {
-                      s.schedule( new CopyFeeder( rsd ) );
+                        s.schedule( new CopyFeeder( rsd ) );
                     }
                     else {
                         //RequestType not supported!
@@ -182,8 +190,12 @@ public class AdvancedPicker {
      * issued, then FALSE is returned; otherwise TRUE is returned.
      */
     synchronized public boolean abortRequest(TRequestToken rt) {
-        if (abort) return false;
-        if (rt==null) return false;
+        if (abort) {
+            return false;
+        }
+        if (rt==null) {
+            return false;
+        }
         abortToken = rt; //BE CAREFUL!!! FIRST set the token, and THEN the abort flag!
         abort = true;
         return true;
@@ -198,8 +210,12 @@ public class AdvancedPicker {
      * request has been issued, then FALSE is returned; otherwise TRUE is returned.
      */
     synchronized public boolean abortChunksOfRequest(TRequestToken rt, Collection c) {
-        if (abort) return false;
-        if ((rt==null) || (c==null)) return false;
+        if (abort) {
+            return false;
+        }
+        if ((rt==null) || (c==null)) {
+            return false;
+        }
         abortToken = rt; //BE CAREFUL!!! FIRST set the token and collection, and THEN the abort flag!
         abortSURLS = c;
         abort = true;

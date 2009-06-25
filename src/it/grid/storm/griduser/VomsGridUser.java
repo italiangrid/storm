@@ -164,5 +164,6 @@ public class VomsGridUser extends AbstractGridUser implements GridUserInterface 
         }
         return result;
     }
+    
 
 }

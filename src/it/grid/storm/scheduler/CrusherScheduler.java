@@ -1,8 +1,9 @@
 package it.grid.storm.scheduler;
 
-import org.apache.log4j.Logger;
-
 import it.grid.storm.config.Configuration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -24,7 +25,7 @@ public class CrusherScheduler implements Scheduler
 {
     private static int clients = 0;
     private WorkerPool crusherPool = null;
-    private static final Logger log = Logger.getLogger("scheduler");
+    private static final Logger log = LoggerFactory.getLogger(CrusherScheduler.class);
     private SchedulerStatus[] schedStatus = null;
 
     /**
@@ -46,66 +47,66 @@ public class CrusherScheduler implements Scheduler
 
     private CrusherScheduler()
     {
-	schedStatus = new SchedulerStatus[1];
-	schedStatus[0] = new SchedulerStatus("CrusherScheduler");
+        schedStatus = new SchedulerStatus[1];
+        schedStatus[0] = new SchedulerStatus("CrusherScheduler");
 
-	/**
-	 * @todo  Read to Configuration the information about worker Pool
-	 * structure of Crusher Scheduler
-	 */
+        /**
+         * @todo  Read to Configuration the information about worker Pool
+         * structure of Crusher Scheduler
+         */
 
-	crusherPool = new WorkerPool(workerCorePoolSize, workerMaxPoolSize, queueSize);
-	schedStatus[0].setCorePoolSize(workerCorePoolSize);
-	schedStatus[0].setMaxPoolSize(workerMaxPoolSize);
+        crusherPool = new WorkerPool(workerCorePoolSize, workerMaxPoolSize, queueSize);
+        schedStatus[0].setCorePoolSize(workerCorePoolSize);
+        schedStatus[0].setMaxPoolSize(workerMaxPoolSize);
         schedStatus[0].setQueueSize(queueSize);
     }
 
 
     public static CrusherScheduler getInstance()
     {
-	log.debug("Called multi-thread scheduler");
-	if (istance==null) {
-	    istance = new CrusherScheduler();
-	}
-	return istance;
+        log.debug("Called multi-thread scheduler");
+        if (istance==null) {
+            istance = new CrusherScheduler();
+        }
+        return istance;
     }
 
 
     public void schedule(Delegable cruncherTask) throws SchedulerException
     {
-	log.debug("Scheduling feed "+cruncherTask.getName());
+        log.debug("Scheduling feed "+cruncherTask.getName());
 
-	try {
-	    Task task = new CruncherTask(cruncherTask);
-	    crusherPool.submit(task);
-	    log.debug("Feed task nr. = "+crusherPool.getTaskCount());
-	    log.debug("Scheduled feed "+cruncherTask.getName());
-	}
-	catch (SchedulerException se) {
-	    log.error(se);
-	    throw se;
-	}
+        try {
+            Task task = new CruncherTask(cruncherTask);
+            crusherPool.submit(task);
+            log.debug("Feed task nr. = "+crusherPool.getTaskCount());
+            log.debug("Scheduled feed "+cruncherTask.getName());
+        }
+        catch (SchedulerException se) {
+            log.error(se.getMessage(), se);
+            throw se;
+        }
     }
 
 
     public SchedulerStatus getStatus(int workerPoolType)
     {
-	SchedulerStatus st = null;
-	switch (workerPoolType) {
-	    case 0:
-		schedStatus[0].setCompletedTaskCount(crusherPool.getCompletedTaskCount());
-		schedStatus[0].setActiveCount(crusherPool.getActiveCount());
-		schedStatus[0].setLargestPoolSize(crusherPool.getLargestPoolSize());
-		schedStatus[0].setPoolSize(crusherPool.getActualPoolSize());
-		schedStatus[0].setTaskCount(crusherPool.getTaskCount());
-		schedStatus[0].setRemainingCapacity(crusherPool.getRemainingCapacity());
-		st = schedStatus[0];
-		break;
-	    default:
-		st = null;
-		break;
-	}
-	return st;
+        SchedulerStatus st = null;
+        switch (workerPoolType) {
+        case 0:
+            schedStatus[0].setCompletedTaskCount(crusherPool.getCompletedTaskCount());
+            schedStatus[0].setActiveCount(crusherPool.getActiveCount());
+            schedStatus[0].setLargestPoolSize(crusherPool.getLargestPoolSize());
+            schedStatus[0].setPoolSize(crusherPool.getActualPoolSize());
+            schedStatus[0].setTaskCount(crusherPool.getTaskCount());
+            schedStatus[0].setRemainingCapacity(crusherPool.getRemainingCapacity());
+            st = schedStatus[0];
+            break;
+        default:
+            st = null;
+        break;
+        }
+        return st;
     }
 
     /**
@@ -114,7 +115,7 @@ public class CrusherScheduler implements Scheduler
      * @throws SchedulerException
      */
     public void abort(Delegable task) throws SchedulerException {
-      //crusherPool.remove(task);
+        //crusherPool.remove(task);
     }
 
 
@@ -124,7 +125,7 @@ public class CrusherScheduler implements Scheduler
      * @throws SchedulerException
      */
     public void suspend(Delegable task) throws SchedulerException {
-      throw new SchedulerException("CruscherScheduler","Suspend request not implemented yet!");
+        throw new SchedulerException("CruscherScheduler","Suspend request not implemented yet!");
     }
 
 }

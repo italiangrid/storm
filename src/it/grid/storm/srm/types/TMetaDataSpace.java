@@ -12,16 +12,14 @@
 
 package it.grid.storm.srm.types;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
-import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.space.StorageSpaceData;
 
-import org.apache.log4j.Logger;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TMetaDataSpace implements Serializable
 {
@@ -36,7 +34,7 @@ public class TMetaDataSpace implements Serializable
     private TLifeTimeInSeconds lifetimeAssigned = null;
     private TLifeTimeInSeconds lifetimeLeft = null;
 
-    private static final Logger log = Logger.getLogger("common");
+    private static final Logger log = LoggerFactory.getLogger(TMetaDataSpace.class);
 
     public TMetaDataSpace()
     {
@@ -66,14 +64,16 @@ public class TMetaDataSpace implements Serializable
      * @throws InvalidTMetaDataSpaceAttributeException
      */
     public TMetaDataSpace(TSpaceType spaceType, TSpaceToken spaceToken, TReturnStatus status, TUserID user,
-                    TSizeInBytes totalSize, TSizeInBytes guaranteedSize, TSizeInBytes unusedSize,
-                    TLifeTimeInSeconds lifetimeAssigned, TLifeTimeInSeconds lifetimeLeft)
-                    throws InvalidTMetaDataSpaceAttributeException
+            TSizeInBytes totalSize, TSizeInBytes guaranteedSize, TSizeInBytes unusedSize,
+            TLifeTimeInSeconds lifetimeAssigned, TLifeTimeInSeconds lifetimeLeft)
+    throws InvalidTMetaDataSpaceAttributeException
     {
         boolean ok = (spaceToken!=null);
 
-        if (!ok) throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
-        
+        if (!ok) {
+            throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
+        }
+
         this.spaceType = spaceType;
         this.spaceToken = spaceToken;
         this.status = status;
@@ -92,7 +92,7 @@ public class TMetaDataSpace implements Serializable
      * @throws InvalidTSizeAttributesException
      */
     public TMetaDataSpace(StorageSpaceData spaceData) throws InvalidTMetaDataSpaceAttributeException,
-                    InvalidTSizeAttributesException
+    InvalidTSizeAttributesException
     {
         if (spaceData == null) {
             log.warn("TMetaDataSpace built without SPACEDATA detail.");
@@ -124,8 +124,11 @@ public class TMetaDataSpace implements Serializable
             this.lifetimeAssigned = spaceData.getLifeTime();
             this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getDate());
             try {
-                if ((this.lifetimeLeft.value() == 0)&&(this.spaceType!=TSpaceType.VOSPACE)) this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");
-                else this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Valid space token");
+                if ((this.lifetimeLeft.value() == 0)&&(this.spaceType!=TSpaceType.VOSPACE)) {
+                    this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");
+                } else {
+                    this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Valid space token");
+                }
             } catch (InvalidTReturnStatusAttributeException e) {
                 this.status = null;
             }
@@ -193,17 +196,17 @@ public class TMetaDataSpace implements Serializable
     {
         this.unusedSize = usize;
     }
-    
+
     public void setLifeTime(TLifeTimeInSeconds time)
     {
         this.lifetimeAssigned = time;
     }
-    
+
     public void setLifeTimeLeft(TLifeTimeInSeconds time)
     {
         this.lifetimeLeft = time;
     }
-    
+
     /**
      * Return retentionPolicyInfo
      */

@@ -1,19 +1,25 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
 import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TStatusCode;
 
-
-import java.sql.*;
-import java.util.Collection;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -26,7 +32,7 @@ import java.util.TimerTask;
  */
 public class RequestSummaryDAO {
 
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(RequestSummaryDAO.class);
 
     private final String driver=Configuration.getInstance().getDBDriver();//String with the name of the class for the DB driver
     private final String url=Configuration.getInstance().getDBURL(); //String referring to the URL of the DB
@@ -45,10 +51,15 @@ public class RequestSummaryDAO {
 
     private RequestSummaryDAO() {
         int aux = Configuration.getInstance().getPickingMaxBatchSize();
-        if (aux>1) this.limit=aux; else this.limit=1;
+        if (aux>1) {
+            this.limit=aux;
+        } else {
+            this.limit=1;
+        }
         setUpConnection();
         clock = new Timer();
         clockTask = new TimerTask() {
+            @Override
             public void run() {
                 reconnect = true;
             }
@@ -89,10 +100,10 @@ public class RequestSummaryDAO {
 
             int howMuch = -1;
             if (freeSlot > this.limit )  {
-              howMuch = this.limit;
+                howMuch = this.limit;
             }
             else {
-              howMuch = freeSlot;
+                howMuch = freeSlot;
             }
             log.debug("Retrieving "+howMuch+" new requests from request queue.");
 
@@ -118,20 +129,20 @@ public class RequestSummaryDAO {
                 aux.setRequestType(rs.getString("config_RequestTypeID"));
                 aux.setRequestToken(rs.getString("r_token"));
                 aux.setClientDN(rs.getString("client_dn"));
-               
+
                 /**
                  * This code is only for the 1.3.18.
                  * This is a workaround to get FQANs using the proxy field on request_queue.
-                 * The FE use the proxy field of request_queue to insert  a single FQAN string containing all 
+                 * The FE use the proxy field of request_queue to insert  a single FQAN string containing all
                  * FQAN separeted by the "#" char.
                  * The proxy is a BLOB, hence it has to be properly conveted in string.
                  */
                 java.sql.Blob blob = rs.getBlob("proxy");
                 if(blob != null) {
-                	byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
                     aux.setVomsAttributes(new String(bdata));
                 }
-                
+
                 list.add(aux);
             }
             close(rs);
@@ -142,10 +153,10 @@ public class RequestSummaryDAO {
                 logWarnings(con.getWarnings());
                 String where = makeWhereString(rowids);
                 String update = "UPDATE request_queue SET status="+
-                    StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
-                    ", errstring=?" +
-                    " WHERE ID IN "+
-                    where;
+                StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
+                ", errstring=?" +
+                " WHERE ID IN "+
+                where;
                 stmt2 = con.prepareStatement(update);
                 logWarnings(stmt2.getWarnings());
                 stmt2.setString(1,"Request handled!");
@@ -190,8 +201,8 @@ public class RequestSummaryDAO {
     public void failRequest(long index, String explanation) {
         checkConnection();
         String signalSQL = "UPDATE request_queue r "+
-            "SET r.status="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", r.errstring=? "+
-            "WHERE r.ID=?";
+        "SET r.status="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", r.errstring=? "+
+        "WHERE r.ID=?";
         PreparedStatement signal = null;
         try {
             signal = con.prepareStatement(signalSQL);
@@ -223,12 +234,12 @@ public class RequestSummaryDAO {
     public void failPtGRequest(long index, String explanation) {
         checkConnection();
         String requestSQL = "UPDATE request_queue r "+
-            "SET r.status=?, r.errstring=? "+
-            "WHERE r.ID=?";
+        "SET r.status=?, r.errstring=? "+
+        "WHERE r.ID=?";
         String chunkSQL = "UPDATE "+
-            "status_Get s JOIN (request_queue r, request_Get g) ON s.request_GetID=g.ID AND g.request_queueID=r.ID "+
-            "SET s.statusCode=?, s.explanation=? "+
-            "WHERE r.ID=?";
+        "status_Get s JOIN (request_queue r, request_Get g) ON s.request_GetID=g.ID AND g.request_queueID=r.ID "+
+        "SET s.statusCode=?, s.explanation=? "+
+        "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
@@ -289,12 +300,12 @@ public class RequestSummaryDAO {
     public void failPtPRequest(long index, String explanation) {
         checkConnection();
         String requestSQL = "UPDATE request_queue r "+
-            "SET r.status=?, r.errstring=? "+
-            "WHERE r.ID=?";
+        "SET r.status=?, r.errstring=? "+
+        "WHERE r.ID=?";
         String chunkSQL = "UPDATE "+
-            "status_Put s JOIN (request_queue r, request_Put p) ON s.request_PutID=p.ID AND p.request_queueID=r.ID "+
-            "SET s.statusCode=?, s.explanation=? "+
-            "WHERE r.ID=?";
+        "status_Put s JOIN (request_queue r, request_Put p) ON s.request_PutID=p.ID AND p.request_queueID=r.ID "+
+        "SET s.statusCode=?, s.explanation=? "+
+        "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
@@ -355,12 +366,12 @@ public class RequestSummaryDAO {
     public void failCopyRequest(long index, String explanation) {
         checkConnection();
         String requestSQL = "UPDATE request_queue r "+
-            "SET r.status=?, r.errstring=? "+
-            "WHERE r.ID=?";
+        "SET r.status=?, r.errstring=? "+
+        "WHERE r.ID=?";
         String chunkSQL = "UPDATE "+
-            "status_Copy s JOIN (request_queue r, request_Copy c) ON s.request_CopyID=c.ID AND c.request_queueID=r.ID "+
-            "SET s.statusCode=?, s.explanation=? "+
-            "WHERE r.ID=?";
+        "status_Copy s JOIN (request_queue r, request_Copy c) ON s.request_CopyID=c.ID AND c.request_queueID=r.ID "+
+        "SET s.statusCode=?, s.explanation=? "+
+        "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
@@ -502,9 +513,9 @@ public class RequestSummaryDAO {
                         join_column = "request_BoLID";
                     }
                     String auxstr = "UPDATE "+
-                        status_table+" s JOIN (request_queue r, "+request_table+" t) ON (s."+join_column+"=t.ID AND t.request_queueID=r.ID) "+
-                        "SET s.statusCode=?, s.explanation=? "+
-                        "WHERE r.ID=?";
+                    status_table+" s JOIN (request_queue r, "+request_table+" t) ON (s."+join_column+"=t.ID AND t.request_queueID=r.ID) "+
+                    "SET s.statusCode=?, s.explanation=? "+
+                    "WHERE r.ID=?";
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
                     update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
@@ -594,9 +605,9 @@ public class RequestSummaryDAO {
                         join_column = "request_BoLID";
                     }
                     String auxstr = "UPDATE "+
-                        status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID )"+
-                        "SET s.statusCode=?, s.explanation=? "+
-                        "WHERE r.ID=?";
+                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID )"+
+                    "SET s.statusCode=?, s.explanation=? "+
+                    "WHERE r.ID=?";
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
                     update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
@@ -677,9 +688,9 @@ public class RequestSummaryDAO {
                         surl_column = "sourceSURL";
                     }
                     String auxstr = "UPDATE "+
-                        status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
-                        "SET s.statusCode=?, s.explanation=? "+
-                        "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
+                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
+                    "SET s.statusCode=?, s.explanation=? "+
+                    "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
                     update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
@@ -760,9 +771,9 @@ public class RequestSummaryDAO {
                         surl_column = "sourceSURL";
                     }
                     String auxstr = "UPDATE "+
-                        status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
-                        "SET s.statusCode=?, s.explanation=? "+
-                        "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
+                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
+                    "SET s.statusCode=?, s.explanation=? "+
+                    "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
                     update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
@@ -795,7 +806,9 @@ public class RequestSummaryDAO {
         StringBuffer sb = new StringBuffer("(");
         for (Iterator i = c.iterator(); i.hasNext(); ) {
             sb.append((String)i.next());
-            if (i.hasNext()) sb.append(",");
+            if (i.hasNext()) {
+                sb.append(",");
+            }
         }
         sb.append(")");
         return sb.toString();
@@ -830,21 +843,21 @@ public class RequestSummaryDAO {
             return result;
         }
     }
-    
+
     /**
-     * Method that purges expired requests: it only removes up to a fixed value 
-     * of expired requests at a time. The value is configured and obtained from 
+     * Method that purges expired requests: it only removes up to a fixed value
+     * of expired requests at a time. The value is configured and obtained from
      * the configuration property getPurgeBatchSize.
      *
      * A List of Strings with the request tokens removed is returned.
      *
      * In order to completely remove all expired requests, simply keep invoking
-     * this method until an empty List is returned. This batch processing is 
-     * needed because there could be millions of expired requests which are 
+     * this method until an empty List is returned. This batch processing is
+     * needed because there could be millions of expired requests which are
      * likely to result in out-of-memory problems.
      *
-     * Notice that in case of errors only error messages get logged. An empty 
-     * List is also returned.  
+     * Notice that in case of errors only error messages get logged. An empty
+     * List is also returned.
      */
     public List purgeExpiredRequests() {
         checkConnection();
@@ -856,17 +869,17 @@ public class RequestSummaryDAO {
         try {
             //start transaction
             con.setAutoCommit(false);
-            
+
             stmt =
-                    "SELECT ID, r_token "+
-                    "   FROM request_queue "+
-                    "   WHERE "+
-                    "      UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "+ Configuration.getInstance().getExpiredRequestTime() +
-                    "      AND "+
-                    "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED) +
-                    "      AND "+
-                    "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
-                    "   LIMIT "+ Configuration.getInstance().getPurgeBatchSize();
+                "SELECT ID, r_token "+
+                "   FROM request_queue "+
+                "   WHERE "+
+                "      UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "+ Configuration.getInstance().getExpiredRequestTime() +
+                "      AND "+
+                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED) +
+                "      AND "+
+                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
+                "   LIMIT "+ Configuration.getInstance().getPurgeBatchSize();
             ps = con.prepareStatement(stmt);
             logWarnings(con.getWarnings());
             log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+ps);
@@ -881,8 +894,8 @@ public class RequestSummaryDAO {
             if (!ids.isEmpty()) {
                 //REMOVE BATCH OF EXPIRED REQUESTS!
                 stmt =
-                        "DELETE FROM request_queue "+
-                        "   WHERE ID in "+ makeWhereString(ids);
+                    "DELETE FROM request_queue "+
+                    "   WHERE ID in "+ makeWhereString(ids);
                 ps = con.prepareStatement(stmt);
                 logWarnings(con.getWarnings());
                 log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
@@ -890,34 +903,34 @@ public class RequestSummaryDAO {
                 logWarnings(ps.getWarnings());
                 log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" expired requests.");
                 close(ps);
-                //REMOVE ORPHANED DIR OPTION 
-                
+                //REMOVE ORPHANED DIR OPTION
+
                 //WARNING!! The subquery "WHERE ID NOT IN ..."  does not work for more than 1000 entries
                 //for a bug of MySQL, fixed in 5.1
-                //http://forums.mysql.com/read.php?121,143298,201486 
+                //http://forums.mysql.com/read.php?121,143298,201486
                 //Change using left inner join
-                
-                //stmt = 
+
+                //stmt =
                 //        "DELETE FROM request_DirOption "+
                 //       "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
                 //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
                 //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
-                
-                
-                //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ; 
 
 
-                
-                
-                 stmt =  "DELETE request_DirOption FROM request_DirOption "+
-                         " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID" +
-                         " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID " +
-                         " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID" +
-                         " WHERE request_Copy.request_DirOptionID IS NULL AND" +
-                         " request_Get.request_DirOptionID IS NULL AND" +
-                         " request_BoL.request_DirOptionID IS NULL;"; 
-                     
-                
+                //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ;
+
+
+
+
+                stmt =  "DELETE request_DirOption FROM request_DirOption "+
+                " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID" +
+                " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID " +
+                " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID" +
+                " WHERE request_Copy.request_DirOptionID IS NULL AND" +
+                " request_Get.request_DirOptionID IS NULL AND" +
+                " request_BoL.request_DirOptionID IS NULL;";
+
+
                 ps = con.prepareStatement(stmt);
                 logWarnings(con.getWarnings());
                 log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
@@ -930,7 +943,7 @@ public class RequestSummaryDAO {
             con.commit();
             logWarnings(con.getWarnings());
             con.setAutoCommit(true);
-            logWarnings(con.getWarnings());            
+            logWarnings(con.getWarnings());
         } catch (SQLException e) {
             log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: "+e);
             rollback(con);
@@ -947,13 +960,15 @@ public class RequestSummaryDAO {
     private String makeWhereString(List rowids) {
         StringBuffer sb = new StringBuffer("(");
         for (Iterator i = rowids.iterator(); i.hasNext(); ) {
-            sb.append((Long)i.next());
-            if (i.hasNext()) sb.append(",");
+            sb.append(i.next());
+            if (i.hasNext()) {
+                sb.append(",");
+            }
         }
         sb.append(")");
         return sb.toString();
     }
-    
+
 
 
 
@@ -968,8 +983,11 @@ public class RequestSummaryDAO {
         try {
             Class.forName(driver);
             con = DriverManager.getConnection(url,name,password);
-            if (con==null) log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
-            else logWarnings(con.getWarnings());
+            if (con==null) {
+                log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
+            } else {
+                logWarnings(con.getWarnings());
+            }
         } catch (ClassNotFoundException e) {
             log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! "+e);
         } catch (SQLException e) {
@@ -1047,7 +1065,9 @@ public class RequestSummaryDAO {
     private void logWarnings(SQLWarning warning) {
         if (warning!=null) {
             log.debug("REQUEST SUMMARY DAO: "+warning.toString());
-            while ((warning=warning.getNextWarning())!=null) log.debug("REQUEST SUMMARY DAO: "+warning.toString());
+            while ((warning=warning.getNextWarning())!=null) {
+                log.debug("REQUEST SUMMARY DAO: "+warning.toString());
+            }
         }
     }
 

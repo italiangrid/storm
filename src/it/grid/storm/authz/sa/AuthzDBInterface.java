@@ -1,20 +1,14 @@
 package it.grid.storm.authz.sa;
 
+import it.grid.storm.authz.sa.model.SpaceACE;
+import it.grid.storm.namespace.model.SAAuthzType;
+
 import java.util.List;
-import it.grid.storm.authz.sa.model.*;
 
 
 public interface AuthzDBInterface {
 
-    public int getMajorVersion();
-
-    public int getMinorVersion();
-
-    public String getVersionDescription();
-
-    public String getAuthzDBType();
-
-    public String getHeader();
+    public SAAuthzType getAuthzDBType();
 
     public List<SpaceACE> getOrderedListOfACE();
 

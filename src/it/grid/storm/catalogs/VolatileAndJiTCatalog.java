@@ -1,24 +1,25 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.config.Configuration;
 import it.grid.storm.common.types.PFN;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 
-import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -71,7 +72,7 @@ import java.util.Iterator;
  */
 public class VolatileAndJiTCatalog {
 
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(VolatileAndJiTCatalog.class);
 
     private static final VolatileAndJiTCatalog cat = new VolatileAndJiTCatalog(); //only instance of Catalog!
     private static final VolatileAndJiTDAO dao = VolatileAndJiTDAO.getInstance(); //only instance of DAO object!
@@ -81,13 +82,14 @@ public class VolatileAndJiTCatalog {
     private final long defaultFileLifetime = Configuration.getInstance().getFileLifetimeDefault(); //fileLifetime to use if user specified a non-positive value
     private final long floor = Configuration.getInstance().getPinLifetimeMinimum();   //Number of seconds to use as default if the supplied lifetime is zero!
     private final long ceiling = Configuration.getInstance().getPinLifetimeMaximum(); //Maximum number of seconds that an ACL can live: the life time requested by the user cannot be greater than this value!
-                                                                                      //This ceiling is needed because of the cron job that removes pool account mappings: when the mapping is removed, there must NOT be ANY ACL for that pool-user left!
+    //This ceiling is needed because of the cron job that removes pool account mappings: when the mapping is removed, there must NOT be ANY ACL for that pool-user left!
 
     /**
      * Private costructor that starts the cleaning timer.
      */
-	private VolatileAndJiTCatalog (){
+    private VolatileAndJiTCatalog (){
         TimerTask cleaningTask = new TimerTask() {
+            @Override
             public void run() {
                 purge();
             }
@@ -130,23 +132,29 @@ public class VolatileAndJiTCatalog {
      * If any DB error occurs, then nothing gets added/updated and an error
      * messagge gets logged.
      */
-	synchronized public void trackVolatile(PFN pfn, Calendar start, TLifeTimeInSeconds fileLifetime) {
+    synchronized public void trackVolatile(PFN pfn, Calendar start, TLifeTimeInSeconds fileLifetime) {
         boolean ok = pfn!=null &&
-            fileLifetime!=null &&
-            start!=null;
+        fileLifetime!=null &&
+        start!=null;
         if (!ok) {
             log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="+pfn+" start="+start+" fileLifetime="+fileLifetime);
         } else {
             String fileName = pfn.getValue();
             long fileTime = fileLifetime.value();
-            if (fileTime<=0) fileTime = defaultFileLifetime;
+            if (fileTime<=0) {
+                fileTime = defaultFileLifetime;
+            }
             long fileStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
             int n = dao.numberVolatile(fileName);
-            if (n==-1) log.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "+pfn+"! Volatile entry NOT processed!");
-            else if (n==0) dao.addVolatile(fileName,fileStart,fileTime);
-            else {
+            if (n==-1) {
+                log.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "+pfn+"! Volatile entry NOT processed!");
+            } else if (n==0) {
+                dao.addVolatile(fileName,fileStart,fileTime);
+            } else {
                 dao.updateVolatile(fileName,fileStart,fileTime);
-                if (n>1) log.warn("VolatileAndJiT CATALOG: More than one entry found for "+fileName+"; the catalogue could be corrupt!");
+                if (n>1) {
+                    log.warn("VolatileAndJiT CATALOG: More than one entry found for "+fileName+"; the catalogue could be corrupt!");
+                }
             }
         }
     }
@@ -213,7 +221,7 @@ public class VolatileAndJiTCatalog {
 
 
 
-	/**
+    /**
      * Method used to keep track of an ACL set up on a PFN; it needs the PFN,
      * the LocalUser, the ACL and the desired pinLifeTime. If the 3-ple (PFN,
      * ACL, LocalUser) is not present, it gets added; if it is already present,
@@ -237,13 +245,13 @@ public class VolatileAndJiTCatalog {
      * Notice that for Volatile entries, a pinLifetime larger than the
      * fileLifetime can be specified. However, when Volatile files expire
      * any related JiTs automatically expire in anticipation!
-	 */
-	synchronized public void trackJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
+     */
+    synchronized public void trackJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
         boolean ok = pfn!=null &&
-            localUser!=null &&
-            acl!=null &&
-            start!=null &&
-            pinLifetime!=null;
+        localUser!=null &&
+        acl!=null &&
+        start!=null &&
+        pinLifetime!=null;
         if (!ok) {
             log.error("VolatileAndJiT CATALOG: programming bug! TrackACL invoked on null attributes; pfn="+pfn+" localUser="+localUser+" acl="+acl+" start="+start+" pinLifetime="+pinLifetime);
         } else {
@@ -254,10 +262,13 @@ public class VolatileAndJiTCatalog {
             long pinStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
             long pinTime = validatePinLifetime(pinLifetime.value());
             int n = dao.numberJiT(fileName,uid,intacl);
-            if (n==0) dao.addJiT(fileName,uid,gid,intacl,pinStart,pinTime);
-            else {
+            if (n==0) {
+                dao.addJiT(fileName,uid,gid,intacl,pinStart,pinTime);
+            } else {
                 dao.updateJiT(fileName,uid,intacl,pinStart,pinTime);
-                if (n>1) log.warn("VolatileAndJiT CATALOG: More than one entry found for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
+                if (n>1) {
+                    log.warn("VolatileAndJiT CATALOG: More than one entry found for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
+                }
             }
         }
     }
@@ -300,10 +311,10 @@ public class VolatileAndJiTCatalog {
      * parameters were null, and TRUE otherwise. Yet keep in mind that is says
      * nothing of whether the DB operation was successful or not.
      */
-	synchronized public boolean expireJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl) {
+    synchronized public boolean expireJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl) {
         boolean ok = pfn!=null &&
-            localUser!=null &&
-            acl!=null;
+        localUser!=null &&
+        acl!=null;
         if (!ok) {
             log.error("VolatileAndJiT CATALOG: programming bug! expireJiT invoked on null attributes; pfn="+pfn+" localUser="+localUser+" acl="+acl);
             return false;
@@ -324,7 +335,9 @@ public class VolatileAndJiTCatalog {
                 return false;
             } else {
                 dao.forceUpdateJiT(fileName,uid,intacl,pinStart,pinTime);
-                if (n>1) log.warn("VolatileAndJiT CATALOG: expireJiT found more than one entry for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
+                if (n>1) {
+                    log.warn("VolatileAndJiT CATALOG: expireJiT found more than one entry for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
+                }
                 return true;
             }
         }
@@ -356,7 +369,7 @@ public class VolatileAndJiTCatalog {
      */
     synchronized public boolean expireGetJiTs(PFN pfn, LocalUser localUser) {
         boolean ok = pfn!=null &&
-            localUser!=null;
+        localUser!=null;
         if (!ok) {
             log.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked on null attributes; pfn="+pfn+" localUser="+localUser);
             return false;
@@ -393,7 +406,7 @@ public class VolatileAndJiTCatalog {
      */
     synchronized public boolean expirePutJiTs(PFN pfn, LocalUser localUser) {
         boolean ok = pfn!=null &&
-            localUser!=null;
+        localUser!=null;
         if (!ok) {
             log.error("VolatileAndJiT CATALOG: programming bug! expirePutJiTs invoked on null attributes; pfn="+pfn+" localUser="+localUser);
             return false;
@@ -441,10 +454,16 @@ public class VolatileAndJiTCatalog {
         Collection[] expired = dao.removeExpired(rightNow.getTimeInMillis() / 1000); //removes all expired entries from storm_pin and storm_track, returning two Collections: one with the PFN of Volatile files, and the other with PFN + GridUser couple of the entries that were just being tracked for the ACLs set up on them.
         Collection expiredVolatile = expired[0]; //collection of expired Volatile entries
         Collection expiredJiT = expired[1]; //collection of expired JiTs
-        if (expiredVolatile.size()==0) log.debug("VolatileAndJiT CATALOG! No expired Volatile entries found.");
-        else log.info("VolatileAndJiT CATALOG! Found and purged the following expired Volatile entries:\n "+volatileString(expired[0]));
-        if (expiredJiT.size()==0) log.debug("VolatileAndJiT CATALOG! No JiT entries found.");
-        else log.info("VolatileAndJiT CATALOG! Found and purged the following expired JiT ACLs entries:\n "+jitString(expired[1]));
+        if (expiredVolatile.size()==0) {
+            log.debug("VolatileAndJiT CATALOG! No expired Volatile entries found.");
+        } else {
+            log.info("VolatileAndJiT CATALOG! Found and purged the following expired Volatile entries:\n "+volatileString(expired[0]));
+        }
+        if (expiredJiT.size()==0) {
+            log.debug("VolatileAndJiT CATALOG! No JiT entries found.");
+        } else {
+            log.info("VolatileAndJiT CATALOG! Found and purged the following expired JiT ACLs entries:\n "+jitString(expired[1]));
+        }
         //Remove ACLs
         JiTData aux = null;
         for (Iterator i = expiredJiT.iterator(); i.hasNext(); ) {
@@ -473,7 +492,9 @@ public class VolatileAndJiTCatalog {
                 log.info("VolatileAndJiT CATALOG. Deleting file "+auxPFN);
                 LocalFile auxFile = NamespaceDirector.getNamespace().resolveStoRIbyPFN(PFN.make(auxPFN)).getLocalFile();
                 boolean ok = auxFile.delete();
-                if (!ok) throw new Exception("Java File deletion failed!");
+                if (!ok) {
+                    throw new Exception("Java File deletion failed!");
+                }
             } catch (Exception e) {
                 //log exceptions
                 log.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but physical file "+auxPFN+" could NOT be deleted!");
@@ -487,11 +508,15 @@ public class VolatileAndJiTCatalog {
      * the expired entries Collection of pfn Strings.
      */
     private String volatileString(Collection c) {
-        if (c==null) return "";
+        if (c==null) {
+            return "";
+        }
         StringBuffer sb = new StringBuffer();
         for (Iterator i = c.iterator(); i.hasNext(); ) {
             sb.append((String)i.next());
-            if (i.hasNext()) sb.append(",");
+            if (i.hasNext()) {
+                sb.append(",");
+            }
         }
         return sb.toString();
     }
@@ -501,14 +526,18 @@ public class VolatileAndJiTCatalog {
      * expired entries Collection of JiTData.
      */
     private String jitString(Collection c) {
-        if (c==null) return "";
+        if (c==null) {
+            return "";
+        }
         StringBuffer sb = new StringBuffer();
         sb.append("file,acl,uid,gid\n");
         JiTData aux = null;
         for (Iterator i = c.iterator(); i.hasNext(); ) {
             aux = (JiTData) i.next();
             sb.append(aux.pfn()); sb.append(","); sb.append(aux.acl()); sb.append(","); sb.append(aux.uid()); sb.append(","); sb.append(aux.gid());
-            if (i.hasNext()) sb.append("\n");
+            if (i.hasNext()) {
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }

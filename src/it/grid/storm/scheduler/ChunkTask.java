@@ -1,11 +1,13 @@
 package it.grid.storm.scheduler;
 
-import it.grid.storm.health.HealthDirector;
-import it.grid.storm.health.BookKeeper;
-import it.grid.storm.health.LogEvent;
-import it.grid.storm.health.OperationType;
 import it.grid.storm.asynch.PtGChunk;
 import it.grid.storm.asynch.PtPChunk;
+import it.grid.storm.health.BookKeeper;
+import it.grid.storm.health.HealthDirector;
+import it.grid.storm.health.LogEvent;
+import it.grid.storm.health.OperationType;
+
+import java.util.ArrayList;
 
 /**
  * <p>Title: </p>
@@ -34,18 +36,18 @@ public class ChunkTask extends Task {
      */
     public ChunkTask(Delegable todo, ChunkType type)
     {
-	super();
-	this.todo = todo;
-	this.taskName = todo.getName();
-	this.chunkType = type;
+        super();
+        this.todo = todo;
+        this.taskName = todo.getName();
+        this.chunkType = type;
         if (type.equals(ChunkType.PREPARE_TO_GET)) {
-          PtGChunk ptgToDo = (PtGChunk)todo;
-          setLoggingValues(ptgToDo.getUserDN(), ptgToDo.getSURL(), ptgToDo.getRequestToken());
+            PtGChunk ptgToDo = (PtGChunk)todo;
+            setLoggingValues(ptgToDo.getUserDN(), ptgToDo.getSURL(), ptgToDo.getRequestToken());
         } else if (type.equals(ChunkType.PREPARE_TO_PUT)) {
-          PtPChunk ptpToDo = (PtPChunk)todo;
-          setLoggingValues(ptpToDo.getUserDN(), ptpToDo.getSURL(), ptpToDo.getRequestToken());
+            PtPChunk ptpToDo = (PtPChunk)todo;
+            setLoggingValues(ptpToDo.getUserDN(), ptpToDo.getSURL(), ptpToDo.getRequestToken());
         } else {
-          setLoggingValues("unknonw", "unknown", "unknown");
+            setLoggingValues("unknonw", "unknown", "unknown");
         }
 
     }
@@ -53,22 +55,22 @@ public class ChunkTask extends Task {
 
     protected ChunkTask(Delegable todo)
     {
-	super();
-	this.todo = todo;
-	this.taskName = todo.getName();
-	this.chunkType = ChunkType.GENERIC;
+        super();
+        this.todo = todo;
+        this.taskName = todo.getName();
+        this.chunkType = ChunkType.GENERIC;
     }
 
 
     public void setLoggingValues(String userDN, String surl, String requestToken) {
-      this.userDN = userDN;
-      this.surl = surl;
-      this.requestToken = requestToken;
+        this.userDN = userDN;
+        this.surl = surl;
+        this.requestToken = requestToken;
     }
 
 
     public void setResult(boolean result) {
-      this.successResult = result;
+        this.successResult = result;
     }
 
     /**
@@ -82,9 +84,10 @@ public class ChunkTask extends Task {
      * all chunk tasks are considered equals.
      *
      */
+    @Override
     public int compareTo(Object o)
     {
-	return 0;
+        return 0;
     }
 
 
@@ -92,22 +95,28 @@ public class ChunkTask extends Task {
      * Method used to book the execution of this chunk
      */
     public void logExecution() {
-      BookKeeper bk = HealthDirector.getHealthMonitor().getBookKeeper();
-    OperationType opType = OperationType.makeFromChunkType(this.getType());
-      long startTime = this.getStartExecutionTime();
-      long duration = this.howlongInExecution();
+        ArrayList<BookKeeper> bks = HealthDirector.getHealthMonitor().getBookKeepers();
+        OperationType opType = OperationType.makeFromChunkType(this.getType());
+        long startTime = this.getStartExecutionTime();
+        long duration = this.howlongInExecution();
 
-      if (chunkType.equals(ChunkType.PREPARE_TO_GET)) {
-        PtGChunk ptgToDo = (PtGChunk) todo;
-        this.successResult = ptgToDo.isResultSuccess();
-      } else if (chunkType.equals(ChunkType.PREPARE_TO_PUT)) {
-        PtPChunk ptpToDo = (PtPChunk) todo;
-        this.successResult = ptpToDo.isResultSuccess();
-      } else {
+        if (chunkType.equals(ChunkType.PREPARE_TO_GET)) {
+            PtGChunk ptgToDo = (PtGChunk) todo;
+            this.successResult = ptgToDo.isResultSuccess();
+        } else if (chunkType.equals(ChunkType.PREPARE_TO_PUT)) {
+            PtPChunk ptpToDo = (PtPChunk) todo;
+            this.successResult = ptpToDo.isResultSuccess();
+        } else {
 
-      }
-      LogEvent event = new LogEvent(opType, this.userDN, this.surl, startTime, duration, this.requestToken, successResult);
-      bk.addLogEvent(event);
+        }
+        LogEvent event = new LogEvent(opType, this.userDN, this.surl, startTime, duration, this.requestToken, successResult);
+        if (!(bks.isEmpty())){
+            for (int i = 0; i < bks.size(); i++) {
+                bks.get(i).addLogEvent(event);
+            }
+        }
+
+
     }
 
 
@@ -117,10 +126,11 @@ public class ChunkTask extends Task {
      * <code>run</code> method to be called in that separately executing
      * thread.
      */
+    @Override
     public void run()   {
-	this.runEvent();
-	todo.doIt();
-	this.endEvent();
+        this.runEvent();
+        todo.doIt();
+        this.endEvent();
         this.logExecution();
     }
 
@@ -130,7 +140,7 @@ public class ChunkTask extends Task {
      * @return ChunkType
      */
     public ChunkType getType() {
-	return this.chunkType;
+        return this.chunkType;
     }
 
 
@@ -139,7 +149,7 @@ public class ChunkTask extends Task {
      * @param type ChunkType
      */
     protected void setType(ChunkType type) {
-	this.chunkType = type;
+        this.chunkType = type;
     }
 
     /**
@@ -147,19 +157,34 @@ public class ChunkTask extends Task {
      * @param o Object
      * @return boolean
      */
+    @Override
     public boolean equals(Object obj) {
-      if (obj==this) return true;
-      if (!(obj instanceof ChunkTask)) return false;
-      ChunkTask other = (ChunkTask) obj;
-      if (!(other.chunkType.equals(this.chunkType))) return false;
-      if (!(other.getName().equals(this.getName()))) return false;
-      if (!(other.todo.equals(this.todo))) return false;
-      else return true;
+        if (obj==this) {
+            return true;
+        }
+        if (!(obj instanceof ChunkTask)) {
+            return false;
+        }
+        ChunkTask other = (ChunkTask) obj;
+        if (!(other.chunkType.equals(this.chunkType))) {
+            return false;
+        }
+        if (!(other.getName().equals(this.getName()))) {
+            return false;
+        }
+        if (!(other.todo.equals(this.todo))) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
-        if (this.taskName.length()!=0) hash = 37*hash + taskName.hashCode();
+        if (this.taskName.length()!=0) {
+            hash = 37*hash + taskName.hashCode();
+        }
         hash = 37*hash + this.todo.hashCode();
         hash = 37*hash + this.chunkType.hashCode();
         return hash;

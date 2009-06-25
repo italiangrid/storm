@@ -1,9 +1,9 @@
 package it.grid.storm.xmlrpc;
 
+import it.grid.storm.common.OperationType;
 import it.grid.storm.health.BookKeeper;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.health.LogEvent;
-import it.grid.storm.common.OperationType;
 import it.grid.storm.synchcall.SynchcallDispatcher;
 import it.grid.storm.synchcall.SynchcallDispatcherFactory;
 import it.grid.storm.synchcall.data.InputData;
@@ -11,9 +11,11 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ConveterFactory;
 
+import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project.
@@ -25,10 +27,13 @@ import org.apache.log4j.Logger;
 
 public class XMLRPCExecutor {
 
+
+    private static ArrayList<BookKeeper> bookKeepers = HealthDirector.getHealthMonitor().getBookKeepers();
+
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(XMLRPCExecutor.class);
 
     /**
      * @param type
@@ -42,7 +47,9 @@ public class XMLRPCExecutor {
         OperationType opType = type;
         String dn = "synch";
         long startTime = System.currentTimeMillis();
-        long duration = startTime;
+
+        long duration = System.nanoTime();
+
         boolean successResult = true;
         // ******************
 
@@ -59,13 +66,13 @@ public class XMLRPCExecutor {
         // RmdirData Converter, used to obtain and create StoRM type from/to
         // generic xmlrpc types
         Converter converter = ConveterFactory.getConverter(type);
-        
+
         assert(converter!=null): "CONVERTER_IS_NULL";
-        
+
         // Synchcall dispatcher da factory
-        
+
         SynchcallDispatcher dispatcher = SynchcallDispatcherFactory.getDispatcher();
-        
+
         log.debug("Converter");
         // Creation of RmdirInputData from generic xmlrpc structure
         inputData = converter.convertToInputData(inputParam);
@@ -80,10 +87,10 @@ public class XMLRPCExecutor {
 
         // ****** LOGs SYNCH OPERATION *********
         successResult = outputData.isSuccess();
+        //Compute of duration in NanoSeconds
+        duration = System.nanoTime() - duration;
 
-        duration = System.currentTimeMillis() - startTime;
-        //logExecution(opType, dn, startTime, duration, successResult);
-        // ******************
+        logExecution(convertOperationType(type), dn, startTime, duration, successResult);
 
         // Return Output Structure
         return outputParam;
@@ -94,10 +101,51 @@ public class XMLRPCExecutor {
      */
     public void logExecution(it.grid.storm.health.OperationType opType, String dn, long startTime,
             long duration, boolean successResult) {
-        BookKeeper bk = HealthDirector.getHealthMonitor().getBookKeeper();
-        LogEvent event = new LogEvent(opType, dn, startTime, duration,
-                successResult);
-        bk.addLogEvent(event);
+
+        LogEvent event = new LogEvent(opType, dn, startTime, duration, successResult);
+        if (!(bookKeepers.isEmpty())){
+            System.out.println("Found # "+bookKeepers.size()+"bookeepers.");
+            for (int i = 0; i < bookKeepers.size(); i++) {
+                bookKeepers.get(i).addLogEvent(event);
+            }
+        }
     }
+
+    /**
+     * TOREMOVE!
+     * this is a temporary code  since two different class of OperationTYpe are defined.
+     * This is to convert the two kind of operation type, from the onw used here, enum based, to the one
+     * requested by the hearthbeat.
+     * 
+     */
+    private it.grid.storm.health.OperationType convertOperationType(OperationType type) {
+        switch (type) {
+        case PTG: return it.grid.storm.health.OperationType.PTG;
+        case PTP: return it.grid.storm.health.OperationType.PTP;
+        case COPY: return  it.grid.storm.health.OperationType.COPY;
+        case BOL: return it.grid.storm.health.OperationType.BOL;
+        case AF: return it.grid.storm.health.OperationType.AF;
+        case AR: return it.grid.storm.health.OperationType.AR;
+        case EFL: return it.grid.storm.health.OperationType.EFL;
+        case GSM: return it.grid.storm.health.OperationType.GSM;
+        case GST: return it.grid.storm.health.OperationType.GST;
+        case LS: return it.grid.storm.health.OperationType.LS;
+        case MKD: return it.grid.storm.health.OperationType.MKD;
+        case MV: return it.grid.storm.health.OperationType.MV;
+        case PNG: return it.grid.storm.health.OperationType.PNG;
+        case PD: return it.grid.storm.health.OperationType.PD;
+        case RF: return it.grid.storm.health.OperationType.RF;
+        case RESSP: return it.grid.storm.health.OperationType.RS;
+        case RELSP: return it.grid.storm.health.OperationType.RSP;
+        case RM: return it.grid.storm.health.OperationType.RM;
+        case RMD: return it.grid.storm.health.OperationType.RMD;
+        default:
+            return it.grid.storm.health.OperationType.UNDEF;
+        }
+
+
+    }
+
+
 
 }

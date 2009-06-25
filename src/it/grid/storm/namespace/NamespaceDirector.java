@@ -1,11 +1,16 @@
 package it.grid.storm.namespace;
 
-import java.io.*;
+import it.grid.storm.config.ConfigReader;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.config.NamespaceLoader;
+import it.grid.storm.namespace.config.NamespaceParser;
+import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
+import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 
-import org.apache.commons.logging.*;
-import it.grid.storm.config.*;
-import it.grid.storm.namespace.config.*;
-import it.grid.storm.namespace.config.xml.*;
+import java.io.File;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -21,7 +26,7 @@ import it.grid.storm.namespace.config.xml.*;
  */
 public class NamespaceDirector {
 
-    private static final Log log = LogFactory.getLog("namespace");
+    private static final Logger log = LoggerFactory.getLogger(NamespaceDirector.class);;
     private static NamespaceInterface namespaceIstance = null;
 
     private static int refreshInSeconds = 5; //Default value;
@@ -143,7 +148,7 @@ public class NamespaceDirector {
         return loader;
     }
 
-    public static Log getLogger() {
+    public static Logger getLogger() {
         return log;
     }
 

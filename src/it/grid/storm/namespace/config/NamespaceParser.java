@@ -1,8 +1,9 @@
 package it.grid.storm.namespace.config;
 
-import java.util.*;
+import it.grid.storm.namespace.VirtualFSInterface;
 
-import it.grid.storm.namespace.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Title: </p>
@@ -21,7 +22,7 @@ public interface NamespaceParser {
 
     public String getNamespaceVersion();
 
-    public Map getVFSs();
+    public Map<String, VirtualFSInterface> getVFSs();
 
     public VirtualFSInterface getVFS(String vfsName);
 

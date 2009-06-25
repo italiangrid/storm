@@ -1,8 +1,7 @@
 package it.grid.storm.wrapper;
 
-import org.apache.log4j.Logger;
-
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for Space Reservation native Library.
@@ -16,23 +15,23 @@ import java.io.*;
  */
 public class SpaceReservationWrapper
 {
-	/**
-	 * Logger.
-	 * This Logger it's used to log information.
-	 */ 	
-	private static final Logger log = Logger.getLogger("wrapper");
-	
-	
-native int reserveSpace(String pathToFile, long size);
-static  {
-	//	System.out.println("File: "+pathToFile+", size = "+ size );
-	try {
-		System.loadLibrary("spacenativelib");
-	} catch (UnsatisfiedLinkError e) {
-      		log.fatal("SpaceReservation native library failed to load!\n" + e);
-		System.exit(1);
-	}
-	
-}
+    /**
+     * Logger.
+     * This Logger it's used to log information.
+     */
+    private static final Logger log = LoggerFactory.getLogger(SpaceReservationWrapper.class);
+
+
+    native int reserveSpace(String pathToFile, long size);
+    static  {
+        //	System.out.println("File: "+pathToFile+", size = "+ size );
+        try {
+            System.loadLibrary("spacenativelib");
+        } catch (UnsatisfiedLinkError e) {
+            log.error("SpaceReservation native library failed to load!", e);
+            System.exit(1);
+        }
+
+    }
 
 }

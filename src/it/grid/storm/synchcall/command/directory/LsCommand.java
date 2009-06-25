@@ -1,41 +1,61 @@
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.authorization.AuthorizationDecision;
-import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.StoRI;
-
-
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.srm.types.TMetaDataPathDetail;
 import it.grid.storm.common.SRMConstants;
-import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
-
-import java.util.LinkedList;
-import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
+import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
+import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
+import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.srm.types.ArrayOfSURLs;
+import it.grid.storm.srm.types.ArrayOfTExtraInfo;
+import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
+import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
+import it.grid.storm.srm.types.TCheckSumType;
+import it.grid.storm.srm.types.TCheckSumValue;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TFileLocality;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TFileType;
+import it.grid.storm.srm.types.TGroupID;
+import it.grid.storm.srm.types.TGroupPermission;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TMetaDataPathDetail;
+import it.grid.storm.srm.types.TPermissionMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TUserID;
+import it.grid.storm.srm.types.TUserPermission;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DirectoryCommand;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
-import it.grid.storm.namespace.*;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang.mutable.MutableInt;
-
-import it.grid.storm.common.types.SizeUnit;
 
 
 /**
@@ -55,11 +75,11 @@ import it.grid.storm.common.types.SizeUnit;
 public class LsCommand extends DirectoryCommand implements Command
 {
     private int                maxEntries = -1;
-    private NamespaceInterface namespace;
-    private LinkedList         buffer;
+    private final NamespaceInterface namespace;
+    private final LinkedList         buffer;
 
     public LsCommand() {
-        maxEntries = config.get_LS_MaxNumberOfEntry();
+        maxEntries = DirectoryCommand.config.get_LS_MaxNumberOfEntry();
         namespace = NamespaceDirector.getNamespace();
         //buffer = Collections.synchronizedList(new LinkedList());
         buffer = new LinkedList();
@@ -159,7 +179,7 @@ public class LsCommand extends DirectoryCommand implements Command
         boolean allLevelRecursive;
         if (inputData.getAllLevelRecursive() == null) {
             // Set to the default value.
-            allLevelRecursive = config.get_LS_allLevelRecursive();
+            allLevelRecursive = DirectoryCommand.config.get_LS_allLevelRecursive();
         } else {
             allLevelRecursive = inputData.getAllLevelRecursive().booleanValue();
         }
@@ -167,7 +187,7 @@ public class LsCommand extends DirectoryCommand implements Command
         int numOfLevels;
         if (inputData.getNumOfLevels() == null) {
             // Set to the default value.
-            numOfLevels = config.get_LS_numOfLevels();
+            numOfLevels = DirectoryCommand.config.get_LS_numOfLevels();
         } else {
             numOfLevels = inputData.getNumOfLevels().intValue();
             if (numOfLevels < 0) {
@@ -188,7 +208,7 @@ public class LsCommand extends DirectoryCommand implements Command
         int count;
         if (inputData.getCount() == null) {
             // Set to the default value.
-            count = config.get_LS_count();
+            count = DirectoryCommand.config.get_LS_count();
         } else {
             count = inputData.getCount().intValue();
             if (count < 0) {
@@ -204,14 +224,14 @@ public class LsCommand extends DirectoryCommand implements Command
                 return outputData;
             }
             if (count == 0) {
-                count = config.get_LS_count();
+                count = DirectoryCommand.config.get_LS_count();
             }
         }
 
         int offset;
         if (inputData.getOffset() == null) {
             // Set to the default value.
-            offset = config.get_LS_offset();
+            offset = DirectoryCommand.config.get_LS_offset();
         } else {
             offset = inputData.getOffset().intValue();
             if (offset < 0) {
@@ -264,13 +284,12 @@ public class LsCommand extends DirectoryCommand implements Command
             }
 
             // Check for authorization and execute Ls.
-            VomsGridUser user = (VomsGridUser) guser;
             if (!failure) {
-                
-                lsAuth = AuthorizationCollector.getInstance().canListDirectory(user, stori);
-                
+
+                lsAuth = AuthorizationCollector.getInstance().canListDirectory(guser, stori);
+
                 if (lsAuth.isPermit()) {
-                    log.debug("srmLs: Ls authorized for user [" + user + "] and PFN = [" + stori.getPFN() + "]");
+                    log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN() + "]");
                     int error=0;
                     MutableInt numberOfReturnedEntries = new MutableInt(0);
                     MutableInt numberOfIterations = new MutableInt(0);
@@ -306,9 +325,9 @@ public class LsCommand extends DirectoryCommand implements Command
                 TMetaDataPathDetail elementDetail = new TMetaDataPathDetail();
                 elementDetail.setStatus(status);
                 elementDetail.setSurl(surl);
-                if (stori != null)
+                if (stori != null) {
                     elementDetail.setStFN(stori.getStFN());
-                else {
+                } else {
                     elementDetail.setStFN(surl.sfn().stfn());
                     //TOREMOVE
                     //log.debug("StFN : "+surl.sfn().stfn());
@@ -384,24 +403,18 @@ public class LsCommand extends DirectoryCommand implements Command
 
         LocalFile localElement = null;
         TMetaDataPathDetail currentElementDetail = null;
-
         boolean anotherLevel = false;
-
         //Current metaDataPath
         currentElementDetail = new TMetaDataPathDetail();
-
         ArrayOfTMetaDataPathDetail currentMetaDataArray  = null;
         //Create the annidate array of TMetaDataPathDetails
         currentMetaDataArray =  new ArrayOfTMetaDataPathDetail();
         //Set the hierarchial array of metaData
         currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
-
         //iter++
         numberOfIterations.add(1);
-
         //Check if max number of requests has been reached
         if(numberOfResult.intValue()<count_maxEntries) {
-
             /**
              *
              *  The recursive idea is:
@@ -418,95 +431,73 @@ public class LsCommand extends DirectoryCommand implements Command
 
             // Ls of the current element
             if (localElement.exists()) { // The local element exists in the underlying file system
-
                 if (localElement.isDirectory()) {
-
                     if (numberOfIterations.intValue() >= offset) {
-
                         // Retrieve information of the directory from the underlying file system
                         populateDetailFromFS(stori, currentElementDetail);
-
-                        if (fullDetailedList)
+                        if (fullDetailedList) {
                             fullDetail(stori, guser, currentElementDetail);
-
+                        }
                         // In Any case set SURL value into TMetaDataPathDetail
                         if (stori  != null) {
                             currentElementDetail.setStFN(stori.getStFN());
                         }
-
                         // Add the information into the details structure
 
                         numberOfResult.add(1);
                         rootArray.addTMetaDataPathDetail(currentElementDetail);
                     }
-
                     anotherLevel = checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel);
                     currentLevel = currentLevel+1;
                     if (anotherLevel) {
                         // Retrieve directory element
                         ArrayList childrenArray = (ArrayList) getFirstLevel(stori);
                         if (childrenArray != null) { //Populate the buffer
-
                             for (Iterator<StoRI> iter = childrenArray.iterator(); iter.hasNext()&&(numberOfResult.intValue()<count_maxEntries);) {
                                 StoRI item = iter.next();
                                 if(numberOfResult.intValue() >= offset) {
-
                                     manageAuthorizedLS(guser, item, currentMetaDataArray, type, allLevelRecursive,
-                                                   numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset, numberOfResult, currentLevel, numberOfIterations);
-                                } else
+                                            numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset, numberOfResult, currentLevel, numberOfIterations);
+                                } else {
                                     manageAuthorizedLS(guser, item, rootArray, type, allLevelRecursive,
-                                                       numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset, numberOfResult, currentLevel, numberOfIterations);
+                                            numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset, numberOfResult, currentLevel, numberOfIterations);
+                                }
                             }
                         } // no valid children
                     } //No More element
-
                 } else { //The local element is a file
-
                     // Retrieve information on file from underlying file system
-
                     if (numberOfIterations.intValue() >= offset) {
-
                         populateDetailFromFS(stori, currentElementDetail);
-
-                        if (fullDetailedList)
+                        if (fullDetailedList) {
                             fullDetail(stori, guser, currentElementDetail);
-
+                        }
                         // In Any case set SURL value into TMetaDataPathDetail
                         if (stori != null) {
                             //elementDetail.setSurl(stori_tmp.getSURL());
                             currentElementDetail.setStFN(stori.getStFN());
                         }
-
                         numberOfResult.add(1);
-
                         rootArray.addTMetaDataPathDetail(currentElementDetail);
                     } //Just do nothing. Skip this element.
                 }
-
             } else { // The local element does not exists in the underlying file system.
                 log.debug("srmLs: The file does not exists in underlying file system.");
-
                 if (numberOfIterations.intValue() >= offset) {
-
                     errorCount++;
-
                     // In Any case set SURL value into TMetaDataPathDetail
                     if (stori != null) {
                         //elementDetail.setSurl(stori_tmp.getSURL());
                         currentElementDetail.setStFN(stori.getStFN());
                     }
-
                     // Set Error Status Code and Explanation
                     populateDetailFromFS(stori, currentElementDetail);
-
                     // Add the information into details structure
                     numberOfResult.add(1);
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
-
             }
         }
-
         return errorCount;
     }
 
@@ -609,10 +600,11 @@ public class LsCommand extends DirectoryCommand implements Command
             // Set Status
             if (!failure) {
                 explanation = "Successful request completion";
-                if (element.isSURLBusy())
+                if (element.isSURLBusy()) {
                     statusCode = TStatusCode.SRM_FILE_BUSY;
-                else
+                } else {
                     statusCode = TStatusCode.SRM_SUCCESS;
+                }
 
                 //log.debug("srmLs: Listing on SURL [" + element.getSURL() + "] sucessfully done with:["+statusCode+" : "+explanation+"]");
 
@@ -655,14 +647,15 @@ public class LsCommand extends DirectoryCommand implements Command
         /**
          * Comment added to prevent BUG in FS Driver
          *
-        */
+         */
 
         try {
             FilesystemPermission permission = null;
-            if (element.hasJustInTimeACLs())
+            if (element.hasJustInTimeACLs()) {
                 permission = localElement.getUserPermission(guser.getLocalUser());
-            else
+            } else {
                 permission = localElement.getGroupPermission(guser.getLocalUser());
+            }
             if (permission != null) {
                 userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()), TPermissionMode
                         .getTPermissionMode(permission));
@@ -715,19 +708,22 @@ public class LsCommand extends DirectoryCommand implements Command
 
             /** Set common information (for files and directories) */
             // Set UserPermission
-            if(userPermission==null)
+            if(userPermission==null) {
                 userPermission= TUserPermission.makeFileDefault();
+            }
             elementDetail.setOwnerPermission(userPermission);
 
             // Set GroupPermission
-            if(groupPermission==null)
+            if(groupPermission==null) {
                 groupPermission = TGroupPermission.makeFileDefault();
+            }
             elementDetail.setGroupPermission(groupPermission);
 
             // Set otherPermission
 
-            if(otherPermission==null)
+            if(otherPermission==null) {
                 otherPermission=TPermissionMode.NONE;
+            }
 
             elementDetail.setOtherPermission(otherPermission);
 
@@ -747,6 +743,16 @@ public class LsCommand extends DirectoryCommand implements Command
                 elementDetail.setLifetimeLeft(lifetimeAssigned.timeLeft(startTime));
             } else {
                 elementDetail.setLifetimeLeft(TLifeTimeInSeconds.makeInfinite());
+            }
+
+            // checksum
+            //Check if the checksum is enabled by properties configuration
+            if(Configuration.getInstance().getChecksumEnabled()) {
+                long checksum = localElement.getChecksum();
+                TCheckSumValue checkSumValue = new TCheckSumValue(Long.toString(checksum));
+                TCheckSumType checkSumType = TCheckSumType.ADLER32;
+                elementDetail.setCheckSumType(checkSumType);
+                elementDetail.setCheckSumValue(checkSumValue);
             }
         }
 
@@ -781,12 +787,15 @@ public class LsCommand extends DirectoryCommand implements Command
     private boolean checkAnotherLevel(boolean allLevelRecursive, int numOfLevels, int currentLevel)
     {
         boolean result = false;
-        if (allLevelRecursive)
+        if (allLevelRecursive) {
             result = true;
-        else if (currentLevel < numOfLevels)
+        } else if (currentLevel < numOfLevels) {
             result = true;
+        }
         return result;
     }
+
+
 
 
 }

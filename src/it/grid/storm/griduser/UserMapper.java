@@ -1,12 +1,19 @@
 package it.grid.storm.griduser;
 
-import java.io.*;
-import java.util.*;
-import org.apache.log4j.Logger;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserMapper {
 
-    private static final Logger log = Logger.getLogger("griduser");
+    private static final Logger log = LoggerFactory.getLogger(UserMapper.class);
 
     private static long delay = 1; // delay for 5 sec.
     private static long period = 18000; // repeat every 5 minuti.
@@ -24,7 +31,7 @@ public class UserMapper {
      * Empty Constructor;
      */
     private UserMapper() {
-	mapping = readMapping();
+        mapping = readMapping();
     }
 
     public static UserMapper getIstance() {
@@ -33,8 +40,8 @@ public class UserMapper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
-                log.error(ex);
+                //ex.printStackTrace();
+                log.error("Unable to load/parse mapping file",ex);
             }
 
         }
@@ -73,24 +80,24 @@ public class UserMapper {
     public String getUID(String subject) {
         String result = "undef";
 
-	String patternStr = "/";
+        String patternStr = "/";
         String[] tokens = subject.split(patternStr);
 
-	//System.out.println("fields = "+tokens.length);
+        //System.out.println("fields = "+tokens.length);
         if (tokens.length > 1) {
             //Mapping based with CN field within FQDN.
             String cn = search("CN=", tokens);
-	    log.debug("CN chiave di ricerca = "+cn);
+            log.debug("CN chiave di ricerca = "+cn);
             result = mapping.getProperty(cn);
-	    log.debug("RESULT = "+result);
+            log.debug("RESULT = "+result);
         } else {
             //Mapping based with no FQDN.
             result = mapping.getProperty(subject);
         }
-	if (result==null) {
-	    log.warn("Mapping does not found with grid user = "+subject);
-	    result = "storm";
-	}
+        if (result==null) {
+            log.warn("Mapping does not found with grid user = "+subject);
+            result = "storm";
+        }
         return result;
     }
 
@@ -104,20 +111,21 @@ public class UserMapper {
         Timer timer = new Timer();
         mapping = new Properties();
         char sep = File.separatorChar;
-	System.out.println("Mapping File Name");
+        System.out.println("Mapping File Name");
         mappingFile = System.getProperty("user.dir") + sep + "config" + sep + mappingFileName;
 
         log.debug(mappingFile);
 
-	TimerTask tt = new TimerTask() {
-	    public void run() {
-		try {
-		    mapping.load(new FileInputStream(mappingFile));
-		} catch (IOException e) {
-		    e.printStackTrace();
-		}
-	    }
-	};
+        TimerTask tt = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    mapping.load(new FileInputStream(mappingFile));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
 
         timer.scheduleAtFixedRate(tt, delay, period);
         return mapping;
@@ -144,11 +152,13 @@ public class UserMapper {
             cn = (cn.replaceAll(" ", "_")).toLowerCase();
             log.debug("cn elab = '" + cn + "'");
         }
-	else {
-	    int end = 8;
-	    if ( subject.length()<8 ) end = subject.length();
-	    cn = subject.substring(0,end);
-	}
+        else {
+            int end = 8;
+            if ( subject.length()<8 ) {
+                end = subject.length();
+            }
+            cn = subject.substring(0,end);
+        }
         return cn;
     }
 
@@ -180,9 +190,9 @@ public class UserMapper {
         String result = null;
         String patternStr = "=";
         String[] parts;
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i].startsWith(start)) {
-                parts = fields[i].split(patternStr);
+        for (String field : fields) {
+            if (field.startsWith(start)) {
+                parts = field.split(patternStr);
                 result = parts[1];
             }
         }
@@ -192,7 +202,7 @@ public class UserMapper {
     public static void main(String[] args) {
 
 
-	UserMapper map = UserMapper.getIstance();
+        UserMapper map = UserMapper.getIstance();
         String res;
         res = map.getUID(args[0]);
         System.out.println("Grid User  = " + args[0]);

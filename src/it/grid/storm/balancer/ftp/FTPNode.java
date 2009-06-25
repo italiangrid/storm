@@ -1,7 +1,6 @@
 package it.grid.storm.balancer.ftp;
 
 import it.grid.storm.balancer.AbstractNode;
-import it.infn.bo.FMC.CurrentProcs;
 import it.grid.storm.namespace.model.Protocol;
 
 /**
@@ -30,6 +29,8 @@ public class FTPNode extends AbstractNode {
 
     }
 
+    
+    
     public FTPNode(String hostname, int port, int weight) {
         this.hostname = hostname;
         this.port = port;
@@ -81,8 +82,9 @@ public class FTPNode extends AbstractNode {
     //con Map<String, Obj metric>
 
     public int getFTPProc() {
+        //cache here
         int nprocs =  0 ;
-        nprocs = new CurrentProcs().getN(this.getHostName());
+        nprocs = new FMCTest().getN(this.getHostName());
         nprocs = (nprocs<0) ? -1 : nprocs;
         return nprocs;
     }

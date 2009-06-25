@@ -1,11 +1,13 @@
 package it.grid.storm.common.types;
 
+import it.grid.storm.config.Configuration;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ArrayList;
 
-import it.grid.storm.config.Configuration;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -18,14 +20,14 @@ import org.apache.log4j.Logger;
  */
 public class SFN {
 
-    static private Logger log = Logger.getLogger("sfn");
-   
+    static private Logger log = LoggerFactory.getLogger(SFN.class);
+
     private Machine m=null;
     private Port p=null;
     private EndPoint ep=null;
     private StFN pn=null;
     private boolean empty = true;
-    
+
     private SFN(Machine m, Port p, EndPoint ep, StFN pn, boolean empty){
         this.m = m;
         this.p = p;
@@ -38,7 +40,7 @@ public class SFN {
      * Static method that returns an empty SFN.
      */
     public static SFN makeEmpty() {
-	    return new SFN(Machine.makeEmpty(), Port.makeEmpty(), EndPoint.makeEmpty(), StFN.makeEmpty(), true);
+        return new SFN(Machine.makeEmpty(), Port.makeEmpty(), EndPoint.makeEmpty(), StFN.makeEmpty(), true);
     }
 
     /**
@@ -46,8 +48,10 @@ public class SFN {
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
     public static SFN make(Machine m, Port p, StFN stfn)  throws InvalidSFNAttributesException {
-	     if ((m==null) || (p==null) || (stfn==null) || m.isEmpty() || p.isEmpty() || stfn.isEmpty()) throw new InvalidSFNAttributesException(m,p,stfn);
-         return new SFN(m,p,EndPoint.makeEmpty(),stfn,false);
+        if ((m==null) || (p==null) || (stfn==null) || m.isEmpty() || p.isEmpty() || stfn.isEmpty()) {
+            throw new InvalidSFNAttributesException(m,p,stfn);
+        }
+        return new SFN(m,p,EndPoint.makeEmpty(),stfn,false);
     }
 
     /**
@@ -55,8 +59,10 @@ public class SFN {
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
     public static SFN makeInQueryForm(Machine m, Port p, EndPoint ep, StFN stfn)  throws InvalidSFNAttributesException {
-	     if ((m==null) || (p==null) || (ep==null) || (stfn==null) || m.isEmpty() || p.isEmpty() || (ep.isEmpty()) || stfn.isEmpty()) throw new InvalidSFNAttributesException(m,p,stfn);
-         return new SFN(m,p,ep,stfn,false);
+        if ((m==null) || (p==null) || (ep==null) || (stfn==null) || m.isEmpty() || p.isEmpty() || (ep.isEmpty()) || stfn.isEmpty()) {
+            throw new InvalidSFNAttributesException(m,p,stfn);
+        }
+        return new SFN(m,p,ep,stfn,false);
     }
 
 
@@ -65,7 +71,9 @@ public class SFN {
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
     public static SFN make(Machine m, StFN stfn) throws InvalidSFNAttributesException {
-        if ((m==null) || (stfn==null) || m.isEmpty() || stfn.isEmpty()) throw new InvalidSFNAttributesException(m,null,stfn);
+        if ((m==null) || (stfn==null) || m.isEmpty() || stfn.isEmpty()) {
+            throw new InvalidSFNAttributesException(m,null,stfn);
+        }
         try {
             return new SFN(m,Port.make(Configuration.getInstance().getFEPort()),EndPoint.makeEmpty(),stfn,false);
         } catch (InvalidPortAttributeException e) {
@@ -79,7 +87,9 @@ public class SFN {
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
     public static SFN makeInQueryForm(Machine m, EndPoint ep, StFN stfn) throws InvalidSFNAttributesException {
-        if ((m==null) || (stfn==null) || (ep==null) || m.isEmpty() || stfn.isEmpty() || (ep.isEmpty())) throw new InvalidSFNAttributesException(m,null,stfn);
+        if ((m==null) || (stfn==null) || (ep==null) || m.isEmpty() || stfn.isEmpty() || (ep.isEmpty())) {
+            throw new InvalidSFNAttributesException(m,null,stfn);
+        }
         try {
             return new SFN(m,Port.make(Configuration.getInstance().getFEPort()),ep,stfn,false);
         } catch (InvalidPortAttributeException e) {
@@ -94,13 +104,17 @@ public class SFN {
      * null or malformed, an InvalidSFNAttributesException is thrown.
      */
     public static SFN makeFromString(String s) throws InvalidSFNAttributesException {
-        if (s==null) throw new ParsingSFNAttributesException(s,"Supplied SFN String was null!");
+        if (s==null) {
+            throw new ParsingSFNAttributesException(s,"Supplied SFN String was null!");
+        }
         int colon = s.indexOf(":"); //first occurence of :
         int slash = s.indexOf("/"); //first occurence of /
         int question = s.toUpperCase().indexOf("?SFN="); //first occurence of ?SFN=
         if ((colon==-1) && (question==-1)){
             //supplied string does not contain a colon, and does not contain question mark! Treat it as optional port specification and optional query form!
-            if ((slash==-1) || (slash==0)) throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found or right at the beginning!"); //slash not found or right at the beginning!
+            if ((slash==-1) || (slash==0)) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found or right at the beginning!"); //slash not found or right at the beginning!
+            }
             String mString = s.substring(0,slash);
             Machine m = null;
             try {
@@ -119,7 +133,9 @@ public class SFN {
             return SFN.make(m,stfn);
         } else if ((colon==-1) && (question!=-1)) {
             //supplied string does not contain a colon! Treat it as optional port specification, _in_ query form!
-            if ((slash==-1) || (slash==0) || (slash>question)) throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found, or right at the beginning, or only followed the question mark!"); //slash not found or right at the beginning! Or, slash follows question!
+            if ((slash==-1) || (slash==0) || (slash>question)) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found, or right at the beginning, or only followed the question mark!"); //slash not found or right at the beginning! Or, slash follows question!
+            }
             String mString = s.substring(0,slash);
             Machine m = null;
             try {
@@ -136,7 +152,9 @@ public class SFN {
                 //do nothing ep remains null and that is fine!
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
-            if (question+5>=s.length()) throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but nothing left after the question mark!"); //nothing left after question!!!
+            if (question+5>=s.length()) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but nothing left after the question mark!"); //nothing left after question!!!
+            }
             String stfnString = s.substring(question+5,s.length());
             StFN stfn = null;
             try {
@@ -147,7 +165,9 @@ public class SFN {
             return SFN.makeInQueryForm(m,ep,stfn);
         } else if ((colon!=-1) && (question==-1)) {
             //supplied string contains a colon! Treat it as if port _is_ specified, and _not_ in query form!
-            if ((colon==0) || (colon>slash)) throw new ParsingSFNAttributesException(s,"String interpreted as specifying port, and as not referring to query form; but either the colon is missing, or it follows the first slash!"); //colon or slash not found or right at the beginning! Or, colon follows slash!
+            if ((colon==0) || (colon>slash)) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as specifying port, and as not referring to query form; but either the colon is missing, or it follows the first slash!"); //colon or slash not found or right at the beginning! Or, colon follows slash!
+            }
             String mString = s.substring(0,colon);
             Machine m = null;
             try {
@@ -155,7 +175,9 @@ public class SFN {
             } catch (InvalidMachineAttributeException e) {
                 //do nothing - m remains null and that is fine!
             }
-            if ((colon+1) == slash) throw new ParsingSFNAttributesException(s,"String interpreted as specifying port, and as not referring to query form; but the actual port number is missing since the first slash is found right after the colon"); //slash found right after colon! There is no port!
+            if ((colon+1) == slash) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as specifying port, and as not referring to query form; but the actual port number is missing since the first slash is found right after the colon"); //slash found right after colon! There is no port!
+            }
             String pString = s.substring(colon+1,slash);
             Port p = null;
             try {
@@ -177,7 +199,9 @@ public class SFN {
         } else {
             //colon!=-1 && question!=-1
             //supplied string contains a port and it also is in query form!
-            if ((colon==0) || (colon>slash) || (slash>question)) throw new ParsingSFNAttributesException(s,"String interpreted as having the optional port specification, and as referring to query form; but either colon is missing, colon follows first slash, or first slash follows question mark!"); //colon or slash not found or right at the beginning! Or, colon follows slash! Or slash follows question!
+            if ((colon==0) || (colon>slash) || (slash>question)) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as having the optional port specification, and as referring to query form; but either colon is missing, colon follows first slash, or first slash follows question mark!"); //colon or slash not found or right at the beginning! Or, colon follows slash! Or slash follows question!
+            }
             String mString = s.substring(0,colon);
             Machine m = null;
             try {
@@ -185,7 +209,9 @@ public class SFN {
             } catch (InvalidMachineAttributeException e) {
                 //do nothing - m remains null and that is fine!
             }
-            if ((colon+1) == slash) throw new ParsingSFNAttributesException(s,"String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!"); //slash found right after colon! There is no port!
+            if ((colon+1) == slash) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!"); //slash found right after colon! There is no port!
+            }
             String pString = s.substring(colon+1,slash);
             Port p = null;
             try {
@@ -204,7 +230,9 @@ public class SFN {
                 //Do nothing! ep remains null and that is fine!
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
-            if (question+5>=s.length()) throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but theere is nothing left after the question mark!"); //nothing left after question!!!
+            if (question+5>=s.length()) {
+                throw new ParsingSFNAttributesException(s,"String interpreted as omitting the optional port specification, and as referring to query form; but theere is nothing left after the question mark!"); //nothing left after question!!!
+            }
             String stfnString = s.substring(question+5,s.length());
             StFN stfn = null;
             try {
@@ -234,13 +262,18 @@ public class SFN {
      * Likewise if This is an EmptySFN.
      */
     public Collection getParents() {
-        if (empty) return new ArrayList();
+        if (empty) {
+            return new ArrayList();
+        }
         try {
             Collection aux = new ArrayList();
             Collection auxStFN = this.pn.getParents();
             for (Iterator i = auxStFN.iterator(); i.hasNext(); ) {
-                if (this.ep.isEmpty()) aux.add(SFN.make(this.m, this.p, (StFN)i.next()));
-                else aux.add(SFN.makeInQueryForm(this.m, this.p, this.ep, (StFN)i.next()));
+                if (this.ep.isEmpty()) {
+                    aux.add(SFN.make(this.m, this.p, (StFN)i.next()));
+                } else {
+                    aux.add(SFN.makeInQueryForm(this.m, this.p, this.ep, (StFN)i.next()));
+                }
             }
             return aux;
         } catch (InvalidSFNAttributesException e) {
@@ -262,10 +295,15 @@ public class SFN {
      * Likewise if This is an EmptySFN.
      */
     public SFN getParent() {
-        if (empty) return makeEmpty();
+        if (empty) {
+            return makeEmpty();
+        }
         try {
-            if (this.ep.isEmpty()) return SFN.make(this.m,this.p,this.pn.getParent());
-            else return SFN.makeInQueryForm(this.m,this.p,this.ep,this.pn.getParent());
+            if (this.ep.isEmpty()) {
+                return SFN.make(this.m,this.p,this.pn.getParent());
+            } else {
+                return SFN.makeInQueryForm(this.m,this.p,this.ep,this.pn.getParent());
+            }
         } catch (InvalidSFNAttributesException e) {
             return makeEmpty();
         }
@@ -275,15 +313,17 @@ public class SFN {
      * Method that returns a boolean true if this object is empty.
      */
     public boolean isEmpty() {
-	    return empty;
+        return empty;
     }
-        
+
     /**
      * Method that returns the Machine specified in this SFN. If this is
      * an empty SFN, then an empty Machine is returned.
      */
     public Machine machine() {
-        if (empty) return Machine.makeEmpty();
+        if (empty) {
+            return Machine.makeEmpty();
+        }
         return m;
     }
 
@@ -292,7 +332,9 @@ public class SFN {
      * empty SFN, then an empty Port is returned.
      */
     public Port port() {
-        if (empty) return Port.makeEmpty();
+        if (empty) {
+            return Port.makeEmpty();
+        }
         return p;
     }
 
@@ -302,7 +344,9 @@ public class SFN {
      * specified at creation time.
      */
     public EndPoint endPoint() {
-        if (empty) return EndPoint.makeEmpty();
+        if (empty) {
+            return EndPoint.makeEmpty();
+        }
         return ep;
     }
 
@@ -311,26 +355,43 @@ public class SFN {
      * empty SFN, then an empty StFN is returned.
      */
     public StFN stfn() {
-        if (empty) return StFN.makeEmpty();
+        if (empty) {
+            return StFN.makeEmpty();
+        }
         return pn;
     }
 
+    @Override
     public String toString() {
-        if (empty) return "Empty SFN";
-        if (ep.isEmpty()) return m+":"+p+pn;
+        if (empty) {
+            return "Empty SFN";
+        }
+        if (ep.isEmpty()) {
+            return m+":"+p+pn;
+        }
         return m+":"+p+ep+"?SFN="+pn;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof SFN)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof SFN)) {
+            return false;
+        }
         SFN sfno = (SFN) o;
-        if (empty && sfno.empty) return true;
+        if (empty && sfno.empty) {
+            return true;
+        }
         return !empty && !sfno.empty && m.equals(sfno.m) && p.equals(sfno.p) && ep.equals(sfno.ep) && pn.equals(sfno.pn);
     }
 
+    @Override
     public int hashCode() {
-        if (empty) return 0;
+        if (empty) {
+            return 0;
+        }
         int hash = 17;
         hash = 37*hash + m.hashCode();
         hash = 37*hash + p.hashCode();
@@ -339,7 +400,7 @@ public class SFN {
         return hash;
     }
 
-/*
+    /*
     public static void main(String[] args) {
         //
         //Testing empty SFN

@@ -1,216 +1,130 @@
 package it.grid.storm.authz.sa.conf;
 
-import java.io.File;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.AuthzDBReaderInterface;
+import it.grid.storm.authz.sa.model.FileAuthzDB;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 
-public class FileAuthzDBReader extends Observable implements AuthzDBReaderInterface {
+public class FileAuthzDBReader implements AuthzDBReaderInterface {
 
-    private final Log log = AuthzDirector.getLogger();
+    private final Logger log = AuthzDirector.getLogger();
 
-    int delay = 4000; // delay for 5 sec.
-    int period = 2000; // repeat every sec.
+    private long period = 5000; // repeat every sec.
 
-    private Timer timer = new Timer();
-    private String authzDBPath = "";
-    private String authzDBFileName;
-    private int refreshInSec = 0;
-    private boolean autoReload = false;
-    private PropertiesConfiguration authzdb = null;
-    private FileAuthzDBReloadingStrategy reloadingStrategy = null;
+    private String authzDBPath;
 
-    private boolean verbose = false;
+    //Watcher for changin on AuthzDB files
+    private final FileAuthzDBWatcher authzDBWatcher;
 
-    /**
-     *
-     */
-    public FileAuthzDBReader(String authzDBFileName, boolean versose) {
-        log.debug("Created Anonymous FileAuthzDBReader : " + this.hashCode());
-        this.verbose = verbose;
-        try {
-            init(authzDBFileName);
-        } catch (AuthzDBReaderException ex) {
-            log.error("Unable to load the AuthzDB file : " + authzDBFileName);
-        }
-    }
+    //Mapping between AuthzDBName and FileAuthzDB
+    private Map<String, FileAuthzDB> authzDBs;
 
-
-    private void init(String authzDBFileName) throws AuthzDBReaderException {
-        Peeper peeper = new Peeper(this);
-        timer.schedule(peeper, delay, period);
-        log.debug("Timer initialized");
-        bindDB(authzDBFileName);
-    }
-
-    /**
-     * To implement the Observer - Observable pattern
-     */
-    public synchronized void setChanged() {
-        super.setChanged();
-    }
-
-    public void setNotifyManaged() {
-        this.reloadingStrategy.notifingPerformed();
-        this.authzdb.setReloadingStrategy(this.reloadingStrategy);
-    }
-
-    public void setObserver(Observer obs) {
-        this.addObserver(obs);
-    }
-
-    /**
-     *
-     * @param authzDBPath String
-     */
-    public void setAuthZDBPath(String authzDBPath) {
-        this.authzDBPath = authzDBPath;
-    }
-
-    /**
-     * bindDB
-     *
-     * @todo Implement this it.grid.storm.authz.sa.AuthzDBReaderInterface
-     *   method
-     */
-    public void bindDB(String dbFileName) throws AuthzDBReaderException {
-        this.authzDBFileName = dbFileName;
-        if (authzDBPath.equals("")) {
-            authzDBPath = System.getProperty("user.dir") + File.separator + "etc";
-        }
-        authzDBFileName = authzDBPath + File.separator + dbFileName;
-
-        try {
-            authzdb = new PropertiesConfiguration(authzDBFileName);
-            log.debug("Bound FileAuthzDBReader with " + authzDBFileName);
-        } catch (ConfigurationException ex) {
-            ex.printStackTrace();
-            throw new AuthzDBReaderException();
-        }
-        if (autoReload) {
-            //create reloading strategy for refresh
-            reloadingStrategy = new FileAuthzDBReloadingStrategy();
-            reloadingStrategy.setRefreshDelay(refreshInSec);
-            authzdb.setReloadingStrategy(reloadingStrategy);
-            FileAuthzDBListener authzListener = new FileAuthzDBListener(authzDBFileName);
-            authzdb.addConfigurationListener(authzListener);
-            log.debug("Configured FileAuthzDBReader " + authzDBFileName + "in AutoReload");
-        }
-    }
-
-    /**
-     * setAutomaticReload
-     *
-     * @param autoReload boolean
-     * @todo Implement this it.grid.storm.authz.sa.AuthzDBReaderInterface
-     *   method
-     */
-    public void setAutomaticReload(boolean autoReload, int timeIntervalInSeconds) {
-        this.autoReload = autoReload;
-        this.refreshInSec = timeIntervalInSeconds;
-    }
+    //Mapping between AuthzDBName and Parsed time
+    private Map<String, Long> parsedTime;
 
 
     /**
-     * loadAuthZDB
-     *
      * @throws AuthzDBReaderException
-     * @todo Implement this it.grid.storm.authz.sa.AuthzDBReaderInterface
-     *   method
+     *
      */
-    public void loadAuthZDB() throws AuthzDBReaderException {
+    public FileAuthzDBReader(long period, String authzDBPath) throws AuthzDBReaderException {
+        this.authzDBPath = authzDBPath;
+        authzDBWatcher = new FileAuthzDBWatcher(period, authzDBPath);
+        authzDBs = new HashMap<String, FileAuthzDB>();
+    }
+
+
+    /*
+     * 
+     */
+    public void addAuthzDB(String dbFileName) throws AuthzDBReaderException {
+        authzDBWatcher.watchAuthzDBFile(getAbsoluteAuthzDBName(dbFileName));
+    }
+
+
+
+
+
+    public AuthzDBInterface getAuthzDB(String dbFileName) throws AuthzDBReaderException {
+        String authzDBName = getAuthzDBName(dbFileName);
+        if (authzDBs.containsKey(authzDBName)) {
+            return authzDBs.get(authzDBName);
+        } else {
+            throw new AuthzDBReaderException("Unable to retrieve '"+authzDBName+"'.");
+        }
+    }
+
+
+    public List<String> getAuthzDBNames() {
+        return new ArrayList<String>(authzDBs.keySet());
+    }
+
+
+    public long getLastParsed(String dbFileName) throws AuthzDBReaderException {
+        String authzDBFileName = getAbsoluteAuthzDBName(dbFileName);
+        File authzFile = new File(authzDBFileName);
+        authzFile.lastModified();
+        return 0;
+    }
+
+
+    /*
+     * 
+     */
+    public void onChangeAuthzDB(String authzDBName) throws AuthzDBReaderException {
+        //Parsing of Authz DB.
         try {
-            authzdb.clear();
-            authzdb.load(authzDBFileName);
+            PropertiesConfiguration authzdb = new PropertiesConfiguration(authzDBName);
+            FileAuthzDB fileAuthzDB = new FileAuthzDB(authzdb);
+            authzDBs.put(authzDBName, fileAuthzDB);
+            long pTime = System.currentTimeMillis();
+            parsedTime.put(authzDBName, new Long(pTime));
+            log.debug("Bound FileAuthzDBReader with " + authzDBName);
         } catch (ConfigurationException ex) {
             ex.printStackTrace();
-            throw new AuthzDBReaderException();
+            throw new AuthzDBReaderException("Unable to parse the AuthzDB '"+authzDBName+"'.");
         }
-    }
-
-    /**
-     *
-     */
-    public void printAuthzDB() {
-        log.debug("Properties read from file:");
-        String key;
-        for (Iterator i = authzdb.getKeys(); i.hasNext(); ) {
-            key = (String) i.next();
-            log.debug(key + "=" + authzdb.getProperty(key).toString());
-        }
-
-    }
-
-    /**
-     * getDB
-     *
-     * @return AuthzDBInterface
-     * @todo Implement this it.grid.storm.authz.sa.AuthzDBReaderInterface
-     *   method
-     */
-    public PropertiesConfiguration getAuthzDB() {
-        return authzdb;
+        //Notify the watcher the accomplished parsing
+        authzDBWatcher.authzDBParsed(authzDBName);
     }
 
 
-
-
-    /***************************************************************** RELOADER ****************
+    /***********************************************
+     * UTILITY Methods
      */
-    private class Peeper extends TimerTask {
 
-        private FileAuthzDBReloadingStrategy reloadingStrategy;
-
-        private boolean signal;
-        private FileAuthzDBReader observed;
-
-        public Peeper(FileAuthzDBReader obs) {
-            this.observed = obs;
+    private String getAbsoluteAuthzDBName(String dbFileName) {
+        String absoluteName = null;
+        if (!(dbFileName.contains(File.separator))) {
+            //dbFileName is only the name
+            if ((authzDBPath==null) || (authzDBPath.equals(""))) {
+                authzDBPath = System.getProperty("user.dir") + File.separator + "etc";
+            }
+            dbFileName = authzDBPath + File.separator + dbFileName;
         }
+        File f = new File(dbFileName);
+        absoluteName = f.getAbsolutePath();
+        return absoluteName;
+    }
 
-        public void run() {
-            //log.debug(" The glange of peeper..");
-            reloadingStrategy = (FileAuthzDBReloadingStrategy) authzdb.getReloadingStrategy();
-            if (verbose) {
-                File authzDBFile = reloadingStrategy.getConfigurationFile();
-                log.debug(" Peeper glance FILE : " + authzDBFileName);
-                long lastFileModified = authzDBFile.lastModified();
-                Date dateFile = new Date(lastFileModified);
-                long lastFileModifiedReload = reloadingStrategy.getLastReload();
-                reloadingStrategy.reloadingPerformed();
-                Date dateReload = new Date(lastFileModifiedReload);
-                if (lastFileModifiedReload < lastFileModified) {
-                    log.debug("RELOAD NEEDED!");
-                    Format formatter = new SimpleDateFormat("HH.mm.ss  dd.MM.yyyy");
-                    log.debug(" FILE AuthzDB " + authzDBFileName + " Last Modified : " + formatter.format(dateFile));
-                    log.debug(" FILE AuthzDB " + authzDBFileName + " Last RELOAD : " + formatter.format(dateReload));
-                }
-            }
-            boolean changed = reloadingStrategy.reloadingRequired();
-            if (changed) {
-                log.debug(" FILE AuthzDB " + authzDBFileName + " is changed ! ");
-                //log.debug(" ... CHECK of VALIDITY of NAMESPACE Configuration ...");
-                log.debug(" ----> RELOADING  ");
-                authzdb.reload();
-                reloadingStrategy.reloadingPerformed();
-            }
-
-            signal = reloadingStrategy.notifingRequired();
-            if ((signal)) {
-                observed.setChanged();
-                observed.notifyObservers(" MSG : Namespace is changed!");
-                reloadingStrategy.notifingPerformed();
-            }
-
+    private String getAuthzDBName(String dbFileName) {
+        String authzName = dbFileName;
+        if (dbFileName.contains(File.separator)) {
+            authzName = dbFileName.substring(dbFileName.indexOf(File.separator));
         }
-
+        return authzName;
     }
 
 }
+

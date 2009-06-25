@@ -13,9 +13,9 @@
 
 package it.grid.storm.griduser;
 
-import javax.security.auth.x500.X500Principal;
 import java.util.ArrayList;
-import java.util.Iterator;
+
+import javax.security.auth.x500.X500Principal;
 
 /**
  * <p>Title: </p>
@@ -29,7 +29,7 @@ import java.util.Iterator;
  * @author R.Zappi
  * @version 1.0
  */
-public class DistinguishedName {
+public class DistinguishedName implements SubjectAttribute {
 
     /**
         C       Country Name
@@ -53,9 +53,9 @@ public class DistinguishedName {
     private String organizationName=null;
     private String localityName=null;
     private String canonizedProxyDN = null;
-    private ArrayList<String> organizationalUnitNames= new ArrayList<String>();
-    private ArrayList<String> commonNames= new ArrayList<String>();
-    private ArrayList<String> domainComponents = new ArrayList<String>();
+    private final ArrayList<String> organizationalUnitNames= new ArrayList<String>();
+    private final ArrayList<String> commonNames= new ArrayList<String>();
+    private final ArrayList<String> domainComponents = new ArrayList<String>();
 
     private String eMailAddress=null;
     private String distinguishedName=null;
@@ -68,8 +68,12 @@ public class DistinguishedName {
             //Check the format of DN
             int slashIndex = distinguishedName.indexOf('/');
             int commaIndex = distinguishedName.indexOf(',');
-            if (slashIndex>-1) parseDNslahed();
-            if (commaIndex>-1) parseDNcommed();
+            if (slashIndex>-1) {
+                parseDNslahed();
+            }
+            if (commaIndex>-1) {
+                parseDNcommed();
+            }
             buildX500DN();
 
         } else {
@@ -174,10 +178,11 @@ public class DistinguishedName {
         //reverse order!
 
         for (int i=0;i<list.size();i++) {
-            if(i==list.size()-1)
+            if(i==list.size()-1) {
                 sb.append(list.get(list.size()-1-i));
-            else
+            } else {
                 sb.append(list.get(list.size()-1-i)+",");
+            }
 
             //Prepare the array for attributes evaluation
             attributes[i] = list.get((list.size()-1-i));
@@ -261,43 +266,59 @@ public class DistinguishedName {
     }
 
 
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-         if (!(o instanceof DistinguishedName)) return false;
+        if (this == o) {
+            return true;
+        }
+         if (!(o instanceof DistinguishedName)) {
+            return false;
+        }
 
          final DistinguishedName dn = (DistinguishedName) o;
 
-         if (!x500DN.equals(dn.getX500DN())) return false;
+         if (!x500DN.equals(dn.getX500DN())) {
+            return false;
+        }
 
          return true;
     }
 
 
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
-        if (countryName != null)
+        if (countryName != null) {
             result.append("C=" + countryName + "\n");
-        if (provinceName != null)
+        }
+        if (provinceName != null) {
             result.append("ST=" + provinceName + "\n");
-        if (organizationName != null)
+        }
+        if (organizationName != null) {
             result.append("O=" + organizationName + "\n");
+        }
         if (organizationalUnitNames != null) {
-            for (Iterator<String> i = organizationalUnitNames.iterator(); i.hasNext(); )
-              result.append("OU=" + i.next() + "\n");
+            for (String string : organizationalUnitNames) {
+                result.append("OU=" + string + "\n");
+            }
         }
 
-        if (localityName != null)
+        if (localityName != null) {
             result.append("L=" + localityName + "\n");
+        }
         if (commonNames != null) {
-            for (Iterator<String> i = commonNames.iterator(); i.hasNext(); )
-              result.append("CN=" + i.next() + "\n");
+            for (String string : commonNames) {
+                result.append("CN=" + string + "\n");
+            }
         }
         if (domainComponents != null) {
-            for (Iterator<String> i = domainComponents.iterator(); i.hasNext(); )
-              result.append("DC=" + i.next() + "\n");
+            for (String string : domainComponents) {
+                result.append("DC=" + string + "\n");
+            }
         }
-        if (eMailAddress != null)
+        if (eMailAddress != null) {
             result.append("EMail=" + eMailAddress + "\n");
+        }
         return result.toString();
     }
 }

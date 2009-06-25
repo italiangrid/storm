@@ -11,25 +11,24 @@
 
 package it.grid.storm.xmlrpc;
 
+import it.grid.storm.common.OperationType;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.xmlrpc.converter.ConveterFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.xmlrpc.converter.ConveterFactory;
-import it.grid.storm.health.BookKeeper;
-import it.grid.storm.health.HealthDirector;
-import it.grid.storm.common.OperationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XMLRPCMethods {
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(XMLRPCMethods.class);
     private final Configuration config;
-    
+
 
     private final ConveterFactory converterFactory = new ConveterFactory();
 
@@ -57,43 +56,43 @@ public class XMLRPCMethods {
     }
 
     public Map ping(Map inputParam) {
-    
+
         return executor.execute(OperationType.PNG, inputParam);
 
     }
 
     public Map putDone(Map inputParam) {
-        
+
         return executor.execute(OperationType.PD, inputParam);
 
     }
 
     public Map releaseFiles(Map inputParam) {
-        
+
         return executor.execute(OperationType.RF, inputParam);
-    
+
     }
 
     public Map extendFileLifeTime(Map inputParam) {
-        
+
         return executor.execute(OperationType.EFL, inputParam);
 
     }
 
     public Map abortRequest(Map inputParam) {
-        
+
         return executor.execute(OperationType.AR, inputParam);
-       
+
     }
 
     public Map abortFiles(HashMap inputParam) {
-        
+
         return executor.execute(OperationType.AF, inputParam);
-       
+
     }
 
     public Map reserveSpace(Map inputParam) {
-        
+
         return executor.execute(OperationType.RESSP, inputParam);
     }
 
@@ -101,9 +100,9 @@ public class XMLRPCMethods {
      * GetSpaceMetaData
      */
     public Map getSpaceMetaData(HashMap inputParam) {
-        
+
         return executor.execute(OperationType.GSM, inputParam);
-        
+
     }
 
     /**
@@ -113,9 +112,9 @@ public class XMLRPCMethods {
      * @return
      */
     public Map getSpaceTokens(Map inputParam) {
-        
+
         return executor.execute(OperationType.GST, inputParam);
-     
+
     }
 
     /**
@@ -123,10 +122,10 @@ public class XMLRPCMethods {
      */
 
     public Map ReleaseSpace(Map inputParam) {
-        
+
         return executor.execute(OperationType.RELSP, inputParam);
-        
-        
+
+
     }
 
     /**
@@ -141,7 +140,7 @@ public class XMLRPCMethods {
      */
 
     public Map ls(Map inputParam) {
-        
+
         log.debug("ls chiamata");
 
         return executor.execute(OperationType.LS, inputParam);
@@ -154,9 +153,9 @@ public class XMLRPCMethods {
      */
 
     public Map mkdir(Map inputParam) {
-    
+
         return executor.execute(OperationType.MKD, inputParam);
-    
+
     }
 
     /**
@@ -165,7 +164,7 @@ public class XMLRPCMethods {
      * @return
      */
     public Map rmdir(Map inputParam) {
-        
+
         return executor.execute(OperationType.RMD, inputParam);
 
     }
@@ -186,15 +185,17 @@ public class XMLRPCMethods {
      */
 
     public Map mv(Map inputParam) {
-        
+
         return executor.execute(OperationType.MV, inputParam);
-        
+
 
     }
+
 
     /**
      * Method used to book the execution of SYNCH operation
      */
+    /**
     public void logExecution(OperationType opType, String dn, long startTime,
             long duration, boolean successResult) {
         BookKeeper bk = HealthDirector.getHealthMonitor().getBookKeeper();
@@ -202,5 +203,6 @@ public class XMLRPCMethods {
        //         successResult);
        // bk.addLogEvent(event);
     }
+     **/
 
 }

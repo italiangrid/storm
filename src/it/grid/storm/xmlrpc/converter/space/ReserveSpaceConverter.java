@@ -11,29 +11,36 @@
 
 package it.grid.storm.xmlrpc.converter.space;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.srm.types.ArrayOfTExtraInfo;
+import it.grid.storm.srm.types.ArrayOfTSizeInBytes;
+import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TRetentionPolicyInfo;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TTransferParameters;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.space.InvalidReserveSpaceInputDataAttributesException;
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.GridUserManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveSpaceConverter implements Converter {
 
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(ReserveSpaceConverter.class);
 
     public ReserveSpaceConverter()
     {};
@@ -62,7 +69,9 @@ public class ReserveSpaceConverter implements Converter {
         /* (2) userSpaceTokenDescription */
         memberName = new String("userSpaceTokenDescription");
         String spaceAlias = (String) inputParam.get(memberName);
-        if (spaceAlias == null) spaceAlias = new String("");
+        if (spaceAlias == null) {
+            spaceAlias = new String("");
+        }
 
         /* (3) retentionPolicyInfo */
         TRetentionPolicyInfo retentionPolicyInfo = TRetentionPolicyInfo.decode(inputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
@@ -94,8 +103,8 @@ public class ReserveSpaceConverter implements Converter {
         /* Creation of SpaceResInputData */
         try {
             inputData = new ReserveSpaceInputData(guser, spaceAlias, retentionPolicyInfo, desiredSizeOfTotalSpace,
-                                              desiredSizeOfGuaranteedSpace, desiredLifetimeOfReservedSpace,
-                                              arrayOfExpectedFileSizes, storageSystemInfo, transferParameters);
+                    desiredSizeOfGuaranteedSpace, desiredLifetimeOfReservedSpace,
+                    arrayOfExpectedFileSizes, storageSystemInfo, transferParameters);
         }
         catch (InvalidReserveSpaceInputDataAttributesException e) {
             log.debug("Error Creating inputData for SpaceReservationManager: " + e);
@@ -130,7 +139,9 @@ public class ReserveSpaceConverter implements Converter {
 
         /* (4) retentionPolocyInfo */
         TRetentionPolicyInfo retentionPolicyInfo = outputData.getRetentionPolicyInfo();
-        if (retentionPolicyInfo != null) retentionPolicyInfo.encode(outputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+        if (retentionPolicyInfo != null) {
+            retentionPolicyInfo.encode(outputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+        }
 
         /* (5) sizeOfTotalReservedSpace */
         TSizeInBytes sizeOfTotalReservedSpace = outputData.getTotalSize();
@@ -158,7 +169,9 @@ public class ReserveSpaceConverter implements Converter {
 
         /* (8) spaceToken */
         TSpaceToken spaceToken = outputData.getSpaceToken();
-        if (spaceToken != null) spaceToken.encode(outputParam, TSpaceToken.PNAME_SPACETOKEN);
+        if (spaceToken != null) {
+            spaceToken.encode(outputParam, TSpaceToken.PNAME_SPACETOKEN);
+        }
 
         log.debug(outputParam.toString());
 

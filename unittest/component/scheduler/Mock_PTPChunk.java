@@ -1,12 +1,14 @@
 package component.scheduler;
 
 
-import it.grid.storm.scheduler.Delegable;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import it.grid.storm.scheduler.Chooser;
+import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
+
 import java.util.ArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -23,47 +25,47 @@ import java.util.ArrayList;
  */
 public class Mock_PTPChunk implements Delegable, Chooser {
 
-  private ArrayList lost = new ArrayList(100);
-  private static Log log = LogFactory.getLog(TestMemoryProfiler.class);
-  private String name;
-   private long duration;
+    private ArrayList lost = new ArrayList(100);
+    private static Logger log = LoggerFactory.getLogger(TestMemoryProfiler.class);
+    private String name;
+    private long duration;
 
 
-  public Mock_PTPChunk(String name, long duration)
-  {
-    this.name = name;
-    this.duration = duration;
-  }
-
-  /**
-   * doIt
-   *
-   */
-  public void doIt() {
-    try {
-      Thread.sleep(this.duration);
-      log.debug("Task with name : "+getName());
-      lost.add("name : "+ getName());
-
+    public Mock_PTPChunk(String name, long duration)
+    {
+        this.name = name;
+        this.duration = duration;
     }
-    catch (InterruptedException ex) {
-       ex.printStackTrace();
 
+    /**
+     * doIt
+     *
+     */
+    public void doIt() {
+        try {
+            Thread.sleep(this.duration);
+            log.debug("Task with name : "+getName());
+            lost.add("name : "+ getName());
+
+        }
+        catch (InterruptedException ex) {
+            ex.printStackTrace();
+
+        }
     }
-  }
 
 
-  /**
-   * getName
-   *
-   * @return String
-   */
-  public String getName() {
-    return this.name;
-  }
+    /**
+     * getName
+     *
+     * @return String
+     */
+    public String getName() {
+        return this.name;
+    }
 
 
-  public void choose(Streets s) {
-    s.ptpStreet(this);
-  }
+    public void choose(Streets s) {
+        s.ptpStreet(this);
+    }
 }

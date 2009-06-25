@@ -21,7 +21,7 @@ vomslocalgroup   = "lcmaps_voms_localgroup.mod"
 #                       "-override_inconsistency"
 #                       "-mapmin 0"
 vomspoolaccount  = "lcmaps_voms_poolaccount.mod"
-                       "-gridmapfile /etc/grid-security/gridmapfile"
+                       "-gridmapfile /etc/grid-security/grid-mapfile"
                        "-gridmapdir /etc/grid-security/gridmapdir"
 
 ### Policies:

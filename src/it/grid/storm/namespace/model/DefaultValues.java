@@ -1,9 +1,18 @@
 package it.grid.storm.namespace.model;
 
-import org.apache.commons.logging.*;
-import it.grid.storm.common.types.*;
-import it.grid.storm.namespace.*;
-import it.grid.storm.srm.types.*;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.namespace.DefaultValuesInterface;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceType;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -18,9 +27,9 @@ import it.grid.storm.srm.types.*;
  * @version 1.0
  */
 public class DefaultValues
-    implements DefaultValuesInterface {
+implements DefaultValuesInterface {
 
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
     private SpaceDefault spaceDefault;
     private FileDefault fileDefault;
 
@@ -30,18 +39,18 @@ public class DefaultValues
     }
 
     public DefaultValues() {
-      try {
-        this.spaceDefault = new SpaceDefault();
-      }
-      catch (NamespaceException ex) {
-        log.error("Something was wrong building default Space Default Values");
-      }
-      try {
-        this.fileDefault = new FileDefault();
-      }
-      catch (NamespaceException ex1) {
-        log.error("Something was wrong building default File Default Values");
-      }
+        try {
+            this.spaceDefault = new SpaceDefault();
+        }
+        catch (NamespaceException ex) {
+            log.error("Something was wrong building default Space Default Values");
+        }
+        try {
+            this.fileDefault = new FileDefault();
+        }
+        catch (NamespaceException ex1) {
+            log.error("Something was wrong building default File Default Values");
+        }
     }
 
     public void setSpaceDefaults(String type, long lifetime, long guarsize, long totalsize) throws NamespaceException {
@@ -76,6 +85,7 @@ public class DefaultValues
         return fileDefault.type;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
@@ -116,8 +126,8 @@ public class DefaultValues
         public SpaceDefault()  throws NamespaceException {
             //Build space type
             this.type = TSpaceType.getTSpaceType(DefaultValues.DEFAULT_SPACE_TYPE);
-             //Build lifetime
-             try {
+            //Build lifetime
+            try {
                 this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_SPACE_LT, TimeUnit.SECONDS);
             }
             catch (InvalidTLifeTimeAttributeException ex) {
@@ -218,17 +228,17 @@ public class DefaultValues
         private TLifeTimeInSeconds lifetime;
 
         public FileDefault() throws NamespaceException {
-          //Build space type
-          this.type = TFileStorageType.getTFileStorageType(DefaultValues.DEFAULT_FILE_TYPE);
+            //Build space type
+            this.type = TFileStorageType.getTFileStorageType(DefaultValues.DEFAULT_FILE_TYPE);
 
-          //Build lifetime
-          try {
-            this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_FILE_LT, TimeUnit.SECONDS);
-          }
-          catch (InvalidTLifeTimeAttributeException ex) {
-            log.error(" Default Space Lifetime was wrong ");
-            throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
-          }
+            //Build lifetime
+            try {
+                this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_FILE_LT, TimeUnit.SECONDS);
+            }
+            catch (InvalidTLifeTimeAttributeException ex) {
+                log.error(" Default Space Lifetime was wrong ");
+                throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
+            }
 
 
         }

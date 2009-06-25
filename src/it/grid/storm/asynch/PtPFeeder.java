@@ -1,23 +1,22 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
+import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.catalogs.PtPChunkData;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.common.types.EndPoint;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.scheduler.Delegable;
+import it.grid.storm.scheduler.SchedulerException;
+import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.SchedulerException;
-
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPChunkData;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.common.types.EndPoint;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.griduser.GridUserInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a PrepareToPut Feeder: the Feeder that will handle the
@@ -43,7 +42,7 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public final class PtPFeeder implements Delegable {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(PtPFeeder.class);
     private RequestSummaryData rsd = null; //RequestSummaryData this PtPFeeder refers to.
     private GridUserInterface gu = null; //GridUser for this PtPFeeder.
     private GlobalStatusManager gsm = null; //Overall request status.
@@ -55,8 +54,12 @@ public final class PtPFeeder implements Delegable {
      * request.
      */
     public PtPFeeder(RequestSummaryData rsd) throws InvalidPtPFeederAttributesException {
-        if (rsd==null) throw new InvalidPtPFeederAttributesException(null,null,null);
-        if (rsd.gridUser()==null) throw new InvalidPtPFeederAttributesException(rsd,null,null);
+        if (rsd==null) {
+            throw new InvalidPtPFeederAttributesException(null,null,null);
+        }
+        if (rsd.gridUser()==null) {
+            throw new InvalidPtPFeederAttributesException(rsd,null,null);
+        }
         try {
             this.gu = rsd.gridUser();
             this.rsd = rsd;
@@ -98,8 +101,9 @@ public final class PtPFeeder implements Delegable {
         for (Iterator i = chunks.iterator(); i.hasNext(); ) {
             auxChunkData = (PtPChunkData) i.next();
             gsm.addChunk(auxChunkData); //add chunk for global status consideration
-            if (correct(auxChunkData.toSURL())) manage(auxChunkData); //manage the request
-            else {
+            if (correct(auxChunkData.toSURL())) {
+                manage(auxChunkData); //manage the request
+            } else {
                 //toSURL does _not_ correspond to this installation of StoRM: fail chunk!
                 log.warn("PtPFeeder: srmPtP contract violation! toSURL does not refer to this machine!");
                 log.warn("Request: " + rsd.requestToken());
@@ -125,9 +129,15 @@ public final class PtPFeeder implements Delegable {
         int stormPort = Configuration.getInstance().getFEPort();
         log.debug("PtP FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
         log.debug("PtP FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) return false;
-        if (stormPort!=port) return false;
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) return false;
+        if (!stormNames.contains(machine)) {
+            return false;
+        }
+        if (stormPort!=port) {
+            return false;
+        }
+        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
+            return false;
+        }
         return true;
     }
 
@@ -161,6 +171,6 @@ public final class PtPFeeder implements Delegable {
      * token!
      */
     public String getName() {
-       return "PtPFeeder of request: "+rsd.requestToken();
+        return "PtPFeeder of request: "+rsd.requestToken();
     }
 }

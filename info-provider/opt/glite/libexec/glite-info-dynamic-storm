@@ -1,0 +1,194 @@
+#!/bin/bash
+
+function get_used_size () {
+
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
+    # Quota on
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      used=`$prefix/mmlsquota -j $4 $5 |  awk 'NR==3 {print $3}' | sed 's/\..*//'`
+      used=$(($used/(1024*1024)))
+    else
+      # Missing fileset or device or both
+      used=10
+    fi
+  else
+    # Quota off
+   used=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $3}'`
+  fi
+
+  export $2=$used
+
+  return 0
+
+}
+
+function get_free_size () {
+
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
+    # Quota on
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
+      if ! [ -z "$used" ] && ! [ -z "total" ]; then
+        free=$(($total-$used))
+	free=$(($free/(1024*1024)))
+      else
+        free=10
+      fi
+    else
+      # Missing fileset or device or both
+      used=10
+    fi
+  else
+    free=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $4}'`
+  fi
+
+  export $2=$free
+
+  return 0
+
+}
+
+function get_total_size () {
+
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
+    # Quota on
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+    else
+      # Missing fileset or device or both
+      total=10
+    fi
+  else
+    # Quota off
+    total=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $2}'`
+  fi
+
+   export $2=$total
+
+  return 0
+
+}
+
+function create_ldif_SEEntries () {
+
+  # Get free and use space on STORM_DEFAULT_ROOT
+  get_used_size $STORM_DEFAULT_ROOT USEDSIZE
+  get_free_size $STORM_DEFAULT_ROOT FREESIZE
+  get_total_size $STORM_DEFAULT_ROOT TOTALSIZE
+
+  cat >> $TMPFILE <<EOF
+
+dn: GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
+GlueSESizeTotal: $TOTALSIZE
+GlueSESizeFree: $FREESIZE
+GlueSETotalOnlineSize: $TOTALSIZE
+GlueSEUsedOnlineSize: $USEDSIZE
+GlueSETotalNearlineSize: 0
+GlueSEUsedNearlineSize: 0
+EOF
+
+  return 0
+
+}
+
+function create_dynamic_ldif_SAEntries () {
+
+  # Get free and use space on SA_ROOT
+  get_used_size $ROOTVALUE USEDSIZE $QUOTA $FILESET $DEVICE
+  get_free_size $ROOTVALUE FREESIZE $QUOTA $FILESET $DEVICE
+  get_total_size $ROOTVALUE TOTALSIZE $QUOTA $FILESET $DEVICE
+
+  # Check the STORAGECLASS
+  if ! [ -z  $STORAGECLASS ] && test $STORAGECLASS = T1D1; then
+    RET_POLICY_ACCESS_LATENCY=custodial:online
+    RET_POLICY=custodial
+  else
+    RET_POLICY_ACCESS_LATENCY=replica:online
+    RET_POLICY=replica
+  fi
+
+  cat >> $TMPFILE <<EOF
+
+dn: GlueSALocalID=$VOVALUE,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
+GlueSAStateAvailableSpace: $FREESIZE
+GlueSAStateUsedSpace: $USEDSIZE
+
+
+dn: GlueSALocalID=$VOVALUE:$RET_POLICY_ACCESS_LATENCY,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
+GlueSAStateAvailableSpace: $FREESIZE
+GlueSAStateUsedSpace: $USEDSIZE
+GlueSATotalOnlineSize: $TOTALSIZE
+GlueSAUsedOnlineSize: $USEDSIZE
+GlueSAFreeOnlineSize: $FREESIZE
+GlueSAReservedOnlineSize: $TOTALSIZE
+GlueSATotalNearlineSize: 0
+GlueSAUsedNearlineSize: 0
+GlueSAFreeNearlineSize: 0
+GlueSAReservedNearlineSize: 0
+
+EOF
+
+  return 0
+
+}
+
+###
+### Main section
+###
+
+# Source configuration file
+if [ $# = 1 ]; then
+  source $1
+else
+  exit 1
+fi
+
+TMPFILE=`mktemp`
+
+# Create the basic SE Entires
+create_ldif_SEEntries
+
+for SA in $STORM_STORAGEAREA_LIST; do
+
+  # Convert case
+  SA=`echo $SA | tr '[:lower:]' '[:upper:]'`
+  SAVO=`echo $SA | tr '[:upper:]' '[:lower:]'`
+
+  x=STORM_${SA}_ACCESSPOINT
+  APVALUE=${!x:-/$SAVO}
+
+  x=STORM_${SA}_ROOT
+  ROOTVALUE=${!x:-${STORM_DEFAULT_ROOT}/${SAVO}}
+
+  x=STORM_${SA}_TOKEN
+  TOKENVALUE=${!x:-${SA}_TOKEN}
+
+  x=STORM_${SA}_VONAME
+  VOVALUE=${!x:-$SAVO}
+
+  x=STORM_${SA}_QUOTA
+  QUOTA=${!x}
+
+  x=STORM_${SA}_FILESET
+  FILESET=${!x}
+
+  x=STORM_${SA}_DEVICE
+  DEVICE=${!x}
+
+  x=STORM_${SA}_STORAGECLASS
+  STORAGECLASS=${!x}
+
+  # Create LDIF SA Entries
+  create_dynamic_ldif_SAEntries
+
+done
+
+# Print built file
+cat $TMPFILE
+rm -f $TMPFILE
+
+exit 0

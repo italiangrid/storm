@@ -1,7 +1,7 @@
 package it.grid.storm.xmlrpc.converter.directory;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -18,8 +18,8 @@ import it.grid.storm.xmlrpc.converter.Converter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import it.grid.storm.griduser.GridUserManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project.
@@ -40,7 +40,7 @@ public class RmConverter implements Converter {
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(RmConverter.class);
 
     public RmConverter() {
     };
@@ -105,18 +105,20 @@ public class RmConverter implements Converter {
     public Map convertFromOutputData(OutputData outputData) {
 
         log
-                .debug("RmConverter :Call received :Creation of XMLRPC Output Structure! ");
+        .debug("RmConverter :Call received :Creation of XMLRPC Output Structure! ");
         // Output structure to return to xmlrpc client
         Map outputParam = new HashMap();
         RmOutputData rmOutputData = (RmOutputData) outputData;
         TReturnStatus status = rmOutputData.getStatus();
-        if (status != null)
+        if (status != null) {
             status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+        }
 
         ArrayOfTSURLReturnStatus surlArray = rmOutputData.getSurlStatus();
-        if (surlArray != null)
+        if (surlArray != null) {
             surlArray.encode(outputParam,
                     ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
+        }
 
         // Return global structure.
         return outputParam;

@@ -1,20 +1,24 @@
 package it.grid.storm.xmlrpc.converter.space;
 
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
+import it.grid.storm.srm.types.ArrayOfTSpaceToken;
+import it.grid.storm.srm.types.InvalidArrayOfTSpaceTokenAttributeException;
+import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.synchcall.data.space.InvalidGetSpaceMetaDataInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.GridUserManager;
+
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project.
@@ -35,7 +39,7 @@ public class GetSpaceMetaDataConverter implements Converter
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(GetSpaceMetaDataConverter.class);
 
     public GetSpaceMetaDataConverter()
     {
@@ -65,7 +69,7 @@ public class GetSpaceMetaDataConverter implements Converter
         ArrayOfTSpaceToken arrayOfSpaceTokens;
         try {
             arrayOfSpaceTokens = ArrayOfTSpaceToken.decode(inputParam,
-                            ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
+                    ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
         } catch (InvalidArrayOfTSpaceTokenAttributeException e) {
             arrayOfSpaceTokens = null;
         }

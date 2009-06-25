@@ -1,6 +1,7 @@
 package it.grid.storm.authz.sa.conf;
 
 public class AuthzDBReaderException extends Exception {
+
     public AuthzDBReaderException() {
         super();
     }

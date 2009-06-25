@@ -1,10 +1,9 @@
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * This class represents the TCheckSumType of a Permission Area managed by Srm. 
+ * This class represents the TCheckSumType of a Permission Area managed by Srm.
  *
  * @author  Magnoni Luca
  * @author  CNAF - INFN  Bologna
@@ -13,10 +12,12 @@ import java.util.Map;
  */
 
 /**
- * Class that represent CheckSum for file. 
+ * Class that represent CheckSum for file.
  */
-public class TCheckSumType
-{
+public class TCheckSumType {
+
+    public static TCheckSumType ADLER32 = new TCheckSumType("Adler32");
+    public static TCheckSumType CRC32 = new TCheckSumType("Crc32");
 
     private String       type               = null;
 
@@ -27,6 +28,7 @@ public class TCheckSumType
         this.type = type;
     }
 
+    @Override
     public String toString()
     {
         return type;

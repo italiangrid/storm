@@ -1,8 +1,9 @@
 package it.grid.storm.space;
 
-import org.apache.log4j.Logger;
-
 import it.grid.storm.griduser.GridUserInterface;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -14,10 +15,10 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 
 public class SRMSpaceFactory {
-    
-    private static final Logger log = Logger.getLogger("space");
 
-    
+    private static final Logger log = LoggerFactory.getLogger(SRMSpaceFactory.class);
+
+
 
     public static SRMSpace get() {
         return null;
@@ -27,10 +28,10 @@ public class SRMSpaceFactory {
      * @return
      */
     public static SRMSpace createDynamic(GridUserInterface user) {
-        
+
         return null;
 
-     
+
     }
 
     public static SRMSpace createStatic() {

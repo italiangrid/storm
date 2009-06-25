@@ -1,9 +1,8 @@
 
 package it.grid.storm.wrapper;
 
-import org.apache.log4j.Logger;
-
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for Native ACL support.
@@ -22,21 +21,21 @@ import java.io.*;
 
 public class AclWrapper
 {
-	/**
-	 * Logger.
-	 * This Logger it's used to log information.
-	 */ 	
-	private static final Logger log = Logger.getLogger("wrapper");
-	
-native int addAcl(String tempDir, String path, String user,String acl);
-static  {
-	//	System.out.println("File: "+pathToFile+", size = "+ size );
-	try {
-		System.loadLibrary("aclnativelib");
-	} catch (UnsatisfiedLinkError e) {
-      		log.fatal("ACL native library failed to load!\n" + e);
-		System.exit(1);
-	}	
-}
+    /**
+     * Logger.
+     * This Logger it's used to log information.
+     */
+    private static final Logger log = LoggerFactory.getLogger(AclWrapper.class);
+
+    native int addAcl(String tempDir, String path, String user,String acl);
+    static  {
+        //	System.out.println("File: "+pathToFile+", size = "+ size );
+        try {
+            System.loadLibrary("aclnativelib");
+        } catch (UnsatisfiedLinkError e) {
+            log.error("ACL native library failed to load!\n", e);
+            System.exit(1);
+        }
+    }
 
 }

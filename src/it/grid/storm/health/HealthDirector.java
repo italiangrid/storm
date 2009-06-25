@@ -1,248 +1,352 @@
 package it.grid.storm.health;
 
 import it.grid.storm.config.Configuration;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Logger;
-import java.util.Enumeration;
-import java.util.ArrayList;
-import java.io.IOException;
-import org.apache.log4j.Level;
-import org.apache.log4j.DailyRollingFileAppender;
-import java.util.Date;
-import java.text.SimpleDateFormat;
+import it.grid.storm.logging.StoRMLoggers;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.slf4j.Logger;
 
 
 public class HealthDirector {
 
-  private static final Logger LOG =  Logger.getLogger("health");
-  private static final Logger BOOKKEEPING = Logger.getLogger("bookkeeping");
-  private static boolean initialized = false;
-  private static HealthMonitor healthMonitorIstance = null;
-  private static boolean bookKeepingConfigured = false;
-  private static boolean bookKeepingEnabled = false;
+    public static final Logger LOGGER =  StoRMLoggers.getHBLogger();
+    public static final Logger HEARTLOG =  StoRMLoggers.getHBLogger();
+    private static final Logger BOOKKEEPING = StoRMLoggers.getBKLogger();
+    private static final Logger PERFLOG = StoRMLoggers.getPerfLogger();
 
-  private static long bornInstant = -1L;
-  private static String bornInstantStr = null;
+    private static boolean initialized = false;
+    private static HealthMonitor healthMonitorIstance = null;
+    private static boolean bookKeepingConfigured = false;
+    private static boolean bookKeepingEnabled = false;
 
+    private static boolean performanceMonitorConfigured = false;
+    private static boolean performanceMonitorEnabled = false;
 
-  /**
-   *
-   * @param testingMode boolean
-   */
-  public static void initializeDirector(boolean testingMode) {
+    private static long bornInstant = -1L;
+    private static String bornInstantStr = null;
 
-    configureHealthLog(testingMode);
-
-    bookKeepingEnabled = Configuration.getInstance().getBookKeepingEnabled();
-    if (bookKeepingEnabled) {
-       configureBookKeeping(testingMode);
-    }
-
-    int statusPeriod = Configuration.getInstance().getHearthbeatPeriod();
-    if (testingMode) {
-      statusPeriod = 1;
-    }
-
-    //Record the born of StoRM instance
-    bornInstant = System.currentTimeMillis();
-    Date date = new Date(bornInstant) ;
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss");
-    bornInstantStr = formatter.format(date);
-
-    healthMonitorIstance = new HealthMonitor(statusPeriod*2, statusPeriod);
-
-    initialized = true;
-  }
-
-  /**
-   *
-   * @param testingMode boolean
-   */
-  private static void configureHealthLog(boolean testingMode) {
-    FileAppender healthFileAppender = null;
-    PatternLayout layout = new PatternLayout(getHealthPatternLayout());
-    //Recovery of HEALTH File Name
-    String healthFile = Configuration.getInstance().getHealthElectrocardiogramFile();
-    try {
-      healthFileAppender = new FileAppender(layout, healthFile);
-    }
-    catch (IOException ex) {
-      System.out.println("Unable to configure Health log." + ex.getMessage());
-      System.out.println("Retrieving ALL LOG appenders..");
-      ArrayList<FileAppender> fileApp = getFileAppenders();
-      if (! (fileApp.isEmpty())) {
-        healthFileAppender = getFileAppenders().get(0);
-      }
-      else {
-        System.out.println("Anyone FILE Appender found!!");
-        System.exit(0);
-      }
-    }
-    LOG.addAppender(healthFileAppender);
-    LOG.setAdditivity(false);
-    healthFileAppender.activateOptions();
-    if (testingMode) {
-      ArrayList<FileAppender> fileApp = getFileAppenders();
-      for (int i = 0; i < fileApp.size(); i++) {
-        LOG.debug(fileApp.get(i));
-      }
-      LOG.setLevel( (Level) Level.DEBUG);
-    }
-    else {
-      LOG.setLevel( (Level) Level.INFO);
-    }
-  }
-
-  /**
-   *
-   * @param testingMode boolean
-   */
-  private static void configureBookKeeping(boolean testingMode) {
-    bookKeepingConfigured = true;
-    DailyRollingFileAppender bookKeepingAppender = null;
-    PatternLayout layout = new PatternLayout(getBookKeppingPatternLayout());
-    //Recovery of BOOK KEEPING LOG File Name
-    String bookKeepingFile = Configuration.getInstance().getBookKeepingFile();
-    String datePattern = "'.'yyyy-MM-dd";
-    try {
-      bookKeepingAppender = new DailyRollingFileAppender(layout, bookKeepingFile, datePattern);
-      BOOKKEEPING.addAppender(bookKeepingAppender);
-      BOOKKEEPING.setAdditivity(false);
-      bookKeepingAppender.activateOptions();
-      if (testingMode) {
-        BOOKKEEPING.setLevel( (Level) Level.DEBUG);
-      }
-      else {
-        BOOKKEEPING.setLevel( (Level) Level.INFO);
-      }
-    }
-    catch (IOException ex) {
-      System.out.println("Unable to configure Book Keeping log." + ex.getMessage());
-      bookKeepingConfigured = false;
-    }
-  }
+    public static int timeToLiveLogEventInSec = Configuration.getInstance().getPerformanceLogbookTimeInterval();
 
 
-  /**
-   *
-   * @return ArrayList
-   */
-  private static ArrayList<FileAppender> getFileAppenders() {
-    ArrayList<FileAppender> fileAppenders = new ArrayList<FileAppender>();
-    Enumeration en = LOG.getAllAppenders();
-    int nbrOfAppenders = 0;
-    while (en.hasMoreElements()) {
-      nbrOfAppenders++;
-      Object appender = en.nextElement();
-      if (appender instanceof FileAppender) {
-          fileAppenders.add((FileAppender)appender);
-      }
-    }
-    return fileAppenders;
-  }
-
-  /**
-   * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
-   * @return String
-   */
-  private static String getHealthPatternLayout() {
     /**
-     * @todo : Retrieve Patter Layout from Configuration ..
+     *
+     * @param testingMode boolean
      */
-    String pattern = "[%d{ISO8601}]: %m%n";
-    return pattern;
-  }
+    public static void initializeDirector(boolean testingMode) {
 
-  /**
-   * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
-   * @return String
-   */
-  private static String getBookKeppingPatternLayout() {
+        //configureHealthLog(testingMode);
+
+        bookKeepingEnabled = Configuration.getInstance().getBookKeepingEnabled();
+        if (bookKeepingEnabled) {
+            //configureBookKeeping(testingMode);
+            bookKeepingConfigured = true;
+        }
+
+        int statusPeriod = Configuration.getInstance().getHearthbeatPeriod();
+        if (testingMode) {
+            statusPeriod = 5;
+        }
+
+        //Record the born of StoRM instance
+        bornInstant = System.currentTimeMillis();
+        Date date = new Date(bornInstant) ;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss");
+        bornInstantStr = formatter.format(date);
+
+        healthMonitorIstance = new HealthMonitor(1, statusPeriod); //Start after 1 sec
+
+        //Setting performance rate
+        performanceMonitorEnabled = Configuration.getInstance().getPerformanceMeasuring();
+        if (performanceMonitorEnabled) {
+            //configurePerformanceMonitor(testingMode);
+            int glanceTimeInterval = Configuration.getInstance().getPerformanceGlanceTimeInterval();
+
+            LOGGER.debug("----- Performance GLANCE Time Interval = "+glanceTimeInterval);
+            LOGGER.debug("----- Performance LOGBOOK Time Interval = "+timeToLiveLogEventInSec);
+
+            healthMonitorIstance.initializePerformanceMonitor(timeToLiveLogEventInSec, glanceTimeInterval);
+            healthMonitorIstance.setPerformanceEnabled(true);
+        } else {
+            healthMonitorIstance.setPerformanceEnabled(false);
+        }
+
+        initialized = true;
+
+    }
+
     /**
-     * @todo : Retrieve Patter Layout from Configuration ..
+     *
+     * @param testingMode boolean
      */
-    String pattern = "[%d{ISO8601}]: %m%n";
-    return pattern;
-  }
 
-  /**
-   *
-   * @return Logger
-   */
-  public static Logger getHealthLogger() {
-    return LOG;
-  }
+    /**
 
-
-  public static boolean isBookKeepingConfigured() {
-    return bookKeepingConfigured;
-  }
-
-
-  public static boolean isBookKeepingEnabled() {
-    return bookKeepingEnabled;
-  }
-
-  /**
-   *
-   * @return Logger
-   */
-  public static Logger getBookKeepingLogger() {
-    return BOOKKEEPING;
-  }
-
-  /**
-   *
-   * @return Namespace
-   */
-  public static HealthMonitor getHealthMonitor() {
-    if (! (initialized)) {
-      initializeDirector(false);
+    private static void configureHealthLog(boolean testingMode) {
+        FileAppender healthFileAppender = null;
+        PatternLayout layout = new PatternLayout(getHealthPatternLayout());
+        //Recovery of HEALTH File Name
+        String healthFile = Configuration.getInstance().getHealthElectrocardiogramFile();
+        try {
+            healthFileAppender = new FileAppender(layout, healthFile);
+            healthFileAppender.activateOptions();
+            HEARTLOG.addAppender(healthFileAppender);
+            HEARTLOG.setAdditivity(false);
+            if (testingMode) {
+                HEARTLOG.setLevel( Level.DEBUG);
+            }
+            else {
+                HEARTLOG.setLevel( Level.INFO);
+            }
+        }
+        catch (IOException ex) {
+            LOGGER.error("Unable to configure Health log." + ex.getMessage());
+        }
     }
-    return healthMonitorIstance;
-  }
 
+     **/
 
-  /**
-   *
-   * @return Namespace
-   */
-  public static HealthMonitor getHealthMonitor(boolean testingMode) {
-    if (! (initialized)) {
-      initializeDirector(testingMode);
+    /**
+     *
+     * @param testingMode boolean
+     */
+
+    /**
+    private static void configureBookKeeping(boolean testingMode) {
+        bookKeepingConfigured = true;
+        DailyRollingFileAppender bookKeepingAppender = null;
+        PatternLayout layout = new PatternLayout(getBookKeppingPatternLayout());
+        //Recovery of BOOK KEEPING LOG File Name
+        String bookKeepingFile = Configuration.getInstance().getBookKeepingLogFile();
+        String datePattern = "'.'yyyy-MM-dd";
+        try {
+            bookKeepingAppender = new DailyRollingFileAppender(layout, bookKeepingFile, datePattern);
+            BOOKKEEPING.addAppender(bookKeepingAppender);
+            BOOKKEEPING.setAdditivity(false);
+            bookKeepingAppender.activateOptions();
+            if (testingMode) {
+                BOOKKEEPING.setLevel( Level.DEBUG);
+            }
+            else {
+                BOOKKEEPING.setLevel( Level.INFO);
+            }
+        }
+        catch (IOException ex) {
+            LOGGER.error("Unable to configure Book Keeping log." + ex.getMessage());
+            bookKeepingConfigured = false;
+        }
     }
-    return healthMonitorIstance;
-  }
+     **/
+
+    /**
+     * health.performance.mesauring.enabled
+     * health.performance.log.filename
+     * health.performance.log.verbosity
+     * health.performance.glance.timeInterval
+     * health.performance.logbook.timeInterval
+     *
+     * @param testingMode boolean
+     */
+    /**
+
+    private static void configurePerformanceMonitor(boolean testingMode) {
+        performanceMonitorConfigured = true;
+        DailyRollingFileAppender performanceAppender = null;
+        PatternLayout layout = new PatternLayout(getPerformanceMonitoringPatternLayout());
+        //Recovery of PERFORMANCE MONITOR LOG File Name
+        String performanceFile = Configuration.getInstance().getPerformanceMonitoringLogFile();
+        String datePattern = "'.'yyyy-MM-dd";
+        try {
+            performanceAppender = new DailyRollingFileAppender(layout, performanceFile, datePattern);
+            PERFLOG.addAppender(performanceAppender);
+            PERFLOG.setAdditivity(false);
+            performanceAppender.activateOptions();
+            if (testingMode) {
+                PERFLOG.setLevel( Level.DEBUG);
+            }
+            else {
+                PERFLOG.setLevel( Level.INFO);
+            }
 
 
-  public static long getBornInstant(boolean testingMode) {
-    if (! (initialized)) {
-      initializeDirector(testingMode);
+        }
+        catch (IOException ex) {
+            LOGGER.error("Unable to configure Performance Monitor log." + ex.getMessage());
+            performanceMonitorConfigured = false;
+        }
+        PERFLOG.debug("--- PERF LOGGER Configured ---");
     }
-    return bornInstant;
-  }
 
-  public static String getBornInstantStr(boolean testingMode) {
-    if (! (initialized)) {
-      initializeDirector(testingMode);
-    }
-    return bornInstantStr;
-  }
+     **/
 
-  public static long getBornInstant() {
-    if (! (initialized)) {
-      initializeDirector(false);
+    /**
+     *
+     * @return ArrayList
+     */
+    /**
+    private static ArrayList<FileAppender> getFileAppenders() {
+        ArrayList<FileAppender> fileAppenders = new ArrayList<FileAppender>();
+        Enumeration en = LOGGER.getAllAppenders();
+        int nbrOfAppenders = 0;
+        while (en.hasMoreElements()) {
+            nbrOfAppenders++;
+            Object appender = en.nextElement();
+            if (appender instanceof FileAppender) {
+                fileAppenders.add((FileAppender)appender);
+            }
+        }
+        return fileAppenders;
     }
-    return bornInstant;
-  }
+     **/
 
-  public static String getBornInstantStr() {
-    if (! (initialized)) {
-      initializeDirector(false);
+    /**
+     * @return String
+     */
+
+    private static String getHealthPatternLayout() {
+        /**
+         * @todo : Retrieve Patter Layout from Configuration ..
+         */
+        String pattern = "[%d{ISO8601}]: %m%n";
+        return pattern;
     }
-    return bornInstantStr;
-  }
+    /**
+     * @return String
+     */
+    private static String getBookKeppingPatternLayout() {
+        /**
+         * @todo : Retrieve Patter Layout from Configuration ..
+         */
+        String pattern = "[%d{ISO8601}]: %-5p [%t] %x -%m%n";
+        return pattern;
+    }
+
+    /**
+     * @return String
+     */
+    private static String getPerformanceMonitoringPatternLayout() {
+        /**
+         * @todo : Retrieve Patter Layout from Configuration ..
+         */
+        String pattern = "[%d{ISO8601}]: %m%n";
+        return pattern;
+    }
+
+
+    /**
+     *
+     * @return Logger
+     */
+    public static Logger getLogger() {
+        return LOGGER;
+    }
+
+
+    /**
+     *
+     * @return Logger
+     */
+    public static Logger getHealthLogger() {
+        return HEARTLOG;
+    }
+
+    /**
+     *
+     * @return Logger
+     */
+    public static Logger getBookkeepingLogger() {
+        return BOOKKEEPING;
+    }
+
+
+    /**
+     *
+     * @return Logger
+     */
+    public static Logger getPerformanceLogger() {
+        return PERFLOG;
+    }
+
+
+
+    public static boolean isBookKeepingConfigured() {
+        return bookKeepingConfigured;
+    }
+
+
+    public static boolean isBookKeepingEnabled() {
+        return bookKeepingEnabled;
+    }
+
+    public static boolean isPerformanceMonitorConfigured() {
+        return performanceMonitorConfigured;
+    }
+
+
+    public static boolean isPerformanceMonitorEnabled() {
+        return performanceMonitorEnabled;
+    }
+
+
+    /**
+     *
+     * @return Logger
+     */
+    public static Logger getBookKeepingLogger() {
+        return BOOKKEEPING;
+    }
+
+    /**
+     *
+     * @return Namespace
+     */
+    public static HealthMonitor getHealthMonitor() {
+        if (! (initialized)) {
+            initializeDirector(false);
+        }
+        return healthMonitorIstance;
+    }
+
+
+    /**
+     *
+     * @return Namespace
+     */
+    public static HealthMonitor getHealthMonitor(boolean testingMode) {
+        if (! (initialized)) {
+            initializeDirector(testingMode);
+        }
+        return healthMonitorIstance;
+    }
+
+
+    public static long getBornInstant(boolean testingMode) {
+        if (! (initialized)) {
+            initializeDirector(testingMode);
+        }
+        return bornInstant;
+    }
+
+    public static String getBornInstantStr(boolean testingMode) {
+        if (! (initialized)) {
+            initializeDirector(testingMode);
+        }
+        return bornInstantStr;
+    }
+
+    public static long getBornInstant() {
+        if (! (initialized)) {
+            initializeDirector(false);
+        }
+        return bornInstant;
+    }
+
+    public static String getBornInstantStr() {
+        if (! (initialized)) {
+            initializeDirector(false);
+        }
+        return bornInstantStr;
+    }
 
 }

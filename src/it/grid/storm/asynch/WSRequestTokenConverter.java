@@ -1,8 +1,9 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.srm.types.*;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public class WSRequestTokenConverter {
 
-    private static Logger log = Logger.getLogger("srmclient");
+    private static Logger log = LoggerFactory.getLogger(WSRequestTokenConverter.class);
 
     /**
      * Method that accepts an srmClientStubs.TRequestToken and returns an
@@ -38,7 +39,11 @@ public class WSRequestTokenConverter {
     public it.grid.storm.srm.types.TRequestToken fromWS(String stub) throws WSConversionException {
         try {
             String auxString = null;
-            if (stub==null) auxString = ""; else auxString = stub;
+            if (stub==null) {
+                auxString = "";
+            } else {
+                auxString = stub;
+            }
             return new it.grid.storm.srm.types.TRequestToken(auxString);
         } catch (InvalidTRequestTokenAttributesException e) {
             log.debug("Unexpected error in WSRequestTokenConverter! This is a programming bug! Could not translate TRequestToken from WS! "+e);

@@ -7,18 +7,17 @@
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
-import org.apache.log4j.Logger;
-import java.util.Vector;
-
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortFilesOutputDataAttributeException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AbortGeneralOutputData implements OutputData
 {
-    private static final Logger log = Logger.getLogger("dataTransfer");
+    private static final Logger log = LoggerFactory.getLogger(AbortGeneralOutputData.class);
     private TReturnStatus returnStatus = null;
     private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
 
@@ -29,7 +28,7 @@ public class AbortGeneralOutputData implements OutputData
     }
 
     public AbortGeneralOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus arrayOfFileStatus)
-                    throws InvalidAbortFilesOutputDataAttributeException
+    throws InvalidAbortFilesOutputDataAttributeException
     {
         boolean ok = (arrayOfFileStatus == null);
 
@@ -81,5 +80,5 @@ public class AbortGeneralOutputData implements OutputData
         // TODO Auto-generated method stub
         return true;
     }
-    
+
 }

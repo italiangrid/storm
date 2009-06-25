@@ -1,17 +1,24 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
 import it.grid.storm.config.Configuration;
-
-import java.sql.*;
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TStatusCode;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DAO class for PtPChunkCatalog. This DAO is specifically designed to connect
@@ -27,7 +34,7 @@ import java.util.TimerTask;
  */
 public class CopyChunkDAO {
 
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(CopyChunkDAO.class);
     private final String driver=Configuration.getInstance().getDBDriver(); //String with the name of the class for the DB driver
     private final String url=Configuration.getInstance().getDBURL(); //String referring to the URL of the DB
     private final String password=Configuration.getInstance().getDBPassword(); //String with the password for the DB
@@ -46,6 +53,7 @@ public class CopyChunkDAO {
         setUpConnection();
         clock = new Timer();
         clockTask = new TimerTask() {
+            @Override
             public void run() {
                 reconnect = true;
             }
@@ -67,8 +75,11 @@ public class CopyChunkDAO {
         try {
             Class.forName(driver);
             con = DriverManager.getConnection(url,name,password);
-            if (con==null) log.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
-            else logWarnings(con.getWarnings());
+            if (con==null) {
+                log.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
+            } else {
+                logWarnings(con.getWarnings());
+            }
         } catch (ClassNotFoundException e) {
             log.error("COPY CHUNK DAO! Exception in setUpConnection! "+e);
         } catch (SQLException e) {
@@ -134,10 +145,10 @@ public class CopyChunkDAO {
         try {
             //get chunks of the request
             str = "SELECT s.ID, r.s_token, r.config_FileStorageTypeID, r.config_OverwriteID, r.fileLifetime, c.sourceSURL, c.targetSURL, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "+
-                "FROM request_queue r JOIN (request_Copy c, status_Copy s) "+
-                "ON (c.request_queueID=r.ID AND s.request_CopyID=c.ID) "+
-                "LEFT JOIN request_DirOption d ON c.request_DirOptionID=d.ID "+
-                "WHERE r.r_token=? AND s.statusCode<>?";
+            "FROM request_queue r JOIN (request_Copy c, status_Copy s) "+
+            "ON (c.request_queueID=r.ID AND s.request_CopyID=c.ID) "+
+            "LEFT JOIN request_DirOption d ON c.request_DirOptionID=d.ID "+
+            "WHERE r.r_token=? AND s.statusCode<>?";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             List list = new ArrayList();
@@ -176,7 +187,7 @@ public class CopyChunkDAO {
 
     /**
      * Method used to save the changes made to a retrieved CopyChunkDataTO,
-     * back into the MySQL DB. 
+     * back into the MySQL DB.
      *
      * Only statusCode and explanation, of status_Copy table get written to the
      * DB. Likewise for fileLifetime of request_queue table.
@@ -233,8 +244,8 @@ public class CopyChunkDAO {
     public void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
         checkConnection();
         String signalSQL = "UPDATE status_Copy s "+
-            "SET s.statusCode="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", s.explanation=? "+
-            "WHERE s.ID="+auxTO.primaryKey();
+        "SET s.statusCode="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", s.explanation=? "+
+        "WHERE s.ID="+auxTO.primaryKey();
         PreparedStatement signal = null;
         try {
             //update storm_put_filereq;
@@ -299,7 +310,9 @@ public class CopyChunkDAO {
     private void logWarnings(SQLWarning w) {
         if (w!=null) {
             log.debug("COPY CHUNK DAO: "+w.toString());
-            while ((w=w.getNextWarning())!=null) log.debug("COPY CHUNK DAO: "+w.toString());
+            while ((w=w.getNextWarning())!=null) {
+                log.debug("COPY CHUNK DAO: "+w.toString());
+            }
         }
     }
 }

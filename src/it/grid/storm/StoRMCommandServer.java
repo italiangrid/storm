@@ -1,10 +1,15 @@
 package it.grid.storm;
 
-import org.apache.log4j.Logger;
-import java.net.*;
-import java.io.*;
-
 import it.grid.storm.config.Configuration;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -25,7 +30,7 @@ public class StoRMCommandServer {
     private StoRM storm; //only StoRM object that the command server administers!
     private int listeningPort; //command server binding port
     private ServerSocket server = null; //server socket of command server!
-    private Logger log;
+    private static Logger log;
 
     public StoRMCommandServer(StoRM s) {
         //Warning! StoRM must be initialized _before_ anything else! This is because
@@ -39,7 +44,7 @@ public class StoRMCommandServer {
         //Initialize handle to StoRM
         this.storm = s;
         //Initialize this log!
-        log = Logger.getLogger("stormBoot");
+        log = LoggerFactory.getLogger(StoRMCommandServer.class);
         //set Listening port of StoRMCommandServer!
         this.listeningPort = Configuration.getInstance().getCommandServerBindingPort();
         //Start multithreaded listening server socket!
@@ -58,6 +63,7 @@ public class StoRMCommandServer {
             //
             //start new thread for ServerSocket listening!
             new Thread() {
+                @Override
                 public void run() {
                     try {
                         while (true) {
@@ -66,14 +72,14 @@ public class StoRMCommandServer {
                         }
                     } catch (IOException e) {
                         //something went wrong with server.accept()!
-                        log.fatal("UNEXPECTED ERROR! Something went wrong with server.accept()! "+e);
+                        log.error("UNEXPECTED ERROR! Something went wrong with server.accept()! "+e);
                         System.exit(1);
                     }
                 }
             }.start();
         } catch (IOException e) {
             //could not bind to listeningPort!
-            log.fatal("UNEXPECTED ERROR! Could not bind to listeningPort! "+e);
+            log.error("UNEXPECTED ERROR! Could not bind to listeningPort! "+e);
             System.exit(1);
         }
     }
@@ -97,6 +103,7 @@ public class StoRMCommandServer {
             this.storm = storm;
         }
 
+        @Override
         public void run() {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //input stream from client!

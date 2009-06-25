@@ -92,11 +92,13 @@ to get a list of the available targets for this buildfile.
   <property name="src.config.dir.db" location="${src.dir}/etc/db"/>
   <property name="src.sbin.dir" location="${src.dir}/sbin"/>
   <property name="src.sysvinit.dir" location="${src.dir}/etc/init.d"/>
+  <property name="info.dir" location="${src.dir}/info-provider"/>
 
   <!-- where to put class and native library files -->
   <property name="build.dir" location="${basedir}/build"/>
   <property name="build.classes.dir" location="${build.dir}/classes"/>
   <property name="build.libs.dir" location="${build.dir}/lib"/>
+  <property name="build.obj.dir" location="${build.dir}/obj"/>
   <property name="build.debug" value="false"/>
   <property name="build.gpfs" value="true"/>
   <property name="build.lustre" value="false"/>
@@ -117,9 +119,12 @@ to get a list of the available targets for this buildfile.
   <property name="sysvinitdir" location="${sysconfdir}/init.d"/>
   <property name="tmpdir" location="${localstatedir}/tmp"/>
 
+  	
+
   <!-- the output file names -->
   <property name="dist.jar" value="storm-backend.jar"/>
   <property name="dist.tarfile" value="storm-backend-${version}.tar"/>
+  <property name="info.tarfile" value="glite-info-dynamic-storm-${version}.tar"/>
 
   <!-- where unit test files are located -->
   <property name="test.junit.dir" value="${src.dir}/test"/>
@@ -183,6 +188,9 @@ build.classes.dir=${build.classes.dir}
 
 build.libs.dir=${build.libs.dir}
   Directory where native code (C/C++) libraries are created
+
+build.obj.dir=${build.obj.dir}
+  Directory where object C/C++ files are created
 
 build.compiler=${build.compiler}
   If set, ant will use this Java compiler; see Ant
@@ -251,6 +259,9 @@ dist.tarfile=${dist.tarfile}
   The tarfile should contain whatever is needed to rebuild
   StoRM from the sources on another machine.
 
+info.tarfile=${info.tarfile}
+  The name of the created .tar file containing the glite 
+  dynamic information provider plugin.
 
 test.junit.dir
   Path to the directory containing the jUnit TestCase source files.
@@ -301,51 +312,36 @@ test.junit.dir
 	<include name="backport-util-concurrent.jar"/>
 	<include name="c3p0-0.8.4.5.jar"/>
 	<include name="cglib-full-2.0.1.jar"/>
-	<include name="srm22client.jar"/>
-
-        <include name="cog-axis.jar"/>
+    <include name="srm22client.jar"/>
+    <include name="cog-axis.jar"/>
 	<include name="cog-jglobus.jar"/>
-        <include name="cog-jobmanager.jar"/>
+    <include name="cog-jobmanager.jar"/>
 	<include name="cog-url.jar"/>
-
-
     <include name="commons-beanutils.jar"/>
 	<include name="commons-cli-1.0.jar"/>
 	<include name="commons-codec-1.3.jar"/>
 	<include name="commons-collections-3.1.jar"/>
-	<!--<include name="commons-configuration-1.1.jar"/>-->
 	<include name="commons-configuration-1.4.jar"/>
 	<include name="commons-dbcp-1.2.1.jar"/>
 	<include name="commons-digester-1.7.jar"/>
 	<include name="commons-discovery-0.2.jar"/>
-	<!--<include name="commons-lang-2.0.jar"/>-->
-    <include name="commons-lang-2.3.jar"/>
-        <!-- <include name="commons-logging-1.0.4.jar"/> -->
-        <include name="commons-logging-1.1.jar"/>
-
+        <include name="commons-lang-2.3.jar"/>
         <include name="commons-pool-1.2.jar"/>
         <include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
-	<include name="cryptix32.jar"/>
+        <include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
+ 	<include name="cryptix32.jar"/>
 	<include name="cryptix-asn1.jar"/>
 	<include name="cryptix.jar"/>
 	<include name="dom4j-1.4.jar"/>
 	<include name="dom.jar"/>
 	<include name="ehcache-0.9.jar"/>
-	<!-- <include name="ejb-api.jar"/> -->
 	<include name="hibernate-2.1.6.jar"/>
 	<include name="hsqldb.jar"/>
-        <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
+    <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
 	<include name="jaxrpc.jar"/>
-
-        <!-- <include name="jce-jdk13-120.jar"/> -->
-        <include name="jce-jdk13-131.jar"/>
+    <include name="jce-jdk13-131.jar"/>
 	<include name="jgss.jar"/>
-	<!-- <include name="jsdk23.jar"/> -->
-	<!-- <include name="jta-api.jar"/> -->
-	<!-- <include name="log4j-1.2.8.jar"/> -->
-        <include name="log4j-1.2.13.jar"/>
-
-        <include name="mail.jar"/>
+  	<include name="mail.jar"/>
 	<include name="middlegen-2.1.jar"/>
 	<include name="middlegen-hibernate-plugin-2.1.jar"/>
 	<include name="odmg-3.0.jar"/>
@@ -354,20 +350,26 @@ test.junit.dir
 	<include name="wsdl4j-1.5.1.jar"/>
 	<include name="xalan.jar"/>
 	<include name="xercesImpl.jar"/>  <!-- PART of xerces 2.8.0 -->
-        <include name="xml-apis.jar"/> <!-- PART of xerces 2.8.0 -->
+    <include name="xml-apis.jar"/> <!-- PART of xerces 2.8.0 -->
 	<include name="xmlrpc-server-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
 	<include name="xmlrpc-common-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
-        <include name="ws-commons-util-1.0.1.jar"/> <!-- PART of XML-RPC 3.0 -->
-
+    <include name="ws-commons-util-1.0.1.jar"/> <!-- PART of XML-RPC 3.0 -->
 	<include name="xsdlib.jar"/>
-        <include name="ECARClient.jar"/>
+    <include name="ECARClient.jar"/>
 
-        <include name="jline-0.9.9.jar"/> <!-- Used for Console feature (NS-Admin) -->
-        <include name="QuickServer.jar"/> <!-- Administration Server -->
-        <include name="QSAdminGUI.jar"/> <!-- Administration Server GUI -->
+    <include name="jline-0.9.9.jar"/> <!-- Used for Console feature (NS-Admin) -->
+    <include name="QuickServer.jar"/> <!-- Administration Server -->
+    <include name="QSAdminGUI.jar"/> <!-- Administration Server GUI -->
 
   	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
-  
+  	<include name="dim-18.r2.jar"/>
+  	
+  	<include name="logback-classic-0.9.15.jar"/> <!-- New LOGGING system -->
+  	<include name="logback-core-0.9.15.jar"/> <!-- New LOGGING system -->
+  	<include name="slf4j-api-1.5.6.jar"/> <!-- New LOGGING system -->
+  	
+  	<include name="jna.jar"/> <!-- DMAPI -->
+  	
   </fileset>
 
   <fileset id="src.jars.build"
@@ -388,6 +390,7 @@ test.junit.dir
     <include name="namespace.xml"/>
     <include name="namespace.xsd"/>
     <include name="lcmaps.db"/>
+    <include name="logging.xml"/>
     <include name="*.template"/>
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
@@ -423,7 +426,10 @@ test.junit.dir
 
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
-	dir="${src.doc.dir}"/>
+	dir="${src.doc.dir}">
+  	<exclude name="VomsGridUser.txt"/>
+  	<exclude name="EGEE-FQAN_wildcard.pdf"/>	
+  </fileset>	
   <fileset id="src.docs.license"
 	dir="${src.dir}"
 	includes="LICENSE.txt"/>
@@ -439,7 +445,11 @@ test.junit.dir
 	<pathelement location="${test.junit.dir}"/>
 	<path refid="build.classpath"/>
   </path>
-
+	
+  <!-- DIM library -->
+  <fileset id="dimlib"
+  	dir="${src.jars.dir}"
+	includes="libjdim.so"/>
 
 
 
@@ -453,6 +463,7 @@ test.junit.dir
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes.dir}"/>
     <mkdir dir="${build.libs.dir}"/>
+    <mkdir dir="${build.obj.dir}"/>
   </target>
 
 
@@ -470,6 +481,17 @@ test.junit.dir
     </exec>
   </target>
 
+  <!-- make c libs used by JNA -->
+  <target name="clibs-jna" depends="init,libs.dmutil"/>
+
+  <target name="libs.dmutil" depends="init">
+    <exec executable="make" logError="true">
+      <arg line="-C ${src.java.dir}/it/grid/storm/dmapi/clib"/>
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg value="BUILDDIR=${build.obj.dir}"/>
+    </exec>
+  </target>
+
 
   <!-- make SWIG Java interfaces -->
   <target name="swig"
@@ -479,7 +501,7 @@ test.junit.dir
     <exec executable="make" logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig"/>
-	  <arg line="swig"/>
+      <arg line="swig"/>
     </exec>
   </target>
 
@@ -502,13 +524,6 @@ test.junit.dir
 <!--	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/> -->
     </exec>
   </target>
-
-
-
-
-
-
-
 
 
   <!-- make wrapper component native libs -->
@@ -555,9 +570,10 @@ test.junit.dir
     </exec>
   </target>
 
+	
   <target name="libs"
 	description="compile native code libs"
-	depends="libs.lcmaps,libs.filesystem"/>
+	depends="libs.lcmaps,libs.filesystem, clibs-jna"/>
 
   <target name="precompile"
 	depends="init,preprocess,swig"/>
@@ -602,6 +618,16 @@ test.junit.dir
   <!-- CLEAN                                                           -->
   <!-- =============================================================== -->
 
+  <!-- Invoke 'clean' target on it/grid/storm/dmapi/clib/Makefile -->
+  <target name="clean.clibs.dmutil">
+    <exec executable="make"
+        dir="${src.java.dir}/it/grid/storm/dmapi/clib"
+        logError="true">
+      <arg value="DESTDIR=${build.libs.dir}"/>
+      <arg value="clean"/>
+    </exec>
+  </target>
+
   <!-- Invoke 'clean' target on it/grid/storm/wrapper Makefile -->
   <target name="clean.libs.wrapper">
     <exec executable="make"
@@ -634,7 +660,7 @@ test.junit.dir
 
   <target name="clean"
 	description="Remove build tree and all of the intermediate build files"
-	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem">
+	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs.dmutil">
     <!-- Delete the ${build.dir} directory tree -->
     <delete dir="${build.dir}"/>
   </target>
@@ -706,6 +732,11 @@ test.junit.dir
   	  overwrite="true">
   	  <fileset refid="src.config.db"/>
   	</copy>
+  	<copy
+  	  todir="${libdir}"
+  	  overwrite="true">
+  	  <fileset refid="dimlib"/>
+    </copy>
   	
 
 	<!-- fix permissions -->
@@ -805,10 +836,60 @@ test.junit.dir
 	  src="${dist.tarfile}"
 	  destfile="${dist.tarfile}.bz2"/>
 	-->
+  	
+  	
   </target>
+	
+	
+	
+	
+  <target name="info.src"
+	    description="Roll a tarball of the glite info provider">
+	    <delete file="${info.tarfile}"/>
+	    <delete file="${info.tarfile}.gz"/>
+	    <delete file="${info.tarfile}.bz2"/>
+  	 <tar
+  	      destfile="${info.tarfile}"
+  	      compression="none"
+  	      longfile="gnu">
+  	  <tarfileset
+  	 	dir="${info.dir}"
+  	 	        username="storm"
+  	 	        group="storm"
+  	 	        mode="0644"
+  	 	        prefix="glite-info-dynamic-storm-${version}/">
+  	        	<include name="opt/"/>
+  	  </tarfileset>	
+  	  </tar>
+  	    <!-- FIXME: should check if filename ends in .gz and compress -->
+  	    <gzip
+  	      src="${info.tarfile}"
+  	      destfile="${info.tarfile}.gz"/>
+  	</target>
 
-
-
+	
+        <!--	
+	 <javadoc 
+	 	       packagenames="*"
+	           sourcepath="src"
+	           excludepackagenames=""
+	           defaultexcludes="yes"
+	           destdir="doc/api"
+	           author="true"
+	           version="true"
+	           use="true"
+	           windowtitle="Test API">
+	    <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2009 StoRM  All Rights Reserved.</i>]]></bottom>
+	    <tag name="todo" scope="all" description="To do:"/>
+	    <group title="Group 1 Packages" packages="com.dummy.test.a*"/>
+	    <link offline="true" href="http://java.sun.com/j2se/1.5.0/docs/api/" packagelistLoc="C:\tmp"/>
+	    <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+	  </javadoc>
+	-->
+	
+	
+	
   <!-- =============================================================== -->
   <!-- UNIT TESTS                                                      -->
   <!-- =============================================================== -->

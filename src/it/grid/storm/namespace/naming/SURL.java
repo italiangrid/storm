@@ -1,11 +1,13 @@
 package it.grid.storm.namespace.naming;
 
-import java.net.*;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.Protocol;
 
-import org.apache.commons.logging.*;
-import org.apache.commons.validator.*;
-import it.grid.storm.namespace.*;
-import it.grid.storm.namespace.model.*;
+import java.net.URI;
+
+import org.apache.commons.validator.UrlValidator;
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -20,26 +22,26 @@ import it.grid.storm.namespace.model.*;
  * @version 1.0
  */
 public class SURL
-    extends SRMURL {
+extends SRMURL {
 
-    private static Log log = NamespaceDirector.getLogger();
+    private static Logger log = NamespaceDirector.getLogger();
     private static String[] schemes = {
-        "srm"};
+    "srm"};
     private static UrlValidator surlValidator = new UrlValidator(schemes, UrlValidator.NO_FRAGMENTS);
 
     public final boolean directory;
 
     public SURL(final String hostName,
-                final int port,
-                final String serviceEndpoint,
-                final String queryString) {
+            final int port,
+            final String serviceEndpoint,
+            final String queryString) {
         super(Protocol.SRM, hostName, port, serviceEndpoint, queryString);
         directory = checkDirectory(queryString);
     }
 
     public SURL(final String hostName,
-                final int port,
-                final String stfn) {
+            final int port,
+            final String stfn) {
         super(Protocol.SRM, hostName, port, stfn);
         directory = checkDirectory(stfn);
     }
@@ -161,6 +163,7 @@ public class SURL
         return sb.toString();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.transfProtocol.toString());

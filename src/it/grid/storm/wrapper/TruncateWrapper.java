@@ -1,8 +1,7 @@
 package it.grid.storm.wrapper;
 
-import org.apache.log4j.Logger;
-
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for Truncate functionality provided by  native Library.
@@ -16,17 +15,17 @@ import java.io.*;
  */
 public class TruncateWrapper
 {
-	/**
-	 * Logger.
-	 * This Logger it's used to log information.
-	 */ 	
-	private static final Logger log = Logger.getLogger("wrapper");
-	
-native int truncateFile(String pathToFile, long newsize);
-static  {
-	//	System.out.println("File: "+pathToFile+", size = "+ size );
-		System.loadLibrary("truncatenativelib");
-	}
-	
+    /**
+     * Logger.
+     * This Logger it's used to log information.
+     */
+    private static final Logger log = LoggerFactory.getLogger(TruncateWrapper.class);
+
+    native int truncateFile(String pathToFile, long newsize);
+    static  {
+        //	System.out.println("File: "+pathToFile+", size = "+ size );
+        System.loadLibrary("truncatenativelib");
+    }
+
 
 }

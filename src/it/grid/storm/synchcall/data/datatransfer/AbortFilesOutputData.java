@@ -7,17 +7,15 @@
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
-import org.apache.log4j.Logger;
-import java.util.Vector;
-
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSURLReturnStatus;
-import it.grid.storm.synchcall.data.OutputData;
 
-public class AbortFilesOutputData implements OutputData
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class AbortFilesOutputData extends AbortGeneralOutputData
 {
-    private static final Logger log = Logger.getLogger("dataTransfer");
+    private static final Logger log = LoggerFactory.getLogger(AbortFilesOutputData.class);
     private TReturnStatus returnStatus = null;
     private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
 
@@ -33,9 +31,9 @@ public class AbortFilesOutputData implements OutputData
         //this.arrayOfFileStatus = filesOutData.getArrayOfFileStatuses();
         return new AbortFilesOutputData(filesOutData.getReturnStatus(), filesOutData.getArrayOfFileStatuses());
     }
-    
+
     public AbortFilesOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus arrayOfFileStatus)
-                    //throws InvalidAbortFilesOutputDataAttributeException
+    //throws InvalidAbortFilesOutputDataAttributeException
     {
         boolean ok = (arrayOfFileStatus == null);
 
@@ -47,11 +45,12 @@ public class AbortFilesOutputData implements OutputData
         this.arrayOfFileStatus = arrayOfFileStatus;
     }
 
-    
+
     /**
      * Returns the returnStatus field
      * @return TReturnStatus
      */
+    @Override
     public TReturnStatus getReturnStatus()
     {
         return returnStatus;
@@ -61,6 +60,7 @@ public class AbortFilesOutputData implements OutputData
      * Set the returnStatus field
      * @param returnStatus
      */
+    @Override
     public void setReturnStatus(TReturnStatus returnStatus)
     {
         this.returnStatus = returnStatus;
@@ -70,6 +70,7 @@ public class AbortFilesOutputData implements OutputData
      * Returns the arrayOfFileStatuses field
      * @return TSURLReturnStatus
      */
+    @Override
     public ArrayOfTSURLReturnStatus getArrayOfFileStatuses()
     {
         return arrayOfFileStatus;
@@ -79,14 +80,16 @@ public class AbortFilesOutputData implements OutputData
      * Set the arrayOfFileStatuses field
      * @param arrayOfFileStatuses
      */
+    @Override
     public void setArrayOfFileStatuses(ArrayOfTSURLReturnStatus arrayOfFileStatuses)
     {
         this.arrayOfFileStatus = arrayOfFileStatuses;
     }
 
+    @Override
     public boolean isSuccess() {
         // TODO Auto-generated method stub
         return false;
     }
-    
+
 }

@@ -1,35 +1,27 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TStatusCode;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TDirOption;
-import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.InvalidTTURLAttributesException;
-import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.namespace.StoRI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents StoRMs CopyChunkCatalog: it collects CopyChunkData and
@@ -41,11 +33,11 @@ import it.grid.storm.namespace.StoRI;
  * @version 2.0
  */
 public class CopyChunkCatalog {
-    private static final Logger log = Logger.getLogger("catalogs");
+    private static final Logger log = LoggerFactory.getLogger(CopyChunkCatalog.class);
     private static final CopyChunkCatalog cat = new CopyChunkCatalog(); //only instance of CopyChunkCatalog present in StoRM!
     private CopyChunkDAO dao = CopyChunkDAO.getInstance(); //WARNING!!! TO BE MODIFIED WITH FACTORY!!!
 
-	private CopyChunkCatalog() {
+    private CopyChunkCatalog() {
     }
 
     /**
@@ -57,9 +49,9 @@ public class CopyChunkCatalog {
 
 
 
-	/**
-	 * Method that returns a Collection of CopyChunkData Objects matching the
-	 * supplied TRequestToken.
+    /**
+     * Method that returns a Collection of CopyChunkData Objects matching the
+     * supplied TRequestToken.
      *
      * If any of the data associated to the TRequestToken is not well formed and
      * so does not allow a CopyChunkData Object to be created, then that part of
@@ -68,8 +60,8 @@ public class CopyChunkCatalog {
      *
      * If there are no chunks to process then an empty Collection is returned,
      * and a messagge gets logged.
-	 */
-	synchronized public Collection lookup(TRequestToken rt) {
+     */
+    synchronized public Collection lookup(TRequestToken rt) {
         Collection c = dao.find(rt);
         log.debug("COPY CHUNK CATALOG: retrieved data "+c);
         List list = new ArrayList();
@@ -81,7 +73,9 @@ public class CopyChunkCatalog {
             for (Iterator i = c.iterator(); i.hasNext(); ) {
                 auxTO = (CopyChunkDataTO) i.next();
                 aux = makeOne(auxTO,rt);
-                if (aux!=null) list.add(aux);
+                if (aux!=null) {
+                    list.add(aux);
+                }
             }
         }
         log.debug("COPY CHUNK CATALOG: returning "+ list +"\n\n");
@@ -127,7 +121,9 @@ public class CopyChunkCatalog {
         TSpaceToken spaceToken=null;
         TSpaceToken emptyToken = TSpaceToken.makeEmpty();
         String spaceTokenTranslation = SpaceTokenStringConverter.getInstance().toStoRM(auxTO.spaceToken()); //convert empty string representation of DPM into StoRM representation;
-        if (emptyToken.toString().equals(spaceTokenTranslation)) spaceToken = emptyToken; else {
+        if (emptyToken.toString().equals(spaceTokenTranslation)) {
+            spaceToken = emptyToken;
+        } else {
             try {
                 spaceToken = TSpaceToken.make(spaceTokenTranslation);
             } catch (InvalidTSpaceTokenAttributesException e) {
@@ -146,22 +142,24 @@ public class CopyChunkCatalog {
         TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
         if (code==TStatusCode.EMPTY) {
             sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else try {
-            status = new TReturnStatus(code,auxTO.errString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
+        } else {
+            try {
+                status = new TReturnStatus(code,auxTO.errString());
+            } catch (InvalidTReturnStatusAttributeException e) {
+                sb.append("\n");
+                sb.append(e);
+            }
         }
         //make CopyChunkData
         CopyChunkData aux=null;
         try {
             aux = new CopyChunkData(rt, fromSURL, toSURL, lifeTime, fileStorageType,
-                spaceToken, globalOverwriteOption, status);
+                    spaceToken, globalOverwriteOption, status);
             aux.setPrimaryKey(auxTO.primaryKey());
         } catch (InvalidCopyChunkDataAttributesException e) {
             dao.signalMalformedCopyChunk(auxTO);
             log.warn("COPY CHUNK CATALOG! Retrieved malformed Copy chunk data from persistence. Dropping chunk from request: "+rt);
-            log.warn(e);
+            log.warn(e.getMessage());
             log.warn(sb.toString());
         }
         //end...

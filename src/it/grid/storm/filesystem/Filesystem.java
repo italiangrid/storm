@@ -16,22 +16,21 @@ package it.grid.storm.filesystem;
 
 
 
-import java.io.File;
-
-import it.grid.storm.filesystem.AclLockPool;
-import it.grid.storm.filesystem.FilesystemPermission;
-import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.swig.fs_acl;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.LocalUser;
 
-import org.apache.log4j.Logger;
+import java.io.File;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.emory.mathcs.backport.java.util.concurrent.Semaphore;
 
 
 /**
    Façade and base class for filesystem manipulation.
-   
+
    This class implements methods for manipulation of filesystem
    entries.  You should not use this class directly in StoRM code from
    outside this package, rather manipulate the filesystem in StoRM
@@ -42,7 +41,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.Semaphore;
    subclass instance that is shall be used for all filesystem
    operations.  Clearly, only the configuration mechanism knows which
    filesystem-type has been configured on a certain path, so this
-   class should only be instanciated at stratup/configuration time. 
+   class should only be instanciated at stratup/configuration time.
 
    Not only, can an instance of this class be shared among different
    objects operating on the same filesystem (or portion of it), but it
@@ -70,22 +69,47 @@ import edu.emory.mathcs.backport.java.util.concurrent.Semaphore;
    setting the <em>whole</em> list of permissions; no changes of
    individual permissions can be performed.  Therefore, no two threads
    can concurrently manipulate ACLs on the same file, or they may
-   overwrite each other's changes.  
+   overwrite each other's changes.
 
    A per-filename lock is maintained, and no two threads can
    concurrently modify ACL on the same pathname.  Modification by
    other programs (that is, outside StoRM) cannot be prevented, so we
    still have a race condition.
-   
+
    @author Riccardo Murri <riccardo.murri@ictp.it>
    @version $Revision: 1.20 $
 
-**/
+ **/
 public class Filesystem {
 
 
+    // --- private instance variables ---
 
+    /** Low-level filesystem interface.*/
+    private final genericfs fs;
 
+    /** Cache of lock instances. */
+    private static AclLockPool locks = new AclLockPool();
+
+    private final Logger log;
+
+    private GetGroupPermissionMethod getGroupPermissionMethod = new GetGroupPermissionMethod();
+    private GetUserPermissionMethod getUserPermissionMethod = new GetUserPermissionMethod();
+
+    private GetEffectiveGroupPermissionMethod getEffectiveGroupPermissionMethod = new GetEffectiveGroupPermissionMethod();
+    private GetEffectiveUserPermissionMethod getEffectiveUserPermissionMethod = new GetEffectiveUserPermissionMethod();
+
+    private GrantGroupPermissionMethod grantGroupPermissionMethod = new GrantGroupPermissionMethod();
+    private GrantUserPermissionMethod grantUserPermissionMethod = new GrantUserPermissionMethod();
+
+    private RemoveGroupPermissionMethod removeGroupPermissionMethod = new RemoveGroupPermissionMethod();
+    private RemoveUserPermissionMethod removeUserPermissionMethod = new RemoveUserPermissionMethod();
+
+    private RevokeGroupPermissionMethod revokeGroupPermissionMethod = new RevokeGroupPermissionMethod();
+    private RevokeUserPermissionMethod revokeUserPermissionMethod = new RevokeUserPermissionMethod();
+
+    private SetGroupPermissionMethod setGroupPermissionMethod = new SetGroupPermissionMethod();
+    private SetUserPermissionMethod setUserPermissionMethod = new SetUserPermissionMethod();
 
     // --- constructor ---
 
@@ -94,8 +118,8 @@ public class Filesystem {
         assert (null != nativeFs) : "Null nativeFs in Filesystem(NativeFilesystemInterface) constructor";
 
         fs = nativeFs;
-        log  = Logger.getLogger(Filesystem.class);
-        
+        log  = LoggerFactory.getLogger(Filesystem.class);
+
         getGroupPermissionMethod = new GetGroupPermissionMethod();
         getUserPermissionMethod = new GetUserPermissionMethod();
 
@@ -129,20 +153,20 @@ public class Filesystem {
        Motivation for this comes from the GPFS filesystem: GPFS nodes
        perform file metadata and attribute caching, so they may return
        out-of-date results to the standard system calls.  The GPFS API
-       provides the corresponding "exact" calls.  
+       provides the corresponding "exact" calls.
 
        In the generic POSIX filesystem implementation, there's no
        difference between the "exact" and the "standard" call.
-       
+
        @{
-    **/
+     **/
 
 
     /** Get file size in bytes.  Same as calling {@link
      * java.io.File#length()}.
      */
     public long getSize(final String file) {
-        
+
         return fs.get_size(file);
     }
 
@@ -150,7 +174,7 @@ public class Filesystem {
      *  calling {@link java.io.File#lastModified()}.
      */
     public long getLastModifiedTime(final String fileOrDirectory) {
-        
+
         /**
          * Since the lastModificationTime can be retrieved by Java.io.File
          * we prefer to don't use the native driver for get this information.
@@ -160,12 +184,12 @@ public class Filesystem {
          * a native JVM support does not exists.
          * 
          */
-        
+
         File fileOrDir = new File(fileOrDirectory);
         return fileOrDir.lastModified();
-        
-        //return fs.get_last_modification_time(fileOrDirectory);      
-        
+
+        //return fs.get_last_modification_time(fileOrDirectory);
+
     }
 
     /** Get up-to-date file size in bytes.  Returned value may differ
@@ -199,7 +223,7 @@ public class Filesystem {
     public int truncateFile(final String filename, final long desired_size) {
         return fs.truncate_file(filename, desired_size);
     }
-    
+
     /** @} **/
 
 
@@ -209,24 +233,24 @@ public class Filesystem {
 
 
 
-    /** 
+    /**
         @defgroup fs_space  Low-level Space Reservation Functions
-        
+
         <strong>This interface is a draft!</strong> Due to the
         unsettled state of the SRM spec regarding to reserved space
         semantics, and the differences between SRM space reservation
         and GPFS preallocation, it's better not use this interface
         directly; rather, use wrapper objects (like {@link
         it.grid.storm.filesystem.Space}) for operations.
-     
-        
+
+
         @{
 
-    **/
+     **/
 
     /** Return available space (in bytes) on filesystem.  Please note
      * that this value may be inaccurate on cluster/networked
-     * filesystems, due to metadata caching. 
+     * filesystems, due to metadata caching.
      */
     public long getFreeSpace() {
         return fs.get_free_space();
@@ -234,7 +258,7 @@ public class Filesystem {
 
     /**
      * Pre-allocate <i>size</i> bytes on a file; return actual size
-     * (in bytes) of reserved space.  When 
+     * (in bytes) of reserved space.  When
      *
      * @return actual size (in bytes) reserved for the file
      *
@@ -250,11 +274,11 @@ public class Filesystem {
      * denied (to the user running the StoRM server process) to
      * operate on the named file.
      */
-//    public long reserveSpaceForFile(final String pathToFile, final long size)
-//        throws InvalidPathException, InvalidPermissionOnFileException {
-//        // cannot reserve space on a generic filesystem
-//        return 0;
-//    }
+    //    public long reserveSpaceForFile(final String pathToFile, final long size)
+    //        throws InvalidPathException, InvalidPermissionOnFileException {
+    //        // cannot reserve space on a generic filesystem
+    //        return 0;
+    //    }
 
     /**
      * Return to filesystems' available space any space previously
@@ -270,11 +294,11 @@ public class Filesystem {
      * denied (to the user running the StoRM server process) to
      * operate on the named file.
      */
-//    public long compactSpaceInFile(final String pathToFile)
-//        throws InvalidPathException, InvalidPermissionOnFileException {
-//        // cannot compact space on a generic filesystem
-//        return 0;
-//    }
+    //    public long compactSpaceInFile(final String pathToFile)
+    //        throws InvalidPathException, InvalidPermissionOnFileException {
+    //        // cannot compact space on a generic filesystem
+    //        return 0;
+    //    }
 
     /** Reserve <i>size</i> bytes on filesystem; return actual size
      * (in bytes) of reserved space.  If any space is actually
@@ -299,10 +323,10 @@ public class Filesystem {
      *
      * @return actual size (in bytes) of the space reserved.
      */
-//    public long reserveGuaranteedSpace(final LocalUser u, final Space space, final long size) {
-//        // cannot reserve space on a generic filesystem
-//        return 0;
-//    }
+    //    public long reserveGuaranteedSpace(final LocalUser u, final Space space, final long size) {
+    //        // cannot reserve space on a generic filesystem
+    //        return 0;
+    //    }
 
     /** Return to filesystems' available space any space previously
      * reserved in object <i>space</i> but currently unused.
@@ -325,10 +349,10 @@ public class Filesystem {
      * successful completion of operation, but that the exact amount
      * of space freed cannot be determined.
      */
-//    public long compactSpace(final LocalUser u, final Space space) {
-//        // cannot compact space on a generic filesystem
-//        return 0;
-//    }
+    //    public long compactSpace(final LocalUser u, final Space space) {
+    //        // cannot compact space on a generic filesystem
+    //        return 0;
+    //    }
 
     /** Dispose reserved space and return any used space to the
      * general filesystem availability.  The space to be freed is
@@ -347,9 +371,9 @@ public class Filesystem {
      * @param space the space to be freed and returned to the
      * filesystem
      */
-//    public void disposeGuaranteedSpace(final LocalUser u, final Space space) {
-//        // cannot reserve space on a generic filesystem
-//    }
+    //    public void disposeGuaranteedSpace(final LocalUser u, final Space space) {
+    //        // cannot reserve space on a generic filesystem
+    //    }
 
     /** @} **/
 
@@ -368,10 +392,10 @@ public class Filesystem {
        directory.  The filesystem protection scheme controlling the
        possible operations is abstracted in the {@link
        it.grid.storm.filesystem.FilesystemPermission} class.
-       
+
        @{
 
-    **/
+     **/
 
     /**
        Return <code>true</code> if the local user <i>u</i> can operate
@@ -385,7 +409,7 @@ public class Filesystem {
 
        - if the requestor's UID matches the UID in the @em owner entry,
        then the @em owner permissions are used;
-       
+
        - else if the requestor's UID matches a UID in a <em>specific
        user</em> entry, then the bitwise-AND of that entry's
        permissions and the @em mask entry permissions are used;
@@ -397,7 +421,7 @@ public class Filesystem {
        - else if any of the requestor's GIDs (primary or supplementary)
        matches the group owner entry, the bitwise-AND of that entry's
        permissions and the @em mask entry permissions are used;
-       
+
        - else, (if no group entry was found to match) the @em other entry
        permissions are used.
 
@@ -433,7 +457,7 @@ public class Filesystem {
     cluster filesystems.
 
     <b>Quick POSIX ACL Glossary</b>
-    
+
     @em ACL: an "Access Control List" is a list of ACEs; according to
     POSIX 1003.1e draft 17 (see
     http://www.suse.de/~agruen/acl/posix/posix.html ), ACLs come in
@@ -455,7 +479,7 @@ public class Filesystem {
     @em ACE: an "ACL Entry" binds an entity on the system (the file
     owner, a specific user, ...) and a set of permissions (access
     rights).  ACEs come in several kinds; the terms by which we denote
-    the different kinds here are: 
+    the different kinds here are:
     <ul>
 
     <li><em>owner</em>: the owner ACE sets the permission to be applied to
@@ -510,27 +534,27 @@ public class Filesystem {
 
     The access control algorithm implemented in StoRM <em>must</em>
     match the one implemented in the Linux kernel, which is detailed
-    in the @a acl(5) man page.  
+    in the @a acl(5) man page.
 
     Suppose a local UNIX user (identified by UID and the list of
     primary and supplementary GIDs) requests access to a certain file
     or directory.  Roughly, the access control algorithm is:
-    
+
     - if the requestor's UID matches the UID in the @em owner entry,
     then the @em owner permissions are used;
-    
+
     - else if the requestor's UID matches a UID in a <em>specific
     user</em> entry, then the bitwise-AND of that entry's
     permissions and the @em mask entry permissions are used;
-    
+
     - else if any of the requestor's GIDs (primary or supplementary)
     matches the group owner entry, the bitwise-AND of that entry's
     permissions and the @em mask entry permissions are used;
-    
+
     - else if any of the requestor's GIDs (primary or supplementary)
     matches the group owner entry, the bitwise-AND of that entry's
     permissions and the @em mask entry permissions are used;
-    
+
     - else, (if no group entry was found to match) the @em other entry
     permissions are used.
 
@@ -560,7 +584,7 @@ public class Filesystem {
     this:
     <pre>
       // add Just-in-Time read+write permission
-      old = file.grantUserPermission(user, 
+      old = file.grantUserPermission(user,
                                      FilesystemPermission.ReadWrite);
       ...
       // "reset" the ACL to its former state
@@ -591,7 +615,7 @@ public class Filesystem {
     entry, then StoRM may not be able to grant some permissions to a
     requesting user, even if the user should be given access according
     to the Authorization component (i.e., the Grid-level access
-    control algorithms).  
+    control algorithms).
 
     Local policy wins over Grid policy, so StoRM should check whether
     the user has been granted the intended effective permissions, and
@@ -616,10 +640,10 @@ public class Filesystem {
         throw new SRM_UNAUTHORIZED_ACCESS("ACL mask settings deny access.");
       }
     </pre>
-    
+
     @{
-    
-    **/
+
+     **/
 
     /** Return the <em>effective</em> permission a group has on the
      * given file or directory.
@@ -692,7 +716,7 @@ public class Filesystem {
     }
 
     /** Return the permission a user has on the given file or
-     * directory.  
+     * directory.
      * 
      * Loads the ACL for the given file or directory, and return the
      * permission associated with the UID of the given {@link
@@ -742,7 +766,7 @@ public class Filesystem {
      * @see fs_acl::grant_group_perm()
      */
     public FilesystemPermission grantGroupPermission (final LocalUser u, final String fileOrDirectory,
-        final FilesystemPermission permission) {
+            final FilesystemPermission permission) {
         return setPermissionTemplate(u, fileOrDirectory, permission, grantGroupPermissionMethod);
     }
 
@@ -805,7 +829,7 @@ public class Filesystem {
     public FilesystemPermission removeGroupPermission (final LocalUser u, final String fileOrDirectory) {
         return removePermissionTemplate(u, fileOrDirectory, removeGroupPermissionMethod);
     }
-    
+
     /** Remove a user's entry from a file or directory ACL, and return
      * the (now deleted) permission.
      * 
@@ -968,40 +992,44 @@ public class Filesystem {
     }
 
     /** Implements the template method for getting a group entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class GetGroupPermissionMethod implements GetPermissionMethod {
         /** Returns the permission associated with the
          * <em>primary</em> GID of the passed {@link
          * it.grid.storm.griduser.LocalUser} instance,
-         * or <code>null</code> if no permission is set specifically 
+         * or <code>null</code> if no permission is set specifically
          * for that group.
          */
         public FilesystemPermission get(final fs_acl a, final LocalUser u) {
-            if (a.has_group_perm(u.getPrimaryGid()))
+            if (a.has_group_perm(u.getPrimaryGid())) {
                 return new FilesystemPermission(a.get_group_perm(u.getPrimaryGid()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
     /** Implements the template method for getting a users' entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class GetUserPermissionMethod implements GetPermissionMethod {
         /** Return the permission associated with the UID of the
          * passed {@link it.grid.storm.griduser.LocalUser} instance,
-         * or <code>null</code> if no permission is set specifically 
+         * or <code>null</code> if no permission is set specifically
          * for that user.
          */
         public FilesystemPermission get(final fs_acl a, final LocalUser u) {
-            if (a.has_user_perm(u.getUid()))
+            if (a.has_user_perm(u.getUid())) {
                 return new FilesystemPermission(a.get_user_perm(u.getUid()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
     /** Implements the template method for getting a group entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class GetEffectiveGroupPermissionMethod implements GetPermissionMethod {
         /** Returns the <em>effective</em> permission associated with
@@ -1011,14 +1039,16 @@ public class Filesystem {
          * that group.
          */
         public FilesystemPermission get(final fs_acl a, final LocalUser u) {
-            if (a.has_group_perm(u.getPrimaryGid()))
+            if (a.has_group_perm(u.getPrimaryGid())) {
                 return new FilesystemPermission(a.get_group_effective_perm(u.getPrimaryGid()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
     /** Implements the template method for getting a users' entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class GetEffectiveUserPermissionMethod implements GetPermissionMethod {
         /** Return the <em>effective</em> permission associated with
@@ -1028,9 +1058,11 @@ public class Filesystem {
          * that user.
          */
         public FilesystemPermission get(final fs_acl a, final LocalUser u) {
-            if (a.has_user_perm(u.getUid()))
+            if (a.has_user_perm(u.getUid())) {
                 return new FilesystemPermission(a.get_user_effective_perm(u.getUid()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -1055,7 +1087,7 @@ public class Filesystem {
      * @see GetPermissionTemplate
      */
     private FilesystemPermission getPermissionTemplate (final LocalUser u, final String fileOrDirectory,
-        final GetPermissionMethod permissionMethod) {
+            final GetPermissionMethod permissionMethod) {
 
         assert (null != u) : "Null LocalUser passed to Filesystem.getPermissionTemplate()";
         assert (null != fileOrDirectory) : "Null fileOrDirectory passed to Filesystem.getPermissionTemplate()";
@@ -1077,7 +1109,7 @@ public class Filesystem {
     }
 
     /** Implements the template method for removing a users' entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class RemoveUserPermissionMethod implements RemovePermissionMethod {
         /** Removes the entry associated with the UID of the passed
@@ -1101,7 +1133,7 @@ public class Filesystem {
     }
 
     /** Implements the template method for removing a group entry from
-     * an fs_acl instance. 
+     * an fs_acl instance.
      */
     private class RemoveGroupPermissionMethod implements RemovePermissionMethod {
         /** Removes the entry associated with the primary GID of the
@@ -1147,7 +1179,7 @@ public class Filesystem {
      * @see RemovePermissionTemplate
      */
     private FilesystemPermission removePermissionTemplate (final LocalUser u, final String fileOrDirectory,
-        final RemovePermissionMethod permissionMethod) {
+            final RemovePermissionMethod permissionMethod) {
         assert (null != u) : "Null LocalUser passed to Filesystem.removePermissionTemplate()";
         assert (null != fileOrDirectory) : "Null fileOrDirectory passed to Filesystem.removePermissionTemplate()";
         assert (null != permissionMethod) : "Null permissionMethod passed to Filesystem.removePermissionTemplate()";
@@ -1188,9 +1220,9 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_user_perm(u.getUid()))
+            if (a.has_user_perm(u.getUid())) {
                 return new FilesystemPermission(a.set_user_perm(u.getUid(), p.toFsAclPermission()));
-            else{
+            } else{
                 a.set_user_perm(u.getUid(), p.toFsAclPermission());
                 return null;
             }
@@ -1210,9 +1242,9 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_user_perm(u.getUid()))
+            if (a.has_user_perm(u.getUid())) {
                 return new FilesystemPermission(a.grant_user_perm(u.getUid(), p.toFsAclPermission()));
-            else {
+            } else {
                 a.grant_user_perm(u.getUid(), p.toFsAclPermission());
                 return null;
             }
@@ -1232,9 +1264,11 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_user_perm(u.getUid()))
+            if (a.has_user_perm(u.getUid())) {
                 return new FilesystemPermission(a.revoke_user_perm(u.getUid(), p.toFsAclPermission()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -1251,9 +1285,9 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_group_perm(u.getPrimaryGid()))
+            if (a.has_group_perm(u.getPrimaryGid())) {
                 return new FilesystemPermission(a.set_group_perm(u.getPrimaryGid(), p.toFsAclPermission()));
-            else {
+            } else {
                 a.set_group_perm(u.getPrimaryGid(), p.toFsAclPermission());
                 return null;
             }
@@ -1273,9 +1307,9 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_group_perm(u.getPrimaryGid()))
+            if (a.has_group_perm(u.getPrimaryGid())) {
                 return new FilesystemPermission(a.grant_group_perm(u.getPrimaryGid(), p.toFsAclPermission()));
-            else {
+            } else {
                 a.grant_group_perm(u.getPrimaryGid(), p.toFsAclPermission());
                 return null;
             }
@@ -1295,9 +1329,11 @@ public class Filesystem {
          * if none was found.
          */
         public FilesystemPermission apply(final fs_acl a, final LocalUser u, final FilesystemPermission p) {
-            if (a.has_group_perm(u.getPrimaryGid()))
+            if (a.has_group_perm(u.getPrimaryGid())) {
                 return new FilesystemPermission(a.revoke_group_perm(u.getPrimaryGid(), p.toFsAclPermission()));
-            else return null;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -1330,12 +1366,12 @@ public class Filesystem {
      * @see GetPermissionTemplate
      */
     private FilesystemPermission setPermissionTemplate (final LocalUser u, final String fileOrDirectory,
-        final FilesystemPermission p, final SetPermissionMethod setPermissionMethod) {
+            final FilesystemPermission p, final SetPermissionMethod setPermissionMethod) {
         assert (null != u) : "Null LocalUser passed to Filesystem.setPermissionTemplate()";
         assert (null != fileOrDirectory) : "Null fileOrDirectory passed to Filesystem.setPermissionTemplate()";
         assert (null != p) : "Null FilesystemPermission passed to Filesystem.setPermissionTemplate()";
         assert (null != setPermissionMethod) : "Null permissionMethod passed to Filesystem.setPermissionTemplate()";
-        
+
         FilesystemPermission oldPermission;
         fs_acl acl = fs.new_acl();
         // do not allow concurrent operation on the same pathname
@@ -1354,36 +1390,4 @@ public class Filesystem {
 
 
 
-
-
-
-
-
-    // --- private instance variables ---
-
-    /** Low-level filesystem interface.*/
-    private final genericfs fs;
-
-    /** Cache of lock instances. */
-    private static AclLockPool locks = new AclLockPool();
-
-    private final Logger log;
-
-    private GetGroupPermissionMethod getGroupPermissionMethod = new GetGroupPermissionMethod();
-    private GetUserPermissionMethod getUserPermissionMethod = new GetUserPermissionMethod();
-
-    private GetEffectiveGroupPermissionMethod getEffectiveGroupPermissionMethod = new GetEffectiveGroupPermissionMethod();
-    private GetEffectiveUserPermissionMethod getEffectiveUserPermissionMethod = new GetEffectiveUserPermissionMethod();
-
-    private GrantGroupPermissionMethod grantGroupPermissionMethod = new GrantGroupPermissionMethod();
-    private GrantUserPermissionMethod grantUserPermissionMethod = new GrantUserPermissionMethod();
-
-    private RemoveGroupPermissionMethod removeGroupPermissionMethod = new RemoveGroupPermissionMethod();
-    private RemoveUserPermissionMethod removeUserPermissionMethod = new RemoveUserPermissionMethod();
-
-    private RevokeGroupPermissionMethod revokeGroupPermissionMethod = new RevokeGroupPermissionMethod();
-    private RevokeUserPermissionMethod revokeUserPermissionMethod = new RevokeUserPermissionMethod();
-
-    private SetGroupPermissionMethod setGroupPermissionMethod = new SetGroupPermissionMethod();
-    private SetUserPermissionMethod setUserPermissionMethod = new SetUserPermissionMethod();
 }

@@ -1,17 +1,20 @@
 package it.grid.storm;
 
+import it.grid.storm.asynch.AdvancedPicker;
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.config.ConfigReader;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.health.HealthDirector;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.startup.Bootstrap;
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.*;
-import it.grid.storm.asynch.AdvancedPicker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.config.ConfigReader;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.health.HealthDirector;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file which
@@ -25,16 +28,19 @@ import it.grid.storm.health.HealthDirector;
 
 
 public class StoRM {
+
+
     private AdvancedPicker picker = null; //Picker of StoRM
 
-    //private SynchCallServer xmlrpcServer=null;   //Synchronous calls server of StoRM!
-    //
     private XMLRPCHttpServer  xmlrpcServer= null;
-        
+
     private StringBuffer welcome = welcomeText(); //Text that displays general info about StoRM project
     private StringBuffer defaultConfig = defaultText(); //Text that displays StoRM built in values
-    private static final Logger log = Logger.getLogger("stormBoot");
+
+    private static Logger log;
+
     private final Timer GC = new Timer(); //Timer object in charge to call periodically the Space Garbace Collector
+
 
 
     /**
@@ -75,10 +81,18 @@ public class StoRM {
         //print welcome
         System.out.println();
         System.out.println(welcome.toString());
-        //Start logger!
-        PropertyConfigurator.configure(Configuration.getInstance().getConfigurationDir()+"log4j.properties");
+
+        /**
+         * INIT LOGGING COMPONENT
+         */
+        String configurationDir = Configuration.getInstance().getConfigurationDir();
+        String logFile = configurationDir + "logging.xml";
+        Bootstrap.initializeLogging(logFile);
+
+        log = LoggerFactory.getLogger(StoRM.class);
+
         //
-        log.fatal(welcome.toString()); //log welcome string!
+        log.error(welcome.toString()); //log welcome string!
         log.debug(defaultConfig.toString()); //log default values!
         log.info("CurrentConfiguration:\n" + currentConfig.toString()); //log actually used values!
 
@@ -92,7 +106,7 @@ public class StoRM {
 
         //
         this.picker = new AdvancedPicker();
-	//this.xmlrpcServer = new SynchCallServer();
+        //this.xmlrpcServer = new SynchCallServer();
         this.xmlrpcServer = new XMLRPCHttpServer();
     }
 
@@ -103,10 +117,19 @@ public class StoRM {
         StringBuffer welcome = new StringBuffer();
         welcome.append("StoRM Backend Server\n\n");
         //
-        welcome.append("This is the backend part of an SRM v2.2 implementation, resulting from a ");
-        welcome.append("collaboration between The Abdus Salam International Centre for Theoretical ");
-        welcome.append("Physics ICTP - EGRID Project; and the Istituto Nazionale di Fisica Nucleare ");
-        welcome.append("INFN-CNAF - grid.IT Project.\n\n");
+        welcome.append("This is the backend part of StoRM, a Storage Resource Manager ");
+        welcome.append(" (SRM) v2.2 implementation, resulting from a ");
+        welcome.append("collaboration between the Istituto Nazionale di Fisica Nucleare INFN-CNAF centre ");
+        welcome.append(" and the Abdus Salam International Centre for Theoretical ");
+        welcome.append("Physics ICTP - EGRID Project\n\n");
+        //
+        welcome.append("For support for installations of StoRM in Physics communities, ");
+        welcome.append("please contact:\n");
+        welcome.append("Istituto Nazionale di Fisica Nucleare - CNAF\n");
+        welcome.append("Viale Berti Pichat, 6/2\n");
+        welcome.append("40127 Bologna\n");
+        welcome.append("Italy\n");
+        welcome.append("http://www.cnaf.infn.it/\n");
         //
         welcome.append("For support for installations of StoRM in Economics/Finance communities, ");
         welcome.append("please contact:\n");
@@ -119,14 +142,10 @@ public class StoRM {
         welcome.append("staff@egrid.it\n");
         welcome.append("http://www.egrid.it/\n\n");
         //
-        welcome.append("For support for installations of StoRM in Physics communities, ");
-        welcome.append("please contact:\n");
-        welcome.append("Istituto Nazionale di Fisica Nucleare - CNAF\n");
-        welcome.append("Viale Berti Pichat, 6/2\n");
-        welcome.append("40127 Bologna\n");
-        welcome.append("Italy\n");
-        welcome.append("http://www.cnaf.infn.it/\n");
+        welcome.append("StoRM web site: http://storm.forge.cnaf.infn.it \n");
         //
+        welcome.append("StoRM Mailing List: storm-users@cnaf.infn.it \n");
+
         return welcome;
     }
 
@@ -159,11 +178,11 @@ public class StoRM {
     }
 
 
-   /**
+    /**
      * Method used to start xmlrpcServer.
      */
     synchronized public void startXmlRpcServer() {
-  	    xmlrpcServer.createServer();
+        xmlrpcServer.createServer();
     }
 
     /**
@@ -171,9 +190,10 @@ public class StoRM {
      *
      */
     synchronized public void startSpaceGC() {
-    	log.debug("Space GC started.");
-    	final ReservedSpaceCatalog  spaceCatalog = new ReservedSpaceCatalog();
-    	TimerTask cleaningTask = new TimerTask() {
+        log.debug("Space GC started.");
+        final ReservedSpaceCatalog  spaceCatalog = new ReservedSpaceCatalog();
+        TimerTask cleaningTask = new TimerTask() {
+            @Override
             public void run() {
                 spaceCatalog.purge();
             }

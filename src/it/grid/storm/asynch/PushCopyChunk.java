@@ -1,39 +1,28 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
+import it.grid.storm.catalogs.CopyChunkData;
+import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.common.types.TransferProtocol;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.TTURL;
 
 import java.util.Date;
 
-import it.grid.storm.config.Configuration;
-
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGChunkData;
-import it.grid.storm.catalogs.CopyChunkData;
-
-import it.grid.storm.catalogs.InvalidRequestSummaryDataAttributesException;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-
-import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.srm.types.TRequestType;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TStorageSystemInfo;
-import it.grid.storm.srm.types.TDirOption;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
-import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.common.types.TransferProtocol;
-
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.model.Protocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SubClass of CopyChunk that handles Push mode, that is, the SRM server that
@@ -52,7 +41,7 @@ import it.grid.storm.namespace.model.Protocol;
  */
 public class PushCopyChunk extends CopyChunk {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(PushCopyChunk.class);
 
     /**
      * Constructor requiring the GridUser, the RequestSummaryData, the
@@ -63,11 +52,13 @@ public class PushCopyChunk extends CopyChunk {
      */
     public PushCopyChunk(GridUserInterface gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) throws InvalidCopyChunkAttributesException {
         boolean ok = (gu!=null) &&
-            (rsd!=null) &&
-            (chunkData!=null) &&
-            (n>=0) &&
-            (gsm!=null);
-        if (!ok) throw new InvalidCopyChunkAttributesException(gu,rsd,chunkData,n,gsm);
+        (rsd!=null) &&
+        (chunkData!=null) &&
+        (n>=0) &&
+        (gsm!=null);
+        if (!ok) {
+            throw new InvalidCopyChunkAttributesException(gu,rsd,chunkData,n,gsm);
+        }
         this.gu = gu;
         this.rsd = rsd;
         this.chunkData = chunkData;
@@ -98,6 +89,7 @@ public class PushCopyChunk extends CopyChunk {
      * then a successful GetOperationResult is returned regardless of the SRM
      * status.
      */
+    @Override
     protected GetOperationResult executeGetOperation() {
         try {
             //create new RequestSummaryData for PtGChunk
@@ -106,11 +98,11 @@ public class PushCopyChunk extends CopyChunk {
             TURLPrefix turlPrefix = new TURLPrefix();
             turlPrefix.addProtocol(Protocol.FILE);
             PtGChunkData ptgChunkData = new PtGChunkData(localrt,chunkData.fromSURL(),
-                chunkData.lifetime(), new TDirOption(false,false,0),turlPrefix,
-                TSizeInBytes.makeEmpty(),
-                new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,"PushCopyChunk has queued this local srmPrepareToGet operation; srmCopy request "+chunkData.requestToken()),
-                TTURL.makeEmpty()
-                );
+                    chunkData.lifetime(), new TDirOption(false,false,0),turlPrefix,
+                    TSizeInBytes.makeEmpty(),
+                    new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,"PushCopyChunk has queued this local srmPrepareToGet operation; srmCopy request "+chunkData.requestToken()),
+                    TTURL.makeEmpty()
+            );
             log.debug("executeGetOperation: adding new chunkData to PtGCatalog!");
             PtGChunkCatalog.getInstance().add(ptgChunkData,gu); //add a new non-child ptg entry to the catalogue, for grid user gu!
             log.debug("executeGetOperation: finished adding to PtGCatalog!");
@@ -132,7 +124,7 @@ public class PushCopyChunk extends CopyChunk {
             //InvalidTLifeTimeAttributesException, InvalidTReturnStatusAttributeException,
             //InvalidTDirOptionAttributesException
             log.error("ERROR IN PushCopyChunk! Cannot initiate local PtG! CopyRequestID: "+chunkData.requestToken());
-            log.error(e);
+            log.error(e.getMessage(), e);
             return new GetOperationResult("Cannot initiate local PtG! "+e);
         }
     }
@@ -166,6 +158,7 @@ public class PushCopyChunk extends CopyChunk {
      *
      * For each of the possible resuts, appropriate messagges get logged!
      */
+    @Override
     protected PutOperationResult executePutOperation(TSizeInBytes getFileSize) {
         try {
             TLifeTimeInSeconds retryTime = TLifeTimeInSeconds.make(Configuration.getInstance().getSRMClientPutTotalRetryTime(),TimeUnit.SECONDS);
@@ -177,12 +170,12 @@ public class PushCopyChunk extends CopyChunk {
                 //Invoke prepareToPut functionality of SRMClient
                 log.debug("PUSH COPY CHUNK: Invoking prepareToPut functionality...");
                 SRMPrepareToPutReply reply = srmClient.prepareToPut(gu,
-                    chunkData.toSURL(),chunkData.lifetime(),chunkData.fileStorageType(),chunkData.spaceToken(),
-                    getFileSize,
-                    TransferProtocol.GSIFTP,
-                    "StoRM Remote PtP for (push) srmCopy",
-                    chunkData.overwriteOption(),
-                    retryTime);
+                        chunkData.toSURL(),chunkData.lifetime(),chunkData.fileStorageType(),chunkData.spaceToken(),
+                        getFileSize,
+                        TransferProtocol.GSIFTP,
+                        "StoRM Remote PtP for (push) srmCopy",
+                        chunkData.overwriteOption(),
+                        retryTime);
                 log.debug("... got it! Reply was: "+reply);
                 //Polling...
                 long timeOut = new Date().getTime() + Configuration.getInstance().getSRMClientPutTimeOut()*1000; //starting time from which to count the time-out!
@@ -260,6 +253,7 @@ public class PushCopyChunk extends CopyChunk {
      *
      * This operation also invokes an srmPutDone on the remote server.
      */
+    @Override
     protected TransferResult executeTransfer(GetOperationResult get, PutOperationResult put) {
         try {
             TTURL getTURL = get.getTURL();

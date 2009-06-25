@@ -1,9 +1,5 @@
 package it.grid.storm.space;
 
-import java.util.Date;
-
-import org.apache.log4j.Logger;
-
 import it.grid.storm.catalogs.InvalidRetrievedDataException;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
@@ -25,9 +21,14 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
 
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
+ * Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
  *
  * @author lucamag
@@ -36,8 +37,8 @@ import it.grid.storm.srm.types.TSpaceType;
  */
 public class SRMSpace {
 
-    private static final Logger log = Logger.getLogger("space");
-    
+    private static final Logger log = LoggerFactory.getLogger(SRMSpace.class);
+
     private Space space;
     private StoRI stori;
     private String spaceFN;
@@ -50,19 +51,20 @@ public class SRMSpace {
     private TLifeTimeInSeconds lifetime;
     private TSpaceToken spacetoken;
     private String spaceTokenAlias;
-    
+
     public SRMSpace(TSpaceToken token) {
         //Retrieve from catalog
-        
+
     }
-    
+
     public SRMSpace(GridUserInterface user, TSizeInBytes desiredSize, TSizeInBytes guaranteedSize, TLifeTimeInSeconds lifetime, String spaceTokenAlias) throws IllegalSRMSpaceParameter {
-        
-        if (user != null)
+
+        if (user != null) {
             this.user = user;
-        else
+        } else {
             throw new IllegalSRMSpaceParameter(user, desiredSize, null);
-        
+        }
+
         try {
             spaceFN = namespace.makeSpaceFileURI(user);
             /**
@@ -76,14 +78,14 @@ public class SRMSpace {
         } catch (NamespaceException ex) {
             throw new IllegalSRMSpaceParameter(user, desiredSize, null);
         }
-        
+
         try {
             vfs = namespace.resolveVFSbyAbsolutePath(spaceFN);
             log.debug("Space File belongs to VFS : " + vfs.getAliasName());
         } catch (NamespaceException ex2) {
             throw new IllegalSRMSpaceParameter(user, desiredSize, null);
-        }   
-            
+        }
+
         String relativeSpaceFN = null;
         try {
             log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath()
@@ -93,8 +95,8 @@ public class SRMSpace {
             log.debug("relativeSpaceFN:" + relativeSpaceFN);
         } catch (NamespaceException ex3) {
         }
-        
-        
+
+
         try {
             stori = vfs.createSpace(relativeSpaceFN, guaranteedSize.value(), desiredSize.value());
         } catch (NamespaceException e) {
@@ -102,21 +104,21 @@ public class SRMSpace {
             e.printStackTrace();
             throw new IllegalSRMSpaceParameter(user, desiredSize, null);
         }
-        
+
         space = stori.getSpace();
-        
+
         this.desiredSize = desiredSize;
         this.lifetime = lifetime;
         this.guaranteedSize = guaranteedSize;
         this.spaceTokenAlias = spaceTokenAlias;
-        
-        
+
+
     }
-    
-    
-    
+
+
+
     private void permission() {
-       
+
         // Call wrapper to set ACL on file created.
         /** Check for JiT or AoT */
         boolean hasJiTACL = stori.hasJustInTimeACLs();
@@ -132,7 +134,7 @@ public class SRMSpace {
                         user.getLocalUser(), fp);
             } catch (CannotMapUserException ex5) {
                 log.debug("Unable to setting up the ACL ", ex5);
-              
+
             }
         } else {
             // AoT Case
@@ -143,14 +145,14 @@ public class SRMSpace {
                         user.getLocalUser(), fp);
             } catch (CannotMapUserException ex5) {
                 log.debug("Unable to setting up the ACL ", ex5);
-             
+
             }
         }
 
     }
-    
+
     private void registerToCatalog() {
-        
+
         /**
          * Create Storage Space in StoRM domain
          */
@@ -164,9 +166,9 @@ public class SRMSpace {
 
         // FIXME: storageSystemInfo is passed as NULL. To fix managing the
         // new type ArrayOfTExtraInfo
-        
+
         Date date = new Date();
-        
+
         try {
             spaceDt = new StorageSpaceData(user, spaceType, spaceTokenAlias, desiredSize ,guaranteedSize, lifetime,
                     null, date, stori.getPFN());
@@ -174,7 +176,7 @@ public class SRMSpace {
             log.debug("-- Created Storage Space Data --");
         } catch (InvalidSpaceDataAttributesException ex7) {
             log.debug("Unable to create Storage Space Data", ex7);
-      
+
         }
 
         /**
@@ -198,34 +200,34 @@ public class SRMSpace {
             log.debug("NoDataFoundException", ex8);
         }
 
-        
-        
+
+
     }
-    
+
     //TODO
     public void doReservation( ) {
-       
-        
+
+
         try {
             space.allot();
         } catch (ReservationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         permission();
-        
-        registerToCatalog();       
-        
-        
-        
+
+        registerToCatalog();
+
+
+
     }
-    
-    
-    
-    
+
+
+
+
     public void update(){}
     public void purge() {}
     public void remove(){}
-    
+
 }

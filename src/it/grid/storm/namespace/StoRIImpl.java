@@ -1,20 +1,45 @@
 package it.grid.storm.namespace;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.commons.logging.*;
-
 import it.grid.storm.balancer.Balancer;
-import it.grid.storm.balancer.ftp.FTPNode;
-import it.grid.storm.catalogs.*;
-import it.grid.storm.common.types.*;
-import it.grid.storm.filesystem.*;
-import it.grid.storm.griduser.*;
-import it.grid.storm.namespace.model.*;
-import it.grid.storm.namespace.naming.*;
-import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.ftp.FTPNode;
+import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.common.types.InvalidPFNAttributeException;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.StFN;
+import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.filesystem.Filesystem;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.ReservationException;
+import it.grid.storm.filesystem.Space;
+import it.grid.storm.filesystem.SpaceSystem;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.Authority;
+import it.grid.storm.namespace.model.Capability;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.PathCreator;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.TransportProtocol;
+import it.grid.storm.namespace.naming.NamespaceUtil;
+import it.grid.storm.namespace.naming.NamingConst;
+import it.grid.storm.namespace.naming.SURL;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TTURL;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -26,9 +51,9 @@ import it.grid.storm.balancer.Node;
  * @version 1.0
  */
 public class StoRIImpl
-    implements StoRI {
+implements StoRI {
 
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
 
     private TSURL surl;
     private PFN pfn;
@@ -69,17 +94,17 @@ public class StoRIImpl
 
 
     public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule, String relativeStFN, StoRIType type) {
-      if (vfs != null) {
-        this.vfs = vfs;
-        try {
-          this.capability = (Capability) vfs.getCapabilities();
+        if (vfs != null) {
+            this.vfs = vfs;
+            try {
+                this.capability = (Capability) vfs.getCapabilities();
+            }
+            catch (NamespaceException ex) {
+                log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
+            }
         }
-        catch (NamespaceException ex) {
-          log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
-        }
-      }
         else {
-            log.fatal("!!! StoRI built without VFS!!?!");
+            log.error("!!! StoRI built without VFS!!?!");
         }
         /**
          * Retrieve from StFN the various part.
@@ -91,7 +116,7 @@ public class StoRIImpl
                 this.vfsRoot = vfs.getRootPath();
             }
             catch (NamespaceException ex) {
-                log.fatal("VFS is not setted.");
+                log.error("VFS is not setted.", ex);
             }
             this.relativeStFN = relativeStFN;
 
@@ -146,10 +171,10 @@ public class StoRIImpl
     public StoRIImpl(VirtualFSInterface vfs, String stfnStr, TLifeTimeInSeconds lifetime, StoRIType type) {
         this.vfs = vfs;
         try {
-          this.capability = (Capability) vfs.getCapabilities();
+            this.capability = (Capability) vfs.getCapabilities();
         }
         catch (NamespaceException ex) {
-          log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
+            log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
         }
         //Relative path has to be a path in a relative form! (without "/" at begins)
         if (relativePath != null) {
@@ -213,9 +238,9 @@ public class StoRIImpl
         }
         else {
 
-          /**
-           * Retrieve Protocol to build the TURL
-           */
+            /**
+             * Retrieve Protocol to build the TURL
+             */
             if ( (desiredProtocols.size() == 0)) {
                 log.debug("<GetTURL> No matching transfer protocol Found! Returnig Error");
                 //Creation TURL with DEFAULT Transport Prefix
@@ -229,29 +254,29 @@ public class StoRIImpl
                 ArrayList<Protocol> availableP = new ArrayList<Protocol> (this.capability.getAllManagedProtocols());
                 desiredP.retainAll(availableP);
                 if (desiredP.isEmpty()) {
-                  //No match found!
+                    //No match found!
                     log.error("stori:No match with Protocol Preferences and Protocol Managed!");
                     throw new InvalidGetTURLProtocolException(desiredProtocols);
                 } else {
-                  log.debug("Protocol matching.. Intersection size:"+desiredP.size());
-                  Protocol firstMatch = desiredP.get(0);
-                  log.debug("Selected Protocol (the first) :"+firstMatch);
-                  boolean pooledProtocol = capability.isPooledProtocol(firstMatch);
-                  Authority authority = null;
-                  if (pooledProtocol) { //POOLED PROTOCOL
-                    log.debug("The protocol selected is in POOL Configuration");
-                    authority = getPooledAuthority(firstMatch);
-                  } else { //SINGLE PROTOCOL
-                    log.debug("The protocol selected is in NON-POOL Configuration");
-                    TransportProtocol transProt = null;
-                    List<TransportProtocol> protList = capability.getManagedProtocolByScheme(firstMatch);
-                    if (protList.size()>1) { //Strange case
-                      log.warn("More than one protocol "+firstMatch+" defined but NOT in POOL Configuration. Taking the first one.");
+                    log.debug("Protocol matching.. Intersection size:"+desiredP.size());
+                    Protocol firstMatch = desiredP.get(0);
+                    log.debug("Selected Protocol (the first) :"+firstMatch);
+                    boolean pooledProtocol = capability.isPooledProtocol(firstMatch);
+                    Authority authority = null;
+                    if (pooledProtocol) { //POOLED PROTOCOL
+                        log.debug("The protocol selected is in POOL Configuration");
+                        authority = getPooledAuthority(firstMatch);
+                    } else { //SINGLE PROTOCOL
+                        log.debug("The protocol selected is in NON-POOL Configuration");
+                        TransportProtocol transProt = null;
+                        List<TransportProtocol> protList = capability.getManagedProtocolByScheme(firstMatch);
+                        if (protList.size()>1) { //Strange case
+                            log.warn("More than one protocol "+firstMatch+" defined but NOT in POOL Configuration. Taking the first one.");
+                        }
+                        transProt = protList.get(0);
+                        authority = transProt.getAuthority();
                     }
-                    transProt = protList.get(0);
-                    authority = transProt.getAuthority();
-                  }
-                  resultTURL = buildTURL(firstMatch, authority, getPFN());
+                    resultTURL = buildTURL(firstMatch, authority, getPFN());
                 }
             }
         }
@@ -260,28 +285,28 @@ public class StoRIImpl
 
 
     private Authority getPooledAuthority(Protocol pooledProtocol) {
-      Authority authority = null;
-      try {
-          if (vfs.getProtocolBalancer(pooledProtocol) != null) {
-              Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
-              if (pooledProtocol.equals(Protocol.GSIFTP)) {
-                FTPNode node = (FTPNode) bal.getNextElement();
-                authority = new Authority(node.getHostName(), node.getPort());
-              } else {
-                log.error("Unable to manage pool with protocol different from GSIFTP.");
-              }
-          }
-      } catch (NamespaceException e) {
-          log.error("Error getting the protocol balancer.");
-      }
-      return authority;
+        Authority authority = null;
+        try {
+            if (vfs.getProtocolBalancer(pooledProtocol) != null) {
+                Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
+                if (pooledProtocol.equals(Protocol.GSIFTP)) {
+                    FTPNode node = (FTPNode) bal.getNextElement();
+                    authority = new Authority(node.getHostName(), node.getPort());
+                } else {
+                    log.error("Unable to manage pool with protocol different from GSIFTP.");
+                }
+            }
+        } catch (NamespaceException e) {
+            log.error("Error getting the protocol balancer.");
+        }
+        return authority;
     }
 
 
 
     private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
-      TTURL result = null;
-      switch (protocol.getProtocolIndex())  {
+        TTURL result = null;
+        switch (protocol.getProtocolIndex())  {
         case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
         case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
         case 2 :  result = TURLBuilder.buildGsiftpTURL(authority,physicalFN); break; //GSIFTP Protocol
@@ -289,8 +314,8 @@ public class StoRIImpl
         case 4 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //SRM Protocol
         case 5 :  result = TURLBuilder.buildROOTTURL(authority,physicalFN); break; //ROOT Protocol
         default : throw new InvalidProtocolForTURLException(protocol.getSchema()); //UNKNOWN Protocol
-     }
-      return result;
+        }
+        return result;
     }
 
 
@@ -328,8 +353,8 @@ public class StoRIImpl
             }
             catch (InvalidPFNAttributeException ex) {
                 log.error("Unable to build the PFN in the VFS '" + getVFSName() + "' with this path :'" +
-                          getAbsolutePath() +
-                          "'");
+                        getAbsolutePath() +
+                "'");
             }
         }
         return this.pfn;
@@ -379,8 +404,9 @@ public class StoRIImpl
      * @return TLifeTimeInSeconds
      */
     public TLifeTimeInSeconds getFileLifeTime() {
-        if (!(volatileInformationAreSet))
+        if (!(volatileInformationAreSet)) {
             setVolatileInformation();
+        }
         return lifetime;
     }
 
@@ -394,8 +420,9 @@ public class StoRIImpl
      * @return Date
      */
     public Date getFileStartTime() {
-        if (!(volatileInformationAreSet))
+        if (!(volatileInformationAreSet)) {
             setVolatileInformation();
+        }
         return startTime;
     }
 
@@ -464,16 +491,16 @@ public class StoRIImpl
      ****************************************************************************/
 
     public ArrayList getChildren(GridUserInterface gUser, TDirOption dirOption) throws
-        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
 
         log.error("METHOD DEPRECATED! : getChildren (GridUser, DirOption); use without GridUser");
         return getChildren(dirOption);
     }
 
     public ArrayList getChildren(TDirOption dirOption) throws
-        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
 
         ArrayList pathList = new ArrayList();
         ArrayList stoRIList = new ArrayList();
@@ -660,6 +687,7 @@ public class StoRIImpl
      *              UTILITY METHODS
      **********************************************/
 
+    @Override
     public String toString() {
 
         StringBuffer sb = new StringBuffer();
@@ -701,23 +729,24 @@ public class StoRIImpl
 
         //Retrieve LIST of TRANSFER PROTOCOL
         List<TransportProtocol> listTransProt = capability.getManagedProtocolByScheme(protocol);
-        if (listTransProt.isEmpty())
-          log.error("ERROR: protocol with protocol "+protocol+" is not supported in the VFS :"+getVFSName());
-        else {
-          //Take the first element of the list
-          result = listTransProt.get(0);
-          if (listTransProt.size()>1)
-            log.warn("ATTENTION: Pool managed as a single element!");
+        if (listTransProt.isEmpty()) {
+            log.error("ERROR: protocol with protocol "+protocol+" is not supported in the VFS :"+getVFSName());
+        } else {
+            //Take the first element of the list
+            result = listTransProt.get(0);
+            if (listTransProt.size()>1) {
+                log.warn("ATTENTION: Pool managed as a single element!");
+            }
         }
         return result;
     }
 
 
     public ArrayList getFirstLevelChildren(TDirOption dirOption)
-            throws InvalidDescendantsEmptyRequestException,
-            InvalidDescendantsAuthRequestException,
-            InvalidDescendantsPathRequestException,
-            InvalidDescendantsFileRequestException {
+    throws InvalidDescendantsEmptyRequestException,
+    InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException,
+    InvalidDescendantsFileRequestException {
 
 
         ArrayList pathList = new ArrayList();

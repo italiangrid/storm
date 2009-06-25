@@ -10,35 +10,31 @@
  */
 package it.grid.storm.xmlrpc.converter.datatransfer;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-//import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTSURLLifetimeReturnStatus;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortFilesInputDataAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.GridUserManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbortFilesConverter implements Converter
 {
-    private static final Logger log = Logger.getLogger("dataTransfer");
+    private static final Logger log = LoggerFactory.getLogger(AbortFilesConverter.class);
 
     public AbortFilesConverter() {}
 
@@ -97,7 +93,7 @@ public class AbortFilesConverter implements Converter
         log.debug("AbortFilesOutputData - Creation of XMLRPC Output Structure!");
 
         Map outputParam = new HashMap();
-        AbortFilesOutputData outputData = (AbortFilesOutputData) data;
+        AbortFilesOutputData outputData = AbortFilesOutputData.make((AbortGeneralOutputData) data);
 
         // (1) returnStatus
         TReturnStatus returnStatus = outputData.getReturnStatus();
@@ -107,8 +103,9 @@ public class AbortFilesConverter implements Converter
 
         // (2) arrayOfFileStatuses
         ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData.getArrayOfFileStatuses();
-        if (arrayOfFileStatuses != null)
+        if (arrayOfFileStatuses != null) {
             arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
+        }
 
         log.debug("AbortFilesConverter - Sending: " + outputParam.toString());
 

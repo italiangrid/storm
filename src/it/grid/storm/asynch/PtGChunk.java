@@ -1,50 +1,47 @@
 package it.grid.storm.asynch;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.Calendar;
-
-import org.apache.log4j.Logger;
-
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.Chooser;
-import it.grid.storm.scheduler.Streets;
-//import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.PtGChunkData;
-import it.grid.storm.catalogs.PtGChunkCatalog;
-
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.filesystem.FilesystemPermission;
-import it.grid.storm.filesystem.WrongFilesystemType;
-import it.grid.storm.filesystem.InvalidPathException;
-import it.grid.storm.filesystem.InvalidPermissionOnFileException;
-
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
-import it.grid.storm.namespace.NamespaceException;
-
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-
+import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
-
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.InvalidPathException;
+import it.grid.storm.filesystem.InvalidPermissionOnFileException;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.WrongFilesystemType;
+import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ACLEntry;
+import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.scheduler.Chooser;
+import it.grid.storm.scheduler.Delegable;
+import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.TTURL;
+
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a chunk of an srmPrepareToGet request: it handles a single
@@ -120,7 +117,7 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public class PtGChunk implements Delegable, Chooser {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(PtGChunk.class);
 
     private GridUserInterface gu=null;        //GridUser that made the request
     private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest
@@ -136,10 +133,12 @@ public class PtGChunk implements Delegable, Chooser {
      */
     public PtGChunk(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
         boolean ok = (gu!=null) &&
-            (rsd!=null) &&
-            (chunkData!=null) &&
-            (gsm!=null);
-        if (!ok) throw new InvalidPtGChunkAttributesException(gu,rsd,chunkData,gsm);
+        (rsd!=null) &&
+        (chunkData!=null) &&
+        (gsm!=null);
+        if (!ok) {
+            throw new InvalidPtGChunkAttributesException(gu,rsd,chunkData,gsm);
+        }
         this.gu = gu;
         this.rsd = rsd;
         this.chunkData = chunkData;
@@ -163,11 +162,17 @@ public class PtGChunk implements Delegable, Chooser {
             try {
                 StoRI fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(),gu);
                 AuthorizationDecision ad = AuthorizationCollector.getInstance().canReadFile(gu,fileStoRI); //PolicyCollector decision on whether the StoRI has read rights
-                if (ad.isPermit()) manageIsPermit(fileStoRI);
-                else if (ad.isDeny()) manageIsDeny();
-                else if (ad.isIndeterminate()) manageIsIndeterminate(ad);
-                else if (ad.isNotApplicable()) manageIsNotApplicabale(ad);
-                else manageUnexpected(ad);
+                if (ad.isPermit()) {
+                    manageIsPermit(fileStoRI);
+                } else if (ad.isDeny()) {
+                    manageIsDeny();
+                } else if (ad.isIndeterminate()) {
+                    manageIsIndeterminate(ad);
+                } else if (ad.isNotApplicable()) {
+                    manageIsNotApplicabale(ad);
+                } else {
+                    manageUnexpected(ad);
+                }
             } catch (NamespaceException e) {
                 //The Supplied SURL does not contain a root that could be identified by the StoRI factory
                 //as referring to a VO being managed by StoRM... that is SURLs begining with such root
@@ -178,7 +183,11 @@ public class PtGChunk implements Delegable, Chooser {
             }
         }
         PtGChunkCatalog.getInstance().update(chunkData); //update status in persistence!!!
-        if (failure) gsm.failedChunk(chunkData); else gsm.successfulChunk(chunkData); //update global status!!!
+        if (failure) {
+            gsm.failedChunk(chunkData);
+        } else {
+            gsm.successfulChunk(chunkData); //update global status!!!
+        }
         log.info("Finished handling PtG chunk for user DN: "+this.gu.getDn()+"; for SURL: "+this.chunkData.fromSURL()+"; for requestToken: "+this.rsd.requestToken()+"; result is: "+this.chunkData.status());
     }
 
@@ -284,18 +293,40 @@ public class PtGChunk implements Delegable, Chooser {
                     if (effective) {
                         //ACL was correctly set up! Track JiT!
                         VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(),localUser,FilesystemPermission.Read,start,chunkData.lifeTime()); //Track JiT ACL
-                    } else log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Read User-ACL to be set up on"+localFile.toString()+"!");
-                } else log.error("ERROR in PTPChunk! A Read FilesystemPermission was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                    } else {
+                        log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Read User-ACL to be set up on"+localFile.toString()+"!");
+                    }
+                } else {
+                    log.error("ERROR in PTPChunk! A Read FilesystemPermission was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                }
             } else {
                 //AoT
                 localFile.grantGroupPermission(localUser,FilesystemPermission.Read);
                 fp = localFile.getEffectiveGroupPermission(localUser);
                 if (fp!=null) {
                     effective = fp.allows(FilesystemPermission.Read);
-                    if (!effective) log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Read Group-ACL to be set up on"+localFile.toString()+"!");
-                } else log.error("ERROR in PTPChunk! Read FilesystemPermission was set on "+fileStoRI.getAbsolutePath()+" for group "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                    if (!effective) {
+                        log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Read Group-ACL to be set up on"+localFile.toString()+"!");
+                    }
+                } else {
+                    log.error("ERROR in PTPChunk! Read FilesystemPermission was set on "+fileStoRI.getAbsolutePath()+" for group "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                }
             }
-
+            
+            /// Manage DefaultACL
+            VirtualFSInterface vfs = fileStoRI.getVirtualFileSystem();
+            DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
+            if ((dacl!=null) && (!dacl.isEmpty()) ) {
+                //There are ACLs to set n file
+                List<ACLEntry> dacl_list = dacl.getACL();
+               for(ACLEntry ace:dacl_list) {
+                   PtGChunk.log.debug("Adding DefaultACL for the gid: "+ace.getGroupID()+" with permission: "+ ace.getFilePermissionString());
+                   LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                   localFile.grantGroupPermission(u ,ace.getFilesystemPermission());
+               }
+                
+            } 
+            
             if (fp==null) {
                 //This is a programming bug and should not occur! An attempt was just made to grant Read
                 //permission; so regardless of the umask allowing the permission or not, there must be at least an ACE
@@ -383,7 +414,11 @@ public class PtGChunk implements Delegable, Chooser {
                 //error situation!
                 //The parent directory either does not exist or is not a directory! The request should fail!
                 String srmString = "The requested SURL is: "+fileStoRI.getSURL().toString()+", but its parent "+parentStoRI.getSURL().toString();
-                if (!exists) srmString = srmString +" does not exist!"; else srmString = srmString + "is not a directory!";
+                if (!exists) {
+                    srmString = srmString +" does not exist!";
+                } else {
+                    srmString = srmString + "is not a directory!";
+                }
                 chunkData.changeStatusSRM_INVALID_PATH(srmString);
                 failure = true; //gsm.failedChunk(chunkData);
                 log.error(srmString + " Parent points to "+parentStoRI.getLocalFile().toString()+".");
@@ -399,17 +434,26 @@ public class PtGChunk implements Delegable, Chooser {
                         fp = parentFile.getEffectiveUserPermission(localUser);
                         if (fp!=null) {
                             allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                            if (allowsTraverse) VolatileAndJiTCatalog.getInstance().trackJiT(parentStoRI.getPFN(),localUser,FilesystemPermission.Traverse,start,chunkData.lifeTime());
-                            else log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Traverse User-ACL to be set up on"+parentFile.toString()+"!");
-                        } else log.error("ERROR in PTPChunk! A Traverse User-ACL was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                            if (allowsTraverse) {
+                                VolatileAndJiTCatalog.getInstance().trackJiT(parentStoRI.getPFN(),localUser,FilesystemPermission.Traverse,start,chunkData.lifeTime());
+                            } else {
+                                log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Traverse User-ACL to be set up on"+parentFile.toString()+"!");
+                            }
+                        } else {
+                            log.error("ERROR in PTPChunk! A Traverse User-ACL was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                        }
                     } else {
                         //AoT
                         parentFile.grantGroupPermission(localUser,FilesystemPermission.Traverse);
                         fp = parentFile.getEffectiveGroupPermission(localUser);
                         if (fp!=null) {
                             allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                            if (!allowsTraverse) log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Traverse Group-ACL to be set up on"+parentFile.toString()+"!");
-                        } else log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                            if (!allowsTraverse) {
+                                log.error("ATTENTION in PtGChunk! The local filesystem has a mask that does not allow Traverse Group-ACL to be set up on"+parentFile.toString()+"!");
+                            }
+                        } else {
+                            log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "+fileStoRI.getAbsolutePath()+" for user "+localUser.toString()+" but when subsequently verifying its effectivity, a null ACE was found!");
+                        }
                     }
 
                     if (fp==null) {
@@ -531,27 +575,27 @@ public class PtGChunk implements Delegable, Chooser {
         s.ptgStreet(this);
     }
 
-////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
 
     public String getUserDN() {
-      return this.gu.getDn();
+        return this.gu.getDn();
     }
 
     public String getSURL() {
-      return this.chunkData.fromSURL().toString();
+        return this.chunkData.fromSURL().toString();
     }
 
     public String getRequestToken() {
-      return this.rsd.requestToken().toString();
+        return this.rsd.requestToken().toString();
     }
 
 
     public boolean isResultSuccess() {
-      boolean result = false;
-      TStatusCode statusCode = this.chunkData.status().getStatusCode();
-      if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))||this.chunkData.status().isSRM_SUCCESS()) {
-        result = true;
-      }
-      return result;
+        boolean result = false;
+        TStatusCode statusCode = this.chunkData.status().getStatusCode();
+        if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))||this.chunkData.status().isSRM_SUCCESS()) {
+            result = true;
+        }
+        return result;
     }
 }

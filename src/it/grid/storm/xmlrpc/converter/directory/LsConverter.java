@@ -1,20 +1,27 @@
 package it.grid.storm.xmlrpc.converter.directory;
 
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.srm.types.*;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.srm.types.ArrayOfSURLs;
+import it.grid.storm.srm.types.ArrayOfTExtraInfo;
+import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
+import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
+import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.InvalidLSInputDataAttributeException;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
-import it.grid.storm.griduser.GridUserManager;
+
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -40,7 +47,7 @@ public class LsConverter implements Converter
     /**
      * Logger
      */
-    private static final Logger log = Logger.getLogger("synch_xmlrpc_server");
+    private static final Logger log = LoggerFactory.getLogger(LsConverter.class);
 
     public LsConverter()
     {
@@ -139,11 +146,15 @@ public class LsConverter implements Converter
 
         /* (2) TRequestToken */
         TRequestToken requestToken = outputData.getRequestToken();
-        if (requestToken != null) outputParam.put("requestToken", requestToken.toString());
+        if (requestToken != null) {
+            outputParam.put("requestToken", requestToken.toString());
+        }
 
         /* (3) ArrayOfTMetaDataPathDetail details*/
         ArrayOfTMetaDataPathDetail details = outputData.getDetails();
-        if (details != null) details.encode(outputParam, ArrayOfTMetaDataPathDetail.PNAME_DETAILS);
+        if (details != null) {
+            details.encode(outputParam, ArrayOfTMetaDataPathDetail.PNAME_DETAILS);
+        }
 
         // Return global structure.
         return outputParam;

@@ -14,9 +14,10 @@
 
 package it.grid.storm.griduser;
 
-import it.grid.storm.common.types.*;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import it.grid.storm.common.types.VO;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -32,7 +33,7 @@ import org.apache.commons.logging.Log;
  */
 public abstract class AbstractGridUser implements GridUserInterface {
 
-    protected static Log log = LogFactory.getLog("griduser");
+    protected static Logger log = LoggerFactory.getLogger(AbstractGridUser.class);
     protected DistinguishedName subjectDN = null;
     protected String proxyString = null;
     protected MapperInterface userMapperClass = null;

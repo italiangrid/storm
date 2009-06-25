@@ -16,11 +16,16 @@
 package it.grid.storm.filesystem;
 
 import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.griduser.LocalUser;
-import java.io.*;
 
-import org.apache.log4j.Logger;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedInputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -75,11 +80,16 @@ import org.apache.log4j.Logger;
 public class LocalFile {
     // ---- public factory methods ----
 
+    // ---- class private variables ----
 
+    /** Log4J logger. */
+    private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
+    // ---- instance private variables ----
 
-
-
+    /** The Filesystem interface to operate on the wrapped pathname. */
+    private Filesystem fs;
+    private java.io.File localFile=null; //Instance of java.io.File to the real local file!
 
 
     // ---- constructors ----
@@ -166,6 +176,7 @@ public class LocalFile {
     /**
      * Return a string representation of this object.
      */
+    @Override
     public String toString() {
         return File.class.toString() + ":" + localFile.toString();
     }
@@ -264,8 +275,9 @@ public class LocalFile {
     public LocalFile[] listFiles() {
         java.io.File[] _children = localFile.listFiles();
         LocalFile[] children = new LocalFile[_children.length];
-        for (int i = 0; i<_children.length; ++i)
+        for (int i = 0; i<_children.length; ++i) {
             children[i] = new LocalFile(_children[i].getAbsolutePath(), this.fs);
+        }
         return children;
     }
 
@@ -291,7 +303,7 @@ public class LocalFile {
         String filename = localFile.getAbsolutePath();
         File file = new File(filename);
         if (file.exists()) {
-          result = file.length();
+            result = file.length();
         }
         return result;
         //return fs.getSize(localFile.getAbsolutePath());
@@ -358,7 +370,7 @@ public class LocalFile {
      */
 
     public int truncateFile(long desired_size) {
-    	return fs.truncateFile(localFile.getAbsolutePath(), desired_size);
+        return fs.truncateFile(localFile.getAbsolutePath(), desired_size);
     }
 
 
@@ -372,12 +384,6 @@ public class LocalFile {
     public boolean canAccess(final LocalUser u, final FilesystemPermission accessMode) throws CannotMapUserException {
         return fs.canAccess(u, localFile.getAbsolutePath(), accessMode);
     }
-
-
-
-
-
-
 
 
     // --- public ACL manipulation methods --- //
@@ -671,20 +677,30 @@ public class LocalFile {
     }
 
 
+    /**
+     * #######################
+     */
 
+    /**
+     * 
+     * 
+     * @param filename
+     * @return
+     */
+    public long getChecksum() {
+        long checksum = -1;
+        String filename = localFile.getAbsolutePath();
+        try {
+            // Compute Adler-32 checksum
+            CheckedInputStream cis = new CheckedInputStream( new FileInputStream(filename), new Adler32());
+            byte[] tempBuf = new byte[128];
+            while (cis.read(tempBuf) >= 0) {
+            }
+            checksum = cis.getChecksum().getValue();
+        } catch (IOException e) {
+            log.error("Error while computing checksum of "+filename+" EXCEPT:"+e.getMessage());
+        }
+        return checksum;
+    }
 
-
-
-
-
-    // ---- class private variables ----
-
-    /** Log4J logger. */
-    private static final Logger log = Logger.getLogger(File.class);
-
-    // ---- instance private variables ----
-
-    /** The Filesystem interface to operate on the wrapped pathname. */
-    private Filesystem fs;
-    private java.io.File localFile=null; //Instance of java.io.File to the real local file!
 }

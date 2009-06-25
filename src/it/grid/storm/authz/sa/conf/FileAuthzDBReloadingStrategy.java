@@ -1,14 +1,15 @@
 package it.grid.storm.authz.sa.conf;
 
-import java.io.*;
+import it.grid.storm.authz.AuthzDirector;
 
-import org.apache.commons.configuration.reloading.*;
-import org.apache.commons.logging.*;
-import it.grid.storm.authz.*;
+import java.io.File;
+
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.slf4j.Logger;
 
 public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
 
-    private final Log log = AuthzDirector.getLogger();
+    private final Logger log = AuthzDirector.getLogger();
     private long reloadingTime;
     private boolean notifing = false;
 
@@ -28,6 +29,7 @@ public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
 
     }
 
+    @Override
     public boolean reloadingRequired() {
 
         //log.debug("Reloading is required?");
@@ -44,6 +46,7 @@ public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
     }
 
 
+    @Override
     public void reloadingPerformed() {
         updateLastModified();
         this.reloadingTime = System.currentTimeMillis();
@@ -56,6 +59,7 @@ public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
      *
      * @return a flag whether the configuration has changed
      */
+    @Override
     protected boolean hasChanged() {
         File file = getConfigurationFile();
         if (file == null || !file.exists()) {

@@ -4,10 +4,12 @@
 
 package it.grid.storm.namespace.model;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import org.apache.log4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PathCreator {
 
@@ -15,7 +17,7 @@ public class PathCreator {
     /**
      * Logger.
      */
-    private static final Logger log = Logger.getLogger("namespace");
+    private static final Logger log = LoggerFactory.getLogger(PathCreator.class);
 
     private File file;
     private boolean recursive;
@@ -44,15 +46,15 @@ public class PathCreator {
                     }
                 }
             }
-            
+
         } else {
             list.add(file.toString());
         }
         //Return List only when visit is finished!!
         return list;
     }
-    
-    
+
+
     public Collection generateFirstLevelChild(ArrayList list) {
 
         if (file.isDirectory() && (recursive || level > 0)) {
@@ -66,7 +68,7 @@ public class PathCreator {
                     }
                 }
             }
-            
+
         } else {
             list.add(file.toString());
         }

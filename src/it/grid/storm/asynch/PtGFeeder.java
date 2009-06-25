@@ -1,39 +1,32 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
+import it.grid.storm.catalogs.InvalidPtGChunkDataAttributesException;
+import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.common.types.EndPoint;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
+import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
+import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
+import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.scheduler.Delegable;
+import it.grid.storm.scheduler.SchedulerException;
+import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import it.grid.storm.scheduler.Delegable;
-
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGChunkData;
-
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
-import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
-import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
-import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
-import it.grid.storm.namespace.NamespaceException;
-
-
-import it.grid.storm.srm.types.TDirOption;
-import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.scheduler.SchedulerException;
-import it.grid.storm.common.types.EndPoint;
-
-import it.grid.storm.catalogs.InvalidPtGChunkDataAttributesException;
-
-//import it.grid.storm.griduser.VomsGridUser;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.griduser.GridUserInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a PrepareToGet Feeder: the Feeder that will handle the
@@ -90,7 +83,7 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public final class PtGFeeder implements Delegable {
 
-    private static Logger log = Logger.getLogger("asynch");
+    private static Logger log = LoggerFactory.getLogger(PtGFeeder.class);
     private RequestSummaryData rsd = null; //RequestSummaryData this PtGFeeder refers to.
     private GridUserInterface gu = null; //GridUser for this PtGFeeder.
     private GlobalStatusManager gsm = null; //Overall request status.
@@ -101,8 +94,12 @@ public final class PtGFeeder implements Delegable {
      * InvalidPtGFeederAttributesException is thrown.
      */
     public PtGFeeder(RequestSummaryData rsd) throws InvalidPtGFeederAttributesException {
-        if (rsd==null) throw new InvalidPtGFeederAttributesException(null,null,null);
-        if (rsd.gridUser()==null) throw new InvalidPtGFeederAttributesException(rsd,null,null);
+        if (rsd==null) {
+            throw new InvalidPtGFeederAttributesException(null,null,null);
+        }
+        if (rsd.gridUser()==null) {
+            throw new InvalidPtGFeederAttributesException(rsd,null,null);
+        }
         try {
             this.gu = rsd.gridUser();
             this.rsd = rsd;
@@ -146,10 +143,11 @@ public final class PtGFeeder implements Delegable {
             gsm.addChunk(auxChunkData); //add chunk for global status consideration
             if (correct(auxChunkData.fromSURL())) {
                 //fromSURL corresponds to This installation of StoRM: go on with processing!
-                if (auxChunkData.dirOption().isDirectory())
+                if (auxChunkData.dirOption().isDirectory()) {
                     manageIsDirectory(auxChunkData); //expand the directory and manage the children!
-                else
+                } else {
                     manageNotDirectory(auxChunkData); //manage the request directly without any expansion
+                }
             } else {
                 //fromSURL does _not_ correspond to this installation of StoRM: fail chunk!
                 log.warn("PtGFeeder: srmPtG contract violation! fromSURL does not correspond to this machine!");
@@ -176,9 +174,15 @@ public final class PtGFeeder implements Delegable {
         int stormPort = Configuration.getInstance().getFEPort();
         log.debug("PtG FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
         log.debug("PtG FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) return false;
-        if (stormPort!=port) return false;
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) return false;
+        if (!stormNames.contains(machine)) {
+            return false;
+        }
+        if (stormPort!=port) {
+            return false;
+        }
+        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
+            return false;
+        }
         return true;
     }
 
@@ -230,15 +234,15 @@ public final class PtGFeeder implements Delegable {
                 childStoRI = (StoRI) i.next();
                 try {
                     childData = new PtGChunkData(
-                        auxChunkData.requestToken(),
-                        childStoRI.getSURL(),
-                        auxChunkData.lifeTime(),
-                        notDir,
-                        auxChunkData.desiredProtocols(),
-                        auxChunkData.fileSize(),
-                        auxChunkData.status(),
-                        auxChunkData.transferURL()
-                        );
+                            auxChunkData.requestToken(),
+                            childStoRI.getSURL(),
+                            auxChunkData.lifeTime(),
+                            notDir,
+                            auxChunkData.desiredProtocols(),
+                            auxChunkData.fileSize(),
+                            auxChunkData.status(),
+                            auxChunkData.transferURL()
+                    );
                     PtGChunkCatalog.getInstance().addChild(childData); //fill in new db row and set the PrimaryKey of ChildData!
                     log.debug("PtGFeeder - added child data: "+childData);
                     gsm.addChunk(childData); //add chunk for global status consideration
@@ -306,6 +310,6 @@ public final class PtGFeeder implements Delegable {
      * id of This PtGFeeder!
      */
     public String getName() {
-       return "PtGFeeder of request: "+rsd.requestToken();
+        return "PtGFeeder of request: "+rsd.requestToken();
     }
 }

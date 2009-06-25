@@ -12,10 +12,11 @@
 
 package it.grid.storm.griduser;
 
-import org.apache.commons.logging.Log;
-import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -31,14 +32,14 @@ import java.util.List;
  */
 public class GridUserFactory {
 
-    private static final Log log = GridUserManager.log;
+    private static final Logger log = GridUserManager.log;
     private String defaultMapperClassName = GridUserManager.getMapperClassName();
     private MapperInterface defaultMapperClass = null;
 
 
     private static GridUserFactory instance = null;
 
-    protected static Log getLogger() {
+    protected static Logger getLogger() {
         return log;
     }
 
@@ -54,7 +55,7 @@ public class GridUserFactory {
                 instance = new GridUserFactory();
             }
             catch (GridUserException ex) {
-                log.fatal("Unable to load GridUser Mapper Driver!");
+                log.error("Unable to load GridUser Mapper Driver!",ex);
             }
         }
         return instance;
@@ -154,10 +155,10 @@ public class GridUserFactory {
 
         List fqansList = null;
         try {
-          fqansList = Arrays.asList( (Object[]) inputParam.get(member_Fqans));
+            fqansList = Arrays.asList( (Object[]) inputParam.get(member_Fqans));
         }
         catch (NullPointerException e) {
-          log.debug("Empty FQAN[] found."+e);
+            log.debug("Empty FQAN[] found."+e);
         }
 
         // Destination Fqans array
@@ -256,8 +257,8 @@ public class GridUserFactory {
         //Check if the Class implements the right interface
         Class[] intfs = mapperClass.getInterfaces();
         boolean found = false;
-        for (int i=0; i<intfs.length; i++) {
-            if (intfs[i].equals(MapperInterface.class)) {
+        for (Class intf : intfs) {
+            if (intf.equals(MapperInterface.class)) {
                 found = true;
                 break;
             }

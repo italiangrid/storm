@@ -1,15 +1,20 @@
 package it.grid.storm.namespace;
 
-import java.util.*;
-
-import it.grid.storm.filesystem.*;
-import it.grid.storm.filesystem.swig.*;
-import it.grid.storm.griduser.*;
-import it.grid.storm.namespace.model.*;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.*;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.filesystem.Filesystem;
+import it.grid.storm.filesystem.SpaceSystem;
+import it.grid.storm.filesystem.swig.genericfs;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.SAAuthzType;
+import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.StorageClassType;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+
+import java.util.List;
 
 /**
  * <p>Title: </p>
@@ -138,6 +143,8 @@ public interface VirtualFSInterface {
      *    VERSION 1.4
      **************************************************/
 
+    public TSpaceToken getSpaceToken() throws NamespaceException;
+    
     public SAAuthzType getStorageAreaAuthzType() throws NamespaceException;
 
     public String getStorageAreaAuthzDB() throws NamespaceException;

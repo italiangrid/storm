@@ -1,5 +1,8 @@
 package it.grid.storm.synchcall.command.directory;
 
+import java.util.List;
+
+import it.grid.storm.asynch.PtPChunk;
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -10,11 +13,14 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ACLEntry;
+import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -41,7 +47,7 @@ import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 public class MkdirCommand extends DirectoryCommand implements Command 
 {
     
-    private NamespaceInterface namespace;
+    private final NamespaceInterface namespace;
 
     public MkdirCommand()
     {
@@ -102,16 +108,25 @@ public class MkdirCommand extends DirectoryCommand implements Command
         StoRI stori = null;
 
         if (!surl.isEmpty()) {
-            // Building StoRI representation of SURL within the request.
+            // Building StoRI  representation of SURL within the request.
             try {
                 stori = namespace.resolveStoRIbySURL(surl, guser);
             } catch (NamespaceException ex) {
                 log.debug("srmMkdir: <"+guser+"> Unable to build StoRI by SURL: "+ex);
                 try {
-                    returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
-                    log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed with: [status:" + returnStatus.toString()+"]");
+                    //log.info("srmMkdir: >>>> stfnpath: "+ newsurl.getStFN());
+                    if (namespace.isStfnFittingSomewhere(surl.toString(), guser)) {
+                        returnStatus = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, "Invalid SURL specified, the SAPath is incomplete!");
+                        log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed with: [status:" + returnStatus.toString()+"]");
+                    } else {
+                        returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
+                        log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed with: [status:" + returnStatus.toString()+"]");
+                    }
+                
                 } catch (InvalidTReturnStatusAttributeException ex1) {
                 	log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed. Error creating returnStatus " + ex1);
+                } catch (NamespaceException e) {
+                    log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed. Error checking if SURL fits in SAPath" + e);
                 }
                 outData  = new MkdirOutputData(returnStatus);
                 return outData;
@@ -135,7 +150,6 @@ public class MkdirCommand extends DirectoryCommand implements Command
         /**
          * Construction of AuthZ request
          */
-        VomsGridUser user = (VomsGridUser) guser;
         
         
         /**
@@ -170,15 +184,52 @@ public class MkdirCommand extends DirectoryCommand implements Command
         
         
         
-        AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canMakeDirectory(user, stori);
+        AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canMakeDirectory(guser, stori);
 
         if ((mkdirAuth != null) && (mkdirAuth.isPermit())) {
-            log.debug("srmMkdir authorized for " + user + " for directory = " + stori.getPFN());
-            returnStatus = manageAuthorizedMKDIR(user, file, hasJiTACL);
-            if(returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
-            	log.info("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] successfully done with: [status:" + returnStatus.toString()+"]");
-            else
-            	log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed with: [status:" + returnStatus.toString()+"]");
+            log.debug("srmMkdir authorized for " + guser + " for directory = " + stori.getPFN());
+            returnStatus = manageAuthorizedMKDIR(guser, file, hasJiTACL);
+            
+            /////////////////////////
+            ////Manage Default ACL
+            /////////////////////////
+            
+            FilesystemPermission fp = null;
+            if(Configuration.getInstance().getEnableWritePermOnDirectory()) {
+                fp = FilesystemPermission.ListTraverseWrite;
+            } else {
+                fp = FilesystemPermission.ListTraverse;
+            }
+                        
+            VirtualFSInterface vfs = stori.getVirtualFileSystem();
+            DefaultACL dacl=null;
+            try {
+                dacl = vfs.getCapabilities().getDefaultACL();
+            } catch (NamespaceException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if ((dacl!=null) && (!dacl.isEmpty()) ) {
+                //There are ACLs to set n file
+                List<ACLEntry> dacl_list = dacl.getACL();
+               for(ACLEntry ace:dacl_list) {
+                   log.debug("Adding DefaultACL for the gid: "+ace.getGroupID()+" with permission: "+ ace.getFilePermissionString());
+                   LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                   try {
+                    file.grantGroupPermission(u ,fp);
+                } catch (CannotMapUserException e) {
+                    // TODO Auto-generated catch block
+                    log.error("Error adding default ACL for the gid: "+ace.getGroupID()+" with permission: "+ ace.getFilePermissionString());
+                    e.printStackTrace();
+                }
+               }
+            }
+            
+            if(returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                log.info("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] successfully done with: [status:" + returnStatus.toString()+"]");
+            } else {
+                log.error("srmMkdir: <"+guser+"> Request for [SURL:'"+ surl+"'] failed with: [status:" + returnStatus.toString()+"]");
+            }
         } else {
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, "User is not authorized to make a new directory");
@@ -198,7 +249,7 @@ public class MkdirCommand extends DirectoryCommand implements Command
      * @param stori StoRI
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedMKDIR(VomsGridUser user, LocalFile file, boolean hasJiTACL)
+    private TReturnStatus manageAuthorizedMKDIR(GridUserInterface user, LocalFile file, boolean hasJiTACL)
     {
         TReturnStatus returnStatus = null;
         boolean creationDone;
@@ -262,10 +313,11 @@ public class MkdirCommand extends DirectoryCommand implements Command
             //Set permission on directory
             //In case of local auth source enable also write
             FilesystemPermission fpLIST = null;
-            if(Configuration.getInstance().getEnableWritePermOnDirectory())
+            if(Configuration.getInstance().getEnableWritePermOnDirectory()) {
                 fpLIST = FilesystemPermission.ListTraverseWrite;
-            else
+            } else {
                 fpLIST = FilesystemPermission.ListTraverse;
+            }
 
             // Check if Jit or AoT
             if (hasJiTACL) {

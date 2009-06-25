@@ -1,7 +1,7 @@
 package it.grid.storm.wrapper;
 
-import org.apache.log4j.Logger;
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -11,37 +11,37 @@ import java.io.*;
  *
  */
 public class StatWrapper {
-	/**
-	 * Logger.
-	 * This Logger it's used to log information.
-	 */ 	
-	private static final Logger log = Logger.getLogger("wrapper");
-	
-native long statfs(String rootDir);
-static  {	
-		//DEBUG	
-		//log.debug("<StatWrapper>## Load Library ##");
-		String libraryPath = System.getProperty("java.library.path");
-		log.debug("<StatWrapper> JAVA.LIBRARY.PATH = "+libraryPath);
+    /**
+     * Logger.
+     * This Logger it's used to log information.
+     */
+    private static final Logger log = LoggerFactory.getLogger(StatWrapper.class);
 
-	try {
-		System.loadLibrary("statnativelib");
-	} catch (UnsatisfiedLinkError e) {
-      		log.fatal("Get ACL native library failed to load!\n" + e);
-		System.exit(1);
-	}
-}
+    native long statfs(String rootDir);
+    static  {
+        //DEBUG
+        //log.debug("<StatWrapper>## Load Library ##");
+        String libraryPath = System.getProperty("java.library.path");
+        log.debug("<StatWrapper> JAVA.LIBRARY.PATH = "+libraryPath);
 
-native long stat(String file);
+        try {
+            System.loadLibrary("statnativelib");
+        } catch (UnsatisfiedLinkError e) {
+            log.error("Get ACL native library failed to load!", e);
+            System.exit(1);
+        }
+    }
 
-static 	{
-	try {
-		System.loadLibrary("statnativelib");
-	} catch (UnsatisfiedLinkError e) {
-      		log.fatal("Get ACL native library failed to load!\n" + e);
-		System.exit(1);
-	}	
-}
+    native long stat(String file);
+
+    static 	{
+        try {
+            System.loadLibrary("statnativelib");
+        } catch (UnsatisfiedLinkError e) {
+            log.error("Get ACL native library failed to load!", e);
+            System.exit(1);
+        }
+    }
 
 
 }

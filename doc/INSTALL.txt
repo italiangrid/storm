@@ -256,19 +256,17 @@ BE installation.
     comments in the file.
 
 
-  ``log4j.properties``
-    Standard Log4J_ configuration file; by default logs
+  ``logging.xml``
+    Standard LogBack configuration file; by default logs
     all messages (excluding DEBUG level ones) to file
     ``$STORM_HOME/var/log/storm-backend.log``, which is rotated on a
     daily basis.
 
-    See http://www.vipan.com/htdocs/log4jhelp.html for a quick guide
-    on how to tweak it to your needs.
 
 
   ``storm.properties``
 
-    A file in the common `Java .properties`_ syntax; available keys
+    A file in the common `Java .properties` syntax; available keys
     are (listed in almost alphabetic order):
 
       asynch.picker.db.driver
@@ -586,13 +584,6 @@ will be used for mapping the user into the specified directory.
     Should be ignored; if it's not, please file a bug.
 
 
-Please refer to http://grid-it.cnaf.infn.it/storm/ and to the
-http://www.egrid.it/sw/storm for up-to-date information and latest
+Please refer to http://storm.forge.cnaf.infn.it for up-to-date information and latest
 errata. 
 
-
-.. _Log4J: http://logging.apache.org/log4j
-
-.. _`Java .properties`: http://java.sun.com/j2se/1.4.2/docs/api/java/util/Properties.html#load(java.io.InputStream)  
-
-.. _Hibernate: http://www.hibernate.org/   

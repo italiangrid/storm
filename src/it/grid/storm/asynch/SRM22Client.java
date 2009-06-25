@@ -1,51 +1,43 @@
 package it.grid.storm.asynch;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.EndPoint;
+import it.grid.storm.common.types.TransferProtocol;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
-import it.grid.storm.srm.types.TReturnStatus;
-
-import it.grid.storm.config.Configuration;
-
-import srmClientStubs.*;
-
-import org.apache.axis.types.URI;
-import org.apache.axis.types.UnsignedLong;
-import org.apache.axis.configuration.SimpleProvider;
-import org.apache.axis.SimpleTargetedChain;
-import org.apache.axis.transport.http.HTTPSender;
-
-import org.globus.axis.transport.GSIHTTPSender;
-import org.globus.axis.transport.GSIHTTPTransport;
-import org.globus.axis.util.Util;
-
-import org.globus.gsi.gssapi.auth.HostAuthorization;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.globus.gsi.gssapi.GlobusGSSException;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
-
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-
-import javax.xml.rpc.Stub;
-import javax.xml.rpc.soap.SOAPFaultException;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TTURL;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
 import javax.xml.rpc.ServiceException;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.AbstractGridUser;
+import javax.xml.rpc.Stub;
+import javax.xml.rpc.soap.SOAPFaultException;
+
+import org.apache.axis.SimpleTargetedChain;
+import org.apache.axis.configuration.SimpleProvider;
+import org.apache.axis.transport.http.HTTPSender;
+import org.globus.axis.transport.GSIHTTPSender;
+import org.globus.axis.transport.GSIHTTPTransport;
+import org.globus.axis.util.Util;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.globus.gsi.gssapi.auth.HostAuthorization;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import srmClientStubs.ISRM;
 
 /**
  * Class that represents a first implementation of an SRMClient.
@@ -56,7 +48,7 @@ import it.grid.storm.griduser.AbstractGridUser;
  */
 public class SRM22Client implements SRMClient {
 
-    private static Logger log = Logger.getLogger("srmclient");
+    private static Logger log = LoggerFactory.getLogger(SRM22Client.class);
 
     /**
      * Method used to execute an srmPrepareToPut.
@@ -149,21 +141,27 @@ public class SRM22Client implements SRMClient {
             log.debug("NAIVE SRM CLIENT: received reply "+response);
 
             //get overall request status
-            if (response==null) throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            if (response==null) {
+                throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            }
             srmClientStubs.TReturnStatus overallRetStat = response.getReturnStatus();
-            if (overallRetStat==null) throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            if (overallRetStat==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            }
             //check overall request status
             it.grid.storm.srm.types.TStatusCode overallStat = WSReturnStatusConverter.getInstance().fromWS(overallRetStat).getStatusCode();
             if ((overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS) &&
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS) &&
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
                 //overall status is some kind of failure!
                 throw new SRMClientException("srmPrepareToPut on remote machine failed! Request level return status: "+overallStat+", explanation: "+overallRetStat.getExplanation());
             }
             //get TRequestToken
             String reqTokenString = response.getRequestToken();
-            if (reqTokenString==null) throw new SRMClientException("Unexpected reply from WebService: null TReqeustToken!");
+            if (reqTokenString==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null TReqeustToken!");
+            }
             it.grid.storm.srm.types.TRequestToken requestToken = new WSRequestTokenConverter().fromWS(reqTokenString);
             //return answer
             return new SRMPrepareToPutReply(requestToken);
@@ -220,7 +218,7 @@ public class SRM22Client implements SRMClient {
      * web service is incomprehensible or malformed, an SRMClientException is thrown
      * with appropriate error messagges.
      */
-     public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException{
+    public SRMStatusOfPutRequestReply statusOfPutRequest(TRequestToken rt, GridUserInterface gu, TSURL toSURL) throws SRMClientException{
         try {
             srmClientStubs.ISRM _srm = setUpGSI(gu,toSURL);
 
@@ -241,25 +239,35 @@ public class SRM22Client implements SRMClient {
             log.debug("NAIVE SRM CLIENT: received response "+response);
 
             //get overall request status
-            if (response==null) throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            if (response==null) {
+                throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            }
             srmClientStubs.TReturnStatus overallRetStat = response.getReturnStatus();
-            if (overallRetStat==null) throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            if (overallRetStat==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            }
             //check overall request status
             it.grid.storm.srm.types.TStatusCode overallStat = WSReturnStatusConverter.getInstance().fromWS(overallRetStat).getStatusCode();
             if ((overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS) &&
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS) &&
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
                 //overall status is some kind of failure!
                 return new SRMStatusOfPutRequestReply(TTURL.makeEmpty(),WSReturnStatusConverter.getInstance().fromWS(overallRetStat));
             }
             //get file level request status
             srmClientStubs.ArrayOfTPutRequestFileStatus arrayOfPutStatuses = response.getArrayOfFileStatuses();
-            if (arrayOfPutStatuses==null) throw new SRMClientException("Unexpected reply from WebService: null ArrayOfTPutRequestFileStatus!");
+            if (arrayOfPutStatuses==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null ArrayOfTPutRequestFileStatus!");
+            }
             srmClientStubs.TPutRequestFileStatus[] stubFileStatusArray = arrayOfPutStatuses.getStatusArray();
-            if ((stubFileStatusArray==null) || (stubFileStatusArray.length==0)) throw new SRMClientException("Unexpected reply from WebService: null or empty StatusArray! ");
+            if ((stubFileStatusArray==null) || (stubFileStatusArray.length==0)) {
+                throw new SRMClientException("Unexpected reply from WebService: null or empty StatusArray! ");
+            }
             srmClientStubs.TPutRequestFileStatus stubFileStatus = stubFileStatusArray[0];
-            if (stubFileStatus==null) throw new SRMClientException("Unexpected reply from WebService: null first entry of StatusArray! ");
+            if (stubFileStatus==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null first entry of StatusArray! ");
+            }
             //process file level status
             org.apache.axis.types.URI stubTurl = stubFileStatus.getTransferURL();
             srmClientStubs.TReturnStatus stubStatus = stubFileStatus.getStatus();
@@ -331,13 +339,17 @@ public class SRM22Client implements SRMClient {
             log.debug("NAIVE SRM CLIENT: received response "+response);
 
             //get overall request status
-            if (response==null) throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            if (response==null) {
+                throw new SRMClientException("Unexpected reply from WebService: got a null response!");
+            }
             srmClientStubs.TReturnStatus overallRetStat = response.getReturnStatus();
-            if (overallRetStat==null) throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            if (overallRetStat==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null request level TReturnStatus!");
+            }
             //check overall request status
             it.grid.storm.srm.types.TStatusCode overallStat = WSReturnStatusConverter.getInstance().fromWS(overallRetStat).getStatusCode();
             if ((overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS) &&
-                (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
+                    (overallStat!=it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS)) {
                 //overall status is some kind of failure!
                 return new SRMPutDoneReply(WSReturnStatusConverter.getInstance().fromWS(overallRetStat));
             }
@@ -346,11 +358,17 @@ public class SRM22Client implements SRMClient {
             //ArrayOfTSURLReturnStatus is optional according to the specifications! If indeed it is absent, assume that
             //the web service saved bandwidth by not including a detailed description for each SURL, so the overall
             //status does summarise the status also for the specific SURL! Return the overall status!
-            if (arrayOfFileStatuses==null) return new SRMPutDoneReply(WSReturnStatusConverter.getInstance().fromWS(overallRetStat)); /*throw new SRMClientException("Unexpected reply from WebService: null ArrayOfTSURLReturnStatus!");*/
+            if (arrayOfFileStatuses==null) {
+                return new SRMPutDoneReply(WSReturnStatusConverter.getInstance().fromWS(overallRetStat)); /*throw new SRMClientException("Unexpected reply from WebService: null ArrayOfTSURLReturnStatus!");*/
+            }
             srmClientStubs.TSURLReturnStatus[] stubFileStatusArray = arrayOfFileStatuses.getStatusArray();
-            if ((stubFileStatusArray==null) || (stubFileStatusArray.length==0)) return new SRMPutDoneReply(WSReturnStatusConverter.getInstance().fromWS(overallRetStat)); /*throw new SRMClientException("Unexpected reply from WebService: null or empty StatusArray! ");*/
+            if ((stubFileStatusArray==null) || (stubFileStatusArray.length==0)) {
+                return new SRMPutDoneReply(WSReturnStatusConverter.getInstance().fromWS(overallRetStat)); /*throw new SRMClientException("Unexpected reply from WebService: null or empty StatusArray! ");*/
+            }
             srmClientStubs.TSURLReturnStatus stubFileStatus = stubFileStatusArray[0];
-            if (stubFileStatus==null) throw new SRMClientException("Unexpected reply from WebService: null first entry of StatusArray! ");
+            if (stubFileStatus==null) {
+                throw new SRMClientException("Unexpected reply from WebService: null first entry of StatusArray! ");
+            }
             //process file level satus
             srmClientStubs.TReturnStatus stubStatus = stubFileStatus.getStatus();
             it.grid.storm.srm.types.TReturnStatus retStat = WSReturnStatusConverter.getInstance().fromWS(stubStatus);
@@ -411,7 +429,9 @@ public class SRM22Client implements SRMClient {
         srmClientStubs.ISRM _srm = sRMService.getsrm();
 
         //set proxy in stub
-        if (((AbstractGridUser)gu).getUserCredentials()==null) log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        if (((AbstractGridUser)gu).getUserCredentials()==null) {
+            log.error("ERROR in NaiveSRMClient! No proxy present for "+gu.getDn());
+        }
         InputStream proxy = new ByteArrayInputStream(((AbstractGridUser)gu).getUserCredentials().getBytes()); //String containing the proxy seen as an input stream!
         GSSCredential globusProxy = new GlobusGSSCredentialImpl(new GlobusCredential(proxy) , GSSCredential.INITIATE_AND_ACCEPT); //GSSCredential containing the proxy!
         ((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS,globusProxy); //set the proxy to be used during GSI connection!
@@ -422,7 +442,11 @@ public class SRM22Client implements SRMClient {
         //set service endpoint address
         EndPoint ep = toSURL.sfn().endPoint();
         String epString = "";
-        if (ep.isEmpty()) epString="/"; else epString = ep.toString();
+        if (ep.isEmpty()) {
+            epString="/";
+        } else {
+            epString = ep.toString();
+        }
         String sea = "httpg://" + toSURL.sfn().machine() + ":" + toSURL.sfn().port() + epString;
         ((Stub) _srm)._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY,sea);
 

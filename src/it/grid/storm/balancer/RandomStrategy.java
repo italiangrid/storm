@@ -1,10 +1,8 @@
 package it.grid.storm.balancer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  *
@@ -22,10 +20,12 @@ import java.util.UUID;
  *
  */
 
-public class RandomStrategy<E extends Node> extends  AbstractStrategy<E> {
+ class RandomStrategy<E extends Node> extends  AbstractStrategy<E> {
    
+
     private Random random = null;
     
+
     public RandomStrategy(List<E> pool) { 
           super(pool);
           random = new Random((new Date()).getTime());
@@ -33,6 +33,7 @@ public class RandomStrategy<E extends Node> extends  AbstractStrategy<E> {
           
     }
     
+
     public  E getNextElement() {
         
         //  Return index from 0 to size-1

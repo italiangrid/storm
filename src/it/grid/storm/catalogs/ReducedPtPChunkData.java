@@ -1,13 +1,12 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a ReducedPrepareToPutChunkData, that is part of a
@@ -26,7 +25,7 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
  * @version 2.0
  */
 public class ReducedPtPChunkData {
-    private static final Logger log = Logger.getLogger("asynch"); //Logger of error messages! Common to all Asynch package!
+    private static final Logger log = LoggerFactory.getLogger(ReducedPtPChunkData.class);
 
     private long primaryKey = -1; //long representing the primary key for the persistence layer!
     private TSURL toSURL;       //SURL that the srm command wants to get
@@ -35,12 +34,14 @@ public class ReducedPtPChunkData {
     private TLifeTimeInSeconds fileLifetime;  //requested lifetime for SURL in case of Volatile entry.
 
     public ReducedPtPChunkData(TSURL toSURL, TReturnStatus status, TFileStorageType fileStorageType, TLifeTimeInSeconds fileLifetime)
-        throws InvalidReducedPtPChunkDataAttributesException {
+    throws InvalidReducedPtPChunkDataAttributesException {
         boolean ok = status!=null &&
-            toSURL!=null &&
-            fileStorageType!=null &&
-            fileLifetime!=null;
-        if (!ok) throw new InvalidReducedPtPChunkDataAttributesException(toSURL,status,fileStorageType,fileLifetime);
+        toSURL!=null &&
+        fileStorageType!=null &&
+        fileLifetime!=null;
+        if (!ok) {
+            throw new InvalidReducedPtPChunkDataAttributesException(toSURL,status,fileStorageType,fileLifetime);
+        }
         this.toSURL = toSURL;
         this.status = status;
         this.fileStorageType = fileStorageType;
@@ -87,6 +88,7 @@ public class ReducedPtPChunkData {
 
 
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("ReducedPtPChunkData\n");
@@ -98,6 +100,7 @@ public class ReducedPtPChunkData {
         return sb.toString();
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = 37*hash + new Long(primaryKey).hashCode();
@@ -108,15 +111,20 @@ public class ReducedPtPChunkData {
         return hash;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof ReducedPtPChunkData)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof ReducedPtPChunkData)) {
+            return false;
+        }
         ReducedPtPChunkData cd = (ReducedPtPChunkData) o;
         return (primaryKey==cd.primaryKey) &&
-            toSURL.equals(cd.toSURL) &&
-            status.equals(cd.status) &&
-            fileStorageType.equals(cd.fileStorageType) &&
-            fileLifetime.equals(cd.fileLifetime);
+        toSURL.equals(cd.toSURL) &&
+        status.equals(cd.status) &&
+        fileStorageType.equals(cd.fileStorageType) &&
+        fileLifetime.equals(cd.fileLifetime);
     }
 
 }

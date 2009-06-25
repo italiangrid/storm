@@ -1,9 +1,9 @@
 package it.grid.storm.filesystem;
 
 import it.grid.storm.filesystem.swig.gpfs;
-import it.grid.storm.filesystem.swig.genericfs;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a SpaceSystem that is able to use native GPFS support
@@ -16,14 +16,16 @@ import org.apache.log4j.Logger;
 public class GPFSSpaceSystem implements SpaceSystem {
 
     private gpfs fs = null; //instance of filesystem that will be used to invoke native operation!
-    private static Logger log = Logger.getLogger("filesystem");
+    private static Logger log = LoggerFactory.getLogger(GPFSSpaceSystem.class);
 
     public GPFSSpaceSystem(String mountpoint) throws SpaceSystemException {
-        if (mountpoint==null) throw new SpaceSystemException("Supplied mountpoint is null!");
+        if (mountpoint==null) {
+            throw new SpaceSystemException("Supplied mountpoint is null!");
+        }
         try {
             this.fs = new gpfs(mountpoint);
         } catch (Exception e) {
-            throw new SpaceSystemException("Unable to instantiate GPFS filesystem on "+mountpoint+"; exception: "+e);            
+            throw new SpaceSystemException("Unable to instantiate GPFS filesystem on "+mountpoint+"; exception: "+e);
         }
     }
 
@@ -73,6 +75,7 @@ public class GPFSSpaceSystem implements SpaceSystem {
         throw new ReservationException(explanation);
     }
 
+    @Override
     public String toString() {
         return "GPFSSpaceSystem";
     }

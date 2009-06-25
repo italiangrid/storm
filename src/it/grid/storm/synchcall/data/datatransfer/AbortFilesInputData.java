@@ -14,7 +14,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortFilesInputDataAttributeException;
 
-public class AbortFilesInputData implements InputData
+public class AbortFilesInputData extends AbortGeneralInputData
 {
     private GridUserInterface auth = null;
     private TRequestToken reqToken = null;

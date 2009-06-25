@@ -1,10 +1,16 @@
 package it.grid.storm.namespace.config;
 
-import java.util.*;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.MappingRule;
 
-import org.apache.commons.logging.*;
-import it.grid.storm.namespace.*;
-import it.grid.storm.namespace.model.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+
+import org.slf4j.Logger;
 
 /**
  * <p>Title: </p>
@@ -20,7 +26,7 @@ import it.grid.storm.namespace.model.*;
  */
 public class NamespaceCheck {
 
-    private Log log = NamespaceDirector.getLogger();
+    private Logger log = NamespaceDirector.getLogger();
     private Hashtable vfss;
     private Hashtable maprules;
     private Hashtable apprules;

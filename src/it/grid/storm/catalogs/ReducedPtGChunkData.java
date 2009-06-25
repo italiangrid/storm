@@ -1,11 +1,10 @@
 package it.grid.storm.catalogs;
 
-import org.apache.log4j.Logger;
-
-import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TSURL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a ReducedPrepareToGetChunkData, that is part of a
@@ -21,17 +20,19 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
  * @version 1.0
  */
 public class ReducedPtGChunkData {
-    private static final Logger log = Logger.getLogger("asynch"); //Logger of error messages! Common to all Asynch package!
+    private static final Logger log = LoggerFactory.getLogger(ReducedPtGChunkData.class); //Logger of error messages! Common to all Asynch package!
 
     private long primaryKey = -1; //long representing the primary key for the persistence layer!
     private TSURL fromSURL;       //SURL that the srm command wants to get
     private TReturnStatus status; //return status for this chunk of request
 
     public ReducedPtGChunkData(TSURL fromSURL, TReturnStatus status)
-        throws InvalidReducedPtGChunkDataAttributesException {
+    throws InvalidReducedPtGChunkDataAttributesException {
         boolean ok = status!=null &&
-            fromSURL!=null;
-        if (!ok) throw new InvalidReducedPtGChunkDataAttributesException(fromSURL,status);
+        fromSURL!=null;
+        if (!ok) {
+            throw new InvalidReducedPtGChunkDataAttributesException(fromSURL,status);
+        }
         this.fromSURL = fromSURL;
         this.status=status;
     }
@@ -69,6 +70,7 @@ public class ReducedPtGChunkData {
 
 
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("ReducedPtGChunkData\n");
@@ -78,6 +80,7 @@ public class ReducedPtGChunkData {
         return sb.toString();
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = 37*hash + new Long(primaryKey).hashCode();
@@ -86,13 +89,18 @@ public class ReducedPtGChunkData {
         return hash;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof ReducedPtGChunkData)) return false;
+        if (o==this) {
+            return true;
+        }
+        if (!(o instanceof ReducedPtGChunkData)) {
+            return false;
+        }
         ReducedPtGChunkData cd = (ReducedPtGChunkData) o;
         return (primaryKey==cd.primaryKey) &&
-            fromSURL.equals(cd.fromSURL) &&
-            status.equals(cd.status);
+        fromSURL.equals(cd.fromSURL) &&
+        status.equals(cd.status);
     }
 
 }

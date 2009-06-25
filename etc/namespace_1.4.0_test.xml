@@ -108,12 +108,20 @@
   </filesystems>
   <mapping-rules>
     <map-rule name="cnaf-maprule">
-      <stfn-root>/cnaf</stfn-root>
+      <stfn-root>/cnaf/test</stfn-root>
       <mapped-fs>CNAF-FS</mapped-fs>
     </map-rule>
     <map-rule name="lhcb-maprule">
       <stfn-root>/lhcb</stfn-root>
       <mapped-fs>LHCB-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="test1-maprule">
+      <stfn-root>/cnaf/cippa</stfn-root>
+      <mapped-fs>CNAF-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="test2-maprule">
+      <stfn-root>/cnaf/lippa</stfn-root>
+      <mapped-fs>CNAF-FS</mapped-fs>
     </map-rule>
   </mapping-rules>
   <approachable-rules>
@@ -129,7 +137,7 @@
       <subjects>
         <dn>*</dn>
       </subjects>
-      <approachable-fs>scratch-FS</approachable-fs>
+      <approachable-fs>CNAF-FS, LHCB-FS</approachable-fs>
       <space-rel-path>/</space-rel-path>
     </app-rule>
   </approachable-rules>

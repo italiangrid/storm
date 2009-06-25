@@ -1,6 +1,9 @@
 package it.grid.storm.namespace.naming;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class NamespaceUtil {
 
@@ -28,7 +31,7 @@ public class NamespaceUtil {
      * @param path String
      * @return Collection
      */
-    public static Collection getPathElement(String path) {
+    public static Collection<String> getPathElement(String path) {
         return (new Path(path)).getPathElements();
     }
 
@@ -150,7 +153,7 @@ public class NamespaceUtil {
      */
     private static class PathElement {
 
-        private String pathChunk;
+        private final String pathChunk;
 
         public PathElement(String path) {
             this.pathChunk = path;
@@ -160,6 +163,7 @@ public class NamespaceUtil {
             return this.pathChunk;
         }
 
+        @Override
         public boolean equals(Object obj) {
             boolean result = true;
             if (! (obj instanceof PathElement)) {
@@ -172,6 +176,7 @@ public class NamespaceUtil {
             return result;
         }
 
+        @Override
         public String toString() {
             return pathChunk;
         }
@@ -212,8 +217,8 @@ public class NamespaceUtil {
 
         public Path(String[] pathElements) {
             if (pathElements != null) {
-                for (int i = 0; i < pathElements.length; i++) {
-                    addPathElement(new PathElement(pathElements[i]));
+                for (String pathElement : pathElements) {
+                    addPathElement(new PathElement(pathElement));
                 }
             }
             this.directory = false;
@@ -239,8 +244,8 @@ public class NamespaceUtil {
             if (pathElements != null) {
                 // ...and build Path
                 this.path = new ArrayList(pathElements.length);
-                for (int i = 0; i < pathElements.length; i++) {
-                    addPathElement(new PathElement(pathElements[i]));
+                for (String pathElement : pathElements) {
+                    addPathElement(new PathElement(pathElement));
                 }
             }
         }
@@ -249,8 +254,8 @@ public class NamespaceUtil {
             return toStringArray(path, PATH_SEPARATOR);
         }
 
-        public Collection getPathElements() {
-            Collection result = new ArrayList(this.getLength());
+        public Collection<String> getPathElements() {
+            Collection<String> result = new ArrayList<String>(this.getLength());
             Iterator scan = path.iterator();
             PathElement p;
             while (scan.hasNext()) {
@@ -331,6 +336,7 @@ public class NamespaceUtil {
          * @param obj Object
          * @return boolean
          */
+        @Override
         public boolean equals(Object obj) {
             boolean result = true;
             if (! (obj instanceof Path)) {
@@ -422,6 +428,7 @@ public class NamespaceUtil {
          *
          * @return String
          */
+        @Override
         public String toString() {
             StringBuffer buf = new StringBuffer();
             buf.append("[");
@@ -433,5 +440,6 @@ public class NamespaceUtil {
             return buf.toString();
         }
     }
+    
 
 }
