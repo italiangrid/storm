@@ -4,11 +4,9 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.model.AceType;
 import it.grid.storm.authz.sa.model.SpaceACE;
 import it.grid.storm.authz.sa.model.SpaceAccessMask;
+import it.grid.storm.authz.sa.model.SpaceOperation;
 import it.grid.storm.authz.sa.model.SubjectPattern;
 import it.grid.storm.authz.sa.model.SubjectType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 
@@ -68,12 +66,11 @@ public class SpaceACETextParser {
 
      **/
     /**
-     * ace.1=dn:/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti:DURWSCP:ALLOW
-     * ace.3=fqan:EVERYONE:RQ:ALLOW
-     * - field[0] = ace number
-     * - field[0] = subject string ==> subject-type + subject
-     * - field[1] = space permission
-     * - field[2] = ace type
+     * ace.1=dn:/DC=ch/DC=cern/OU=Organic
+     * Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti:DURWSCP:ALLOW
+     * ace.3=fqan:EVERYONE:RQ:ALLOW - field[0] = ace number - field[0] = subject
+     * string ==> subject-type + subject - field[1] = space access mask -
+     * field[2] = ace type
      */
     private static SpaceACE parseACE(String aceString) throws AuthzDBReaderException {
 
@@ -90,15 +87,20 @@ public class SpaceACETextParser {
         for (int i = 0; i < fields.length; i++) {
             LOG.debug("Field["+i+"]='"+fields[i]+"'");
         }
+        // FIELD 0 = SubjectType + SubjectPattern
         SubjectType subjectType = parseSubjectType(fields[0].substring(1));
         SubjectPattern subjectPattern = parseSubjectPattern(fields[0]);
-        List<SpaceAccessMask> spacePermissions = parseSpacePermission(fields[1]);
+        
+        // FIELD 1 = Space Access Mask
+        SpaceAccessMask spaceAccessMask = parseSpaceAccessMask(fields[1]);
+
+        // FIELD 2 = ACE Type
         AceType aceType = parseACEType(fields[2]);
 
         //Build the result
         SpaceACE spaceACE = new SpaceACE();
         spaceACE.setAceNumber(aceNumber);
-        spaceACE.setSpacePermission(spacePermissions);
+        spaceACE.setSpaceAccessMask(spaceAccessMask);
         spaceACE.setSubjectType(subjectType);
         spaceACE.setSubjectPattern(subjectPattern);
 
@@ -157,10 +159,15 @@ public class SpaceACETextParser {
      * @param string
      * @return
      */
-    private static List<SpaceAccessMask> parseSpacePermission(String string) throws AuthzDBReaderException{
-        List<SpaceAccessMask> sp = new ArrayList<SpaceAccessMask>();
-        sp.add(SpaceAccessMask.MODIFY_SPACE_ACL);
-        return sp;
+    private static SpaceAccessMask parseSpaceAccessMask(String accessMaskStr) throws AuthzDBReaderException {
+        SpaceAccessMask spAM = new SpaceAccessMask();
+        if (accessMaskStr != null) {
+            char[] spAMarray = accessMaskStr.toCharArray();
+            for (char element : spAMarray) {
+                spAM.addSpaceOperation(SpaceOperation.getSpaceOperation(element));
+            }
+        }
+        return spAM;
     }
 
 
@@ -168,9 +175,8 @@ public class SpaceACETextParser {
      * @param string
      * @return
      */
-    private static AceType parseACEType(String string) throws AuthzDBReaderException {
-        // TODO Auto-generated method stub
-        return null;
+    private static AceType parseACEType(String aceTypeStr) throws AuthzDBReaderException {
+        return AceType.getAceType(aceTypeStr);
     }
 
 

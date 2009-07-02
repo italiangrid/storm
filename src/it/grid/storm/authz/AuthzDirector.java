@@ -26,9 +26,7 @@ public class AuthzDirector {
     private static int refreshInSeconds = 5; //Default value;
     private static String configurationPATH;
     private static String authzDBPath;
-    private static boolean runningMode = false;
     private static String configurationFileName;
-    private Configuration config;
 
     //Map between 'SpaceToken' and the related 'SpaceAuthz'
     private static Map<TSpaceToken,SpaceAuthzInterface> spaceAuthzs = null;
@@ -39,20 +37,15 @@ public class AuthzDirector {
     private static Map<String,PathAuthzInterface> pathAuthzs = null;
 
     private static boolean initialized = false;
-    private static AuthzDirector authzIstance = new AuthzDirector();
 
+    
+    
+ 
+    /**
+     * private AuthzDirector() { super(); }
+     **/
 
-    public static Logger getLogger() {
-        return log;
-    }
-
-
-    private AuthzDirector() {
-        super();
-    }
-
-
-    public static void initializeDirector(boolean testingMode) throws AuthzDBReaderException  {
+    private static void initializeDirector(boolean testingMode) throws AuthzDBReaderException {
         log.info("AUTHZ DIRECTOR : Inizializating ...");
         Configuration config = Configuration.getInstance();
 
@@ -60,7 +53,6 @@ public class AuthzDirector {
             log.info(" ####################### ");
             log.info(" ####  TESTING MODE #### ");
             log.info(" ####################### ");
-            runningMode = testingMode;
             configurationPATH = System.getProperty("user.dir") + File.separator + "etc";
             configurationFileName = configurationPATH + File.separator + "storm_test.properties";
             config.setConfigReader(new ConfigReader(configurationFileName, refreshInSeconds));
@@ -73,7 +65,6 @@ public class AuthzDirector {
             log.info(" +++++++++++++++++++++++ ");
             log.info("    Production Mode      ");
             log.info(" +++++++++++++++++++++++ ");
-            runningMode = testingMode;
             configurationPATH = config.getNamespaceConfigPath(); //Default = "./etc/"
             // configurationFileName = "storm.properties"; //Default name
             authzDBPath = config.getAuthzDBPath();
@@ -84,7 +75,27 @@ public class AuthzDirector {
         //Initialize the AuthzDBReader
         authzDBReader = new FileAuthzDBReader(refreshInSeconds*1000, authzDBPath);
 
+        // Build Space Authzs MAP
+        buildSpaceAuthzsMAP();
 
+        // Build Path Authzs MAP
+        // @todo
+
+        log.debug("AuthZ Configuration PATH : " + configurationPATH);
+        log.debug("AuthZ Configuration Watching RATE : " + refreshInSeconds);
+
+        log.debug("[AuthZ Director] Initialization done!");
+        initialized = true;
+    }
+
+    /**
+     * Scan the Namespace.xml to retrieve the list of file AuthZDB to digest
+     * 
+     * @return
+     * @throws AuthzDBReaderException
+     */
+    private static void buildSpaceAuthzsMAP() throws AuthzDBReaderException {
+        
         //Retrieve the list of VFS from Namespace
         NamespaceInterface ns = NamespaceDirector.getNamespace();
         ArrayList<VirtualFSInterface> vfss;
@@ -99,42 +110,48 @@ public class AuthzDirector {
                     authzName = vfs.getStorageAreaAuthzDB();
                     log.debug("Loading AuthzDB '"+authzName+"'");
                     if (existsAuthzDBFile(authzName))  {
-                        //Incapsule the AuthzDB
-
-
+                        // Digest the Space AuthzDB File
+                        addSpaceAuthz(vfs, authzName);
                     } else {
                         throw new AuthzDBReaderException("File AuthzDB '"+authzName+"' does not exists.");
                     }
                 } else {
                     authzName = vfs.getStorageAreaAuthzFixed();
-
                 }
                 log.debug("VFS ['"+vfsName+"'] = "+authzTp+" : "+authzName );
-
             }
         } catch (NamespaceException e) {
             log.warn("Unable to initialize AUTHZ DB!" + e.getMessage());
             initialized = true;
             log.warn(".. (Workaround): AuthzDirector INITIALIZATED evenly..");
             throw new AuthzDBReaderException(e.getMessage());
+        }       
+    }
+    
+    /**
+     * Utility method
+     * 
+     * @param dbFileName
+     * @return
+     * @throws AuthzDBReaderException
+     */
+    private static boolean existsAuthzDBFile(String dbFileName) throws AuthzDBReaderException {
+        String fileName = configurationPATH + File.separator + dbFileName;
+        boolean exists = (new File(fileName)).exists();
+        if (!(exists)) {
+            throw new AuthzDBReaderException("The AuthzDB File '" + dbFileName + "' does not exists");
         }
-
-
-        log.debug("AuthZ Configuration PATH : " + configurationPATH);
-        log.debug("AuthZ Configuration Watching RATE : " + refreshInSeconds);
-
-        log.debug("[AuthZ Director] Initialization done!");
-        initialized = true;
+        return exists;
     }
 
-    public static AuthzDirector getAuthzDirector() throws AuthzDBReaderException  {
-        if (! (initialized)) {
-            initializeDirector(false);
-        }
-        return authzIstance;
-    }
-
-
+    
+    /**
+     * Command the parsing of SpaceAuthzDB File
+     * 
+     * @param vfs
+     * @param dbFileName
+     * @throws AuthzDBReaderException
+     */
     private static void addSpaceAuthz(VirtualFSInterface vfs, String dbFileName) throws AuthzDBReaderException {
         TSpaceToken spaceToken;
         String vfsName = "unknown";
@@ -148,23 +165,31 @@ public class AuthzDirector {
         } catch (NamespaceException e) {
             throw new AuthzDBReaderException("Unable to retrieve Space Token for VFS '"+vfsName+"' ");
         }
-
     }
 
+    
+    // ****************************************
+    // PUBLIC METHODS
+    // ****************************************
 
-
-
-
-
-    /**************************************************
-     * PUBLIC METHODS
+    /**
+     * Retrieve the Logger used in all the package AUTHZ
      */
+    public static Logger getLogger() {
+        return log;
+    }
 
+    /**
+     * Retrieve the Space Authorization module related to the Space Token
+     * 
+     * @param token
+     * @return
+     */
     public static SpaceAuthzInterface getSpaceAuthz(TSpaceToken token) {
-        AuthzDirector authDir = null;
         try {
-            //Retrieve the director.
-            authDir = getAuthzDirector();
+            if (!(initialized)) {
+                initializeDirector(false);
+            }
         } catch (AuthzDBReaderException e) {
             log.error("Unable to initialize AuthZDB");
             e.printStackTrace();
@@ -180,27 +205,16 @@ public class AuthzDirector {
         return spaceAuthz;
     }
 
-    /*
+    /**
+     * Retrieve the Path Authorization module related to the specified PATH
+     * 
      * @todo: To implement this.
      */
     public static PathAuthzInterface getPathAuthz(String path) {
         return null;
     }
 
-    /****
-     * ***********************TEMPORARY FIX TO REMOVE *********************
-     * THIS METHOD IS A CUT AN PASTE
-     * FROM THE SpaceDBAuthz class to make everything compile
-     */
-    
-    private static boolean existsAuthzDBFile(String dbFileName) throws AuthzDBReaderException {
-        String fileName = configurationPATH + File.separator + dbFileName;
-        boolean exists = (new File(fileName)).exists();
-        if (!(exists) ) {
-            throw new AuthzDBReaderException("The AuthzDB File '"+dbFileName+"' does not exists");
-        }
-        return exists;
-    }
+ 
     
     
 }

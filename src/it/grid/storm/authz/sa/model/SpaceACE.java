@@ -1,7 +1,5 @@
 package it.grid.storm.authz.sa.model;
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class SpaceACE {
@@ -11,7 +9,7 @@ public class SpaceACE {
     private int aceNumber;
     private SubjectType subjectType;
     private SubjectPattern subjectPattern;
-    private List<SpaceAccessMask> spacePermission = new ArrayList<SpaceAccessMask>();
+    private SpaceAccessMask spaceAccessMask;
     private AceType aceType;
 
     public SpaceACE() {
@@ -37,11 +35,11 @@ public class SpaceACE {
     }
 
     public void setSubjectPattern(SubjectPattern subject) {
-        this.subjectPattern = subject;
+        subjectPattern = subject;
     }
 
-    public void addSpacePermission(SpaceAccessMask spacePermission) {
-        this.spacePermission.add(spacePermission);
+    public void setSpaceAccessMask(SpaceAccessMask spAccessMask) {
+        spaceAccessMask = spAccessMask;
     }
 
     public void setAceType(AceType aceType) {
@@ -49,41 +47,29 @@ public class SpaceACE {
     }
 
     public SubjectType getSubjectType() {
-        return this.subjectType;
+        return subjectType;
     }
 
     public SubjectPattern getSubjectPattern() {
-        return this.subjectPattern;
+        return subjectPattern;
     }
 
     /**
      * @return the spacePermission
      */
-    public List<SpaceAccessMask> getSpacePermission() {
-        return spacePermission;
+    public SpaceAccessMask getSpaceAccessMask() {
+        return spaceAccessMask;
     }
     
     public AceType getAceType() {
-        return this.aceType;
+        return aceType;
     }
 
     @Override
 	public String toString() {
-        String spacePermissionStr = "";
-        
-        for (Object element : spacePermission) {
-            SpaceAccessMask item = (SpaceAccessMask) element;
-            spacePermissionStr+=item.toString();
-        }
-        return "SpaceACE ("+this.getAceNumber()+"): "+this.getSubjectType()+":"+this.getSubjectPattern()+":"+spacePermissionStr+":"+this.aceType;
+        String spacePermissionStr = spaceAccessMask.toString();
+        return "SpaceACE ("+getAceNumber()+"): "+getSubjectType()+":"+getSubjectPattern()+":"+spacePermissionStr+":"+aceType;
     }
 
-
-    /**
-     * @param spacePermission the spacePermission to set
-     */
-    public void setSpacePermission(List<SpaceAccessMask> spacePermission) {
-        this.spacePermission = spacePermission;
-    }
 
 }
