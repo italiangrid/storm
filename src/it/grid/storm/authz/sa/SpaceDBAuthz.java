@@ -13,54 +13,6 @@ import java.io.File;
 
 /**
  * @author zappi
- *
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
- * 
- */
-/**
- * @author zappi
  * 
  */
 public class SpaceDBAuthz extends SpaceAuthz {
@@ -69,7 +21,7 @@ public class SpaceDBAuthz extends SpaceAuthz {
     private String dbFileName;
     private FileAuthzDB authzDB;
 
-    SpaceDBAuthz(String dbFileName) throws AuthzDBReaderException {
+    public SpaceDBAuthz(String dbFileName) throws AuthzDBReaderException {
         Configuration config = Configuration.getInstance();
         configurationPATH = config.getNamespaceConfigPath();
         if (existsAuthzDBFile(dbFileName)) {
