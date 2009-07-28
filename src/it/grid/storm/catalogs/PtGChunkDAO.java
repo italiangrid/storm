@@ -848,11 +848,10 @@ public class PtGChunkDAO {
              * 
              */
             checkConnection();
-            String str = "UPDATE "+
-            "status_Get s JOIN (request_Get rg, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "+
-            "SET s.statusCode=? "+
-            "WHERE s.statusCode=? AND r.r_token="+token.toString()+" AND s.ID IN " +
-            makeWhereString(ids);
+            String str = "UPDATE "
+                    + "status_Get s JOIN (request_Get rg, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
+                    + "SET s.statusCode=? " + "WHERE s.statusCode=? AND r.r_token='" + token.toString()
+                    + "' AND s.ID IN " + makeWhereString(ids);
             PreparedStatement stmt = null;
             try {
                 stmt = con.prepareStatement(str);

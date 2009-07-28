@@ -1,6 +1,7 @@
-package it.grid.storm.dmapi;
+package it.grid.storm.ea;
 
-public class FileNotFoundException extends DMAPIException {
+
+public class FileNotFoundException extends ExtendedAttributesException {
 
     private static final long serialVersionUID = -4633331132951511667L;
 

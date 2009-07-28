@@ -4,6 +4,9 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
+import it.grid.storm.filesystem.Checksum;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
@@ -41,36 +44,31 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- *
- * This class is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
+ * 
+ * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- *
- *
+ * 
+ * 
  * Authors:
- *     @author=lucamag luca.magnoniATcnaf.infn.it
- *     @author  Alberto Forti
+ * 
+ * @author=lucamag luca.magnoniATcnaf.infn.it
+ * @author Alberto Forti
  * @date = Oct 10, 2008
- *
+ * 
  */
 
-
-public class PutDoneCommand extends DataTransferCommand implements Command
-{
+public class PutDoneCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
     private final String funcName = "PutDone: ";
-    private Configuration config;
 
     public PutDoneCommand() {};
 
     /**
-     * Does a PutDone. Used to notify the SRM that the client completed a file transfer to the TransferURL in the allocated
-     * space (by a PrepareToPut).
+     * Does a PutDone. Used to notify the SRM that the client completed a file transfer to the
+     * TransferURL in the allocated space (by a PrepareToPut).
      */
-    public OutputData execute(InputData absData)
-    {
+    public OutputData execute(InputData absData) {
 
         PutDoneOutputData outputData = new PutDoneOutputData();
         PutDoneInputData inputData = (PutDoneInputData) absData;
@@ -93,17 +91,21 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         if (requestFailure) {
             PutDoneCommand.log.debug(funcName + "Invalid input parameter specified");
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                                 "Missing mandatory parameters");
             } catch (InvalidTReturnStatusAttributeException e) {
                 PutDoneCommand.log.warn(funcName + "dataTransferManger: Error creating returnStatus " + e);
             }
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
 
-            if(inputData==null) {
-                PutDoneCommand.log.error("srmPutDone: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
+            if (inputData == null) {
+                PutDoneCommand.log.error("srmPutDone: <> Request for [token:] [SURL:] failed with [status: "
+                        + globalStatus + "]");
             } else {
-                PutDoneCommand.log.error("srmPutDone: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"]failed with [status: "+globalStatus+"]");
+                PutDoneCommand.log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
+                        + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                        + "]failed with [status: " + globalStatus + "]");
             }
 
             return outputData;
@@ -115,14 +117,16 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             PutDoneCommand.log.error(funcName + "the user field is NULL");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                "Unable to get user credential!");
+                                                 "Unable to get user credential!");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 PutDoneCommand.log.debug(funcName + "dataTransferManger: Error creating returnStatus " + ex1);
             }
 
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            PutDoneCommand.log.error("srmPutDone: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"]failed with [status: "+globalStatus+"]");
+            PutDoneCommand.log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "]failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
@@ -133,14 +137,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         } catch (CannotMapUserException e) {
             PutDoneCommand.log.debug(funcName + "Unable to map the user '" + user + "' in a local user.", e);
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, "Unable to map the user");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                                 "Unable to map the user");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown
                 PutDoneCommand.log.error(funcName + "dataTransferManger: Error creating returnStatus ");
             }
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            PutDoneCommand.log.error("srmPutDone: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"]failed with [status: "+globalStatus+"]");
+            PutDoneCommand.log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "]failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
@@ -164,27 +171,31 @@ public class PutDoneCommand extends DataTransferCommand implements Command
 
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            PutDoneCommand.log.error("srmPutDone: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"]failed with [status: "+globalStatus+"]");
+            PutDoneCommand.log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "]failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
-        /* Execute a PutDone for all the SURLs specified in the request (the following for loop).
-         * Each requested SURL must be found in the catalog (as a SURL associated with the
-         * specified request token), otherwise the return status of the missing SURL indicates
-         * the error.
+        /*
+         * Execute a PutDone for all the SURLs specified in the request (the following for loop).
+         * Each requested SURL must be found in the catalog (as a SURL associated with the specified
+         * request token), otherwise the return status of the missing SURL indicates the error.
          */
         ArrayList listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
         int num_SURLs = listOfSURLs.size();
         ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
-        // spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        // spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE
+        // to SRM_SUCCESS.
         ArrayList spaceAvailableSURLs = new ArrayList(num_SURLs);
 
         requestFailure = true;
         boolean requestSuccess = true;
         boolean requestAborted = true;
 
-        // ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for loop
+        // ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for
+        // loop
         // the two boolean variables "requestFailure" and "requestSuccess" are correctly set.
 
         for (int i = 0; i < num_SURLs; i++) {
@@ -224,18 +235,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                         requestAborted = false;
                     } else if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_ABORTED) {
                         surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                        "PtP status for this SURL is SRM_ABORTED");
+                                                             "PtP status for this SURL is SRM_ABORTED");
                         requestSuccess = false;
                     } else {
                         surlReturnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                        "Check StatusOfPutRequest for more information");
+                                                             "Check StatusOfPutRequest for more information");
                         requestSuccess = false;
                         requestAborted = false;
                     }
                 } else { // SURL not found, set the corresponding return status value
                     PutDoneCommand.log.debug(funcName + "SURL[" + i + "] NOT found in the DB!");
                     surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                    "SURL does not refer to an existing file for the specified request token");
+                                                         "SURL does not refer to an existing file for the specified request token");
                     requestSuccess = false;
                     requestAborted = false;
                 }
@@ -249,14 +260,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             try {
                 if (surlReturnStatus == null) {
                     surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
-                    "Internal error: try again...");
+                                                         "Internal error: try again...");
                 }
                 TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, surlReturnStatus);
 
                 if (surlReturnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                    PutDoneCommand.log.info("srmPutDone: <"+user+"> Request for [token:"+requestToken+"] for [SURL:"+surl+"] successfully done with: [status:"+surlReturnStatus+"]");
+                    PutDoneCommand.log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                            + "] for [SURL:" + surl + "] successfully done with: [status:" + surlReturnStatus
+                            + "]");
                 } else {
-                    PutDoneCommand.log.error("srmPutDone: <"+user+"> Request for [token:"+requestToken+"] for [SURL:"+surl+"] failed with: [status:"+surlReturnStatus+"]");
+                    PutDoneCommand.log.error("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                            + "] for [SURL:" + surl + "] failed with: [status:" + surlReturnStatus + "]");
                 }
                 arrayOfFileStatus.addTSurlReturnStatus(surlRetStatus);
             } catch (InvalidTReturnStatusAttributeException e1) {
@@ -268,14 +282,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             }
         }
 
-        // Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone. To execute this operation
+        // Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone. To execute this
+        // operation
         // three steps are needed for each SURL:
         // 1- if the SURL is volatile than an entry in the table Volatile must be created;
         // 2- JiTs must me removed from the TURL;
-        // 3- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        // 3- compute the checksum and store it in an extended attribute
+        // 4- Tape stuff management.
+        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         // NEW: if the SA is T1D1, an hidden file is created.
         VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
-        for (int i=0; i<spaceAvailableSURLs.size(); i++) {
+        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
@@ -290,30 +307,41 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             }
             // 1- if the SURL is volatile create an entry in the Volatile table
             if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
-                volatileAndJiTCatalog.trackVolatile(stori.getPFN(), Calendar.getInstance(), chunkData.fileLifetime());
+                volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
+                                                    Calendar.getInstance(),
+                                                    chunkData.fileLifetime());
             }
             // 2- JiTs must me removed from the TURL;
             if (stori.hasJustInTimeACLs()) {
                 PutDoneCommand.log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
-                // Retrive the PFN of the SURL parents
+                // Retrieve the PFN of the SURL parents
                 List storiParentsList = stori.getParents();
                 List pfnParentsList = new ArrayList(storiParentsList.size());
-                for (int j=0; j<storiParentsList.size(); j++) {
+                for (int j = 0; j < storiParentsList.size(); j++) {
                     pfnParentsList.add(((StoRI) storiParentsList.get(j)).getPFN());
                 }
                 volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
             }
 
-
-
-
-
+            // 3- compute the checksum and store it in an extended attribute
+            LocalFile localFile = stori.getLocalFile();
+            localFile.setChecksum();
+            
+            // 4- Tape stuff management.
+            if (Configuration.getInstance().getTapeEnabled()) {
+                String fileAbosolutePath = localFile.getAbsolutePath();
+                StormEA.removePinned(fileAbosolutePath);
+                StormEA.setPremigrate(fileAbosolutePath);
+            }
+            
         }
-        //WARNING! This purge overload the mysqld in case of large volatile table and multiple PD requests
-        //log.debug(funcName + "Purging VolatileAndJiTCatalog...");
-        //volatileAndJiTCatalog.purge();
+        
+        // WARNING! This purge overload the mysqld in case of large volatile table and multiple PD
+        // requests
+        // log.debug(funcName + "Purging VolatileAndJiTCatalog...");
+        // volatileAndJiTCatalog.purge();
 
-        // 3- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         if (spaceAvailableSURLs.size() > 0) {
             dbCatalog.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
         }
@@ -321,15 +349,16 @@ public class PutDoneCommand extends DataTransferCommand implements Command
         /* Set the request status */
         try {
             if (requestAborted) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_ABORTED, "Request " + requestToken.toString());
+                globalStatus = new TReturnStatus(TStatusCode.SRM_ABORTED, "Request "
+                        + requestToken.toString());
             } else if (requestFailure) {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All file requests are failed");
             } else if (requestSuccess) {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                "All file requests are successfully completed");
+                                                 "All file requests are successfully completed");
             } else {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-                "Details are on the file statuses");
+                                                 "Details are on the file statuses");
             }
 
             PutDoneCommand.log.debug(funcName + "Finished with status: " + globalStatus.toString());
@@ -338,14 +367,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command
             PutDoneCommand.log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
         }
 
-        /* 4-
-         * NEW! Management of T1D1 Storage Class.
-         * In case of T1D1 Storage Class, an hidden file is created to manage
-         * the migration to tape.
+        /*
+         * 6- NEW! Management of T1D1 Storage Class. In case of T1D1 Storage Class, an hidden file
+         * is created to manage the migration to tape.
          */
         VirtualFSInterface fs = null;
 
-        for (int i=0; i<spaceAvailableSURLs.size(); i++) {
+        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
@@ -359,10 +387,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                 continue;
             }
 
-
             StorageClassType stype = null;
             fs = stori.getVirtualFileSystem();
-            if(fs !=null) {
+            if (fs != null) {
                 try {
                     stype = fs.getStorageClassType();
                 } catch (NamespaceException e) {
@@ -370,66 +397,65 @@ public class PutDoneCommand extends DataTransferCommand implements Command
                 }
             }
 
-            if((stype !=null) && stype.equals(StorageClassType.T1D1)) {
-                //Get the T1D1Plugin
-                config = Configuration.getInstance();
+            if ((stype != null) && stype.equals(StorageClassType.T1D1)) {
+                // Get the T1D1Plugin
+                Configuration config = Configuration.getInstance();
                 String pluginName = config.getT1D1PluginName();
                 String prefix = config.getT1D1HiddenFilePrefix();
-                String className  = null;
+                String className = null;
                 T1D1PluginInterface plugin = null;
 
-                if(pluginName.equals("HiddenFile")) {
+                if (pluginName.equals("HiddenFile")) {
                     className = "it.grid.storm.dataTransfer.HiddenFileT1D1Plugin";
-                    //Use Reflection here
+                    // Use Reflection here
                     plugin = new HiddenFileT1D1Plugin();
                 } else {
                     PutDoneCommand.log.debug("T1D1Plugin specified does not exists yet!.");
                 }
 
-                int error=0;
-                if(plugin != null) {
-                    error=plugin.startMigration(stori, prefix);
+                int error = 0;
+                if (plugin != null) {
+                    error = plugin.startMigration(stori, prefix);
                 }
-                if(error!=0) {
+                if (error != 0) {
                     PutDoneCommand.log.debug("T1D1Plugin error in managing the file migration.");
                 }
 
             }
 
-
             /**
              * If Storage Area hard limit is enabled, update space on DB
              */
             try {
-                if ( (fs!=null) &&  (fs.getProperties().isOnlineSpaceLimited()) ) {
+                if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
                     SpaceHelper sh = new SpaceHelper();
-                    //Update the used space into Database
+                    // Update the used space into Database
                     sh.decreaseFreeSpaceForSA(PutDoneCommand.log, funcName, user, spaceAvailableSURLs);
                 }
             } catch (NamespaceException e) {
-                PutDoneCommand.log.warn(funcName+"Not able to build the virtual fs properties for checking Storage Area size enforcement!");
+                PutDoneCommand.log.warn(funcName
+                        + "Not able to build the virtual fs properties for checking Storage Area size enforcement!");
             }
-
 
         }
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            PutDoneCommand.log.info("srmPutDone: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"] successfully done with: [status:"+globalStatus+"]");
+            PutDoneCommand.log.info("srmPutDone: <" + user + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "] successfully done with: [status:" + globalStatus + "]");
         } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-            PutDoneCommand.log.info("srmPutDone: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"] partially done with: [status:"+globalStatus+"]");
+            PutDoneCommand.log.info("srmPutDone: <" + user + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "] partially done with: [status:" + globalStatus + "]");
         } else {
-            PutDoneCommand.log.error("srmPutDone: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+inputData.getArrayOfSURLs()+"] failed with: [status:"+globalStatus+"]");
+            PutDoneCommand.log.error("srmPutDone: <" + user + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
+                    + "] failed with: [status:" + globalStatus + "]");
 
         }
 
-
-
-
-
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(arrayOfFileStatus);
-
-
 
         return outputData;
     }

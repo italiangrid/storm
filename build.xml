@@ -311,7 +311,7 @@ test.junit.dir
 	<include name="axis-schema.jar"/>
 	<include name="backport-util-concurrent.jar"/>
 	<include name="c3p0-0.8.4.5.jar"/>
-	<include name="cglib-full-2.0.1.jar"/>
+	<!-- <include name="cglib-full-2.0.1.jar"/> -->
     <include name="srm22client.jar"/>
     <include name="cog-axis.jar"/>
 	<include name="cog-jglobus.jar"/>
@@ -325,25 +325,25 @@ test.junit.dir
 	<include name="commons-dbcp-1.2.1.jar"/>
 	<include name="commons-digester-1.7.jar"/>
 	<include name="commons-discovery-0.2.jar"/>
-        <include name="commons-lang-2.3.jar"/>
-        <include name="commons-pool-1.2.jar"/>
-        <include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
-        <include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
+	<include name="commons-lang-2.3.jar"/>
+	<include name="commons-pool-1.2.jar"/>
+	<include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
+	<include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
  	<include name="cryptix32.jar"/>
 	<include name="cryptix-asn1.jar"/>
 	<include name="cryptix.jar"/>
 	<include name="dom4j-1.4.jar"/>
 	<include name="dom.jar"/>
-	<include name="ehcache-0.9.jar"/>
-	<include name="hibernate-2.1.6.jar"/>
-	<include name="hsqldb.jar"/>
+	<!-- <include name="ehcache-0.9.jar"/> -->
+	<!-- <include name="hibernate-2.1.6.jar"/> -->
+	<!-- <include name="hsqldb.jar"/> -->
     <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
 	<include name="jaxrpc.jar"/>
     <include name="jce-jdk13-131.jar"/>
 	<include name="jgss.jar"/>
   	<include name="mail.jar"/>
-	<include name="middlegen-2.1.jar"/>
-	<include name="middlegen-hibernate-plugin-2.1.jar"/>
+	<!-- <include name="middlegen-2.1.jar"/> -->
+	<!-- <include name="middlegen-hibernate-plugin-2.1.jar"/> -->
 	<include name="odmg-3.0.jar"/>
 	<include name="puretls.jar"/>
 	<include name="saaj.jar"/>
@@ -357,9 +357,9 @@ test.junit.dir
 	<include name="xsdlib.jar"/>
     <include name="ECARClient.jar"/>
 
-    <include name="jline-0.9.9.jar"/> <!-- Used for Console feature (NS-Admin) -->
-    <include name="QuickServer.jar"/> <!-- Administration Server -->
-    <include name="QSAdminGUI.jar"/> <!-- Administration Server GUI -->
+    <!-- <include name="jline-0.9.9.jar"/> --> <!-- Used for Console feature (NS-Admin) -->
+    <!-- <include name="QuickServer.jar"/> --> <!-- Administration Server -->
+    <!-- <include name="QSAdminGUI.jar"/> --> <!-- Administration Server GUI -->
 
   	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
   	<include name="dim-18.r2.jar"/>
@@ -369,6 +369,12 @@ test.junit.dir
   	<include name="slf4j-api-1.5.6.jar"/> <!-- New LOGGING system -->
   	
   	<include name="jna.jar"/> <!-- DMAPI -->
+  	
+  	<include name="rest-recalltable/asm-3.1.jar"/>  <!-- JERSEY and GRIZZLY for REST Service --> 
+  	<include name="rest-recalltable/grizzly-webserver-1.9.15b.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jsr311-api-1.1.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
   	
   </fileset>
 
@@ -486,7 +492,7 @@ test.junit.dir
 
   <target name="libs.dmutil" depends="init">
     <exec executable="make" logError="true">
-      <arg line="-C ${src.java.dir}/it/grid/storm/dmapi/clib"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/jna/clib"/>
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="BUILDDIR=${build.obj.dir}"/>
     </exec>
@@ -592,8 +598,8 @@ test.junit.dir
 	  <!-- Javac needs a *directory* as argument... -->
 	  <!-- <src path="${src.java.dir}/it/grid/storm/"/> -->
 	  <classpath refid="build.classpath"/>
-          <include name="it/grid/storm/**"/>
-          <exclude name="it/grid/storm/namespace/admin/**"/>
+		<include name="it/grid/storm/**"/>
+ 		<exclude name="it/grid/storm/namespace/admin/**"/>
     </javac>
   </target>
 
@@ -618,10 +624,10 @@ test.junit.dir
   <!-- CLEAN                                                           -->
   <!-- =============================================================== -->
 
-  <!-- Invoke 'clean' target on it/grid/storm/dmapi/clib/Makefile -->
+  <!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
   <target name="clean.clibs.dmutil">
     <exec executable="make"
-        dir="${src.java.dir}/it/grid/storm/dmapi/clib"
+        dir="${src.java.dir}/it/grid/storm/jna/clib"
         logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="clean"/>

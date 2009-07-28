@@ -1,5 +1,7 @@
 package it.grid.storm.srm.types;
 
+import it.grid.storm.filesystem.Checksum;
+
 import java.util.Map;
 
 /**
@@ -16,31 +18,24 @@ import java.util.Map;
  */
 public class TCheckSumType {
 
-    public static TCheckSumType ADLER32 = new TCheckSumType("Adler32");
-    public static TCheckSumType CRC32 = new TCheckSumType("Crc32");
-
-    private String       type               = null;
-
     public static String PNAME_CHECKSUMTYPE = "checkSumType";
+    
+    private Checksum.ChecksumType chkType = null;
 
-    //TO Complete wut Exception if Strin specified == null
-    public TCheckSumType(String type) {
-        this.type = type;
+    public TCheckSumType(Checksum.ChecksumType chkType) {
+        this.chkType = chkType;
     }
 
     @Override
-    public String toString()
-    {
-        return type;
+    public String toString() {
+        return chkType.toString();
     }
 
-    public String getValue()
-    {
-        return type;
+    public String getValue() {
+        return chkType.toString();
     }
 
-    public void encode(Map param, String name)
-    {
+    public void encode(Map param, String name) {
         param.put(name, this.toString());
     }
 };

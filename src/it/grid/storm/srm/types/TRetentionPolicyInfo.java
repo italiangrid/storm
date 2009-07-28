@@ -9,7 +9,6 @@
 package it.grid.storm.srm.types;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 public class TRetentionPolicyInfo {
@@ -17,6 +16,10 @@ public class TRetentionPolicyInfo {
     /* Hashtable field names for encode() and decode() methods */
     public static String PNAME_retentionPolicyInfo = "retentionPolicyInfo";
     
+    public static final TRetentionPolicyInfo TAPE0_DISK1_RETENTION_POLICY = new TRetentionPolicyInfo(TRetentionPolicy.REPLICA,
+                                                                                                     TAccessLatency.ONLINE);
+    public static final TRetentionPolicyInfo TAPE1_DISK1_RETENTION_POLICY = new TRetentionPolicyInfo(TRetentionPolicy.CUSTODIAL,
+                                                                                                     TAccessLatency.ONLINE);
     private TRetentionPolicy retentionPolicy;
     private TAccessLatency accessLatency;
     

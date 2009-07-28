@@ -29,6 +29,8 @@ public interface DAOFactory {
    * @return StorageSpaceDAO
    */
   public StorageSpaceDAO getStorageSpaceDAO() throws DataAccessException;
+  
+  public TapeRecallDAO getTapeRecallDAO() throws DataAccessException;
 
   public StorageFileDAO getStorageFileDAO() throws DataAccessException;
 

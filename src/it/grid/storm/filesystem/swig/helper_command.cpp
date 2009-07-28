@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <string.h>
 
 #ifdef HAVE_STDIO_FILEBUF
 #  include <ext/stdio_filebuf.h>

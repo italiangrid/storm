@@ -2,6 +2,9 @@ package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.dao.TapeRecallDAO;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.InvalidTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TExtraInfo;
@@ -11,6 +14,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
+import it.grid.storm.persistence.PersistenceDirector;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,6 +89,19 @@ public class PingCommand extends DiscoveryCommand implements Command
                 log.warn("Unable to retrieve KEY (key='"+key+"') value requested in srmPing.");
                 otherInfo = new TExtraInfo();
             }
+        }
+        
+        try {
+
+            TapeRecallDAO tapeDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
+
+            RecallTaskTO task = tapeDAO.takeoverTask();
+            tapeDAO.setTaskStatus(task.getTaskId(), TapeRecallDAO.SUCCESS);
+            
+            log.info("Task \"" + task.getTaskId() + "\" set to success: " + task.getFileName());
+
+        } catch (DataAccessException e) {
+            log.error("DB error", e);
         }
 
         //Build the Output Data

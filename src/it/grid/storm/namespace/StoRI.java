@@ -71,6 +71,10 @@ public interface StoRI {
     public void setStFNRoot(String stfnRoot);
 
     public void setMappingRule(MappingRule winnerRule);
+    
+    public void setGroupTapeRead();
+    
+    public void setGroupTapeWrite();
 
     public MappingRule getMappingRule();
 

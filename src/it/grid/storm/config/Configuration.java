@@ -2736,11 +2736,49 @@ public class Configuration {
         }
     
     }
+    
+    public String getChecksumType() {
+        
+        String key = "checksum.type";
+        
+        if (cr.getConfiguration().containsKey(key)) {
+            
+            return cr.getConfiguration().getString(key);
+        }
 
+        return "Adler32";
+    }
+    
+    public boolean getTapeEnabled() {
+        // TODO: remove this method, this is not the right place. This information goes into Filesystem stuff.
+        
+        String key = "tape.enabled";
+        
+        if (cr.getConfiguration().containsKey(key)) {
+            return cr.getConfiguration().getBoolean(key);
+        }
+        
+        return false;
+    }
 
-
-
-
-
+    /**
+     * Method used to retrieve the PORT where the Recall Table (RESTful) service
+     * listen
+     * 
+     * If no value is found in the configuration medium, then the default one is
+     * used instead, that is the "9998"
+     * 
+     * key="tape.recalltable.service.port";
+     */
+    public int getRecallTableServicePort() {
+        String key = "tape.recalltable.service.port";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 9998;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
 
 }

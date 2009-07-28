@@ -30,7 +30,7 @@ static const char* const RCSID="$Id: gpfs23.cpp,v 1.3 2007/04/13 14:07:15 aforti
 #include <sstream>
 #include <stdexcept>
 
-#include <iostream.h>
+#include <iostream>
 
 // --- module local functions --- //
 
