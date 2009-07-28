@@ -13,7 +13,7 @@
 ### Package Naming 
 
 Name: storm-backend
-Version: 1.4.0
+Version: 1.4.1
 Release: 00.sl4
 Summary: The StoRM BackEnd component.
 Copyright:  Apache License, Version 2.0. See included file LICENSE.txt
@@ -96,19 +96,15 @@ separately in the ``storm-backend-jars`` package.
 %{prefix}/lib/storm-backend/libxfsapi_interface.so
 %{prefix}/lib/storm-backend/libposixapi_interface.so
 %{prefix}/lib/storm-backend/libjdim.so
+%{prefix}/lib/storm-backend/libstorm_cutil.so
 %config(noreplace) /etc/cron.d/storm-backend.cron
 
 %defattr(755,root,root)
 
 %config(noreplace) %{prefix}/sbin/storm-backend-configure
-%config(noreplace) %{prefix}/etc/init.d/storm-backend
+#%config(noreplace) %{prefix}/etc/init.d/storm-backend
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
 %config(noreplace) /etc/init.d/storm-backend
-
-#%files server -f ../filelist.server.%{name}
-#%{prefix}/etc/logrotate.d/storm-backend.logrotate
-#/etc/init.d/storm-backend
-#%defattr(-,root,root)
 
 # Temp solution... find another way to make the directories readable by the
 # user running StoRM... i.e. the user may not be "storm"
@@ -148,7 +144,6 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/commons-codec-1.3.jar
 %{prefix}/lib/storm-backend/jar/c3p0-0.8.4.5.jar
 %{prefix}/lib/storm-backend/jar/saaj.jar
-%{prefix}/lib/storm-backend/jar/middlegen-hibernate-plugin-2.1.jar
 %{prefix}/lib/storm-backend/jar/xmlrpc-server-3.0.jar
 %{prefix}/lib/storm-backend/jar/dom.jar
 %{prefix}/lib/storm-backend/jar/cryptix.jar
@@ -169,12 +164,9 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/mail.jar
 %{prefix}/lib/storm-backend/jar/cryptix-asn1.jar
 %{prefix}/lib/storm-backend/jar/axis.jar
-%{prefix}/lib/storm-backend/jar/QSAdminGUI.jar
 %{prefix}/lib/storm-backend/jar/axis-schema.jar
-%{prefix}/lib/storm-backend/jar/hibernate-2.1.6.jar
 %{prefix}/lib/storm-backend/jar/cryptix32.jar
 %{prefix}/lib/storm-backend/jar/ws-commons-util-1.0.1.jar
-%{prefix}/lib/storm-backend/jar/jline-0.9.9.jar
 %{prefix}/lib/storm-backend/jar/cog-url.jar
 %{prefix}/lib/storm-backend/jar/xalan.jar
 %{prefix}/lib/storm-backend/jar/commons-validator-1.3.0.jar
@@ -182,14 +174,11 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/commons-beanutils.jar
 %{prefix}/lib/storm-backend/jar/ECARClient.jar
 %{prefix}/lib/storm-backend/jar/jce-jdk13-131.jar
-%{prefix}/lib/storm-backend/jar/middlegen-2.1.jar
-%{prefix}/lib/storm-backend/jar/hsqldb.jar
 %{prefix}/lib/storm-backend/jar/xercesImpl.jar
 %{prefix}/lib/storm-backend/jar/srm22client.jar
 %{prefix}/lib/storm-backend/jar/commons-lang-2.3.jar
 %{prefix}/lib/storm-backend/jar/puretls.jar
 %{prefix}/lib/storm-backend/jar/commons-digester-1.7.jar
-%{prefix}/lib/storm-backend/jar/QuickServer.jar
 %{prefix}/lib/storm-backend/jar/logback-classic-0.9.15.jar
 %{prefix}/lib/storm-backend/jar/logback-core-0.9.15.jar
 %{prefix}/lib/storm-backend/jar/slf4j-api-1.5.6.jar
@@ -197,11 +186,16 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/commons-pool-1.2.jar
 %{prefix}/lib/storm-backend/jar/jaxrpc.jar
 %{prefix}/lib/storm-backend/jar/commons-discovery-0.2.jar
-%{prefix}/lib/storm-backend/jar/ehcache-0.9.jar
 %{prefix}/lib/storm-backend/jar/cog-jobmanager.jar
 %{prefix}/lib/storm-backend/jar/jakarta-oro-2.0.8.jar
-%{prefix}/lib/storm-backend/jar/cglib-full-2.0.1.jar
 %{prefix}/lib/storm-backend/jar/dom4j-1.4.jar
+%{prefix}/lib/storm-backend/jar/asm-3.1.jar
+%{prefix}/lib/storm-backend/jar/grizzly-webserver-1.9.15b.jar
+%{prefix}/lib/storm-backend/jar/jersey-core-1.1.0-ea.jar
+%{prefix}/lib/storm-backend/jar/jersey-server-1.1.0-ea.jar
+%{prefix}/lib/storm-backend/jar/jna.jar
+%{prefix}/lib/storm-backend/jar/jsr311-api-1.1.jar
+
 %{prefix}/doc/ehcache-0.9.LICENSE
 %{prefix}/doc/apache2.LICENSE
 %{prefix}/doc/puretls.LICENSE
@@ -226,42 +220,17 @@ ant -Dversion="%{version}" clean build
 
 
 %install
-
 rm -rf $RPM_BUILD_ROOT
-ant -Dversion="%{version}" \
-    -Dprefix="$RPM_BUILD_ROOT%{prefix}" \
-    install
+ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
 
 mkdir -p $RPM_BUILD_ROOT/etc/cron.d
 mv -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
-# NOT NEEDED FROM 1.4 server has "./config" hard-coded path for config files
-#ln -s etc "$RPM_BUILD_ROOT/%{prefix}/config"
-
-# i can't find out how to do this in ant w/out too much pain...
 mkdir -p $RPM_BUILD_ROOT/etc/init.d
-ln -sf %{prefix}/etc/init.d/storm-backend "$RPM_BUILD_ROOT/etc/init.d/storm-backend"
+mv -f $RPM_BUILD_ROOT/opt/storm/backend/etc/init.d/storm-backend $RPM_BUILD_ROOT/etc/init.d/
 
-# make file list from install dir contents
-# (this is getting intricated; I hope the lists stabilizes soon)
-#
-#cd "$RPM_BUILD_ROOT"
-#(
-#    find './%{prefix}/lib/storm-backend/jar' -name '*.jar';
-#    find './%{prefix}/doc' -name '*.LICENSE';
-#    find './%{prefix}/doc' -name 'ACKNOWLEDGEMENTS.txt'
-#)  | sed -e " \
-#   s|^\.|%attr(-,root,root) |; \
-#" > "$RPM_BUILD_DIR/filelist.jars.%{name}"
-#sed -e 's|^.*%{prefix}|%{prefix}|;' \
-#    < "$RPM_BUILD_DIR/filelist.jars.%{name}" \
-#    > "$RPM_BUILD_DIR/contents.jars.%{name}" 
-#find -type f -or -type l \
-#  | grep -v -f "$RPM_BUILD_DIR/contents.jars.%{name}" \
-#  | sed -e " \
-#   s|^\.|%attr(-,root,root) |; \
-#   /\/etc\//s|^|%config(noreplace) |; \
-#" > "$RPM_BUILD_DIR/filelist.server.%{name}"
-
+if [ -h /etc/init.d/storm-backend ]; then
+    rm -f /etc/init.d/storm-backend
+fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
