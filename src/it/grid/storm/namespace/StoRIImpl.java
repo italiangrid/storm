@@ -209,16 +209,357 @@ implements StoRI {
     }
 
 
-    public void setStoRIType(StoRIType type) {
-        this.type = type;
+    public void allotSpaceByToken(TSpaceToken token) throws ReservationException, ExpiredSpaceTokenException {
+
+        LocalFile localfile = this.getLocalFile();
+
+        //Retrieve SpaceSystem Driver
+        if (spaceDriver == null) {
+            try {
+                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
+            }
+            catch (NamespaceException ex) {
+                log.error("Error while retrieving Space System Driver for VFS ", ex);
+                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
+            }
+        }
+
+        try {
+            vfs.useAllSpaceForFile(token, this);
+        }
+        catch (NamespaceException ex1) {
+            log.error("Error while using Space with token '" + token + "' for " + this.fileName, ex1);
+            throw new ReservationException("Error while using Space with token '" + token + "' for " + this.fileName);
+        }
+
+        //this.getSpace().allot();
+
     }
 
-    public void setMappingRule(MappingRule winnerRule) {
-        this.winnerRule = winnerRule;
+    public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize) throws ReservationException, ExpiredSpaceTokenException {
+
+        LocalFile localfile = this.getLocalFile();
+
+        //Retrieve SpaceSystem Driver
+        if (spaceDriver == null) {
+            try {
+                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
+            }
+            catch (NamespaceException ex) {
+                log.error("Error while retrieving Space System Driver for VFS ", ex);
+                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
+            }
+        }
+
+        try {
+            vfs.useSpaceForFile(token, this, totSize);
+        }
+        catch (NamespaceException ex1) {
+            log.error("Error while using Space with token '" + token + "' for " + this.fileName, ex1);
+            throw new ReservationException("Error while using Space with token '" + token + "' for " + this.fileName);
+        }
+
+        //this.getSpace().allot();
+
+    }
+
+    public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException {
+
+        if (spaceDriver == null) {
+            try {
+                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
+            }
+            catch (NamespaceException ex) {
+                log.error("Error while retrieving Space System Driver for VFS ", ex);
+                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
+            }
+        }
+
+        //Make SILHOUETTE for File
+        try {
+            vfs.makeSilhouetteForFile(this, totSize);
+        }
+        catch (NamespaceException ex1) {
+            log.error("Error while constructing 'Space Silhouette' for " + this.fileName, ex1);
+            throw new ReservationException("Error while constructing 'Space Silhouette' for " + this.fileName);
+        }
+
+        log.debug("Space built. Space " + this.getSpace().getSpaceFile().getPath());
+
+        //Make "space" physically in underlying file system
+        this.getSpace().allot();
+
+    }
+
+    public String getAbsolutePath() {
+        try {
+            return vfs.getRootPath() + NamingConst.SEPARATOR + relativeStFN;
+        }
+        catch (NamespaceException ex) {
+            log.error("VFS Root path error", ex);
+            return null;
+        }
+    }
+
+
+    /*****************************************************************************
+     *  BUSINESS METHODs
+     ****************************************************************************/
+
+    public ArrayList getChildren(GridUserInterface gUser, TDirOption dirOption) throws
+    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+
+        log.error("METHOD DEPRECATED! : getChildren (GridUser, DirOption); use without GridUser");
+        return getChildren(dirOption);
+    }
+
+
+
+    public ArrayList getChildren(TDirOption dirOption) throws
+    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+
+        ArrayList pathList = new ArrayList();
+        ArrayList stoRIList = new ArrayList();
+        File fileHandle = new File(getAbsolutePath());
+
+        if (!fileHandle.isDirectory()) {
+            if (fileHandle.isFile()) {
+                log.error("SURL represents a File, not a Directory!");
+                throw new InvalidDescendantsFileRequestException(fileHandle);
+            }
+            else {
+                log.warn("SURL does not exists!");
+                throw new InvalidDescendantsPathRequestException(fileHandle);
+            }
+        }
+        else { //SURL point to an existent directory.
+            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), dirOption.getNumLevel());
+            pathList = (ArrayList) pCreator.generateChild(pathList);
+            if (pathList.size() == 0) {
+                log.debug("SURL point to an EMPTY DIRECTORY");
+                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
+            }
+            else { //Creation of StoRI LIST
+                NamespaceInterface namespace = NamespaceDirector.getNamespace();
+                StoRI createdStoRI = null;
+                String childPath;
+                for (int i = 0; i < pathList.size(); i++) {
+                    childPath = (String) pathList.get(i);
+                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
+                    try {
+                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
+                        stoRIList.add(createdStoRI);
+                    }
+                    catch (NamespaceException ex) {
+                        log.error("Error occurred while resolving StoRI by absolute path", ex);
+                    }
+                }
+            }
+        }
+        return stoRIList;
+    }
+
+
+    /**
+     * Returns the SURL lifetime. This method queries the DB and retrieves also the startTime.
+     * The DB is queried only on the first invocation of this or the getFileStartTime() methods,
+     * therefore subsequent invocations of these two methods are computationally lighter.
+     *
+     * If the file is PERMANENT, or this StoRI refeers to a non-valid file then -1 is returned.
+     * @return TLifeTimeInSeconds
+     */
+    public TLifeTimeInSeconds getFileLifeTime() {
+        if (!(volatileInformationAreSet)) {
+            setVolatileInformation();
+        }
+        return lifetime;
+    }
+
+    public String getFilename() {
+        return this.fileName;
+    }
+
+    /**
+     * Returns the SURL start time (time from which starts the lifetime). This method queries the DB
+     * and retrieves also the lifetime of the SURL.
+     * The DB is queried only on the first invocation of this or the getFileLifeTime() methods,
+     * therefore subsequent invocations of these two methods are computationally lighter.
+     *
+     * If the file is permanent or this StoRI refeers to a non-valid file then NULL is retuned!
+     * @return Date
+     */
+    public Date getFileStartTime() {
+        if (!(volatileInformationAreSet)) {
+            setVolatileInformation();
+        }
+        return startTime;
+    }
+
+    public ArrayList getFirstLevelChildren(TDirOption dirOption)
+    throws InvalidDescendantsEmptyRequestException,
+    InvalidDescendantsAuthRequestException,
+    InvalidDescendantsPathRequestException,
+    InvalidDescendantsFileRequestException {
+
+
+        ArrayList pathList = new ArrayList();
+        ArrayList stoRIList = new ArrayList();
+        File fileHandle = new File(getAbsolutePath());
+
+        if (!fileHandle.isDirectory()) {
+            if (fileHandle.isFile()) {
+                log.error("SURL represents a File, not a Directory!");
+                throw new InvalidDescendantsFileRequestException(fileHandle);
+            }
+            else {
+                log.warn("SURL does not exists!");
+                throw new InvalidDescendantsPathRequestException(fileHandle);
+            }
+        }
+        else { //SURL point to an existent directory.
+            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
+            pathList = (ArrayList) pCreator.generateFirstLevelChild(pathList);
+            if (pathList.size() == 0) {
+                log.debug("SURL point to an EMPTY DIRECTORY");
+                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
+            }
+            else { //Creation of StoRI LIST
+                NamespaceInterface namespace = NamespaceDirector.getNamespace();
+                StoRI createdStoRI = null;
+                String childPath;
+                for (int i = 0; i < pathList.size(); i++) {
+                    childPath = (String) pathList.get(i);
+                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
+                    try {
+                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
+                        stoRIList.add(createdStoRI);
+                    }
+                    catch (NamespaceException ex) {
+                        log.error("Error occurred while resolving StoRI by absolute path", ex);
+                    }
+                }
+            }
+        }
+        return stoRIList;
+    }
+
+    public LocalFile getLocalFile() {
+        if (localFile == null) {
+            try {
+                fs = vfs.getFilesystem();
+            }
+            catch (NamespaceException ex) {
+                log.error("Error while retrieving FS driver ", ex);
+            }
+            localFile = new LocalFile(getAbsolutePath(), fs);
+        }
+        return localFile;
     }
 
     public MappingRule getMappingRule() {
         return this.winnerRule;
+    }
+
+    public List getParents() {
+
+        StoRI createdStoRI = null;
+        ArrayList parentList = new ArrayList();
+        String consumeElements = this.relativePath;
+        String consumed;
+        boolean lastElements = false;
+
+        do {
+            createdStoRI = new StoRIImpl(this.vfs, this.winnerRule, consumeElements, StoRIType.FOLDER);
+            parentList.add(createdStoRI);
+            consumed = NamespaceUtil.consumeElement(consumeElements);
+            if (consumed.equals(consumeElements)) {
+                lastElements = true;
+            }
+            else {
+                consumeElements = consumed;
+            }
+        }
+        while ( (!lastElements));
+
+        return parentList;
+    }
+
+    public PFN getPFN() {
+        if (pfn == null) {
+            try {
+                this.pfn = PFN.make(getAbsolutePath());
+            }
+            catch (InvalidPFNAttributeException ex) {
+                log.error("Unable to build the PFN in the VFS '" + getVFSName() + "' with this path :'" +
+                        getAbsolutePath() +
+                "'");
+            }
+        }
+        return this.pfn;
+    }
+
+    public String getRelativePath() {
+        return this.relativePath;
+    }
+
+    public String getRelativeStFN() {
+        return this.relativeStFN;
+    }
+
+
+
+    public Space getSpace() {
+        if (space == null) {
+            log.error("No space bound with this StoRI!");
+            return null;
+        }
+        return this.space;
+    }
+
+    public StFN getStFN() {
+        StFN stfn = null;
+        if (this.surl == null) {
+            getSURL();
+        }
+        stfn = surl.sfn().stfn();
+        return stfn;
+    }
+
+    public String getStFNPath() {
+        return this.stfnPath;
+    }
+
+    public String getStFNRoot() {
+        return this.stfnRoot;
+    }
+
+    public StoRIType getStoRIType() {
+        return this.type;
+    }
+
+    public TSURL getSURL() {
+        /**
+         *  The String passed to TSURL.makeFromString MUST contains
+         *  a valid TSURL in string format, not only relativePath.
+         */
+        if (this.surl == null) {
+            try {
+                this.surl = TSURL.makeFromString(buildSURLString());
+            }
+            catch (InvalidTSURLAttributesException ex) {
+                log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);
+            }
+            catch (NamespaceException ex) {
+                /** @todo Handle this exception */
+                log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);
+            }
+
+        }
+        return surl;
     }
 
     /*****************************************************************************
@@ -283,265 +624,8 @@ implements StoRI {
         return resultTURL;
     }
 
-
-    private Authority getPooledAuthority(Protocol pooledProtocol) {
-        Authority authority = null;
-        try {
-            if (vfs.getProtocolBalancer(pooledProtocol) != null) {
-                Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
-                if (pooledProtocol.equals(Protocol.GSIFTP)) {
-                    FTPNode node = (FTPNode) bal.getNextElement();
-                    authority = new Authority(node.getHostName(), node.getPort());
-                } else {
-                    log.error("Unable to manage pool with protocol different from GSIFTP.");
-                }
-            }
-        } catch (NamespaceException e) {
-            log.error("Error getting the protocol balancer.");
-        }
-        return authority;
-    }
-
-
-
-    private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
-        TTURL result = null;
-        switch (protocol.getProtocolIndex())  {
-        case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
-        case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
-        case 2 :  result = TURLBuilder.buildGsiftpTURL(authority,physicalFN); break; //GSIFTP Protocol
-        case 3 :  result = TURLBuilder.buildRFIOTURL(authority,physicalFN); break; //RFIO Protocol
-        case 4 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //SRM Protocol
-        case 5 :  result = TURLBuilder.buildROOTTURL(authority,physicalFN); break; //ROOT Protocol
-        default : throw new InvalidProtocolForTURLException(protocol.getSchema()); //UNKNOWN Protocol
-        }
-        return result;
-    }
-
-
-    public TSURL getSURL() {
-        /**
-         *  The String passed to TSURL.makeFromString MUST contains
-         *  a valid TSURL in string format, not only relativePath.
-         */
-        if (this.surl == null) {
-            try {
-                this.surl = TSURL.makeFromString(buildSURLString());
-            }
-            catch (InvalidTSURLAttributesException ex) {
-                log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);
-            }
-            catch (NamespaceException ex) {
-                /** @todo Handle this exception */
-                log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);
-            }
-
-        }
-        return surl;
-    }
-
-    private String buildSURLString() throws NamespaceException {
-        String stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
-        SURL surl = new SURL(stfn);
-        return surl.toString();
-    }
-
-    public PFN getPFN() {
-        if (pfn == null) {
-            try {
-                this.pfn = PFN.make(getAbsolutePath());
-            }
-            catch (InvalidPFNAttributeException ex) {
-                log.error("Unable to build the PFN in the VFS '" + getVFSName() + "' with this path :'" +
-                        getAbsolutePath() +
-                "'");
-            }
-        }
-        return this.pfn;
-    }
-
-    public StFN getStFN() {
-        StFN stfn = null;
-        if (this.surl == null) {
-            getSURL();
-        }
-        stfn = surl.sfn().stfn();
-        return stfn;
-    }
-
-    public String getStFNRoot() {
-        return this.stfnRoot;
-    }
-
-    public void setStFNRoot(String stfnRoot) {
-        this.stfnRoot = stfnRoot;
-    }
-
-    public String getRelativePath() {
-        return this.relativePath;
-    }
-
-    public String getRelativeStFN() {
-        return this.relativeStFN;
-    }
-
-    public String getFilename() {
-        return this.fileName;
-    }
-
-    public String getStFNPath() {
-        return this.stfnPath;
-    }
-
-
-
-    /**
-     * Returns the SURL lifetime. This method queries the DB and retrieves also the startTime.
-     * The DB is queried only on the first invocation of this or the getFileStartTime() methods,
-     * therefore subsequent invocations of these two methods are computationally lighter.
-     *
-     * If the file is PERMANENT, or this StoRI refeers to a non-valid file then -1 is returned.
-     * @return TLifeTimeInSeconds
-     */
-    public TLifeTimeInSeconds getFileLifeTime() {
-        if (!(volatileInformationAreSet)) {
-            setVolatileInformation();
-        }
-        return lifetime;
-    }
-
-    /**
-     * Returns the SURL start time (time from which starts the lifetime). This method queries the DB
-     * and retrieves also the lifetime of the SURL.
-     * The DB is queried only on the first invocation of this or the getFileLifeTime() methods,
-     * therefore subsequent invocations of these two methods are computationally lighter.
-     *
-     * If the file is permanent or this StoRI refeers to a non-valid file then NULL is retuned!
-     * @return Date
-     */
-    public Date getFileStartTime() {
-        if (!(volatileInformationAreSet)) {
-            setVolatileInformation();
-        }
-        return startTime;
-    }
-
-    /**
-     * Set "lifetime" and "startTime" information. The corresponding values are retrieved from the DB.
-     */
-    private void setVolatileInformation() {
-        VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
-        List volatileInfo = catalog.volatileInfoOn(getPFN());
-        if (volatileInfo.size() != 2) {
-            lifetime = TLifeTimeInSeconds.makeInfinite();
-            startTime = null;
-            return;
-        }
-        startTime = new Date(((Calendar) volatileInfo.get(0)).getTimeInMillis());
-        lifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
-        volatileInformationAreSet = true;
-    }
-
-    /**
-     * Returns true if the status of the SURL is SRM_SPACE_AVAILABLE, false otherwise.
-     * This method queries the DB, therefore pay attention to possible performance issues.
-     * @return boolean
-     */
-    public boolean isSURLBusy() {
-        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(getSURL());
-        return busyStatus;
-    }
-
-    public StoRIType getStoRIType() {
-        return this.type;
-    }
-
-    public Space getSpace() {
-        if (space == null) {
-            log.error("No space bound with this StoRI!");
-            return null;
-        }
-        return this.space;
-    }
-
-    public void setSpace(Space space) {
-        this.space = space;
-    }
-
-    public LocalFile getLocalFile() {
-        if (localFile == null) {
-            try {
-                fs = vfs.getFilesystem();
-            }
-            catch (NamespaceException ex) {
-                log.error("Error while retrieving FS driver ", ex);
-            }
-            localFile = new LocalFile(getAbsolutePath(), fs);
-        }
-        return localFile;
-    }
-
     public VirtualFSInterface getVirtualFileSystem() {
         return this.vfs;
-    }
-
-    /*****************************************************************************
-     *  BUSINESS METHODs
-     ****************************************************************************/
-
-    public ArrayList getChildren(GridUserInterface gUser, TDirOption dirOption) throws
-    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
-
-        log.error("METHOD DEPRECATED! : getChildren (GridUser, DirOption); use without GridUser");
-        return getChildren(dirOption);
-    }
-
-    public ArrayList getChildren(TDirOption dirOption) throws
-    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
-
-        ArrayList pathList = new ArrayList();
-        ArrayList stoRIList = new ArrayList();
-        File fileHandle = new File(getAbsolutePath());
-
-        if (!fileHandle.isDirectory()) {
-            if (fileHandle.isFile()) {
-                log.error("SURL represents a File, not a Directory!");
-                throw new InvalidDescendantsFileRequestException(fileHandle);
-            }
-            else {
-                log.warn("SURL does not exists!");
-                throw new InvalidDescendantsPathRequestException(fileHandle);
-            }
-        }
-        else { //SURL point to an existent directory.
-            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
-            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), dirOption.getNumLevel());
-            pathList = (ArrayList) pCreator.generateChild(pathList);
-            if (pathList.size() == 0) {
-                log.debug("SURL point to an EMPTY DIRECTORY");
-                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
-            }
-            else { //Creation of StoRI LIST
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                StoRI createdStoRI = null;
-                String childPath;
-                for (int i = 0; i < pathList.size(); i++) {
-                    childPath = (String) pathList.get(i);
-                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
-                    try {
-                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
-                        stoRIList.add(createdStoRI);
-                    }
-                    catch (NamespaceException ex) {
-                        log.error("Error occurred while resolving StoRI by absolute path", ex);
-                    }
-                }
-            }
-        }
-        return stoRIList;
     }
 
     public boolean hasJustInTimeACLs() {
@@ -565,123 +649,50 @@ implements StoRI {
         return result;
     }
 
-    public List getParents() {
-
-        StoRI createdStoRI = null;
-        ArrayList parentList = new ArrayList();
-        String consumeElements = this.relativePath;
-        String consumed;
-        boolean lastElements = false;
-
-        do {
-            createdStoRI = new StoRIImpl(this.vfs, this.winnerRule, consumeElements, StoRIType.FOLDER);
-            parentList.add(createdStoRI);
-            consumed = NamespaceUtil.consumeElement(consumeElements);
-            if (consumed.equals(consumeElements)) {
-                lastElements = true;
-            }
-            else {
-                consumeElements = consumed;
-            }
-        }
-        while ( (!lastElements));
-
-        return parentList;
+    /**
+     * Returns true if the status of the SURL is SRM_SPACE_AVAILABLE, false otherwise.
+     * This method queries the DB, therefore pay attention to possible performance issues.
+     * @return boolean
+     */
+    public boolean isSURLBusy() {
+        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
+        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(getSURL());
+        return busyStatus;
     }
 
-    public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException {
-
-        if (spaceDriver == null) {
-            try {
-                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-            }
-            catch (NamespaceException ex) {
-                log.error("Error while retrieving Space System Driver for VFS ", ex);
-                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
-            }
-        }
-
-        //Make SILHOUETTE for File
-        try {
-            vfs.makeSilhouetteForFile(this, totSize);
-        }
-        catch (NamespaceException ex1) {
-            log.error("Error while constructing 'Space Silhouette' for " + this.fileName, ex1);
-            throw new ReservationException("Error while constructing 'Space Silhouette' for " + this.fileName);
-        }
-
-        log.debug("Space built. Space " + this.getSpace().getSpaceFile().getPath());
-
-        //Make "space" physically in underlying file system
-        this.getSpace().allot();
-
+    public void setGroupTapeRead() {
+        
+        String groupName = "storm-SA-read";
+        
+        LocalFile localFile = getLocalFile();
+        
+        localFile.setGroupOwnership(groupName);
+    }
+    
+    public void setGroupTapeWrite() {
+        
+        String groupName = "storm-SA-write";
+        
+        LocalFile localFile = getLocalFile();
+        
+        localFile.setGroupOwnership(groupName);
+    }
+    
+    public void setMappingRule(MappingRule winnerRule) {
+        this.winnerRule = winnerRule;
     }
 
-    public void allotSpaceByToken(TSpaceToken token) throws ReservationException, ExpiredSpaceTokenException {
-
-        LocalFile localfile = this.getLocalFile();
-
-        //Retrieve SpaceSystem Driver
-        if (spaceDriver == null) {
-            try {
-                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-            }
-            catch (NamespaceException ex) {
-                log.error("Error while retrieving Space System Driver for VFS ", ex);
-                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
-            }
-        }
-
-        try {
-            vfs.useAllSpaceForFile(token, this);
-        }
-        catch (NamespaceException ex1) {
-            log.error("Error while using Space with token '" + token + "' for " + this.fileName, ex1);
-            throw new ReservationException("Error while using Space with token '" + token + "' for " + this.fileName);
-        }
-
-        //this.getSpace().allot();
-
+    public void setSpace(Space space) {
+        this.space = space;
     }
 
-    public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize) throws ReservationException, ExpiredSpaceTokenException {
-
-        LocalFile localfile = this.getLocalFile();
-
-        //Retrieve SpaceSystem Driver
-        if (spaceDriver == null) {
-            try {
-                this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-            }
-            catch (NamespaceException ex) {
-                log.error("Error while retrieving Space System Driver for VFS ", ex);
-                throw new ReservationException("Error while retrieving Space System Driver for VFS ");
-            }
-        }
-
-        try {
-            vfs.useSpaceForFile(token, this, totSize);
-        }
-        catch (NamespaceException ex1) {
-            log.error("Error while using Space with token '" + token + "' for " + this.fileName, ex1);
-            throw new ReservationException("Error while using Space with token '" + token + "' for " + this.fileName);
-        }
-
-        //this.getSpace().allot();
-
+    public void setStFNRoot(String stfnRoot) {
+        this.stfnRoot = stfnRoot;
     }
 
-    public String getAbsolutePath() {
-        try {
-            return vfs.getRootPath() + NamingConst.SEPARATOR + relativeStFN;
-        }
-        catch (NamespaceException ex) {
-            log.error("VFS Root path error", ex);
-            return null;
-        }
+    public void setStoRIType(StoRIType type) {
+        this.type = type;
     }
-
-
 
     /***********************************************
      *              UTILITY METHODS
@@ -706,6 +717,46 @@ implements StoRI {
         sb.append(" stori.localFile      : " + this.getLocalFile() + "\n");
 
         return sb.toString();
+    }
+
+    private String buildSURLString() throws NamespaceException {
+        String stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
+        SURL surl = new SURL(stfn);
+        return surl.toString();
+    }
+
+    private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
+        TTURL result = null;
+        switch (protocol.getProtocolIndex())  {
+        case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
+        case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
+        case 2 :  result = TURLBuilder.buildGsiftpTURL(authority,physicalFN); break; //GSIFTP Protocol
+        case 3 :  result = TURLBuilder.buildRFIOTURL(authority,physicalFN); break; //RFIO Protocol
+        case 4 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //SRM Protocol
+        case 5 :  result = TURLBuilder.buildROOTTURL(authority,physicalFN); break; //ROOT Protocol
+        default : throw new InvalidProtocolForTURLException(protocol.getSchema()); //UNKNOWN Protocol
+        }
+        return result;
+    }
+
+
+
+    private Authority getPooledAuthority(Protocol pooledProtocol) {
+        Authority authority = null;
+        try {
+            if (vfs.getProtocolBalancer(pooledProtocol) != null) {
+                Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
+                if (pooledProtocol.equals(Protocol.GSIFTP)) {
+                    FTPNode node = (FTPNode) bal.getNextElement();
+                    authority = new Authority(node.getHostName(), node.getPort());
+                } else {
+                    log.error("Unable to manage pool with protocol different from GSIFTP.");
+                }
+            }
+        } catch (NamespaceException e) {
+            log.error("Error getting the protocol balancer.");
+        }
+        return authority;
     }
 
     private String getVFSName() {
@@ -742,53 +793,20 @@ implements StoRI {
     }
 
 
-    public ArrayList getFirstLevelChildren(TDirOption dirOption)
-    throws InvalidDescendantsEmptyRequestException,
-    InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException,
-    InvalidDescendantsFileRequestException {
-
-
-        ArrayList pathList = new ArrayList();
-        ArrayList stoRIList = new ArrayList();
-        File fileHandle = new File(getAbsolutePath());
-
-        if (!fileHandle.isDirectory()) {
-            if (fileHandle.isFile()) {
-                log.error("SURL represents a File, not a Directory!");
-                throw new InvalidDescendantsFileRequestException(fileHandle);
-            }
-            else {
-                log.warn("SURL does not exists!");
-                throw new InvalidDescendantsPathRequestException(fileHandle);
-            }
+    /**
+     * Set "lifetime" and "startTime" information. The corresponding values are retrieved from the DB.
+     */
+    private void setVolatileInformation() {
+        VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
+        List volatileInfo = catalog.volatileInfoOn(getPFN());
+        if (volatileInfo.size() != 2) {
+            lifetime = TLifeTimeInSeconds.makeInfinite();
+            startTime = null;
+            return;
         }
-        else { //SURL point to an existent directory.
-            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
-            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
-            pathList = (ArrayList) pCreator.generateFirstLevelChild(pathList);
-            if (pathList.size() == 0) {
-                log.debug("SURL point to an EMPTY DIRECTORY");
-                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
-            }
-            else { //Creation of StoRI LIST
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                StoRI createdStoRI = null;
-                String childPath;
-                for (int i = 0; i < pathList.size(); i++) {
-                    childPath = (String) pathList.get(i);
-                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
-                    try {
-                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
-                        stoRIList.add(createdStoRI);
-                    }
-                    catch (NamespaceException ex) {
-                        log.error("Error occurred while resolving StoRI by absolute path", ex);
-                    }
-                }
-            }
-        }
-        return stoRIList;
+        startTime = new Date(((Calendar) volatileInfo.get(0)).getTimeInMillis());
+        lifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
+        volatileInformationAreSet = true;
     }
 
 

@@ -22,6 +22,18 @@ CREATE TABLE IF NOT EXISTS db_version (
   description VARCHAR(100));
 REPLACE INTO db_version (major,minor,revision,description) VALUES (1,4,0000,'1 Dec 2008');
 
+CREATE TABLE IF NOT EXISTS tape_recall (
+  taskId VARCHAR(255) BINARY NOT NULL,
+  requestToken VARCHAR(255) BINARY,
+  requestType char(3),
+  fileName text not null,
+  status int,
+  voName VARCHAR(255) BINARY,
+  userID VARCHAR(255) BINARY,
+  retryAttempt int,
+  timeStamp datetime not null,
+  primary key (taskId)) type=InnoDB;
+
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
   config_FileStorageTypeID CHAR(1),

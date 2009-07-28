@@ -36,7 +36,7 @@ RCSID = "$Id: posixfs_acl.cpp,v 1.28 2007/04/13 11:28:24 aforti Exp $";
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <string.h>
 
 using std::string;
 

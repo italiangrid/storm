@@ -3,9 +3,16 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtGChunkData;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.StoRIImpl;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -144,7 +151,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         // Build the ArrayOfTSURLReturnStatus matching the SURLs requested by
         // the user and the list of candidate SURLs found in the db.
         ArrayOfTSURLReturnStatus surlStatusReturnList = null;
-        Collection surlToRelease = new LinkedList();
+        Collection<ReducedPtGChunkData> surlToRelease = new LinkedList<ReducedPtGChunkData>();
         try {
             if (surlPtGChunks.isEmpty()) {
                 // Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or SRM_FAILURE are returned.
@@ -262,7 +269,27 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         if (!(surlToRelease.isEmpty())) {
             dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(surlToRelease,requestToken);
         }
+        
+        if (Configuration.getInstance().getTapeEnabled()) {
+            for (ReducedPtGChunkData reducedChhnkData : surlToRelease) {
 
+                NamespaceInterface nameSpace = NamespaceDirector.getNamespace();
+
+                if (!dbCatalogPtG.isSRM_FILE_PINNED(reducedChhnkData.fromSURL())) {
+
+                    try {
+
+                        StoRI stori = nameSpace.resolveStoRIbySURL(reducedChhnkData.fromSURL());
+                        StormEA.removePinned(stori.getAbsolutePath());
+
+                    } catch (NamespaceException e) {
+                        log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
+                                + reducedChhnkData.fromSURL().toString());
+                    }
+
+                }
+            }
+        }
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
             ReleaseFilesCommand.log.info("srmReleaseFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] [SURL:"+inputData.getArrayOfSURLs()+"] successfully done with: [status:"+globalStatus.toString()+"]");
@@ -271,7 +298,6 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         } else {
             ReleaseFilesCommand.log.error("srmReleaseFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] [SURL:"+inputData.getArrayOfSURLs()+"] failed with: [status:"+globalStatus.toString()+"]");
         }
-
 
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(surlStatusReturnList);

@@ -10,10 +10,12 @@ import it.grid.storm.persistence.dao.RequestSummaryDAO;
 import it.grid.storm.persistence.dao.StorageAreaDAO;
 import it.grid.storm.persistence.dao.StorageFileDAO;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
+import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.exceptions.PersistenceException;
 import it.grid.storm.persistence.impl.mysql.StorageFileDAOMySql;
 import it.grid.storm.persistence.impl.mysql.StorageSpaceDAOMySql;
+import it.grid.storm.persistence.impl.mysql.TapeRecallDAOMySql;
 import it.grid.storm.persistence.util.db.DBConnection;
 import it.grid.storm.persistence.util.db.DBConnectionPool;
 import it.grid.storm.persistence.util.db.DataBaseStrategy;
@@ -105,7 +107,20 @@ public class MySqlDAOFactory implements DAOFactory {
     {
         return new StorageSpaceDAOMySql();
     }
-
+    
+    /**
+     * Returns an implementation of TapeRecallCatalog, specific to a particular
+     * datastore.
+     *
+     * @throws DataAccessException
+     * @return TapeReallDAO
+     * @todo Implement this it.grid.storm.persistence.DAOFactory method
+     */
+    public TapeRecallDAO getTapeRecallDAO() throws DataAccessException
+    {
+      return new TapeRecallDAOMySql();
+    }
+    
     /**
      *
      * @return String

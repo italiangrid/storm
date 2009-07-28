@@ -21,6 +21,7 @@
 #include <sys/types.h> // mode_t
 #include <vector>
 #include <unistd.h>
+#include <stdlib.h>
 
 
 namespace fs {
@@ -30,7 +31,7 @@ namespace fs {
   public:
     /** Constructor, taking PATH string formatted like the environment
         variable "PATH". */
-    path::path(const char* const PATH = getenv("PATH"));
+    path(const char* const PATH = getenv("PATH"));
 
     /** Search for the first occurence of @a x, in the directories
         listed in this path instance; if one is found, it is put in the @a

@@ -1,6 +1,7 @@
-package it.grid.storm.dmapi;
+package it.grid.storm.ea;
 
-public class AttributeNotFoundException extends DMAPIException {
+
+public class AttributeNotFoundException extends ExtendedAttributesException {
 
     private static final long serialVersionUID = -7093256442208513239L;
 

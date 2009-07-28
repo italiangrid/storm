@@ -561,7 +561,7 @@ class fs_acl {
    */
   template<typename uid_or_gid_t>
     fs_acl::permission_t
-    fs_acl::get_effective_perm_template(const uid_or_gid_t id,
+    get_effective_perm_template(const uid_or_gid_t id,
                                         const owner_perm_pair<uid_or_gid_t>& owner,
                                         extended_acl_t<uid_or_gid_t>& eacl) const
     {
@@ -586,7 +586,7 @@ class fs_acl {
    */
   template<typename uid_or_gid_t>
     fs_acl::permission_t
-    fs_acl::get_perm_template(const uid_or_gid_t id,
+    get_perm_template(const uid_or_gid_t id,
                               const owner_perm_pair<uid_or_gid_t>& owner,
                               extended_acl_t<uid_or_gid_t>& eacl) const
     {

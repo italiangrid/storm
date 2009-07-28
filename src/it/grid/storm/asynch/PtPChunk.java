@@ -10,6 +10,7 @@ import it.grid.storm.catalogs.PtPChunkData;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.InvalidPathException;
 import it.grid.storm.filesystem.InvalidPermissionOnFileException;
@@ -960,6 +961,13 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData
             .changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
             failure = false; // gsm.successfulChunk(chunkData);
+            
+            // set group permission for tape quota management
+            if (Configuration.getInstance().getTapeEnabled()) {
+                fileStoRI.setGroupTapeWrite();
+                StormEA.setPinned(localFile.getAbsolutePath());
+            }
+            
             return true;
 
         } catch (WrongFilesystemType e) {

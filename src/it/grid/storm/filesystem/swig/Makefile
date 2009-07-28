@@ -68,7 +68,8 @@ GPFSAPI_LIBS ?= -lacl -lgpfs -L$(GPFS_LOCATION)/lib
 XFSAPI_INCLUDES ?= -I/usr/include
 
 # additional libraries libposixapi_interface depends on
-XFSAPI_LIBS ?= -lxfs -L/usr/lib
+#XFSAPI_LIBS ?= -lxfs -L/usr/lib
+XFSAPI_LIBS ?= -lhandle -L/usr/lib
 
 # the SWIG interface generator invocation
 #SWIG ?= swig -verbose
@@ -330,7 +331,7 @@ $(gpfsapi_swig_output): \
 
 # SWIG-generated C wrapper
 gpfsapi_interface_wrap.o: gpfsapi_interface_wrap.cxx
-	$(COMPILE.cpp) $(JAVA_INCLUDES) $(OUTPUT_OPTION) $<
+	$(COMPILE.cpp) $(GPFSAPI_INCLUDES) $(JAVA_INCLUDES) $(OUTPUT_OPTION) $<
 
 # automatic C wrapper files dependencies
 -include $(gpfsapi_swig_output_cxx:.cxx=.dep)

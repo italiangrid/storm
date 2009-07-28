@@ -25,8 +25,9 @@
 #include <cassert>
 #include <unistd.h>
 #include <sstream>
-#include <iostream.h>
+#include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 
 
 using std::string;

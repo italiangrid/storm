@@ -1,13 +1,11 @@
 package it.grid.storm.persistence.impl.mysql;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.persistence.DataSourceConnectionFactory;
 import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.dao.AbstractDAO;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.exceptions.PersistenceException;
 import it.grid.storm.persistence.model.StorageSpaceTO;
-import it.grid.storm.persistence.util.db.DataBaseStrategy;
 import it.grid.storm.persistence.util.helper.StorageSpaceSQLHelper;
 
 import java.sql.Connection;
@@ -20,13 +18,12 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- find = con.prepareStatement("SELECT storm_get_filereq.rowid, storm_req.r_token, storm_get_filereq.from_surl, storm_get_filereq.lifetime, storm_get_filereq.s_token, storm_get_filereq.flags, storm_req.protocol, storm_get_filereq.actual_size, storm_get_filereq.status, storm_get_filereq.errstring, storm_get_filereq.pfn FROM storm_get_filereq, storm_req WHERE storm_get_filereq.r_token=storm_req.r_token AND storm_get_filereq.r_token=?");
+ * find = con.prepareStatement("SELECT storm_get_filereq.rowid, storm_req.r_token, storm_get_filereq.from_surl, storm_get_filereq.lifetime, storm_get_filereq.s_token, storm_get_filereq.flags, storm_req.protocol, storm_get_filereq.actual_size, storm_get_filereq.status, storm_get_filereq.errstring, storm_get_filereq.pfn FROM storm_get_filereq, storm_req WHERE storm_get_filereq.r_token=storm_req.r_token AND storm_get_filereq.r_token=?"
+ * );
  **/
 
-
-public class StorageSpaceDAOMySql implements StorageSpaceDAO {
+public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO {
 
     private static final Logger log = LoggerFactory.getLogger(StorageSpaceDAOMySql.class);
 
@@ -34,51 +31,44 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     private static String FIND_BY_OWNER;
     private static String REMOVE;
 
-    private DataSourceConnectionFactory connFactory;
-
-    private DataBaseStrategy db;
     private StorageSpaceSQLHelper helper;
 
     /**
      * CONSTRUCTOR
      */
-    public StorageSpaceDAOMySql()
-    {
-        db = PersistenceDirector.getDataBase();
-        helper = new StorageSpaceSQLHelper(db.getDbmsVendor());
-        connFactory = PersistenceDirector.getConnectionFactory();
+    public StorageSpaceDAOMySql() {
+        helper = new StorageSpaceSQLHelper(PersistenceDirector.getDataBase().getDbmsVendor());
     }
 
     /**
      * addStorageSpace
-     *
+     * 
      * @param ss StorageSpace
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
      */
     public void addStorageSpace(StorageSpaceTO ss) throws DataAccessException {
         String query = helper.insertQuery(ss);
-        log.debug("INSERT query = "+query);
+        log.debug("INSERT query = " + query);
         Connection conn = getConnection();
         int res = -1;
         Statement stat = getStatement(conn);
         try {
             res = stat.executeUpdate(query);
-            log.debug("UPDATE result = "+res);
+            log.debug("UPDATE result = " + res);
             if (res == -1) {
                 log.error("db error : " + query);
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             log.error("Error while executing INSERT query", ex);
-            throw new DataAccessException("Error while executing INSERT query",ex);
+            throw new DataAccessException("Error while executing INSERT query", ex);
         }
         releaseConnection(null, stat, conn);
     }
 
     /**
      * getStorageSpaceById
-     *
+     * 
      * @param ssId Long
      * @return StorageSpace
      * @throws DataAccessException
@@ -89,18 +79,18 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     }
 
     /**
-     * Returns a Collection of StorageSpaceTO owned by 'user' and with the specified
-     * alias ('spaceAlias'). 'spaceAlias' can be NULL or empty and in these cases a Collection
-     * of all the StorageSpaceTO owned by 'user' is returned.
-     *
+     * Returns a Collection of StorageSpaceTO owned by 'user' and with the specified alias
+     * ('spaceAlias'). 'spaceAlias' can be NULL or empty and in these cases a Collection of all the
+     * StorageSpaceTO owned by 'user' is returned.
+     * 
      * @param owner VomsGridUser.
      * @param spaceAlias String.
      * @return Collection of StorageSpaceTO.
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
      */
-    public Collection getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias) throws DataAccessException
-    {
+    public Collection getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias)
+            throws DataAccessException {
         StorageSpaceTO ssTO = null;
         Collection result = new LinkedList();
         String query = helper.selectBySpaceAliasQuery(owner, spaceAlias);
@@ -130,18 +120,15 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
         return result;
     }
 
-
-
     /**
      * Returns a Collection of StorageSpaceTO owned by 'VO'.
-     *
+     * 
      * @param voname Vo.
      * @return Collection of StorageSpaceTO.
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
      */
-    public Collection getStorageSpaceBySpaceType(String stype) throws DataAccessException
-    {
+    public Collection getStorageSpaceBySpaceType(String stype) throws DataAccessException {
         StorageSpaceTO ssTO = null;
         Collection result = new LinkedList();
         String query = helper.selectBySpaceType(stype);
@@ -171,27 +158,16 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
         return result;
     }
 
-
-
-
-
-
-
-
-
-
-
-
     /**
-     * Returns a Collection of StorageSpaceTO with the specified
-     * alias ('spaceAlias'). 'spaceAlias' can not be be NULL or empty.
+     * Returns a Collection of StorageSpaceTO with the specified alias ('spaceAlias'). 'spaceAlias'
+     * can not be be NULL or empty.
+     * 
      * @param spaceAlias String.
      * @return Collection of StorageSpaceTO.
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
      */
-    public Collection getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException
-    {
+    public Collection getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException {
         StorageSpaceTO ssTO = null;
         Collection result = new LinkedList();
         String query = helper.selectBySpaceAliasOnlyQuery(spaceAlias);
@@ -221,11 +197,9 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
         return result;
     }
 
-
-
     /**
      * getStorageSpaceByToken
-     *
+     * 
      * @param token TSpaceToken
      * @return StorageSpace
      * @throws DataAccessException
@@ -244,13 +218,10 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
             log.debug("SELECT result = " + res);
             if (res == null) {
                 log.error("db error : " + query);
-                throw new DataAccessException("Storage Space with token = '"+token+"' not found!");
-            }
-            else
-            {
+                throw new DataAccessException("Storage Space with token = '" + token + "' not found!");
+            } else {
                 /**
-                 * @todo: Check size of result set.
-                 * Only one storage space can hold the token.
+                 * @todo: Check size of result set. Only one storage space can hold the token.
                  **/
 
                 // Fetch each row from the result set
@@ -258,8 +229,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
                     ssTO = helper.makeStorageSpaceTO(res);
                 }
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             log.error("Error while executing INSERT query", ex);
             throw new DataAccessException("Error while executing INSERT query", ex);
         }
@@ -270,7 +240,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
 
     /**
      * removeStorageSpace
-     *
+     * 
      * @param ss StorageSpace
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
@@ -301,7 +271,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
 
     /**
      * removeStorageSpace only by spaceToken
-     *
+     * 
      * @param ss StorageSpace
      * @throws DataAccessException
      * @todo Implement this it.grid.storm.catalog.StorageSpaceDAO method
@@ -326,31 +296,28 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
         releaseConnection(null, stat, conn);
     }
 
-
     /**
-     *
+     * 
      * @param ss StorageSpaceTO
      * @throws DataAccessException
      */
-    public void updateStorageSpace(StorageSpaceTO ss) throws DataAccessException
-    {
+    public void updateStorageSpace(StorageSpaceTO ss) throws DataAccessException {
         long freeSpace = (ss.getUnusedSize());
         /**
          * @todo: Update all changeable column! not only FreeSpace.
          */
-        String query = helper.updateFreeSpaceByTokenQuery(ss.getSpaceToken(),freeSpace);
-        log.debug("UPDATE query = "+query);
+        String query = helper.updateFreeSpaceByTokenQuery(ss.getSpaceToken(), freeSpace);
+        log.debug("UPDATE query = " + query);
         Connection conn = getConnection();
         int res = -1;
         Statement stat = getStatement(conn);
         try {
             res = stat.executeUpdate(query);
-            log.debug("UPDATE result = "+res);
-            if (res==-1) {
-                log.error("db error : "+query);
+            log.debug("UPDATE result = " + res);
+            if (res == -1) {
+                log.error("db error : " + query);
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             log.error("Error while executing INSERT query", ex);
             throw new DataAccessException("Error while executing UPDATE query", ex);
         }
@@ -358,29 +325,30 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
     }
 
     /**
-     *
+     * 
      * @param ss StorageSpaceTO
      * @throws DataAccessException
      */
-    public void updateAllStorageSpace(StorageSpaceTO ss) throws DataAccessException
-    {
+    public void updateAllStorageSpace(StorageSpaceTO ss) throws DataAccessException {
         long freeSpace = (ss.getUnusedSize());
         /**
          * @todo: Update all changeable column! not only FreeSpace.
          */
-        String query = helper.updateAllByTokenQuery(ss.getSpaceToken(), ss.getAlias(), ss.getGuaranteedSize(), ss.getSpaceFile());
-        log.debug("UPDATE query = "+query);
+        String query = helper.updateAllByTokenQuery(ss.getSpaceToken(),
+                                                    ss.getAlias(),
+                                                    ss.getGuaranteedSize(),
+                                                    ss.getSpaceFile());
+        log.debug("UPDATE query = " + query);
         Connection conn = getConnection();
         int res = -1;
         Statement stat = getStatement(conn);
         try {
             res = stat.executeUpdate(query);
-            log.debug("UPDATE result = "+res);
-            if (res==-1) {
-                log.error("db error : "+query);
+            log.debug("UPDATE result = " + res);
+            if (res == -1) {
+                log.error("db error : " + query);
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             log.error("Error while executing INSERT query", ex);
             throw new DataAccessException("Error while executing UPDATE query", ex);
         }
@@ -389,6 +357,7 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
 
     /**
      * Method used to retrieve the set of StorageTO for expired space.
+     * 
      * @param long timeInSecond
      * @return Collection of transfer object
      */
@@ -421,97 +390,4 @@ public class StorageSpaceDAOMySql implements StorageSpaceDAO {
 
         return result;
     }
-
-
-    /**
-     * Retrieve a connection
-     * Accessor method.
-     *
-     * @return Connection
-     * @throws DataAccessException
-     */
-    protected Connection getConnection() throws DataAccessException {
-        //Retrieve a Connection
-        Connection conn = null;
-        try {
-            conn = connFactory.borrowConnection();
-        }
-        catch (PersistenceException ex) {
-            throw new DataAccessException(ex);
-        }
-        return conn;
-    }
-
-
-    /**
-     * Release  a connection
-     * Accessor method.
-     *
-     * @param resultSet ResultSet
-     * @param statement Statement
-     * @param connection Connection
-     * @throws DataAccessException
-     */
-    protected void releaseConnection(ResultSet resultSet, Statement statement, Connection connection) throws DataAccessException {
-
-        //Release the ResultSet
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            }
-            catch (SQLException ex1) {
-                log.error("Error while releasing the result set");
-                throw new DataAccessException(ex1);
-            }
-        }
-
-        //Close the statement
-        if (statement != null) {
-            try {
-                statement.close();
-            }
-            catch (SQLException ex2) {
-                log.error("Error while releasing the statement");
-                throw new DataAccessException(ex2);
-            }
-        }
-
-        //Release the connection
-        if (connection != null) {
-            try {
-                connFactory.giveBackConnection(connection);
-            }
-            catch (PersistenceException ex3) {
-                log.error("Error while releasing the connection");
-                throw new DataAccessException(ex3);
-            }
-        }
-
-    }
-
-    /**
-     * Retrieve a Statement from connetion
-     * Accessor method.
-     *
-     * @param conn Connection
-     * @return Statement
-     * @throws DataAccessException
-     */
-    protected Statement getStatement(Connection conn) throws DataAccessException {
-        Statement stat = null;
-        if (conn==null) {
-            throw new DataAccessException("No Connection available to create a Statement");
-        } else
-        {
-            try {
-                stat = conn.createStatement();
-            }
-            catch (SQLException ex1) {
-                log.error("Error while creating the statement");
-                throw new DataAccessException(ex1);
-            }
-        }
-        return stat;
-    }
-
 }

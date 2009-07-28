@@ -107,6 +107,19 @@ public class MockDAOFactory implements DAOFactory {
   {
     return null;
   }
+  
+  /**
+   * Returns an implementation of TapeRecallCatalog, specific to a particular
+   * datastore.
+   *
+   * @throws DataAccessException
+   * @return TapeReallDAO
+   * @todo Implement this it.grid.storm.persistence.DAOFactory method
+   */
+  public TapeRecallDAO getTapeRecallDAO() throws DataAccessException
+  {
+    return null;
+  }
 
   public String toString()
   {

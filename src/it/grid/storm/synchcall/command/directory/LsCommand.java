@@ -5,6 +5,7 @@ import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.Checksum;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -24,6 +25,7 @@ import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
+import it.grid.storm.srm.types.TAccessLatency;
 import it.grid.storm.srm.types.TCheckSumType;
 import it.grid.storm.srm.types.TCheckSumValue;
 import it.grid.storm.srm.types.TDirOption;
@@ -36,6 +38,8 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TMetaDataPathDetail;
 import it.grid.storm.srm.types.TPermissionMode;
 import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRetentionPolicy;
+import it.grid.storm.srm.types.TRetentionPolicyInfo;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -730,9 +734,33 @@ public class LsCommand extends DirectoryCommand implements Command
             // fileType
             elementDetail.setFileType(TFileType.getTFileType("File"));
 
+            // retentionPolicyInfo
+            TRetentionPolicyInfo retentionPolicyInfo;
+            
+            if (Configuration.getInstance().getTapeEnabled()) {
+                retentionPolicyInfo = TRetentionPolicyInfo.TAPE1_DISK1_RETENTION_POLICY;
+            } else {
+                retentionPolicyInfo = TRetentionPolicyInfo.TAPE0_DISK1_RETENTION_POLICY;
+            }
+            elementDetail.setTRetentionPolicyInfo(retentionPolicyInfo);
+            
+            
             // fileLocality
-            elementDetail.setTFileLocality(TFileLocality.ONLINE);
-
+            boolean isFileOnDisk = localElement.isOnDisk();
+            if (Configuration.getInstance().getTapeEnabled()) {
+                boolean isFileOnTape = localElement.isOnTape();
+                
+                if (isFileOnTape && isFileOnDisk) {
+                    elementDetail.setTFileLocality(TFileLocality.ONLINE_AND_NEARLINE);
+                } else if (isFileOnDisk) {
+                    elementDetail.setTFileLocality(TFileLocality.ONLINE);
+                } else {
+                    elementDetail.setTFileLocality(TFileLocality.NEARLINE);
+                }
+            } else {
+                elementDetail.setTFileLocality(TFileLocality.ONLINE);
+            }
+            
             // lifetimeAssigned
             TLifeTimeInSeconds lifetimeAssigned = element.getFileLifeTime();
             elementDetail.setLifeTimeAssigned(lifetimeAssigned);
@@ -746,11 +774,27 @@ public class LsCommand extends DirectoryCommand implements Command
             }
 
             // checksum
-            //Check if the checksum is enabled by properties configuration
-            if(Configuration.getInstance().getChecksumEnabled()) {
-                long checksum = localElement.getChecksum();
-                TCheckSumValue checkSumValue = new TCheckSumValue(Long.toString(checksum));
-                TCheckSumType checkSumType = TCheckSumType.ADLER32;
+            boolean getChecksum = false;
+            
+            if (localElement.hasChecksum()) {
+                getChecksum = true;
+            } else if (isFileOnDisk) {
+                if (Configuration.getInstance().getChecksumEnabled()) {
+                    getChecksum = true;
+                }
+            }
+            
+            if (getChecksum) {
+                
+                String checksum = localElement.getChecksum();
+                
+                if (checksum == null) {
+                    checksum = "Error computing checksum";
+                }
+                
+                TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
+                TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumType());
+                
                 elementDetail.setCheckSumType(checkSumType);
                 elementDetail.setCheckSumValue(checkSumValue);
             }

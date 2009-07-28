@@ -11,6 +11,8 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.InvalidPathException;
 import it.grid.storm.filesystem.InvalidPermissionOnFileException;
@@ -19,6 +21,7 @@ import it.grid.storm.filesystem.WrongFilesystemType;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -26,6 +29,7 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -42,6 +46,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sun.security.jca.GetInstance.Instance;
 
 /**
  * Class that represents a chunk of an srmPrepareToGet request: it handles a single
@@ -183,10 +189,18 @@ public class PtGChunk implements Delegable, Chooser {
             }
         }
         PtGChunkCatalog.getInstance().update(chunkData); //update status in persistence!!!
-        if (failure) {
-            gsm.failedChunk(chunkData);
-        } else {
-            gsm.successfulChunk(chunkData); //update global status!!!
+        
+        /*
+         *  If the status is still SRM_REQUEST_INPROGRESS means that the file is on the tape and it's being recalled.
+         *  The status will be changed to SRM_FILE_PINNED by the function that updates the TapeRecall table putting
+         *  a SUCCESS in the corresponding row (and the file will have been recalled).
+         */
+        if (chunkData.status().getStatusCode() != TStatusCode.SRM_REQUEST_INPROGRESS) {
+            if (failure) {
+                gsm.failedChunk(chunkData);
+            } else {
+                gsm.successfulChunk(chunkData); // update global status!!!
+            }
         }
         log.info("Finished handling PtG chunk for user DN: "+this.gu.getDn()+"; for SURL: "+this.chunkData.fromSURL()+"; for requestToken: "+this.rsd.requestToken()+"; result is: "+this.chunkData.status());
     }
@@ -224,10 +238,33 @@ public class PtGChunk implements Delegable, Chooser {
                     //File exists and it is not a directory
                     boolean canTraverse = managePermitTraverseStep(fileStoRI,localUser);
                     if (canTraverse) {
-                        boolean canRead = managePermitReadFileStep(fileStoRI,localFile,localUser,turl);
-                        if (!canRead) {
-                            //roll back Read, and Traverse
-                            //URGENT!
+                        if (Configuration.getInstance().getTapeEnabled()) {
+                            
+                            StormEA.setPinned(localFile.getAbsolutePath());
+                            fileStoRI.setGroupTapeRead();
+                            
+                            if (localFile.isOnDisk()) {
+                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
+                                if (!canRead) {
+                                    // roll back Read, and Traverse
+                                    // URGENT!
+                                }
+                            } else {
+                                chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
+                                
+                                String voName = null;
+                                if (gu instanceof VomsGridUser) {
+                                    voName = ((VomsGridUser) gu).getVO().getValue();
+                                }
+                                
+                                PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(chunkData, gsm, voName);
+                            }
+                        } else {
+                            boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
+                            if (!canRead) {
+                                // roll back Read, and Traverse
+                                // URGENT!
+                            }
                         }
                     } else {
                         //roll back Traverse
@@ -280,6 +317,7 @@ public class PtGChunk implements Delegable, Chooser {
      * Returns false if something goes wrong
      */
     private boolean managePermitReadFileStep(StoRI fileStoRI, LocalFile localFile, LocalUser localUser, TTURL turl) {
+
         try {
             chunkData.setFileSize(TSizeInBytes.make(localFile.length(),SizeUnit.BYTES));
             FilesystemPermission fp = null;
