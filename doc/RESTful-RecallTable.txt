@@ -1,0 +1,311 @@
+Resources URI 
+==============
+
+/recalltable/task : indica un recall task 
+  - POST : insertTask(recall-task) 
+
+/recalltable/task/{taskId} : indica il recall task con Id = {taskId}
+  - GET {@retry}  : getRetryValue
+  - GET {@status} : getTaskStatus
+  - GET           : getTask(taskId)
+
+/recalltable/vo/{vo-name}/tasks : indica tutte le richieste di recall di una VO (qualsiasi stato)
+  - public RecallTaskTO takeoverTask(String vo-name) throws DataAccessException;
+  
+
+/recalltable/vo/{vo-name}/tasks/{status} : indica la lista delle richieste con lo status = {status} per una data VO
+
+/recalltable/vo/{vo-name}/cardinality/tasks/{status} : indica la cardinalità della lista delle richieste con {status} per la VO
+
+/recalltable/task/{taskId}/{status} : indica lo Status della richiesta {taskId}
+
+/recalltable/{status} : indica la lista delle richieste con lo status = {status}
+
+/recalltable/cardinality/tasks/{status} : indica la cardinalità della lista delle richieste con lo status = {status}
+
+
+Task representation
+====================
+
+## XML ##  (output from the service)
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			<filename>/storage/gpfs-tsm/atlas/pippo.txt</filename>
+			<vo-name>ATLAS</vo-name>
+			<user-id>
+				<dn></dn>
+				<fqan></fqan>
+				<fqan></fqan>
+			</user-id>
+			<status>in_progress</status>
+			<retry-attempt></retry-attempt>
+			<created></created>
+			<lastModified></lastModified>
+		</task>
+		<task>
+			<task-id>12312341234</task-id>
+			<filename>/storage/gpfs-tsm/atlas/pippo.txt</filename>
+			<vo-name>ATLAS</vo-name>
+			<user-id>
+				<dn></dn>
+				<fqan></fqan>
+				<fqan></fqan>
+			</user-id>
+			<status>in_progress</status>
+			<retry-attempt></retry-attempt>
+			<created></created>
+			<lastModified></lastModified>
+		</task>
+	 </tasks>
+	  
+## TXT ##  (input for the service)
+	{ 
+	   "stfn":"<file-name>", 
+	   "dn":"<DN>", 
+	   "fqans":["fqan":"<FQAN>", "fqan":"<FQAN>"], 
+	   "vo-name":"<vo-name>" 
+	}
+
+La tabella RECALL
+==================
+
+    taskId
+    requestToken   			// uso interno di StoRM)
+    fileName   
+    userID         			// composto DN+FQANs
+    status         			// valori : 0..3
+    creation      			// date
+    retryAttempt 			// >= 0
+    VO-name del richiedente 
+    Istante della presa in carico (da queued a in_progress)
+ 
+ 
+Funzioni
+==========
+
+## getRetryValue(taskId) ## [?? Conviene utilizzare la chiamata getTask(TaskId) e poi fare xpath ??]
+
+	HTTP verb   : GET
+	Resource    : /recalltable/task/{taskId}/retry
+	Java Method : public int getRetryValue(String taskId) throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/123413254/retry
+	 1
+	>
+
+## getTaskStatus(taskId) ##  [?? Conviene utilizzare la chiamata getTask(TaskId) e poi fare xpath ??]
+
+	HTTP verb   : GET
+	Resource    : /recalltable/task/{taskId}/status
+	Java Method : public int getTaskStatus(String taskId) throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/123413254/status
+	 1 
+	>
+    0:SUCCESS | 1:QUEUED | 2:IN_PROGRESS | 3:ERROR
+	
+##  getTask(taskId) ## 
+
+	HTTP verb   : GET
+	Resource    : /recalltable/task/{taskId}
+	Java Method : public RecallTaskTO getTask(String taskId) throws DataAccessException;
+	Response    : Task-XML
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/123413254
+	 <tasks>
+		<task>
+			<task-id>123413254</task-id>
+			...
+		</task>
+	 </tasks>	 
+	>
+
+## getNumberInProgress() ##
+		
+ 	HTTP verb   : GET
+	Resource    : /recalltable/cardinality/tasks/in_progress
+	Java Method : public int getNumberInProgress() throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/cardinality/tasks/in_progress
+	 12
+	>   
+   
+## getNumberInProgress(vo-name) ##
+
+ 	HTTP verb   : GET
+	Resource    : /recalltable/vo/{vo-name}/cardinality/tasks/in_progress
+	Java Method : public int getNumberInProgress(String vo-name) throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/vo/ATLAS/cardinality/tasks/in_progress
+	 8
+	>   
+
+## getNumberQueued() ##
+		
+ 	HTTP verb   : GET
+	Resource    : /recalltable/cardinality/tasks/queued
+	Java Method : public int getNumberQueued() throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/cardinality/tasks/queued
+	 140
+	>   
+   
+## getNumberQueued(vo-name) ##
+
+ 	HTTP verb   : GET
+	Resource    : /recalltable/vo/{vo-name}/cardinality/tasks/queued
+	Java Method : public int getNumberQueued(String vo-name) throws DataAccessException;
+	Response    : int
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/vo/ATLAS/cardinality/tasks/queued
+	 120
+	>   
+	
+## getInProgressTask() ##
+
+ 	HTTP verb   : GET
+	Resource    : /recalltable/in_progress
+	Java Method : public List<RecallTaskTO> getInProgressTask() throws DataAccessException;
+	Response    : Task-XML
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/in_progress
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+		<task>
+			<task-id>12312341124</task-id>
+			...
+		</task>
+	 </tasks>
+	>   
+
+## getInProgressTask(vo-name) ##
+
+ 	HTTP verb   : GET
+	Resource    : /recalltable/vo/{vo-name}/in_progress
+	Java Method : public List<RecallTaskTO> getInProgressTask(String vo-name) throws DataAccessException;
+	Response    : Task-XML
+	Example     : 
+	> curl http://<storm-recalltab-service>:9998/recalltable/vo/ATLAS/in_progress
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+	 </tasks>
+	>   
+
+## takeoverTask() ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/tasks
+	Java Method : public RecallTaskTO takeoverTask() throws DataAccessException;
+	Response    : Task-XML
+	Example     :
+	> curl -X PUT -HContent-type:text/plain --data "first=1" http://<storm-recalltab-service>:9998/recalltable/tasks
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+	 </tasks>
+	>   
+	
+## takeoverTask(N) ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/tasks
+	Java Method : public List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException;
+	Response    : Task-XML
+	Example     :
+	> curl -X PUT -HContent-type:text/plain --data "first=2" http://<storm-recalltab-service>:9998/recalltable/tasks
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+		<task>
+			<task-id>12312134235</task-id>
+			...
+		</task>
+	 </tasks>
+	>
+	
+## takeoverTask(vo-name) ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/vo/{vo-name}/tasks
+	Java Method : public RecallTaskTO takeoverTask(String vo-name) throws DataAccessException;
+	Response    : Task-XML
+	Example     :
+	> curl -X PUT -HContent-type:text/plain --data "first=1" http://<storm-recalltab-service>:9998/recalltable/vo/ATLAS/tasks
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+	 </tasks>
+	>   
+
+## takeoverTask(vo-name, N) ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/vo/{vo-name}/tasks
+	Java Method : public List<RecallTaskTO> takeoverTasks(String vo-name, int numberOfTaks) throws DataAccessException;
+	Response    : Task-XML
+	Example     :
+	> curl -X PUT -HContent-type:text/plain --data "first=N" http://<storm-recalltab-service>:9998/recalltable/vo/ATLAS/tasks
+	 <tasks>
+		<task>
+			<task-id>12312341234</task-id>
+			...
+		</task>
+		<task>
+			<task-id>12312134235</task-id>
+			...
+		</task>
+	 </tasks>
+	>
+	
+## insertTask(recall-task) ##
+
+ 	HTTP verb   : POST
+	Resource    : /recalltable/task
+	Java Method : public String insertTask(RecallTaskTO task) throws DataAccessException;
+	Response    : text
+	Example     :
+	> curl -X POST -HContent-type:text/plain --data "<task-in-txt>" http://<storm-recalltab-service>:9998/recalltable/task
+	  taskId = 12312341234
+	>
+
+## setRetryValue(taskId, value) ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/task/{taskId}
+	Java Method : public void setRetryValue(String taskId, int value) throws DataAccessException;
+	Response    : int
+	Example     :
+	> curl -X POST -HContent-type:text/plain --data "retryValue=<value>" http://<storm-recalltab-service>:9998/recalltable/task
+	  0
+	>
+
+## setTaskStatus(taskId, status) ##
+
+ 	HTTP verb   : PUT
+	Resource    : /recalltable/task/{taskId}
+	Java Method : public void setTaskStatus(String taskId, int status) throws DataAccessException;
+	Response    : int
+	Example     :
+	> curl -X POST -HContent-type:text/plain --data "status=<value>" http://<storm-recalltab-service>:9998/recalltable/task
+	  0
+	>
+
+    
