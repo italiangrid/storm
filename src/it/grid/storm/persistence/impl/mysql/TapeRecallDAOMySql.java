@@ -5,6 +5,7 @@ import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -36,7 +37,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         rtTO.setFileName("pippo_00");
         rtTO.setRequestToken("toke_00");
-        rtTO.setStatus(TapeRecallDAO.IN_PROGRESS);
+        rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
         rtTO.setVoName("infngrid");
 
         String taskId = trDAO.insertTask(rtTO);
@@ -500,7 +501,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         task.setRequestType(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE));
         task.setFileName(res.getString(TapeRecallMySQLHelper.COL_FILE_NAME));
         task.setPinLifetime(res.getInt(TapeRecallMySQLHelper.COL_PIN_LIFETIME));
-        task.setStatus(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
+        task.setStatusId(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
         task.setVoName(res.getString(TapeRecallMySQLHelper.COL_VO_NAME));
         task.setUserID(res.getString(TapeRecallMySQLHelper.COL_USER_ID));
         task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));

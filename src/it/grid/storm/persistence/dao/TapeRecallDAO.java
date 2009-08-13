@@ -5,6 +5,7 @@ import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,12 +18,6 @@ import org.slf4j.LoggerFactory;
  */
 
 public abstract class TapeRecallDAO extends AbstractDAO {
-
-    public static final int SUCCESS = 0;
-    public static final int QUEUED = 1;
-    public static final int IN_PROGRESS = 2;
-    public static final int ERROR = 3;
-    public static final int ABORTED = 4;
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
     private static ConcurrentHashMap<String, GlobalStatusManager> ptgGSM = new ConcurrentHashMap<String, GlobalStatusManager>();
@@ -81,7 +76,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             return false;
         }
 
-        if ((status == TapeRecallDAO.IN_PROGRESS) || (status == TapeRecallDAO.QUEUED)) {
+        if ((status == RecallTaskStatus.IN_PROGRESS.getStatusId()) || (status == RecallTaskStatus.QUEUED.getStatusId())) {
             log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, taskId="
                     + taskId);
             return true;
@@ -96,13 +91,13 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             return true;
         }
 
-        if (status == TapeRecallDAO.SUCCESS) {
+        if (status == RecallTaskStatus.SUCCESS.getStatusId()) {
 
             chunkData.changeStatusSRM_FILE_PINNED("File recalled from tape");
             PtGChunkCatalog.getInstance().update(chunkData);
             gsm.successfulChunk(chunkData);
 
-        } else if (status == TapeRecallDAO.ABORTED) {
+        } else if (status == RecallTaskStatus.ABORTED.getStatusId()) {
 
             chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
             PtGChunkCatalog.getInstance().update(chunkData);

@@ -1,10 +1,10 @@
 package it.grid.storm.persistence.util.helper;
 
-import java.util.List;
-
-import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.persistence.util.db.SQLHelper;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+
+import java.util.List;
 
 public class TapeRecallMySQLHelper extends SQLHelper {
 
@@ -29,7 +29,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         String queryFormat = "SELECT * FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, TapeRecallDAO.IN_PROGRESS);
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.IN_PROGRESS.getStatusId());
     }
 
     public String getQueryGetInprograssTask(String voName) {
@@ -39,7 +39,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             TapeRecallDAO.IN_PROGRESS,
+                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              COL_VO_NAME,
                              formatString(voName));
     }
@@ -99,7 +99,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              formatString(recallTask.getRequestType()),
                              formatString(recallTask.getFileName()),
                              recallTask.getPinLifetime(),
-                             TapeRecallDAO.QUEUED,
+                             RecallTaskStatus.QUEUED.getStatusId(),
                              formatString(recallTask.getVoName()),
                              formatString(recallTask.getUserID()),
                              recallTask.getRetryAttempt());
@@ -109,7 +109,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, TapeRecallDAO.IN_PROGRESS);
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.IN_PROGRESS.getStatusId());
     }
 
     public String getQueryNumberInProgress(String voName) {
@@ -119,7 +119,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             TapeRecallDAO.IN_PROGRESS,
+                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              COL_VO_NAME,
                              formatString(voName));
     }
@@ -128,14 +128,15 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, TapeRecallDAO.QUEUED);
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId());
     }
 
     public String getQueryNumberQueued(String voName) {
 
         String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, TapeRecallDAO.QUEUED, COL_VO_NAME, formatString(voName));
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId(), COL_VO_NAME,
+                formatString(voName));
     }
 
     public String getQueryRetrieveTaskStatus(String taskId) {
@@ -167,7 +168,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             TapeRecallDAO.QUEUED,
+                             RecallTaskStatus.QUEUED.getStatusId(),
                              COL_DATE,
                              numberOfTasks);
     }
@@ -179,7 +180,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             TapeRecallDAO.QUEUED,
+                             RecallTaskStatus.QUEUED.getStatusId(),
                              COL_VO_NAME,
                              formatString(voName),
                              COL_DATE,
@@ -198,7 +199,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         StringBuffer sb = new StringBuffer(String.format(queryFormat,
                                                          TABLE_NAME,
                                                          COL_STATUS,
-                                                         TapeRecallDAO.IN_PROGRESS,
+                                                         RecallTaskStatus.IN_PROGRESS.getStatusId(),
                                                          COL_TASK_ID,
                                                          formatString(taskIdList.get(0))));
 
@@ -216,7 +217,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             TapeRecallDAO.IN_PROGRESS,
+                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              COL_TASK_ID,
                              formatString(taskId));
     }

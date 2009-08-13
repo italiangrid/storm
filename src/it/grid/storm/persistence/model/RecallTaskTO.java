@@ -1,15 +1,17 @@
 package it.grid.storm.persistence.model;
 
-import it.grid.storm.persistence.dao.TapeRecallDAO;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.Serializable;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class RecallTaskTO implements Serializable {
 
     public static final String PTG_REQUEST = "ptg";
     public static final String BOL_REQUEST = "bol";
-
+    
     private static final long serialVersionUID = -2907739786996767167L;
 
     private String taskId = null;
@@ -19,7 +21,7 @@ public class RecallTaskTO implements Serializable {
     private String userID = null;
     private String voName = null;
     private int pinLifetime = 0;
-    private int status = TapeRecallDAO.QUEUED;
+    private RecallTaskStatus status = RecallTaskStatus.QUEUED;
     private int retryAttempt = 0;
     private Date date = null;
     
@@ -46,7 +48,11 @@ public class RecallTaskTO implements Serializable {
         return retryAttempt;
     }
 
-    public int getStatus() {
+    public int getStatusId() {
+        return status.getStatusId();
+    }
+
+    public RecallTaskStatus getRecallStatus() {
         return status;
     }
 
@@ -86,10 +92,14 @@ public class RecallTaskTO implements Serializable {
         this.retryAttempt = retryAttempt;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setStatusId(int statusId) {
+        status = RecallTaskStatus.getRecallTaskStatus(statusId);
     }
 
+    public void setStatus(RecallTaskStatus status) {
+        this.status = status;
+    }
+    
     public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
@@ -100,5 +110,37 @@ public class RecallTaskTO implements Serializable {
 
     public void setVoName(String voName) {
         this.voName = voName;
+    }
+    
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        String startChar = "> ";
+        char sepChar = '\t';
+        char endChar = '\n';
+        sb.append(startChar);
+        sb.append(taskId);
+        sb.append(sepChar);
+
+        Format formatter = new SimpleDateFormat("HH.mm.ss dd.MM.yyyy");
+        sb.append(formatter.format(date));
+
+        sb.append(sepChar);
+        sb.append(requestType);
+        sb.append(sepChar);
+        sb.append(fileName);
+        sb.append(sepChar);
+        sb.append(voName);
+        sb.append(sepChar);
+        sb.append(userID);
+        sb.append(sepChar);
+        sb.append(retryAttempt);
+        sb.append(sepChar);
+        sb.append(status);
+        sb.append(sepChar);
+        sb.append(pinLifetime);
+        sb.append(sepChar);
+        sb.append(requestToken);
+        sb.append(endChar);
+        return sb.toString();
     }
 }

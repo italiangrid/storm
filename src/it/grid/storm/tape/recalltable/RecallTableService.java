@@ -29,26 +29,21 @@ public class RecallTableService {
 
     private static final Logger log = LoggerFactory.getLogger(RecallTableService.class);
     private static Configuration config = Configuration.getInstance();
-    private static int serverPort = 9998;
     private static SelectorThread httpThreadSelector;
-
     public static final URI BASE_URI = RecallTableService.getBaseURI();
 
+    
     private static int getPort() {
         int recallTableServicePort = config.getRecallTableServicePort();
         log.debug("TableRecall Service Port =  " + recallTableServicePort);
         return recallTableServicePort;
     }
 
+    
     private static URI getBaseURI() {
         return UriBuilder.fromUri("http://localhost/").port(RecallTableService.getPort()).build();
     }
 
-    
-    protected static void initServer() {
-        serverPort = RecallTableService.getPort();
-
-    }
     
     
     protected static SelectorThread startServer() throws IOException {
@@ -75,7 +70,7 @@ public class RecallTableService {
     } 
     
     public static void start() throws IOException {
-        initServer();
+
         httpThreadSelector = startServer();
 
     }

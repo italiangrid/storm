@@ -2,6 +2,7 @@ package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
@@ -14,7 +15,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
-import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -96,7 +97,7 @@ public class PingCommand extends DiscoveryCommand implements Command
             TapeRecallDAO tapeDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
 
             RecallTaskTO task = tapeDAO.takeoverTask();
-            tapeDAO.setTaskStatus(task.getTaskId(), TapeRecallDAO.SUCCESS);
+            tapeDAO.setTaskStatus(task.getTaskId(), RecallTaskStatus.SUCCESS.getStatusId());
             
             log.info("Task \"" + task.getTaskId() + "\" set to success: " + task.getFileName());
 
