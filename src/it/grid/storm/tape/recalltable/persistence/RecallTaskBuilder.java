@@ -107,8 +107,6 @@ public class RecallTaskBuilder {
     }
 
 
-
-
     public static void main(String[] args) {
         String recallTaskLine = "> taskid\t12:23:45 13.08.2009\treqtpye\tfilename\tvoname\tuserid\t2\t1\t2\treqtoken";
         RecallTaskTO task = RecallTaskBuilder.build(recallTaskLine);
