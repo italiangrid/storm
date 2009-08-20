@@ -20,8 +20,11 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<String, GlobalStatusManager> ptgGSM = new ConcurrentHashMap<String, GlobalStatusManager>();
+    private static ConcurrentHashMap<String, GlobalStatusManager> ptgGSM =
+            new ConcurrentHashMap<String, GlobalStatusManager>();
     private static ConcurrentHashMap<String, PtGChunkData> ptgChunkData = new ConcurrentHashMap<String, PtGChunkData>();
+
+    public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
     public abstract List<RecallTaskTO> getInProgressTask(String voName) throws DataAccessException;
 
@@ -41,8 +44,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getTaskStatus(String taskId) throws DataAccessException;
 
-    public String insertTask(PtGChunkData chunkData, GlobalStatusManager gsm, String voName)
-            throws DataAccessException {
+    public String insertTask(PtGChunkData chunkData, GlobalStatusManager gsm, String voName) throws DataAccessException {
 
         String requestToken = chunkData.requestToken().getValue();
 
@@ -72,13 +74,13 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     public boolean setTaskStatus(String taskId, int status) throws DataAccessException {
 
         if (!setTaskStatusDBImpl(taskId, status)) {
-            // shall the "taskId" data be removed from hashmaps? lets think about it...
+            // shall the "taskId" data be removed from hashmaps? lets think
+            // about it...
             return false;
         }
 
         if ((status == RecallTaskStatus.IN_PROGRESS.getStatusId()) || (status == RecallTaskStatus.QUEUED.getStatusId())) {
-            log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, taskId="
-                    + taskId);
+            log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, taskId=" + taskId);
             return true;
         }
 
@@ -86,7 +88,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         PtGChunkData chunkData = ptgChunkData.remove(taskId);
 
         if ((gsm == null) || (chunkData == null)) {
-            // Happens when the task is inserted with insertTask(RecallTaskTO task)
+            // Happens when the task is inserted with insertTask(RecallTaskTO
+            // task)
             log.info("Set status with no internal data. taskId=\"" + taskId + "\" status=" + status);
             return true;
         }
@@ -119,8 +122,40 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException;
 
-    public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName)
-            throws DataAccessException;
+    public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName) throws DataAccessException;
 
     protected abstract boolean setTaskStatusDBImpl(String taskId, int status) throws DataAccessException;
+
+    // --------- NEW methods ----------
+
+    /**
+     * Method called by a garbage collector
+     * 
+     * @throws DataAccessException
+     */
+    public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
+
+    /**
+     * Method used to monitor the status of the Recall Table Return the number
+     * of tasks with the status = QUEUED or IN_PROGRESS
+     * 
+     * @throws DataAccessException
+     */
+    public abstract int getNumberOfToDoTasks() throws DataAccessException;
+
+    /**
+     * Method used to monitor the status of the Recall Table
+     * 
+     * @throws DataAccessException
+     */
+    public abstract int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException;
+
+    /**
+     * Method used to store an updated Task. If the task does not exits then a
+     * DataAccessException will be thrown.
+     * 
+     * @param task
+     * @throws DataAccessException
+     */
+    public abstract void updateTask(RecallTaskTO task) throws DataAccessException;
 }

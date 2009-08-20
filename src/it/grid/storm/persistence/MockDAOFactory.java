@@ -1,7 +1,15 @@
 package it.grid.storm.persistence;
 
 
-import it.grid.storm.persistence.dao.*;
+import it.grid.storm.persistence.dao.CopyChunkDAO;
+import it.grid.storm.persistence.dao.PermissionDAO;
+import it.grid.storm.persistence.dao.PtGChunkDAO;
+import it.grid.storm.persistence.dao.PtPChunkDAO;
+import it.grid.storm.persistence.dao.RequestSummaryDAO;
+import it.grid.storm.persistence.dao.StorageAreaDAO;
+import it.grid.storm.persistence.dao.StorageFileDAO;
+import it.grid.storm.persistence.dao.StorageSpaceDAO;
+import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 
 
@@ -121,8 +129,20 @@ public class MockDAOFactory implements DAOFactory {
     return null;
   }
 
-  public String toString()
+  @Override
+public String toString()
   {
     return factoryName;
   }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.DAOFactory#getTapeRecallDAO(boolean)
+     */
+    @Override
+    public TapeRecallDAO getTapeRecallDAO(boolean test) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

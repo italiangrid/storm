@@ -6,12 +6,17 @@ import java.io.Serializable;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
-public class RecallTaskTO implements Serializable {
+public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
     public static final String PTG_REQUEST = "ptg";
     public static final String BOL_REQUEST = "bol";
-    
+    public static final String startChar = "";
+    public static final char sepChar = '\u0009';
+    // public static final char endChar = '#';
+    public static final String dateFormat = "dd-MM-yyyy HH.mm.ss";
+
     private static final long serialVersionUID = -2907739786996767167L;
 
     private String taskId = null;
@@ -24,10 +29,15 @@ public class RecallTaskTO implements Serializable {
     private RecallTaskStatus status = RecallTaskStatus.QUEUED;
     private int retryAttempt = 0;
     private Date date = null;
-    
+
+    public RecallTaskTO() {
+        taskId = UUID.randomUUID().toString();
+    }
+
     public Date getDate() {
         return date;
     }
+
     public String getFileName() {
         return fileName;
     }
@@ -99,7 +109,7 @@ public class RecallTaskTO implements Serializable {
     public void setStatus(RecallTaskStatus status) {
         this.status = status;
     }
-    
+
     public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
@@ -111,17 +121,16 @@ public class RecallTaskTO implements Serializable {
     public void setVoName(String voName) {
         this.voName = voName;
     }
-    
+
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        String startChar = "> ";
-        char sepChar = '\t';
-        char endChar = '\n';
+
         sb.append(startChar);
         sb.append(taskId);
         sb.append(sepChar);
 
-        Format formatter = new SimpleDateFormat("HH.mm.ss dd.MM.yyyy");
+        Format formatter = new SimpleDateFormat(dateFormat);
         sb.append(formatter.format(date));
 
         sb.append(sepChar);
@@ -140,7 +149,30 @@ public class RecallTaskTO implements Serializable {
         sb.append(pinLifetime);
         sb.append(sepChar);
         sb.append(requestToken);
-        sb.append(endChar);
+        // sb.append(endChar);
         return sb.toString();
+    }
+
+    /*
+     * Implementing the natural order (by age)
+     */
+    @Override
+    public int compareTo(RecallTaskTO arg0) {
+        if (arg0 == null) {
+            return 0;
+        }
+        return date.compareTo(arg0.getDate());
+    }
+
+    public static RecallTaskTO createRandom(Date date, String voName) {
+
+        RecallTaskTO result = new RecallTaskTO();
+        result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
+        result.setRequestToken(voName + Math.round(Math.random() * 1000));
+        result.setRetryAttempt(0);
+        result.setPinLifetime((int) Math.round(Math.random() * 1000));
+        result.setVoName(voName);
+        result.setDate(date);
+        return result;
     }
 }

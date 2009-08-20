@@ -23,7 +23,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOMySql.class);
 
-    private TapeRecallMySQLHelper sqlHelper;
+    private final TapeRecallMySQLHelper sqlHelper;
 
     public TapeRecallDAOMySql() {
         sqlHelper = new TapeRecallMySQLHelper(PersistenceDirector.getDataBase().getDbmsVendor());
@@ -47,10 +47,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         System.out.println("GOT STATUS " + status + " for taskId=" + taskId);
     }
 
+    @Override
     public List<RecallTaskTO> getInProgressTask() throws DataAccessException {
         return getInProgressTask(null);
     }
 
+    @Override
     public List<RecallTaskTO> getInProgressTask(String voName) throws DataAccessException {
 
         Connection dbConnection = getConnection();
@@ -100,12 +102,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList;
     }
 
+    @Override
     public int getNumberInProgress() throws DataAccessException {
 
         return getNumberInProgress(null);
 
     }
 
+    @Override
     public int getNumberInProgress(String voName) throws DataAccessException {
 
         String query;
@@ -148,10 +152,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+    @Override
     public int getNumberQueued() throws DataAccessException {
         return getNumberQueued(null);
     }
 
+    @Override
     public int getNumberQueued(String voName) throws DataAccessException {
 
         String query;
@@ -194,6 +200,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+    @Override
     public String getRequestToken(String taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRequestToken(taskId);
@@ -230,6 +237,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return requestToken;
     }
 
+    @Override
     public int getRetryValue(String taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRetryValue(taskId);
@@ -266,6 +274,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return retryValue;
     }
 
+    @Override
     public RecallTaskTO getTask(String taskId) throws DataAccessException {
 
         Connection dbConnection = getConnection();
@@ -304,6 +313,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return task;
     }
 
+    @Override
     public int getTaskStatus(String taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryRetrieveTaskStatus(taskId);
@@ -340,6 +350,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+    @Override
     public String insertTask(RecallTaskTO task) throws DataAccessException {
 
         String taskId = UUID.randomUUID().toString();
@@ -364,6 +375,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskId;
     }
 
+    @Override
     public void setRetryValue(String taskId, int value) throws DataAccessException {
 
         String query = sqlHelper.getQuerySetRetryValue(taskId, value);
@@ -385,10 +397,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
     }
 
+    @Override
     public RecallTaskTO takeoverTask() throws DataAccessException {
         return takeoverTask(null);
     }
 
+    @Override
     public RecallTaskTO takeoverTask(String voName) throws DataAccessException {
 
         List<RecallTaskTO> taskList = takeoverTasks(1, voName);
@@ -400,10 +414,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList.get(0);
     }
 
+    @Override
     public List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException {
         return takeoverTasks(numberOfTaks, null);
     }
 
+    @Override
     public List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName) throws DataAccessException {
 
         Connection dbConnection = getConnection();
@@ -465,6 +481,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList;
     }
 
+    @Override
     protected boolean setTaskStatusDBImpl(String taskId, int status) throws DataAccessException {
 
         String query = sqlHelper.getQueryUpdateTaskStatus(taskId, status);
@@ -507,5 +524,53 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));
 
         return taskId;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
+     * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
+     */
+    @Override
+    public int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return -1;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfToDoTasks()
+     */
+    @Override
+    public int getNumberOfToDoTasks() throws DataAccessException {
+        // TODO Auto-generated method stub
+        return -1;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
+     */
+    @Override
+    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+        // TODO Auto-generated method stub
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
+     * persistence.model.RecallTaskTO)
+     */
+    @Override
+    public void updateTask(RecallTaskTO task) throws DataAccessException {
+        // TODO Auto-generated method stub
+
     }
 }

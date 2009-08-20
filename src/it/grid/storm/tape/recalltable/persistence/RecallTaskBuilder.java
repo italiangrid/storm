@@ -4,6 +4,7 @@
 package it.grid.storm.tape.recalltable.persistence;
 
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -13,28 +14,30 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * @author zappi
- *
+ * 
  */
 public class RecallTaskBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(RecallTaskBuilder.class);
 
+
     public static RecallTaskTO build(String recallTaskLine) {
         RecallTaskTO recallTask = new RecallTaskTO();
-        String startChar = "> ";
-        String sepChar = "\t";
+        String startChar = RecallTaskTO.startChar;
+        String sepChar = "" + RecallTaskTO.sepChar;
 
         // Check if the line is empty
         if (((recallTaskLine != null)) && ((recallTaskLine.length() > 0))) {
             // Check if start with the right starter string
             if (recallTaskLine.startsWith(startChar)) {
-                log.debug("RecallTable Row : '" + recallTaskLine + "'");
-                recallTaskLine = recallTaskLine.substring(2);
-                log.debug("RecallTable Row : '" + recallTaskLine + "'");
+                // log.debug("RecallTable Row : '" + recallTaskLine + "'");
+                // recallTaskLine = recallTaskLine.substring(2);
+                // log.debug("RecallTable Row : '" + recallTaskLine + "'");
                 String[] fields = recallTaskLine.split(sepChar);
-                log.debug("RecallTable Row # fields = " + fields.length);
+                // log.debug("RecallTable Row # fields = " + fields.length);
                 // Check if number of Fields is 10.
                 if (fields.length == 10) {
                     // ####### Manage the fields #######
@@ -53,7 +56,7 @@ public class RecallTaskBuilder {
                     // FIELD-6 = retryAttempt (int)
                     recallTask.setRetryAttempt(parseInt(fields[6]));
                     // FIELD-7 = status (int)
-                    recallTask.setStatusId(parseInt(fields[7]));
+                    recallTask.setStatus(parseTaskStatus(fields[7]));
                     // FIELD-8 = pinLifetime (int)
                     recallTask.setPinLifetime(parseInt(fields[8]));
                     // FIELD-9 = requestToken (String)
@@ -61,7 +64,7 @@ public class RecallTaskBuilder {
                 } else {
                     log.debug("RecallTable Row contains # fields not equal to 10.");
                 }
-           } else {
+            } else {
                 // Invalid Row
                 log.debug("RecallTable Row does not starts with '" + startChar + "'");
             }
@@ -72,30 +75,61 @@ public class RecallTaskBuilder {
         return recallTask;
     }
 
-    
-    
-    
+
+    /**
+     * 
+     * @param bodyInput
+     *            : 4 fields "stfn, dn, fqans, vo-name"
+     * @return
+     */
+    public static RecallTaskTO buildFromPOST(String bodyInput) {
+        { 
+            "stfn":"<file-name>", 
+            "dn":"<DN>", 
+            "fqans":["fqan":"<FQAN>", "fqan":"<FQAN>"], 
+            "vo-name":"<vo-name>" 
+         }
+    }
+
+
     /**
      * @param string
      * @return
      */
-    private static int parseInt(String integer) {
-        int result = 0;
+    private static RecallTaskStatus parseTaskStatus(String taskStatus) {
+        RecallTaskStatus result = RecallTaskStatus.UNDEFINED;
         try {
-            result = Integer.parseInt(integer);
+            result = RecallTaskStatus.getRecallTaskStatus(taskStatus);
         } catch (Exception e) {
-            log.error("Number '" + integer + "' is not in a valid format.");
+            log.error("Task Status '" + taskStatus + "' is not in a valid format.");
             e.printStackTrace();
         }
         return result;
     }
+
+
+    /**
+     * @param string
+     * @return
+     */
+    private static int parseInt(String number) {
+        int result = 0;
+        try {
+            result = Integer.parseInt(number);
+        } catch (Exception e) {
+            log.error("Number'" + number + "' is not in a valid format.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 
     /**
      * @param string
      * @return
      */
     private static Date parseDate(String dateString) {
-        DateFormat formatter = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy");
+        DateFormat formatter = new SimpleDateFormat(RecallTaskTO.dateFormat);
         Date date = new Date();
         try {
             date = formatter.parse(dateString);
@@ -106,12 +140,4 @@ public class RecallTaskBuilder {
         return date;
     }
 
-
-    public static void main(String[] args) {
-        String recallTaskLine = "> taskid\t12:23:45 13.08.2009\treqtpye\tfilename\tvoname\tuserid\t2\t1\t2\treqtoken";
-        RecallTaskTO task = RecallTaskBuilder.build(recallTaskLine);
-        log.debug("Recall Task : '" + task + "'");
-        Date d = new Date();
-        log.debug("" + d);
-    }
 }
