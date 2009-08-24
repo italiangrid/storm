@@ -83,12 +83,12 @@ public class RecallTaskBuilder {
      * @return
      */
     public static RecallTaskTO buildFromPOST(String bodyInput) {
-        { 
-            "stfn":"<file-name>", 
-            "dn":"<DN>", 
-            "fqans":["fqan":"<FQAN>", "fqan":"<FQAN>"], 
-            "vo-name":"<vo-name>" 
-         }
+        RecallTaskTO result = null;
+        /**
+         * { "stfn":"<file-name>", "dn":"<DN>", "fqans":["fqan":"<FQAN>",
+         * "fqan":"<FQAN>"], "vo-name":"<vo-name>" }
+         **/
+        return result;
     }
 
 
