@@ -140,7 +140,6 @@ public String toString()
      * 
      * @see it.grid.storm.persistence.DAOFactory#getTapeRecallDAO(boolean)
      */
-    @Override
     public TapeRecallDAO getTapeRecallDAO(boolean test) throws DataAccessException {
         // TODO Auto-generated method stub
         return null;

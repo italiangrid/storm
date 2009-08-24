@@ -156,7 +156,6 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     /*
      * Implementing the natural order (by age)
      */
-    @Override
     public int compareTo(RecallTaskTO arg0) {
         if (arg0 == null) {
             return 0;
