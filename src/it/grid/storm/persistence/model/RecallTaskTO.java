@@ -28,16 +28,21 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     private int pinLifetime = 0;
     private RecallTaskStatus status = RecallTaskStatus.QUEUED;
     private int retryAttempt = 0;
-    private Date date = null;
+    private Date insertionInstant = null;
+    private Date deferredRecallInstant = null;
 
     public RecallTaskTO() {
         taskId = UUID.randomUUID().toString();
     }
 
-    public Date getDate() {
-        return date;
+    public Date getInsertionInstant() {
+        return insertionInstant;
     }
 
+    public Date getDeferredRecallInstant() {
+        return deferredRecallInstant;
+    }    
+    
     public String getFileName() {
         return fileName;
     }
@@ -78,10 +83,14 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return voName;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDeferredRecallInstant(Date date) {
+        deferredRecallInstant = date;
     }
 
+    public void setInsertionInstant(Date date) {
+        insertionInstant = date;
+    }    
+    
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -131,7 +140,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         sb.append(sepChar);
 
         Format formatter = new SimpleDateFormat(dateFormat);
-        sb.append(formatter.format(date));
+        sb.append(formatter.format(insertionInstant));
 
         sb.append(sepChar);
         sb.append(requestType);
@@ -145,6 +154,13 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         sb.append(retryAttempt);
         sb.append(sepChar);
         sb.append(status);
+        
+        if (deferredRecallInstant!=null) {
+            sb.append(formatter.format(deferredRecallInstant));
+        } else {
+            sb.append(formatter.format(insertionInstant));
+        }
+        
         sb.append(sepChar);
         sb.append(pinLifetime);
         sb.append(sepChar);
@@ -160,7 +176,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         if (arg0 == null) {
             return 0;
         }
-        return date.compareTo(arg0.getDate());
+        return insertionInstant.compareTo(arg0.getInsertionInstant());
     }
 
     public static RecallTaskTO createRandom(Date date, String voName) {
@@ -171,7 +187,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         result.setRetryAttempt(0);
         result.setPinLifetime((int) Math.round(Math.random() * 1000));
         result.setVoName(voName);
-        result.setDate(date);
+        result.setInsertionInstant(date);
         return result;
     }
 }

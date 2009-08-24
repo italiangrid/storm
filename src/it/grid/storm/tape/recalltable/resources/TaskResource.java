@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,8 +130,10 @@ public class TaskResource {
     @POST
     @Path("/")
     @Consumes("text/plain")
-    public void postNewTask(InputStream input) throws RecallTableException {
+    public Response postNewTask(InputStream input) throws RecallTableException {
 
+        Response result;
+        
         // Parse the Input Stream
         String inputStr = buildInputString(input);
         TaskResource.log.debug("@POST (input string) = '" + inputStr + "'");
@@ -157,9 +161,13 @@ public class TaskResource {
         // Store the new Recall Task if it is all OK.
         if (errorStr != null) {
             throw new RecallTableException(errorStr);
-        } else {
-            rtCat.insertNewTask(task);
         }
+        rtCat.insertNewTask(task);
+        URI newResource = URI.create("/" + taskId);
+        result = Response.created(newResource).build();
+        log.debug("New task resource created: " + newResource);
+
+        return result;
     }
 
 

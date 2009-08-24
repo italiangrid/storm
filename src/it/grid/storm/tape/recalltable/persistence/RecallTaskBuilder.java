@@ -44,7 +44,7 @@ public class RecallTaskBuilder {
                     // FIELD-0 = TaskId (String)
                     recallTask.setTaskId(fields[0]);
                     // FIELD-1 = Date (java.util.Date)
-                    recallTask.setDate(parseDate(fields[1]));
+                    recallTask.setInsertionInstant(parseDate(fields[1]));
                     // FIELD-2 = requestType (String)
                     recallTask.setRequestType(fields[2]);
                     // FIELD-3 = fileName (String)

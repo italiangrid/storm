@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class TapeRecallDAOProperties extends TapeRecallDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOProperties.class);
-    private static String UNSPECIFIED = "unspecified-VO";
+    public static String UNSPECIFIED = "unspecified-VO";
     private static LinkedHashMap<String, RecallTaskTO> tasks;
     private PropertiesDB tasksDB = null;
     private boolean test = false;
