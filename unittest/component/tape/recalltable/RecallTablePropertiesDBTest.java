@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RecallTablePropertiesDBTest {
 
-    private static final Logger log = LoggerFactory.getLogger(TaskResourceTest.class);
+    private static final Logger log = LoggerFactory.getLogger(RecallTablePropertiesDBTest.class);
 
 
     public static void main(String[] args) {

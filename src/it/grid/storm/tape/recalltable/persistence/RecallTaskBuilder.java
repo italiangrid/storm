@@ -23,6 +23,25 @@ public class RecallTaskBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(RecallTaskBuilder.class);
 
+    /**
+     * { "filename":"<file-name>"; "dn":"<DN>"; "fqans":["fqan":"<FQAN>",
+     * "fqan":"<FQAN>"]; "vo-name":"<vo-name>" }
+     **/
+    public static final String taskStart = "{";
+    public static final String taskEnd = "}";
+    public static final String elementSep = "#";
+    public static final String fnPrefix = "filename:";
+    public static final String dnPrefix = "dn:";
+    public static final String fqansPrefix = "fqans:";
+    public static final String fqansArrayStart = "[";
+    public static final String fqansArrayEnd = "]";
+    public static final String fqanPrefix = "fqan:";
+    public static final String fqanSep = ",";
+    public static final String voNamePrefix = "vo-name:";     
+    
+    
+    
+    
 
     public static RecallTaskTO build(String recallTaskLine) {
         RecallTaskTO recallTask = new RecallTaskTO();
@@ -84,10 +103,7 @@ public class RecallTaskBuilder {
      */
     public static RecallTaskTO buildFromPOST(String bodyInput) {
         RecallTaskTO result = null;
-        /**
-         * { "stfn":"<file-name>", "dn":"<DN>", "fqans":["fqan":"<FQAN>",
-         * "fqan":"<FQAN>"], "vo-name":"<vo-name>" }
-         **/
+
         return result;
     }
 
