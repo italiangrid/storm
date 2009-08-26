@@ -10,7 +10,6 @@ import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.InvalidTTURLAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
@@ -141,18 +140,6 @@ public class BoLChunkCatalog {
                 }
             }
             inputChunk.setStatus(status);
-
-            // TTURL
-            TTURL turl = null;
-            try {
-                turl = TTURL.makeFromString(auxTO.getTurl());
-            } catch (InvalidTTURLAttributesException e) {
-                // TODO Auto-generated catch block
-                // e.printStackTrace();
-                log.info("BoLChunkCatalog (FALSE-ERROR-in-abort-refresh-status?): built a TURL with protocol NULL (retrieved from the DB..)");
-            }
-            inputChunk.setTransferURL(turl);
-
         }
         return inputChunk;
     }
@@ -359,7 +346,6 @@ public class BoLChunkCatalog {
         to.setFileSize(cd.getFileSize().value());
         to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
         to.setErrString(cd.getStatus().getExplanation());
-        to.setTurl(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
         to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getLifeTime().value()));
         dao.update(to);
     }

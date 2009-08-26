@@ -31,7 +31,6 @@ public class BoLChunkDataTO {
     private long filesize = 0;
     private int status; // initialised in constructor
     private String errString = " ";
-    private String turl = " ";
     private boolean empty = true;
     private int deferredStartTime = -1;
 
@@ -91,10 +90,6 @@ public class BoLChunkDataTO {
 
     public int getStatus() {
         return status;
-    }
-
-    public String getTurl() {
-        return turl;
     }
 
     public void setAllLevelRecursive(boolean b) {
@@ -158,11 +153,6 @@ public class BoLChunkDataTO {
         status = n;
     }
 
-    public void setTurl(String s) {
-        empty = false;
-        turl = s;
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(primaryKey);
@@ -186,8 +176,6 @@ public class BoLChunkDataTO {
         sb.append(status);
         sb.append(" ");
         sb.append(errString);
-        sb.append(" ");
-        sb.append(turl);
         return sb.toString();
     }
 }

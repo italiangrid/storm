@@ -311,7 +311,7 @@ public class BoLChunkDAO {
     /**
      * Method used to save the changes made to a retrieved BoLChunkDataTO, back into the MySQL DB.
      * 
-     * Only the fileSize, transferURL, statusCode and explanation, of status_BoL table are written
+     * Only the fileSize, statusCode and explanation, of status_BoL table are written
      * to the DB. Likewise for the request pinLifetime.
      * 
      * In case of any error, an error message gets logged but no exception is thrown.
@@ -321,19 +321,17 @@ public class BoLChunkDAO {
         PreparedStatement updateFileReq = null;
         try {
             // ready updateFileReq...
-            updateFileReq = con.prepareStatement("UPDATE request_queue r JOIN (status_BoL s, request_BoL g) ON (r.ID=g.request_queueID AND s.request_BoLID=g.ID) SET s.fileSize=?, s.transferURL=?, s.statusCode=?, s.explanation=?, r.pinLifetime=? WHERE s.ID=?");
+            updateFileReq = con.prepareStatement("UPDATE request_queue r JOIN (status_BoL s, request_BoL g) ON (r.ID=g.request_queueID AND s.request_BoLID=g.ID) SET s.fileSize=?, s.statusCode=?, s.explanation=?, r.pinLifetime=? WHERE s.ID=?");
             logWarnings(con.getWarnings());
             updateFileReq.setLong(1, to.getFileSize());
             logWarnings(updateFileReq.getWarnings());
-            updateFileReq.setString(2, to.getTurl());
+            updateFileReq.setInt(2, to.getStatus());
             logWarnings(updateFileReq.getWarnings());
-            updateFileReq.setInt(3, to.getStatus());
+            updateFileReq.setString(3, to.getErrString());
             logWarnings(updateFileReq.getWarnings());
-            updateFileReq.setString(4, to.getErrString());
+            updateFileReq.setInt(4, to.getLifeTime());
             logWarnings(updateFileReq.getWarnings());
-            updateFileReq.setInt(5, to.getLifeTime());
-            logWarnings(updateFileReq.getWarnings());
-            updateFileReq.setLong(6, to.getPrimaryKey());
+            updateFileReq.setLong(5, to.getPrimaryKey());
             logWarnings(updateFileReq.getWarnings());
             // execute update
             log.debug("BoL CHUNK DAO: update method; " + updateFileReq.toString());
@@ -351,7 +349,7 @@ public class BoLChunkDAO {
      * 
      * Method used to refresh the BoLChunkDataTO information from the MySQL DB.
      * 
-     * In this first version, only the statusCode and the TURL are reloaded from the DB. TODO The
+     * In this first version, only the statusCode is reloaded from the DB. TODO The
      * next version must contains all the information related to the Chunk!
      * 
      * In case of any error, an error message gets logged but no exception is thrown.
@@ -366,7 +364,7 @@ public class BoLChunkDAO {
 
         try {
             // get chunks of the request
-            str = "SELECT  s.statusCode, s.transferURL " + "FROM status_BoL s " + "WHERE s.ID=?";
+            str = "SELECT  s.statusCode " + "FROM status_BoL s " + "WHERE s.ID=?";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             find.setLong(1, primary_key);
@@ -384,7 +382,6 @@ public class BoLChunkDAO {
                 aux = new BoLChunkDataTO();
                 // aux.setPrimaryKey(rs.getLong("s.ID"));
                 aux.setStatus(rs.getInt("s.statusCode"));
-                aux.setTurl(rs.getString("s.transferURL"));
                 // aux.setRequestToken(strToken);
                 // aux.setFromSURL(rs.getString("g.sourceSURL"));
                 // aux.setLifeTime(rs.getInt("r.pinLifetime"));
