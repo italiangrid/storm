@@ -4,6 +4,9 @@ import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.persistence.util.db.SQLHelper;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 public class TapeRecallMySQLHelper extends SQLHelper {
@@ -20,6 +23,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
     public final static String COL_VO_NAME = "voName";
     public final static String COL_DATE = "timeStamp";
     public final static String COL_RETRY_ATTEMPT = "retryAttempt";
+    public final static String COL_DEFERRED_STARTTIME = "deferredStartTime";
 
     public TapeRecallMySQLHelper(String dbmsVendor) {
         super(dbmsVendor);
@@ -73,36 +77,50 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, formatString(taskId));
     }
 
-    public String getQueryInsertTask(RecallTaskTO recallTask) {
+    public PreparedStatement getQueryInsertTask(Connection conn, RecallTaskTO recallTask) {
 
         if (recallTask == null) {
             return null;
         }
 
-        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (%s, %s, %s, %s, %d, %d, %s, %s, %d, CURRENT_TIMESTAMP)";
+        //String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (%s, %s, %s, %s, %d, %d, %s, %s, %d, CURRENT_TIMESTAMP)";
+        
+        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        String query = String.format(queryFormat, TABLE_NAME,
+                                     COL_TASK_ID,
+                                     COL_REQUEST_TOKEN,
+                                     COL_REQUEST_TYPE,
+                                     COL_FILE_NAME,
+                                     COL_PIN_LIFETIME,
+                                     COL_STATUS,
+                                     COL_VO_NAME,
+                                     COL_USER_ID,
+                                     COL_RETRY_ATTEMPT,
+                                     COL_DEFERRED_STARTTIME,
+                                     COL_DATE);
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_TASK_ID,
-                             COL_REQUEST_TOKEN,
-                             COL_REQUEST_TYPE,
-                             COL_FILE_NAME,
-                             COL_PIN_LIFETIME,
-                             COL_STATUS,
-                             COL_VO_NAME,
-                             COL_USER_ID,
-                             COL_RETRY_ATTEMPT,
-                             COL_DATE,
-                             // VALUES
-                             formatString(recallTask.getTaskId()),
-                             formatString(recallTask.getRequestToken()),
-                             formatString(recallTask.getRequestType()),
-                             formatString(recallTask.getFileName()),
-                             recallTask.getPinLifetime(),
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             formatString(recallTask.getVoName()),
-                             formatString(recallTask.getUserID()),
-                             recallTask.getRetryAttempt());
+        try {
+            PreparedStatement prepStat = conn.prepareStatement(query);
+            
+            prepStat.setString(1, recallTask.getTaskId());
+            prepStat.setString(2, recallTask.getRequestToken());
+            prepStat.setString(3, recallTask.getRequestType());
+            prepStat.setString(4, recallTask.getFileName());
+            prepStat.setInt(5, recallTask.getPinLifetime());
+            prepStat.setInt(6, RecallTaskStatus.QUEUED.getStatusId());
+            
+            prepStat.setString(7, recallTask.getVoName());
+            prepStat.setString(8, recallTask.getUserID());
+            prepStat.setInt(9, recallTask.getRetryAttempt());
+            prepStat.setDate(10, new java.sql.Date(recallTask.getDeferredRecallInstant().getTime()));
+            prepStat.setDate(10, new java.sql.Date(recallTask.getInsertionInstant().getTime()));
+            
+            return prepStat;
+            
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
     public String getQueryNumberInProgress() {
@@ -135,8 +153,12 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId(), COL_VO_NAME,
-                formatString(voName));
+        return String.format(queryFormat,
+                             TABLE_NAME,
+                             COL_STATUS,
+                             RecallTaskStatus.QUEUED.getStatusId(),
+                             COL_VO_NAME,
+                             formatString(voName));
     }
 
     public String getQueryRetrieveTaskStatus(String taskId) {
@@ -158,7 +180,12 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
 
-        return String.format(queryFormat, TABLE_NAME, COL_RETRY_ATTEMPT, value, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat,
+                             TABLE_NAME,
+                             COL_RETRY_ATTEMPT,
+                             value,
+                             COL_TASK_ID,
+                             formatString(taskId));
     }
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks) {
@@ -232,7 +259,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, formatString(taskId));
     }
-    
+
     private String formatString(String s) {
         if (s == null) {
             return null;

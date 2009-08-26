@@ -199,6 +199,22 @@ public class BoLChunkData implements ChunkData {
     }
 
     /**
+     * Method that sets the status of this request to SRM_NOT_SUPPORTED; it needs the explanation
+     * String which describes the situation in greater detail; if a null is passed, then an empty
+     * String is used as explanation.
+     */
+    public void changeStatusSRM_NOT_SUPPORTED(String explanation) {
+        try {
+            if (explanation == null) {
+                explanation = "";
+            }
+            status = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, explanation);
+        } catch (InvalidTReturnStatusAttributeException e) {
+            log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_NOT_SUPPORTED! " + e);
+        }
+    }
+
+    /**
      * Method that sets the status of this request to SRM_REQUEST_INPROGRESS; it needs the
      * explanation String which describes the situation in greater detail; if a null is passed, then
      * an empty String is used as explanation.
@@ -213,7 +229,7 @@ public class BoLChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_INPROGRESS! " + e);
         }
     }
-
+    
     /**
      * Method that sets the status of this request to SRM_REQUEST_QUEUED; it needs the explanation
      * String which describes the situation in greater detail; if a null is passed, then an empty

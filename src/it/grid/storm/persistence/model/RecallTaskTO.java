@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
+    private static final long serialVersionUID = -2907739786996767167L;
+    
     public static final String PTG_REQUEST = "ptg";
     public static final String BOL_REQUEST = "bol";
     public static final String startChar = "";
@@ -17,7 +19,6 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     // public static final char endChar = '#';
     public static final String dateFormat = "dd-MM-yyyy HH.mm.ss";
 
-    private static final long serialVersionUID = -2907739786996767167L;
 
     private String taskId = null;
     private String requestToken = null;
@@ -35,20 +36,46 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         taskId = UUID.randomUUID().toString();
     }
 
-    public Date getInsertionInstant() {
-        return insertionInstant;
+    public static RecallTaskTO createRandom(Date date, String voName) {
+
+        RecallTaskTO result = new RecallTaskTO();
+        result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
+        result.setRequestToken(voName + Math.round(Math.random() * 1000));
+        result.setRetryAttempt(0);
+        result.setPinLifetime((int) Math.round(Math.random() * 1000));
+        result.setVoName(voName);
+        result.setInsertionInstant(date);
+        return result;
     }
 
-    public Date getDeferredRecallInstant() {
-        return deferredRecallInstant;
+    /*
+     * Implementing the natural order (by age)
+     */
+    public int compareTo(RecallTaskTO arg0) {
+        if (arg0 == null) {
+            return 0;
+        }
+        return insertionInstant.compareTo(arg0.getInsertionInstant());
     }    
     
+    public Date getDeferredRecallInstant() {
+        return deferredRecallInstant;
+    }
+
     public String getFileName() {
         return fileName;
     }
 
+    public Date getInsertionInstant() {
+        return insertionInstant;
+    }
+
     public int getPinLifetime() {
         return pinLifetime;
+    }
+
+    public RecallTaskStatus getRecallStatus() {
+        return status;
     }
 
     public String getRequestToken() {
@@ -67,10 +94,6 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return status.getStatusId();
     }
 
-    public RecallTaskStatus getRecallStatus() {
-        return status;
-    }
-
     public String getTaskId() {
         return taskId;
     }
@@ -81,18 +104,18 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
     public String getVoName() {
         return voName;
-    }
-
+    }    
+    
     public void setDeferredRecallInstant(Date date) {
         deferredRecallInstant = date;
     }
 
-    public void setInsertionInstant(Date date) {
-        insertionInstant = date;
-    }    
-    
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setInsertionInstant(Date date) {
+        insertionInstant = date;
     }
 
     public void setPinLifetime(int pinLifetime) {
@@ -111,12 +134,12 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         this.retryAttempt = retryAttempt;
     }
 
-    public void setStatusId(int statusId) {
-        status = RecallTaskStatus.getRecallTaskStatus(statusId);
-    }
-
     public void setStatus(RecallTaskStatus status) {
         this.status = status;
+    }
+
+    public void setStatusId(int statusId) {
+        status = RecallTaskStatus.getRecallTaskStatus(statusId);
     }
 
     public void setTaskId(String taskId) {
@@ -167,27 +190,5 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         sb.append(requestToken);
         // sb.append(endChar);
         return sb.toString();
-    }
-
-    /*
-     * Implementing the natural order (by age)
-     */
-    public int compareTo(RecallTaskTO arg0) {
-        if (arg0 == null) {
-            return 0;
-        }
-        return insertionInstant.compareTo(arg0.getInsertionInstant());
-    }
-
-    public static RecallTaskTO createRandom(Date date, String voName) {
-
-        RecallTaskTO result = new RecallTaskTO();
-        result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
-        result.setRequestToken(voName + Math.round(Math.random() * 1000));
-        result.setRetryAttempt(0);
-        result.setPinLifetime((int) Math.round(Math.random() * 1000));
-        result.setVoName(voName);
-        result.setInsertionInstant(date);
-        return result;
     }
 }

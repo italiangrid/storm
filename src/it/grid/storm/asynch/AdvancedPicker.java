@@ -143,6 +143,9 @@ public class AdvancedPicker {
                     else if (rtype==TRequestType.COPY) {
                         s.schedule( new CopyFeeder( rsd ) );
                     }
+                    else if (rtype==TRequestType.BRING_ON_LINE) {
+                        s.schedule( new BoLFeeder( rsd ) );
+                    }
                     else {
                         //RequestType not supported!
                         log.warn("ADVANCED PICKER received request "+rt+" of type "+rtype+" which is NOT currently supported. Dropping request... ");
@@ -164,6 +167,10 @@ public class AdvancedPicker {
                 } catch (InvalidCopyFeederAttributesException e) {
                     log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created because of invalid attributes:\n" + e);
                     log.error("Copy Request is being dropped: " + rsd.requestToken());
+                    RequestSummaryCatalog.getInstance().failRequest(rsd,"Internal error does not allow request to be fed to scheduler.");
+                } catch (InvalidBoLFeederAttributesException e) {
+                    log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created because of invalid attributes:\n" + e);
+                    log.error("BoL Request is being dropped: " + rsd.requestToken());
                     RequestSummaryCatalog.getInstance().failRequest(rsd,"Internal error does not allow request to be fed to scheduler.");
                 } catch (SchedulerException e) {
                     log.error("ADVANCED PICKER ERROR! The request could not be scheduled because of scheduler errors!\n" + e);

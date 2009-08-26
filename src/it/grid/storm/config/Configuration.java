@@ -711,7 +711,7 @@ public class Configuration {
      * 
      * key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
      */
-    public List getListOfMachineNames() {
+    public List<String> getListOfMachineNames() {
         String key = "storm.machinenames";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
@@ -720,7 +720,7 @@ public class Configuration {
             // load from external source
             // String[] names = cr.getConfiguration().getString(key).split(";");
             // //split around commas!
-            List names = cr.getConfiguration().getList(key); // split around
+            List<String> names = (List<String>) cr.getConfiguration().getList(key); // split around
             // commas!
 
             for (int i = 0; i < names.size(); i++) {

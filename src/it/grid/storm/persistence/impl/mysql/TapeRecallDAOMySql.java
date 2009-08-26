@@ -8,6 +8,7 @@ import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -356,22 +357,20 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         String taskId = UUID.randomUUID().toString();
         task.setTaskId(taskId);
 
-        String query = sqlHelper.getQueryInsertTask(task);
-
         Connection dbConnection = getConnection();
-        Statement statment = getStatement(dbConnection);
+        PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
 
         try {
 
-            statment.executeUpdate(query);
+            prepStat.executeUpdate();
 
         } catch (SQLException e) {
 
-            throw new DataAccessException("Error executing query: " + query, e);
+            throw new DataAccessException("Error executing query: " + prepStat.toString(), e);
 
         }
 
-        releaseConnection(null, statment, dbConnection);
+        releaseConnection(null, prepStat, dbConnection);
         return taskId;
     }
 
