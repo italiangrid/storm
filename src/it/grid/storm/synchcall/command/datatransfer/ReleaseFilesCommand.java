@@ -1,4 +1,3 @@
-
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.PtGChunkCatalog;
@@ -12,7 +11,6 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.StoRIImpl;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -36,32 +34,29 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- *
- * This class is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
+ * 
+ * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- *
- *
+ * 
+ * 
  * Authors:
- *     @author=lucamag luca.magnoniATcnaf.infn.it
- *     @author  Alberto Forti
- *
+ * 
+ * @author=lucamag luca.magnoniATcnaf.infn.it
+ * @author Alberto Forti
+ * 
  * @date = Oct 10, 2008
- *
+ * 
  */
 
-public class ReleaseFilesCommand extends DataTransferCommand implements Command
-{
+public class ReleaseFilesCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(ReleaseFilesCommand.class);
 
-    public ReleaseFilesCommand() {
-    }
+    public ReleaseFilesCommand() {}
 
     /**
-     * Does a ReleaseFiles. Used to release pins on the previously requested "copies" (or "state") of
-     * the SURL. This function normally follows a srmPrepareToGet or srmBringOnline functions.
+     * Does a ReleaseFiles. Used to release pins on the previously requested "copies" (or "state") of the
+     * SURL. This function normally follows a srmPrepareToGet or srmBringOnline functions.
      */
     public OutputData execute(InputData data) {
 
@@ -71,7 +66,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         boolean requestFailure;
         boolean requestSuccess;
 
-        ReleaseFilesCommand.log.debug("Started ReleaseFiles function");
+        log.debug("Started ReleaseFiles function");
 
         /******************** Check for malformed request: missing mandatory input parameters ****************/
         requestFailure = false;
@@ -82,20 +77,23 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         }
 
         if (requestFailure) {
-            ReleaseFilesCommand.log.error("ReleaseFiles: Invalid input parameters specified");
+            log.error("ReleaseFiles: Invalid input parameters specified");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                "Missing mandatory parameters (requestToken or arrayOfSURLs must be specified)");
+                                                 "Missing mandatory parameters (requestToken or arrayOfSURLs must be specified)");
             } catch (InvalidTReturnStatusAttributeException e) {
-                ReleaseFilesCommand.log.warn("dataTransferManger: Error creating returnStatus " + e);
+                log.warn("dataTransferManger: Error creating returnStatus " + e);
             }
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
 
-            if(inputData==null) {
-                ReleaseFilesCommand.log.error("srmReleaseFiles: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
+            if (inputData == null) {
+                log.error("srmReleaseFiles: <> Request for [token:] [SURL:] failed with [status: "
+                        + globalStatus + "]");
             } else {
-                ReleaseFilesCommand.log.error("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL: "+inputData.getArrayOfSURLs()+"] failed with [status: "+globalStatus+"]");
+                log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                        + inputData.getRequestToken() + "] for [SURL: " + inputData.getArrayOfSURLs()
+                        + "] failed with [status: " + globalStatus + "]");
             }
 
             return outputData;
@@ -104,45 +102,48 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         /********************** Check user authentication and authorization ******************************/
         GridUserInterface user = inputData.getUser();
         if (user == null) {
-            ReleaseFilesCommand.log.debug("ReleaseFiles: the user field is NULL");
+            log.debug("ReleaseFiles: the user field is NULL");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                "Unable to get user credential!");
-            }
-            catch (InvalidTReturnStatusAttributeException e) {
-                ReleaseFilesCommand.log.debug("dataTransferManger: Error creating returnStatus " + e);
+                                                 "Unable to get user credential!");
+            } catch (InvalidTReturnStatusAttributeException e) {
+                log.debug("dataTransferManger: Error creating returnStatus " + e);
             }
 
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            ReleaseFilesCommand.log.error("srmReleaseFile: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL: "+inputData.getArrayOfSURLs()+"] failed with [status: "+globalStatus+"]");
+            log.error("srmReleaseFile: <" + inputData.getUser() + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL: " + inputData.getArrayOfSURLs()
+                    + "] failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
         // Mapping of VOMS Grid user into Local User
+        @SuppressWarnings("unused")
         LocalUser lUser = null;
         try {
             lUser = user.getLocalUser();
-        }
-        catch (CannotMapUserException e) {
-            ReleaseFilesCommand.log.debug("ReleaseFiles: Unable to map the user '" + user + "' in a local user.", e);
+        } catch (CannotMapUserException e) {
+            log.debug("ReleaseFiles: Unable to map the user '" + user + "' in a local user.", e);
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, "Unable to map the user");
-            }
-            catch (InvalidTReturnStatusAttributeException ex1) {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                                 "Unable to map the user");
+            } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown
-                ReleaseFilesCommand.log.warn("dataTransferManger: Error creating returnStatus ");
+                log.warn("dataTransferManger: Error creating returnStatus ");
             }
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            ReleaseFilesCommand.log.error("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL: "+inputData.getArrayOfSURLs()+"] failed with [status: "+globalStatus+"]");
+            log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                    + inputData.getRequestToken() + "] for [SURL: " + inputData.getArrayOfSURLs()
+                    + "] failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
         /********************************** Start to manage the request ***********************************/
         ArrayOfSURLs arrayOfUserSURLs = inputData.getArrayOfSURLs();
         TRequestToken requestToken = inputData.getRequestToken();
-        Collection surlPtGChunks;
+        Collection<ReducedPtGChunkData> surlPtGChunks;
         PtGChunkCatalog dbCatalogPtG = PtGChunkCatalog.getInstance();
 
         // Get the list of candidate SURLs from the DB
@@ -155,11 +156,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
         try {
             if (surlPtGChunks.isEmpty()) {
                 // Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or SRM_FAILURE are returned.
-                ReleaseFilesCommand.log.debug("No SURLs found in the DB.");
+                log.debug("No SURLs found in the DB.");
                 if (requestToken != null) {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
                 } else if (arrayOfUserSURLs != null) {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "None of the specified SURLs was found");
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
+                                                     "None of the specified SURLs was found");
                 } else {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No SURLs found");
                 }
@@ -183,13 +185,18 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
                         } else {
                             requestSuccess = false;
                             fileLevelStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                            "Not released because it is not pinned");
+                                                                "Not released because it is not pinned");
                         }
-                        TSURLReturnStatus surlStatus = new TSURLReturnStatus(ptgSURL.fromSURL(), fileLevelStatus);
+                        TSURLReturnStatus surlStatus = new TSURLReturnStatus(ptgSURL.fromSURL(),
+                                                                             fileLevelStatus);
                         if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                            ReleaseFilesCommand.log.info("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+requestToken+"] for [SURL: "+ptgSURL.fromSURL()+"] successfully done with [status: "+fileLevelStatus+"]");
+                            log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                    + requestToken + "] for [SURL: " + ptgSURL.fromSURL()
+                                    + "] successfully done with [status: " + fileLevelStatus + "]");
                         } else {
-                            ReleaseFilesCommand.log.error("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+requestToken+"] for [SURL: "+ptgSURL.fromSURL()+"] failed with [status: "+fileLevelStatus+"]");
+                            log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                    + requestToken + "] for [SURL: " + ptgSURL.fromSURL()
+                                    + "] failed with [status: " + fileLevelStatus + "]");
                         }
 
                         surlStatusReturnList.addTSurlReturnStatus(surlStatus);
@@ -230,18 +237,22 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
                             } else {
                                 requestSuccess = false;
                                 fileLevelStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                                "Not released because it is not pinned");
+                                                                    "Not released because it is not pinned");
                             }
                         } else {
                             requestSuccess = false;
                             fileLevelStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                            "Invalid SURL or it is a directory (srmReleaseFiles of directories not yet supported)");
+                                                                "Invalid SURL or it is a directory (srmReleaseFiles of directories not yet supported)");
                         }
 
                         if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                            ReleaseFilesCommand.log.info("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+requestToken+"] for [SURL: "+ptgSURL.fromSURL()+"] successfully done with [status: "+fileLevelStatus+"]");
+                            log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                    + requestToken + "] for [SURL: " + ptgSURL.fromSURL()
+                                    + "] successfully done with [status: " + fileLevelStatus + "]");
                         } else {
-                            ReleaseFilesCommand.log.error("srmReleaseFiles: <"+inputData.getUser()+"> Request for [token:"+requestToken+"] for [SURL: "+ptgSURL.fromSURL()+"] failed with [status: "+fileLevelStatus+"]");
+                            log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                    + requestToken + "] for [SURL: " + ptgSURL.fromSURL()
+                                    + "] failed with [status: " + fileLevelStatus + "]");
                         }
 
                         TSURLReturnStatus surlStatus = new TSURLReturnStatus(surl, fileLevelStatus);
@@ -254,22 +265,23 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
                 } else if (requestFailure) {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No files released");
                 } else {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, "Check files status for details");
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+                                                     "Check files status for details");
                 }
             }
         } catch (InvalidTReturnStatusAttributeException ex1) {
             // Nothing to do, it will never be thrown
-            ReleaseFilesCommand.log.warn("dataTransferManger: Error creating returnStatus ");
+            log.warn("dataTransferManger: Error creating returnStatus ");
         } catch (InvalidTSURLReturnStatusAttributeException ex2) {
             // Nothing to do, it will never be thrown
-            ReleaseFilesCommand.log.error("ReleaseFiles: error creatung TSURLReturnStatusElement");
+            log.error("ReleaseFiles: error creatung TSURLReturnStatusElement");
         }
 
         // Update the DB
         if (!(surlToRelease.isEmpty())) {
-            dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(surlToRelease,requestToken);
+            dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(surlToRelease, requestToken);
         }
-        
+
         if (Configuration.getInstance().getTapeEnabled()) {
             for (ReducedPtGChunkData reducedChhnkData : surlToRelease) {
 
@@ -286,44 +298,48 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command
                         log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
                                 + reducedChhnkData.fromSURL().toString());
                     }
-
                 }
             }
         }
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            ReleaseFilesCommand.log.info("srmReleaseFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] [SURL:"+inputData.getArrayOfSURLs()+"] successfully done with: [status:"+globalStatus.toString()+"]");
+            log.info("srmReleaseFiles: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] [SURL:" + inputData.getArrayOfSURLs() + "] successfully done with: [status:"
+                    + globalStatus.toString() + "]");
         } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-            ReleaseFilesCommand.log.info("srmReleaseFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] [SURL:"+inputData.getArrayOfSURLs()+"] partially done with: [status:"+globalStatus.toString()+"]");
+            log.info("srmReleaseFiles: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] [SURL:" + inputData.getArrayOfSURLs() + "] partially done with: [status:"
+                    + globalStatus.toString() + "]");
         } else {
-            ReleaseFilesCommand.log.error("srmReleaseFiles: <"+user+"> Request for [token:"+inputData.getRequestToken()+"] [SURL:"+inputData.getArrayOfSURLs()+"] failed with: [status:"+globalStatus.toString()+"]");
+            log.error("srmReleaseFiles: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] [SURL:" + inputData.getArrayOfSURLs() + "] failed with: [status:"
+                    + globalStatus.toString() + "]");
         }
 
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(surlStatusReturnList);
 
-        ReleaseFilesCommand.log.debug("End of ReleaseFiles function");
+        log.debug("End of ReleaseFiles function");
         return outputData;
     }
 
     /**
-     * Retrive SURL chunks from the db. If requestToken is not NULL and arrayOfSURLs is NULL
-     * then all the PtGChunks matching the requestToken are returned. If requestToken is not NULL
-     * and arrayOfSURLs is not NULL then all the PtGChunks matching requestToken and arrayOfSURLs
-     * are returned. If requestToken is NULL and arrayOfSURLs is not NULL then all the PtGChunks
-     * belonging to the user are returned. If there are no matches then an empty collection is returned.
-     * requestToken and arrayOfSURLs cannot be both NULL, in this case an empty collection is returned.
+     * Retrive SURL chunks from the db. If requestToken is not NULL and arrayOfSURLs is NULL then all the
+     * PtGChunks matching the requestToken are returned. If requestToken is not NULL and arrayOfSURLs is not
+     * NULL then all the PtGChunks matching requestToken and arrayOfSURLs are returned. If requestToken is
+     * NULL and arrayOfSURLs is not NULL then all the PtGChunks belonging to the user are returned. If there
+     * are no matches then an empty collection is returned. requestToken and arrayOfSURLs cannot be both NULL,
+     * in this case an empty collection is returned.
      */
-    private Collection getSurlPtGChunks(GridUserInterface user, PtGChunkCatalog dbCatalog, TRequestToken requestToken,
-            ArrayOfSURLs arrayOfSURLs)
-    {
-        Collection surlChunks;
+    private Collection<ReducedPtGChunkData> getSurlPtGChunks(GridUserInterface user,
+            PtGChunkCatalog dbCatalog, TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs) {
+        Collection<ReducedPtGChunkData> surlChunks;
 
         if (dbCatalog == null) {
-            return new LinkedList();
+            return new LinkedList<ReducedPtGChunkData>();
         }
         if ((requestToken == null) && (arrayOfSURLs == null)) {
-            return new LinkedList();
+            return new LinkedList<ReducedPtGChunkData>();
         }
 
         if (requestToken != null) {
