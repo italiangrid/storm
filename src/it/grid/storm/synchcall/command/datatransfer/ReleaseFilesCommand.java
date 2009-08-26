@@ -1,5 +1,6 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
+import it.grid.storm.catalogs.BoLChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtGChunkData;
 import it.grid.storm.config.Configuration;
@@ -289,14 +290,17 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
                 if (!dbCatalogPtG.isSRM_FILE_PINNED(reducedChhnkData.fromSURL())) {
 
-                    try {
+                    if (!BoLChunkCatalog.getInstance().isSRM_FILE_PINNED(reducedChhnkData.fromSURL())) {
 
-                        StoRI stori = nameSpace.resolveStoRIbySURL(reducedChhnkData.fromSURL());
-                        StormEA.removePinned(stori.getAbsolutePath());
+                        try {
 
-                    } catch (NamespaceException e) {
-                        log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-                                + reducedChhnkData.fromSURL().toString());
+                            StoRI stori = nameSpace.resolveStoRIbySURL(reducedChhnkData.fromSURL());
+                            StormEA.removePinned(stori.getAbsolutePath());
+
+                        } catch (NamespaceException e) {
+                            log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
+                                    + reducedChhnkData.fromSURL().toString());
+                        }
                     }
                 }
             }
