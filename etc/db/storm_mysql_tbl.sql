@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS tape_recall (
   userID VARCHAR(255) BINARY,
   retryAttempt int,
   timeStamp datetime not null,
+  deferredStartTime datetime not null,
   primary key (taskId)) type=InnoDB;
 
 CREATE TABLE IF NOT EXISTS request_queue (
