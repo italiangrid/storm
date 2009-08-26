@@ -177,8 +177,25 @@ public class RecallTaskData {
         pos = pos < 0 ? result.length() : pos;
         result = result.substring(RecallTaskBuilder.dnPrefix.length(), pos);
         log.debug("DN to parse ='" + result + "'");
-        DistinguishedName dn = new DistinguishedName(result);
-        result = dn.getX500DN_rfc2253();
+        
+        log.warn("## TODO Feature ## : Bug in parsing DN in RFC 2253 format.");
+        /**
+         * ############### TEMPORARY FIX
+         */
+        // DistinguishedName dn = new DistinguishedName(result);
+        // result = dn.getX500DN_rfc1779();
+        if (result.contains("CN=")) {
+            int beginIndex = result.indexOf("CN=") + 3;
+            result = result.substring(beginIndex);
+            int endIndex = result.contains(",") ? result.indexOf(',') : result.length();
+            result = result.substring(0, endIndex);
+            endIndex = result.contains("/") ? result.indexOf('/') : result.length();
+            result = result.substring(0, endIndex);
+        }
+        /**
+         * ################# END TEMPORARY FIX
+         */
+        
         log.debug("DN parsed ='" + result + "'");
         return result;
     }
@@ -315,7 +332,7 @@ public class RecallTaskData {
      * 
      * @return
      */
-    public String getFileNameTextFormat() {
+    private String getFileNameTextFormat() {
         String result = "";
         result += RecallTaskBuilder.fnPrefix;
         result += getFileName();
@@ -326,7 +343,7 @@ public class RecallTaskData {
      * 
      * @return
      */
-    public String getUserDNTextFormat() {
+    private String getUserDNTextFormat() {
         String result = "";
         result += RecallTaskBuilder.dnPrefix;
         result += getUserDN();
@@ -337,7 +354,7 @@ public class RecallTaskData {
      * 
      * @return
      */
-    public String getFqansTextFormat() {
+    private String getFqansTextFormat() {
         String result = "";
         int fqansNum = (fqansString != null ? fqansString.length : 0);
         result += RecallTaskBuilder.fqansPrefix;
@@ -356,7 +373,7 @@ public class RecallTaskData {
      * 
      * @return
      */
-    public String getVONameTextFormat() {
+    private String getVONameTextFormat() {
         String result = "";
         result += RecallTaskBuilder.voNamePrefix;
         result += getVoName();
@@ -366,7 +383,7 @@ public class RecallTaskData {
     /**
      * 
      */
-    public String toString() {
+    public String getRecallTaskData_textFormat() {
         String result = "";
         result += RecallTaskBuilder.taskStart;
         result += getFileNameTextFormat() + RecallTaskBuilder.elementSep;

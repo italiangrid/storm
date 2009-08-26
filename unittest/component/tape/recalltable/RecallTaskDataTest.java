@@ -5,6 +5,7 @@ package component.tape.recalltable;
 
 import it.grid.storm.tape.recalltable.RecallTableException;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
+import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +26,72 @@ public class RecallTaskDataTest {
             log.error(e.getMessage());
             e.printStackTrace();
         }
-        log.debug("RTD : " + rtd);
+        log.debug("RTD : " + rtd.getRecallTaskData_textFormat());
         return rtd;
+    }
+    
+    private void test1() {
+        String fnExample = "/gpfs_tsm/dtem/test1.txt";
+        String dnExample = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it";
+        String dnExample2 = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Alberto Forti";
+        String fqanExample1 = RecallTaskBuilder.fqanPrefix + "/infngrid/prod";
+        String fqanExample2 = RecallTaskBuilder.fqanPrefix + "/infngrid/test";
+        String voNameExample1 = "ciccioVO";
+
+        String fnElement = RecallTaskBuilder.fnPrefix + fnExample;
+        String dnElement = RecallTaskBuilder.dnPrefix + dnExample2;
+        String fqansElement = RecallTaskBuilder.fqansPrefix + RecallTaskBuilder.fqansArrayStart + fqanExample1
+                + RecallTaskBuilder.fqanSep + fqanExample2 + RecallTaskBuilder.fqansArrayEnd;
+        String voNameElement = RecallTaskBuilder.voNamePrefix + voNameExample1;
+
+        String rtdS = RecallTaskBuilder.taskStart + fnElement + RecallTaskBuilder.elementSep + dnElement
+                + RecallTaskBuilder.elementSep + fqansElement + RecallTaskBuilder.elementSep + voNameElement
+                + RecallTaskBuilder.taskEnd;
+
+        log.debug(rtdS);
+        
+        try {
+            RecallTaskData rtd = new RecallTaskData(rtdS);
+            log.debug("RTD = " + rtd.getRecallTaskData_textFormat());
+        } catch (RecallTableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private void test2() {
+        String fromTSM = "{filename=/gpfs_tsm/dtem/test1.txt \n dn=C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Luca Magnoni,1.2.840.113549.1.9.1=#16196c7563612e6d61676e6f6e6940636e61662e696e666e2e6974 \n fqans=[fqan=/infngrid/prod,fqan=/infngrid/test] \n vo-name=ciccioVO}";
+        try {
+            RecallTaskData rtd = new RecallTaskData(fromTSM);
+            log.debug("RTD = " + rtd.getRecallTaskData_textFormat());
+        } catch (RecallTableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private void test3() {
+        String fromTSM = "{filename=/gpfs_tsm/dtem/test1.txt \n dn=C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Alberto Forti \n fqans=[fqan=/infngrid/prod,fqan=/infngrid/test] \n vo-name=ciccioVO}";
+        try {
+            RecallTaskData rtd = new RecallTaskData(fromTSM);
+            log.debug("RTD = " + rtd.getRecallTaskData_textFormat());
+        } catch (RecallTableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     /**
      * @param args
      */
     public static void main(String[] args) {
-        String fnExample = "/gpfs_tsm/dtem/test1.txt";
-        String dnExample = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it";
-        String dnExample2 = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Alberto Forti";
-        String fqans = "[fqan:/infngrid/prod,fqan:/infngrid/test]";
-        String rtdS = "{ filename:" + fnExample + " # dn:" + dnExample2;
-        rtdS += "# fqans:" + fqans + "# vo-name:infngrid }";
+        
+        
         RecallTaskDataTest test = new RecallTaskDataTest();
-        test.createTaskData(rtdS);
+        test.test1();
+        test.test2();
+        // test.test3();
     }
 
 }

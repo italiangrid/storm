@@ -8,6 +8,7 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
+import it.grid.storm.tape.recalltable.model.RecallTaskData;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -146,18 +147,17 @@ public class TaskResource {
         // Recall Table Catalog
         RecallTableCatalog rtCat = new RecallTableCatalog(test);
 
-        // Retrieve value from Body param
-        String errorStr = null;
-
         // Create a new RecallTaskTO
         RecallTaskTO task = new RecallTaskTO();
         String taskId = task.getTaskId();
 
-        // Parsing of the inputString to extract the fields of RecallTask
-        /**
-         * @todo
-         */
+        // Retrieve values from Body param
+        String errorStr = null;
 
+        // Parsing of the inputString to extract the fields of RecallTask
+        RecallTaskData rtd = new RecallTaskData(inputStr);
+        log.debug("RTD=" + rtd.getRecallTaskData_textFormat());
+        
         // Store the new Recall Task if it is all OK.
         if (errorStr != null) {
             throw new RecallTableException(errorStr);
