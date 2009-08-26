@@ -47,8 +47,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.security.jca.GetInstance.Instance;
-
 /**
  * Class that represents a chunk of an srmPrepareToGet request: it handles a single
  * file of a multifile/directory-expansion request. StoRM then sends the chunk to

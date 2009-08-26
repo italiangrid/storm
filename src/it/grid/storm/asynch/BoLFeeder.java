@@ -151,11 +151,10 @@ public final class BoLFeeder implements Delegable {
                 log.warn("Chunk: " + auxChunkData);
                 auxChunkData.changeStatusSRM_FAILURE("SRM protocol violation! Cannot do an srmBoL of a SURL that is not local!");
                 BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
-                gsm.failedChunk(auxChunkData); // inform global status computation of the chunk s
-                // failure
+                gsm.failedChunk(auxChunkData); // inform global status computation of the chunk failure
             }
         }
-        gsm.finishedAdding(); // no more chunks need to be cosidered for the overall status
+        gsm.finishedAdding(); // no more chunks need to be considered for the overall status
         // computation
     }
 

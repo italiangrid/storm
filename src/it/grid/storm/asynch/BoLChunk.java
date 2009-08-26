@@ -266,7 +266,7 @@ public class BoLChunk implements Delegable, Chooser {
      * Copy chunks.
      */
     public void choose(Streets s) {
-        s.ptgStreet(this);
+        s.bolStreet(this);
     }
 
     // //////////////////////////////////////////////////////////////////////////////
