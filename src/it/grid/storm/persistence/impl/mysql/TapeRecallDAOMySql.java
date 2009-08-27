@@ -359,7 +359,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
-
+        log.debug("Query(insert-task)=" + prepStat.toString());
         try {
 
             prepStat.executeUpdate();

@@ -114,7 +114,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             prepStat.setString(8, recallTask.getUserID());
             prepStat.setInt(9, recallTask.getRetryAttempt());
             prepStat.setDate(10, new java.sql.Date(recallTask.getDeferredRecallInstant().getTime()));
-            prepStat.setDate(10, new java.sql.Date(recallTask.getInsertionInstant().getTime()));
+            prepStat.setDate(11, new java.sql.Date(recallTask.getInsertionInstant().getTime()));
             
             return prepStat;
             

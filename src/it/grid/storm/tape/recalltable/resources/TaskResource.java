@@ -9,6 +9,7 @@ import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
+import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class TaskResource {
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
         // @todo : REMOVE THIS
-        test = true;
+        // test = true;
 
         // Retrieve the Input String
         String inputStr = buildInputString(input);
@@ -81,7 +82,19 @@ public class TaskResource {
 
         // Retrieve Task corresponding to taskId
         RecallTaskTO task = null;
-        RecallTableCatalog rtCat = new RecallTableCatalog(test);
+        
+        // Recall Table Catalog
+        RecallTableCatalog rtCat = null;
+
+        String errorStr = null;       
+        
+        try {
+            rtCat = new RecallTableCatalog(test);
+        } catch (DataAccessException e) {
+            log.error("Unable to use RecallTable DB.");
+            throw new RecallTableException("Unable to use RecallTable DB.");
+        }
+
         try {
             task = rtCat.getTask(taskId);
         } catch (DataAccessException e1) {
@@ -93,7 +106,7 @@ public class TaskResource {
         String keyRetryValue = config.getRetryValueKey();
         String keyStatus = config.getStatusKey();
         int eqIndex = inputStr.indexOf('=');
-        String errorStr = null;
+
         if (eqIndex > 0) {
             String value = inputStr.substring(eqIndex);
             String key = inputStr.substring(0, eqIndex - 1);
@@ -133,7 +146,10 @@ public class TaskResource {
     @Consumes("text/plain")
     public Response postNewTask(InputStream input) throws RecallTableException {
 
-        Response result;
+        Response result = Response.noContent().build();
+        
+        // Retrieve values from Body param
+        String errorStr = null;  
         
         // Parse the Input Stream
         String inputStr = buildInputString(input);
@@ -142,17 +158,19 @@ public class TaskResource {
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
         // @todo : REMOVE THIS
-        test = true;
+        // test = true;
 
         // Recall Table Catalog
-        RecallTableCatalog rtCat = new RecallTableCatalog(test);
+        RecallTableCatalog rtCat = null;
+        
+        try {
+            rtCat = new RecallTableCatalog(test);
+        } catch (DataAccessException e) {
+            errorStr = "Unable to use RecallTable DB.";
+            log.error("Unable to use RecallTable DB.");
+            e.printStackTrace();
 
-        // Create a new RecallTaskTO
-        RecallTaskTO task = new RecallTaskTO();
-        String taskId = task.getTaskId();
-
-        // Retrieve values from Body param
-        String errorStr = null;
+        }
 
         // Parsing of the inputString to extract the fields of RecallTask
         RecallTaskData rtd = new RecallTaskData(inputStr);
@@ -161,12 +179,22 @@ public class TaskResource {
         // Store the new Recall Task if it is all OK.
         if (errorStr != null) {
             throw new RecallTableException(errorStr);
-        }
-        rtCat.insertNewTask(task);
-        URI newResource = URI.create("/" + taskId);
-        result = Response.created(newResource).build();
-        log.debug("New task resource created: " + newResource);
-
+        } else {
+            RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
+            if (rtCat != null) {
+                rtCat.insertNewTask(task);
+                URI newResource = URI.create("/" + task.getTaskId());
+                result = Response.created(newResource).build();
+                log.debug("New task resource created: " + newResource);
+            } else {
+                result = Response.serverError().build();
+                /**
+                 * @todo : // Build an error response!
+                 */
+            }
+       }
+        
+        
         return result;
     }
 

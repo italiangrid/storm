@@ -89,8 +89,11 @@ public class RecallTaskData {
     public RecallTaskData(String textFormat) throws RecallTableException {
         //Parsing of the String
         if (textFormat.startsWith(RecallTaskBuilder.taskStart)) {
-            if (textFormat.endsWith(RecallTaskBuilder.taskEnd)) {
-                String taskDataText = textFormat.substring(1, textFormat.length() - 1);
+            char[] textFormatBytes = textFormat.toCharArray();
+            if (textFormat.contains(RecallTaskBuilder.taskEnd)) {
+                int beginIndex = 1;
+                int endIndex = textFormat.indexOf(RecallTaskBuilder.taskEnd);
+                String taskDataText = textFormat.substring(beginIndex, endIndex);
                 int fnPos = taskDataText.indexOf(RecallTaskBuilder.fnPrefix);
                 if (fnPos < 0) {
                     throw new RecallTableException("Unable to find the File Name");

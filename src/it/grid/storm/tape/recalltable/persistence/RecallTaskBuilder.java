@@ -4,6 +4,7 @@
 package it.grid.storm.tape.recalltable.persistence;
 
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.text.DateFormat;
@@ -101,10 +102,23 @@ public class RecallTaskBuilder {
      *            : 4 fields "stfn, dn, fqans, vo-name"
      * @return
      */
-    public static RecallTaskTO buildFromPOST(String bodyInput) {
-        RecallTaskTO result = null;
+    public static RecallTaskTO buildFromPOST(RecallTaskData rtd) {
+        // Create a new RecallTaskTO
+        RecallTaskTO task = new RecallTaskTO();
 
-        return result;
+        Date currentDate = new Date();
+        task.setInsertionInstant(currentDate);
+
+        task.setRequestType(RecallTaskTO.BACK_REQUEST);
+        task.setRequestToken("local-request");
+        task.setFileName(rtd.getFileName());
+        task.setPinLifetime(-1);
+        task.setDeferredRecallInstant(currentDate);
+
+        // Setting values into RecallTaskTO
+        task.setFileName(rtd.getFileName());
+
+        return task;
     }
 
 

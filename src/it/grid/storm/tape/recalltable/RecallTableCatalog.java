@@ -28,11 +28,12 @@ public class RecallTableCatalog {
     private DAOFactory daoFactory = null;
     private final TapeRecallDAO tapeRecallDAO;
 
-
     /**
      * Default constructor
+     * 
+     * @throws DataAccessException
      */
-    public RecallTableCatalog(boolean test) {
+    public RecallTableCatalog(boolean test) throws DataAccessException {
         log.debug("Building RECALL TABLE Catalog ...");
         // Binding to the persistence component
         daoFactory = PersistenceDirector.getDAOFactory();
@@ -40,8 +41,8 @@ public class RecallTableCatalog {
         if (test) {
             tapeRecallDAO = new TapeRecallDAOProperties(true);
         } else {
-            tapeRecallDAO = null;
-            log.error("TO DO !");
+            tapeRecallDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
+            ;
         }
     }
 

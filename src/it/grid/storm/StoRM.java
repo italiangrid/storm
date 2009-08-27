@@ -7,8 +7,10 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.startup.Bootstrap;
+import it.grid.storm.tape.recalltable.RecallTableService;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -104,10 +106,20 @@ public class StoRM {
         //Hearthbeat
         HealthDirector.initializeDirector(false);
 
+        /**
+         * RESTFul Service Start-up
+         */
+        try {
+            RecallTableService.start();
+        } catch (IOException e) {
+            log.error("Unable to start internal HTTP Server listening for RESTFul services");
+            e.printStackTrace();
+        }
+        
         //
-        this.picker = new AdvancedPicker();
+        picker = new AdvancedPicker();
         //this.xmlrpcServer = new SynchCallServer();
-        this.xmlrpcServer = new XMLRPCHttpServer();
+        xmlrpcServer = new XMLRPCHttpServer();
     }
 
     /**

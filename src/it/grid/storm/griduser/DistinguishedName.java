@@ -19,6 +19,9 @@ import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <p>Title: </p>
  *
@@ -33,6 +36,7 @@ import javax.security.auth.x500.X500Principal;
  */
 public class DistinguishedName implements SubjectAttribute {
 
+    private static final Logger log = LoggerFactory.getLogger(DistinguishedName.class);
     /**
         C       Country Name
         ST      State Or ProvinceName
@@ -100,7 +104,8 @@ public class DistinguishedName implements SubjectAttribute {
             }
         }
         if (pairs.size() > 0) {
-            x500DN = new X500Principal(stringDN, pairs);
+            log.error("To use this functionality (DN rfc 2253) you have to recompile with Java 1.6");
+            // x500DN = new X500Principal(stringDN, pairs);
         }
 
     }

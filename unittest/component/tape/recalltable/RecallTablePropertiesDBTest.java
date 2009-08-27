@@ -35,23 +35,34 @@ public class RecallTablePropertiesDBTest {
         RecallTablePropertiesDBTest testDB = new RecallTablePropertiesDBTest();
         testDB.createTasks(3);
         // testDB.showDB();
-        testDB.numberOfTasks();
+        try {
+            testDB.numberOfTasks();
+        } catch (DataAccessException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        testDB.takeoverNTasks(2);
-        // testDB.showDB();
-        testDB.numberOfTasks();
-        testDB.showDB();
-        testDB.printTaskList(testDB.getInProgressTask());
-        testDB.completedTasks(1);
-        // testDB.showDB();
-        testDB.numberOfTasks();
-        testDB.purgeCatalog(2);
-        testDB.numberOfTasks();
+        try {
+            testDB.takeoverNTasks(2);
+            // testDB.showDB();
+            testDB.numberOfTasks();
+            testDB.showDB();
+            testDB.printTaskList(testDB.getInProgressTask());
+            testDB.completedTasks(1);
+            // testDB.showDB();
+            testDB.numberOfTasks();
+            testDB.purgeCatalog(2);
+            testDB.numberOfTasks();
+        } catch (DataAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -79,7 +90,7 @@ public class RecallTablePropertiesDBTest {
     }
 
 
-    private void numberOfTasks() {
+    private void numberOfTasks() throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         log.debug("#Tasks Queued = " + recallTableCatalog.getNumberTaskQueued());
         log.debug("#Tasks In progress = " + recallTableCatalog.getNumberTaskInProgress());
@@ -87,21 +98,21 @@ public class RecallTablePropertiesDBTest {
     }
 
 
-    private void takeoverATask() {
+    private void takeoverATask() throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         RecallTaskTO task = recallTableCatalog.takeoverTask();
         log.debug("Taken Task : " + task);
     }
 
 
-    private void takeoverNTasks(int n) {
+    private void takeoverNTasks(int n) throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         ArrayList<RecallTaskTO> tasksList = recallTableCatalog.takeoverNTasks(n);
         printTaskList(tasksList);
     }
 
 
-    private List<RecallTaskTO> getInProgressTask() {
+    private List<RecallTaskTO> getInProgressTask() throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         ArrayList<RecallTaskTO> taskList = new ArrayList<RecallTaskTO>(recallTableCatalog.getInProgressTasks());
         return taskList;
@@ -116,13 +127,13 @@ public class RecallTablePropertiesDBTest {
     }
 
 
-    private void changeStatusInSuccess(RecallTaskTO task) {
+    private void changeStatusInSuccess(RecallTaskTO task) throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         recallTableCatalog.changeStatus(task.getTaskId(), RecallTaskStatus.SUCCESS);
     }
 
 
-    private void completedTasks(int number) {
+    private void completedTasks(int number) throws DataAccessException {
         ArrayList<RecallTaskTO> taskList = new ArrayList<RecallTaskTO>(getInProgressTask());
         log.debug("TaskList size = " + taskList.size() + " and number = " + number);
 
@@ -136,7 +147,7 @@ public class RecallTablePropertiesDBTest {
     }
 
 
-    private void purgeCatalog(int n) {
+    private void purgeCatalog(int n) throws DataAccessException {
         RecallTableCatalog recallTableCatalog = new RecallTableCatalog(true);
         recallTableCatalog.purgeCatalog(n);
     }

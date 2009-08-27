@@ -91,7 +91,7 @@ public class TaskResourceTest {
         String dnElement = RecallTaskBuilder.dnPrefix + dn;
         String fqansElement = RecallTaskBuilder.fqansPrefix + RecallTaskBuilder.fqansArrayStart;
         for (int i = 0; i < fqans.length; i++) {
-            fqansElement += fqans[i];
+            fqansElement += RecallTaskBuilder.fqanPrefix + fqans[i];
             if (i < fqans.length - 1) {
                 fqansElement += RecallTaskBuilder.fqanSep;
             }
