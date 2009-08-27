@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @date November, 2006
  * @version 1.0
  */
-public class ReducedPtGChunkData {
+public class ReducedPtGChunkData implements ReducedChunkData {
     @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(ReducedPtGChunkData.class);
 
@@ -100,5 +100,4 @@ public class ReducedPtGChunkData {
         ReducedPtGChunkData cd = (ReducedPtGChunkData) o;
         return (primaryKey == cd.primaryKey) && fromSURL.equals(cd.fromSURL) && status.equals(cd.status);
     }
-
 }

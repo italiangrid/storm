@@ -18,8 +18,9 @@ import org.slf4j.LoggerFactory;
  * @date Aug 2009
  * @version 1.0
  */
-public class ReducedBoLChunkData {
+public class ReducedBoLChunkData implements ReducedChunkData{
 
+    @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(ReducedBoLChunkData.class);
 
     private long primaryKey = -1; // long representing the primary key for the persistence layer!

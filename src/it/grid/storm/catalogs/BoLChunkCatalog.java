@@ -423,23 +423,29 @@ public class BoLChunkCatalog {
     }
 
     /**
-     * Method used to transit the specified Collection of ReducedBoLChunkData from SRM_FILE_PINNED
-     * to SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error
-     * nothing is done, but proper error messages get logged by the underlaying DAO.
+     * Method used to transit the specified Collection of ReducedBoLChunkData from SRM_FILE_PINNED to
+     * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
+     * done, but proper error messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedBoLChunkData> chunks, TRequestToken token) {
+    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedBoLChunkData> chunks,
+            TRequestToken token) {
+        
+        if (chunks.isEmpty()) {
+            return;
+        }
+        
         List<Long> aux = new ArrayList<Long>();
-        long[] auxlong = null;
-        ReducedBoLChunkData auxData = null;
-        for (Iterator<ReducedBoLChunkData> i = chunks.iterator(); i.hasNext();) {
-            auxData = i.next();
+        
+        for (ReducedBoLChunkData auxData : chunks) {
             aux.add(new Long(auxData.primaryKey()));
         }
+        
         int n = aux.size();
-        auxlong = new long[n];
+        long[] auxlong = new long[n];
         for (int i = 0; i < n; i++) {
             auxlong[i] = ((Long) aux.get(i)).longValue();
         }
+        
         dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong, token);
     }
 

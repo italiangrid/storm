@@ -278,8 +278,8 @@ public class PtGChunkCatalog {
      * is dropped and gets logged, while processing continues with the next one.
      * All valid chunks get returned: the others get dropped.
      *
-     * If there are no chunks associated to the given GridUser and Colelction of
-     * TSURLs, then an empty Collection is returned and a messagge gets logged.
+     * If there are no chunks associated to the given GridUser and Collection of
+     * TSURLs, then an empty Collection is returned and a message gets logged.
      */
     synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
         Object[] surlsobj = (new ArrayList(c)).toArray();
@@ -447,25 +447,30 @@ public class PtGChunkCatalog {
     }
 
     /**
-     * Method used to transit the specified Collection of ReducedPtGChunkData
-     * from SRM_FILE_PINNED to SRM_RELEASED. Chunks in any other starting state
-     * are not transited. In case of any error nothing is done, but proper error
-     * messages get logged by the underlaying DAO.
+     * Method used to transit the specified Collection of ReducedPtGChunkData from SRM_FILE_PINNED to
+     * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
+     * done, but proper error messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks, TRequestToken token) {
-        List aux = new ArrayList();
-        long[] auxlong = null;
-        ReducedPtGChunkData auxData = null;
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
-            auxData = (ReducedPtGChunkData) i.next();
+    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedPtGChunkData> chunks,
+            TRequestToken token) {
+        
+        if (chunks.isEmpty()) {
+            return;
+        }
+        
+        List<Long> aux = new ArrayList<Long>();
+        
+        for (ReducedPtGChunkData auxData : chunks) {
             aux.add(new Long(auxData.primaryKey()));
         }
+        
         int n = aux.size();
-        auxlong = new long[n];
-        for (int i=0; i<n; i++) {
-            auxlong[i] = ((Long)aux.get(i)).longValue();
+        long[] auxlong = new long[n];
+        for (int i = 0; i < n; i++) {
+            auxlong[i] = ((Long) aux.get(i)).longValue();
         }
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong,token);
+        
+        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong, token);
     }
 
     /**
