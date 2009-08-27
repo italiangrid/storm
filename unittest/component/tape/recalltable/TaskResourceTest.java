@@ -27,9 +27,9 @@ public class TaskResourceTest {
     
     private static final Logger log = LoggerFactory.getLogger(TaskResourceTest.class);
     
-    private static void testPutOnTask(String putBodyString) throws IOException, HttpException {
+    private static void testPutOnTask(String taskId, String putBodyString) throws IOException, HttpException {
 
-        PutMethod putMethod = new PutMethod("http://localhost:9998/recalltable/task/abc123");
+        PutMethod putMethod = new PutMethod("http://localhost:9998/recalltable/task/" + taskId);
         RequestEntity entity = new InputStreamRequestEntity(new ByteArrayInputStream(putBodyString.getBytes()),
                 "text/plain");
         putMethod.setRequestEntity(entity);
@@ -47,7 +47,9 @@ public class TaskResourceTest {
         }
     }
  
-    private static void testPostNewTask(String postBodyString) throws IOException, HttpException {
+    private static String testPostNewTask(String postBodyString) throws IOException, HttpException {
+
+        String taskId = null;
         PostMethod postMethod = new PostMethod("http://localhost:9998/recalltable/task");
         RequestEntity entity = new InputStreamRequestEntity(new ByteArrayInputStream(postBodyString.getBytes()),
                 "text/plain");
@@ -59,21 +61,33 @@ public class TaskResourceTest {
             log.debug("Response headers:");
             Header[] headers = postMethod.getResponseHeaders();
             for (Header header : headers) {
-                log.debug(header.toString());
+                if (header.getName().equals("Location")) {
+                    // log.debug("found");
+                    String newResource = header.getValue();
+                    // log.debug("New resource = '" + newResource + "'");
+                    String[] elements = newResource.split("/");
+                    // log.debug("elements : " + elements.length);
+                    taskId = elements[elements.length - 1];
+                    log.debug("Task-id='" + taskId + "'");
+                    
+                }
+                // log.debug(header.toString());
             }
             String responseBody = postMethod.getResponseBodyAsString();
             log.debug("Body Response = '" + responseBody + "'");
+            
         } finally {
             postMethod.releaseConnection();
         }
+        return taskId;
     }
 
-    private void testSetStatus(String statusString) throws HttpException, IOException {
-        testPutOnTask(statusString);
+    private void testSetStatus(String taskId, String statusString) throws HttpException, IOException {
+        testPutOnTask(taskId, statusString);
     }
 
-    private void testSetRetryValue(String retryValueString) throws HttpException, IOException {
-        testPutOnTask(retryValueString);
+    private void testSetRetryValue(String taskId, String retryValueString) throws HttpException, IOException {
+        testPutOnTask(taskId, retryValueString);
     }
 
     private String createTextPostBody(String filename, String dn, String[] fqans, String voName) {
@@ -106,8 +120,8 @@ public class TaskResourceTest {
         return rtdS;
     }
 
-    private void testCreateNewTask(String newTaskString) throws HttpException, IOException {
-        testPostNewTask(newTaskString);
+    private String testCreateNewTask(String newTaskString) throws HttpException, IOException {
+        return testPostNewTask(newTaskString);
     }    
     
     public static void main(String[] args) {
@@ -125,8 +139,12 @@ public class TaskResourceTest {
             fqansExample[0] = "/infngrid/prod";
             fqansExample[1] = "/infngrid/test";
             String voNameExample = "ciccioVO";
+            
             String postBody = tester.createTextPostBody(fnExample, dnExample, fqansExample, voNameExample);
-            tester.testCreateNewTask(postBody);
+            String taskId = tester.testCreateNewTask(postBody);
+            
+            tester.testSetStatus(taskId, "status=2");
+            
             
         } catch (IOException e) {
             e.printStackTrace();

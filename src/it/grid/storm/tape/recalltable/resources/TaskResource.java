@@ -109,7 +109,7 @@ public class TaskResource {
 
         if (eqIndex > 0) {
             String value = inputStr.substring(eqIndex);
-            String key = inputStr.substring(0, eqIndex - 1);
+            String key = inputStr.substring(0, eqIndex);
             if (key.equals(keyRetryValue)) {
                 try {
                     int retryValue = Integer.valueOf(value);
@@ -120,7 +120,9 @@ public class TaskResource {
             } else {
                 if (key.equals(keyStatus)) {
                     try {
-                        int statusValue = Integer.valueOf(value);
+                        // trim out the '\n' end.
+
+                        int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));
                         task.setStatusId(statusValue);
                     } catch (NumberFormatException e) {
                         errorStr = "Unable to understand the number value = '" + value + "'";

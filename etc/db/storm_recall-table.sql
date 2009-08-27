@@ -1,5 +1,5 @@
 
-USE storm_db;
+USE storm_be_isam;
 CREATE TABLE IF NOT EXISTS tape_recall (
   taskId VARCHAR(255) BINARY NOT NULL,
   requestToken VARCHAR(255) BINARY,
