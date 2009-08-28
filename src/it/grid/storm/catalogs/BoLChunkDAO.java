@@ -1,8 +1,14 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
 import java.sql.Connection;
@@ -16,8 +22,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,9 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DAO class for BoLChunkCatalog. This DAO is specifically designed to connect to a MySQL DB. The
- * raw data found in those tables is pre-treated in order to turn it into the Object Model of StoRM.
- * See Method comments for further info.
+ * DAO class for BoLChunkCatalog. This DAO is specifically designed to connect to a MySQL DB. The raw data
+ * found in those tables is pre-treated in order to turn it into the Object Model of StoRM. See Method
+ * comments for further info.
  * 
  * BEWARE! DAO Adjusts for extra fields in the DB that are not present in the object model.
  * 
@@ -112,8 +121,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Auxiliary method that checks if time for resetting the connection has come, and eventually
-     * takes it down and up back again.
+     * Auxiliary method that checks if time for resetting the connection has come, and eventually takes it
+     * down and up back again.
      */
     private void checkConnection() {
         if (reconnect) {
@@ -128,9 +137,9 @@ public class BoLChunkDAO {
      * Method that queries the MySQL DB to find all entries matching the supplied TRequestToken. The
      * Collection contains the corresponding BoLChunkDataTO objects.
      * 
-     * An initial simple query establishes the list of protocols associated with the request. A
-     * second complex query establishes all chunks associated with the request, by properly joining
-     * request_queue, request_BoL, status_BoL and request_DirOption. The considered fields are:
+     * An initial simple query establishes the list of protocols associated with the request. A second complex
+     * query establishes all chunks associated with the request, by properly joining request_queue,
+     * request_BoL, status_BoL and request_DirOption. The considered fields are:
      * 
      * (1) From status_BoL: the ID field which becomes the TOs primary key, and statusCode.
      * 
@@ -140,8 +149,7 @@ public class BoLChunkDAO {
      * 
      * (4) From request_DirOption: isSourceADirectory, alLevelRecursive, numOfLevels
      * 
-     * In case of any error, a log gets written and an empty collection is returned. No exception is
-     * thrown.
+     * In case of any error, a log gets written and an empty collection is returned. No exception is thrown.
      * 
      * NOTE! Chunks in SRM_ABORTED status are NOT returned!
      */
@@ -215,8 +223,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given
-     * TRequestToken expressed as String.
+     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given TRequestToken
+     * expressed as String.
      */
     public Collection<ReducedBoLChunkDataTO> findReduced(String reqtoken) {
         checkConnection();
@@ -254,8 +262,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser,
-     * and whose SURLs are contained in the supplied array of Strings.
+     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and whose
+     * SURLs are contained in the supplied array of Strings.
      */
     public Collection<ReducedBoLChunkDataTO> findReduced(String griduser, String[] surls) {
         checkConnection();
@@ -311,8 +319,8 @@ public class BoLChunkDAO {
     /**
      * Method used to save the changes made to a retrieved BoLChunkDataTO, back into the MySQL DB.
      * 
-     * Only the fileSize, statusCode and explanation, of status_BoL table are written
-     * to the DB. Likewise for the request pinLifetime.
+     * Only the fileSize, statusCode and explanation, of status_BoL table are written to the DB. Likewise for
+     * the request pinLifetime.
      * 
      * In case of any error, an error message gets logged but no exception is thrown.
      */
@@ -349,8 +357,8 @@ public class BoLChunkDAO {
      * 
      * Method used to refresh the BoLChunkDataTO information from the MySQL DB.
      * 
-     * In this first version, only the statusCode is reloaded from the DB. TODO The
-     * next version must contains all the information related to the Chunk!
+     * In this first version, only the statusCode is reloaded from the DB. TODO The next version must contains
+     * all the information related to the Chunk!
      * 
      * In case of any error, an error message gets logged but no exception is thrown.
      */
@@ -402,12 +410,12 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey
-     * changed to the one assigned by the DB.
+     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to
+     * the one assigned by the DB.
      * 
-     * The supplied BoLChunkData is used to fill in only the DB table where file specific info gets
-     * recorded: it does _not_ add a new request! So if spurious data is supplied, it will just stay
-     * there because of a lack of a parent request!
+     * The supplied BoLChunkData is used to fill in only the DB table where file specific info gets recorded:
+     * it does _not_ add a new request! So if spurious data is supplied, it will just stay there because of a
+     * lack of a parent request!
      */
     public void addChild(BoLChunkDataTO to) {
         checkConnection();
@@ -523,11 +531,11 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey
-     * changed to the one assigned by the DB. The client_dn must also be supplied as a String.
+     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to
+     * the one assigned by the DB. The client_dn must also be supplied as a String.
      * 
-     * The supplied BoLChunkData is used to fill in all the DB tables where file specific info gets
-     * recorded: it _adds_ a new request!
+     * The supplied BoLChunkData is used to fill in all the DB tables where file specific info gets recorded:
+     * it _adds_ a new request!
      */
     public void addNew(BoLChunkDataTO to, String client_dn) {
         checkConnection();
@@ -689,19 +697,17 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used in extraordinary situations to signal that data retrieved from the DB was
-     * malformed and could not be translated into the StoRM object model.
+     * Method used in extraordinary situations to signal that data retrieved from the DB was malformed and
+     * could not be translated into the StoRM object model.
      * 
-     * This method attempts to change the status of the request to SRM_FAILURE and record it in the
-     * DB.
+     * This method attempts to change the status of the request to SRM_FAILURE and record it in the DB.
      * 
      * This operation could potentially fail because the source of the malformed problems could be a
      * problematic DB; indeed, initially only log messages where recorded.
      * 
-     * Yet it soon became clear that the source of malformed data were the clients and/or FE
-     * recording info in the DB. In these circumstances the client would see its request as being in
-     * the SRM_IN_PROGRESS state for ever. Hence the pressing need to inform it of the encountered
-     * problems.
+     * Yet it soon became clear that the source of malformed data were the clients and/or FE recording info in
+     * the DB. In these circumstances the client would see its request as being in the SRM_IN_PROGRESS state
+     * for ever. Hence the pressing need to inform it of the encountered problems.
      */
     public void signalMalformedBoLChunk(BoLChunkDataTO auxTO) {
         checkConnection();
@@ -727,11 +733,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns the number of BoL requests on the given SURL, that are in SRM_FILE_PINNED
-     * state.
+     * Method that returns the number of BoL requests on the given SURL, that are in SRM_FILE_PINNED state.
      * 
-     * This method is intended to be used by BoLChunkCatalog in the isSRM_FILE_PINNED method
-     * invocation.
+     * This method is intended to be used by BoLChunkCatalog in the isSRM_FILE_PINNED method invocation.
      * 
      * In case of any error, 0 is returned.
      */
@@ -767,13 +771,12 @@ public class BoLChunkDAO {
 
     /**
      * Method that updates all chunks in SRM_FILE_PINNED state, into SRM_RELEASED. An array of long
-     * representing the primary key of each chunk is required: only they get the status changed
-     * provided their current status is SRM_FILE_PINNED.
+     * representing the primary key of each chunk is required: only they get the status changed provided their
+     * current status is SRM_FILE_PINNED.
      * 
      * This method is used during srmReleaseFiles
      * 
-     * In case of any error nothing happens and no exception is thrown, but proper messages get
-     * logged.
+     * In case of any error nothing happens and no exception is thrown, but proper messages get logged.
      */
     public void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids) {
         checkConnection();
@@ -809,8 +812,8 @@ public class BoLChunkDAO {
             transitSRM_FILE_PINNEDtoSRM_RELEASED(ids);
         } else {
             /*
-             * If a request token has been specified, only the related BoL requests have to be
-             * released. This is done adding the r.r_token="..." clause in the where subquery.
+             * If a request token has been specified, only the related BoL requests have to be released. This
+             * is done adding the r.r_token="..." clause in the where subquery.
              */
             checkConnection();
             String str = "UPDATE "
@@ -861,12 +864,11 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that transits chunks in SRM_FILE_PINNED to SRM_ABORTED, for the given SURL: the
-     * overall request status of the requests containing that chunk, is not changed! The TURL is set
-     * to null.
+     * Method that transits chunks in SRM_FILE_PINNED to SRM_ABORTED, for the given SURL: the overall request
+     * status of the requests containing that chunk, is not changed! The TURL is set to null.
      * 
-     * Beware, that the chunks may be part of requests that have finished, or that still have not
-     * finished because other chunks are still being processed.
+     * Beware, that the chunks may be part of requests that have finished, or that still have not finished
+     * because other chunks are still being processed.
      */
     public void transitSRM_FILE_PINNEDtoSRM_ABORTED(String surl, String explanation) {
         checkConnection();
@@ -904,22 +906,62 @@ public class BoLChunkDAO {
      * This is needed when the client forgets to invoke srmReleaseFiles().
      */
     public void transitExpiredSRM_FILE_PINNED() {
+
+        // TODO: put a limit on the queries.....
+
         checkConnection();
-        String str = "UPDATE "
+        List<String> expiredSurlList = new LinkedList<String>();
+
+        String str = "SELECT request_BoL.sourceSURL FROM "
+                + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
+                + "WHERE s.statusCode=" + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
+
+        Statement statement = null;
+        try {
+
+            //            stmt.executeUpdate("START TRANSACTION");
+
+            statement = con.createStatement();
+
+            ResultSet res = statement.executeQuery(str);
+            logWarnings(statement.getWarnings());
+
+            while (res.next()) {
+                expiredSurlList.add(res.getString("sourceSURL"));
+            }
+
+            if (expiredSurlList.isEmpty()) {
+                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                return;
+            }
+
+        } catch (SQLException e) {
+            log.error("BoLChunkDAO! SQLException." + e);
+        } finally {
+            close(statement);
+        }
+
+        str = "UPDATE "
                 + "status_BoL s JOIN (request_BoL rg, request_queue r) ON s.request_BoLID=rg.ID AND rg.request_queueID=r.ID "
                 + "SET s.statusCode=? "
                 + "WHERE s.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
+
         PreparedStatement stmt = null;
         try {
             stmt = con.prepareStatement(str);
             logWarnings(con.getWarnings());
+
             stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
             logWarnings(stmt.getWarnings());
             stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
             logWarnings(stmt.getWarnings());
+
             log.debug("BoL CHUNK DAO - transitExpiredSRM_FILE_PINNED method: " + stmt.toString());
+
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
+
             if (count == 0) {
                 log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
             } else {
@@ -931,6 +973,66 @@ public class BoLChunkDAO {
                     + e);
         } finally {
             close(stmt);
+        }
+
+        Set<String> pinnedSurlList = new HashSet<String>();
+        try {
+
+            statement = con.createStatement();
+
+            str = "SELECT request_BoL.sourceSURL FROM "
+                    + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
+                    + "WHERE s.statusCode="
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
+
+            ResultSet res = statement.executeQuery(str);
+            logWarnings(statement.getWarnings());
+
+            while (res.next()) {
+                pinnedSurlList.add(res.getString("sourceSURL"));
+            }
+
+            str = "SELECT request_Get.sourceSURL FROM "
+                    + "request_Get rg JOIN (status_Get s, request_queue r) ON s.request_GetID=rb.ID AND rg.request_queueID=r.ID "
+                    + "WHERE s.statusCode="
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
+
+            res = statement.executeQuery(str);
+            logWarnings(statement.getWarnings());
+
+            while (res.next()) {
+                pinnedSurlList.add(res.getString("sourceSURL"));
+            }
+
+        } catch (SQLException e) {
+            log.error("BoLChunkDAO! SQLException." + e);
+        } finally {
+            close(statement);
+        }
+
+        for (String surl : expiredSurlList) {
+            if (!pinnedSurlList.contains(surl)) {
+
+                StoRI stori;
+
+                try {
+
+                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(TSURL.makeFromString(surl));
+
+                } catch (NamespaceException e) {
+                    log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
+                    continue;
+                } catch (InvalidTSURLAttributesException e) {
+                    log.error("Invalid SURL, cannot release the pin (Extended Attribute): " + surl);
+                    continue;
+                }
+
+                if (Configuration.getInstance().getTapeEnabled()) {
+                    StormEA.removePinned(stori.getAbsolutePath());
+                }
+            }
         }
     }
 
