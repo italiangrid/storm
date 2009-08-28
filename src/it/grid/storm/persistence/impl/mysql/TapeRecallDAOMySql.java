@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 public class TapeRecallDAOMySql extends TapeRecallDAO {
 
-    @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOMySql.class);
 
     private final TapeRecallMySQLHelper sqlHelper;
@@ -456,24 +455,21 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
                 taskIdList.add(taskId);
             }
 
-            if (taskIdList.isEmpty()) {
-
-                statment.executeUpdate("COMMIT");
-
-            } else {
+            if (!taskIdList.isEmpty()) {
 
                 query = sqlHelper.getQueryTakeoverTasksUpdate(taskIdList);
                 statment.executeUpdate(query);
 
-                statment.executeUpdate("COMMIT");
             }
 
+            dbConnection.commit();
+            
         } catch (SQLException e) {
 
             throw new DataAccessException("Error executing query: " + query, e);
 
         } finally {
-
+            
             releaseConnection(res, statment, dbConnection);
         }
 
