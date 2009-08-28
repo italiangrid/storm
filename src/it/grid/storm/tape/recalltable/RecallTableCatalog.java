@@ -139,8 +139,29 @@ public class RecallTableCatalog {
             e.printStackTrace();
         }
     }
+    
+    public void changeRetryValue(String taskId, int newValue) {
+        try {
+            tapeRecallDAO.setRetryValue(taskId, newValue);
+        } catch (DataAccessException e) {
+            log.error("Unable to takeover a task");
+            e.printStackTrace();
+        }
+    }
 
+    
+    public RecallTaskTO taskOverTask() {
+        RecallTaskTO task = null;
+        try {
+            task = tapeRecallDAO.takeoverTask();
+        } catch (DataAccessException e) {
+            log.error("Unable to update the task : " + task.toString());
+            e.printStackTrace();
+        }
+        return task;
+    }
 
+    
     public void updateTask(RecallTaskTO task) {
         try {
             tapeRecallDAO.updateTask(task);
@@ -150,7 +171,8 @@ public class RecallTableCatalog {
         }
     }
 
-
+  
+    
     public void insertNewTask(RecallTaskTO task) {
         try {
             tapeRecallDAO.insertTask(task);

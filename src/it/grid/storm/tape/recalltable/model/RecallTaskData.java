@@ -56,7 +56,7 @@ public class RecallTaskData {
         } else {
             voName = RecallTaskData.UNSPECIFIED;
         }
-        userDN = user.getDistinguishedName().getX500DN_rfc2253();
+        userDN = user.getDistinguishedName().getDN();
     }
     
     /**
@@ -89,7 +89,7 @@ public class RecallTaskData {
     public RecallTaskData(String textFormat) throws RecallTableException {
         //Parsing of the String
         if (textFormat.startsWith(RecallTaskBuilder.taskStart)) {
-            char[] textFormatBytes = textFormat.toCharArray();
+            
             if (textFormat.contains(RecallTaskBuilder.taskEnd)) {
                 int beginIndex = 1;
                 int endIndex = textFormat.indexOf(RecallTaskBuilder.taskEnd);
@@ -322,6 +322,18 @@ public class RecallTaskData {
         return fqansString;
     }
 
+    
+    public String getUserID() {
+        String userId = "anonymous";
+        if (getUserDN() != null) {
+            userId = getUserDN();
+            if (getFqansTextFormat() != null) {
+                userId += " - " + getFqansTextFormat();
+            }
+        }
+        return userId;
+    }
+    
     /**
      * 
      * @return

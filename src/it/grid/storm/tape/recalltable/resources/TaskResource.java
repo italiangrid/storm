@@ -112,33 +112,34 @@ public class TaskResource {
             String key = inputStr.substring(0, eqIndex);
             if (key.equals(keyRetryValue)) {
                 try {
-                    int retryValue = Integer.valueOf(value);
+                 // trim out the '\n' end.
+                    int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
                     task.setRetryAttempt(retryValue);
+                    rtCat.changeRetryValue(taskId, task.getRetryAttempt());
+
                 } catch (NumberFormatException e) {
                     errorStr = "Unable to understand the number value = '" + value + "'";
+                    throw new RecallTableException(errorStr);
                 }
             } else {
                 if (key.equals(keyStatus)) {
                     try {
                         // trim out the '\n' end.
-
                         int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));
                         task.setStatusId(statusValue);
+                        rtCat.changeStatus(task.getTaskId(), task.getRecallStatus());
                     } catch (NumberFormatException e) {
                         errorStr = "Unable to understand the number value = '" + value + "'";
+                        throw new RecallTableException(errorStr);
                     }
                 } else {
                     errorStr = "Unable to understand the key = '" + key + "' in @PUT request.";
+                    throw new RecallTableException(errorStr);
                 }
             }
         } else {
             errorStr = "Body '" + inputStr + "'is wrong";
-        }
-        if (errorStr != null) {
             throw new RecallTableException(errorStr);
-        } else {
-            // Store the Task
-            rtCat.updateTask(task);
         }
     }
 
@@ -149,10 +150,10 @@ public class TaskResource {
     public Response postNewTask(InputStream input) throws RecallTableException {
 
         Response result = Response.noContent().build();
-        
+
         // Retrieve values from Body param
         String errorStr = null;  
-        
+
         // Parse the Input Stream
         String inputStr = buildInputString(input);
         TaskResource.log.debug("@POST (input string) = '" + inputStr + "'");
@@ -164,39 +165,31 @@ public class TaskResource {
 
         // Recall Table Catalog
         RecallTableCatalog rtCat = null;
-        
         try {
             rtCat = new RecallTableCatalog(test);
         } catch (DataAccessException e) {
             errorStr = "Unable to use RecallTable DB.";
-            log.error("Unable to use RecallTable DB.");
-            e.printStackTrace();
-
+            log.error(errorStr);
+            throw new RecallTableException(errorStr);
         }
 
         // Parsing of the inputString to extract the fields of RecallTask
         RecallTaskData rtd = new RecallTaskData(inputStr);
         log.debug("RTD=" + rtd.getRecallTaskData_textFormat());
-        
+
         // Store the new Recall Task if it is all OK.
-        if (errorStr != null) {
-            throw new RecallTableException(errorStr);
+        RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
+        if (rtCat != null) {
+            rtCat.insertNewTask(task);
+            URI newResource = URI.create("/" + task.getTaskId());
+            result = Response.created(newResource).build();
+            log.debug("New task resource created: " + newResource);
         } else {
-            RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
-            if (rtCat != null) {
-                rtCat.insertNewTask(task);
-                URI newResource = URI.create("/" + task.getTaskId());
-                result = Response.created(newResource).build();
-                log.debug("New task resource created: " + newResource);
-            } else {
-                result = Response.serverError().build();
-                /**
-                 * @todo : // Build an error response!
-                 */
-            }
-       }
-        
-        
+            result = Response.serverError().build();
+            /**
+             * @todo : // Build an error response!
+             */
+        }
         return result;
     }
 

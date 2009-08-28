@@ -114,7 +114,10 @@ public class RecallTaskBuilder {
         task.setFileName(rtd.getFileName());
         task.setPinLifetime(-1);
         task.setDeferredRecallInstant(currentDate);
-
+        
+        task.setUserID(rtd.getUserID());
+        task.setVoName(rtd.getVoName());
+        
         // Setting values into RecallTaskTO
         task.setFileName(rtd.getFileName());
 

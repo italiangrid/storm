@@ -144,6 +144,7 @@ public class TaskResourceTest {
             String taskId = tester.testCreateNewTask(postBody);
             
             tester.testSetStatus(taskId, "status=2");
+            tester.testSetRetryValue(taskId, "retry-value=7");
             
             
         } catch (IOException e) {
