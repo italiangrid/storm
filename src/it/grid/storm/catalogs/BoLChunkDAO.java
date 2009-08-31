@@ -921,7 +921,8 @@ public class BoLChunkDAO {
         Statement statement = null;
         try {
 
-            con.setAutoCommit(false);
+            // start transaction
+//            con.setAutoCommit(false);
             
             statement = con.createStatement();
 
@@ -944,10 +945,10 @@ public class BoLChunkDAO {
             close(statement);
         }
         
-        if (failure) {
-            commit(con);
-            return;
-        }
+//        if (failure) {
+//            commit(con);
+//            return;
+//        }
 
         str = "UPDATE "
                 + "status_BoL s JOIN (request_BoL rg, request_queue r) ON s.request_BoLID=rg.ID AND rg.request_queueID=r.ID "
@@ -983,10 +984,10 @@ public class BoLChunkDAO {
             close(stmt);
         }
         
-        if (failure) {
-            commit(con);
-            return;
-        }
+//        if (failure) {
+//            commit(con);
+//            return;
+//        }
 
         Set<String> pinnedSurlList = new HashSet<String>();
         try {
@@ -1025,7 +1026,7 @@ public class BoLChunkDAO {
             close(statement);
         }
         
-        commit(con);
+//        commit(con);
 
         for (String surl : expiredSurlList) {
             if (!pinnedSurlList.contains(surl)) {

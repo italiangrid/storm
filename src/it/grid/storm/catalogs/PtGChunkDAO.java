@@ -965,7 +965,7 @@ public class PtGChunkDAO {
         
         try {
             // start transaction
-            con.setAutoCommit(false);
+            //con.setAutoCommit(false);
 
             statement = con.createStatement();
 
@@ -988,10 +988,10 @@ public class PtGChunkDAO {
             close(statement);
         }
 
-        if (failure) {
-            commit(con);
-            return;
-        }
+//        if (failure) {
+//            commit(con);
+//            return;
+//        }
     
     
         str = "UPDATE "
@@ -1016,7 +1016,6 @@ public class PtGChunkDAO {
             
             if (count == 0) {
                 log.debug("PtGChunkDAO! No chunk of PtG request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
-                failure = true;
             } else {
                 log.info("PtGChunkDAO! " + count
                         + " chunks of PtG requests were transited from SRM_FILE_PINNED to SRM_RELEASED.");
@@ -1024,14 +1023,15 @@ public class PtGChunkDAO {
         } catch (SQLException e) {
             log.error("PtGChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of PtG requests, to SRM_RELEASED! "
                     + e);
+            failure = true;
         } finally {
             close(stmt);
         }
         
-        if (failure) {
-            commit(con);
-            return;
-        }
+//        if (failure) {
+//            commit(con);
+//            return;
+//        }
         
         Set<String> pinnedSurlList = new HashSet<String>();
         try {
@@ -1072,7 +1072,7 @@ public class PtGChunkDAO {
             close(statement);
         }
         
-        commit(con);
+//        commit(con);
 
         for (String surl : expiredSurlList) {
             if (!pinnedSurlList.contains(surl)) {
