@@ -428,19 +428,21 @@ public class RequestSummaryCatalog {
      * corresponding proxies if available.
      */
     synchronized private void purgeExpiredRequests() {
-        
+
         PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
         BoLChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
-        
-        List r_tokens = dao.purgeExpiredRequests();
+
+        List<String> r_tokens = dao.purgeExpiredRequests();
         if (r_tokens.isEmpty()) {
             RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");
         }
+        
         while (!r_tokens.isEmpty()) {
+            
             RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG; removed from DB the following expired requests: "
                     + r_tokens);
-            for (Iterator i = r_tokens.iterator(); i.hasNext();) {
-                String rt = (String) i.next();
+            
+            for (String rt : r_tokens) {
                 String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
                 File proxyFile = new File(proxyFileName);
                 if (proxyFile.exists()) {
@@ -449,7 +451,8 @@ public class RequestSummaryCatalog {
                         RequestSummaryCatalog.log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file "
                                 + proxyFileName + " failed!");
                     } else {
-                        RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
+                        RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file "
+                                + proxyFileName);
                     }
                 }
             }
