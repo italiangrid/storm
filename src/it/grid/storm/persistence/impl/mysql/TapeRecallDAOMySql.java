@@ -462,7 +462,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
             }
 
-            dbConnection.commit();
+            statment.executeUpdate("COMMIT");
             
         } catch (SQLException e) {
 

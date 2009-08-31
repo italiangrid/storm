@@ -428,6 +428,10 @@ public class RequestSummaryCatalog {
      * corresponding proxies if available.
      */
     synchronized private void purgeExpiredRequests() {
+        
+        PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
+        BoLChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
+        
         List r_tokens = dao.purgeExpiredRequests();
         if (r_tokens.isEmpty()) {
             RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");

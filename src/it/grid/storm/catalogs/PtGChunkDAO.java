@@ -1132,6 +1132,9 @@ public class PtGChunkDAO {
             Statement s = con.createStatement();
             
             s.executeUpdate("COMMIT");
+            
+            s.close();
+            
         } catch (SQLException e) {
             log.error( "BoL, SQL EXception", e);
         }
