@@ -909,6 +909,7 @@ public class BoLChunkDAO {
 
         // TODO: put a limit on the queries.....
 
+        boolean failure = false;
         checkConnection();
         List<String> expiredSurlList = new LinkedList<String>();
 
@@ -920,9 +921,9 @@ public class BoLChunkDAO {
         Statement statement = null;
         try {
 
-            //            stmt.executeUpdate("START TRANSACTION");
-
             statement = con.createStatement();
+
+            statement.executeUpdate("START TRANSACTION");
 
             ResultSet res = statement.executeQuery(str);
             logWarnings(statement.getWarnings());
@@ -938,8 +939,14 @@ public class BoLChunkDAO {
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
+            failure = true;
         } finally {
             close(statement);
+        }
+        
+        if (failure) {
+            commit(con);
+            return;
         }
 
         str = "UPDATE "
@@ -971,8 +978,14 @@ public class BoLChunkDAO {
         } catch (SQLException e) {
             log.error("BoLChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of BoL requests, to SRM_RELEASED! "
                     + e);
+            failure = true;
         } finally {
             close(stmt);
+        }
+        
+        if (failure) {
+            commit(con);
+            return;
         }
 
         Set<String> pinnedSurlList = new HashSet<String>();
@@ -1005,6 +1018,8 @@ public class BoLChunkDAO {
             while (res.next()) {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
+            
+            con.commit();
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
@@ -1061,6 +1076,14 @@ public class BoLChunkDAO {
                 log.error("BoL CHUNK DAO! Unable to close Statement " + stmt.toString() + " - Exception: "
                         + e);
             }
+        }
+    }
+    
+    private void commit(Connection con) {
+        try {
+            con.commit();
+        } catch (SQLException e) {
+            log.error( "BoL, SQL EXception", e);
         }
     }
 
