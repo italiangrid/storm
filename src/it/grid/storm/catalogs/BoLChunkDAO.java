@@ -913,7 +913,7 @@ public class BoLChunkDAO {
         checkConnection();
         List<String> expiredSurlList = new LinkedList<String>();
 
-        String str = "SELECT request_BoL.sourceSURL FROM "
+        String str = "SELECT sourceSURL FROM "
                 + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
                 + "WHERE s.statusCode=" + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
                 + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
@@ -993,7 +993,7 @@ public class BoLChunkDAO {
 
             statement = con.createStatement();
 
-            str = "SELECT request_BoL.sourceSURL FROM "
+            str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
                     + "WHERE s.statusCode="
                     + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
@@ -1006,8 +1006,8 @@ public class BoLChunkDAO {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
 
-            str = "SELECT request_Get.sourceSURL FROM "
-                    + "request_Get rg JOIN (status_Get s, request_queue r) ON s.request_GetID=rb.ID AND rg.request_queueID=r.ID "
+            str = "SELECT sourceSURL FROM "
+                    + "request_Get rg JOIN (status_Get s, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
                     + "WHERE s.statusCode="
                     + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
