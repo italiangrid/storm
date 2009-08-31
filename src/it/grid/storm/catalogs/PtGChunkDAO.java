@@ -1065,7 +1065,8 @@ public class PtGChunkDAO {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
             
-            con.commit();
+            statement.executeUpdate("COMMIT");
+            logWarnings(statement.getWarnings());
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
@@ -1128,7 +1129,9 @@ public class PtGChunkDAO {
     
     private void commit(Connection con) {
         try {
-            con.commit();
+            Statement s = con.createStatement();
+            
+            s.executeUpdate("COMMIT");
         } catch (SQLException e) {
             log.error( "BoL, SQL EXception", e);
         }
