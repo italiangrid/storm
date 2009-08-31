@@ -962,11 +962,12 @@ public class PtGChunkDAO {
                 + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
         Statement statement = null;
+        
         try {
+            // start transaction
+            con.setAutoCommit(false);
 
             statement = con.createStatement();
-
-            statement.executeUpdate("START TRANSACTION");
 
             ResultSet res = statement.executeQuery(str);
             logWarnings(statement.getWarnings());
@@ -1065,14 +1066,13 @@ public class PtGChunkDAO {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
             
-            statement.executeUpdate("COMMIT");
-            logWarnings(statement.getWarnings());
-
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
         } finally {
             close(statement);
         }
+        
+        commit(con);
 
         for (String surl : expiredSurlList) {
             if (!pinnedSurlList.contains(surl)) {
@@ -1129,11 +1129,9 @@ public class PtGChunkDAO {
     
     private void commit(Connection con) {
         try {
-            Statement s = con.createStatement();
             
-            s.executeUpdate("COMMIT");
-            
-            s.close();
+            con.commit();
+            con.setAutoCommit(true);
             
         } catch (SQLException e) {
             log.error( "BoL, SQL EXception", e);
