@@ -949,25 +949,26 @@ public class PtGChunkDAO {
      * This is needed when the client forgets to invoke srmReleaseFiles().
      */
     public void transitExpiredSRM_FILE_PINNED() {
-        
+
         // TODO: put a limit on the queries.....
-        
-        boolean failure = false;
+
         checkConnection();
         List<String> expiredSurlList = new LinkedList<String>();
-        
-        String str = "SELECT sourceSURL FROM "
-                + "request_Get rg JOIN (status_Get s, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
-                + "WHERE s.statusCode=" + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
-                + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
+        String str = null;
 
         Statement statement = null;
-        
+
         try {
             // start transaction
-            //con.setAutoCommit(false);
+            con.setAutoCommit(false);
 
             statement = con.createStatement();
+
+            str = "SELECT sourceSURL FROM "
+                    + "request_Get rg JOIN (status_Get s, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
+                    + "WHERE s.statusCode="
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
             ResultSet res = statement.executeQuery(str);
             logWarnings(statement.getWarnings());
@@ -983,37 +984,33 @@ public class PtGChunkDAO {
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
-            failure = true;
+            rollback(con);
+            return;
         } finally {
             close(statement);
         }
 
-//        if (failure) {
-//            commit(con);
-//            return;
-//        }
-    
-    
-        str = "UPDATE "
-                + "status_Get s JOIN (request_Get rg, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
-                + "SET s.statusCode=? "
-                + "WHERE s.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
-        
-        PreparedStatement stmt = null;
+        PreparedStatement preparedStatement = null;
         try {
-            stmt = con.prepareStatement(str);
+
+            str = "UPDATE "
+                    + "status_Get s JOIN (request_Get rg, request_queue r) ON s.request_GetID=rg.ID AND rg.request_queueID=r.ID "
+                    + "SET s.statusCode=? "
+                    + "WHERE s.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
+
+            preparedStatement = con.prepareStatement(str);
             logWarnings(con.getWarnings());
-            
-            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
-            logWarnings(stmt.getWarnings());
-            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-            logWarnings(stmt.getWarnings());
-            
-            log.debug("PtG CHUNK DAO - transitExpiredSRM_FILE_PINNED method: " + stmt.toString());
-            
-            int count = stmt.executeUpdate();
-            logWarnings(stmt.getWarnings());
-            
+
+            preparedStatement.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
+            logWarnings(preparedStatement.getWarnings());
+            preparedStatement.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+            logWarnings(preparedStatement.getWarnings());
+
+            log.debug("PtG CHUNK DAO - transitExpiredSRM_FILE_PINNED method: " + preparedStatement.toString());
+
+            int count = preparedStatement.executeUpdate();
+            logWarnings(preparedStatement.getWarnings());
+
             if (count == 0) {
                 log.debug("PtGChunkDAO! No chunk of PtG request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
             } else {
@@ -1023,16 +1020,12 @@ public class PtGChunkDAO {
         } catch (SQLException e) {
             log.error("PtGChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of PtG requests, to SRM_RELEASED! "
                     + e);
-            failure = true;
+            rollback(con);
+            return;
         } finally {
-            close(stmt);
+            close(preparedStatement);
         }
-        
-//        if (failure) {
-//            commit(con);
-//            return;
-//        }
-        
+
         Set<String> pinnedSurlList = new HashSet<String>();
         try {
 
@@ -1065,34 +1058,38 @@ public class PtGChunkDAO {
             while (res.next()) {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
-            
+
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
         } finally {
             close(statement);
         }
-        
-//        commit(con);
 
-        for (String surl : expiredSurlList) {
-            if (!pinnedSurlList.contains(surl)) {
+        commit(con);
 
-                StoRI stori;
+        // Remove the Extended Attribute pinned
+        if (Configuration.getInstance().getTapeEnabled()) {
+            for (String surl : expiredSurlList) {
+                if (!pinnedSurlList.contains(surl)) {
 
-                try {
+                    StoRI stori;
 
-                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(TSURL.makeFromString(surl));
+                    try {
 
-                } catch (NamespaceException e) {
-                    log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
-                    continue;
-                } catch (InvalidTSURLAttributesException e) {
-                    log.error("Invalid SURL, cannot release the pin (Extended Attribute): " + surl);
-                    continue;
-                }
+                        stori = NamespaceDirector.getNamespace()
+                                                 .resolveStoRIbySURL(TSURL.makeFromString(surl));
 
-                if (Configuration.getInstance().getTapeEnabled()) {
-                    StormEA.removePinned(stori.getAbsolutePath());
+                    } catch (NamespaceException e) {
+                        log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
+                        continue;
+                    } catch (InvalidTSURLAttributesException e) {
+                        log.error("Invalid SURL, cannot release the pin (Extended Attribute): " + surl);
+                        continue;
+                    }
+
+                    if (Configuration.getInstance().getTapeEnabled()) {
+                        StormEA.removePinned(stori.getAbsolutePath());
+                    }
                 }
             }
         }
