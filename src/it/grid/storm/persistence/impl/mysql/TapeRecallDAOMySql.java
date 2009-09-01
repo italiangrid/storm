@@ -436,7 +436,8 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
-            statment.executeUpdate("START TRANSACTION");
+            // start transaction
+            dbConnection.setAutoCommit(false);
 
             res = statment.executeQuery(query);
 
@@ -462,16 +463,18 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
             }
 
-            statment.executeUpdate("COMMIT");
+            commit(dbConnection);
             
         } catch (SQLException e) {
 
+            rollback(dbConnection);
             throw new DataAccessException("Error executing query: " + query, e);
 
         } finally {
             
             releaseConnection(res, statment, dbConnection);
         }
+        
 
         return taskList;
     }
