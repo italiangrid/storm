@@ -26,10 +26,13 @@ import org.slf4j.LoggerFactory;
 public class TaskResourceTest {
     
     private static final Logger log = LoggerFactory.getLogger(TaskResourceTest.class);
+   
+    public static String hostName = "http://storm-test-04-a.cr.cnaf.infn.it:9998"; 
+    
     
     private static void testPutOnTask(String taskId, String putBodyString) throws IOException, HttpException {
 
-        PutMethod putMethod = new PutMethod("http://localhost:9998/recalltable/task/" + taskId);
+        PutMethod putMethod = new PutMethod(hostName + "/recalltable/task/" + taskId);
         RequestEntity entity = new InputStreamRequestEntity(new ByteArrayInputStream(putBodyString.getBytes()),
                 "text/plain");
         putMethod.setRequestEntity(entity);
@@ -50,7 +53,7 @@ public class TaskResourceTest {
     private static String testPostNewTask(String postBodyString) throws IOException, HttpException {
 
         String taskId = null;
-        PostMethod postMethod = new PostMethod("http://localhost:9998/recalltable/task");
+        PostMethod postMethod = new PostMethod(hostName + "/recalltable/task");
         RequestEntity entity = new InputStreamRequestEntity(new ByteArrayInputStream(postBodyString.getBytes()),
                 "text/plain");
         postMethod.setRequestEntity(entity);
@@ -126,6 +129,7 @@ public class TaskResourceTest {
     
     public static void main(String[] args) {
         TaskResourceTest tester = new TaskResourceTest();
+        
         try {
             // Update the Status of a Task ID
             // tester.testSetStatus("status=1");
@@ -141,6 +145,7 @@ public class TaskResourceTest {
             String voNameExample = "ciccioVO";
             
             String postBody = tester.createTextPostBody(fnExample, dnExample, fqansExample, voNameExample);
+            log.debug(postBody);
             String taskId = tester.testCreateNewTask(postBody);
             
             tester.testSetStatus(taskId, "status=2");

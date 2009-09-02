@@ -174,8 +174,9 @@ public class TaskResource {
         }
 
         // Parsing of the inputString to extract the fields of RecallTask
-        RecallTaskData rtd = new RecallTaskData(inputStr);
-        log.debug("RTD=" + rtd.getRecallTaskData_textFormat());
+        // RecallTaskData rtd = new RecallTaskData(inputStr);
+        RecallTaskData rtd = RecallTaskData.buildFromString(inputStr);
+        log.debug("RTD=" + rtd.toString());
 
         // Store the new Recall Task if it is all OK.
         RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);

@@ -34,15 +34,15 @@ public class RecallTaskDataTest {
         String fnExample = "/gpfs_tsm/dtem/test1.txt";
         String dnExample = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it";
         String dnExample2 = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Alberto Forti";
-        String fqanExample1 = RecallTaskBuilder.fqanPrefix + "/infngrid/prod";
-        String fqanExample2 = RecallTaskBuilder.fqanPrefix + "/infngrid/test";
+        String fqanExample1 = RecallTaskBuilder.fqanPrefix + RecallTaskBuilder.equalChar + "/infngrid/prod";
+        String fqanExample2 = RecallTaskBuilder.fqanPrefix + RecallTaskBuilder.equalChar + "/infngrid/test";
         String voNameExample1 = "ciccioVO";
 
-        String fnElement = RecallTaskBuilder.fnPrefix + fnExample;
-        String dnElement = RecallTaskBuilder.dnPrefix + dnExample2;
+        String fnElement = RecallTaskBuilder.fnPrefix + RecallTaskBuilder.equalChar + fnExample;
+        String dnElement = RecallTaskBuilder.dnPrefix + RecallTaskBuilder.equalChar + dnExample2;
         String fqansElement = RecallTaskBuilder.fqansPrefix + RecallTaskBuilder.fqansArrayStart + fqanExample1
                 + RecallTaskBuilder.fqanSep + fqanExample2 + RecallTaskBuilder.fqansArrayEnd;
-        String voNameElement = RecallTaskBuilder.voNamePrefix + voNameExample1;
+        String voNameElement = RecallTaskBuilder.voNamePrefix + RecallTaskBuilder.equalChar + voNameExample1;
 
         String rtdS = RecallTaskBuilder.taskStart + fnElement + RecallTaskBuilder.elementSep + dnElement
                 + RecallTaskBuilder.elementSep + fqansElement + RecallTaskBuilder.elementSep + voNameElement
@@ -81,7 +81,29 @@ public class RecallTaskDataTest {
             e.printStackTrace();
         }
     }
+
     
+    /**
+     * 
+     */
+    private void test4() {
+        String fromString = RecallTaskBuilder.taskStart;
+        fromString += RecallTaskBuilder.fnPrefix + RecallTaskBuilder.equalChar + "pincopallo fn";
+        fromString += RecallTaskBuilder.elementSep;
+        fromString += RecallTaskBuilder.voNamePrefix + RecallTaskBuilder.equalChar + "vo-ciccio";
+        fromString += RecallTaskBuilder.taskEnd;    
+        log.debug(fromString);   
+        RecallTaskData rtd = new RecallTaskData();
+        try {
+            rtd = RecallTaskData.buildFromString(fromString);
+        } catch (RecallTableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        log.debug("RTD = " + rtd.toString());
+
+    }
+
     /**
      * @param args
      */
@@ -89,9 +111,11 @@ public class RecallTaskDataTest {
         
         
         RecallTaskDataTest test = new RecallTaskDataTest();
-        test.test1();
-        test.test2();
+        // test.test1();
+        // test.test2();
         // test.test3();
+        test.test4();
     }
+
 
 }

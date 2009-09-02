@@ -29,53 +29,78 @@ import org.slf4j.LoggerFactory;
  */
 public class RecallTaskData {
 
+    public static String ANONYMOUS_USER = "anonymous";
+    
     private static final Logger log = LoggerFactory.getLogger(RecallTaskBuilder.class);
-    
- 
-        
+    // Constants
+    public static String UNSPECIFIED_FN = "filename N/A";
+    public static String UNSPECIFIED_VO = "unspecified-VO";
+
+    // Main Attributes
     private String fileName = null;
-    private String userDN = null;
-    private ArrayList<FQAN> fqans = null;
-    private String[] fqansString = null;
+    private String userId = null;
     private String voName = null;
-    public static String UNSPECIFIED = "unspecified-VO";
+
+    // Sub attributes
+    private String userDN = null;
+    private String[] fqansString = null;
+    private ArrayList<FQAN> fqans = null;
 
     /**
-     * Constructor with x.509 certificate
+     * Static Builder
      * 
-     * @param filename
-     * @param user
+     * @param inputString
+     * @return
+     * @throws RecallTableException
      */
-    public RecallTaskData(String filename, GridUserInterface user) {
-        fileName = filename;
-        if (user instanceof VomsGridUser) {
-            VomsGridUser vu = (VomsGridUser) user;
-            fqans = new ArrayList<FQAN>(vu.getFQANsList());
-            fqansString = vu.getFQANsString();
-            voName = vu.getVO().getValue();
-        } else {
-            voName = RecallTaskData.UNSPECIFIED;
+    public static RecallTaskData buildFromString(String inputString) throws RecallTableException {
+            // Check the string as Properties file
+            RecallTaskData result = new RecallTaskData();
+            // Retrieve from input String the substring encapsuling the keys-values
+            // set.
+            int beginArray = inputString.indexOf(RecallTaskBuilder.taskStart);
+            int endArray = inputString.indexOf(RecallTaskBuilder.taskEnd);
+            if ((beginArray >= 0) && (endArray > 0) && (beginArray < endArray)) {
+                String parameters = inputString.substring(beginArray + 1, endArray);
+                String[] paramArray = parameters.split(RecallTaskBuilder.elementSep);
+            for (int i = 0; i < paramArray.length; i++) {
+                log.debug("param[" + i + "]=" + paramArray[i]);
+                if (paramArray[i].contains(RecallTaskBuilder.equalChar)) {
+                    int equalIndex = paramArray[i].indexOf(RecallTaskBuilder.equalChar);
+                    String key = paramArray[i].substring(0, equalIndex);
+                    String value = paramArray[i].substring(equalIndex + 1, paramArray[i].length());
+                    log.debug("KEY:" + key + " VALUE:" + value);
+                    //Scan for known keys.
+                    if (key.equals(RecallTaskBuilder.fnPrefix)) {
+                      result.fileName = value;  
+                    } else if (key.equals(RecallTaskBuilder.userIdPrefix)) {
+                      result.userId = value;
+                    } else if (key.equals(RecallTaskBuilder.voNamePrefix)) {
+                      result.voName = value;  
+                    } else if (key.equals(RecallTaskBuilder.fqansPrefix)) {
+                      result.fqans = result.parseFQANs(value, 0, 0, 0, value.length());  
+                    } else {
+                        log.warn("Unknown key-value pair (" + key + "," + value + "). StoRM will ignore them.");
+                    }
+                }
+            }
+            } else {
+                throw new RecallTableException("Unable to understand :'" + inputString + "'");
+            }
+            return result;
+    
         }
-        userDN = user.getDistinguishedName().getDN();
-    }
+
     
     /**
-     * 
-     * @param filename
-     * @param dn
-     * @param fqans
-     * @param voName
+     * Empty RecallTaskData
      */
-    public RecallTaskData(String filename, String dn, String[] fqans, String voName) {
-        fileName = filename;
-        DistinguishedName dn500 = (new DistinguishedName(dn));
-        userDN = dn500.getX500DN_rfc2253();
-        fqansString = fqans;
-        this.voName = voName;
+    public RecallTaskData() {
+        fileName = UNSPECIFIED_FN;
+        userId = ANONYMOUS_USER;
+        voName = UNSPECIFIED_VO;
     }
-
-
-
+    
     /**
      * 
      * 
@@ -126,33 +151,127 @@ public class RecallTaskData {
         }
     }
 
+
     /**
-     * @param taskDataText
-     * @param fnPos
-     * @param dnPos
-     * @param fqansPos
-     * @param voNamePos
+     * Constructor with x.509 certificate
+     * 
+     * @param filename
+     * @param user
+     */
+    public RecallTaskData(String filename, GridUserInterface user) {
+        fileName = filename;
+        if (user instanceof VomsGridUser) {
+            VomsGridUser vu = (VomsGridUser) user;
+            fqans = new ArrayList<FQAN>(vu.getFQANsList());
+            fqansString = vu.getFQANsString();
+            voName = vu.getVO().getValue();
+        } else {
+            voName = RecallTaskData.UNSPECIFIED_VO;
+        }
+        userDN = user.getDistinguishedName().getDN();
+    }
+    
+    
+    /**
+     * 
+     * @param filename
+     * @param dn
+     * @param fqans
+     * @param voName
+     */
+    public RecallTaskData(String filename, String dn, String[] fqans, String voName) {
+        fileName = filename;
+        DistinguishedName dn500 = (new DistinguishedName(dn));
+        userDN = dn500.getX500DN_rfc2253();
+        fqansString = fqans;
+        this.voName = voName;
+    }
+
+    
+    /**
+     * 
      * @return
      */
-    private String parseFN(String taskDataText, int fnPos, int dnPos, int fqansPos, int voNamePos) {
-        String result = null;
-        if (dnPos > 0) {
-            result = taskDataText.substring(fnPos, dnPos);
-        } else if (fqansPos > 0) {
-            result = taskDataText.substring(fnPos, fqansPos);
-        } else if (voNamePos > 0) {
-            result = taskDataText.substring(fnPos, voNamePos);
-        } else {
-            result = taskDataText.substring(fnPos);
+    public String getFileName() {
+        return fileName;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getUserID() {
+        if (userId.equals(ANONYMOUS_USER)) {
+            // Try to build an userId
+            if (getUserDN() != null) {
+                userId = getUserDN();
+                if (getFqansTextFormat() != null) {
+                    userId += " - " + getFqansTextFormat();
+                }
+            }
         }
-        log.debug("FN to parse ='" + result + "'");
-        int pos = result.indexOf(RecallTaskBuilder.elementSep);
-        pos = pos < 0 ? result.length() : pos;
-        result = result.substring(RecallTaskBuilder.fnPrefix.length(), pos);
-        log.debug("FN parsed ='" + result + "'");
+        return userId; 
+    }
+
+
+    /**
+     * 
+     * @return
+     */
+    public String getVoName() {
+        return voName;
+    }  
+    
+    
+    
+
+
+
+    /**
+     * 
+     */
+    public String getRecallTaskData_textFormat() {
+        String result = "";
+        result += RecallTaskBuilder.taskStart;
+        result += getFileNameTextFormat() + RecallTaskBuilder.elementSep;
+        result += getUserDNTextFormat() + RecallTaskBuilder.elementSep;
+        result += getFqansTextFormat() + RecallTaskBuilder.elementSep;
+        result += getVONameTextFormat();
+        result += RecallTaskBuilder.taskEnd;
         return result;
     }
 
+    /**
+     * 
+     * @return
+     */
+    private String getUserDN() {
+        return userDN;
+    }
+
+
+
+    
+
+    
+  
+    
+    
+
+    
+    
+    /**
+     * 
+     * @return
+     */
+    private String getVONameTextFormat() {
+        String result = "";
+        result += RecallTaskBuilder.voNamePrefix;
+        result += getVoName();
+        return result;
+    }
+    
+    
     /**
      * @param taskDataText
      * @param fnPos
@@ -211,6 +330,33 @@ public class RecallTaskData {
      * @param voNamePos
      * @return
      */
+    private String parseFN(String taskDataText, int fnPos, int dnPos, int fqansPos, int voNamePos) {
+        String result = null;
+        if (dnPos > 0) {
+            result = taskDataText.substring(fnPos, dnPos);
+        } else if (fqansPos > 0) {
+            result = taskDataText.substring(fnPos, fqansPos);
+        } else if (voNamePos > 0) {
+            result = taskDataText.substring(fnPos, voNamePos);
+        } else {
+            result = taskDataText.substring(fnPos);
+        }
+        log.debug("FN to parse ='" + result + "'");
+        int pos = result.indexOf(RecallTaskBuilder.elementSep);
+        pos = pos < 0 ? result.length() : pos;
+        result = result.substring(RecallTaskBuilder.fnPrefix.length(), pos);
+        log.debug("FN parsed ='" + result + "'");
+        return result;
+    }
+
+    /**
+     * @param taskDataText
+     * @param fnPos
+     * @param dnPos
+     * @param fqansPos
+     * @param voNamePos
+     * @return
+     */
     private ArrayList<FQAN> parseFQANs(String taskDataText, int fnPos, int dnPos, int fqansPos, int voNamePos) {
         ArrayList<FQAN> result = new ArrayList<FQAN>();
         String fqansSt = null;
@@ -252,8 +398,7 @@ public class RecallTaskData {
         }
         return result;
     }
-    
-    
+
     /**
      * @param taskDataText
      * @param fnPos
@@ -283,66 +428,6 @@ public class RecallTaskData {
         return result;
     }
 
-
-
-
-
-
-
-    /**
-     * 
-     * @return
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public String getUserDN() {
-        return userDN;
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public String[] getFqans() {
-        
-        if ((fqans != null) && (fqans.size() > 0)) {
-            fqansString = new String[fqans.size()];
-            int count = 0;
-            for (FQAN fqan : fqans) {
-                fqansString[count] = fqan.toString();
-                count++;
-            }
-        }
-        return fqansString;
-    }
-
-    
-    public String getUserID() {
-        String userId = "anonymous";
-        if (getUserDN() != null) {
-            userId = getUserDN();
-            if (getFqansTextFormat() != null) {
-                userId += " - " + getFqansTextFormat();
-            }
-        }
-        return userId;
-    }
-    
-    /**
-     * 
-     * @return
-     */
-    public String getVoName() {
-        return voName;
-    }    
-    
-    
     /**
      * 
      * @return
@@ -358,11 +443,17 @@ public class RecallTaskData {
      * 
      * @return
      */
-    private String getUserDNTextFormat() {
-        String result = "";
-        result += RecallTaskBuilder.dnPrefix;
-        result += getUserDN();
-        return result;
+    private String[] getFqans() {
+
+        if ((fqans != null) && (fqans.size() > 0)) {
+            fqansString = new String[fqans.size()];
+            int count = 0;
+            for (FQAN fqan : fqans) {
+                fqansString[count] = fqan.toString();
+                count++;
+            }
+        }
+        return fqansString;
     }
 
     /**
@@ -388,24 +479,19 @@ public class RecallTaskData {
      * 
      * @return
      */
-    private String getVONameTextFormat() {
+    private String getUserDNTextFormat() {
         String result = "";
-        result += RecallTaskBuilder.voNamePrefix;
-        result += getVoName();
+        result += RecallTaskBuilder.dnPrefix;
+        result += getUserDN();
         return result;
     }
-
-    /**
-     * 
-     */
-    public String getRecallTaskData_textFormat() {
+    
+    
+    public String toString() {
         String result = "";
-        result += RecallTaskBuilder.taskStart;
-        result += getFileNameTextFormat() + RecallTaskBuilder.elementSep;
-        result += getUserDNTextFormat() + RecallTaskBuilder.elementSep;
-        result += getFqansTextFormat() + RecallTaskBuilder.elementSep;
-        result += getVONameTextFormat();
-        result += RecallTaskBuilder.taskEnd;
+        result += RecallTaskBuilder.fnPrefix + RecallTaskBuilder.equalChar + fileName + "\t";
+        result += RecallTaskBuilder.userIdPrefix + RecallTaskBuilder.equalChar + userId + "\t";
+        result += RecallTaskBuilder.voNamePrefix + RecallTaskBuilder.equalChar + voName;
         return result;
     }
     
