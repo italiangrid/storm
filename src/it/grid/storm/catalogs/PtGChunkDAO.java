@@ -960,7 +960,7 @@ public class PtGChunkDAO {
 
         try {
             // start transaction
-            con.setAutoCommit(false);
+//            con.setAutoCommit(false);
 
             statement = con.createStatement();
 
@@ -978,13 +978,13 @@ public class PtGChunkDAO {
             }
 
             if (expiredSurlList.isEmpty()) {
-                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                log.debug("PtGChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
                 return;
             }
 
         } catch (SQLException e) {
-            log.error("BoLChunkDAO! SQLException." + e);
-            rollback(con);
+            log.error("PtGChunkDAO! SQLException." + e);
+//            rollback(con);
             return;
         } finally {
             close(statement);
@@ -1020,7 +1020,7 @@ public class PtGChunkDAO {
         } catch (SQLException e) {
             log.error("PtGChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of PtG requests, to SRM_RELEASED! "
                     + e);
-            rollback(con);
+//            rollback(con);
             return;
         } finally {
             close(preparedStatement);
@@ -1060,12 +1060,13 @@ public class PtGChunkDAO {
             }
 
         } catch (SQLException e) {
-            log.error("BoLChunkDAO! SQLException." + e);
+            log.error("PtGChunkDAO! SQLException." + e);
+            rollback(con);
         } finally {
             close(statement);
         }
 
-        commit(con);
+//        commit(con);
 
         // Remove the Extended Attribute pinned
         if (Configuration.getInstance().getTapeEnabled()) {

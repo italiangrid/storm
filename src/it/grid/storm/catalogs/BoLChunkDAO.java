@@ -917,7 +917,7 @@ public class BoLChunkDAO {
         try {
 
             // start transaction
-            con.setAutoCommit(false);
+//            con.setAutoCommit(false);
 
             statement = con.createStatement();
 
@@ -941,7 +941,7 @@ public class BoLChunkDAO {
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
-            rollback(con);
+//            rollback(con);
             return;
         } finally {
             close(statement);
@@ -976,7 +976,7 @@ public class BoLChunkDAO {
         } catch (SQLException e) {
             log.error("BoLChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of BoL requests, to SRM_RELEASED! "
                     + e);
-            rollback(con);
+//            rollback(con);
             return;
         } finally {
             close(preparedStatement);
@@ -1015,12 +1015,12 @@ public class BoLChunkDAO {
 
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
-            rollback(con);
+//            rollback(con);
         } finally {
             close(statement);
         }
 
-        commit(con);
+//        commit(con);
 
         if (Configuration.getInstance().getTapeEnabled()) {
             for (String surl : expiredSurlList) {
