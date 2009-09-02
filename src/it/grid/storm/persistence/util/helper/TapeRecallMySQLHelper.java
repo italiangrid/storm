@@ -9,8 +9,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public class TapeRecallMySQLHelper extends SQLHelper {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class TapeRecallMySQLHelper extends SQLHelper {
+    
+    @SuppressWarnings("unused")
+    private static final Logger log = LoggerFactory.getLogger(TapeRecallMySQLHelper.class);
+    
     private final static String TABLE_NAME = "tape_recall";
 
     public final static String COL_TASK_ID = "taskId";
