@@ -52,7 +52,7 @@ public class TasksResourceTest {
         TasksResourceTest tester = new TasksResourceTest();
         try {
 
-            tester.testTakeoverTasks(1);
+            tester.testTakeoverTasks(2);
 
         } catch (IOException e) {
             e.printStackTrace();

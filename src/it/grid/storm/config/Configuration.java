@@ -720,11 +720,11 @@ public class Configuration {
             // load from external source
             // String[] names = cr.getConfiguration().getString(key).split(";");
             // //split around commas!
-            List<String> names = (List<String>) cr.getConfiguration().getList(key); // split around
+            List<String> names = cr.getConfiguration().getList(key); // split around
             // commas!
 
             for (int i = 0; i < names.size(); i++) {
-                names.set(i, ((String) names.get(i)).trim().toLowerCase()); // for
+                names.set(i, (names.get(i)).trim().toLowerCase()); // for
                 // each
                 // bit
                 // remove
@@ -2867,6 +2867,24 @@ public class Configuration {
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "status";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+
+    /**
+     * Method used to retrieve the key string used to pass RETRY-VALUE parameter
+     * to Recall Table service
+     * 
+     * key="tape.recalltable.service.param.takeover";
+     */
+    public String getTaskoverKey() {
+        String key = "tape.recalltable.service.param.takeover";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "first";
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);

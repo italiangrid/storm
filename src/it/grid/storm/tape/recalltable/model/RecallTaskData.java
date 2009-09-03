@@ -88,7 +88,6 @@ public class RecallTaskData {
                 throw new RecallTableException("Unable to understand :'" + inputString + "'");
             }
             return result;
-    
         }
 
     

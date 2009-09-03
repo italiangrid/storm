@@ -8,11 +8,13 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
+import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
@@ -66,19 +68,46 @@ public class TasksResource {
         
         // Retrieve the number of tasks to takeover (default = 1)
         int numbOfTask = 1;
-        /**
-         * currently we ignore the parameter (first = 1) .
-         * 
-         * @todo
-         */
+        // Retrieve value from Body param
+        String keyTakeover = config.getTaskoverKey();
+        int eqIndex = inputStr.indexOf('=');
+
+        if (eqIndex > 0) {
+            String value = inputStr.substring(eqIndex);
+            String key = inputStr.substring(0, eqIndex);
+            if (key.equals(keyTakeover)) {
+                try {
+                    // trim out the '\n' end.
+                    numbOfTask = Integer.valueOf(value.substring(1, value.length() - 1));
+                } catch (NumberFormatException e) {
+                    throw new RecallTableException("Unable to understand the number value = '" + value + "'");
+                }
+            }
+        }
 
         // Retrieve the Task
-        task = rtCat.taskOverTask();
+        ArrayList<RecallTaskTO> tasks = rtCat.takeoverNTasks(numbOfTask);
 
         // Build the body of response
         ResponseBuilder responseBuilder = Response.ok();
 
-        return task.getFileName();
+        // Build the response
+        String result = buildTakeoverTasksResponse(tasks);
+        
+        return result;
+    }
+
+    /**
+     * @param tasks
+     * @return
+     */
+    private String buildTakeoverTasksResponse(ArrayList<RecallTaskTO> tasks) {
+        String result = "{";
+        for (RecallTaskTO recallTaskTO : tasks) {
+            result += recallTaskTO + RecallTaskBuilder.elementSep;
+        }
+        result += "}";
+        return result;
     }
 
     /**

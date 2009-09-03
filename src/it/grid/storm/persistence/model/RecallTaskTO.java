@@ -5,7 +5,9 @@ import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 import java.io.Serializable;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
 public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
@@ -165,7 +167,13 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         sb.append(sepChar);
 
         Format formatter = new SimpleDateFormat(dateFormat);
-        sb.append(formatter.format(insertionInstant));
+        if (insertionInstant != null) {
+            sb.append(formatter.format(insertionInstant));
+        } else {
+            Calendar xmas = new GregorianCalendar(2008, Calendar.DECEMBER, 25);
+            insertionInstant = xmas.getTime();
+            sb.append(formatter.format(insertionInstant));
+        }
 
         sb.append(sepChar);
         sb.append(requestType);
