@@ -13,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TapeRecallMySQLHelper extends SQLHelper {
-    
+
     @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(TapeRecallMySQLHelper.class);
-    
+
     private final static String TABLE_NAME = "tape_recall";
 
     public final static String COL_TASK_ID = "taskId";
@@ -90,10 +90,11 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         }
 
         //String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (%s, %s, %s, %s, %d, %d, %s, %s, %d, CURRENT_TIMESTAMP)";
-        
+
         String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        String query = String.format(queryFormat, TABLE_NAME,
+
+        String query = String.format(queryFormat,
+                                     TABLE_NAME,
                                      COL_TASK_ID,
                                      COL_REQUEST_TOKEN,
                                      COL_REQUEST_TYPE,
@@ -108,22 +109,22 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         try {
             PreparedStatement prepStat = conn.prepareStatement(query);
-            
+
             prepStat.setString(1, recallTask.getTaskId());
             prepStat.setString(2, recallTask.getRequestToken());
             prepStat.setString(3, recallTask.getRequestType());
             prepStat.setString(4, recallTask.getFileName());
             prepStat.setInt(5, recallTask.getPinLifetime());
             prepStat.setInt(6, RecallTaskStatus.QUEUED.getStatusId());
-            
+
             prepStat.setString(7, recallTask.getVoName());
             prepStat.setString(8, recallTask.getUserID());
             prepStat.setInt(9, recallTask.getRetryAttempt());
             prepStat.setTimestamp(10, new java.sql.Timestamp(recallTask.getDeferredRecallInstant().getTime()));
             prepStat.setTimestamp(11, new java.sql.Timestamp(recallTask.getInsertionInstant().getTime()));
-            
+
             return prepStat;
-            
+
         } catch (SQLException e) {
             return null;
         }
@@ -165,6 +166,31 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              RecallTaskStatus.QUEUED.getStatusId(),
                              COL_VO_NAME,
                              formatString(voName));
+    }
+
+    public String getQueryPurgeCompletedTasks() {
+
+        String queryFormat = "DELETE FROM %s WHERE %s!=%d AND %s!=%d";
+
+        return String.format(queryFormat,
+                             TABLE_NAME,
+                             COL_STATUS,
+                             RecallTaskStatus.QUEUED,
+                             COL_STATUS,
+                             RecallTaskStatus.IN_PROGRESS);
+    }
+
+    public String getQueryPurgeCompletedTasks(int maxNumTasks) {
+
+        String queryFormat = "DELETE FROM %s WHERE %s!=%d AND %s!=%d LIMIT %d";
+
+        return String.format(queryFormat,
+                             TABLE_NAME,
+                             COL_STATUS,
+                             RecallTaskStatus.QUEUED,
+                             COL_STATUS,
+                             RecallTaskStatus.IN_PROGRESS,
+                             maxNumTasks);
     }
 
     public String getQueryRetrieveTaskStatus(String taskId) {

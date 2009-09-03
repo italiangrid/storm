@@ -152,6 +152,29 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
+     * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
+     */
+    @Override
+    public int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return -1;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfToDoTasks()
+     */
+    @Override
+    public int getNumberOfToDoTasks() throws DataAccessException {
+        // TODO Auto-generated method stub
+        return -1;
+    }
+
     @Override
     public int getNumberQueued() throws DataAccessException {
         return getNumberQueued(null);
@@ -373,6 +396,45 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskId;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
+     */
+    @Override
+    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+        
+        String query;
+        
+        if (numMaxToPurge == -1) {
+            query = sqlHelper.getQueryPurgeCompletedTasks();
+        } else {
+            query = sqlHelper.getQueryPurgeCompletedTasks(numMaxToPurge);
+        }
+
+        Connection dbConnection = getConnection();
+        Statement statment = getStatement(dbConnection);
+
+        try {
+
+            int count = statment.executeUpdate(query);
+            
+            if (count == 0) {
+                log.info("No entries have been purged from tape_recall table");
+            } {
+                log.info(count + " entries have been purged from tape_recall table");
+            }
+
+        } catch (SQLException e) {
+
+            throw new DataAccessException("Error executing query: " + query, e);
+
+        } finally {
+
+            releaseConnection(null, statment, dbConnection);
+        }
+    }
+
     @Override
     public void setRetryValue(String taskId, int value) throws DataAccessException {
 
@@ -464,19 +526,30 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             }
 
             commit(dbConnection);
-            
+
         } catch (SQLException e) {
 
             rollback(dbConnection);
             throw new DataAccessException("Error executing query: " + query, e);
 
         } finally {
-            
+
             releaseConnection(res, statment, dbConnection);
         }
-        
 
         return taskList;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
+     * persistence.model.RecallTaskTO)
+     */
+    @Override
+    public void updateTask(RecallTaskTO task) throws DataAccessException {
+    // TODO Auto-generated method stub
+
     }
 
     @Override
@@ -522,53 +595,5 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));
 
         return taskId;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
-     * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
-     */
-    @Override
-    public int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException {
-        // TODO Auto-generated method stub
-        return -1;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfToDoTasks()
-     */
-    @Override
-    public int getNumberOfToDoTasks() throws DataAccessException {
-        // TODO Auto-generated method stub
-        return -1;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
-     */
-    @Override
-    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
-     * persistence.model.RecallTaskTO)
-     */
-    @Override
-    public void updateTask(RecallTaskTO task) throws DataAccessException {
-        // TODO Auto-generated method stub
-
     }
 }

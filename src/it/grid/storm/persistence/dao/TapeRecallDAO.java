@@ -6,12 +6,15 @@ import it.grid.storm.catalogs.BoLChunkData;
 import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -26,6 +29,23 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
     private static ConcurrentHashMap<String, GlobalStatusManager> gsmMap = new ConcurrentHashMap<String, GlobalStatusManager>();
     private static ConcurrentHashMap<String, ChunkData> chunkDataMap = new ConcurrentHashMap<String, ChunkData>();
+    private final Timer transiter = new Timer();
+
+    protected TapeRecallDAO() {
+        TimerTask transitTask = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    purgeCompletedTasks(-1);
+                } catch (DataAccessException e) {
+                    log.error("Cannot purge expired entries of tape_recall table.", e);
+                }
+            }
+        };
+        transiter.scheduleAtFixedRate(transitTask,
+                                      Configuration.getInstance().getTransitInitialDelay() * 1000,
+                                      Configuration.getInstance().getTransitTimeInterval() * 1000);
+    }
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
@@ -44,8 +64,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             throws DataAccessException;
 
     /**
-     * Method used to monitor the status of the Recall Table Return the number of tasks with the
-     * status = QUEUED or IN_PROGRESS
+     * Method used to monitor the status of the Recall Table Return the number of tasks with the status =
+     * QUEUED or IN_PROGRESS
      * 
      * @throws DataAccessException
      */
@@ -123,12 +143,12 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         } else {
             updateChunk((BoLChunkData) chunkData, gsm, status);
         }
-        
+
         return true;
     }
 
     public abstract RecallTaskTO takeoverTask() throws DataAccessException;
-    
+
     public abstract RecallTaskTO takeoverTask(String voName) throws DataAccessException;
 
     public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException;
@@ -137,8 +157,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             throws DataAccessException;
 
     /**
-     * Method used to store an updated Task. If the task does not exits then a DataAccessException
-     * will be thrown.
+     * Method used to store an updated Task. If the task does not exits then a DataAccessException will be
+     * thrown.
      * 
      * @param task
      * @throws DataAccessException
@@ -219,13 +239,13 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
             chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
             PtGChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
+            gsm.failedChunk(chunkData);
 
         } else {
 
             chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
             PtGChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
+            gsm.failedChunk(chunkData);
 
         }
     }
