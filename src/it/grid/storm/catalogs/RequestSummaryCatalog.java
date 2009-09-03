@@ -4,6 +4,8 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -72,9 +74,24 @@ public class RequestSummaryCatalog {
                     purgeExpiredRequests();
                 }
             };
-            clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000,
-                    Configuration.getInstance().getRequestPurgerPeriod() * 1000);
+            clock.scheduleAtFixedRate(clockTask,
+                                      Configuration.getInstance().getRequestPurgerDelay() * 1000,
+                                      Configuration.getInstance().getRequestPurgerPeriod() * 1000);
         }
+
+        TimerTask tableRecallPurgeTask = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    PersistenceDirector.getDAOFactory().getTapeRecallDAO().purgeCompletedTasks(-1);
+                } catch (DataAccessException e) {
+                    log.error("Cannot purge expired entries of tape_recall table.", e);
+                }
+            }
+        };
+        clock.scheduleAtFixedRate(tableRecallPurgeTask,
+                                  Configuration.getInstance().getTransitInitialDelay() * 1000,
+                                  Configuration.getInstance().getTransitTimeInterval() * 1000);
     }
 
     /**

@@ -6,15 +6,12 @@ import it.grid.storm.catalogs.BoLChunkData;
 import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -29,23 +26,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
     private static ConcurrentHashMap<String, GlobalStatusManager> gsmMap = new ConcurrentHashMap<String, GlobalStatusManager>();
     private static ConcurrentHashMap<String, ChunkData> chunkDataMap = new ConcurrentHashMap<String, ChunkData>();
-    private final Timer transiter = new Timer();
-
-    protected TapeRecallDAO() {
-        TimerTask transitTask = new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    purgeCompletedTasks(-1);
-                } catch (DataAccessException e) {
-                    log.error("Cannot purge expired entries of tape_recall table.", e);
-                }
-            }
-        };
-        transiter.scheduleAtFixedRate(transitTask,
-                                      Configuration.getInstance().getTransitInitialDelay() * 1000,
-                                      Configuration.getInstance().getTransitTimeInterval() * 1000);
-    }
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
