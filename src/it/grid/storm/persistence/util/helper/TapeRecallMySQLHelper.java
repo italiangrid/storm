@@ -196,19 +196,20 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d ORDER BY %s LIMIT %d";
+        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s<=NOW() ORDER BY %s LIMIT %d";
 
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
                              RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_DATE,
+                             COL_DEFERRED_STARTTIME,
+                             COL_DEFERRED_STARTTIME,
                              numberOfTasks);
     }
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks, String voName) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s=%s ORDER BY %s LIMIT %d";
+        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s=%s AND %s<=NOW() ORDER BY %s LIMIT %d";
 
         return String.format(queryFormat,
                              TABLE_NAME,
@@ -216,7 +217,8 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              RecallTaskStatus.QUEUED.getStatusId(),
                              COL_VO_NAME,
                              formatString(voName),
-                             COL_DATE,
+                             COL_DEFERRED_STARTTIME,
+                             COL_DEFERRED_STARTTIME,
                              numberOfTasks);
     }
 

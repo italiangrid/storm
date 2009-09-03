@@ -83,17 +83,14 @@ public class BoLChunkCatalog {
      * logged.
      */
     synchronized public Collection<BoLChunkData> lookup(TRequestToken rt) {
-        Collection<BoLChunkDataTO> c = dao.find(rt);
-        log.debug("BoL CHUNK CATALOG: retrieved data " + c);
+        Collection<BoLChunkDataTO> chunkCollection = dao.find(rt);
+        log.debug("BoL CHUNK CATALOG: retrieved data " + chunkCollection);
         List<BoLChunkData> list = new ArrayList<BoLChunkData>();
-        if (c.isEmpty()) {
+        if (chunkCollection.isEmpty()) {
             log.warn("BoL CHUNK CATALOG! No chunks found in persistence for specified request: " + rt);
         } else {
-            BoLChunkDataTO auxTO;
-            BoLChunkData aux;
-            for (Iterator<BoLChunkDataTO> i = c.iterator(); i.hasNext();) {
-                auxTO = i.next();
-                aux = makeOne(auxTO, rt);
+            for (BoLChunkDataTO auxTO : chunkCollection) {
+                BoLChunkData aux = makeOne(auxTO, rt);
                 if (aux != null) {
                     list.add(aux);
                 }
