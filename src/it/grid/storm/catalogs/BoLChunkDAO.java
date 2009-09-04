@@ -697,6 +697,7 @@ public class BoLChunkDAO {
             }
 
             if (expiredSurlList.isEmpty()) {
+                commit(con);
                 log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
                 return;
             }
@@ -1079,6 +1080,7 @@ public class BoLChunkDAO {
         if (con != null) {
             try {
                 con.rollback();
+                con.setAutoCommit(true);
                 log.error("BoL CHUNK DAO: roll back successful!");
             } catch (SQLException e2) {
                 log.error("BoL CHUNK DAO: roll back failed! " + e2);

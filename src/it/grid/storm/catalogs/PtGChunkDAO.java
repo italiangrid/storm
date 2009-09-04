@@ -683,6 +683,7 @@ public class PtGChunkDAO {
             }
 
             if (expiredSurlList.isEmpty()) {
+                commit(con);
                 log.debug("PtGChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
                 return;
             }
@@ -995,13 +996,16 @@ public class PtGChunkDAO {
     }
 
     private void commit(Connection con) {
-        try {
 
-            con.commit();
-            con.setAutoCommit(true);
+        if (con != null) {
+            try {
 
-        } catch (SQLException e) {
-            log.error("BoL, SQL EXception", e);
+                con.commit();
+                con.setAutoCommit(true);
+
+            } catch (SQLException e) {
+                log.error("BoL, SQL EXception", e);
+            }
         }
     }
 
@@ -1070,6 +1074,7 @@ public class PtGChunkDAO {
         if (con != null) {
             try {
                 con.rollback();
+                con.setAutoCommit(true);
                 log.error("PTG CHUNK DAO: roll back successful!");
             } catch (SQLException e2) {
                 log.error("PTG CHUNK DAO: roll back failed! " + e2);
