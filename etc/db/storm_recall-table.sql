@@ -3,7 +3,7 @@ USE storm_db;
 REPLACE INTO db_version (major,minor,revision,description) VALUES (1,5,00,'1 Oct 2009');
 USE storm_be_ISAM;
 CREATE TABLE IF NOT EXISTS tape_recall (
-  taskId VARCHAR(255) BINARY NOT NULL,
+  taskId MEDIUMINT NOT NULL AUTO_INCREMENT,
   requestToken VARCHAR(255) BINARY,
   requestType char(3),
   fileName text not null,
