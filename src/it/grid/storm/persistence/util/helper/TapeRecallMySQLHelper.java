@@ -81,7 +81,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             return null;
         }
 
-        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String query = String.format(queryFormat,
                                      TABLE_NAME,
