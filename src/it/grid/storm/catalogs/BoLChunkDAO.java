@@ -775,6 +775,8 @@ public class BoLChunkDAO {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
 
+            commit(con);
+            
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
             rollback(con);
@@ -782,7 +784,6 @@ public class BoLChunkDAO {
             close(statement);
         }
 
-        commit(con);
 
         if (Configuration.getInstance().getTapeEnabled()) {
             for (String surl : expiredSurlList) {
