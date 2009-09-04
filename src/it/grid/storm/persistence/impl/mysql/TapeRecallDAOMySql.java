@@ -378,21 +378,20 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
         log.debug("Query(insert-task)=" + prepStat.toString());
-        
+
         int taskId = -1;
         try {
 
             prepStat.executeUpdate();
-            
+
             ResultSet rs = prepStat.getGeneratedKeys();
-            
+
             if (rs.next()) {
                 taskId = rs.getInt(1);
             } else {
-                throw new DataAccessException("Cannot retrieve the last inserted index. Query: " + prepStat.toString());
+                throw new DataAccessException("Cannot retrieve the last inserted index. Query: "
+                        + prepStat.toString());
             }
-            
-            log.info("AOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO: " + taskId);
 
         } catch (SQLException e) {
 
@@ -414,14 +413,10 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         String query = null;
 
-        try {
-            if (numMaxToPurge == -1) {
-                query = sqlHelper.getQueryPurgeCompletedTasks();
-            } else {
-                query = sqlHelper.getQueryPurgeCompletedTasks(numMaxToPurge);
-            }
-        } catch (Throwable t) {
-            log.error("CAZZZZOOOO", t);
+        if (numMaxToPurge == -1) {
+            query = sqlHelper.getQueryPurgeCompletedTasks();
+        } else {
+            query = sqlHelper.getQueryPurgeCompletedTasks(numMaxToPurge);
         }
 
         Connection dbConnection = getConnection();
@@ -429,7 +424,6 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
-            log.info("Executing query: ");
             int count = statment.executeUpdate(query);
 
             if (count == 0) {
