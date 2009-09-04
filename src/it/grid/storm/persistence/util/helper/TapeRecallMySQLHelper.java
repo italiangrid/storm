@@ -175,9 +175,9 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             RecallTaskStatus.QUEUED,
+                             RecallTaskStatus.QUEUED.getStatusId(),
                              COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS);
+                             RecallTaskStatus.IN_PROGRESS.getStatusId());
     }
 
     public String getQueryPurgeCompletedTasks(int maxNumTasks) {
@@ -187,9 +187,9 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat,
                              TABLE_NAME,
                              COL_STATUS,
-                             RecallTaskStatus.QUEUED,
+                             RecallTaskStatus.QUEUED.getStatusId(),
                              COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS,
+                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              maxNumTasks);
     }
 
