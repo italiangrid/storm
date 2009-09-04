@@ -404,6 +404,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     @Override
     public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
         
+        log.info("AOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
         String query;
         
         if (numMaxToPurge == -1) {

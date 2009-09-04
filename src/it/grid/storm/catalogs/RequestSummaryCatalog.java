@@ -41,27 +41,14 @@ import org.slf4j.LoggerFactory;
 public class RequestSummaryCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(RequestSummaryCatalog.class);
-    private static RequestSummaryCatalog cat = new RequestSummaryCatalog(); // Only
-    // instance
-    // of
-    // RequestSummaryCatalog
-    // for
-    // StoRM
-    // !
-    private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance(); // WARNING
-    // !
-    // !!
-    // TO
-    // BE
-    // MODIFIED
-    // WITH
-    // FACTORY
-    // !
-    // !!
-
-    private Timer clock = null; // timer thread that will run a task to clean
-    // expired requests!
-    private TimerTask clockTask = null; // timer task that will remove expired
+    /** Only instance of RequestSummaryCatalog for StoRM! */
+    private static RequestSummaryCatalog cat = new RequestSummaryCatalog();
+    /** WARNING!!! TO BE MODIFIED WITH FACTORY!!!*/
+    private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
+    /** timer thread that will run a task to clean */
+    private Timer clock = null;
+    /** timer task that will remove expired */
+    private TimerTask clockTask = null;
 
     // requests and corresponding proxies!
 
@@ -83,6 +70,7 @@ public class RequestSummaryCatalog {
             @Override
             public void run() {
                 try {
+                    log.info("PARTITOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
                     PersistenceDirector.getDAOFactory().getTapeRecallDAO().purgeCompletedTasks(-1);
                 } catch (DataAccessException e) {
                     log.error("Cannot purge expired entries of tape_recall table.", e);
