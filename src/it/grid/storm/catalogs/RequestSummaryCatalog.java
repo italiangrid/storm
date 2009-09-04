@@ -70,7 +70,6 @@ public class RequestSummaryCatalog {
             @Override
             public void run() {
                 try {
-                    log.info("PARTITOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
                     PersistenceDirector.getDAOFactory().getTapeRecallDAO().purgeCompletedTasks(-1);
                 } catch (DataAccessException e) {
                     log.error("Cannot purge expired entries of tape_recall table.", e);
