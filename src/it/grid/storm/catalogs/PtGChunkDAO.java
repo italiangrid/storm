@@ -764,14 +764,14 @@ public class PtGChunkDAO {
                 pinnedSurlList.add(res.getString("sourceSURL"));
             }
 
+            commit(con);
+            
         } catch (SQLException e) {
             log.error("PtGChunkDAO! SQLException." + e);
             rollback(con);
         } finally {
             close(statement);
         }
-
-        commit(con);
 
         // Remove the Extended Attribute pinned
         if (Configuration.getInstance().getTapeEnabled()) {
