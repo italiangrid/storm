@@ -403,13 +403,17 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
      */
     @Override
     public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
-        
-        String query;
-        
-        if (numMaxToPurge == -1) {
-            query = sqlHelper.getQueryPurgeCompletedTasks();
-        } else {
-            query = sqlHelper.getQueryPurgeCompletedTasks(numMaxToPurge);
+
+        String query = null;
+
+        try {
+            if (numMaxToPurge == -1) {
+                query = sqlHelper.getQueryPurgeCompletedTasks();
+            } else {
+                query = sqlHelper.getQueryPurgeCompletedTasks(numMaxToPurge);
+            }
+        } catch (Throwable t) {
+            log.error("CAZZZZOOOO", t);
         }
 
         Connection dbConnection = getConnection();
@@ -417,9 +421,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
-            log.info("Executing query: " + query);
+            log.info("Executing query: ");
             int count = statment.executeUpdate(query);
-            
+
             if (count == 0) {
                 log.info("No entries have been purged from tape_recall table");
             } else {

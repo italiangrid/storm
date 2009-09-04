@@ -170,7 +170,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryPurgeCompletedTasks() {
 
-        String queryFormat = "DELETE FROM %s WHERE %s!=%d AND %s!=%d";
+        String queryFormat = "DELETE FROM %s WHERE %s != %d AND %s != %d";
 
         return String.format(queryFormat,
                              TABLE_NAME,
@@ -182,7 +182,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryPurgeCompletedTasks(int maxNumTasks) {
 
-        String queryFormat = "DELETE FROM %s WHERE %s!=%d AND %s!=%d LIMIT %d";
+        String queryFormat = "DELETE FROM %s WHERE %s != %d AND %s != %d LIMIT %d";
 
         return String.format(queryFormat,
                              TABLE_NAME,
