@@ -61,8 +61,14 @@ public class RecallTaskBuilder {
                 // Check if number of Fields is 10.
                 if (fields.length == 10) {
                     // ####### Manage the fields #######
-                    // FIELD-0 = TaskId (String)
-                    recallTask.setTaskId(fields[0]);
+                    // FIELD-0 = TaskId (int)
+                    int taskId = -1;
+                    try {
+                        taskId = Integer.parseInt(fields[0]);
+                    } catch (NumberFormatException e) {
+                        log.error("Unable to parse the taskId '" + fields[0] + "'.");
+                    }
+                    recallTask.setTaskId(taskId);
                     // FIELD-1 = Date (java.util.Date)
                     recallTask.setInsertionInstant(parseDate(fields[1]));
                     // FIELD-2 = requestType (String)

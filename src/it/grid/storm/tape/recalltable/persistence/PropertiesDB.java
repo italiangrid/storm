@@ -90,7 +90,7 @@ public class PropertiesDB {
         // Build the String related to Task-id
         String taskStr = task.toString();
         // Insert the new property entry
-        properties.setProperty(taskid, taskStr);
+        properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
@@ -113,7 +113,7 @@ public class PropertiesDB {
             // Build the String related to Task-id
             taskStr = recallTaskTO.toString();
             // Insert the new property entry
-            properties.setProperty(taskid, taskStr);
+            properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
             taskid = -1;
         }
         // Store the properties into disk
@@ -127,7 +127,7 @@ public class PropertiesDB {
         properties.load(new FileInputStream(propertiesDBName));
 
         // Retrieve the Task from taskid
-        String task = properties.getProperty(taskId);
+        String task = properties.getProperty(Integer.valueOf(taskId).toString());
         if (task == null) {
             log.error("Unable to retrieve the task with ID = " + taskId);
             throw new DataAccessException("Unable to find the task with ID = " + taskId);
@@ -153,7 +153,7 @@ public class PropertiesDB {
             // Build the String related to Task-id
             String taskStr = task.toString();
             // Insert the new property entry
-            properties.setProperty(taskId, taskStr);
+            properties.setProperty(Integer.valueOf(taskId).toString(), taskStr);
             log.debug("Removed tasks '" + taskId + "'");
         }
 
@@ -167,7 +167,7 @@ public class PropertiesDB {
         properties.load(new FileInputStream(propertiesDBName));
 
         // Retrieve the Task from taskid
-        String task = properties.getProperty(taskId);
+        String task = properties.getProperty(Integer.valueOf(taskId).toString());
         if (task == null) {
             log.error("Unable to find the task with ID = " + taskId);
             throw new DataAccessException("Unable to find the task with ID = " + taskId);
@@ -199,8 +199,10 @@ public class PropertiesDB {
         Arrays.sort(tasksArray);
         // Create the ordered LinkedHashMap
         for (RecallTaskTO element : tasksArray) {
-            tasksDB.put(element.getTaskId(), element);
+            tasksDB.put(Integer.valueOf(element.getTaskId()).toString(), element);
         }
+        
+        
         return tasksDB;
     }
 
