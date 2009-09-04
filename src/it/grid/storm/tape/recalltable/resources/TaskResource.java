@@ -68,7 +68,7 @@ public class TaskResource {
     @PUT
     @Path("/{taskId}")
     @Consumes("text/plain")
-    public void putNewTaskStatusOrRetryValue(@PathParam("taskId") String taskId, InputStream input)
+    public void putNewTaskStatusOrRetryValue(@PathParam("taskId") int taskId, InputStream input)
             throws RecallTableException {
 
         // Retrieve if running in TEST setup

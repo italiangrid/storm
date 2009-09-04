@@ -54,33 +54,25 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              formatString(voName));
     }
 
-    public String getQueryGetRequestToken(String taskId) {
-
-        if (taskId == null) {
-            return null;
-        }
+    public String getQueryGetRequestToken(int taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
 
-        return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQueryGetRetryValue(String taskId) {
-
-        if (taskId == null) {
-            return null;
-        }
+    public String getQueryGetRetryValue(int taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
 
-        return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQueryGetTask(String taskId) {
+    public String getQueryGetTask(int taskId) {
 
         String queryFormat = "SELECT * FROM %s WHERE %s=%s";
 
-        return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
     public PreparedStatement getQueryInsertTask(Connection conn, RecallTaskTO recallTask) {
@@ -89,13 +81,10 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             return null;
         }
 
-        //String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (%s, %s, %s, %s, %d, %d, %s, %s, %d, CURRENT_TIMESTAMP)";
-
         String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String query = String.format(queryFormat,
                                      TABLE_NAME,
-                                     COL_TASK_ID,
                                      COL_REQUEST_TOKEN,
                                      COL_REQUEST_TYPE,
                                      COL_FILE_NAME,
@@ -109,19 +98,20 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         try {
             PreparedStatement prepStat = conn.prepareStatement(query);
+            
+            int idx = 1;
+            
+            prepStat.setString(idx++, recallTask.getRequestToken());
+            prepStat.setString(idx++, recallTask.getRequestType());
+            prepStat.setString(idx++, recallTask.getFileName());
+            prepStat.setInt(idx++, recallTask.getPinLifetime());
+            prepStat.setInt(idx++, RecallTaskStatus.QUEUED.getStatusId());
 
-            prepStat.setString(1, recallTask.getTaskId());
-            prepStat.setString(2, recallTask.getRequestToken());
-            prepStat.setString(3, recallTask.getRequestType());
-            prepStat.setString(4, recallTask.getFileName());
-            prepStat.setInt(5, recallTask.getPinLifetime());
-            prepStat.setInt(6, RecallTaskStatus.QUEUED.getStatusId());
-
-            prepStat.setString(7, recallTask.getVoName());
-            prepStat.setString(8, recallTask.getUserID());
-            prepStat.setInt(9, recallTask.getRetryAttempt());
-            prepStat.setTimestamp(10, new java.sql.Timestamp(recallTask.getDeferredRecallInstant().getTime()));
-            prepStat.setTimestamp(11, new java.sql.Timestamp(recallTask.getInsertionInstant().getTime()));
+            prepStat.setString(idx++, recallTask.getVoName());
+            prepStat.setString(idx++, recallTask.getUserID());
+            prepStat.setInt(idx++, recallTask.getRetryAttempt());
+            prepStat.setTimestamp(idx++, new java.sql.Timestamp(recallTask.getDeferredRecallInstant().getTime()));
+            prepStat.setTimestamp(idx++, new java.sql.Timestamp(recallTask.getInsertionInstant().getTime()));
 
             return prepStat;
 
@@ -193,22 +183,14 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              maxNumTasks);
     }
 
-    public String getQueryRetrieveTaskStatus(String taskId) {
-
-        if (taskId == null) {
-            return null;
-        }
+    public String getQueryRetrieveTaskStatus(int taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
 
-        return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQuerySetRetryValue(String taskId, int value) {
-
-        if (taskId == null) {
-            return null;
-        }
+    public String getQuerySetRetryValue(int taskId, int value) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
 
@@ -217,7 +199,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              COL_RETRY_ATTEMPT,
                              value,
                              COL_TASK_ID,
-                             formatString(taskId));
+                             taskId);
     }
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks) {
@@ -248,9 +230,9 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              numberOfTasks);
     }
 
-    public String getQueryTakeoverTasksUpdate(List<String> taskIdList) {
+    public String getQueryTakeoverTasksUpdate(List<Integer> taskIdArray) {
 
-        if (taskIdList.isEmpty()) {
+        if (taskIdArray.size() == 0) {
             return null;
         }
 
@@ -262,16 +244,16 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                                                          COL_STATUS,
                                                          RecallTaskStatus.IN_PROGRESS.getStatusId(),
                                                          COL_TASK_ID,
-                                                         formatString(taskIdList.get(0))));
+                                                         taskIdArray.get(0)));
 
-        for (int i = 1; i < taskIdList.size(); i++) {
-            sb.append(String.format(whereClauseFormat, formatString(taskIdList.get(i))));
+        for (int i = 1; i < taskIdArray.size(); i++) {
+            sb.append(String.format(whereClauseFormat, taskIdArray.get(i)));
         }
 
         return sb.toString();
     }
 
-    public String getQueryTakeoverTaskUpdate(String taskId) {
+    public String getQueryTakeoverTaskUpdate(int taskId) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
 
@@ -280,18 +262,14 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              COL_STATUS,
                              RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              COL_TASK_ID,
-                             formatString(taskId));
+                             taskId);
     }
 
-    public String getQueryUpdateTaskStatus(String taskId, int status) {
-
-        if (taskId == null) {
-            return null;
-        }
+    public String getQueryUpdateTaskStatus(int taskId, int status) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, formatString(taskId));
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, taskId);
     }
 
     private String formatString(String s) {

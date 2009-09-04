@@ -82,8 +82,8 @@ public class PropertiesDB {
         properties.load(new FileInputStream(propertiesDBName));
 
         // Retrieve the Task-id (unique-key)
-        String taskid = task.getTaskId();
-        if (taskid == null) {
+        int taskid = task.getTaskId();
+        if (taskid == -1) {
             log.error("You are trying to store a Task without a task-id.");
             throw new DataAccessException("You are trying to store a Task without a task-id.");
         }
@@ -101,12 +101,12 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        String taskid = null;
+        int taskid = -1;
         String taskStr = null;
         for (RecallTaskTO recallTaskTO : listTasks) {
             // Retrieve the Task-id (unique-key)
             taskid = recallTaskTO.getTaskId();
-            if (taskid == null) {
+            if (taskid == -1) {
                 log.error("You are trying to store a Task without a task-id.");
                 throw new DataAccessException("You are trying to store a Task without a task-id.");
             }
@@ -114,14 +114,14 @@ public class PropertiesDB {
             taskStr = recallTaskTO.toString();
             // Insert the new property entry
             properties.setProperty(taskid, taskStr);
-            taskid = null;
+            taskid = -1;
         }
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
 
 
-    public RecallTaskTO getRecallTask(String taskId) throws FileNotFoundException, IOException, DataAccessException {
+    public RecallTaskTO getRecallTask(int taskId) throws FileNotFoundException, IOException, DataAccessException {
         RecallTaskTO result = null;
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
@@ -142,7 +142,7 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        String taskId = task.getTaskId();
+        int taskId = task.getTaskId();
 
         // Check if the Task exists within the Properties DB
         boolean taskExist = properties.containsKey(taskId);
@@ -162,7 +162,7 @@ public class PropertiesDB {
     }
 
 
-    public void deleteRecallTask(String taskId) throws FileNotFoundException, IOException, DataAccessException {
+    public void deleteRecallTask(int taskId) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 

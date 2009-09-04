@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<String, GlobalStatusManager> gsmMap = new ConcurrentHashMap<String, GlobalStatusManager>();
-    private static ConcurrentHashMap<String, ChunkData> chunkDataMap = new ConcurrentHashMap<String, ChunkData>();
+    private static ConcurrentHashMap<Integer, GlobalStatusManager> gsmMap = new ConcurrentHashMap<Integer, GlobalStatusManager>();
+    private static ConcurrentHashMap<Integer, ChunkData> chunkDataMap = new ConcurrentHashMap<Integer, ChunkData>();
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
@@ -55,21 +55,21 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getNumberQueued(String voName) throws DataAccessException;
 
-    public abstract String getRequestToken(String taskId) throws DataAccessException;
+    public abstract String getRequestToken(int taskId) throws DataAccessException;
 
-    public abstract int getRetryValue(String taskId) throws DataAccessException;
+    public abstract int getRetryValue(int taskId) throws DataAccessException;
 
-    public abstract RecallTaskTO getTask(String taskId) throws DataAccessException;
+    public abstract RecallTaskTO getTask(int taskId) throws DataAccessException;
 
-    public abstract int getTaskStatus(String taskId) throws DataAccessException;
+    public abstract int getTaskStatus(int taskId) throws DataAccessException;
 
-    public String insertTask(ChunkData chunkData, GlobalStatusManager gsm, String voName)
+    public int insertTask(ChunkData chunkData, GlobalStatusManager gsm, String voName)
             throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunkData);
         task.setVoName(voName);
 
-        String taskId = insertTask(task);
+        int taskId = insertTask(task);
 
         if (!gsmMap.containsKey(taskId)) {
 
@@ -83,7 +83,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         return taskId;
     }
 
-    public abstract String insertTask(RecallTaskTO task) throws DataAccessException;
+    public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
 
     /**
      * Method called by a garbage collector
@@ -92,9 +92,9 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
 
-    public abstract void setRetryValue(String taskId, int value) throws DataAccessException;
+    public abstract void setRetryValue(int taskId, int value) throws DataAccessException;
 
-    public boolean setTaskStatus(String taskId, int status) throws DataAccessException {
+    public boolean setTaskStatus(int taskId, int status) throws DataAccessException {
 
         if (!setTaskStatusDBImpl(taskId, status)) {
             // shall the "taskId" data be removed from hashmaps? lets think about it...
@@ -145,7 +145,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void updateTask(RecallTaskTO task) throws DataAccessException;
 
-    protected abstract boolean setTaskStatusDBImpl(String taskId, int status) throws DataAccessException;
+    protected abstract boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException;
 
     private RecallTaskTO getTaskFromChunk(ChunkData chunkData) {
 

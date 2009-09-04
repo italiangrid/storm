@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
         rtTO.setVoName("infngrid");
 
-        String taskId = trDAO.insertTask(rtTO);
+        int taskId = trDAO.insertTask(rtTO);
 
         int status = trDAO.getTaskStatus(taskId);
 
@@ -224,7 +223,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public String getRequestToken(String taskId) throws DataAccessException {
+    public String getRequestToken(int taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRequestToken(taskId);
 
@@ -261,7 +260,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getRetryValue(String taskId) throws DataAccessException {
+    public int getRetryValue(int taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRetryValue(taskId);
 
@@ -298,7 +297,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public RecallTaskTO getTask(String taskId) throws DataAccessException {
+    public RecallTaskTO getTask(int taskId) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         Statement statment = getStatement(dbConnection);
@@ -337,7 +336,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getTaskStatus(String taskId) throws DataAccessException {
+    public int getTaskStatus(int taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryRetrieveTaskStatus(taskId);
 
@@ -374,17 +373,26 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public String insertTask(RecallTaskTO task) throws DataAccessException {
-
-        String taskId = UUID.randomUUID().toString();
-        task.setTaskId(taskId);
+    public int insertTask(RecallTaskTO task) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
         log.debug("Query(insert-task)=" + prepStat.toString());
+        
+        int taskId = -1;
         try {
 
             prepStat.executeUpdate();
+            
+            ResultSet rs = prepStat.getGeneratedKeys();
+            
+            if (rs.next()) {
+                taskId = rs.getInt(1);
+            } else {
+                throw new DataAccessException("Cannot retrieve the last inserted index. Query: " + prepStat.toString());
+            }
+            
+            log.info("AOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO: " + taskId);
 
         } catch (SQLException e) {
 
@@ -441,7 +449,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public void setRetryValue(String taskId, int value) throws DataAccessException {
+    public void setRetryValue(int taskId, int value) throws DataAccessException {
 
         String query = sqlHelper.getQuerySetRetryValue(taskId, value);
 
@@ -512,12 +520,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
                 return taskList;
             }
 
-            List<String> taskIdList = new LinkedList<String>();
+            List<Integer> taskIdList = new LinkedList<Integer>();
 
             while (res.next()) {
                 task = new RecallTaskTO();
 
-                String taskId = setTaskInfo(task, res);
+                int taskId = setTaskInfo(task, res);
 
                 taskList.add(task);
                 taskIdList.add(taskId);
@@ -558,7 +566,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    protected boolean setTaskStatusDBImpl(String taskId, int status) throws DataAccessException {
+    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
 
         String query = sqlHelper.getQueryUpdateTaskStatus(taskId, status);
 
@@ -585,9 +593,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return ret;
     }
 
-    private String setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
+    private int setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
 
-        String taskId = res.getString(TapeRecallMySQLHelper.COL_TASK_ID);
+        int taskId = res.getInt(TapeRecallMySQLHelper.COL_TASK_ID);
 
         task.setTaskId(taskId);
         task.setRequestToken(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TOKEN));

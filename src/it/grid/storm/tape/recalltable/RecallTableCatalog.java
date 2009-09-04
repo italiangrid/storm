@@ -124,14 +124,14 @@ public class RecallTableCatalog {
     }
 
 
-    public RecallTaskTO getTask(String taskId) throws DataAccessException {
+    public RecallTaskTO getTask(int taskId) throws DataAccessException {
         RecallTaskTO task = null;
         task = tapeRecallDAO.getTask(taskId);
         return task;
     }
 
 
-    public void changeStatus(String taskId, RecallTaskStatus newStatus) {
+    public void changeStatus(int taskId, RecallTaskStatus newStatus) {
         try {
             tapeRecallDAO.setTaskStatus(taskId, newStatus.getStatusId());
         } catch (DataAccessException e) {
@@ -140,7 +140,7 @@ public class RecallTableCatalog {
         }
     }
     
-    public void changeRetryValue(String taskId, int newValue) {
+    public void changeRetryValue(int taskId, int newValue) {
         try {
             tapeRecallDAO.setRetryValue(taskId, newValue);
         } catch (DataAccessException e) {
