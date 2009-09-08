@@ -29,7 +29,6 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -963,7 +962,7 @@ public class PtPChunk implements Delegable, Chooser {
             failure = false; // gsm.successfulChunk(chunkData);
             
             // set group permission for tape quota management
-            if (Configuration.getInstance().getTapeEnabled()) {
+            if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
                 fileStoRI.setGroupTapeWrite();
                 StormEA.setPinned(localFile.getAbsolutePath());
             }

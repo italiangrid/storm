@@ -775,28 +775,25 @@ public class PtGChunkDAO {
         }
 
         // Remove the Extended Attribute pinned
-        if (Configuration.getInstance().getTapeEnabled()) {
-            for (String surl : expiredSurlList) {
-                if (!pinnedSurlList.contains(surl)) {
+        for (String surl : expiredSurlList) {
+            if (!pinnedSurlList.contains(surl)) {
 
-                    StoRI stori;
+                StoRI stori;
 
-                    try {
+                try {
 
-                        stori = NamespaceDirector.getNamespace()
-                                                 .resolveStoRIbySURL(TSURL.makeFromString(surl));
+                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(TSURL.makeFromString(surl));
 
-                    } catch (NamespaceException e) {
-                        log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
-                        continue;
-                    } catch (InvalidTSURLAttributesException e) {
-                        log.error("Invalid SURL, cannot release the pin (Extended Attribute): " + surl);
-                        continue;
-                    }
-
-                    if (Configuration.getInstance().getTapeEnabled()) {
+                    if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
                         StormEA.removePinned(stori.getAbsolutePath());
                     }
+                    
+                } catch (NamespaceException e) {
+                    log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
+                    continue;
+                } catch (InvalidTSURLAttributesException e) {
+                    log.error("Invalid SURL, cannot release the pin (Extended Attribute): " + surl);
+                    continue;
                 }
             }
         }

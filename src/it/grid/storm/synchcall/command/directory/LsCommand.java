@@ -737,7 +737,15 @@ public class LsCommand extends DirectoryCommand implements Command
             // retentionPolicyInfo
             TRetentionPolicyInfo retentionPolicyInfo;
             
-            if (Configuration.getInstance().getTapeEnabled()) {
+            boolean isTapeEnabled = false;
+            
+            try {
+                isTapeEnabled = element.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
+            } catch (NamespaceException e) {
+                log.error("Cannot retrieve storage class type information", e);
+            }
+            
+            if (isTapeEnabled) {
                 retentionPolicyInfo = TRetentionPolicyInfo.TAPE1_DISK1_RETENTION_POLICY;
             } else {
                 retentionPolicyInfo = TRetentionPolicyInfo.TAPE0_DISK1_RETENTION_POLICY;
@@ -747,7 +755,7 @@ public class LsCommand extends DirectoryCommand implements Command
             
             // fileLocality
             boolean isFileOnDisk = localElement.isOnDisk();
-            if (Configuration.getInstance().getTapeEnabled()) {
+            if (isTapeEnabled) {
                 boolean isFileOnTape = localElement.isOnTape();
                 
                 if (isFileOnTape && isFileOnDisk) {

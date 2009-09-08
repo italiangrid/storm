@@ -2790,21 +2790,6 @@ public class Configuration {
         return "Adler32";
     }
 
-
-    public boolean getTapeEnabled() {
-        // TODO: remove this method, this is not the right place. This
-        // information goes into Filesystem stuff.
-
-        String key = "tape.enabled";
-
-        if (cr.getConfiguration().containsKey(key)) {
-            return cr.getConfiguration().getBoolean(key);
-        }
-
-        return false;
-    }
-
-
     public boolean getRecallTableTestingMode() {
 
         String key = "tape.recalltable.service.test-mode";

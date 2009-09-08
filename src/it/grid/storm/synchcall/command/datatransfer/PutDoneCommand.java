@@ -5,7 +5,6 @@ import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
-import it.grid.storm.filesystem.Checksum;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -301,39 +300,41 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             try {
                 NamespaceInterface namespace = NamespaceDirector.getNamespace();
                 stori = namespace.resolveStoRIbySURL(surl, user);
+
+                // 1- if the SURL is volatile create an entry in the Volatile table
+                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
+                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
+                                                        Calendar.getInstance(),
+                                                        chunkData.fileLifetime());
+                }
+                // 2- JiTs must me removed from the TURL;
+                if (stori.hasJustInTimeACLs()) {
+                    PutDoneCommand.log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
+                    // Retrieve the PFN of the SURL parents
+                    List storiParentsList = stori.getParents();
+                    List pfnParentsList = new ArrayList(storiParentsList.size());
+                    for (int j = 0; j < storiParentsList.size(); j++) {
+                        pfnParentsList.add(((StoRI) storiParentsList.get(j)).getPFN());
+                    }
+                    volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
+                }
+
+                // 3- compute the checksum and store it in an extended attribute
+                LocalFile localFile = stori.getLocalFile();
+                localFile.setChecksum();
+
+                // 4- Tape stuff management.
+                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+                    String fileAbosolutePath = localFile.getAbsolutePath();
+                    StormEA.removePinned(fileAbosolutePath);
+                    StormEA.setPremigrate(fileAbosolutePath);
+                }
+
             } catch (NamespaceException e1) {
                 PutDoneCommand.log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
                 continue;
             }
-            // 1- if the SURL is volatile create an entry in the Volatile table
-            if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
-                volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
-                                                    Calendar.getInstance(),
-                                                    chunkData.fileLifetime());
-            }
-            // 2- JiTs must me removed from the TURL;
-            if (stori.hasJustInTimeACLs()) {
-                PutDoneCommand.log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
-                // Retrieve the PFN of the SURL parents
-                List storiParentsList = stori.getParents();
-                List pfnParentsList = new ArrayList(storiParentsList.size());
-                for (int j = 0; j < storiParentsList.size(); j++) {
-                    pfnParentsList.add(((StoRI) storiParentsList.get(j)).getPFN());
-                }
-                volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
-            }
 
-            // 3- compute the checksum and store it in an extended attribute
-            LocalFile localFile = stori.getLocalFile();
-            localFile.setChecksum();
-            
-            // 4- Tape stuff management.
-            if (Configuration.getInstance().getTapeEnabled()) {
-                String fileAbosolutePath = localFile.getAbsolutePath();
-                StormEA.removePinned(fileAbosolutePath);
-                StormEA.setPremigrate(fileAbosolutePath);
-            }
-            
         }
         
         // WARNING! This purge overload the mysqld in case of large volatile table and multiple PD

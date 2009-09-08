@@ -6,7 +6,6 @@ import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.catalogs.ReducedBoLChunkData;
 import it.grid.storm.catalogs.ReducedChunkData;
 import it.grid.storm.catalogs.ReducedPtGChunkData;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -300,41 +299,39 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         }
 
         // Remove the pin Extended Attribute (for filesystems with tape support)
-        if (Configuration.getInstance().getTapeEnabled()) {
-            for (ReducedChunkData chunk : surlToRelease) {
+        for (ReducedChunkData chunk : surlToRelease) {
 
-                StoRI stori;
+            try {
 
-                try {
+                StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunk.fromSURL());
 
-                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunk.fromSURL());
-
-                } catch (NamespaceException e) {
-                    log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-                            + chunk.fromSURL().toString());
-                    continue;
-                }
-
-                if (requestToken == null) {
-                    StormEA.removePinned(stori.getAbsolutePath());
-                    continue;
-                }
-
-                if (chunk instanceof PtGChunkData) {
-
-                    if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                        if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                            StormEA.removePinned(stori.getAbsolutePath());
-                        }
+                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+                    
+                    if (requestToken == null) {
+                        StormEA.removePinned(stori.getAbsolutePath());
+                        continue;
                     }
-                } else {
 
-                    if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                    if (chunk instanceof PtGChunkData) {
+
                         if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                            StormEA.removePinned(stori.getAbsolutePath());
+                            if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                                StormEA.removePinned(stori.getAbsolutePath());
+                            }
+                        }
+                    } else {
+
+                        if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                            if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                                StormEA.removePinned(stori.getAbsolutePath());
+                            }
                         }
                     }
                 }
+            } catch (NamespaceException e) {
+                log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
+                        + chunk.fromSURL().toString());
+                continue;
             }
         }
 

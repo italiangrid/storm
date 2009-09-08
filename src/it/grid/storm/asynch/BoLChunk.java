@@ -8,7 +8,6 @@ import it.grid.storm.catalogs.BoLChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
@@ -210,7 +209,7 @@ public class BoLChunk implements Delegable, Chooser {
             } else {
                 // File exists and it is not a directory
 
-                if (Configuration.getInstance().getTapeEnabled()) {
+                if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 
                     StormEA.setPinned(localFile.getAbsolutePath());
                     fileStoRI.setGroupTapeRead();
