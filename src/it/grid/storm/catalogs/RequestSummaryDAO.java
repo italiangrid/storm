@@ -639,7 +639,7 @@ public class RequestSummaryDAO {
      * If the supplied token is null, or not found, or not in the SRM_REQUEST_QUEUED
      * state, then nothing happens.
      */
-    public void abortChunksOfRequest(String rt, Collection surls) {
+    public void abortChunksOfRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
         PreparedStatement query = null;
@@ -722,7 +722,7 @@ public class RequestSummaryDAO {
      * If the supplied token is null, or not found, or not in the SRM_REQUEST_INPROGRESS
      * state, then nothing happens.
      */
-    public void abortChunksOfInProgressRequest(String rt, Collection surls) {
+    public void abortChunksOfInProgressRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
         PreparedStatement query = null;
@@ -802,10 +802,10 @@ public class RequestSummaryDAO {
      * Private method that returns a String of all SURLS in the collection of
      * String.
      */
-    private String makeInString(Collection c) {
+    private String makeInString(Collection<String> c) {
         StringBuffer sb = new StringBuffer("(");
-        for (Iterator i = c.iterator(); i.hasNext(); ) {
-            sb.append((String)i.next());
+        for (Iterator<String> i = c.iterator(); i.hasNext();) {
+            sb.append(i.next());
             if (i.hasNext()) {
                 sb.append(",");
             }
@@ -840,68 +840,70 @@ public class RequestSummaryDAO {
         } finally {
             close(rs);
             close(query);
-            return result;
         }
+        return result;
     }
 
     /**
-     * Method that purges expired requests: it only removes up to a fixed value
-     * of expired requests at a time. The value is configured and obtained from
-     * the configuration property getPurgeBatchSize.
-     *
+     * Method that purges expired requests: it only removes up to a fixed value of expired requests at a time.
+     * The value is configured and obtained from the configuration property getPurgeBatchSize.
+     * 
      * A List of Strings with the request tokens removed is returned.
-     *
-     * In order to completely remove all expired requests, simply keep invoking
-     * this method until an empty List is returned. This batch processing is
-     * needed because there could be millions of expired requests which are
-     * likely to result in out-of-memory problems.
-     *
-     * Notice that in case of errors only error messages get logged. An empty
-     * List is also returned.
+     * 
+     * In order to completely remove all expired requests, simply keep invoking this method until an empty
+     * List is returned. This batch processing is needed because there could be millions of expired requests
+     * which are likely to result in out-of-memory problems.
+     * 
+     * Notice that in case of errors only error messages get logged. An empty List is also returned.
      */
-    public List purgeExpiredRequests() {
+    public List<String> purgeExpiredRequests() {
+
         checkConnection();
-        String stmt = "";
+
         PreparedStatement ps = null;
         ResultSet rs = null;
-        List requestTokens = new ArrayList();
-        List ids = new ArrayList();
+        List<String> requestTokens = new ArrayList<String>();
+        List<Long> ids = new ArrayList<Long>();
+        
         try {
             //start transaction
             con.setAutoCommit(false);
 
-            stmt =
-                "SELECT ID, r_token "+
-                "   FROM request_queue "+
-                "   WHERE "+
-                "      UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "+ Configuration.getInstance().getExpiredRequestTime() +
-                "      AND "+
-                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED) +
-                "      AND "+
-                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
-                "   LIMIT "+ Configuration.getInstance().getPurgeBatchSize();
+            String stmt = "SELECT ID, r_token FROM request_queue WHERE"
+                    + " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > " + Configuration.getInstance().getExpiredRequestTime()
+                    + " AND status <> " + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
+                    + " AND status <> " + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS)
+                    + " LIMIT "
+                    + Configuration.getInstance().getPurgeBatchSize();
+            
             ps = con.prepareStatement(stmt);
             logWarnings(con.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+ps);
+            log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - " + ps);
+            
             rs = ps.executeQuery();
             logWarnings(ps.getWarnings());
+            
             while (rs.next()) {
-                requestTokens.add( rs.getString("r_token") );
-                ids.add( new Long(rs.getLong("ID")) );
+                requestTokens.add(rs.getString("r_token"));
+                ids.add(new Long(rs.getLong("ID")));
             }
+            
             close(rs);
             close(ps);
+            
             if (!ids.isEmpty()) {
                 //REMOVE BATCH OF EXPIRED REQUESTS!
-                stmt =
-                    "DELETE FROM request_queue "+
-                    "   WHERE ID in "+ makeWhereString(ids);
+                stmt = "DELETE FROM request_queue WHERE ID in " + makeWhereString(ids);
+                
                 ps = con.prepareStatement(stmt);
                 logWarnings(con.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
+                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
+                
                 int deleted = ps.executeUpdate();
                 logWarnings(ps.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" expired requests.");
+                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted " + deleted
+                        + " expired requests.");
+                
                 close(ps);
                 //REMOVE ORPHANED DIR OPTION
 
@@ -916,27 +918,23 @@ public class RequestSummaryDAO {
                 //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
                 //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
 
-
                 //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ;
 
-
-
-
-                stmt =  "DELETE request_DirOption FROM request_DirOption "+
-                " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID" +
-                " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID " +
-                " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID" +
-                " WHERE request_Copy.request_DirOptionID IS NULL AND" +
-                " request_Get.request_DirOptionID IS NULL AND" +
-                " request_BoL.request_DirOptionID IS NULL;";
-
+                stmt = "DELETE request_DirOption FROM request_DirOption "
+                        + " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID"
+                        + " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID "
+                        + " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID"
+                        + " WHERE request_Copy.request_DirOptionID IS NULL AND"
+                        + " request_Get.request_DirOptionID IS NULL AND"
+                        + " request_BoL.request_DirOptionID IS NULL;";
 
                 ps = con.prepareStatement(stmt);
                 logWarnings(con.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
+                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
                 deleted = ps.executeUpdate();
                 logWarnings(ps.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" DirOption related to expired requests.");
+                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted " + deleted
+                        + " DirOption related to expired requests.");
                 close(ps);
             }
             //commit and finish transaction
@@ -945,21 +943,21 @@ public class RequestSummaryDAO {
             con.setAutoCommit(true);
             logWarnings(con.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: "+e);
+            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: " + e);
             rollback(con);
         } finally {
             close(rs);
             close(ps);
-            return requestTokens;
         }
+        return requestTokens;
     }
 
     /**
      * Private method that returns a String of all IDs retrieved by the last SELECT.
      */
-    private String makeWhereString(List rowids) {
+    private String makeWhereString(List<Long> rowids) {
         StringBuffer sb = new StringBuffer("(");
-        for (Iterator i = rowids.iterator(); i.hasNext(); ) {
+        for (Iterator<Long> i = rowids.iterator(); i.hasNext(); ) {
             sb.append(i.next());
             if (i.hasNext()) {
                 sb.append(",");
