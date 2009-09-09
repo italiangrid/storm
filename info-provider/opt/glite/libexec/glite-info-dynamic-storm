@@ -14,7 +14,8 @@ function get_used_size () {
     fi
   else
     # Quota off
-   used=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $3}'`
+    used=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $2}' | sed 's/\..*//'`
+    used=$(($used/(1024*1024)))
   fi
 
   export $2=$used
@@ -42,7 +43,8 @@ function get_free_size () {
       used=10
     fi
   else
-    free=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $4}'`
+    free=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $3}' | sed 's/\..*//'`
+    free=$(($free/(1024*1024)))
   fi
 
   export $2=$free
@@ -64,7 +66,7 @@ function get_total_size () {
     fi
   else
     # Quota off
-    total=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $2}'`
+    total=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $1}' | sed 's/\..*//'`
   fi
 
    export $2=$total
@@ -113,12 +115,11 @@ function create_dynamic_ldif_SAEntries () {
 
   cat >> $TMPFILE <<EOF
 
-dn: GlueSALocalID=$VOVALUE,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=$SAVO,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
 GlueSAStateAvailableSpace: $FREESIZE
 GlueSAStateUsedSpace: $USEDSIZE
 
-
-dn: GlueSALocalID=$VOVALUE:$RET_POLICY_ACCESS_LATENCY,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=$SAVO:$RET_POLICY_ACCESS_LATENCY,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
 GlueSAStateAvailableSpace: $FREESIZE
 GlueSAStateUsedSpace: $USEDSIZE
 GlueSATotalOnlineSize: $TOTALSIZE
