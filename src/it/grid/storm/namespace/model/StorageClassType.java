@@ -18,20 +18,20 @@ public class StorageClassType {
         this.storageClassTypeString = storageClassTypeString;
         this.stringSchema = stringSchema;
 
-        if (storageClassTypeString.equals(T0D0.toString())) {
+        if (T0D0.getStorageClassTypeString().equals(storageClassTypeString)) {
 
             storageClassType = StorageClassType.T0D0;
 
-        } else if (storageClassTypeString.equals(T0D1.toString())) {
+        } else if (T0D1.getStorageClassTypeString().equals(storageClassTypeString)) {
 
             storageClassType = StorageClassType.T0D1;
 
-        } else if (storageClassTypeString.equals(T1D0.toString())) {
+        } else if (T1D0.getStorageClassTypeString().equals(storageClassTypeString)) {
 
             storageClassType = StorageClassType.T1D0;
             tapeEnabled = true;
 
-        } else if (storageClassTypeString.equals(T1D1.toString())) {
+        } else if (T1D1.getStorageClassTypeString().equals(storageClassTypeString)) {
 
             storageClassType = StorageClassType.T1D1;
             tapeEnabled = true;
@@ -84,6 +84,10 @@ public class StorageClassType {
      */
     public String getStorageClassTypeString() {
         return storageClassTypeString;
+    }
+
+    public String getStringSchema() {
+        return stringSchema;
     }
 
     public boolean isTapeEnabled() {
