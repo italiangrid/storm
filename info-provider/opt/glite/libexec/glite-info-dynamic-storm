@@ -1,21 +1,24 @@
 #!/bin/bash
 
-function get_used_size () {
+function get_used_size_kb () {
 
+  # Quota on
   if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
     prefix=/usr/lpp/mmfs/bin/
     if ! [ -z "$4" ] && ! [ -z "$5" ]; then
-      used=`$prefix/mmlsquota -j $4 $5 |  awk 'NR==3 {print $3}' | sed 's/\..*//'`
-      used=$(($used/(1024*1024)))
+      used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {print $3}' | sed 's/\..*//'`
+      # convert in kB (base 10)
+      used=$(($used*1024/1000))
     else
       # Missing fileset or device or both
       used=10
     fi
+  # Quota off
   else
-    # Quota off
-    used=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $2}' | sed 's/\..*//'`
-    used=$(($used/(1024*1024)))
+    # print complete info | remove first line | print value
+    used=`df -P $1 | sed 1d | awk '{print $3}'`
+    # convert in kB (base 10)
+    used=$(($used*1024/1000))
   fi
 
   export $2=$used
@@ -24,17 +27,45 @@ function get_used_size () {
 
 }
 
-function get_free_size () {
+function get_used_size_gb () {
 
+  # Quota on
   if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {print $3}' | sed 's/\..*//'`
+      # convert in GB (base 10)
+      used=$(($used*1024/(1000*1000*1000)))
+    else
+      # Missing fileset or device or both
+      used=10
+    fi
+  # Quota off
+  else
+    # print complete info | remove first line | print value
+    used=`df -P $1 | sed 1d | awk '{print $3}'`
+    # convert in GB (base 10)
+    used=$(($used*1024/(1000*1000*1000)))
+  fi
+
+  export $2=$used
+
+  return 0
+
+}
+
+function get_free_size_kb () {
+
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
     prefix=/usr/lpp/mmfs/bin/
     if ! [ -z "$4" ] && ! [ -z "$5" ]; then
       total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
       used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
       if ! [ -z "$used" ] && ! [ -z "total" ]; then
         free=$(($total-$used))
-	free=$(($free/(1024*1024)))
+        # convert in kB (base 10)
+	free=$(($free*1024/1000))
       else
         free=10
       fi
@@ -42,9 +73,12 @@ function get_free_size () {
       # Missing fileset or device or both
       used=10
     fi
+  # Quota off
   else
-    free=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $3}' | sed 's/\..*//'`
-    free=$(($free/(1024*1024)))
+    # print complete info | remove first line | print value
+    free=`df -P $1 | sed 1d | awk '{print $4}'`
+    # convert in kB (base 10)
+    free=$(($free*1024/1000))
   fi
 
   export $2=$free
@@ -53,20 +87,85 @@ function get_free_size () {
 
 }
 
-function get_total_size () {
+function get_free_size_gb () {
 
+  # Quota on
   if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
     prefix=/usr/lpp/mmfs/bin/
     if ! [ -z "$4" ] && ! [ -z "$5" ]; then
       total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
+      if ! [ -z "$used" ] && ! [ -z "total" ]; then
+        free=$(($total-$used))
+        # convert in GB (base 10)
+        free=$(($free*1024/(1000*1000*1000)))
+      else
+        free=10
+      fi
+  # Quota off
+    else
+      # Missing fileset or device or both
+      used=10
+    fi
+  else
+    # print complete info | remove first line | print value
+    free=`df -P $1 | sed 1d | awk '{print $4}'`
+    # convert in GB (base 10)
+    free=$(($free*1024/(1000*1000*1000)))
+  fi
+
+  export $2=$free
+
+  return 0
+
+}
+
+function get_total_size_kb () {
+
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      # convert in kB (base 10)
+      total=$(($total*1024/1000))
     else
       # Missing fileset or device or both
       total=10
     fi
+  # Quota off
   else
-    # Quota off
-    total=`df $1 | xargs -n1 | tail -n5 | xargs -n5 | awk '{print $1}' | sed 's/\..*//'`
+    # print complete info | remove first line | print value
+    total=`df -P $1 | sed 1d | awk '{print $2}'`
+    # convert in kB (base 10)
+    total=$(($total*1024/1000))
+  fi
+
+   export $2=$total
+
+  return 0
+
+}
+
+function get_total_size_gb () {
+
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
+    prefix=/usr/lpp/mmfs/bin/
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      # convert in GB (base 10)
+      total=$(($total*1024/(1000*1000*1000)))
+    else
+      # Missing fileset or device or both
+      total=10
+    fi
+  # Quota off
+  else
+    # print complete info | remove first line | print value
+    total=`df -P $1 | sed 1d | awk '{print $2}'`
+    # convert in GB (base 10)
+    total=$(($total*1024/(1000*1000*1000)))
   fi
 
    export $2=$total
@@ -77,18 +176,18 @@ function get_total_size () {
 
 function create_ldif_SEEntries () {
 
-  # Get free and use space on STORM_DEFAULT_ROOT
-  get_used_size $STORM_DEFAULT_ROOT USEDSIZE
-  get_free_size $STORM_DEFAULT_ROOT FREESIZE
-  get_total_size $STORM_DEFAULT_ROOT TOTALSIZE
+  # Get size infos on STORM_DEFAULT_ROOT
+  get_used_size_gb $STORM_DEFAULT_ROOT USED_SIZE_GB
+  get_free_size_gb $STORM_DEFAULT_ROOT FREE_SIZE_GB
+  get_total_size_gb $STORM_DEFAULT_ROOT TOTAL_SIZE_GB
 
-  cat >> $TMPFILE <<EOF
+  cat >> $TMPFILE1 <<EOF
 
 dn: GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSESizeTotal: $TOTALSIZE
-GlueSESizeFree: $FREESIZE
-GlueSETotalOnlineSize: $TOTALSIZE
-GlueSEUsedOnlineSize: $USEDSIZE
+GlueSESizeTotal: $TOTAL_SIZE_GB
+GlueSESizeFree: $FREE_SIZE_GB
+GlueSETotalOnlineSize: $TOTAL_SIZE_GB
+GlueSEUsedOnlineSize: $USED_SIZE_GB
 GlueSETotalNearlineSize: 0
 GlueSEUsedNearlineSize: 0
 EOF
@@ -99,10 +198,13 @@ EOF
 
 function create_dynamic_ldif_SAEntries () {
 
-  # Get free and use space on SA_ROOT
-  get_used_size $ROOTVALUE USEDSIZE $QUOTA $FILESET $DEVICE
-  get_free_size $ROOTVALUE FREESIZE $QUOTA $FILESET $DEVICE
-  get_total_size $ROOTVALUE TOTALSIZE $QUOTA $FILESET $DEVICE
+  # Get size infos on SA_ROOT
+  get_used_size_gb $ROOTVALUE USED_SIZE_GB $QUOTA $FILESET $DEVICE
+  get_free_size_gb $ROOTVALUE FREE_SIZE_GB $QUOTA $FILESET $DEVICE
+  get_total_size_gb $ROOTVALUE TOTAL_SIZE_GB $QUOTA $FILESET $DEVICE
+
+  get_used_size_kb $ROOTVALUE USED_SIZE_KB $QUOTA $FILESET $DEVICE
+  get_free_size_kb $ROOTVALUE FREE_SIZE_KB $QUOTA $FILESET $DEVICE
 
   # Check the STORAGECLASS
   if ! [ -z  $STORAGECLASS ] && test $STORAGECLASS = T1D1; then
@@ -113,19 +215,20 @@ function create_dynamic_ldif_SAEntries () {
     RET_POLICY=replica
   fi
 
-  cat >> $TMPFILE <<EOF
+  cat >>$TMPFILE1 <<EOF
 
 dn: GlueSALocalID=$SAVO,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSAStateAvailableSpace: $FREESIZE
-GlueSAStateUsedSpace: $USEDSIZE
+GlueSAStateAvailableSpace: $FREE_SIZE_KB
+GlueSAStateUsedSpace: $USED_SIZE_KB
+
 
 dn: GlueSALocalID=$SAVO:$RET_POLICY_ACCESS_LATENCY,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSAStateAvailableSpace: $FREESIZE
-GlueSAStateUsedSpace: $USEDSIZE
-GlueSATotalOnlineSize: $TOTALSIZE
-GlueSAUsedOnlineSize: $USEDSIZE
-GlueSAFreeOnlineSize: $FREESIZE
-GlueSAReservedOnlineSize: $TOTALSIZE
+GlueSAStateAvailableSpace: $FREE_SIZE_KB
+GlueSAStateUsedSpace: $USED_SIZE_KB
+GlueSATotalOnlineSize: $TOTAL_SIZE_GB
+GlueSAUsedOnlineSize: $USED_SIZE_GB
+GlueSAFreeOnlineSize: $FREE_SIZE_GB
+GlueSAReservedOnlineSize: $TOTAL_SIZE_GB
 GlueSATotalNearlineSize: 0
 GlueSAUsedNearlineSize: 0
 GlueSAFreeNearlineSize: 0
@@ -141,55 +244,55 @@ EOF
 ### Main section
 ###
 
-# Source configuration file
-if [ $# = 1 ]; then
-  source $1
-else
-  exit 1
-fi
+  # Source configuration file
+  if [ $# = 1 ]; then
+    source $1
+  else
+    exit 1
+  fi
 
-TMPFILE=`mktemp`
+  TMPFILE1=`mktemp`
 
-# Create the basic SE Entires
-create_ldif_SEEntries
+  # Create the basic SE Entires
+  create_ldif_SEEntries
 
-for SA in $STORM_STORAGEAREA_LIST; do
+  for SA in $STORM_STORAGEAREA_LIST; do
 
-  # Convert case
-  SA=`echo $SA | tr '[:lower:]' '[:upper:]'`
-  SAVO=`echo $SA | tr '[:upper:]' '[:lower:]'`
+    # Convert case
+    SA=`echo $SA | tr '[:lower:]' '[:upper:]'`
+    SAVO=`echo $SA | tr '[:upper:]' '[:lower:]'`
 
-  x=STORM_${SA}_ACCESSPOINT
-  APVALUE=${!x:-/$SAVO}
+    x=STORM_${SA}_ACCESSPOINT
+    APVALUE=${!x:-/$SAVO}
 
-  x=STORM_${SA}_ROOT
-  ROOTVALUE=${!x:-${STORM_DEFAULT_ROOT}/${SAVO}}
+    x=STORM_${SA}_ROOT
+    ROOTVALUE=${!x:-${STORM_DEFAULT_ROOT}/${SAVO}}
 
-  x=STORM_${SA}_TOKEN
-  TOKENVALUE=${!x:-${SA}_TOKEN}
+    x=STORM_${SA}_TOKEN
+    TOKENVALUE=${!x:-${SA}_TOKEN}
 
-  x=STORM_${SA}_VONAME
-  VOVALUE=${!x:-$SAVO}
+    x=STORM_${SA}_VONAME
+    VOVALUE=${!x:-$SAVO}
 
-  x=STORM_${SA}_QUOTA
-  QUOTA=${!x}
+    x=STORM_${SA}_QUOTA
+    QUOTA=${!x}
 
-  x=STORM_${SA}_FILESET
-  FILESET=${!x}
+    x=STORM_${SA}_FILESET
+    FILESET=${!x}
 
-  x=STORM_${SA}_DEVICE
-  DEVICE=${!x}
+    x=STORM_${SA}_DEVICE
+    DEVICE=${!x}
 
-  x=STORM_${SA}_STORAGECLASS
-  STORAGECLASS=${!x}
+    x=STORM_${SA}_STORAGECLASS
+    STORAGECLASS=${!x}
 
-  # Create LDIF SA Entries
-  create_dynamic_ldif_SAEntries
+    # Create LDIF SA Entries
+    create_dynamic_ldif_SAEntries
 
-done
+  done
 
-# Print built file
-cat $TMPFILE
-rm -f $TMPFILE
+  # Print built file
+  cat $TMPFILE1
+  rm -f $TMPFILE1
 
-exit 0
+  exit 0
