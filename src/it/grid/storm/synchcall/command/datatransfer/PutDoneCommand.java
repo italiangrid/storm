@@ -289,14 +289,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 3- compute the checksum and store it in an extended attribute
         // 4- Tape stuff management.
         // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        // NEW: if the SA is T1D1, an hidden file is created.
         VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
             StoRI stori = null;
-            // Retrive the StoRI associate to the SURL
+            // Retrieve the StoRI associate to the SURL
             try {
                 NamespaceInterface namespace = NamespaceDirector.getNamespace();
                 stori = namespace.resolveStoRIbySURL(surl, user);
@@ -366,78 +365,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         } catch (InvalidTReturnStatusAttributeException e) {
             // Nothing to do, it will never be thrown
             PutDoneCommand.log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
-        }
-
-        /*
-         * 6- NEW! Management of T1D1 Storage Class. In case of T1D1 Storage Class, an hidden file
-         * is created to manage the migration to tape.
-         */
-        VirtualFSInterface fs = null;
-
-        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
-
-            ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
-            TSURL surl = chunkData.toSURL();
-            StoRI stori = null;
-            // Retrive the StoRI associate to the SURL
-            try {
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                stori = namespace.resolveStoRIbySURL(surl, user);
-            } catch (NamespaceException e1) {
-                PutDoneCommand.log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
-                continue;
-            }
-
-            StorageClassType stype = null;
-            fs = stori.getVirtualFileSystem();
-            if (fs != null) {
-                try {
-                    stype = fs.getStorageClassType();
-                } catch (NamespaceException e) {
-                    PutDoneCommand.log.debug("Error getting StorageClassType from FileSystem");
-                }
-            }
-
-            if ((stype != null) && stype.equals(StorageClassType.T1D1)) {
-                // Get the T1D1Plugin
-                Configuration config = Configuration.getInstance();
-                String pluginName = config.getT1D1PluginName();
-                String prefix = config.getT1D1HiddenFilePrefix();
-                String className = null;
-                T1D1PluginInterface plugin = null;
-
-                if (pluginName.equals("HiddenFile")) {
-                    className = "it.grid.storm.dataTransfer.HiddenFileT1D1Plugin";
-                    // Use Reflection here
-                    plugin = new HiddenFileT1D1Plugin();
-                } else {
-                    PutDoneCommand.log.debug("T1D1Plugin specified does not exists yet!.");
-                }
-
-                int error = 0;
-                if (plugin != null) {
-                    error = plugin.startMigration(stori, prefix);
-                }
-                if (error != 0) {
-                    PutDoneCommand.log.debug("T1D1Plugin error in managing the file migration.");
-                }
-
-            }
-
-            /**
-             * If Storage Area hard limit is enabled, update space on DB
-             */
-            try {
-                if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
-                    SpaceHelper sh = new SpaceHelper();
-                    // Update the used space into Database
-                    sh.decreaseFreeSpaceForSA(PutDoneCommand.log, funcName, user, spaceAvailableSURLs);
-                }
-            } catch (NamespaceException e) {
-                PutDoneCommand.log.warn(funcName
-                        + "Not able to build the virtual fs properties for checking Storage Area size enforcement!");
-            }
-
         }
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
