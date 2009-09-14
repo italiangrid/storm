@@ -13,7 +13,7 @@
 
 Name: glite-info-dynamic-storm
 Version: 1.4.0
-Release: 01.sl4
+Release: 02.sl4
 Summary: The StoRM dynamic information provider plugin.
 Copyright:  Apache License, Version 2.0. 
 Url: http://storm.forge.cnaf.infn.it
@@ -33,7 +33,7 @@ This package contains the StoRM dynamic information provider plugin.
 This plugin provides dynamic information on space usage and other parameters published by the StoRM Storage Element.
 
 %files
-%defattr(-,root,root)
+%defattr(755,root,root)
 %{prefix}/glite-info-dynamic-storm
 
 %prep
