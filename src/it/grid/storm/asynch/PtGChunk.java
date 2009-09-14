@@ -233,28 +233,36 @@ public class PtGChunk implements Delegable, Chooser {
                     log.debug("ANOMALY in PtGChunk! PolicyCollector confirms read rights on file, yet file does not exist physically! Or, an srmPrepareToGet was attempted on a directory!");
                 } else {
                     //File exists and it is not a directory
-                    boolean canTraverse = managePermitTraverseStep(fileStoRI,localUser);
+                    boolean canTraverse = managePermitTraverseStep(fileStoRI, localUser);
                     if (canTraverse) {
                         if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                            
+
                             StormEA.setPinned(localFile.getAbsolutePath());
                             fileStoRI.setGroupTapeRead();
-                            
+
                             if (localFile.isOnDisk()) {
-                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
+                                boolean canRead = managePermitReadFileStep(fileStoRI,
+                                                                           localFile,
+                                                                           localUser,
+                                                                           turl);
                                 if (!canRead) {
                                     // roll back Read, and Traverse
                                     // URGENT!
                                 }
                             } else {
                                 chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
-                                
+
                                 String voName = null;
                                 if (gu instanceof VomsGridUser) {
                                     voName = ((VomsGridUser) gu).getVO().getValue();
                                 }
-                                
-                                PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(chunkData, gsm, voName);
+
+                                PersistenceDirector.getDAOFactory()
+                                                   .getTapeRecallDAO()
+                                                   .insertTask(chunkData,
+                                                               gsm,
+                                                               voName,
+                                                               localFile.getAbsolutePath());
                             }
                         } else {
                             boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
@@ -437,10 +445,10 @@ public class PtGChunk implements Delegable, Chooser {
         boolean exists = false; //boolean that is true if parentFile exists
         boolean dir = false; //boolean true if parentFile is adirectory
         boolean anomaly = false; //boolean _true_ if the parent just treated, exists and is not a directory
-        List parentList = fileStoRI.getParents();
-        Iterator i = parentList.iterator();
+        List<StoRI> parentList = fileStoRI.getParents();
+        Iterator<StoRI> i = parentList.iterator();
         while ((!anomaly) && i.hasNext()) {
-            parentStoRI = (StoRI) i.next();
+            parentStoRI = i.next();
             parentFile = parentStoRI.getLocalFile();
             exists = parentFile.exists();
             dir = parentFile.isDirectory();

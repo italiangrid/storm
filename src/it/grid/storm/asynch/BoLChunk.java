@@ -230,7 +230,8 @@ public class BoLChunk implements Delegable, Chooser {
 
                         PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(chunkData,
                                                                                           gsm,
-                                                                                          voName);
+                                                                                          voName,
+                                                                                          localFile.getAbsolutePath());
                     }
                 } else {
                     chunkData.changeStatusSRM_NOT_SUPPORTED("Tape not supported for this filesystem");

@@ -63,10 +63,11 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getTaskStatus(int taskId) throws DataAccessException;
 
-    public int insertTask(ChunkData chunkData, GlobalStatusManager gsm, String voName)
+    public int insertTask(ChunkData chunkData, GlobalStatusManager gsm, String voName, String absoluteFileName)
             throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunkData);
+        task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
         int taskId = insertTask(task);
@@ -160,7 +161,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
             task.setRequestType(RecallTaskTO.PTG_REQUEST);
             task.setRequestToken(ptgChunk.requestToken().getValue());
-            task.setFileName(ptgChunk.fromSURL().getSURLString());
             task.setPinLifetime((int) ptgChunk.lifeTime().value());
             task.setDeferredRecallInstant(currentDate);
 
@@ -170,7 +170,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
             task.setRequestType(RecallTaskTO.BOL_REQUEST);
             task.setRequestToken(bolChunk.getRequestToken().getValue());
-            task.setFileName(bolChunk.getFromSURL().getSURLString());
             task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
             Date deferredStartDate = new Date(currentDate.getTime()
