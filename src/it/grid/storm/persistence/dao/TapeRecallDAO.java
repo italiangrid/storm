@@ -55,6 +55,10 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getNumberQueued(String voName) throws DataAccessException;
 
+    public abstract int getReadyForTakeOver() throws DataAccessException;
+    
+    public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
+    
     public abstract String getRequestToken(int taskId) throws DataAccessException;
 
     public abstract int getRetryValue(int taskId) throws DataAccessException;

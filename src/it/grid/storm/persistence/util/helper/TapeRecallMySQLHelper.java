@@ -145,7 +145,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
         return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId());
     }
-
+    
     public String getQueryNumberQueued(String voName) {
 
         String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s";
@@ -169,7 +169,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              COL_STATUS,
                              RecallTaskStatus.IN_PROGRESS.getStatusId());
     }
-
+    
     public String getQueryPurgeCompletedTasks(int maxNumTasks) {
 
         String queryFormat = "DELETE FROM %s WHERE %s != %d AND %s != %d LIMIT %d";
@@ -181,6 +181,26 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              COL_STATUS,
                              RecallTaskStatus.IN_PROGRESS.getStatusId(),
                              maxNumTasks);
+    }
+
+    public String getQueryReadyForTakeOver() {
+
+        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s<=NOW()";
+
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId(), COL_DEFERRED_STARTTIME);
+    }
+
+    public String getQueryReadyForTakeOver(String voName) {
+
+        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s AND %s<=NOW()";
+
+        return String.format(queryFormat,
+                             TABLE_NAME,
+                             COL_STATUS,
+                             RecallTaskStatus.QUEUED.getStatusId(),
+                             COL_VO_NAME,
+                             formatString(voName),
+                             COL_DEFERRED_STARTTIME);
     }
 
     public String getQueryRetrieveTaskStatus(int taskId) {

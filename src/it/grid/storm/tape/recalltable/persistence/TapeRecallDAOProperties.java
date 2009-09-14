@@ -37,40 +37,6 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    public void setTestMode() {
-        test = true;
-    }
-
-
-    private PropertiesDB getTasksDB() {
-        tasksDB = new PropertiesDB(test);
-        return tasksDB;
-    }
-
-
-    private LinkedHashMap<String, RecallTaskTO> getTasks() throws DataAccessException {
-        getTasksDB();
-        LinkedHashMap<String, RecallTaskTO> result = null;
-        try {
-            result = tasksDB.getAll();
-        } catch (FileNotFoundException e) {
-            log.error("RecallTask DB does not exists!");
-            throw new DataAccessException("RecallTask DB does not exists!");
-        } catch (IOException e) {
-            log.error("IO Error while reading RecallTaskDB.");
-            throw new DataAccessException("IO Error while reading RecallTaskDB.");
-        }
-        return result;
-    }
-
-
-    private ArrayList<RecallTaskTO> getOrderedTasks() throws DataAccessException {
-        tasks = getTasks();
-        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>(tasks.values());
-        return result;
-    }
-
-
     /*
      */
     @Override
@@ -131,6 +97,54 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
 
 
     /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
+     * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
+     */
+    @Override
+    public int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException {
+        if (voName == null) {
+            voName = UNSPECIFIED;
+        }
+        tasks = getTasks();
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks.values()) {
+                if (recallTaskTO.getRecallStatus().equals(status)) {
+                    if ((voName.equals(UNSPECIFIED)) || (recallTaskTO.getVoName().equals(voName))) {
+                        result.add(recallTaskTO);
+                    }
+                }
+            }
+        }
+        return result.size();
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfToDoTasks()
+     */
+    @Override
+    public int getNumberOfToDoTasks() throws DataAccessException {
+        tasks = getTasks();
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks.values()) {
+                if ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.IN_PROGRESS)) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.QUEUED)))) {
+                    result.add(recallTaskTO);
+                }
+
+            }
+        }
+        return result.size();
+    }
+
+
+    /*
      */
     @Override
     public int getNumberQueued() throws DataAccessException {
@@ -159,6 +173,20 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
             }
         }
         return result.size();
+    }
+
+
+    @Override
+    public int getReadyForTakeOver() throws DataAccessException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+
+    @Override
+    public int getReadyForTakeOver(String voName) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 
@@ -258,6 +286,46 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
 
 
     /*
+     * (non-Javadoc)
+     * 
+     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
+     */
+    @Override
+    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+        ArrayList<RecallTaskTO> ordTasks = getOrderedTasks();
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : ordTasks) {
+                if ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.ERROR)) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.ABORTED))) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.SUCCESS)))) {
+                    result.add(recallTaskTO);
+                }
+            }
+            int count = 0;
+            if (result.size() > 0) {
+                for (RecallTaskTO recallTaskTO : result) {
+                    try {
+                        tasksDB.deleteRecallTask(recallTaskTO.getTaskId());
+                    } catch (FileNotFoundException e) {
+                        log.error("RecallTask DB does not exists!");
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        log.error("IO Error while reading RecallTaskDB.");
+                        e.printStackTrace();
+                    }
+                    count++;
+                    if (count >= numMaxToPurge) {
+                        break;
+                    }
+                }
+                log.debug("Purged " + count + " completed tasks from RecallTable.");
+            } else {
+                log.debug("No one completed tasks to purge.");
+            }
+        }
+    }
+
+
+    /*
      */
     @Override
     public void setRetryValue(int taskId, int value) throws DataAccessException {
@@ -276,27 +344,8 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    /*
-     */
-    @Override
-    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
-        boolean result = false;
-        RecallTaskTO task = getTask(taskId);
-        if (task != null) {
-            task.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
-            PropertiesDB tasksDB = getTasksDB();
-            try {
-                tasksDB.addRecallTask(task);
-                result = true;
-            } catch (FileNotFoundException e) {
-                log.error("RecallTask DB does not exists!");
-                e.printStackTrace();
-            } catch (IOException e) {
-                log.error("IO Error while reading RecallTaskDB.");
-                e.printStackTrace();
-            }
-        }
-        return result;
+    public void setTestMode() {
+        test = true;
     }
 
 
@@ -382,94 +431,6 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * (non-Javadoc)
      * 
      * @see
-     * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
-     * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
-     */
-    @Override
-    public int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName) throws DataAccessException {
-        if (voName == null) {
-            voName = UNSPECIFIED;
-        }
-        tasks = getTasks();
-        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
-        if (!(tasks.isEmpty())) {
-            for (RecallTaskTO recallTaskTO : tasks.values()) {
-                if (recallTaskTO.getRecallStatus().equals(status)) {
-                    if ((voName.equals(UNSPECIFIED)) || (recallTaskTO.getVoName().equals(voName))) {
-                        result.add(recallTaskTO);
-                    }
-                }
-            }
-        }
-        return result.size();
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfToDoTasks()
-     */
-    @Override
-    public int getNumberOfToDoTasks() throws DataAccessException {
-        tasks = getTasks();
-        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
-        if (!(tasks.isEmpty())) {
-            for (RecallTaskTO recallTaskTO : tasks.values()) {
-                if ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.IN_PROGRESS)) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.QUEUED)))) {
-                    result.add(recallTaskTO);
-                }
-
-            }
-        }
-        return result.size();
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
-     */
-    @Override
-    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
-        ArrayList<RecallTaskTO> ordTasks = getOrderedTasks();
-        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
-        if (!(tasks.isEmpty())) {
-            for (RecallTaskTO recallTaskTO : ordTasks) {
-                if ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.ERROR)) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.ABORTED))) || ((recallTaskTO.getRecallStatus().equals(RecallTaskStatus.SUCCESS)))) {
-                    result.add(recallTaskTO);
-                }
-            }
-            int count = 0;
-            if (result.size() > 0) {
-                for (RecallTaskTO recallTaskTO : result) {
-                    try {
-                        tasksDB.deleteRecallTask(recallTaskTO.getTaskId());
-                    } catch (FileNotFoundException e) {
-                        log.error("RecallTask DB does not exists!");
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        log.error("IO Error while reading RecallTaskDB.");
-                        e.printStackTrace();
-                    }
-                    count++;
-                    if (count >= numMaxToPurge) {
-                        break;
-                    }
-                }
-                log.debug("Purged " + count + " completed tasks from RecallTable.");
-            } else {
-                log.debug("No one completed tasks to purge.");
-            }
-        }
-    }
-
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
      * it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
      * persistence.model.RecallTaskTO)
      */
@@ -484,6 +445,59 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
             log.error("IO Error while reading RecallTaskDB.");
             e.printStackTrace();
         }
+    }
+
+
+    /*
+     */
+    @Override
+    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
+        boolean result = false;
+        RecallTaskTO task = getTask(taskId);
+        if (task != null) {
+            task.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
+            PropertiesDB tasksDB = getTasksDB();
+            try {
+                tasksDB.addRecallTask(task);
+                result = true;
+            } catch (FileNotFoundException e) {
+                log.error("RecallTask DB does not exists!");
+                e.printStackTrace();
+            } catch (IOException e) {
+                log.error("IO Error while reading RecallTaskDB.");
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+
+    private ArrayList<RecallTaskTO> getOrderedTasks() throws DataAccessException {
+        tasks = getTasks();
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>(tasks.values());
+        return result;
+    }
+
+
+    private LinkedHashMap<String, RecallTaskTO> getTasks() throws DataAccessException {
+        getTasksDB();
+        LinkedHashMap<String, RecallTaskTO> result = null;
+        try {
+            result = tasksDB.getAll();
+        } catch (FileNotFoundException e) {
+            log.error("RecallTask DB does not exists!");
+            throw new DataAccessException("RecallTask DB does not exists!");
+        } catch (IOException e) {
+            log.error("IO Error while reading RecallTaskDB.");
+            throw new DataAccessException("IO Error while reading RecallTaskDB.");
+        }
+        return result;
+    }
+
+
+    private PropertiesDB getTasksDB() {
+        tasksDB = new PropertiesDB(test);
+        return tasksDB;
     }
 
 }

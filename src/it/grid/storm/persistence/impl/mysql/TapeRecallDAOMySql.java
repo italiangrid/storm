@@ -223,6 +223,55 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
+    public int getReadyForTakeOver() throws DataAccessException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public int getReadyForTakeOver(String voName) throws DataAccessException {
+
+        String query;
+
+        if (voName == null) {
+            query = sqlHelper.getQueryReadyForTakeOver();
+        } else {
+            query = sqlHelper.getQueryReadyForTakeOver(voName);
+        }
+
+        Connection dbConnection = getConnection();
+        Statement statment = getStatement(dbConnection);
+
+        int status;
+        ResultSet res = null;
+
+        try {
+
+            res = statment.executeQuery(query);
+
+            if (res == null) {
+                return 0;
+            }
+
+            if (res.first() == false) {
+                return -1;
+            }
+
+            status = res.getInt(1);
+
+        } catch (SQLException e) {
+
+            throw new DataAccessException("Error executing query: " + query, e);
+
+        } finally {
+
+            releaseConnection(res, statment, dbConnection);
+        }
+
+        return status;
+    }
+
+    @Override
     public String getRequestToken(int taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRequestToken(taskId);
