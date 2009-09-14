@@ -13,7 +13,7 @@
 
 Name: glite-info-dynamic-storm
 Version: 1.4.0
-Release: 02.sl4
+Release: 03.sl4
 Summary: The StoRM dynamic information provider plugin.
 Copyright:  Apache License, Version 2.0. 
 Url: http://storm.forge.cnaf.infn.it
