@@ -35,62 +35,62 @@ public class RequestSummaryDAO {
     private static final Logger log = LoggerFactory.getLogger(RequestSummaryDAO.class);
 
     private final String driver = Configuration.getInstance().getDBDriver();// String
-                                                                            // with
-                                                                            // the
-                                                                            // name
-                                                                            // of
-                                                                            // the
-                                                                            // class
-                                                                            // for
-                                                                            // the
-                                                                            // DB
-                                                                            // driver
+    // with
+    // the
+    // name
+    // of
+    // the
+    // class
+    // for
+    // the
+    // DB
+    // driver
     private final String url = Configuration.getInstance().getDBURL(); // String
-                                                                       // referring
-                                                                       // to the
-                                                                       // URL of
-                                                                       // the DB
+    // referring
+    // to the
+    // URL of
+    // the DB
     private final String password = Configuration.getInstance().getDBPassword(); // String
-                                                                                 // with
-                                                                                 // the
-                                                                                 // password
-                                                                                 // for
-                                                                                 // the
-                                                                                 // DB
+    // with
+    // the
+    // password
+    // for
+    // the
+    // DB
     private final String name = Configuration.getInstance().getDBUserName(); // String
-                                                                             // with
-                                                                             // the
-                                                                             // name
-                                                                             // for
-                                                                             // the
-                                                                             // DB
+    // with
+    // the
+    // name
+    // for
+    // the
+    // DB
     private int limit; // maximum number of requests that will be retrieved
     private Connection con = null; // Connection to DB - WARNING!!! It is kept
-                                   // open all the time!
+    // open all the time!
 
     private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;// milliseconds
-                                                                                          // that
-                                                                                          // must
-                                                                                          // pass
-                                                                                          // before
-                                                                                          // reconnecting
-                                                                                          // to
-                                                                                          // DB
+    // that
+    // must
+    // pass
+    // before
+    // reconnecting
+    // to
+    // DB
     private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;// initial
-                                                                                        // delay
-                                                                                        // in
-                                                                                        // millseconds
-                                                                                        // before
-                                                                                        // starting
-                                                                                        // timer
+    // delay
+    // in
+    // millseconds
+    // before
+    // starting
+    // timer
     private Timer clock = null; // timer thread that will run a taask to alert
-                                // when reconnecting is necessary!
+    // when reconnecting is necessary!
     private TimerTask clockTask = null; // timer task that will update the
-                                        // boolean signalling that a
-                                        // reconnection is neede!
+    // boolean signalling that a
+    // reconnection is neede!
     private boolean reconnect = false; // boolean that tells whether
-                                       // reconnection is needed because of
-                                       // MySQL bug!
+    // reconnection is needed because of
+    // MySQL bug!
 
     private static final RequestSummaryDAO dao = new RequestSummaryDAO(); // DAO!
 
@@ -140,7 +140,7 @@ public class RequestSummaryDAO {
         Statement stmt = null;
         ResultSet rs = null;
         List list = new ArrayList(); // ArrayList containing all retrieved
-                                     // RequestSummaryDataTO
+        // RequestSummaryDataTO
         try {
             // start transaction
             con.setAutoCommit(false);
@@ -151,7 +151,8 @@ public class RequestSummaryDAO {
             } else {
                 howMuch = freeSlot;
             }
-            log.debug("Retrieving " + howMuch + " new requests from request queue.");
+            // log.debug("Retrieving " + howMuch +
+            // " new requests from request queue.");
 
             // get id, request type, request token and client_DN of newly added
             // requests, which must be in SRM_REQUEST_QUEUED state
@@ -166,7 +167,7 @@ public class RequestSummaryDAO {
             logWarnings(stmt.getWarnings());
             List rowids = new ArrayList(); // arraylist with selected ids
             RequestSummaryDataTO aux = null; // RequestSummaryDataTO made from
-                                             // retrieved row
+            // retrieved row
             long auxid; // primary key of retrieved row
             String auxreqtype = null; // request type of retrieved row
             String auxreqtok = null; // request token of retrieved row
@@ -254,7 +255,7 @@ public class RequestSummaryDAO {
             signal = con.prepareStatement(signalSQL);
             logWarnings(con.getWarnings());
             signal.setString(1, explanation); // Prepared statement spares
-                                              // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(signal.getWarnings());
             signal.setLong(2, index);
             logWarnings(signal.getWarnings());
@@ -297,7 +298,7 @@ public class RequestSummaryDAO {
             request.setInt(1, failCode);
             logWarnings(request.getWarnings());
             request.setString(2, explanation); // Prepared statement spares
-                                               // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
             request.setLong(3, index);
             logWarnings(request.getWarnings());
@@ -311,7 +312,7 @@ public class RequestSummaryDAO {
             chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
             chunk.setString(2, explanation); // Prepared statement spares
-                                             // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
             chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
@@ -362,7 +363,7 @@ public class RequestSummaryDAO {
             request.setInt(1, failCode);
             logWarnings(request.getWarnings());
             request.setString(2, explanation); // Prepared statement spares
-                                               // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
             request.setLong(3, index);
             logWarnings(request.getWarnings());
@@ -376,7 +377,7 @@ public class RequestSummaryDAO {
             chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
             chunk.setString(2, explanation); // Prepared statement spares
-                                             // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
             chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
@@ -427,7 +428,7 @@ public class RequestSummaryDAO {
             request.setInt(1, failCode);
             logWarnings(request.getWarnings());
             request.setString(2, explanation); // Prepared statement spares
-                                               // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
             request.setLong(3, index);
             logWarnings(request.getWarnings());
@@ -441,7 +442,7 @@ public class RequestSummaryDAO {
             chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
             chunk.setString(2, explanation); // Prepared statement spares
-                                             // DB-specific String notation!
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
             chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
