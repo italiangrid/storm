@@ -684,7 +684,7 @@ public class PtGChunkDAO {
 
             if (expiredSurlList.isEmpty()) {
                 commit(con);
-                log.debug("PtGChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                log.debug("PtGChunkDAO! No chunk of PtG request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
                 return;
             }
 
@@ -755,7 +755,7 @@ public class PtGChunkDAO {
             str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
                     + "WHERE s.statusCode="
-                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
 
             res = statement.executeQuery(str);
@@ -1001,7 +1001,7 @@ public class PtGChunkDAO {
                 con.setAutoCommit(true);
 
             } catch (SQLException e) {
-                log.error("BoL, SQL EXception", e);
+                log.error("PtG, SQL EXception", e);
             }
         }
     }

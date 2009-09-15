@@ -415,7 +415,7 @@ public class RequestSummaryCatalog {
     synchronized private void purgeExpiredRequests() {
 
         PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
-        BoLChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
+        BoLChunkCatalog.getInstance().transitExpiredSRM_SUCCESS();
 
         List<String> r_tokens = dao.purgeExpiredRequests();
         if (r_tokens.isEmpty()) {

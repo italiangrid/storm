@@ -258,7 +258,8 @@ public final class BoLFeeder implements Delegable {
             log.debug("BoLFeeder - expansion completed."); // info
             // A request on a Directory is considered done whether there is somethig to expand or
             // not!
-            auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!");
+//            auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!");
+            auxChunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption set: request successfully expanded!");
             BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
             gsm.successfulChunk(auxChunkData);
         } catch (NamespaceException e) {
@@ -283,7 +284,8 @@ public final class BoLFeeder implements Delegable {
             // The expanded directory was empty
             // A request on a Directory is considered done whether there is somethig to expand or
             // not!
-            auxChunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
+//            auxChunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
+            auxChunkData.changeStatusSRM_SUCCESS("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
             BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
             log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to expand empty directory."); // info
             gsm.successfulChunk(auxChunkData);

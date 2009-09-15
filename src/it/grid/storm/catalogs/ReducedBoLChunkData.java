@@ -2,6 +2,7 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,14 @@ public class ReducedBoLChunkData implements ReducedChunkData{
         hash = 37 * hash + fromSURL.hashCode();
         hash = 37 * hash + status.hashCode();
         return hash;
+    }
+
+    @Override
+    public boolean isPinned() {
+        if (status.getStatusCode() == TStatusCode.SRM_SUCCESS) {
+            return true;
+        }
+        return false;
     }
 
     /**

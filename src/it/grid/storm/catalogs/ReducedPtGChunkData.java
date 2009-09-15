@@ -2,6 +2,7 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,42 @@ public class ReducedPtGChunkData implements ReducedChunkData {
         this.status = status;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof ReducedPtGChunkData)) {
+            return false;
+        }
+        ReducedPtGChunkData cd = (ReducedPtGChunkData) o;
+        return (primaryKey == cd.primaryKey) && fromSURL.equals(cd.fromSURL) && status.equals(cd.status);
+    }
+
+    /**
+     * Method that returns the fromSURL of the srm request to which this chunk belongs.
+     */
+    public TSURL fromSURL() {
+        return fromSURL;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 17;
+        hash = 37 * hash + new Long(primaryKey).hashCode();
+        hash = 37 * hash + fromSURL.hashCode();
+        hash = 37 * hash + status.hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean isPinned() {
+        if (status.getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Method used to get the primary key used in the persistence layer!
      */
@@ -48,13 +85,6 @@ public class ReducedPtGChunkData implements ReducedChunkData {
      */
     public void setPrimaryKey(long l) {
         primaryKey = l;
-    }
-
-    /**
-     * Method that returns the fromSURL of the srm request to which this chunk belongs.
-     */
-    public TSURL fromSURL() {
-        return fromSURL;
     }
 
     /**
@@ -78,26 +108,5 @@ public class ReducedPtGChunkData implements ReducedChunkData {
         sb.append(status);
         sb.append(".");
         return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 17;
-        hash = 37 * hash + new Long(primaryKey).hashCode();
-        hash = 37 * hash + fromSURL.hashCode();
-        hash = 37 * hash + status.hashCode();
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof ReducedPtGChunkData)) {
-            return false;
-        }
-        ReducedPtGChunkData cd = (ReducedPtGChunkData) o;
-        return (primaryKey == cd.primaryKey) && fromSURL.equals(cd.fromSURL) && status.equals(cd.status);
     }
 }

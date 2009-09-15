@@ -150,7 +150,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         TRequestToken requestToken = inputData.getRequestToken();
 
         // Get the list of candidate SURLs from the DB
-        Collection<ReducedChunkData> chunks = getSurlPtGChunks(user, requestToken, arrayOfUserSURLs);
+        Collection<ReducedChunkData> chunks = getChunks(user, requestToken, arrayOfUserSURLs);
 
         // Build the ArrayOfTSURLReturnStatus matching the SURLs requested by
         // the user and the list of candidate SURLs found in the db.
@@ -171,7 +171,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             } else {
                 requestFailure = true;
                 requestSuccess = true;
-                // "surlPtGChunks.size()" is an upper bound of the dimension of the list of the returned statuses.
+                // "chunks.size()" is an upper bound of the dimension of the list of the returned statuses.
                 surlStatusReturnList = new ArrayOfTSURLReturnStatus(chunks.size());
                 if (arrayOfUserSURLs == null) {
 
@@ -181,7 +181,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
                         TReturnStatus fileLevelStatus;
 
-                        if (chunk.status().getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
+                        if (chunk.isPinned()) {
                             surlToRelease.add(chunk);
                             requestFailure = false;
                             fileLevelStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Released");
@@ -221,12 +221,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                         // released. If there's at least one chunk that is released then the returned file level
                         // status of the corresponding SURL is SRM_SUCCESS, otherwise SRM_FAILURE. If no chunks
                         // are found for a SURL, then SRM_INVALID_PATH is returned.
-                        for (ReducedChunkData ptgSURL : chunks) {
+                        for (ReducedChunkData chunk : chunks) {
 
-                            if (surl.equals(ptgSURL.fromSURL())) {
+                            if (surl.equals(chunk.fromSURL())) {
                                 surlFound = true;
-                                if (ptgSURL.status().getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
-                                    surlToRelease.add(ptgSURL);
+                                if (chunk.isPinned()) {
+                                    surlToRelease.add(chunk);
                                     atLeastOneReleased = true;
                                 }
                             }
@@ -295,7 +295,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             }
 
             dbCatalogPtG.transitSRM_FILE_PINNEDtoSRM_RELEASED(ptgChunksToRelease, requestToken);
-            dbCatalogBoL.transitSRM_FILE_PINNEDtoSRM_RELEASED(bolChunksToRelease, requestToken);
+            dbCatalogBoL.transitSRM_SUCCESStoSRM_RELEASED(bolChunksToRelease, requestToken);
         }
 
         // Remove the pin Extended Attribute (for filesystems with tape support)
@@ -365,7 +365,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
      * there are no matches then an empty collection is returned. requestToken and arrayOfSURLs cannot be both
      * NULL, in this case an empty collection is returned.
      */
-    private Collection<ReducedChunkData> getSurlPtGChunks(GridUserInterface user, TRequestToken requestToken,
+    private Collection<ReducedChunkData> getChunks(GridUserInterface user, TRequestToken requestToken,
             ArrayOfSURLs arrayOfSURLs) {
 
         Collection<ReducedChunkData> surlChunks;
@@ -378,6 +378,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
             surlChunks = dbCatalogPtG.lookupReducedPtGChunkData(requestToken);
 
+            // if the requestToken is not null than it refers to a PtG or to a BoL, not to both of them.
             if (surlChunks.isEmpty()) {
                 surlChunks.addAll(dbCatalogBoL.lookupReducedBoLChunkData(requestToken));
             }

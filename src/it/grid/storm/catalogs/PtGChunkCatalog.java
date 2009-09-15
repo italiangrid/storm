@@ -237,34 +237,30 @@ public class PtGChunkCatalog {
 
 
     /**
-     * Method that returns a Collection of ReducedPtGChunkData Objects associated
-     * to the supplied TRequestToken.
-     *
-     * If any of the data retrieved for a given chunk is not well formed and so
-     * does not allow a ReducedPtGChunkData Object to be created, then that chunk
-     * is dropped and gets logged, while processing continues with the next one.
-     * All valid chunks get returned: the others get dropped.
-     *
-     * If there are no chunks associated to the given TRequestToken, then an
-     * empty Collection is returned and a messagge gets logged.
+     * Method that returns a Collection of ReducedPtGChunkData Objects associated to the supplied
+     * TRequestToken.
+     * 
+     * If any of the data retrieved for a given chunk is not well formed and so does not allow a
+     * ReducedPtGChunkData Object to be created, then that chunk is dropped and gets logged, while processing
+     * continues with the next one. All valid chunks get returned: the others get dropped.
+     * 
+     * If there are no chunks associated to the given TRequestToken, then an empty Collection is returned and
+     * a message gets logged.
      */
     synchronized public Collection lookupReducedPtGChunkData(TRequestToken rt) {
-        Collection cl = dao.findReduced(rt.getValue());
-        log.debug("PtG CHUNK CATALOG: retrieved data "+cl);
-        List list = new ArrayList();
+        Collection<ReducedPtGChunkDataTO> cl = dao.findReduced(rt.getValue());
+        log.debug("PtG CHUNK CATALOG: retrieved data " + cl);
+        List<ReducedPtGChunkData> list = new ArrayList<ReducedPtGChunkData>();
         if (cl.isEmpty()) {
-            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for "+rt);
+            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + rt);
         } else {
-            ReducedPtGChunkDataTO auxTO;
-            ReducedPtGChunkData aux;
-            for (Iterator i = cl.iterator(); i.hasNext(); ) {
-                auxTO = (ReducedPtGChunkDataTO) i.next();
-                aux = makeReducedPtGChunkData(auxTO);
-                if (aux!=null) {
+            for (ReducedPtGChunkDataTO auxTO : cl) {
+                ReducedPtGChunkData aux = makeReducedPtGChunkData(auxTO);
+                if (aux != null) {
                     list.add(aux);
                 }
             }
-            log.debug("PtG CHUNK CATALOG: returning "+ list);
+            log.debug("PtG CHUNK CATALOG: returning " + list);
         }
         return list;
     }

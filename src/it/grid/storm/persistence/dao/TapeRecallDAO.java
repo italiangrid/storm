@@ -191,7 +191,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         if (status == RecallTaskStatus.SUCCESS.getStatusId()) {
 
-            chunkData.changeStatusSRM_FILE_PINNED("File recalled from tape");
+//            chunkData.changeStatusSRM_FILE_PINNED("File recalled from tape");
+            chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
             BoLChunkCatalog.getInstance().update(chunkData);
             gsm.successfulChunk(chunkData);
 

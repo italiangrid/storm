@@ -533,13 +533,13 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns the number of BoL requests on the given SURL, that are in SRM_FILE_PINNED state.
+     * Method that returns the number of BoL requests on the given SURL, that are in SRM_SUCCESS state.
      * 
-     * This method is intended to be used by BoLChunkCatalog in the isSRM_FILE_PINNED method invocation.
+     * This method is intended to be used by BoLChunkCatalog in the isSRM_SUCCESS method invocation.
      * 
      * In case of any error, 0 is returned.
      */
-    public synchronized int numberInSRM_FILE_PINNED(String surl) {
+    public synchronized int numberInSRM_SUCCESS(String surl) {
         checkConnection();
         String str = "SELECT COUNT(s.ID) " + "FROM status_BoL s JOIN request_BoL r "
                 + "ON (s.request_BoLID=r.ID) " + "WHERE r.sourceSURL=? AND s.statusCode=?";
@@ -550,8 +550,8 @@ public class BoLChunkDAO {
             logWarnings(con.getWarnings());
             stmt.setString(1, surl); // Prepared statement spares DB-specific String notation!
             logWarnings(stmt.getWarnings());
-            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-            log.debug("BoL CHUNK DAO - numberInSRM_FILE_PINNED method: " + stmt.toString());
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
+            log.debug("BoL CHUNK DAO - numberInSRM_SUCCESS method: " + stmt.toString());
             rs = stmt.executeQuery();
             logWarnings(stmt.getWarnings());
             int aux = 0;
@@ -562,7 +562,7 @@ public class BoLChunkDAO {
             close(stmt);
             return aux;
         } catch (SQLException e) {
-            log.error("BoL CHUNK DAO! Unable to determine numberInSRM_FILE_PINNED! Returning 0! " + e);
+            log.error("BoL CHUNK DAO! Unable to determine numberInSRM_SUCCESS! Returning 0! " + e);
             close(rs);
             close(stmt);
             return 0;
@@ -663,11 +663,11 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that updates all expired requests in SRM_FILE_PINNED state, into SRM_RELEASED.
+     * Method that updates all expired requests in SRM_SUCCESS state, into SRM_RELEASED.
      * 
      * This is needed when the client forgets to invoke srmReleaseFiles().
      */
-    public synchronized void transitExpiredSRM_FILE_PINNED() {
+    public synchronized void transitExpiredSRM_SUCCESS() {
 
         // TODO: put a limit on the queries.....
 
@@ -686,7 +686,7 @@ public class BoLChunkDAO {
             str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
                     + "WHERE s.statusCode="
-                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
             ResultSet res = statement.executeQuery(str);
@@ -698,7 +698,7 @@ public class BoLChunkDAO {
 
             if (expiredSurlList.isEmpty()) {
                 commit(con);
-                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
                 return;
             }
 
@@ -722,22 +722,22 @@ public class BoLChunkDAO {
 
             preparedStatement.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
             logWarnings(preparedStatement.getWarnings());
-            preparedStatement.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+            preparedStatement.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(preparedStatement.getWarnings());
 
-            log.debug("BoL CHUNK DAO - transitExpiredSRM_FILE_PINNED method: " + preparedStatement.toString());
+            log.debug("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: " + preparedStatement.toString());
 
             int count = preparedStatement.executeUpdate();
             logWarnings(preparedStatement.getWarnings());
 
             if (count == 0) {
-                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
             } else {
                 log.info("BoLChunkDAO! " + count
-                        + " chunks of BoL requests were transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                        + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
             }
         } catch (SQLException e) {
-            log.error("BoLChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of BoL requests, to SRM_RELEASED! "
+            log.error("BoLChunkDAO! Unable to transit expired SRM_SUCCESS chunks of BoL requests, to SRM_RELEASED! "
                     + e);
             rollback(con);
             return;
@@ -753,7 +753,7 @@ public class BoLChunkDAO {
             str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
                     + "WHERE s.statusCode="
-                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
 
             ResultSet res = statement.executeQuery(str);
@@ -810,13 +810,13 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that transits chunks in SRM_FILE_PINNED to SRM_ABORTED, for the given SURL: the overall request
+     * Method that transits chunks in SRM_SUCCESS to SRM_ABORTED, for the given SURL: the overall request
      * status of the requests containing that chunk, is not changed! The TURL is set to null.
      * 
      * Beware, that the chunks may be part of requests that have finished, or that still have not finished
      * because other chunks are still being processed.
      */
-    public synchronized void transitSRM_FILE_PINNEDtoSRM_ABORTED(String surl, String explanation) {
+    public synchronized void transitSRM_SUCCESStoSRM_ABORTED(String surl, String explanation) {
         checkConnection();
         String str = "UPDATE "
                 + "status_BoL s JOIN (request_BoL rg, request_queue r) ON s.request_BoLID=rg.ID AND rg.request_queueID=r.ID "
@@ -830,32 +830,32 @@ public class BoLChunkDAO {
             logWarnings(stmt.getWarnings());
             stmt.setString(2, explanation);
             logWarnings(stmt.getWarnings());
-            stmt.setInt(3, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+            stmt.setInt(3, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(stmt.getWarnings());
             stmt.setString(4, surl);
             logWarnings(stmt.getWarnings());
-            log.debug("BoL CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_ABORTED: " + stmt.toString());
+            log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_ABORTED: " + stmt.toString());
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
             log.debug("BoL CHUNK DAO! " + count
-                    + " chunks were transited from SRM_FILE_PINNED to SRM_ABORTED.");
+                    + " chunks were transited from SRM_SUCCESS to SRM_ABORTED.");
         } catch (SQLException e) {
-            log.error("BoL CHUNK DAO! Unable to transitSRM_FILE_PINNEDtoSRM_ABORTED! " + e);
+            log.error("BoL CHUNK DAO! Unable to transitSRM_SUCCESStoSRM_ABORTED! " + e);
         } finally {
             close(stmt);
         }
     }
 
     /**
-     * Method that updates all chunks in SRM_FILE_PINNED state, into SRM_RELEASED. An array of long
+     * Method that updates all chunks in SRM_SUCCESS state, into SRM_RELEASED. An array of long
      * representing the primary key of each chunk is required: only they get the status changed provided their
-     * current status is SRM_FILE_PINNED.
+     * current status is SRM_SUCCESS.
      * 
      * This method is used during srmReleaseFiles
      * 
      * In case of any error nothing happens and no exception is thrown, but proper messages get logged.
      */
-    public synchronized void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids) {
+    public synchronized void transitSRM_SUCCESStoSRM_RELEASED(long[] ids) {
         checkConnection();
         String str = "UPDATE "
                 + "status_BoL s JOIN (request_BoL rg, request_queue r) ON s.request_BoLID=rg.ID AND rg.request_queueID=r.ID "
@@ -866,27 +866,27 @@ public class BoLChunkDAO {
             logWarnings(con.getWarnings());
             stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
             logWarnings(stmt.getWarnings());
-            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(stmt.getWarnings());
-            log.debug("BoL CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: " + stmt.toString());
+            log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
             if (count == 0) {
-                log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
             } else {
                 log.info("BoL CHUNK DAO! " + count
-                        + " chunks of BoL requests were transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                        + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
             }
         } catch (SQLException e) {
-            log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_FILE_PINNED to SRM_RELEASED! " + e);
+            log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS to SRM_RELEASED! " + e);
         } finally {
             close(stmt);
         }
     }
 
-    public synchronized void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids, TRequestToken token) {
+    public synchronized void transitSRM_SUCCESStoSRM_RELEASED(long[] ids, TRequestToken token) {
         if (token == null) {
-            transitSRM_FILE_PINNEDtoSRM_RELEASED(ids);
+            transitSRM_SUCCESStoSRM_RELEASED(ids);
         } else {
             /*
              * If a request token has been specified, only the related BoL requests have to be released. This
@@ -903,19 +903,19 @@ public class BoLChunkDAO {
                 logWarnings(con.getWarnings());
                 stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
                 logWarnings(stmt.getWarnings());
-                stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+                stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
                 logWarnings(stmt.getWarnings());
-                log.debug("BoL CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: " + stmt.toString());
+                log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
                 int count = stmt.executeUpdate();
                 logWarnings(stmt.getWarnings());
                 if (count == 0) {
-                    log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                    log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
                 } else {
                     log.info("BoL CHUNK DAO! " + count
-                            + " chunks of BoL requests were transited from SRM_FILE_PINNED to SRM_RELEASED.");
+                            + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
                 }
             } catch (SQLException e) {
-                log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_FILE_PINNED to SRM_RELEASED! "
+                log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS to SRM_RELEASED! "
                         + e);
             } finally {
                 close(stmt);

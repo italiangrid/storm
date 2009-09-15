@@ -245,6 +245,22 @@ public class BoLChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_QUEUED! " + e);
         }
     }
+    
+    /**
+     * Method that sets the status of this request to SRM_SUCCESS; it needs the explanation
+     * String which describes the situation in greater detail; if a null is passed, then an empty
+     * String is used as explanation.
+     */
+    public void changeStatusSRM_SUCCESS(String explanation) {
+        try {
+            if (explanation == null) {
+                explanation = "";
+            }
+            status = new TReturnStatus(TStatusCode.SRM_SUCCESS, explanation);
+        } catch (InvalidTReturnStatusAttributeException e) {
+            log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SUCCESS! " + e);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

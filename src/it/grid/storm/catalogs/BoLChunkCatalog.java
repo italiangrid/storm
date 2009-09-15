@@ -58,7 +58,7 @@ public class BoLChunkCatalog {
         TimerTask transitTask = new TimerTask() {
             @Override
             public void run() {
-                transitExpiredSRM_FILE_PINNED();
+                transitExpiredSRM_SUCCESS();
             }
         };
         transiter.scheduleAtFixedRate(transitTask, delay, period);
@@ -415,7 +415,7 @@ public class BoLChunkCatalog {
      * srmMv.
      */
     synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
-        int n = dao.numberInSRM_FILE_PINNED(surl.toString());
+        int n = dao.numberInSRM_SUCCESS(surl.toString());
         return (n > 0);
     }
 
@@ -424,7 +424,7 @@ public class BoLChunkCatalog {
      * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
      * done, but proper error messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedBoLChunkData> chunks,
+    synchronized public void transitSRM_SUCCESStoSRM_RELEASED(Collection<ReducedBoLChunkData> chunks,
             TRequestToken token) {
         
         if (chunks.isEmpty()) {
@@ -443,7 +443,7 @@ public class BoLChunkCatalog {
             auxlong[i] = ((Long) aux.get(i)).longValue();
         }
         
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong, token);
+        dao.transitSRM_SUCCESStoSRM_RELEASED(auxlong, token);
     }
 
     /**
@@ -458,11 +458,11 @@ public class BoLChunkCatalog {
      * Beware, that the chunks may be part of requests that have finished, or that still have not
      * finished because other chunks are being processed.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_ABORTED(TSURL surl, String explanation) {
+    synchronized public void transitSRM_SUCCESStoSRM_ABORTED(TSURL surl, String explanation) {
         if (explanation == null) {
             explanation = "";
         }
-        dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.toString(), explanation);
+        dao.transitSRM_SUCCESStoSRM_ABORTED(surl.toString(), explanation);
         // PinnedFilesCatalog.getInstance().removeAllJit(surl);
         // PinnedfilesCatalog.getInstance().removeVolatile(surl);
     }
@@ -472,7 +472,7 @@ public class BoLChunkCatalog {
      * whose pinLifetime has expired and the state still has not been changed (a user forgot to run
      * srmReleaseFiles)!
      */
-    synchronized public void transitExpiredSRM_FILE_PINNED() {
-        dao.transitExpiredSRM_FILE_PINNED();
+    synchronized public void transitExpiredSRM_SUCCESS() {
+        dao.transitExpiredSRM_SUCCESS();
     }
 }

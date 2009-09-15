@@ -216,7 +216,8 @@ public class BoLChunk implements Delegable, Chooser {
 
                     if (localFile.isOnDisk()) {
 
-                        chunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine successfully handled!");
+//                        chunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine successfully handled!");
+                        chunkData.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
                         chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                     } else {
