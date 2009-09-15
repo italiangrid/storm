@@ -144,10 +144,8 @@ public class StormEA {
 
     public static void setPremigrate(String fileName) {
 
-        byte[] value = { 1 };
-        
         try {
-            ea.setXAttr(fileName, EA_PREMIGRATE, value);
+            ea.setXAttr(fileName, EA_PREMIGRATE, null);
 
         } catch (FileNotFoundException e) {
 
