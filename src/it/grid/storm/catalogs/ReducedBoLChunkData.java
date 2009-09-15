@@ -8,18 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a ReducedBringOnLineChunkData, that is part of a multifile PrepareToGet srm
- * request. It is closely related to BoLChunkData but it is called Reduced because it only contains
- * the fromSURL, the current TReturnStatus, and the primary key of the request.
+ * This class represents a ReducedBringOnLineChunkData, that is part of a multifile PrepareToGet srm request.
+ * It is closely related to BoLChunkData but it is called Reduced because it only contains the fromSURL, the
+ * current TReturnStatus, and the primary key of the request.
  * 
- * This class is intended to be used by srmReleaseFiles, where only a limited amunt of information
- * is needed instead of full blown BoLChunkData.
+ * This class is intended to be used by srmReleaseFiles, where only a limited amunt of information is needed
+ * instead of full blown BoLChunkData.
  * 
  * @author CNAF
  * @date Aug 2009
  * @version 1.0
  */
-public class ReducedBoLChunkData implements ReducedChunkData{
+public class ReducedBoLChunkData implements ReducedChunkData {
 
     @SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(ReducedBoLChunkData.class);
@@ -66,7 +66,6 @@ public class ReducedBoLChunkData implements ReducedChunkData{
         return hash;
     }
 
-    @Override
     public boolean isPinned() {
         if (status.getStatusCode() == TStatusCode.SRM_SUCCESS) {
             return true;

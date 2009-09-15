@@ -65,7 +65,6 @@ public class ReducedPtGChunkData implements ReducedChunkData {
         return hash;
     }
 
-    @Override
     public boolean isPinned() {
         if (status.getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
             return true;
