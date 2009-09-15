@@ -18,15 +18,18 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class TapeRecallDAOMySql extends TapeRecallDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOMySql.class);
 
     private final TapeRecallMySQLHelper sqlHelper;
 
+
     public TapeRecallDAOMySql() {
         sqlHelper = new TapeRecallMySQLHelper(PersistenceDirector.getDataBase().getDbmsVendor());
     }
+
 
     public static void main(String[] args) throws DataAccessException {
 
@@ -46,10 +49,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         System.out.println("GOT STATUS " + status + " for taskId=" + taskId);
     }
 
+
     @Override
     public List<RecallTaskTO> getInProgressTask() throws DataAccessException {
         return getInProgressTask(null);
     }
+
 
     @Override
     public List<RecallTaskTO> getInProgressTask(String voName) throws DataAccessException {
@@ -101,12 +106,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList;
     }
 
+
     @Override
     public int getNumberInProgress() throws DataAccessException {
 
         return getNumberInProgress(null);
 
     }
+
 
     @Override
     public int getNumberInProgress(String voName) throws DataAccessException {
@@ -151,10 +158,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+
     /*
      * (non-Javadoc)
      * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
+     * @see
+     * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberOfTasksWithStatus
      * (it.grid.storm.tape.recalltable.model.RecallTaskStatus)
      */
     @Override
@@ -162,6 +171,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         // TODO Auto-generated method stub
         return -1;
     }
+
 
     /*
      * (non-Javadoc)
@@ -174,10 +184,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return -1;
     }
 
+
     @Override
     public int getNumberQueued() throws DataAccessException {
         return getNumberQueued(null);
     }
+
 
     @Override
     public int getNumberQueued(String voName) throws DataAccessException {
@@ -222,11 +234,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+
     @Override
     public int getReadyForTakeOver() throws DataAccessException {
-        // TODO Auto-generated method stub
-        return 0;
+        return getReadyForTakeOver(null);
     }
+
 
     @Override
     public int getReadyForTakeOver(String voName) throws DataAccessException {
@@ -271,6 +284,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+
     @Override
     public String getRequestToken(int taskId) throws DataAccessException {
 
@@ -308,6 +322,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return requestToken;
     }
 
+
     @Override
     public int getRetryValue(int taskId) throws DataAccessException {
 
@@ -344,6 +359,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         return retryValue;
     }
+
 
     @Override
     public RecallTaskTO getTask(int taskId) throws DataAccessException {
@@ -384,6 +400,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return task;
     }
 
+
     @Override
     public int getTaskStatus(int taskId) throws DataAccessException {
 
@@ -421,6 +438,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return status;
     }
 
+
     @Override
     public int insertTask(RecallTaskTO task) throws DataAccessException {
 
@@ -438,8 +456,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             if (rs.next()) {
                 taskId = rs.getInt(1);
             } else {
-                throw new DataAccessException("Cannot retrieve the last inserted index. Query: "
-                        + prepStat.toString());
+                throw new DataAccessException("Cannot retrieve the last inserted index. Query: " + prepStat.toString());
             }
 
         } catch (SQLException e) {
@@ -451,6 +468,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         releaseConnection(null, prepStat, dbConnection);
         return taskId;
     }
+
 
     /*
      * (non-Javadoc)
@@ -491,6 +509,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
     }
 
+
     @Override
     public void setRetryValue(int taskId, int value) throws DataAccessException {
 
@@ -513,10 +532,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
     }
 
+
     @Override
     public RecallTaskTO takeoverTask() throws DataAccessException {
         return takeoverTask(null);
     }
+
 
     @Override
     public RecallTaskTO takeoverTask(String voName) throws DataAccessException {
@@ -530,10 +551,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList.get(0);
     }
 
+
     @Override
     public List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException {
         return takeoverTasks(numberOfTaks, null);
     }
+
 
     @Override
     public List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName) throws DataAccessException {
@@ -596,17 +619,20 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         return taskList;
     }
 
+
     /*
      * (non-Javadoc)
      * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
+     * @see
+     * it.grid.storm.persistence.dao.TapeRecallDAO#updateTask(it.grid.storm.
      * persistence.model.RecallTaskTO)
      */
     @Override
     public void updateTask(RecallTaskTO task) throws DataAccessException {
-    // TODO Auto-generated method stub
+        // TODO Auto-generated method stub
 
     }
+
 
     @Override
     protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
@@ -635,6 +661,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         return ret;
     }
+
 
     private int setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
 

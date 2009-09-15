@@ -3,7 +3,6 @@
  */
 package it.grid.storm.tape.recalltable;
 
-import it.grid.storm.persistence.DAOFactory;
 import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -25,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public class RecallTableCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(RecallTableCatalog.class);
-    private DAOFactory daoFactory = null;
     private final TapeRecallDAO tapeRecallDAO;
+
 
     /**
      * Default constructor
@@ -35,14 +34,11 @@ public class RecallTableCatalog {
      */
     public RecallTableCatalog(boolean test) throws DataAccessException {
         log.debug("Building RECALL TABLE Catalog ...");
-        // Binding to the persistence component
-        daoFactory = PersistenceDirector.getDAOFactory();
 
         if (test) {
             tapeRecallDAO = new TapeRecallDAOProperties(true);
         } else {
             tapeRecallDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
-            ;
         }
     }
 
@@ -56,6 +52,7 @@ public class RecallTableCatalog {
             e.printStackTrace();
         }
         return result;
+
     }
 
 
@@ -139,7 +136,8 @@ public class RecallTableCatalog {
             e.printStackTrace();
         }
     }
-    
+
+
     public void changeRetryValue(int taskId, int newValue) {
         try {
             tapeRecallDAO.setRetryValue(taskId, newValue);
@@ -149,19 +147,23 @@ public class RecallTableCatalog {
         }
     }
 
-    
+
     public RecallTaskTO taskOverTask() {
         RecallTaskTO task = null;
         try {
             task = tapeRecallDAO.takeoverTask();
         } catch (DataAccessException e) {
-            log.error("Unable to update the task : " + task.toString());
+            if (task == null) {
+                log.error("Unable to update the task. It is NULL!");
+            } else {
+                log.error("Unable to update the task " + task.getTaskId());
+            }
             e.printStackTrace();
         }
         return task;
     }
 
-    
+
     public void updateTask(RecallTaskTO task) {
         try {
             tapeRecallDAO.updateTask(task);
@@ -171,8 +173,7 @@ public class RecallTableCatalog {
         }
     }
 
-  
-    
+
     public void insertNewTask(RecallTaskTO task) {
         try {
             tapeRecallDAO.insertTask(task);
@@ -180,6 +181,18 @@ public class RecallTableCatalog {
             log.error("Unable to store the task : " + task.toString());
             e.printStackTrace();
         }
+    }
+
+
+    public int getReadyForTakeOver() {
+        int result = -1;
+        try {
+            result = tapeRecallDAO.getReadyForTakeOver();
+        } catch (DataAccessException e) {
+            log.error("AHH!");
+            e.printStackTrace();
+        }
+        return result;
     }
 
 

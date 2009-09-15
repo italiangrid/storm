@@ -82,12 +82,12 @@ public class TaskResource {
 
         // Retrieve Task corresponding to taskId
         RecallTaskTO task = null;
-        
+
         // Recall Table Catalog
         RecallTableCatalog rtCat = null;
 
-        String errorStr = null;       
-        
+        String errorStr = null;
+
         try {
             rtCat = new RecallTableCatalog(test);
         } catch (DataAccessException e) {
@@ -112,7 +112,7 @@ public class TaskResource {
             String key = inputStr.substring(0, eqIndex);
             if (key.equals(keyRetryValue)) {
                 try {
-                 // trim out the '\n' end.
+                    // trim out the '\n' end.
                     int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
                     task.setRetryAttempt(retryValue);
                     rtCat.changeRetryValue(taskId, task.getRetryAttempt());
@@ -152,16 +152,14 @@ public class TaskResource {
         Response result = Response.noContent().build();
 
         // Retrieve values from Body param
-        String errorStr = null;  
+        String errorStr = null;
 
         // Parse the Input Stream
         String inputStr = buildInputString(input);
-        TaskResource.log.debug("@POST (input string) = '" + inputStr + "'");
+        log.debug("@POST (input string) = '" + inputStr + "'");
 
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
-        // @todo : REMOVE THIS
-        // test = true;
 
         // Recall Table Catalog
         RecallTableCatalog rtCat = null;
