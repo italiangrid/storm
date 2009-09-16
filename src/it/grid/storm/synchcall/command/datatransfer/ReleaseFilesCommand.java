@@ -57,6 +57,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     private PtGChunkCatalog dbCatalogPtG = PtGChunkCatalog.getInstance();
     private BoLChunkCatalog dbCatalogBoL = BoLChunkCatalog.getInstance();
 
+    private ReleaseFilesOutputData outputData;
+    private ReleaseFilesInputData inputData;
+    private TReturnStatus globalStatus = null;
+    private boolean requestFailure;
+    private boolean requestSuccess;
+
     public ReleaseFilesCommand() {}
 
     /**
@@ -65,11 +71,8 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
      */
     public OutputData execute(InputData data) {
 
-        ReleaseFilesOutputData outputData = new ReleaseFilesOutputData();
-        ReleaseFilesInputData inputData = (ReleaseFilesInputData) data;
-        TReturnStatus globalStatus = null;
-        boolean requestFailure;
-        boolean requestSuccess;
+        outputData = new ReleaseFilesOutputData();
+        inputData = (ReleaseFilesInputData) data;
 
         log.debug("Started ReleaseFiles function");
 
@@ -146,140 +149,15 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         }
 
         /********************************** Start to manage the request ***********************************/
-        ArrayOfSURLs arrayOfUserSURLs = inputData.getArrayOfSURLs();
         TRequestToken requestToken = inputData.getRequestToken();
 
         // Get the list of candidate SURLs from the DB
-        Collection<ReducedChunkData> chunks = getChunks(user, requestToken, arrayOfUserSURLs);
+        Collection<ReducedChunkData> chunks = getChunks(user, requestToken, inputData.getArrayOfSURLs());
 
-        // Build the ArrayOfTSURLReturnStatus matching the SURLs requested by
-        // the user and the list of candidate SURLs found in the db.
         ArrayOfTSURLReturnStatus surlStatusReturnList = null;
         Collection<ReducedChunkData> surlToRelease = new LinkedList<ReducedChunkData>();
-        try {
-            if (chunks.isEmpty()) {
-                // Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or SRM_FAILURE are returned.
-                log.debug("No SURLs found in the DB.");
-                if (requestToken != null) {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
-                } else if (arrayOfUserSURLs != null) {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                                                     "None of the specified SURLs was found");
-                } else {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No SURLs found");
-                }
-            } else {
-                requestFailure = true;
-                requestSuccess = true;
-                // "chunks.size()" is an upper bound of the dimension of the list of the returned statuses.
-                surlStatusReturnList = new ArrayOfTSURLReturnStatus(chunks.size());
-                if (arrayOfUserSURLs == null) {
 
-                    // Case 2: Only requestToken is specified and candidate SURLs were found in the DB.
-                    //         The status of all the candidate SURLs is returned to the user.
-                    for (ReducedChunkData chunk : chunks) {
-
-                        TReturnStatus fileLevelStatus;
-
-                        if (chunk.isPinned()) {
-                            surlToRelease.add(chunk);
-                            requestFailure = false;
-                            fileLevelStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Released");
-                        } else {
-                            requestSuccess = false;
-                            fileLevelStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                                                                "Not released because it is not pinned");
-                        }
-                        TSURLReturnStatus surlStatus = new TSURLReturnStatus(chunk.fromSURL(),
-                                                                             fileLevelStatus);
-                        if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                            log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
-                                    + requestToken + "] for [SURL: " + chunk.fromSURL()
-                                    + "] successfully done with [status: " + fileLevelStatus + "]");
-                        } else {
-                            log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
-                                    + requestToken + "] for [SURL: " + chunk.fromSURL()
-                                    + "] failed with [status: " + fileLevelStatus + "]");
-                        }
-
-                        surlStatusReturnList.addTSurlReturnStatus(surlStatus);
-                    }
-                } else {
-
-                    // Case 3: arrayOfUserSURLs is not empty and candidate SURLs were found in the DB.
-                    //         SURLs present in both arrayOfUserSURLs and surlPtGChunks are the ones
-                    //         that have to be released.
-                    //         For the SURLs that are in arrayOfUserSURLs but not in surlPtGChunks a
-                    //         SRM_INVALID_PATH is returned.
-                    //         The resulting status for all the SURLs in arrayOfUserSURLs is returned to the user.
-                    for (int i = 0; i < arrayOfUserSURLs.size(); i++) {
-                        TSURL surl = arrayOfUserSURLs.getTSURL(i);
-                        boolean surlFound = false;
-                        boolean atLeastOneReleased = false;
-                        // Each SURL in arrayOfUserSURLs can match with more than one chunk (this can happen
-                        // when requestToken is not specified). All the chunks that can be released are
-                        // released. If there's at least one chunk that is released then the returned file level
-                        // status of the corresponding SURL is SRM_SUCCESS, otherwise SRM_FAILURE. If no chunks
-                        // are found for a SURL, then SRM_INVALID_PATH is returned.
-                        for (ReducedChunkData chunk : chunks) {
-
-                            if (surl.equals(chunk.fromSURL())) {
-                                surlFound = true;
-                                if (chunk.isPinned()) {
-                                    surlToRelease.add(chunk);
-                                    atLeastOneReleased = true;
-                                }
-                            }
-                        }
-
-                        TReturnStatus fileLevelStatus;
-                        if (surlFound) {
-                            if (atLeastOneReleased) {
-                                requestFailure = false;
-                                fileLevelStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Released");
-                            } else {
-                                requestSuccess = false;
-                                fileLevelStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                                                                    "Not released because it is not pinned");
-                            }
-                        } else {
-                            requestSuccess = false;
-                            fileLevelStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                                                                "Invalid SURL or it is a directory (srmReleaseFiles of directories not yet supported)");
-                        }
-
-                        if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                            log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
-                                    + requestToken + "] for [SURL: " + surl.getSURLString()
-                                    + "] successfully done with [status: " + fileLevelStatus + "]");
-                        } else {
-                            log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
-                                    + requestToken + "] for [SURL: " + surl.getSURLString()
-                                    + "] failed with [status: " + fileLevelStatus + "]");
-                        }
-
-                        TSURLReturnStatus surlStatus = new TSURLReturnStatus(surl, fileLevelStatus);
-                        surlStatusReturnList.addTSurlReturnStatus(surlStatus);
-                    }
-                } // end Case 3
-
-                if (requestSuccess) {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Files released");
-
-                } else if (requestFailure) {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No files released");
-                } else {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-                                                     "Check files status for details");
-                }
-            }
-        } catch (InvalidTReturnStatusAttributeException ex1) {
-            // Nothing to do, it will never be thrown
-            log.warn("dataTransferManger: Error creating returnStatus ");
-        } catch (InvalidTSURLReturnStatusAttributeException ex2) {
-            // Nothing to do, it will never be thrown
-            log.error("ReleaseFiles: error creatung TSURLReturnStatusElement");
-        }
+        retrieveSurlsToRelease(chunks, surlToRelease, surlStatusReturnList);
 
         // Update the DB
         if (!(surlToRelease.isEmpty())) {
@@ -298,42 +176,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             dbCatalogBoL.transitSRM_SUCCESStoSRM_RELEASED(bolChunksToRelease, requestToken);
         }
 
-        // Remove the pin Extended Attribute (for filesystems with tape support)
-        for (ReducedChunkData chunk : surlToRelease) {
-
-            try {
-
-                StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunk.fromSURL());
-
-                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                    
-                    if (requestToken == null) {
-                        StormEA.removePinned(stori.getAbsolutePath());
-                        continue;
-                    }
-
-                    if (chunk instanceof PtGChunkData) {
-
-                        if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                            if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                                StormEA.removePinned(stori.getAbsolutePath());
-                            }
-                        }
-                    } else {
-
-                        if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                            if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
-                                StormEA.removePinned(stori.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-            } catch (NamespaceException e) {
-                log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-                        + chunk.fromSURL().toString());
-                continue;
-            }
-        }
+        removePinneExtendedAttribute(surlToRelease);
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
             log.info("srmReleaseFiles: <" + user + "> Request for [token:" + inputData.getRequestToken()
@@ -390,5 +233,238 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         }
 
         return surlChunks;
+    }
+
+    /**
+     * Convenient method to build a {@link TReturnStatus} from constants (i.e. getting rid of unneeded
+     * try/catch block).
+     * 
+     * @param statusCode
+     * @param explanation
+     * @return
+     */
+    private TReturnStatus getTReturnStatus(TStatusCode statusCode, String explanation) {
+
+        TReturnStatus status = null;
+        try {
+            status = new TReturnStatus(statusCode, explanation);
+        } catch (InvalidTReturnStatusAttributeException e) {
+            // Nothing to do, it will never be thrown
+            log.error("ReleaseFiles (BUG): Error creating returnStatus (probably a BUG)");
+        }
+
+        return status;
+    }
+
+    /**
+     * Convenient method to build a {@link TReturnStatus} from constants (i.e. getting rid of unneeded
+     * try/catch block).
+     * 
+     * @param statusCode
+     * @param explanation
+     * @return
+     */
+    private TSURLReturnStatus getTSURLReturnStatus(TSURL surl, TReturnStatus returnStatus) {
+
+        TSURLReturnStatus status = null;
+
+        try {
+            status = new TSURLReturnStatus(surl, returnStatus);
+        } catch (InvalidTSURLReturnStatusAttributeException e) {
+            // Nothing to do, it will never be thrown
+            log.error("ReleaseFiles (BUG): error creatung TSURLReturnStatusElement");
+        }
+
+        return status;
+    }
+
+    /**
+     * Removes the Extended Attribute "pinned" from SURLs belonging to a filesystem with tape support.
+     * 
+     * @param surlToRelease
+     */
+    private void removePinneExtendedAttribute(Collection<ReducedChunkData> surlToRelease) {
+
+        // Remove the pin Extended Attribute (for filesystems with tape support)
+        for (ReducedChunkData chunk : surlToRelease) {
+
+            try {
+
+                StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunk.fromSURL());
+
+                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+
+                    if (inputData.getRequestToken() == null) {
+                        StormEA.removePinned(stori.getAbsolutePath());
+                        continue;
+                    }
+
+                    if (chunk instanceof PtGChunkData) {
+
+                        if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                            if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                                StormEA.removePinned(stori.getAbsolutePath());
+                            }
+                        }
+                    } else {
+
+                        if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                            if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
+                                StormEA.removePinned(stori.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+            } catch (NamespaceException e) {
+                log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
+                        + chunk.fromSURL().toString());
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Retrieves the list of SURLs (as {@link ReducedChunkData}) e sets the return status of each SURL of the
+     * request.
+     * 
+     * @param chunks the list of candidate surls retrieved from the DB.
+     * @param surlToRelease output parameter: the list of SURLs to release.
+     * @param surlStatusReturnList output parameter: the list of return status for each SURL of the request.
+     */
+    private void retrieveSurlsToRelease(Collection<ReducedChunkData> chunks,
+            Collection<ReducedChunkData> surlToRelease, ArrayOfTSURLReturnStatus surlStatusReturnList) {
+
+        TRequestToken requestToken = inputData.getRequestToken();
+        ArrayOfSURLs arrayOfUserSURLs = inputData.getArrayOfSURLs();
+
+        if (chunks.isEmpty()) {
+
+            // Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or SRM_FAILURE are returned.
+            log.debug("No SURLs found in the DB.");
+
+            if (requestToken != null) {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+
+            } else if (arrayOfUserSURLs != null) {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_FAILURE,
+                                                "None of the specified SURLs was found");
+
+            } else {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_FAILURE, "No SURLs found");
+
+            }
+        } else {
+
+            requestFailure = true;
+            requestSuccess = true;
+            // "chunks.size()" is an upper bound of the dimension of the list of the returned statuses.
+            surlStatusReturnList = new ArrayOfTSURLReturnStatus(chunks.size());
+            if (arrayOfUserSURLs == null) {
+
+                // Case 2: Only requestToken is specified and candidate SURLs were found in the DB.
+                //         The status of all the candidate SURLs is returned to the user.
+                for (ReducedChunkData chunk : chunks) {
+
+                    TReturnStatus fileLevelStatus;
+
+                    if (chunk.isPinned()) {
+                        surlToRelease.add(chunk);
+                        requestFailure = false;
+                        fileLevelStatus = getTReturnStatus(TStatusCode.SRM_SUCCESS, "Released");
+                    } else {
+                        requestSuccess = false;
+                        fileLevelStatus = getTReturnStatus(TStatusCode.SRM_FAILURE,
+                                                           "Not released because it is not pinned");
+                    }
+                    TSURLReturnStatus surlStatus = getTSURLReturnStatus(chunk.fromSURL(), fileLevelStatus);
+                    if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                        log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                + requestToken + "] for [SURL: " + chunk.fromSURL()
+                                + "] successfully done with [status: " + fileLevelStatus + "]");
+                    } else {
+                        log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                + requestToken + "] for [SURL: " + chunk.fromSURL()
+                                + "] failed with [status: " + fileLevelStatus + "]");
+                    }
+
+                    surlStatusReturnList.addTSurlReturnStatus(surlStatus);
+                }
+
+            } else {
+
+                // Case 3: arrayOfUserSURLs is not empty and candidate SURLs were found in the DB.
+                //         SURLs present in both arrayOfUserSURLs and surlPtGChunks are the ones
+                //         that have to be released.
+                //         For the SURLs that are in arrayOfUserSURLs but not in surlPtGChunks a
+                //         SRM_INVALID_PATH is returned.
+                //         The resulting status for all the SURLs in arrayOfUserSURLs is returned to the user.
+                for (int i = 0; i < arrayOfUserSURLs.size(); i++) {
+                    TSURL surl = arrayOfUserSURLs.getTSURL(i);
+                    boolean surlFound = false;
+                    boolean atLeastOneReleased = false;
+                    // Each SURL in arrayOfUserSURLs can match with more than one chunk (this can happen
+                    // when requestToken is not specified). All the chunks that can be released are
+                    // released. If there's at least one chunk that is released then the returned file level
+                    // status of the corresponding SURL is SRM_SUCCESS, otherwise SRM_FAILURE. If no chunks
+                    // are found for a SURL, then SRM_INVALID_PATH is returned.
+                    for (ReducedChunkData chunk : chunks) {
+
+                        if (surl.equals(chunk.fromSURL())) {
+                            surlFound = true;
+                            if (chunk.isPinned()) {
+                                surlToRelease.add(chunk);
+                                atLeastOneReleased = true;
+                            }
+                        }
+                    }
+
+                    TReturnStatus fileLevelStatus;
+                    if (surlFound) {
+                        if (atLeastOneReleased) {
+                            requestFailure = false;
+                            fileLevelStatus = getTReturnStatus(TStatusCode.SRM_SUCCESS, "Released");
+                        } else {
+                            requestSuccess = false;
+                            fileLevelStatus = getTReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                               "Not released because it is not pinned");
+                        }
+                    } else {
+                        requestSuccess = false;
+                        fileLevelStatus = getTReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                           "Invalid SURL or it is a directory (srmReleaseFiles of directories not yet supported)");
+                    }
+
+                    if (fileLevelStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                        log.info("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                + requestToken + "] for [SURL: " + surl.getSURLString()
+                                + "] successfully done with [status: " + fileLevelStatus + "]");
+                    } else {
+                        log.error("srmReleaseFiles: <" + inputData.getUser() + "> Request for [token:"
+                                + requestToken + "] for [SURL: " + surl.getSURLString()
+                                + "] failed with [status: " + fileLevelStatus + "]");
+                    }
+
+                    TSURLReturnStatus surlStatus = getTSURLReturnStatus(surl, fileLevelStatus);
+                    surlStatusReturnList.addTSurlReturnStatus(surlStatus);
+                }
+            } // end Case 3
+
+            if (requestSuccess) {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_SUCCESS, "Files released");
+
+            } else if (requestFailure) {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_FAILURE, "No files released");
+
+            } else {
+
+                globalStatus = getTReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+                                                "Check files status for details");
+            }
+        }
     }
 }
