@@ -198,8 +198,8 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
                 } else {
                     this.failure = true;
-                    chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Read access to "
-                            + chunkData.getFromSURL() + " in Storage Area: " + token + " denied!");
+                    chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
+                            + chunkData.getFromSURL() + " in Storage Area: " + token);
                     log.debug("Read access to " + chunkData.getFromSURL() + " in Storage Area: " + token
                             + " denied!");
                 }
@@ -289,12 +289,11 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
                     StormEA.setPinned(localFile.getAbsolutePath());
                     fileStoRI.setGroupTapeRead();
+                    chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                     if (localFile.isOnDisk()) {
 
-                        //                        chunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine successfully handled!");
                         chunkData.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
-                        chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                     } else {
 
