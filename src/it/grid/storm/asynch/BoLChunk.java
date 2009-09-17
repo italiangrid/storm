@@ -156,7 +156,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         if (success) {
 
             gsm.successfulChunk(chunkData);
-            log.info("Completed BoL request (" + chunkData.getRequestToken()
+            log.info("Completed BoL request (" + rsd.requestToken()
                     + "), file successfully recalled from tape: " + chunkData.getFromSURL().toString());
 
         } else {

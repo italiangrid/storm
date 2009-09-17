@@ -72,7 +72,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         int taskId = insertTask(task);
 
-        if (!chunkMap.containsKey(taskId)) {
+        if (chunkMap.containsKey(taskId)) {
 
             log.error("BUG: duplicated key taskId: " + taskId);
             return -1;

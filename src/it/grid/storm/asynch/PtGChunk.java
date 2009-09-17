@@ -180,9 +180,9 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         boolean success = false;
 
         if (recallStatus == RecallTaskStatus.SUCCESS) {
-            
+
             success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
-            
+
         } else if (recallStatus == RecallTaskStatus.ABORTED) {
 
             chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
@@ -196,14 +196,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         PtGChunkCatalog.getInstance().update(chunkData); //update status in persistence!!!
 
         if (success) {
+
             gsm.successfulChunk(chunkData);
+            log.info("Completed PtG request (" + rsd.requestToken()
+                    + "), file successfully recalled from tape: " + chunkData.fromSURL().toString());
+
         } else {
             gsm.failedChunk(chunkData);
+
+            log.error("BoL request (" + rsd.requestToken() + "), file not recalled from tape: "
+                    + chunkData.fromSURL().toString());
         }
-        
-        log.info("Finished handling PtG chunk for user DN: " + this.gu.getDn() + "; for SURL: "
-                + this.chunkData.fromSURL() + "; for requestToken: " + this.rsd.requestToken()
-                + "; result is: " + this.chunkData.status());
     }
 
     /**
