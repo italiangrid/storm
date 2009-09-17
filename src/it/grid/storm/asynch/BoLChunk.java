@@ -135,7 +135,6 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         s.bolStreet(this);
     }
 
-    @Override
     public void completeRequest(RecallTaskStatus recallStatus) {
         
         boolean success = false;
@@ -231,7 +230,6 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                 + "; result is: " + this.chunkData.getStatus());
     }
 
-    @Override
     public ChunkData getChunkData() {
         return chunkData;
     }
