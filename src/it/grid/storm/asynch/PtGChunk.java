@@ -5,6 +5,7 @@ import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
@@ -38,6 +39,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Calendar;
 import java.util.Iterator;
@@ -118,16 +120,31 @@ import org.slf4j.LoggerFactory;
  * @date    May 3rd, 2005
  * @version 4.0
  */
-public class PtGChunk implements Delegable, Chooser {
+public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 
     private static Logger log = LoggerFactory.getLogger(PtGChunk.class);
 
-    private GridUserInterface gu=null;        //GridUser that made the request
-    private RequestSummaryData rsd=null; //RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest
-    private PtGChunkData chunkData=null; //PtGChunkData that holds the specific info for this chunk
-    private Calendar start = null; //Calendar used for jit tracking
-    private GlobalStatusManager gsm = null; //manager for global status computation
-    private boolean failure = false; //boolean that indicates a chunk failure
+    /** GridUser that made the request */
+    private GridUserInterface gu=null;
+    /** RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest */
+    private RequestSummaryData rsd=null;
+    /** PtGChunkData that holds the specific info for this chunk */
+    private PtGChunkData chunkData=null;
+    /** Calendar used for jit tracking */
+    private Calendar start = null;
+    /** manager for global status computation */
+    private GlobalStatusManager gsm = null;
+    /** boolean that indicates a chunk failure */
+    private boolean failure = false;
+    
+    /**
+     * variables used to backup values in case the request is suspended waiting for the file to be recalled
+     * from the tape
+     */
+    private StoRI bupFileStori;
+    private LocalFile bupLocalFile;
+    private LocalUser bupLocalUser;
+    private TTURL bupTURL;
 
     /**
      * Constructor requiring the GridUser, the RequestSummaryData and the
@@ -147,6 +164,46 @@ public class PtGChunk implements Delegable, Chooser {
         this.chunkData = chunkData;
         this.gsm = gsm;
         this.start = Calendar.getInstance(); //right now!
+    }
+
+    /**
+     * Method used in a callback fashion in the scheduler for separately handling
+     * PtG, PtP and Copy chunks.
+     */
+    public void choose(Streets s) {
+        s.ptgStreet(this);
+    }
+
+    
+    public void completeRequest(RecallTaskStatus recallStatus) {
+
+        boolean success = false;
+
+        if (recallStatus == RecallTaskStatus.SUCCESS) {
+            
+            success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+            
+        } else if (recallStatus == RecallTaskStatus.ABORTED) {
+
+            chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+
+        } else {
+
+            chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+
+        }
+
+        PtGChunkCatalog.getInstance().update(chunkData); //update status in persistence!!!
+
+        if (success) {
+            gsm.successfulChunk(chunkData);
+        } else {
+            gsm.failedChunk(chunkData);
+        }
+        
+        log.info("Finished handling PtG chunk for user DN: " + this.gu.getDn() + "; for SURL: "
+                + this.chunkData.fromSURL() + "; for requestToken: " + this.rsd.requestToken()
+                + "; result is: " + this.chunkData.status());
     }
 
     /**
@@ -199,11 +256,98 @@ public class PtGChunk implements Delegable, Chooser {
                 gsm.successfulChunk(chunkData); // update global status!!!
             }
         }
-        log.info("Finished handling PtG chunk for user DN: "+this.gu.getDn()+"; for SURL: "+this.chunkData.fromSURL()+"; for requestToken: "+this.rsd.requestToken()+"; result is: "+this.chunkData.status());
+        log.info("Finished handling PtG chunk for user DN: " + this.gu.getDn() + "; for SURL: "
+                + this.chunkData.fromSURL() + "; for requestToken: " + this.rsd.requestToken()
+                + "; result is: " + this.chunkData.status());
+    }
+
+
+    @Override
+    public ChunkData getChunkData() {
+        return chunkData;
+    }
+
+    /**
+     * Method that supplies a String describing this PtGChunk - for scheduler Log
+     * purposes! It returns the request token and the SURL that was asked for.
+     */
+    public String getName() {
+        return "PtGChunk of request "+rsd.requestToken()+" for SURL "+chunkData.fromSURL();
+    }
+
+    public String getRequestToken() {
+        return this.rsd.requestToken().toString();
     }
 
 
 
+
+
+
+    public String getSURL() {
+        return this.chunkData.fromSURL().toString();
+    }
+
+    public String getUserDN() {
+        return this.gu.getDn();
+    }
+
+    public boolean isResultSuccess() {
+        boolean result = false;
+        TStatusCode statusCode = this.chunkData.status().getStatusCode();
+        if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))||this.chunkData.status().isSRM_SUCCESS()) {
+            result = true;
+        }
+        return result;
+    }
+
+    private void backupData(StoRI fileStoRI, LocalFile localFile, LocalUser localUser, TTURL turl) {
+        bupFileStori = fileStoRI;
+        bupLocalFile = localFile;
+        bupLocalUser = localUser;
+        bupTURL = turl;
+    }
+
+
+    /**
+     * Manager of the IsDeny state: it indicates that Permission is
+     * not granted.
+     */
+    private void manageIsDeny() {
+        chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Read access to "+chunkData.fromSURL()+" denied!");
+        failure = true; //gsm.failedChunk(chunkData);
+        log.debug("Read access to "+chunkData.fromSURL()+" denied!"); //info
+    }
+
+    /**
+     * Manager of the IsIndeterminate state: this state indicates that an error
+     * in the PolicySource occured and so the policy Collector does not know what
+     * do to!
+     */
+    private void manageIsIndeterminate(AuthorizationDecision ad) {
+        chunkData.changeStatusSRM_FAILURE("Failure in PolicySource prevented PolicyCollector from establishing access rights! Processing failed!");
+        failure = true; //gsm.failedChunk(chunkData);
+        log.error("ERROR in PtGChunk! PolicyCollector received an error from PolicySource!");
+        log.error("Received state: "+ad);
+        log.error("Request: "+rsd.requestToken());
+        log.error("Requested SURL: "+chunkData.fromSURL());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Manager of the IsNotApplicable state: this state indicates that the
+     * PolicyCollector has not got any info on the requested file, so it does
+     * not know what to answer.
+     */
+    private void manageIsNotApplicabale(AuthorizationDecision ad) {
+        chunkData.changeStatusSRM_FAILURE("No policies found for the requested SURL! Therefore access rights cannot be established! Processing cannot continue!");
+        failure = true; //gsm.failedChunk(chunkData);
+        log.warn("PtGChunk: PolicyCollector found no policy for the supplied SURL!"); //info
+        log.warn("Received state: "+ad); //info
+        log.warn("Request: "+rsd.requestToken()); //info
+        log.warn("Requested SURL: "+chunkData.fromSURL()); //info
+    }
 
     /**
      * Manager of the IsPermit state: the user may indeed read the specified SURL
@@ -251,6 +395,7 @@ public class PtGChunk implements Delegable, Chooser {
                                 }
                             } else {
                                 chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
+                                chunkData.setFileSize(TSizeInBytes.make(localFile.length(),SizeUnit.BYTES));
 
                                 String voName = null;
                                 if (gu instanceof VomsGridUser) {
@@ -259,10 +404,17 @@ public class PtGChunk implements Delegable, Chooser {
 
                                 PersistenceDirector.getDAOFactory()
                                                    .getTapeRecallDAO()
-                                                   .insertTask(chunkData,
-                                                               gsm,
+                                                   .insertTask(this,
                                                                voName,
                                                                localFile.getAbsolutePath());
+                                
+                                backupData(fileStoRI, localFile, localUser, turl);
+                                
+                                /*
+                                 * The request now ends by saving in the DB the IN_PROGRESS status information.
+                                 * The effective PtG will be accomplished when the setTaskStatus() method of the
+                                 * tapeRecallDAO calls the completeRequest() method.
+                                 */
                             }
                         } else {
                             boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
@@ -432,6 +584,7 @@ public class PtGChunk implements Delegable, Chooser {
         }
     }
 
+
     /**
      * Private method used to setup the right traverse permissions.
      *
@@ -545,49 +698,6 @@ public class PtGChunk implements Delegable, Chooser {
         return !anomaly;
     }
 
-
-
-
-
-
-    /**
-     * Manager of the IsDeny state: it indicates that Permission is
-     * not granted.
-     */
-    private void manageIsDeny() {
-        chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Read access to "+chunkData.fromSURL()+" denied!");
-        failure = true; //gsm.failedChunk(chunkData);
-        log.debug("Read access to "+chunkData.fromSURL()+" denied!"); //info
-    }
-
-    /**
-     * Manager of the IsIndeterminate state: this state indicates that an error
-     * in the PolicySource occured and so the policy Collector does not know what
-     * do to!
-     */
-    private void manageIsIndeterminate(AuthorizationDecision ad) {
-        chunkData.changeStatusSRM_FAILURE("Failure in PolicySource prevented PolicyCollector from establishing access rights! Processing failed!");
-        failure = true; //gsm.failedChunk(chunkData);
-        log.error("ERROR in PtGChunk! PolicyCollector received an error from PolicySource!");
-        log.error("Received state: "+ad);
-        log.error("Request: "+rsd.requestToken());
-        log.error("Requested SURL: "+chunkData.fromSURL());
-    }
-
-    /**
-     * Manager of the IsNotApplicable state: this state indicates that the
-     * PolicyCollector has not got any info on the requested file, so it does
-     * not know what to answer.
-     */
-    private void manageIsNotApplicabale(AuthorizationDecision ad) {
-        chunkData.changeStatusSRM_FAILURE("No policies found for the requested SURL! Therefore access rights cannot be established! Processing cannot continue!");
-        failure = true; //gsm.failedChunk(chunkData);
-        log.warn("PtGChunk: PolicyCollector found no policy for the supplied SURL!"); //info
-        log.warn("Received state: "+ad); //info
-        log.warn("Request: "+rsd.requestToken()); //info
-        log.warn("Requested SURL: "+chunkData.fromSURL()); //info
-    }
-
     /**
      * Manage unknown state of AuthorizationDecision! This happens if new states are added
      * and this class is not updated!
@@ -599,46 +709,5 @@ public class PtGChunk implements Delegable, Chooser {
         log.error("Received state: "+ad);
         log.error("Request: "+rsd.requestToken());
         log.error("Requested SURL: "+chunkData.fromSURL());
-    }
-
-
-    /**
-     * Method that supplies a String describing this PtGChunk - for scheduler Log
-     * purposes! It returns the request token and the SURL that was asked for.
-     */
-    public String getName() {
-        return "PtGChunk of request "+rsd.requestToken()+" for SURL "+chunkData.fromSURL();
-    }
-
-    /**
-     * Method used in a callback fashion in the scheduler for separately handling
-     * PtG, PtP and Copy chunks.
-     */
-    public void choose(Streets s) {
-        s.ptgStreet(this);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-
-    public String getUserDN() {
-        return this.gu.getDn();
-    }
-
-    public String getSURL() {
-        return this.chunkData.fromSURL().toString();
-    }
-
-    public String getRequestToken() {
-        return this.rsd.requestToken().toString();
-    }
-
-
-    public boolean isResultSuccess() {
-        boolean result = false;
-        TStatusCode statusCode = this.chunkData.status().getStatusCode();
-        if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))||this.chunkData.status().isSRM_SUCCESS()) {
-            result = true;
-        }
-        return result;
     }
 }

@@ -5,6 +5,7 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.BoLChunkCatalog;
 import it.grid.storm.catalogs.BoLChunkData;
+import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.common.types.SizeUnit;
@@ -23,6 +24,7 @@ import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +94,7 @@ import org.slf4j.LoggerFactory;
  * @date Aug 2009
  * @version 1.0
  */
-public class BoLChunk implements Delegable, Chooser {
+public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
     private static Logger log = LoggerFactory.getLogger(BoLChunk.class);
 
@@ -123,6 +125,43 @@ public class BoLChunk implements Delegable, Chooser {
         this.rsd = rsd;
         this.chunkData = chunkData;
         this.gsm = gsm;
+    }
+
+    /**
+     * Method used in a callback fashion in the scheduler for separately handling PtG, BoL, PtP and
+     * Copy chunks.
+     */
+    public void choose(Streets s) {
+        s.bolStreet(this);
+    }
+
+    @Override
+    public void completeRequest(RecallTaskStatus recallStatus) {
+        
+        boolean success = false;
+        
+        if (recallStatus == RecallTaskStatus.SUCCESS) {
+
+            chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
+            success = true;
+
+        } else if (recallStatus == RecallTaskStatus.ABORTED) {
+
+            chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+
+        } else {
+
+            chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+
+        }
+        
+        BoLChunkCatalog.getInstance().update(chunkData);
+        
+        if (success) {
+            gsm.successfulChunk(chunkData);
+        } else {
+            gsm.failedChunk(chunkData);
+        }
     }
 
     /**
@@ -192,6 +231,43 @@ public class BoLChunk implements Delegable, Chooser {
                 + "; result is: " + this.chunkData.getStatus());
     }
 
+    @Override
+    public ChunkData getChunkData() {
+        return chunkData;
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Method that supplies a String describing this BoLChunk - for scheduler Log purposes! It
+     * returns the request token and the SURL that was asked for.
+     */
+    public String getName() {
+        return "BoLChunk of request " + rsd.requestToken() + " for SURL " + chunkData.getFromSURL();
+    }
+
+    public String getRequestToken() {
+        return this.rsd.requestToken().toString();
+    }
+
+    public String getSURL() {
+        return this.chunkData.getFromSURL().toString();
+    }
+
+    public String getUserDN() {
+        return this.gu.getDn();
+    }
+
+    public boolean isResultSuccess() {
+        boolean result = false;
+        TStatusCode statusCode = this.chunkData.getStatus().getStatusCode();
+        if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))
+                || this.chunkData.getStatus().isSRM_SUCCESS()) {
+            result = true;
+        }
+        return result;
+    }
+
     /**
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      */
@@ -229,8 +305,7 @@ public class BoLChunk implements Delegable, Chooser {
                             voName = ((VomsGridUser) gu).getVO().getValue();
                         }
 
-                        PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(chunkData,
-                                                                                          gsm,
+                        PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(this,
                                                                                           voName,
                                                                                           localFile.getAbsolutePath());
                     }
@@ -252,45 +327,5 @@ public class BoLChunk implements Delegable, Chooser {
             failure = true;
             log.error("ERROR in BoLChunk! StoRM process got an unexpected error! " + e);
         }
-    }
-
-    /**
-     * Method that supplies a String describing this BoLChunk - for scheduler Log purposes! It
-     * returns the request token and the SURL that was asked for.
-     */
-    public String getName() {
-        return "BoLChunk of request " + rsd.requestToken() + " for SURL " + chunkData.getFromSURL();
-    }
-
-    /**
-     * Method used in a callback fashion in the scheduler for separately handling PtG, BoL, PtP and
-     * Copy chunks.
-     */
-    public void choose(Streets s) {
-        s.bolStreet(this);
-    }
-
-    // //////////////////////////////////////////////////////////////////////////////
-
-    public String getUserDN() {
-        return this.gu.getDn();
-    }
-
-    public String getSURL() {
-        return this.chunkData.getFromSURL().toString();
-    }
-
-    public String getRequestToken() {
-        return this.rsd.requestToken().toString();
-    }
-
-    public boolean isResultSuccess() {
-        boolean result = false;
-        TStatusCode statusCode = this.chunkData.getStatus().getStatusCode();
-        if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))
-                || this.chunkData.getStatus().isSRM_SUCCESS()) {
-            result = true;
-        }
-        return result;
     }
 }

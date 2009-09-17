@@ -1,10 +1,8 @@
 package it.grid.storm.persistence.dao;
 
-import it.grid.storm.asynch.GlobalStatusManager;
-import it.grid.storm.catalogs.BoLChunkCatalog;
+import it.grid.storm.asynch.SuspendedChunk;
 import it.grid.storm.catalogs.BoLChunkData;
 import it.grid.storm.catalogs.ChunkData;
-import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
@@ -24,8 +22,7 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<Integer, GlobalStatusManager> gsmMap = new ConcurrentHashMap<Integer, GlobalStatusManager>();
-    private static ConcurrentHashMap<Integer, ChunkData> chunkDataMap = new ConcurrentHashMap<Integer, ChunkData>();
+    private static ConcurrentHashMap<Integer, SuspendedChunk> chunkMap = new ConcurrentHashMap<Integer, SuspendedChunk>();
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
@@ -56,9 +53,9 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     public abstract int getNumberQueued(String voName) throws DataAccessException;
 
     public abstract int getReadyForTakeOver() throws DataAccessException;
-    
+
     public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
-    
+
     public abstract String getRequestToken(int taskId) throws DataAccessException;
 
     public abstract int getRetryValue(int taskId) throws DataAccessException;
@@ -67,23 +64,22 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getTaskStatus(int taskId) throws DataAccessException;
 
-    public int insertTask(ChunkData chunkData, GlobalStatusManager gsm, String voName, String absoluteFileName)
-            throws DataAccessException {
+    public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
 
-        RecallTaskTO task = getTaskFromChunk(chunkData);
+        RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
         int taskId = insertTask(task);
 
-        if (!gsmMap.containsKey(taskId)) {
+        if (!chunkMap.containsKey(taskId)) {
 
-            gsmMap.put(taskId, gsm);
-            chunkDataMap.put(taskId, chunkData);
-
-        } else {
             log.error("BUG: duplicated key taskId: " + taskId);
+            return -1;
+
         }
+
+        chunkMap.put(taskId, chunk);
 
         return taskId;
     }
@@ -101,33 +97,37 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public boolean setTaskStatus(int taskId, int status) throws DataAccessException {
 
-        if (!setTaskStatusDBImpl(taskId, status)) {
-            // shall the "taskId" data be removed from hashmaps? lets think about it...
+        RecallTaskStatus recallTaskStatus = RecallTaskStatus.getRecallTaskStatus(status);
+
+        if (!setTaskStatusDBImpl(taskId, recallTaskStatus.getStatusId())) {
+            /*
+             * "taskId" is not removed from the hash map, something strange is happened. If it's just a
+             * temporary failure of the DB then this is the correct behavior, because the status of the task
+             * can be set later. If this operation cannot be retried anymore (hoping in a successful result),
+             * then there's nothing we can do.
+             */
             return false;
         }
 
-        if ((status == RecallTaskStatus.IN_PROGRESS.getStatusId())
-                || (status == RecallTaskStatus.QUEUED.getStatusId())) {
+        if ((recallTaskStatus == RecallTaskStatus.IN_PROGRESS)
+                || (recallTaskStatus == RecallTaskStatus.QUEUED)) {
+
             log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, taskId="
                     + taskId);
             return true;
+
         }
 
-        GlobalStatusManager gsm = gsmMap.remove(taskId);
-        ChunkData chunkData = chunkDataMap.remove(taskId);
+        SuspendedChunk chunk = chunkMap.remove(taskId);
 
-        if ((gsm == null) || (chunkData == null)) {
-            // Happens when the task is inserted with insertTask(RecallTaskTO
-            // task)
-            log.info("Set status with no internal data. taskId=\"" + taskId + "\" status=" + status);
+        if (chunk == null) {
+            // Happens when the task is inserted with insertTask(RecallTaskTO task)
+            log.info("Set status with no internal data. taskId=\"" + taskId + "\" status="
+                    + recallTaskStatus.getStatusId());
             return true;
         }
 
-        if (chunkData instanceof PtGChunkData) {
-            updateChunk((PtGChunkData) chunkData, gsm, status);
-        } else {
-            updateChunk((BoLChunkData) chunkData, gsm, status);
-        }
+        chunk.completeRequest(recallTaskStatus);
 
         return true;
     }
@@ -185,52 +185,5 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         }
 
         return task;
-    }
-
-    private void updateChunk(BoLChunkData chunkData, GlobalStatusManager gsm, int status) {
-
-        if (status == RecallTaskStatus.SUCCESS.getStatusId()) {
-
-//            chunkData.changeStatusSRM_FILE_PINNED("File recalled from tape");
-            chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
-            BoLChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
-
-        } else if (status == RecallTaskStatus.ABORTED.getStatusId()) {
-
-            chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
-            BoLChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
-
-        } else {
-
-            chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-            BoLChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
-
-        }
-    }
-
-    private void updateChunk(PtGChunkData chunkData, GlobalStatusManager gsm, int status) {
-
-        if (status == RecallTaskStatus.SUCCESS.getStatusId()) {
-
-            chunkData.changeStatusSRM_FILE_PINNED("File recalled from tape");
-            PtGChunkCatalog.getInstance().update(chunkData);
-            gsm.successfulChunk(chunkData);
-
-        } else if (status == RecallTaskStatus.ABORTED.getStatusId()) {
-
-            chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
-            PtGChunkCatalog.getInstance().update(chunkData);
-            gsm.failedChunk(chunkData);
-
-        } else {
-
-            chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-            PtGChunkCatalog.getInstance().update(chunkData);
-            gsm.failedChunk(chunkData);
-
-        }
     }
 }
