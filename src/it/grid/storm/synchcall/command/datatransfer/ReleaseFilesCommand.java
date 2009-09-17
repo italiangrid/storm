@@ -154,7 +154,8 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         // Get the list of candidate SURLs from the DB
         Collection<ReducedChunkData> chunks = getChunks(user, requestToken, inputData.getArrayOfSURLs());
 
-        ArrayOfTSURLReturnStatus surlStatusReturnList = null;
+        // "chunks.size()" is an upper bound of the dimension of the list of the returned statuses.
+        ArrayOfTSURLReturnStatus surlStatusReturnList = new ArrayOfTSURLReturnStatus(chunks.size());
         Collection<ReducedChunkData> surlToRelease = new LinkedList<ReducedChunkData>();
 
         retrieveSurlsToRelease(chunks, surlToRelease, surlStatusReturnList);
@@ -360,8 +361,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
             requestFailure = true;
             requestSuccess = true;
-            // "chunks.size()" is an upper bound of the dimension of the list of the returned statuses.
-            surlStatusReturnList = new ArrayOfTSURLReturnStatus(chunks.size());
+
             if (arrayOfUserSURLs == null) {
 
                 // Case 2: Only requestToken is specified and candidate SURLs were found in the DB.
