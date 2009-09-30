@@ -49,14 +49,15 @@ public class Checksum extends Thread {
 
         for (ChecksumType chkType : ChecksumType.values()) {
 
-            if (chkType.toString().toLowerCase().equals(configChecksumType.toLowerCase())) {
-                this.checksumType = chkType;
+            log.info("PIPPO: " + chkType.toString().toLowerCase());
+            if (chkType.toString().toLowerCase().equals(configChecksumType)) {
+                checksumType = chkType;
                 break;
             }
         }
 
         if (checksumType == null) {
-            log.error("Unsupported checksum type (property checksum.type): " + configChecksumType);
+            log.error("Unsupported checksum type (property checksum.type): " + Configuration.getInstance().getChecksumType());
         }
     }
 
