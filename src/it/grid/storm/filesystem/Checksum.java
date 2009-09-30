@@ -49,7 +49,6 @@ public class Checksum extends Thread {
 
         for (ChecksumType chkType : ChecksumType.values()) {
 
-            log.info("PIPPO: " + chkType.toString().toLowerCase());
             if (chkType.toString().toLowerCase().equals(configChecksumType)) {
                 checksumType = chkType;
                 break;
