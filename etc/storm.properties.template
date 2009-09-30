@@ -14,6 +14,14 @@ storm.service.endpoint=/srm/managerv2
 proxy.home=/opt/storm/backend/var/proxies
 
 # ============================
+# Checksum
+# ============================
+checksum.enabled=true
+checksum.queueSize=30
+# Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
+checksum.type=CRC32 
+
+# ============================
 # FE/BE communication RDBMS
 # ============================
 asynch.picker.db.host = @DB_HOSTNAME@

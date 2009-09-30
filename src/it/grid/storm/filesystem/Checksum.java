@@ -42,6 +42,7 @@ public class Checksum extends Thread {
     private static final Logger log = LoggerFactory.getLogger(Checksum.class);
     private static Checksum instance = null;
     private ChecksumType checksumType = null;
+    private int queueSize = Configuration.getInstance().getChecksumQueueSize();
 
     private Checksum() {
 
@@ -105,6 +106,10 @@ public class Checksum extends Thread {
     }
 
     public String computeAndSetChecksum(String fileName) {
+        
+        if (queue.size() >= queueSize) {
+            return "Computation of checksum aborted (reached max queue size). Try again later.";
+        }
 
         String checksum = "task in queue";
 

@@ -2766,7 +2766,7 @@ public class Configuration {
      * support has been made optional. Default is false.
      */
     public boolean getChecksumEnabled() {
-        String key = "checksum.support";
+        String key = "checksum.enabled";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
@@ -2778,6 +2778,18 @@ public class Configuration {
     }
 
 
+    public int getChecksumQueueSize() {
+
+        String key = "checksum.queueSize";
+
+        if (cr.getConfiguration().containsKey(key)) {
+
+            return cr.getConfiguration().getInt(key);
+        }
+
+        return 100;
+    }
+    
     public String getChecksumType() {
 
         String key = "checksum.type";
