@@ -54,7 +54,12 @@ public class PathACE {
             }
 
             // Setting the Permission Mask
-
+            PathAccessMask pAccessMask = new PathAccessMask();
+            for (int i = 0; i < fields[2].length(); i++) {
+                PathOperation pathOper = PathOperation.getSpaceOperation(fields[2].charAt(i));
+                pAccessMask.addPathOperation(pathOper);
+            }
+            result.setPathAccessMask(pAccessMask);
         }
         return result;
     }
@@ -81,6 +86,22 @@ public class PathACE {
 
     public PathAccessMask getPathAccessMask() {
         return pathAccessMask;
+    }
+    
+    
+    public boolean equals(Object other) {
+        boolean result = false;
+        if (other instanceof PathACE) {
+            PathACE pathOther = (PathACE) other;
+            if (pathOther.getLocalGroupName() == localGroupName) {
+                if (pathOther.getStorageFileName().equals(storageFileName)) {
+                    if (pathOther.getPathAccessMask().equals(pathAccessMask)) {
+                        result = true;
+                    }
+                }
+            }
+        }
+        return result;
     }
     
 }

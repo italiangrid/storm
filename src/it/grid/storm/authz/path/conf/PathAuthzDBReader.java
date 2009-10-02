@@ -4,6 +4,7 @@
 package it.grid.storm.authz.path.conf;
 
 import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.config.Configuration;
 
@@ -54,7 +55,12 @@ public class PathAuthzDBReader {
             BufferedReader in = new BufferedReader(new FileReader(authzDBFilename));
             String str;
             while ((str = in.readLine()) != null) {
-                PathACE ace = parseLine(str);
+                PathACE ace = PathACE.PERMIT_ALL;
+                try {
+                    ace = parseLine(str);
+                } catch (AuthzException e) {
+
+                }
                 result.addPathACE(ace);
             }
             in.close();
@@ -67,10 +73,10 @@ public class PathAuthzDBReader {
     /**
      * @param str
      * @return
+     * @throws AuthzException
      */
-    private PathACE parseLine(String str) {
-        // TODO Auto-generated method stub
-        return null;
+    private PathACE parseLine(String pathACEString) throws AuthzException {
+        return PathACE.buildFromString(pathACEString);
     }
 
     public void refreshPathAuthzDB() {
