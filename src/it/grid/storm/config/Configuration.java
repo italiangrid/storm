@@ -2194,21 +2194,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryDAO to establish the batch size for removing
-     * expired requests.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="purge.size"; default value=500
+     * Method used by RequestSummaryDAO to establish the batch size for removing expired requests. If no value is found
+     * in the configuration medium, then the default one is used instead. key="purge.size"; default value=800
      */
     public int getPurgeBatchSize() {
         String key = "purge.size";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
-            return 500;
+            return 800;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(key);
@@ -2262,21 +2256,16 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryCatalog to establish the time interval in
-     * _seconds_ between successive purging checks.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="purge.interval"; default value=3600 (1 hour)
+     * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between successive purging
+     * checks. If no value is found in the configuration medium, then the default one is used instead.
+     * key="purge.interval"; default value=600 (1o minutes)
      */
     public int getRequestPurgerPeriod() {
         String key = "purge.interval";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
-            return 3600;
+            return 600;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(key);

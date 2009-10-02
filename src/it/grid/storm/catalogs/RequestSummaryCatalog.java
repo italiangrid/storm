@@ -429,12 +429,10 @@ public class RequestSummaryCatalog {
 
         List<String> r_tokens = dao.purgeExpiredRequests();
         if (r_tokens.isEmpty()) {
-            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");
-        }
-
-        while (!r_tokens.isEmpty()) {
-
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG; removed from DB the following expired requests: " + r_tokens);
+            log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");
+        } else {
+            log.info("REQUEST SUMMARY CATALOG; removed from DB < " + r_tokens.size() + " > expired requests");
+            log.debug("REQUEST SUMMARY CATALOG; removed from DB the following expired requests: " + r_tokens);                
 
             for (String rt : r_tokens) {
                 String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
@@ -447,8 +445,7 @@ public class RequestSummaryCatalog {
                         RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
                     }
                 }
-            }
-            r_tokens = dao.purgeExpiredRequests();
+            }   
         }
     }
 
