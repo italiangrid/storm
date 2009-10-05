@@ -16,35 +16,6 @@ public class StormEA {
 
     private static final ExtendedAttributes ea = new ExtendedAttributesImpl();
 
-    public static boolean getMigrated(String fileName) {
-        
-        try {
-            
-            ea.getXAttr(fileName, EA_MIGRATED);
-            
-        } catch (AttributeNotFoundException e) {
-
-            return false;
-
-        } catch (FileNotFoundException e) {
-
-            log.error("Cannot retrieve checksum EA because file does not exists: " + fileName, e);
-            return false;
-
-        } catch (NotSupporterdException e) {
-
-            log.error("Cannot retrieve checksum EA (operation not supported) from file: " + fileName, e);
-            return false;
-
-        } catch (ExtendedAttributesException e) {
-
-            log.error("Cannot retrieve checksum EA from file: " + fileName, e);
-            return false;
-        }
-        
-        return true;
-    }
-    
     public static String getChecksum(String fileName, String algorithm) {
 
         String checksum = null;
@@ -77,6 +48,66 @@ public class StormEA {
         }
 
         return checksum;
+    }
+
+    public static boolean getMigrated(String fileName) {
+
+        try {
+
+            ea.getXAttr(fileName, EA_MIGRATED);
+
+        } catch (AttributeNotFoundException e) {
+
+            return false;
+
+        } catch (FileNotFoundException e) {
+
+            log.error("Cannot retrieve checksum EA because file does not exists: " + fileName, e);
+            return false;
+
+        } catch (NotSupporterdException e) {
+
+            log.error("Cannot retrieve checksum EA (operation not supported) from file: " + fileName, e);
+            return false;
+
+        } catch (ExtendedAttributesException e) {
+
+            log.error("Cannot retrieve checksum EA from file: " + fileName, e);
+            return false;
+        }
+
+        return true;
+    }
+
+    public static long getPinned(String fileName) {
+
+        try {
+            byte[] byteArray = ea.getXAttr(fileName, EA_PINNED);
+            
+            if (byteArray == null) {
+                return -1;
+            }
+            
+            String longString = new String(byteArray);
+            
+            return Long.decode(longString);
+            
+        } catch (FileNotFoundException e) {
+
+            log.error("Cannot set pinned EA because file does not exists: " + fileName, e);
+
+        } catch (NotSupporterdException e) {
+
+            log.error("Cannot set pinned EA (operation not supported) to file: " + fileName, e);
+
+        } catch (ExtendedAttributesException e) {
+            log.error("Cannot set pinned EA to file: " + fileName, e);
+            
+        } catch (NumberFormatException e) {
+            log.error("Value of pinned EA is not a number, assuming -1. File: " + fileName, e);
+        }
+        
+        return -1;
     }
 
     public static void removePinned(String fileName) {
@@ -124,10 +155,37 @@ public class StormEA {
         }
     }
 
+    @Deprecated
     public static void setPinned(String fileName) {
 
         try {
             ea.setXAttr(fileName, EA_PINNED, null);
+
+        } catch (FileNotFoundException e) {
+
+            log.error("Cannot set pinned EA because file does not exists: " + fileName, e);
+
+        } catch (NotSupporterdException e) {
+
+            log.error("Cannot set pinned EA (operation not supported) to file: " + fileName, e);
+
+        } catch (ExtendedAttributesException e) {
+            log.error("Cannot set pinned EA to file: " + fileName, e);
+        }
+    }
+    
+    public static void setPinned(String fileName, long expirationDateInMills) {
+
+        long existingPinValue = getPinned(fileName);
+        
+        if (existingPinValue >= expirationDateInMills) {
+            return;
+        }
+        
+        String longString = String.valueOf(expirationDateInMills);
+        
+        try {
+            ea.setXAttr(fileName, EA_PINNED, longString.getBytes());
 
         } catch (FileNotFoundException e) {
 
