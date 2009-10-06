@@ -118,6 +118,8 @@ public class ChecksumManager {
      */
     public String getChecksum(String fileName) {
 
+        log.debug("Requesting checksum for file: " + fileName);
+        
         String value = StormEA.getChecksum(fileName, algorithm);
 
         if (value == null) {
@@ -167,8 +169,11 @@ public class ChecksumManager {
     private String retrieveChecksumFromExternalService(String fileName) {
 
         if (urlList.isEmpty()) {
+            
+            log.debug("No external checksum servers found, no checksum returned for file: " + fileName);
             return null;
         }
+        
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
@@ -177,6 +182,8 @@ public class ChecksumManager {
             return null;
         }
 
+        log.debug("Requesting checksum to service: " + targetURL);
+        
         ChecksumClient client = ChecksumClientFactory.getChecksumClient();
 
         try {
