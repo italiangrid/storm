@@ -34,6 +34,8 @@ public class ChecksumManager {
                 URL url = new URL(urlString);
 
                 urlList.add(urlString);
+                
+                log.info("Adding URL for external checksum server: " + urlString);
 
             } catch (MalformedURLException e) {
                 log.error("Skipping malformed URL in storm.properties (checksum.serviceURL): " + urlString);
