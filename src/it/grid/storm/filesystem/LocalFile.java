@@ -15,6 +15,7 @@
 
 package it.grid.storm.filesystem;
 
+import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
@@ -196,19 +197,9 @@ public class LocalFile {
      * @return the checksum of the file.
      */
     public String getChecksum() {
+        
+        return ChecksumManager.getInstance().getChecksum(localFile.getAbsolutePath());
 
-        Checksum checksum = Checksum.getInstance();
-        String algorithm = checksum.getChecksumType().toString();
-
-        String value = StormEA.getChecksum(localFile.getAbsolutePath(), algorithm);
-
-        if (value == null) {
-
-            value = checksum.computeAndSetChecksum(localFile.getAbsolutePath());
-
-        }
-
-        return value;
     }
     
     /**
@@ -216,8 +207,8 @@ public class LocalFile {
      * 
      * @return
      */
-    public Checksum.ChecksumType getChecksumType() {
-        return Checksum.getInstance().getChecksumType();
+    public String getChecksumAlgorithm() {
+        return ChecksumManager.getInstance().getAlgorithm();
     }
 
     /**
@@ -426,17 +417,8 @@ public class LocalFile {
      */
     public boolean hasChecksum() {
 
-        Checksum checksum = Checksum.getInstance();
-        String algorithm = checksum.getChecksumType().toString();
-
-        String value = StormEA.getChecksum(localFile.getAbsolutePath(), algorithm);
-
-        if (value == null) {
-            
-            return false;
-        }
-
-        return true;
+        return ChecksumManager.getInstance().hasChecksum(localFile.getAbsolutePath()
+                                                         );
     }
 
     /**
@@ -626,10 +608,8 @@ public class LocalFile {
      */
     public void setChecksum() {
 
-        Checksum checksum = Checksum.getInstance();
-        String fileName = localFile.getPath();
-
-        checksum.computeAndSetChecksum(fileName);
+        ChecksumManager.getInstance().setChecksum(localFile.getAbsolutePath());
+        
     }
 
     /**

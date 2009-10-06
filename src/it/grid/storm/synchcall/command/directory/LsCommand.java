@@ -801,7 +801,7 @@ public class LsCommand extends DirectoryCommand implements Command
                 }
                 
                 TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
-                TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumType());
+                TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumAlgorithm());
                 
                 elementDetail.setCheckSumType(checkSumType);
                 elementDetail.setCheckSumValue(checkSumValue);

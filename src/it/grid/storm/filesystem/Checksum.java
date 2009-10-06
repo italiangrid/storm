@@ -18,6 +18,7 @@ import java.util.zip.CheckedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class Checksum extends Thread {
 
     public enum ChecksumType {
@@ -46,7 +47,7 @@ public class Checksum extends Thread {
 
     private Checksum() {
 
-        String configChecksumType = Configuration.getInstance().getChecksumType().toLowerCase();
+        String configChecksumType = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
 
         for (ChecksumType chkType : ChecksumType.values()) {
 
@@ -57,7 +58,7 @@ public class Checksum extends Thread {
         }
 
         if (checksumType == null) {
-            log.error("Unsupported checksum type (property checksum.type): " + Configuration.getInstance().getChecksumType());
+            log.error("Unsupported checksum type (property checksum.type): " + Configuration.getInstance().getChecksumAlgorithm());
         }
     }
 

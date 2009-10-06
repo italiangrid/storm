@@ -2765,6 +2765,18 @@ public class Configuration {
         }
 
     }
+    
+    public String[] getChecksumServiceURLArray() {
+        String key = "checksum.serviceURL";
+        String[] urlArray;
+        
+        if (cr.getConfiguration().containsKey(key)) {
+            urlArray = cr.getConfiguration().getStringArray(key);
+        } else {
+            urlArray = new String[0];
+        }
+        return urlArray;
+    }
 
 
     public int getChecksumQueueSize() {
@@ -2779,9 +2791,9 @@ public class Configuration {
         return 100;
     }
     
-    public String getChecksumType() {
+    public String getChecksumAlgorithm() {
 
-        String key = "checksum.type";
+        String key = "checksum.algorithm";
 
         if (cr.getConfiguration().containsKey(key)) {
 
