@@ -375,7 +375,8 @@ test.junit.dir
     <include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
     <include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
     <include name="rest-recalltable/jsr311-api-1.1.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
-  	
+
+    <include name="json-20080701.jar"/>  	
   </fileset>
 
   <fileset id="src.jars.build"
