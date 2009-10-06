@@ -3,9 +3,12 @@
  */
 package it.grid.storm.authz.path.model;
 
+import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
+
+import org.slf4j.Logger;
 
 /**
  * @author zappi
@@ -13,16 +16,21 @@ import it.grid.storm.common.types.StFN;
  */
 public class PathACE {
     
+    private final Logger log = AuthzDirector.getLogger();
+    
     public static final String ALL_GROUPS = "*";
     public static final String FIELD_SEP = "\\s"; // * White space character **/
 
     public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT);
-    
+    public static final String COMMENT = "#";
     
     private String localGroupName;
     private StFN storageFileName;
     private PathAccessMask pathAccessMask;
 
+
+    // =========== CONSTRUCTORs ============
+    
     public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask) {
         localGroupName = localGroup;
         storageFileName = stfn;
@@ -36,6 +44,11 @@ public class PathACE {
     }
 
     
+    /**
+     * @param pathACEString
+     * @return
+     * @throws AuthzException
+     */
     public static PathACE buildFromString(String pathACEString) throws AuthzException {
         PathACE result = new PathACE();
         String[] fields = pathACEString.split(FIELD_SEP, -1);
@@ -64,6 +77,7 @@ public class PathACE {
         return result;
     }
     
+    
     public void setLocalGroupName(String localGroup) {
         localGroupName = localGroup;
     }
@@ -88,7 +102,30 @@ public class PathACE {
         return pathAccessMask;
     }
     
+
+    /**
+     * ## BUSINESS Methods
+     */
     
+    public boolean subjectMatch(String subjectGroup) {
+        boolean result = false;
+        if (localGroupName != null) {
+            if (localGroupName.equals(PathACE.ALL_GROUPS)) {
+                result = true;
+                // WARNING. Here we don't check if the subjectGroup is a valid group Name.
+            } else {
+                if (localGroupName.equals(subjectGroup)) {
+                    result = true;
+                    log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 
+     */
     public boolean equals(Object other) {
         boolean result = false;
         if (other instanceof PathACE) {
@@ -101,6 +138,20 @@ public class PathACE {
                 }
             }
         }
+        return result;
+    }
+    
+    public String toString() {
+        String result = "";
+        if (localGroupName == null) {
+            result += "NULL";
+        } else {
+            result += localGroupName;
+        }
+        result += " ";
+        result += storageFileName;
+        result += " ";
+        result += pathAccessMask;
         return result;
     }
     

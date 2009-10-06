@@ -46,17 +46,6 @@ public class PathAccessMask {
         return pathAccessMask;
     }
 
-    public String toString() {
-        String pathPermissionStr = "";
-        for (PathOperation pathOp : PathOperation.values()) {
-            if (pathAccessMask.contains(pathOp)) {
-                pathPermissionStr += pathOp.getSpaceOperationValue();
-            } else {
-                pathPermissionStr += "-";
-            }
-        }
-        return pathPermissionStr;
-    }
     
     public int getSize() {
         return pathAccessMask != null ? pathAccessMask.size() : 0;
@@ -71,6 +60,18 @@ public class PathAccessMask {
             }
         }
         return result;
+    }
+    
+    public String toString() {
+        String pathPermissionStr = "";
+        for (PathOperation pathOp : PathOperation.values()) {
+            if (pathAccessMask.contains(pathOp)) {
+                pathPermissionStr += pathOp.getSpaceOperationValue();
+            } else {
+                pathPermissionStr += "-";
+            }
+        }
+        return pathPermissionStr;
     }
     
 }

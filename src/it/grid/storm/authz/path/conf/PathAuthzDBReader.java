@@ -26,6 +26,8 @@ public class PathAuthzDBReader {
     private String authzDBFilename;
     private PathAuthzDB pathAuthzDB;
     
+    
+    
     public PathAuthzDBReader(String filename) {
         log.info("Path Authorization : Inizializating ...");
         Configuration config = Configuration.getInstance();
@@ -76,7 +78,14 @@ public class PathAuthzDBReader {
      * @throws AuthzException
      */
     private PathACE parseLine(String pathACEString) throws AuthzException {
-        return PathACE.buildFromString(pathACEString);
+        PathACE result = null;
+        if (pathACEString.startsWith(PathACE.COMMENT)) {
+            log.debug("Skipped the comment line: " + pathACEString);
+        } else {
+            result = PathACE.buildFromString(pathACEString);
+        }
+
+        return result;
     }
 
     public void refreshPathAuthzDB() {
