@@ -387,10 +387,8 @@ public class PtPChunk implements Delegable, Chooser {
             LocalUser localUser) {
         // Create missing subdirectories and set trasverse ACL
         // ATTENTION!!! For AoT this turns out to be a PERMANENT ACL!!!
-        PtPChunk.log.debug("PtPChunk: entered TraverseStep for "
-                + fileStoRI.getAbsolutePath());
-        boolean automaticDirectoryCreation = Configuration.getInstance()
-        .getAutomaticDirectoryCreation();
+        PtPChunk.log.debug("PtPChunk: entered TraverseStep for " + fileStoRI.getAbsolutePath());
+        boolean automaticDirectoryCreation = Configuration.getInstance().getAutomaticDirectoryCreation();
         StoRI parentStoRI = null; // StoRI representing a parent directory
         LocalFile parentFile = null; // File representing a parent diretory
         boolean exists = false; // boolean that is true if parentFile exists
@@ -398,25 +396,20 @@ public class PtPChunk implements Delegable, Chooser {
         boolean anomaly = false; // boolean _true_ if the parent just treated,
         // exists and is not a directory
         List parentList = fileStoRI.getParents();
-        PtPChunk.log
-        .debug("PtPChunk TraverseStep - established the following parents: "
-                + parentList.toString());
+        log.debug("PtPChunk TraverseStep - established the following parents: " + parentList.toString());
         Iterator i = parentList.iterator();
         while ((!anomaly) && i.hasNext()) {
             parentStoRI = (StoRI) i.next();
             parentFile = parentStoRI.getLocalFile();
             exists = parentFile.exists();
             dir = parentFile.isDirectory();
-            anomaly = (exists && !dir); // true if parent exists and is not a
-            // directory!
-            PtPChunk.log.debug("PtPChunk TraverseStep - processing parent "
-                    + parentFile.toString());
+            anomaly = (exists && !dir); // true if parent exists and is not a directory!
+            log.debug("PtPChunk TraverseStep - processing parent " + parentFile.toString());
             if (anomaly) {
                 // error situation!
                 // The current parent is a file and not a directory! The request
                 // should fail!
-                chunkData
-                .changeStatusSRM_INVALID_PATH("Invalid path; requested SURL is: "
+                chunkData.changeStatusSRM_INVALID_PATH("Invalid path; requested SURL is: "
                         + fileStoRI.getSURL().toString()
                         + ", but its parent "
                         + parentStoRI.getSURL().toString()
@@ -434,42 +427,30 @@ public class PtPChunk implements Delegable, Chooser {
             } else {
                 // process parent
                 try {
-                    anomaly = prepareDirectory(parentFile,
-                            automaticDirectoryCreation,
-                            exists);
+                    anomaly = prepareDirectory(parentFile, automaticDirectoryCreation, exists);
                     if (!anomaly) {
                         // directory successfully created or already present!
                         FilesystemPermission fp = null;
                         boolean allowsTraverse = false;
                         if (fileStoRI.hasJustInTimeACLs()) {
                             // JiT
-                            parentFile
-                            .grantUserPermission(
-                                    localUser,
-                                    FilesystemPermission.Traverse);
-                            fp = parentFile
-                            .getEffectiveUserPermission(localUser);
+                            parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+                            fp = parentFile.getEffectiveUserPermission(localUser);
                             if (fp != null) {
-                                allowsTraverse = fp
-                                .allows(FilesystemPermission.Traverse);
+                                allowsTraverse = fp.allows(FilesystemPermission.Traverse);
                                 if (allowsTraverse) {
-                                    VolatileAndJiTCatalog
-                                    .getInstance()
-                                    .trackJiT(
-                                            parentStoRI.getPFN(),
-                                            localUser,
-                                            FilesystemPermission.Traverse,
-                                            start,
-                                            chunkData.pinLifetime());
+                                    VolatileAndJiTCatalog.getInstance()
+                                                         .trackJiT(parentStoRI.getPFN(),
+                                                                   localUser,
+                                                                   FilesystemPermission.Traverse,
+                                                                   start,
+                                                                   chunkData.pinLifetime());
                                 } else {
-                                    PtPChunk.log
-                                    .error("ATTENTION in PtPChunk! The local filesystem has a mask that does not allow Traverse User-ACL to be set up on"
-                                            + parentFile.toString()
-                                            + "!");
+                                    log.error("ATTENTION in PtPChunk! The local filesystem has a mask that does not allow Traverse User-ACL to be set up on"
+                                            + parentFile.toString() + "!");
                                 }
                             } else {
-                                PtPChunk.log
-                                .error("ERROR in PTPChunk! A Traverse User-ACL was set on "
+                                log.error("ERROR in PTPChunk! A Traverse User-ACL was set on "
                                         + fileStoRI.getAbsolutePath()
                                         + " for user "
                                         + localUser.toString()
@@ -477,24 +458,16 @@ public class PtPChunk implements Delegable, Chooser {
                             }
                         } else {
                             // AoT
-                            parentFile
-                            .grantGroupPermission(
-                                    localUser,
-                                    FilesystemPermission.Traverse);
-                            fp = parentFile
-                            .getEffectiveGroupPermission(localUser);
+                            parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+                            fp = parentFile.getEffectiveGroupPermission(localUser);
                             if (fp != null) {
-                                allowsTraverse = fp
-                                .allows(FilesystemPermission.Traverse);
+                                allowsTraverse = fp.allows(FilesystemPermission.Traverse);
                                 if (!allowsTraverse) {
-                                    PtPChunk.log
-                                    .error("ATTENTION in PtPChunk! The local filesystem has a mask that does not allow Traverse Group-ACL to be set up on"
-                                            + parentFile.toString()
-                                            + "!");
+                                    PtPChunk.log.error("ATTENTION in PtPChunk! The local filesystem has a mask that does not allow Traverse Group-ACL to be set up on"
+                                            + parentFile.toString() + "!");
                                 }
                             } else {
-                                PtPChunk.log
-                                .error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
+                                log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
                                         + fileStoRI.getAbsolutePath()
                                         + " for user "
                                         + localUser.toString()
@@ -520,13 +493,7 @@ public class PtPChunk implements Delegable, Chooser {
                             anomaly = true;
                         } else {
                             // anomaly is already false: no need to restate it!
-                        }
-                        
-                      
-                        
-                        
-                        
-                        
+                        }                     
                     }
                 } catch (SecurityException e) {
                     // parentFile.mkdir() could not create directory because the
@@ -596,27 +563,22 @@ public class PtPChunk implements Delegable, Chooser {
                 }
             }
         }
-        PtPChunk.log.debug("PtPChunk: finished TraverseStep for "
-                + fileStoRI.getAbsolutePath());
+        PtPChunk.log.debug("PtPChunk: finished TraverseStep for " + fileStoRI.getAbsolutePath());
         return !anomaly;
     }
 
     /**
-     * Private method that handles directory creation: it considers whether it
-     * already exists, and if automatic creation is enabled or not. BEWARE! It
-     * returns a boolean true if any _anomaly_ occurs!
+     * Private method that handles directory creation: it considers whether it already exists, and if automatic creation
+     * is enabled or not. BEWARE! It returns a boolean true if any _anomaly_ occurs!
      */
-    private boolean prepareDirectory(LocalFile f, boolean canCreate,
-            boolean exists) throws SecurityException {
+    private boolean prepareDirectory(LocalFile f, boolean canCreate, boolean exists) throws SecurityException {
         boolean anomaly = false;
         if ((!exists) && (!canCreate)) {
             // The directory does not exist, but automatic creation is disabled!
             // Fail chunk with SRM_INVALID_PATH!!!
-            chunkData
-            .changeStatusSRM_INVALID_PATH("Directory structure as specified in SURL does not exist!");
+            chunkData.changeStatusSRM_INVALID_PATH("Directory structure as specified in SURL does not exist!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtPChunk.log
-            .debug("ATTENTION in PtPChunk! Directory structure as specified in "
+            log.debug("ATTENTION in PtPChunk! Directory structure as specified in "
                     + f
                     + " does not exist, and automatic directory ceration is disbaled! Failing this chunk of request!"); // info
             anomaly = true;
@@ -625,11 +587,9 @@ public class PtPChunk implements Delegable, Chooser {
             anomaly = !(f.mkdirs()); // create directory!
             if (anomaly) {
                 // Directory creation failed for some reason!!!
-                chunkData
-                .changeStatusSRM_FAILURE("Local filesystem error: could not crete directory!");
+                chunkData.changeStatusSRM_FAILURE("Local filesystem error: could not crete directory!");
                 failure = true; // gsm.failedChunk(chunkData);
-                PtPChunk.log
-                .error("ERROR in PtPChunk! Filesystem was unable to successfully create directory: "
+                log.error("ERROR in PtPChunk! Filesystem was unable to successfully create directory: "
                         + f.toString());
                 // anomaly is already true! No need to re-state it!
             }
