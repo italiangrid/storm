@@ -796,6 +796,7 @@ public class LsCommand extends DirectoryCommand implements Command
                     getChecksum = false;
                 } else {
                     getChecksum = true;
+                    doNotComputeMoreChecksums = true;
                 }
             }
             
