@@ -72,6 +72,7 @@ public class ChecksumManager {
     private synchronized static String getTargetURL() {
 
         ChecksumClient client = ChecksumClientFactory.getChecksumClient();
+        boolean isAlive = false;
         int index = currentURLIndex;
         String url;
 
@@ -88,10 +89,12 @@ public class ChecksumManager {
             } catch (MalformedURLException e) {
                 log.error("BUG, this exception should had never be thrown.", e);
             }
+            
+            isAlive = client.ping();
 
-        } while ((index != currentURLIndex) && (client.ping() == false));
+        } while ((index != currentURLIndex) && !isAlive);
 
-        if (index == currentURLIndex) {
+        if ((index == currentURLIndex) && !isAlive) {
             return null;
         }
 
