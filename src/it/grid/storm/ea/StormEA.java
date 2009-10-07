@@ -236,4 +236,26 @@ public class StormEA {
             log.warn("Cannot set pre-migrate EA to file: " + fileName);
         }
     }
+
+    /**
+     * @param absoluteFileName
+     * @return boolean: true if the file is pinned, false else.
+     */
+    public static boolean isPinned(String absoluteFileName) {
+        boolean result = false;
+        try {
+            ea.getXAttr(absoluteFileName, EA_PINNED);
+            result = true;
+        } catch (FileNotFoundException e) {
+            log.warn("Cannot check pinned EA because file does not exists: " + absoluteFileName);
+        } catch (NotSupportedException e) {
+            log.warn("Cannot check pinned EA (operation not supported) to file: " + absoluteFileName);
+        } catch (AttributeNotFoundException e) {
+            log.debug("Pinned EA is not attached to file: " + absoluteFileName);
+            result = false;
+        } catch (ExtendedAttributesException e) {
+            log.warn("Cannot check pinned EA (" + e.getMessage() + ")to file: '" + absoluteFileName);
+        }
+        return result;
+    }
 }
