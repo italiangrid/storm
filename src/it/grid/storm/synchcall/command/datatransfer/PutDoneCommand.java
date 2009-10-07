@@ -320,7 +320,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
                 // 3- compute the checksum and store it in an extended attribute
                 LocalFile localFile = stori.getLocalFile();
-                localFile.setChecksum();
+                boolean checksumComputed = localFile.setChecksum();
+                
+                if (!checksumComputed) {
+                    arrayOfFileStatus.getTSURLReturnStatus(i)
+                                     .getStatus()
+                                     .setExplanation("Failed to computed checksum");
+                }
 
                 // 4- Tape stuff management.
                 if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {

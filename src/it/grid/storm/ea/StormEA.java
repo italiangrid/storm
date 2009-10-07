@@ -107,6 +107,28 @@ public class StormEA {
         return -1;
     }
 
+    public static void removeChecksum(String fileName) {
+        try {
+
+            ea.rmXAttr(fileName, EA_CHECKSUM);
+
+        } catch (FileNotFoundException e) {
+
+            log.warn("Cannot remove pinned EA because file does not exists: " + fileName);
+
+        } catch (AttributeNotFoundException e) {
+
+            // nothing to do
+
+        } catch (NotSupportedException e) {
+
+            log.warn("Cannot remove pinned EA (operation not supported) to file: " + fileName);
+
+        } catch (ExtendedAttributesException e) {
+            log.warn("Cannot remove pinned EA to file: " + fileName);
+        }
+    }
+
     public static void removePinned(String fileName) {
         try {
 

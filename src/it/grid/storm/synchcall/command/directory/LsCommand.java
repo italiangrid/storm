@@ -81,6 +81,9 @@ public class LsCommand extends DirectoryCommand implements Command
     private int                maxEntries = -1;
     private final NamespaceInterface namespace;
     private final LinkedList         buffer;
+    
+    /** In case of ls on more than one file only one checksum computation is admitted */
+    private boolean doNotComputeMoreChecksums = false;
 
     public LsCommand() {
         maxEntries = DirectoryCommand.config.get_LS_MaxNumberOfEntry();
@@ -787,7 +790,11 @@ public class LsCommand extends DirectoryCommand implements Command
             if (localElement.hasChecksum()) {
                 getChecksum = true;
             } else if (isFileOnDisk) {
-                if (Configuration.getInstance().getChecksumEnabled()) {
+                
+                // Only one checksum computation is admitted
+                if (doNotComputeMoreChecksums) {
+                    getChecksum = false;
+                } else {
                     getChecksum = true;
                 }
             }
@@ -795,10 +802,6 @@ public class LsCommand extends DirectoryCommand implements Command
             if (getChecksum) {
                 
                 String checksum = localElement.getChecksum();
-                
-                if (checksum == null) {
-                    checksum = "Error computing checksum";
-                }
                 
                 TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
                 TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumAlgorithm());

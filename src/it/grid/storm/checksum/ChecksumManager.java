@@ -123,21 +123,21 @@ public class ChecksumManager {
 
         log.debug("Requesting checksum for file: " + fileName);
         
-        String value = StormEA.getChecksum(fileName, algorithm);
+        String checksum = StormEA.getChecksum(fileName, algorithm);
 
-        if (value == null) {
+        if (checksum == null) {
 
-            value = retrieveChecksumFromExternalService(fileName);
+            checksum = retrieveChecksumFromExternalService(fileName);
             
-            if (value == null) {
+            if (checksum == null) {
                 return null;
             }
 
-            StormEA.setChecksum(fileName, value, algorithm);
+            StormEA.setChecksum(fileName, checksum, algorithm);
 
         }
 
-        return value;
+        return checksum;
     }
 
     /**
@@ -159,28 +159,36 @@ public class ChecksumManager {
     }
 
     /**
-     * Computes the checksum of the given file and stores it to an extended attribute.
+     * Computes the checksum of the given file and stores it in to an extended attribute.
      * 
      * @param fileName fileName file absolute path.
      */
-    public void setChecksum(String fileName) {
+    public boolean setChecksum(String fileName) {
 
-        getChecksum(fileName);
-
+        String checksum = retrieveChecksumFromExternalService(fileName);
+        
+        if (checksum == null) {
+            StormEA.removeChecksum(fileName);
+            return false;
+        }
+        
+        StormEA.setChecksum(fileName, checksum, algorithm);
+        
+        return true;
     }
 
     private String retrieveChecksumFromExternalService(String fileName) {
 
         if (urlList.isEmpty()) {
             
-            log.debug("No external checksum servers found, no checksum returned for file: " + fileName);
+            log.warn("No external checksum servers found, no checksum returned for file: " + fileName);
             return null;
         }
         
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
-            log.error("Checksum computation (" + fileName
+            log.warn("Checksum computation (" + fileName
                     + ") request failed: none of the servers has responded");
             return null;
         }
@@ -204,7 +212,7 @@ public class ChecksumManager {
             log.error(e.getMessage());
             return null;
         } catch (IOException e) {
-            log.error("Error contacting server: " + targetURL.toString(), e);
+            log.error("Error contacting server: " + targetURL.toString());
             return null;
         }
     }

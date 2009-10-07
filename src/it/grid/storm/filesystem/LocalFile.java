@@ -606,9 +606,9 @@ public class LocalFile {
      * Stores the checksum of the represented file in an Extended Attribute. The checksum is
      * computed by a separate thread and set when it will have been available.
      */
-    public void setChecksum() {
+    public boolean setChecksum() {
 
-        ChecksumManager.getInstance().setChecksum(localFile.getAbsolutePath());
+        return ChecksumManager.getInstance().setChecksum(localFile.getAbsolutePath());
         
     }
 

@@ -2744,26 +2744,6 @@ public class Configuration {
         }
     }
 
-
-    /**
-     * This is the FLAG to support or not the checksum in the srmLS sull
-     * detailed list. Since the checksum is calculated run time each time and LS
-     * request in full detailed is done, it could be quite expensive for large
-     * file. Since FTS can use both srmls and gridftp based checksum, the
-     * support has been made optional. Default is false.
-     */
-    public boolean getChecksumEnabled() {
-        String key = "checksum.enabled";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return false;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getBoolean(key);
-        }
-
-    }
-    
     public String[] getChecksumServiceURLArray() {
         String key = "checksum.serviceURL";
         String[] urlArray;
