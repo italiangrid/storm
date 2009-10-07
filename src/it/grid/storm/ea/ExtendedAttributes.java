@@ -11,7 +11,7 @@ public interface ExtendedAttributes {
      * 
      * @throws FileNotFoundException the given file does not exists.
      * @throws AttributeNotFoundException if <code>attributeName</code> does not exists.
-     * @throws NotSupporterdException if extended attributes are not supported by the filesystem.
+     * @throws NotSupportedException if extended attributes are not supported by the filesystem.
      * @throws ExtendedAttributesException if an unrecognized error occurred (exception message is set).
      */
     byte[] getXAttr(String fileName, String attributeName) throws ExtendedAttributesException;
@@ -25,7 +25,7 @@ public interface ExtendedAttributes {
      * @param attributeValue value of the attribute.
      * 
      * @throws FileNotFoundException the given file does not exists.
-     * @throws NotSupporterdException  if extended attributes are not supported by the filesystem.
+     * @throws NotSupportedException  if extended attributes are not supported by the filesystem.
      * @throws ExtendedAttributesException if an unrecognized error occurred (exception message is set).
      */
     public void setXAttr(String filename, String attributeName, byte[] attributeValue)
@@ -40,7 +40,7 @@ public interface ExtendedAttributes {
      * 
      * @throws FileNotFoundException the given file does not exists.
      * @throws AttributeNotFoundException if <code>attributeName</code> does not exists.
-     * @throws NotSupporterdException  if extended attributes are not supported by the filesystem.
+     * @throws NotSupportedException  if extended attributes are not supported by the filesystem.
      * @throws ExtendedAttributesException if an unrecognized error occurred (exception message is set).
      */
     public void rmXAttr(String filename, String attributeName) throws ExtendedAttributesException;

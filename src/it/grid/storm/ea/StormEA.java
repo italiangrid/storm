@@ -36,7 +36,7 @@ public class StormEA {
             log.warn("Cannot retrieve checksum EA because file does not exists: " + fileName);
             return null;
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot retrieve checksum EA (operation not supported) from file: " + fileName);
             return null;
@@ -65,7 +65,7 @@ public class StormEA {
             log.warn("Cannot retrieve checksum EA because file does not exists: " + fileName);
             return false;
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot retrieve checksum EA (operation not supported) from file: " + fileName);
             return false;
@@ -83,30 +83,27 @@ public class StormEA {
 
         try {
             byte[] byteArray = ea.getXAttr(fileName, EA_PINNED);
-            
+
             if (byteArray == null) {
                 return -1;
             }
-            
+
             String longString = new String(byteArray);
-            
+
             return Long.decode(longString);
-            
+
         } catch (FileNotFoundException e) {
-
-            log.warn("Cannot set pinned EA because file does not exists: " + fileName);
-
-        } catch (NotSupporterdException e) {
-
-            log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
-
-        } catch (ExtendedAttributesException e) {
-            log.warn("Cannot set pinned EA to file: " + fileName);
-            
+            log.warn("Cannot retrieve pinned EA because file does not exists: " + fileName);
+        } catch (NotSupportedException e) {
+            log.warn("Cannot retrieve pinned EA (operation not supported) to file: " + fileName);
+        } catch (AttributeNotFoundException e) {
+            log.debug("Cannot retrieve pinned (file is not pinned) EA to file: '" + fileName);
         } catch (NumberFormatException e) {
             log.warn("Value of pinned EA is not a number, assuming -1. File: " + fileName);
+        } catch (ExtendedAttributesException e) {
+            log.warn("Cannot retrieve pinned EA (" + e.getMessage() + ")to file: '" + fileName);
         }
-        
+
         return -1;
     }
 
@@ -123,7 +120,7 @@ public class StormEA {
 
             // nothing to do
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot remove pinned EA (operation not supported) to file: " + fileName);
 
@@ -146,7 +143,7 @@ public class StormEA {
 
             log.warn("Cannot set checksum EA because file does not exists: " + fileName);
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot set checksum EA (operation not supported) to file: " + fileName);
 
@@ -165,7 +162,7 @@ public class StormEA {
 
             log.warn("Cannot set pinned EA because file does not exists: " + fileName);
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
 
@@ -173,17 +170,17 @@ public class StormEA {
             log.warn("Cannot set pinned EA to file: " + fileName);
         }
     }
-    
+
     public static void setPinned(String fileName, long expirationDateInMills) {
 
         long existingPinValue = getPinned(fileName);
-        
+
         if (existingPinValue >= expirationDateInMills) {
             return;
         }
-        
+
         String longString = String.valueOf(expirationDateInMills);
-        
+
         try {
             ea.setXAttr(fileName, EA_PINNED, longString.getBytes());
 
@@ -191,7 +188,7 @@ public class StormEA {
 
             log.warn("Cannot set pinned EA because file does not exists: " + fileName);
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
 
@@ -209,7 +206,7 @@ public class StormEA {
 
             log.warn("Cannot set pre-migrate EA because file does not exists: " + fileName);
 
-        } catch (NotSupporterdException e) {
+        } catch (NotSupportedException e) {
 
             log.warn("Cannot set pre-migrate EA (operation not supported) to file: " + fileName);
 
