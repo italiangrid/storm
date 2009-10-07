@@ -23,7 +23,6 @@ import com.sun.jersey.api.core.PackagesResourceConfig;
 
 /**
  * @author zappi
- *
  */
 public class RecallTableService {
 
@@ -32,43 +31,39 @@ public class RecallTableService {
     private static SelectorThread httpThreadSelector;
     public static final URI BASE_URI = RecallTableService.getBaseURI();
 
-    
     private static int getPort() {
         int recallTableServicePort = config.getRecallTableServicePort();
         log.debug("TableRecall Service Port =  " + recallTableServicePort);
         return recallTableServicePort;
     }
 
-    
     private static URI getBaseURI() {
         return UriBuilder.fromUri("http://localhost/").port(RecallTableService.getPort()).build();
     }
 
-    
-    
     protected static SelectorThread startServer() throws IOException {
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put(PackagesResourceConfig.PROPERTY_PACKAGES, "it.grid.storm.tape.recalltable.resources");
 
-        System.out.println("Starting grizzly...");
+        System.out.print("Starting RecallTable Servive ... ");
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(BASE_URI, initParams);
+        System.out.println(" ... started!");
         return threadSelector;
     }
 
-    
     public static void startWithAdapter() throws IOException {
         GrizzlyWebServer ws = new GrizzlyWebServer(RecallTableService.getPort());
         ServletAdapter jerseyAdapter = new ServletAdapter();
         jerseyAdapter.setServletInstance(new com.sun.jersey.spi.container.servlet.ServletContainer());
 
         jerseyAdapter.addInitParameter(PackagesResourceConfig.PROPERTY_PACKAGES,
-                "it.grid.storm.tape.recalltable.resources");
+                                       "it.grid.storm.tape.recalltable.resources");
         System.out.println("Property packages : " + PackagesResourceConfig.PROPERTY_PACKAGES);
         ws.addGrizzlyAdapter(jerseyAdapter, new String[] { "/" });
         ws.getSelectorThread().enableMonitoring();
         ws.start();
-    } 
-    
+    }
+
     public static void start() throws IOException {
 
         httpThreadSelector = startServer();
@@ -78,5 +73,5 @@ public class RecallTableService {
     public static void stop() throws IOException {
         httpThreadSelector.stopEndpoint();
     }
-    
+
 }
