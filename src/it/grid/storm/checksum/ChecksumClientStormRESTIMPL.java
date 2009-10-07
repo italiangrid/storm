@@ -37,8 +37,9 @@ public class ChecksumClientStormRESTIMPL implements ChecksumClient {
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
-
+        connection.setReadTimeout(0);
         connection.setDoOutput(true);
+        
         OutputStream output = connection.getOutputStream();
         output.write(body.getBytes());
 
@@ -160,5 +161,4 @@ public class ChecksumClientStormRESTIMPL implements ChecksumClient {
 
         return responseBody.toString();
     }
-
 }

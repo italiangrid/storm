@@ -33,17 +33,17 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot retrieve checksum EA because file does not exists: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA because file does not exists: " + fileName);
             return null;
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot retrieve checksum EA (operation not supported) from file: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA (operation not supported) from file: " + fileName);
             return null;
 
         } catch (ExtendedAttributesException e) {
 
-            log.error("Cannot retrieve checksum EA from file: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA from file: " + fileName);
             return null;
         }
 
@@ -62,17 +62,17 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot retrieve checksum EA because file does not exists: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA because file does not exists: " + fileName);
             return false;
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot retrieve checksum EA (operation not supported) from file: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA (operation not supported) from file: " + fileName);
             return false;
 
         } catch (ExtendedAttributesException e) {
 
-            log.error("Cannot retrieve checksum EA from file: " + fileName, e);
+            log.warn("Cannot retrieve checksum EA from file: " + fileName);
             return false;
         }
 
@@ -94,17 +94,17 @@ public class StormEA {
             
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot set pinned EA because file does not exists: " + fileName, e);
+            log.warn("Cannot set pinned EA because file does not exists: " + fileName);
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot set pinned EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot set pinned EA to file: " + fileName, e);
+            log.warn("Cannot set pinned EA to file: " + fileName);
             
         } catch (NumberFormatException e) {
-            log.error("Value of pinned EA is not a number, assuming -1. File: " + fileName, e);
+            log.warn("Value of pinned EA is not a number, assuming -1. File: " + fileName);
         }
         
         return -1;
@@ -117,7 +117,7 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot remove pinned EA because file does not exists: " + fileName, e);
+            log.warn("Cannot remove pinned EA because file does not exists: " + fileName);
 
         } catch (AttributeNotFoundException e) {
 
@@ -125,10 +125,10 @@ public class StormEA {
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot remove pinned EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot remove pinned EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot remove pinned EA to file: " + fileName, e);
+            log.warn("Cannot remove pinned EA to file: " + fileName);
         }
     }
 
@@ -144,14 +144,14 @@ public class StormEA {
             ea.setXAttr(fileName, chkEA, checksum.getBytes());
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot set checksum EA because file does not exists: " + fileName, e);
+            log.warn("Cannot set checksum EA because file does not exists: " + fileName);
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot set checksum EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot set checksum EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot set checksum EA to file: " + fileName, e);
+            log.warn("Cannot set checksum EA to file: " + fileName);
         }
     }
 
@@ -163,14 +163,14 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot set pinned EA because file does not exists: " + fileName, e);
+            log.warn("Cannot set pinned EA because file does not exists: " + fileName);
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot set pinned EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot set pinned EA to file: " + fileName, e);
+            log.warn("Cannot set pinned EA to file: " + fileName);
         }
     }
     
@@ -189,14 +189,14 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot set pinned EA because file does not exists: " + fileName, e);
+            log.warn("Cannot set pinned EA because file does not exists: " + fileName);
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot set pinned EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot set pinned EA to file: " + fileName, e);
+            log.warn("Cannot set pinned EA to file: " + fileName);
         }
     }
 
@@ -207,14 +207,14 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.error("Cannot set pre-migrate EA because file does not exists: " + fileName, e);
+            log.warn("Cannot set pre-migrate EA because file does not exists: " + fileName);
 
         } catch (NotSupporterdException e) {
 
-            log.error("Cannot set pre-migrate EA (operation not supported) to file: " + fileName, e);
+            log.warn("Cannot set pre-migrate EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.error("Cannot set pre-migrate EA to file: " + fileName, e);
+            log.warn("Cannot set pre-migrate EA to file: " + fileName);
         }
     }
 }
