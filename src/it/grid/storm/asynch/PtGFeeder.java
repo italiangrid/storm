@@ -236,7 +236,7 @@ public final class PtGFeeder implements Delegable {
                     childData = new PtGChunkData(
                             auxChunkData.requestToken(),
                             childStoRI.getSURL(),
-                            auxChunkData.lifeTime(),
+                            auxChunkData.getPinLifeTime(),
                             notDir,
                             auxChunkData.desiredProtocols(),
                             auxChunkData.fileSize(),

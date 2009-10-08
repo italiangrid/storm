@@ -165,7 +165,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
             task.setRequestType(RecallTaskTO.PTG_REQUEST);
             task.setRequestToken(ptgChunk.requestToken().getValue());
-            task.setPinLifetime((int) ptgChunk.lifeTime().value());
+            task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
             task.setDeferredRecallInstant(currentDate);
 
         } else if (chunkData instanceof BoLChunkData) {

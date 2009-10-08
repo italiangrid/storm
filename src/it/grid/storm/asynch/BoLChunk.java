@@ -271,6 +271,11 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
                 if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 
+                    // set group permission for tape quota management
+                    fileStoRI.setGroupTapeRead();
+                    //
+                    // set the EA pinned with the right value
+                    //
                     // Compute the Expiration Time
                     TLifeTimeInSeconds lifeTime = chunkData.getLifeTime();
                     long expDate = System.currentTimeMillis() + lifeTime.value() * 1000;

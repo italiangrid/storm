@@ -361,7 +361,7 @@ public class PtGChunkCatalog {
         to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
         to.setErrString(cd.status().getExplanation());
         to.setTurl(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
-        to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.lifeTime().value()));
+        to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
         dao.update(to);
     }
 
@@ -418,7 +418,7 @@ public class PtGChunkCatalog {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());
-        to.setLifeTime(new Long(chunkData.lifeTime().value()).intValue() );
+        to.setLifeTime(new Long(chunkData.getPinLifeTime().value()).intValue() );
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
         to.setNumLevel(chunkData.dirOption().getNumLevel());
