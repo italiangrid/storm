@@ -20,27 +20,34 @@ public class PathACE {
     
     public static final String ALL_GROUPS = "*";
     public static final String FIELD_SEP = "\\s"; // * White space character **/
+    private static final boolean PERMIT_ACE = true;
 
-    public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT);
+    public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS,
+                                                         StFN.makeEmpty(),
+                                                         PathAccessMask.DEFAULT,
+                                                         PERMIT_ACE);
     public static final String COMMENT = "#";
     
     private String localGroupName;
     private StFN storageFileName;
     private PathAccessMask pathAccessMask;
+    private boolean isPermitACE;
 
 
     // =========== CONSTRUCTORs ============
     
-    public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask) {
+    public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask, boolean permitACE) {
         localGroupName = localGroup;
         storageFileName = stfn;
         pathAccessMask = accessMask;
+        isPermitACE = permitACE;
     }
 
     public PathACE() {
         localGroupName = null;
         storageFileName = StFN.makeEmpty();
         pathAccessMask = PathAccessMask.DEFAULT;
+        isPermitACE = PERMIT_ACE;
     }
 
     
@@ -52,7 +59,7 @@ public class PathACE {
     public static PathACE buildFromString(String pathACEString) throws AuthzException {
         PathACE result = new PathACE();
         String[] fields = pathACEString.split(FIELD_SEP, -1);
-        if (fields.length != 3) {
+        if (fields.length < 4) {
             throw new AuthzException("Error while parsing the Path ACE '" + pathACEString + "'");
         } else {
             // Setting the Local Group Name
@@ -73,6 +80,14 @@ public class PathACE {
                 pAccessMask.addPathOperation(pathOper);
             }
             result.setPathAccessMask(pAccessMask);
+            
+            // Check if the ACE is DENY or PERMIT
+            if (fields[3].toLowerCase().equals("permit")) {
+                result.setIsPermitType(true);
+            } else {
+                result.setIsPermitType(false);
+            }
+            
         }
         return result;
     }
@@ -90,6 +105,10 @@ public class PathACE {
         pathAccessMask = accessMask;
     }
 
+    public void setIsPermitType(boolean value) {
+        isPermitACE = value;
+    }
+    
     public String getLocalGroupName() {
         return localGroupName;
     }
@@ -102,6 +121,9 @@ public class PathACE {
         return pathAccessMask;
     }
     
+    public boolean isPermitAce() {
+        return isPermitACE;
+    }
 
     /**
      * ## BUSINESS Methods

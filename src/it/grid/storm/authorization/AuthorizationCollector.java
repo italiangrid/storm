@@ -11,14 +11,10 @@
 package it.grid.storm.authorization;
 
 
-import it.grid.storm.authorization.AuthorizationDecision;
-import it.grid.storm.authorization.AuthorizationQueryInterface;
-import it.grid.storm.authorization.DecisionCombiningAlgorithm;
 import it.grid.storm.authorization.sources.CompositeAuthorizationSource;
 import it.grid.storm.config.Configuration;
-//import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.namespace.StoRI;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.StoRI;
 
 
 /**
@@ -53,8 +49,7 @@ public class AuthorizationCollector
 	implements AuthorizationQueryInterface {
 
 	/** The only instance of this class. */
-	private static final AuthorizationCollector instance
-		= new AuthorizationCollector();
+	private static final AuthorizationCollector instance = new AuthorizationCollector();
 
 
 	/** The root node of the authorization sources tree. */

@@ -5,6 +5,7 @@ package it.grid.storm.authz.path;
 
 import it.grid.storm.authz.PathAuthzInterface;
 import it.grid.storm.authz.path.conf.PathAuthzDB;
+import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
@@ -16,12 +17,11 @@ import it.grid.storm.namespace.StoRI;
 public class PathAuthz implements PathAuthzInterface {
 
     private PathAuthzDB pathAuthzDB = PathAuthzDB.makeEmpty();
+    private PathAuthzEvaluationAlgorithm aclAlgorithm = null;
 
-    public PathAuthz() {
-    }
-
-    public PathAuthz(PathAuthzDB pathAuthzDB) {
+    public PathAuthz(PathAuthzDB pathAuthzDB, PathAuthzEvaluationAlgorithm algorithm) {
         this.pathAuthzDB = pathAuthzDB;
+        aclAlgorithm = algorithm;
     }
     
     
