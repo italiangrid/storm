@@ -21,12 +21,17 @@ public class PathACE {
     public static final String ALL_GROUPS = "*";
     public static final String FIELD_SEP = "\\s"; // * White space character **/
     private static final boolean PERMIT_ACE = true;
-
+    public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
+    
+    
     public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS,
                                                          StFN.makeEmpty(),
                                                          PathAccessMask.DEFAULT,
                                                          PERMIT_ACE);
     public static final String COMMENT = "#";
+
+    
+    
     
     private String localGroupName;
     private StFN storageFileName;
@@ -82,12 +87,12 @@ public class PathACE {
             result.setPathAccessMask(pAccessMask);
             
             // Check if the ACE is DENY or PERMIT
-            if (fields[3].toLowerCase().equals("permit")) {
-                result.setIsPermitType(true);
-            } else {
+            if (fields[3].toLowerCase().equals("deny")) {
+                // ** IMP ** : permit is the default
                 result.setIsPermitType(false);
+            } else {
+                result.setIsPermitType(true);
             }
-            
         }
         return result;
     }

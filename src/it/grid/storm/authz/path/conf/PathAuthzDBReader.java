@@ -60,10 +60,16 @@ public class PathAuthzDBReader {
                 PathACE ace = PathACE.PERMIT_ALL;
                 try {
                     ace = parseLine(str);
+                    if (ace != null) {
+                        result.addPathACE(ace);
+                    } else {
+                        // Found a comment line or algorithm definition.
+                        // Do nothing
+                    }
+                    
                 } catch (AuthzException e) {
-
+                    log.debug("No ACE line found");
                 }
-                result.addPathACE(ace);
             }
             in.close();
         } catch (IOException e) {
@@ -80,9 +86,19 @@ public class PathAuthzDBReader {
     private PathACE parseLine(String pathACEString) throws AuthzException {
         PathACE result = null;
         if (pathACEString.startsWith(PathACE.COMMENT)) {
+            // COMMENT LINE
             log.debug("Skipped the comment line: " + pathACEString);
         } else {
-            result = PathACE.buildFromString(pathACEString);
+            if (pathACEString.startsWith(PathACE.ALGORITHM)) {
+                // EVALUATION ALGORITHM
+                // Skip the line (return null)
+
+            } else {
+                // SUPPOSE ACE Line
+                result = PathACE.buildFromString(pathACEString);
+            }
+            
+            
         }
 
         return result;

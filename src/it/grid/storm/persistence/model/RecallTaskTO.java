@@ -22,6 +22,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     public static final String dateFormat = "dd-MM-yyyy HH.mm.ss";
 
 
+    
     private int taskId = -1;
     private String requestToken = null;
     private String requestType = null;
@@ -155,6 +156,72 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         this.voName = voName;
     }
 
+    
+    
+    public String toString(boolean[] verbosity) {
+        StringBuffer sb = new StringBuffer();
+        Format formatter = new SimpleDateFormat(dateFormat);
+        sb.append(startChar);
+        if ((verbosity != null) && (verbosity.length == 11)) {
+            if (verbosity[0]) {
+                sb.append(taskId);
+                sb.append(sepChar);
+            }
+            if (verbosity[1]) {
+
+                if (insertionInstant != null) {
+                    sb.append(formatter.format(insertionInstant));
+                } else {
+                    Calendar xmas = new GregorianCalendar(2008, Calendar.DECEMBER, 25);
+                    insertionInstant = xmas.getTime();
+                    sb.append(formatter.format(insertionInstant));
+                }
+                sb.append(sepChar);
+            }
+            if (verbosity[2]) {
+                sb.append(requestType);
+                sb.append(sepChar);
+            }
+            if (verbosity[3]) {
+                sb.append(fileName);
+                sb.append(sepChar);
+            }
+            if (verbosity[4]) {
+                sb.append(voName);
+                sb.append(sepChar);
+            }
+            if (verbosity[5]) {
+                sb.append(userID);
+                sb.append(sepChar);
+            }
+            if (verbosity[6]) {
+                sb.append(retryAttempt);
+                sb.append(sepChar);
+            }
+            if (verbosity[7]) {
+                sb.append(status);
+                sb.append(sepChar);
+            }
+            if (verbosity[8]) {
+                if (deferredRecallInstant != null) {
+                    sb.append(formatter.format(deferredRecallInstant));
+                } else {
+                    sb.append(formatter.format(insertionInstant));
+                }
+                sb.append(sepChar);
+            }
+            if (verbosity[9]) {
+                sb.append(pinLifetime);
+                sb.append(sepChar);
+            }
+            if (verbosity[10]) {
+                sb.append(requestToken);
+            }
+        }
+        return sb.toString();
+    }
+    
+    
     
     @Override
     public String toString() {
