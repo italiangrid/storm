@@ -541,7 +541,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 if (alreadyPinned) {
                     long currExpDate = StormEA.getPinned(absFN);
                     if (currExpDate > expDate) {
-                        Date expDateTime = new Date(currExpDate);
+                        Date expDateTime = new Date(currExpDate * 1000);
                         log.debug("The file '"
                                 + absFN
                                 + "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
@@ -551,12 +551,12 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                                 + absFN
                                 + "' is already Pinned and the pre-existing PinLifeTime is lower than the new one. PinLifeTime will be updated.");
                         StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                        Date expDateTime = new Date(expDate);
+                        Date expDateTime = new Date(expDate * 1000);
                         log.debug("Updated the Pinned EA to '" + absFN + "' with expiration: "
                                 + formatter.format(expDateTime));
                     }
                 } else {
-                    Date expDateTime = new Date(expDate);
+                    Date expDateTime = new Date(expDate * 1000);
                     log.debug("Added the Pinned EA to '" + absFN + "' with expiration: "
                             + formatter.format(expDateTime));
                     StormEA.setPinned(localFile.getAbsolutePath(), expDate);
