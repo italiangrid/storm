@@ -4,7 +4,9 @@
 package it.grid.storm.authz.path.conf;
 
 import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
+import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,10 @@ public class PathAuthzDB {
 
     private final Logger log = AuthzDirector.getLogger();
     
+    private String authzAlgorithm = null;
+    private PathAuthzEvaluationAlgorithm evaluationAlg = null;
     private List<PathACE> authzDB = new ArrayList<PathACE>();
+    
  
     //===========  CONSTRUCTORs ============
     
@@ -28,13 +33,47 @@ public class PathAuthzDB {
      */
     public static PathAuthzDB makeEmpty() {
         PathAuthzDB result = new PathAuthzDB();
+        
         result.addPathACE(PathACE.PERMIT_ALL);
         return result;
     }
- 
-    
+     
     public PathAuthzDB() {
     }
+ 
+    public void setPathAuthzEvaluationAlgorithm(String authzClassName) throws AuthzException {
+        authzAlgorithm = authzClassName;
+        Class<?> authzAlgClass = null;
+        try {
+            authzAlgClass = Class.forName(authzClassName);
+        } catch (ClassNotFoundException e) {
+            log.error("Unable to load the Class '" + authzClassName + "'");
+        }
+        if (authzAlgClass != null) {
+            Object authzAlgInstance = null;
+            try {
+                authzAlgInstance = authzAlgClass.newInstance();
+                if (authzAlgInstance instanceof PathAuthzEvaluationAlgorithm) {
+                    // ** SET the Algorithm **
+                    evaluationAlg = (PathAuthzEvaluationAlgorithm) authzAlgInstance; 
+                    log.debug("Found a valid Path Authz Evaluation Algorithm.");
+                    log.debug(" It implements the algorithm : " + evaluationAlg.getDescription());
+                } else {
+                    log.error("The Class '" + authzClassName
+                            + "' is not a valid Path Authz Evaluation Algorithm");
+                    // Manage the exceptional case (Use the default Algorithm)
+                }
+            } catch (InstantiationException e) {
+                log.error("Unable to instantiate the Class '" + authzClassName + "'; " + e.getMessage());
+                // Manage the exceptional case (Use the default Algorithm)
+            } catch (IllegalAccessException e) {
+                log.error("Unable to instantiate the Class '" + authzClassName + "'; " + e.getMessage());
+                // Manage the exceptional case (Use the default Algorithm)
+            }
+        }
+    }
+    
+
     
     public void addPathACE(PathACE pathAce) {
         authzDB.add(pathAce);

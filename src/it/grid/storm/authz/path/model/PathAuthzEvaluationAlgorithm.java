@@ -34,12 +34,24 @@ import org.slf4j.Logger;
 public abstract class PathAuthzEvaluationAlgorithm {
 
     protected final Logger log = AuthzDirector.getLogger();
-    protected ArrayList<PathACE> pathACL;
+    protected ArrayList<PathACE> pathACL = new ArrayList<PathACE>();
 
-    public PathAuthzEvaluationAlgorithm(List<PathACE> acl) {
-        pathACL = new ArrayList<PathACE>(acl);
+    public PathAuthzEvaluationAlgorithm() {
     }
 
+    public void setACL(List<PathACE> acl) {
+        pathACL = new ArrayList<PathACE>(acl);
+    }
+    
+    public int getACLLenght() {
+        return pathACL.size();
+    }
+    
     public abstract boolean evaluate(StFN fileName, PathOperation pathOperation);
+
+    /**
+     * @return
+     */
+    public abstract String getDescription();
     
 }

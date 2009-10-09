@@ -80,7 +80,7 @@ public class PathAuthzDBReader {
 
     /**
      * @param str
-     * @return
+     * @return PathACE if the line parsed is a valid PathACE, null if the line is a comment or other special lines
      * @throws AuthzException
      */
     private PathACE parseLine(String pathACEString) throws AuthzException {

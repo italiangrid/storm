@@ -22,8 +22,6 @@ package it.grid.storm.authz.path.model;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 
-import java.util.List;
-
 /**
  * @author zappi
  *
@@ -31,12 +29,13 @@ import java.util.List;
 public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
     /**
-     * @param acl
+     * 
      */
-    public PathAuthzAlgBestMatch(List<PathACE> acl) {
-        super(acl);
+    public PathAuthzAlgBestMatch() {
+        super();
         log.debug("Path Authorization Algorithm : Best Match evaluator");
     }
+    
 
     @Override
     public boolean evaluate(StFN fileName, PathOperation pathOperation) {
@@ -56,9 +55,20 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         } // End of cycle
         if (bestACE != null) { // There is at least one ACE with resource compatible
             result = bestACE.getPathAccessMask().containsPathOperation(pathOperation);
+
+        
+        } else {
+            
         }
 
         return result;
+    }
+
+
+   @Override
+    public String getDescription() {
+        String description = "< Best Match Path Authorization Algorithm >";
+        return description;
     }
 
 }
