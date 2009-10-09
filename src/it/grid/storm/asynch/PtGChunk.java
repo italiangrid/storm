@@ -531,7 +531,10 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 //
                 // Compute the Expiration Time
                 TLifeTimeInSeconds lifeTime = chunkData.getPinLifeTime();
-                long expDate = System.currentTimeMillis() + lifeTime.value() * 1000;
+  
+                // - expressed in Seconds
+                long expDate = (System.currentTimeMillis() / 1000 + lifeTime.value());
+
                 Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
                 String absFN = localFile.getAbsolutePath();
                 boolean alreadyPinned = StormEA.isPinned(absFN);

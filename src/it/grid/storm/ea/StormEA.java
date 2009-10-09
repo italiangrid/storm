@@ -193,15 +193,15 @@ public class StormEA {
         }
     }
 
-    public static void setPinned(String fileName, long expirationDateInMills) {
+    public static void setPinned(String fileName, long expirationDateInSEC) {
 
-        long existingPinValue = getPinned(fileName);
+        long existingPinValueInSEC = getPinned(fileName);
 
-        if (existingPinValue >= expirationDateInMills) {
+        if (existingPinValueInSEC >= expirationDateInSEC) {
             return;
         }
 
-        String longString = String.valueOf(expirationDateInMills);
+        String longString = String.valueOf(expirationDateInSEC);
 
         try {
             ea.setXAttr(fileName, EA_PINNED, longString.getBytes());
