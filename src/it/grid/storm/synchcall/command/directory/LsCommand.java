@@ -810,28 +810,38 @@ public class LsCommand extends DirectoryCommand implements Command {
             boolean getChecksum = false;
 
             if (localElement.hasChecksum()) {
+                // Computation of checksum is not needed
                 getChecksum = true;
-            } else if (isFileOnDisk) {
-
-                // Only one checksum computation is admitted
-                if (doNotComputeMoreChecksums) {
-                    getChecksum = false;
-                } else {
-                    log.debug("Checksum Computation: Start!");
-                    getChecksum = true;
-                    doNotComputeMoreChecksums = true;
+            } else {
+                // Computation of checksum could be needed
+                if (isFileOnDisk) {
+                    // Only one checksum computation is admitted
+                    if (doNotComputeMoreChecksums) {
+                        getChecksum = false;
+                    } else {
+                        log.debug("Checksum Computation is needed for file :'"
+                                + localElement.getAbsolutePath() + "'");
+                        getChecksum = true;
+                        doNotComputeMoreChecksums = true;
+                    }
                 }
             }
 
             if (getChecksum) {
-
                 String checksum = localElement.getChecksum();
 
-                TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
-                TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumAlgorithm());
+                if (checksum != null) {
+                    TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
+                    TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumAlgorithm());
+                    elementDetail.setCheckSumType(checkSumType);
+                    elementDetail.setCheckSumValue(checkSumValue);
+                } else {
+                    // Checksum is not available
+                    // so StoRM don't set the attributes checkSumType and checkSumValue
+                    log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath()
+                            + "'");
+                }
 
-                elementDetail.setCheckSumType(checkSumType);
-                elementDetail.setCheckSumValue(checkSumValue);
             }
         }
 
