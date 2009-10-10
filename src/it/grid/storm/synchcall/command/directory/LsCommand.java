@@ -4,6 +4,7 @@ import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -814,16 +815,25 @@ public class LsCommand extends DirectoryCommand implements Command {
                 getChecksum = true;
             } else {
                 // Computation of checksum could be needed
-                if (isFileOnDisk) {
-                    // Only one checksum computation is admitted
-                    if (doNotComputeMoreChecksums) {
-                        getChecksum = false;
-                    } else {
-                        log.debug("Checksum Computation is needed for file :'"
-                                + localElement.getAbsolutePath() + "'");
-                        getChecksum = true;
-                        doNotComputeMoreChecksums = true;
+
+                if (Configuration.getInstance().getChecksumEnabled()) {
+
+                    // Computation is needed
+                    if (isFileOnDisk) {
+                        // Only one checksum computation is admitted
+                        if (doNotComputeMoreChecksums) {
+                            getChecksum = false;
+                        } else {
+                            log.debug("Checksum Computation is needed for file :'"
+                                    + localElement.getAbsolutePath() + "'");
+                            getChecksum = true;
+                            doNotComputeMoreChecksums = true;
+                        }
                     }
+                } else {
+                    // Computation is needed but it is disabled
+                    getChecksum = false;
+                    log.debug("Checksum computation is disabled.");
                 }
             }
 
