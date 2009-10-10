@@ -102,4 +102,4 @@ checksum.enabled=false
 #checksum.queueSize=30
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
-#checksum.type=CRC32 
+#checksum.algorithm=CRC32 
