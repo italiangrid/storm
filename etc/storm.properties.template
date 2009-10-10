@@ -14,14 +14,6 @@ storm.service.endpoint=/srm/managerv2
 proxy.home=/opt/storm/backend/var/proxies
 
 # ============================
-# Checksum
-# ============================
-checksum.enabled=true
-checksum.queueSize=30
-# Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
-checksum.type=CRC32 
-
-# ============================
 # FE/BE communication RDBMS
 # ============================
 asynch.picker.db.host = @DB_HOSTNAME@
@@ -55,16 +47,14 @@ authorization.sources = PermitAllAuthorizationSource
 # =======================
 
 # Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
-# without any pinLifetime specified. The value specified below is 1 day
+# without any pinLifetime specified. 
 pinLifetime.minimum=259200
 
 # Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
-# The value specified below is 1 day
 fileLifetime.default=259200
 
 # Deault PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
 # This value is the one specified in the remote SrmPrepareToGet request.
-# The value specified below is 1 day.
 SRM22Client.PinLifeTime=259200
 
 
@@ -83,9 +73,9 @@ asynch.PickingTimeInterval = 2
 extraslashes.gsiftp=/
 
 
-# ===================
+# ===========================
 # Garbage Collector parameter
-# ===================
+# ===========================
 #Time interval for request garbage collection
 #purge.interval=21600
 #
@@ -94,3 +84,22 @@ extraslashes.gsiftp=/
 #
 #Time after that the GC consider a _terminated_ request as garbage
 #expired.request.time=3600
+
+# ===========================
+# Checksum parameters
+# ===========================
+
+# If enabled the computation will be enabled for one file per requests.
+# The computation is blocking.
+checksum.enabled=false  
+
+# The array of URLs where external checksum agent are running
+# note: the value must be separated by comma ','.
+#checksum.serviceURL=
+
+# The queue of checksum represents the max number of simultaneous checksum computation.
+# The number should be balanced in respect of the number of external checksum agent.
+#checksum.queueSize=30
+
+# Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
+#checksum.type=CRC32 
