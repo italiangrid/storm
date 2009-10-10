@@ -1,23 +1,12 @@
-/************************************************************************** 
- *  This file is part of the StoRM project.
- *
- *  Copyright (c) 2003-2009 INFN.
- *  All rights reserved.
- *   
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- * 
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
+/**************************************************************************
+ * This file is part of the StoRM project. Copyright (c) 2003-2009 INFN. All rights reserved. Licensed under the Apache
+ * License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
+ * limitations under the License.
  ***********************************************************************/
- 
+
 package it.grid.storm.config;
 
 import java.lang.reflect.Method;
@@ -29,20 +18,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * Singleton holding all configuration values that any other object in the StoRM
- * backend reads from configuration files, databases, etc.
- * 
- * Implements a 'get<something>' method for each value that should be looked up
- * this way. In fact, this is a "read-only" class.
- * 
- * If no value is specified in the configuration medium, a default one is used
- * instead; some properties may hold several comma separated values without any
- * white spaces in-between; the name of the property in the configuration
- * medium, default values, as well as the option of holding multiple values, is
- * specified in each method comment.
- * 
+ * Singleton holding all configuration values that any other object in the StoRM backend reads from configuration files,
+ * databases, etc. Implements a 'get<something>' method for each value that should be looked up this way. In fact, this
+ * is a "read-only" class. If no value is specified in the configuration medium, a default one is used instead; some
+ * properties may hold several comma separated values without any white spaces in-between; the name of the property in
+ * the configuration medium, default values, as well as the option of holding multiple values, is specified in each
+ * method comment.
  */
 
 public class Configuration {
@@ -52,7 +34,6 @@ public class Configuration {
     // as default
     private static Configuration instance = new Configuration(); // only
 
-
     // instance of
     // this
     // configuration
@@ -61,7 +42,6 @@ public class Configuration {
     private Configuration() {
     }
 
-
     /**
      * Returns the sole instance of the Configuration class.
      */
@@ -69,10 +49,8 @@ public class Configuration {
         return Configuration.instance;
     }
 
-
     /**
-     * Method used to set the config reader: if a null is supplied then a
-     * default empty ConfigReader is used instead.
+     * Method used to set the config reader: if a null is supplied then a default empty ConfigReader is used instead.
      */
     public void setConfigReader(ConfigReader cr) {
         if (cr != null) {
@@ -80,13 +58,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by all DAO Objects to get the DataBase Driver. If no value is
-     * found in the configuration medium, then the default value is returned
-     * instead.
-     * 
-     * key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
+     * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the configuration medium, then
+     * the default value is returned instead. key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
      */
     public String getDBDriver() {
         String key = "asynch.picker.db.driver";
@@ -99,19 +73,12 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by all DAO Objects to get DB URL. If no value is found in the
-     * configuration medium, then the default value is returned instead.
-     * 
-     * key1="asynch.picker.db.protocol"; default value="jdbc:mysql://";
-     * key2="asynch.picker.db.host"; default value="localhost";
-     * key3="asynch.picker.db.name"; default value="storm_db";
-     * 
-     * The returned value is made up of the above default values and whatever is
-     * read from the configuration medium, combined in the following way:
-     * 
-     * protocol + host + "/" + name
+     * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium, then the default
+     * value is returned instead. key1="asynch.picker.db.protocol"; default value="jdbc:mysql://";
+     * key2="asynch.picker.db.host"; default value="localhost"; key3="asynch.picker.db.name"; default value="storm_db";
+     * The returned value is made up of the above default values and whatever is read from the configuration medium,
+     * combined in the following way: protocol + host + "/" + name
      */
     public String getDBURL() {
         String prefix = "";
@@ -148,14 +115,9 @@ public class Configuration {
         return prefix + host + "/" + name;
     }
 
-
     /**
-     * Method used by all DAO Objects to get the DB username. If no value is
-     * found in the configuration medium, then the default value is returned
-     * instead.
-     * 
-     * Default value = "storm"; key searched in medium =
-     * "asynch.picker.db.username".
+     * Method used by all DAO Objects to get the DB username. If no value is found in the configuration medium, then the
+     * default value is returned instead. Default value = "storm"; key searched in medium = "asynch.picker.db.username".
      */
     public String getDBUserName() {
         String key = "asynch.picker.db.username";
@@ -168,14 +130,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by all DAO Objects to get the DB password. If no value is
-     * found in the configuration medium, then the default value is returned
-     * instead.
-     * 
-     * Deafult value = "storm"; key searched in medium =
-     * "asynch.picker.db.passwd".
+     * Method used by all DAO Objects to get the DB password. If no value is found in the configuration medium, then the
+     * default value is returned instead. Deafult value = "storm"; key searched in medium = "asynch.picker.db.passwd".
      */
     public String getDBPassword() {
         String key = "asynch.picker.db.passwd";
@@ -188,25 +145,14 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by all DAOs to establish the reconnection period in
-     * _seconds_: after such period the DB connection will be closed and
-     * re-opened. Beware that after such time expires, the connection is _not_
-     * automatically closed and reopened; rather, it acts as a flag that is
-     * considered by the main code and when the most appropriate time comes, the
-     * connection is closed and reopened.
-     * 
-     * This is because of MySQL bug that does not allow a connection to remain
-     * open for an arbitrary amount of time! Else an Unexpected EOF Exception
-     * gets thrown by the JDBC driver!
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.db.ReconnectPeriod"; default value=18000;
-     * 
-     * Keep in mind that 18000 seconds = 5 hours.
+     * Method used by all DAOs to establish the reconnection period in _seconds_: after such period the DB connection
+     * will be closed and re-opened. Beware that after such time expires, the connection is _not_ automatically closed
+     * and reopened; rather, it acts as a flag that is considered by the main code and when the most appropriate time
+     * comes, the connection is closed and reopened. This is because of MySQL bug that does not allow a connection to
+     * remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the JDBC driver! If
+     * no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.db.ReconnectPeriod"; default value=18000; Keep in mind that 18000 seconds = 5 hours.
      */
     public long getDBReconnectPeriod() {
         String key = "asynch.db.ReconnectPeriod";
@@ -219,19 +165,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by all DAOs to establish the reconnection delay in _seconds_:
-     * when StoRM is first launched it will wait for this amount of time before
-     * starting the timer.
-     * 
-     * This is because of MySQL bug that does not allow a connection to remain
-     * open for an arbitrary amount of time! Else an Unexpected EOF Exception
-     * gets thrown by the JDBC driver!
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by all DAOs to establish the reconnection delay in _seconds_: when StoRM is first launched it will
+     * wait for this amount of time before starting the timer. This is because of MySQL bug that does not allow a
+     * connection to remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the
+     * JDBC driver! If no value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.db.ReconnectDelay"; default value=30;
      */
     public long getDBReconnectDelay() {
@@ -245,14 +183,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by PinnedFilesCatalog to get the initial delay in _seconds_
-     * before starting the cleaning thread.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the cleaning thread. If
+     * no value is found in the configuration medium, then the default value is returned instead.
      * key="pinnedfiles.cleaning.delay"; default value=10;
      */
     public long getCleaningInitialDelay() {
@@ -266,17 +199,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by PinnedFilesCatalog to get the cleaning time interval, in
-     * _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="pinnedfiles.cleaning.interval"; default value=300;
-     * 
-     * Keep in mind that 300 seconds = 5 minutes.
+     * Method used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="pinnedfiles.cleaning.interval"; default
+     * value=300; Keep in mind that 300 seconds = 5 minutes.
      */
     public long getCleaningTimeInterval() {
         String key = "pinnedfiles.cleaning.interval";
@@ -288,7 +214,6 @@ public class Configuration {
             return cr.getConfiguration().getLong(key);
         }
     }
-
 
     /**
      * Get the default file size
@@ -306,18 +231,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by VolatileAndJiTCatalog to get the default fileLifetime to
-     * use when a volatile entry is being added/updated, but the user specified
-     * a non positive value.
-     * 
-     * Measured in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="fileLifetime.default"; default value=3600;
+     * Method used by VolatileAndJiTCatalog to get the default fileLifetime to use when a volatile entry is being
+     * added/updated, but the user specified a non positive value. Measured in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="fileLifetime.default"; default value=3600;
      */
     public long getFileLifetimeDefault() {
         String key = "fileLifetime.default";
@@ -330,19 +247,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by VolatileAndJiTCatalog to get the minimum pinLifetime
-     * allowed, when a jit is being added/updated, but the user specified a
-     * lower one. This method is also used by the PinLifetimeConverter to
-     * translate a NULL/0/negative value to a default one.
-     * 
-     * Measured in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="pinLifetime.minimum"; default value=30;
+     * Method used by VolatileAndJiTCatalog to get the minimum pinLifetime allowed, when a jit is being added/updated,
+     * but the user specified a lower one. This method is also used by the PinLifetimeConverter to translate a
+     * NULL/0/negative value to a default one. Measured in _seconds_. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="pinLifetime.minimum"; default value=30;
      */
     public long getPinLifetimeMinimum() {
         String key = "pinLifetime.minimum";
@@ -355,18 +264,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by VolatileAndJiTCatalog to get the maximum pinLifetime
-     * allowed, when a jit is being added/updated, but the user specified a
-     * higher one.
-     * 
-     * Measured in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="pinLifetime.maximum"; default value=144000 (40 hours);
+     * Method used by VolatileAndJiTCatalog to get the maximum pinLifetime allowed, when a jit is being added/updated,
+     * but the user specified a higher one. Measured in _seconds_. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="pinLifetime.maximum"; default value=144000 (40 hours);
      */
     public long getPinLifetimeMaximum() {
         String key = "pinLifetime.maximum";
@@ -379,15 +280,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by PtPChunkCatalog to get the initial delay in _seconds_
-     * before starting the transiting thread.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="transit.delay"; default value=10;
+     * Method used by PtPChunkCatalog to get the initial delay in _seconds_ before starting the transiting thread. If no
+     * value is found in the configuration medium, then the default value is returned instead. key="transit.delay";
+     * default value=10;
      */
     public long getTransitInitialDelay() {
         String key = "transit.delay";
@@ -400,17 +296,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by PtPChunkCatalog to get the transiting time interval, in
-     * _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="transit.interval"; default value=300;
-     * 
-     * Keep in mind that 300 seconds = 5 minutes.
+     * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="transit.interval"; default value=300; Keep
+     * in mind that 300 seconds = 5 minutes.
      */
     public long getTransitTimeInterval() {
         String key = "transit.interval";
@@ -423,14 +312,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by AdvancedPicker to get the initial delay before starting to
-     * pick data from the DB, in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by AdvancedPicker to get the initial delay before starting to pick data from the DB, in _seconds_. If
+     * no value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.PickingInitialDelay"; default value=5;
      */
     public long getPickingInitialDelay() {
@@ -444,15 +328,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by AdvancedPicker to get the time interval of successive
-     * pickings, in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.PickingTimeInterval"; default value=15;
+     * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_. If no value is found
+     * in the configuration medium, then the default value is returned instead. key="asynch.PickingTimeInterval";
+     * default value=15;
      */
     public long getPickingTimeInterval() {
         String key = "asynch.PickingTimeInterval";
@@ -465,14 +344,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryDAO to establish the maximum number of
-     * requests to retrieve with each polling.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by RequestSummaryDAO to establish the maximum number of requests to retrieve with each polling. If no
+     * value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.PickingMaxBatchSize"; default value=30;
      */
     public int getPickingMaxBatchSize() {
@@ -486,16 +360,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push
-     * Mode). It needs it to estalish the totalRetryTime in seconds to supply to
-     * the internal SRMClient. The parameter is passed to the prepareToPut
-     * functionality.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). It needs it to estalish the
+     * totalRetryTime in seconds to supply to the internal SRMClient. The parameter is passed to the prepareToPut
+     * functionality. If no value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.srmclient.retrytime"; default value=60;
      */
     public long getSRMClientPutTotalRetryTime() {
@@ -509,17 +377,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push
-     * Mode). The CopyChunk will periodically invoke the statusOfPutRequest
-     * functionality of the internal SRMClient, for at most the time out
-     * interval in seconds returned by this method.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.srmclient.timeout"; default value=180;
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will periodically invoke
+     * the statusOfPutRequest functionality of the internal SRMClient, for at most the time out interval in seconds
+     * returned by this method. If no value is found in the configuration medium, then the default value is returned
+     * instead. key="asynch.srmclient.timeout"; default value=180;
      */
     public long getSRMClientPutTimeOut() {
         String key = "asynch.srmclient.timeout";
@@ -532,17 +394,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push
-     * Mode). The CopyChunk will wait the amount of time in seconds returned by
-     * this method, before invoking again the statusOfPutRequest functionality
-     * of the internal SRMClient. That is, it tells the polling interval.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.srmclient.sleeptime"; default value=5;
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will wait the amount of
+     * time in seconds returned by this method, before invoking again the statusOfPutRequest functionality of the
+     * internal SRMClient. That is, it tells the polling interval. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="asynch.srmclient.sleeptime"; default value=5;
      */
     public long getSRMClientPutSleepTime() {
         String key = "asynch.srmclient.sleeptime";
@@ -555,19 +411,12 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by CopyChunk when making the FileTransfer and finally
-     * invoking a remote srmPutDone. The CopyChunk will wait the amount of time
-     * in seconds returned by this method, before invoking again the srmPutDone
-     * functionality of the internal SRMClient. That is, it tells the time
-     * interval between successive invocations: they are necessary when the
-     * returned status is SRM_INTERNAL_ERROR which denotes a transient error
-     * situation.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk
+     * will wait the amount of time in seconds returned by this method, before invoking again the srmPutDone
+     * functionality of the internal SRMClient. That is, it tells the time interval between successive invocations: they
+     * are necessary when the returned status is SRM_INTERNAL_ERROR which denotes a transient error situation. If no
+     * value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.srmclient.putdone.sleeptime"; default value=2;
      */
     public long getSRMClientPutDoneSleepTime() {
@@ -581,19 +430,12 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by CopyChunk when making the FileTransfer and finally
-     * invoking a remote srmPutDone. The CopyChunk may have to periodically
-     * invoke srmPutDone functionality of the internal SRMClient if the web
-     * service returns SRM_INTERNAL_ERROR; in that case invocations will be
-     * attempted for at most the time out interval in seconds returned by this
-     * method.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.srmclient.putdone.timeout"; default value=60;
+     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk may
+     * have to periodically invoke srmPutDone functionality of the internal SRMClient if the web service returns
+     * SRM_INTERNAL_ERROR; in that case invocations will be attempted for at most the time out interval in seconds
+     * returned by this method. If no value is found in the configuration medium, then the default value is returned
+     * instead. key="asynch.srmclient.putdone.timeout"; default value=60;
      */
     public long getSRMClientPutDoneTimeOut() {
         String key = "asynch.srmclient.putdone.timeout";
@@ -605,7 +447,6 @@ public class Configuration {
             return cr.getConfiguration().getLong(key);
         }
     }
-
 
     /**
      * Get max number of xmlrpc threads into for the XMLRPC server.
@@ -620,7 +461,6 @@ public class Configuration {
             return cr.getConfiguration().getInt(key);
         }
     }
-
 
     /**
      * Get Default Space Tokens
@@ -650,17 +490,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by Factory invoked in CopyChunk subclasses, to instantiate a
-     * GridFTPTransferClient. The String returned specifies the name of the
-     * class to instantiate; for now, there are two classes:
-     * NaiveGridFTPTransferClient and StubGridFTPTransferClient.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="asynch.gridftpclient"; default
+     * Method used by Factory invoked in CopyChunk subclasses, to instantiate a GridFTPTransferClient. The String
+     * returned specifies the name of the class to instantiate; for now, there are two classes:
+     * NaiveGridFTPTransferClient and StubGridFTPTransferClient. If no value is found in the configuration medium, then
+     * the default value is returned instead. key="asynch.gridftpclient"; default
      * value="it.grid.storm.asynch.NaiveGridFTPTransferClient";
      */
     public String getGridFTPTransferClient() {
@@ -674,16 +508,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by Factory invoked in CopyChunk subclasses, to instantiate an
-     * SRMClient. The String returned specifies the name of the class to
-     * instantiate; for now, there are two classes: NaiveSRMClient and
-     * StubSRMClient.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by Factory invoked in CopyChunk subclasses, to instantiate an SRMClient. The String returned
+     * specifies the name of the class to instantiate; for now, there are two classes: NaiveSRMClient and StubSRMClient.
+     * If no value is found in the configuration medium, then the default value is returned instead.
      * key="asynch.srmclient"; default value="it.grid.storm.asynch.SRM22Client";
      */
     public String getSRMClient() {
@@ -697,17 +525,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to get a List of Strings of the names of the machine hosting
-     * the FE for _this_ StoRM instance! Used in srmCopy to understand if the
-     * fromSURL/toSURL refer to the server itself or to some other foreign
-     * server! The List contains Strings in _lower_case_!!!
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
+     * Method used to get a List of Strings of the names of the machine hosting the FE for _this_ StoRM instance! Used
+     * in srmCopy to understand if the fromSURL/toSURL refer to the server itself or to some other foreign server! The
+     * List contains Strings in _lower_case_!!! If no value is found in the configuration medium, then the default value
+     * is returned instead. key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
      */
     public List<String> getListOfMachineNames() {
         String key = "storm.machinenames";
@@ -740,19 +562,12 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to get a List of Strings of the IPs of the machine hosting
-     * the FE for _this_ StoRM instance! Used in the xmlrcp server
-     * configuration, to allow request coming from the specified IP. (Into the
-     * xmlrpc server the filter is done by IP, not hostname.) This paramter is
-     * mandatory when a distribuited FE-BE installation of StoRM is used
-     * togheter with a dynamic DNS on the FE hostname. In that case the
-     * properties storm.machinenames is not enough meaningfull.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM instance! Used in
+     * the xmlrcp server configuration, to allow request coming from the specified IP. (Into the xmlrpc server the
+     * filter is done by IP, not hostname.) This paramter is mandatory when a distribuited FE-BE installation of StoRM
+     * is used togheter with a dynamic DNS on the FE hostname. In that case the properties storm.machinenames is not
+     * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
      * key="storm.machineIPs"; default value={"127.0.0.1"};
      */
     public List getListOfMachineIPs() {
@@ -776,35 +591,20 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Reads the 'authorization.sources' configuration key and tries to
-     * instanciate a <code>List</code> of classes whose name matches the
-     * configuration key given.
-     * 
+     * Reads the 'authorization.sources' configuration key and tries to instanciate a <code>List</code> of classes whose
+     * name matches the configuration key given.
      * <p>
-     * The configuration value is a comma-separated list of class names;
-     * therefore, they are case-sensitive. If a name contains no dots, then it
-     * is considered the name of a class in the
-     * <code>it.grid.storm.authorization.sources</code> package.
+     * The configuration value is a comma-separated list of class names; therefore, they are case-sensitive. If a name
+     * contains no dots, then it is considered the name of a class in the
+     * <code>it.grid.storm.authorization.sources</code> package. If no value is found in the configuration medium, then
+     * the default value "DenyAllAuthorizationSource" is returned instead. FIXME: there should be no default value;
+     * failing to configure an authorization source should be a critical error instead.
      * 
-     * If no value is found in the configuration medium, then the default value
-     * "DenyAllAuthorizationSource" is returned instead.
-     * 
-     * FIXME: there should be no default value; failing to configure an
-     * authorization source should be a critical error instead.
-     * 
-     * @throws RuntimeException
-     *             if the extracted configuration value cannot be mapped to a
-     *             Java class, as we cannot properly handle this condition. The
-     *             use of a RuntimeException was chosen after suggestions in
-     *             http
-     *             ://www-106.ibm.com/developerworks/library/j-jtp05254.html?
-     *             ca=drs-j2204
-     * 
-     *             key="authorization.sources"; default
-     *             value=DenyAllAuthorizationSource;
-     * 
+     * @throws RuntimeException if the extracted configuration value cannot be mapped to a Java class, as we cannot
+     *             properly handle this condition. The use of a RuntimeException was chosen after suggestions in http
+     *             ://www-106.ibm.com/developerworks/library/j-jtp05254.html? ca=drs-j2204 key="authorization.sources";
+     *             default value=DenyAllAuthorizationSource;
      */
     public Collection getAuthorizationSources() {
         String key = "authorization.sources";
@@ -830,46 +630,41 @@ public class Configuration {
                 Class sourceClass = Class.forName(configValue);
                 result.add(sourceClass.newInstance());
             } catch (ClassNotFoundException e) {
-                logger.error("Cannot find class '" + configValue + " to handle '" + configValue + "' (from configuration value " + "'authorization.sources'): " + e.getMessage());
+                logger.error("Cannot find class '" + configValue + " to handle '" + configValue
+                        + "' (from configuration value " + "'authorization.sources'): " + e.getMessage());
                 logger.warn("Ignoring authorization source '" + configValue + "'");
             } catch (InstantiationException e) {
-                logger.error("Cannot instanciate class '" + configValue + " as an instance of AuthorizationQueryInterface" + " (from configuration value " + "'authorization.sources'): " + e.getMessage());
+                logger.error("Cannot instanciate class '" + configValue
+                        + " as an instance of AuthorizationQueryInterface" + " (from configuration value "
+                        + "'authorization.sources'): " + e.getMessage());
                 logger.warn("Ignoring authorization source '" + configValue + "'");
             } catch (IllegalAccessException e) {
-                logger.error("Cannot instanciate class '" + configValue + " as an instance of AuthorizationQueryInterface" + " (from configuration value " + "'authorization.sources'): " + e.getMessage());
+                logger.error("Cannot instanciate class '" + configValue
+                        + " as an instance of AuthorizationQueryInterface" + " (from configuration value "
+                        + "'authorization.sources'): " + e.getMessage());
                 logger.warn("Ignoring authorization source '" + configValue + "'");
             }
         }
         if (0 == result.size()) {
-            String msg =
-                    "Abort: No AuthorizationSource could be loaded; " + "all configuration values in 'authorization.sources'" + " were ignored because of errors (see log)";
+            String msg = "Abort: No AuthorizationSource could be loaded; "
+                    + "all configuration values in 'authorization.sources'"
+                    + " were ignored because of errors (see log)";
             logger.error(msg);
             throw new RuntimeException(msg);
         }
         return result;
     }
 
-
     /**
-     * Reads the 'authorization.combining.algorithm' configuration key and tries
-     * to instanciate a <code>DecisionCombiningAlgorithm</code> whose name
-     * matches the configuration key given.
+     * Reads the 'authorization.combining.algorithm' configuration key and tries to instanciate a
+     * <code>DecisionCombiningAlgorithm</code> whose name matches the configuration key given. If no value is found in
+     * the configuration medium, then the default value is returned instead.
      * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * @throws IllegalArgumentException
-     *             if the extracted configuration value cannot be mapped to a
-     *             subclass of
-     *             {@link it.grid.storm.authorization.DecisionCombiningAlgorithm}
-     *             , as we cannot properly handle this condition. The use of a
-     *             RuntimeExcpetion was chosen after suggestions in
-     *             http://www-106.
-     *             ibm.com/developerworks/library/j-jtp05254.html?ca=drs-j2204
-     * 
-     *             key="authorization.combining.algorithm"; default
-     *             value=FirstProper;
-     * 
+     * @throws IllegalArgumentException if the extracted configuration value cannot be mapped to a subclass of
+     *             {@link it.grid.storm.authorization.DecisionCombiningAlgorithm} , as we cannot properly handle this
+     *             condition. The use of a RuntimeExcpetion was chosen after suggestions in http://www-106.
+     *             ibm.com/developerworks/library/j-jtp05254.html?ca=drs-j2204 key="authorization.combining.algorithm";
+     *             default value=FirstProper;
      */
     public Class getAuthorizationCombiningAlgorithm() {
         String key = "authorization.combining.algorithm";
@@ -891,48 +686,36 @@ public class Configuration {
         try {
             return Class.forName(algorithmName);
         } catch (ClassNotFoundException e) {
-            String msg =
-                    "Cannot find class'" + algorithmName + " to handle '" + value + "' (from configuration key " + "'authorization.combining.algorithm'): " + e.getMessage();
+            String msg = "Cannot find class'" + algorithmName + " to handle '" + value
+                    + "' (from configuration key " + "'authorization.combining.algorithm'): "
+                    + e.getMessage();
             logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
     }
 
-
     /**
-     * Method that returns the directory holding the configuration file. The
-     * methods that make use of it are uncertain... must be found soon!!!
-     * 
-     * Beware that the configuration directory is implicit in the complete
-     * pathname to the configuration file supplied in the command line when
-     * starting StoRM BE.
+     * Method that returns the directory holding the configuration file. The methods that make use of it are
+     * uncertain... must be found soon!!! Beware that the configuration directory is implicit in the complete pathname
+     * to the configuration file supplied in the command line when starting StoRM BE.
      */
     public String getConfigurationDir() {
         return cr.configurationDirectory();
         /*
-         * String key = "storm.configuration.dir"; String dirValue = ""; if
-         * (!cr.getConfiguration().containsKey(key)) { //default dirValue =
-         * "/home/storm/config"; } else { //load from external source dirValue =
+         * String key = "storm.configuration.dir"; String dirValue = ""; if (!cr.getConfiguration().containsKey(key)) {
+         * //default dirValue = "/home/storm/config"; } else { //load from external source dirValue =
          * cr.getConfiguration().getString(key); } // String config = dirValue;
-         * if(!config_file.endsWith(java.io.File.separator)) //original:
-         * if(!config.endsWith("/")) config = config + java.io.File.separator;
-         * return config;
+         * if(!config_file.endsWith(java.io.File.separator)) //original: if(!config.endsWith("/")) config = config +
+         * java.io.File.separator; return config;
          */
     }
 
-
     /**
-     * Method used by Space Reservation component to get the complete pathname
-     * for the "namespace.xml" configuration File. This configuration file
-     * contains information about the mapping between user, vo, storage area,
-     * default lifetime and filetype. This method searches the configuration
-     * medium for the configuration directory, and if it does not find it then a
-     * default value for such directory is used. The returned String is of the
-     * form:
-     * 
-     * storm.configuration.dir + "/" + "namespace.xml"
-     * 
-     * key=storm.configuration.dir; default value="/home/storm/config";
+     * Method used by Space Reservation component to get the complete pathname for the "namespace.xml" configuration
+     * File. This configuration file contains information about the mapping between user, vo, storage area, default
+     * lifetime and filetype. This method searches the configuration medium for the configuration directory, and if it
+     * does not find it then a default value for such directory is used. The returned String is of the form:
+     * storm.configuration.dir + "/" + "namespace.xml" key=storm.configuration.dir; default value="/home/storm/config";
      */
     public String getNamespaceConfigurationFile() {
         String dirValue = "";
@@ -945,15 +728,10 @@ public class Configuration {
         return config_file;
     }
 
-
     /**
-     * Method used in filesystem wrapper to get the directory path for temporary
-     * file creation: StoRM crates a temporary file to manage GPFS ACL, and
-     * these files are created in the temporary directory specified here.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used in filesystem wrapper to get the directory path for temporary file creation: StoRM crates a temporary
+     * file to manage GPFS ACL, and these files are created in the temporary directory specified here. If no value is
+     * found in the configuration medium, then the default value is returned instead.
      * key="wrapper.filesystem.acl.tmpdir"; default value="/tmp";
      */
     public String getTempDir() {
@@ -967,16 +745,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in experimental persistence layer implementation to get
-     * DATASOURCE type to use in DataSourceFactory. DataSource in test model
-     * must be MemoryObect, while soon it will become a HYBERNATE object.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="data_source_type"; default value="MEMORY_OBJECT";
+     * Method used in experimental persistence layer implementation to get DATASOURCE type to use in DataSourceFactory.
+     * DataSource in test model must be MemoryObect, while soon it will become a HYBERNATE object. If no value is found
+     * in the configuration medium, then the default value is returned instead. key="data_source_type"; default
+     * value="MEMORY_OBJECT";
      */
     public String getDataSourceType() {
         String key = "data_source_type";
@@ -989,15 +762,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by StoRMCommandServer to establish the listening port to
-     * which it should bind.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="storm.commandserver.port"; default value=4444;
+     * Method used by StoRMCommandServer to establish the listening port to which it should bind. If no value is found
+     * in the configuration medium, then the default value is returned instead. key="storm.commandserver.port"; default
+     * value=4444;
      */
     public int getCommandServerBindingPort() {
         String key = "storm.commandserver.port";
@@ -1010,15 +778,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by Dispatcher and Feeder objects to check if a serial
-     * scheduler must be used, or not.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="scheduler.serial"; default value=false;
+     * Method used by Dispatcher and Feeder objects to check if a serial scheduler must be used, or not. If no value is
+     * found in the configuration medium, then the default value is returned instead. key="scheduler.serial"; default
+     * value=false;
      */
     public boolean getSerialScheduler() {
         String key = "scheduler.serial";
@@ -1031,15 +794,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in space reservation component to get the port number for
-     * SpaceReservationSocketServer.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="synchcall.spaceres.port"; default value=5544;
+     * Method used in space reservation component to get the port number for SpaceReservationSocketServer. If no value
+     * is found in the configuration medium, then the default value is returned instead. key="synchcall.spaceres.port";
+     * default value=5544;
      */
     public int getSpaceResSocketPORT() {
         String key = "synchcall.spaceres.port";
@@ -1052,14 +810,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in space reservation component to get the port number for the
-     * GetSpaceMetaDataSocketServer method.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used in space reservation component to get the port number for the GetSpaceMetaDataSocketServer method. If
+     * no value is found in the configuration medium, then the default value is returned instead.
      * key="synchcall.getspace.port"; default value=5545;
      */
     public int getGetSpaceSocketPORT() {
@@ -1073,14 +826,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component It returns the DB vendor name.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.vendor"; default value="mysql";
+     * Method used in Persistence Component It returns the DB vendor name. If no value is found in the configuration
+     * medium, then the default value is returned instead. key="persistence.db.vendor"; default value="mysql";
      */
     public String getBE_PersistenceDBVendor() {
         String key = "persistence.db.vendor";
@@ -1093,15 +841,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component: it returns the host where the DB
-     * resides.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.host"; default value="localhost";
+     * Method used in Persistence Component: it returns the host where the DB resides. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="persistence.db.host"; default
+     * value="localhost";
      */
     public String getBE_PersistenceDBMSUrl() {
         String key = "persistence.db.host";
@@ -1114,15 +857,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns the name of the DB to
-     * use.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.name"; default value="storm_be_ISAM";
+     * Method used in Persistence Component it returns the name of the DB to use. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="persistence.db.name"; default
+     * value="storm_be_ISAM";
      */
     public String getBE_PersistenceDBName() {
         String key = "persistence.db.name";
@@ -1135,15 +873,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns the name of the DB user
-     * that must be used.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.username"; default value="storm";
+     * Method used in Persistence Component it returns the name of the DB user that must be used. If no value is found
+     * in the configuration medium, then the default value is returned instead. key="persistence.db.username"; default
+     * value="storm";
      */
     public String getBE_PersistenceDBUserName() {
         String key = "persistence.db.username";
@@ -1156,15 +889,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns the password for the DB
-     * user that must be used.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.passwd"; default value="storm";
+     * Method used in Persistence Component it returns the password for the DB user that must be used. If no value is
+     * found in the configuration medium, then the default value is returned instead. key="persistence.db.passwd";
+     * default value="storm";
      */
     public String getBE_PersistenceDBPassword() {
         String key = "persistence.db.passwd";
@@ -1177,14 +905,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns a boolean indicating
-     * whether to use connection pooling or not.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used in Persistence Component it returns a boolean indicating whether to use connection pooling or not. If
+     * no value is found in the configuration medium, then the default value is returned instead.
      * key="persistence.db.pool"; default value=false;
      */
     public boolean getBE_PersistencePoolDB() {
@@ -1198,17 +921,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns an int indicating the
-     * maximum number of active connections in the connection pool. It is the
-     * maximum number of active connections that can be allocated from this pool
-     * at the same time... 0 (zero) for no limit.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * key="persistence.db.pool.maxActive"; default value=10;
+     * Method used in Persistence Component it returns an int indicating the maximum number of active connections in the
+     * connection pool. It is the maximum number of active connections that can be allocated from this pool at the same
+     * time... 0 (zero) for no limit. If no value is found in the configuration medium, then the default value is
+     * returned instead. key="persistence.db.pool.maxActive"; default value=10;
      */
     public int getBE_PersistencePoolDB_MaxActive() {
         String key = "persistence.db.pool.maxActive";
@@ -1221,17 +938,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used in Persistence Component it returns an int indicating the
-     * maximum waiting time in _milliseconds_ for the connection in the pool. It
-     * represents the time that the pool will wait (when there are no available
-     * connections) for a connection to be returned before throwing an
-     * exception... a value of -1 to wait indefinitely.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used in Persistence Component it returns an int indicating the maximum waiting time in _milliseconds_ for
+     * the connection in the pool. It represents the time that the pool will wait (when there are no available
+     * connections) for a connection to be returned before throwing an exception... a value of -1 to wait indefinitely.
+     * If no value is found in the configuration medium, then the default value is returned instead.
      * key="persistence.db.pool.maxWait"; default value=50;
      */
     public int getBE_PersistencePoolDB_MaxWait() {
@@ -1245,14 +956,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Synch Component to set the binding port for the
-     * _unsecure_ xmlrpc server in the BE.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by the Synch Component to set the binding port for the _unsecure_ xmlrpc server in the BE. If no
+     * value is found in the configuration medium, then the default value is returned instead.
      * key="synchcall.xmlrpc.unsecureServerPort"; default value=8080;
      */
     public int getXmlRpcServerPort() {
@@ -1266,14 +972,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Synch Component to set the binding port for the
-     * _secure_ xmlrpc server in the BE.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by the Synch Component to set the binding port for the _secure_ xmlrpc server in the BE. If no value
+     * is found in the configuration medium, then the default value is returned instead.
      * key="synchcall.xmlrpc.secureServerPort"; default value=8089;
      */
     public int getSecureXmlRpcServerPort() {
@@ -1287,14 +988,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Synch Component to set the maximum number of entries
-     * to return for the srmLs functionality.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by the Synch Component to set the maximum number of entries to return for the srmLs functionality. If
+     * no value is found in the configuration medium, then the default value is returned instead.
      * key="synchcall.directoryManager.maxLsEntry"; default value=500;
      * 
      * @return int
@@ -1310,7 +1006,6 @@ public class Configuration {
         }
     }
 
-
     /**
      * Default value for the parameter "allLevelRecursive" of the LS request.
      * 
@@ -1319,7 +1014,6 @@ public class Configuration {
     public boolean get_LS_allLevelRecursive() {
         return false;
     }
-
 
     /**
      * Default value for the parameter "numOfLevels" of the LS request.
@@ -1330,7 +1024,6 @@ public class Configuration {
         return 1;
     }
 
-
     /**
      * Default value for the parameter "count" of the LS request.
      * 
@@ -1339,7 +1032,6 @@ public class Configuration {
     public int get_LS_count() {
         return get_LS_MaxNumberOfEntry();
     }
-
 
     /**
      * Default value for the parameter "offset" of the LS request.
@@ -1350,27 +1042,15 @@ public class Configuration {
         return 0;
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Core Poolsize
-     * for the srmPrepareToPut management.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * corePoolSize - the number of threads to keep in the pool, even if they
-     * are idle.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by the Scheduler Component to get the Worker Core Poolsize for the srmPrepareToPut management.
+     * Scheduler component uses a thread pool. Scheduler pool will automatically adjust the pool size according to the
+     * bounds set by corePoolSize and maximumPoolSize. When a new task is submitted in method execute, and fewer than
+     * corePoolSize threads are running, a new thread is created to handle the request, even if other worker threads are
+     * idle. If there are more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
+     * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size
+     * thread pool. corePoolSize - the number of threads to keep in the pool, even if they are idle. If no value is
+     * found in the configuration medium, then the default value is returned instead.
      * key="scheduler.chunksched.ptp.workerCorePoolSize"; default value=10;
      */
     public int getPtPCorePoolSize() {
@@ -1384,26 +1064,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Max Pool Size
-     * for the srmPrepareToPut management.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * maxPoolSize - the maximum number of threads to allow in the pool.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
+     * Method used by the Scheduler Component to get the Worker Max Pool Size for the srmPrepareToPut management.
+     * Scheduler component uses a thread pool. Scheduler pool will automatically adjust the pool size according to the
+     * bounds set by corePoolSize and maximumPoolSize. When a new task is submitted in method execute, and fewer than
+     * corePoolSize threads are running, a new thread is created to handle the request, even if other worker threads are
+     * idle. If there are more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
+     * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size
+     * thread pool. maxPoolSize - the maximum number of threads to allow in the pool. If no value is found in the
+     * configuration medium, then the default value is returned instead.
      * key="scheduler.chunksched.ptp.workerMaxPoolSize"; default value=100;
      */
     public int getPtPMaxPoolSize() {
@@ -1417,32 +1086,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Queue Size for the
-     * srmPrepareToPut management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler hold a blocking priority queue used to transfer and hols
-     * submitted tasks.
-     * 
-     * The use of this queue interacts with pool sizing: - If fewer than
-     * corePoolSize threads are running, the Scheduler always prefers adding a
-     * new thread rather than queuing. - If corePoolSize or more threads are
-     * running, the Scheduler always prefers queuing a request rather than
-     * adding a new thread. - If a request cannot be queued, a new thread is
-     * created unless this would exceed maxPoolSize, in which case, the task
-     * will be rejected.
-     * 
-     * QueueSize - The initial capacity for this priority queue used for holding
-     * tasks before they are executed.
-     * 
-     * The queue will hold only the Runnable tasks submitted by the execute
-     * method.
-     * 
-     * 
+     * Method used by the Scheduler Component to get the Queue Size for the srmPrepareToPut management. If no value is
+     * found in the configuration medium, then the default value is returned instead. Scheduler hold a blocking priority
+     * queue used to transfer and hols submitted tasks. The use of this queue interacts with pool sizing: - If fewer
+     * than corePoolSize threads are running, the Scheduler always prefers adding a new thread rather than queuing. - If
+     * corePoolSize or more threads are running, the Scheduler always prefers queuing a request rather than adding a new
+     * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
+     * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
+     * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
      * key="scheduler.chunksched.ptp.queueSize"; default value=100;
      */
     public int getPtPQueueSize() {
@@ -1456,27 +1108,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Core Pool Size
-     * for the srmPrepareToGet management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * corePoolSize - the number of threads to keep in the pool, even if they
-     * are idle.
-     * 
+     * Method used by the Scheduler Component to get the Worker Core Pool Size for the srmPrepareToGet management. If no
+     * value is found in the configuration medium, then the default value is returned instead. Scheduler component uses
+     * a thread pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize
+     * and maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are
+     * running, a new thread is created to handle the request, even if other worker threads are idle. If there are more
+     * than corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue
+     * is full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize
+     * - the number of threads to keep in the pool, even if they are idle.
      * key="scheduler.chunksched.ptg.workerCorePoolSize"; default value=10;
      */
     public int getPtGCorePoolSize() {
@@ -1490,28 +1130,16 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Max Pool Size
-     * for the srmPrepareToGet management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * maxPoolSize - the maximum number of threads to allow in the pool.
-     * 
-     * 
-     * key="scheduler.chunksched.ptg.workerMaxPoolSize"; default value=100;
+     * Method used by the Scheduler Component to get the Worker Max Pool Size for the srmPrepareToGet management. If no
+     * value is found in the configuration medium, then the default value is returned instead. Scheduler component uses
+     * a thread pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize
+     * and maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are
+     * running, a new thread is created to handle the request, even if other worker threads are idle. If there are more
+     * than corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue
+     * is full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize -
+     * the maximum number of threads to allow in the pool. key="scheduler.chunksched.ptg.workerMaxPoolSize"; default
+     * value=100;
      */
     public int getPtGMaxPoolSize() {
         String key = "scheduler.chunksched.ptg.workerMaxPoolSize";
@@ -1524,32 +1152,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Queue Size for the
-     * srmPrepareToGet management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler hold a blocking priority queue used to transfer and hols
-     * submitted tasks.
-     * 
-     * The use of this queue interacts with pool sizing: - If fewer than
-     * corePoolSize threads are running, the Scheduler always prefers adding a
-     * new thread rather than queuing. - If corePoolSize or more threads are
-     * running, the Scheduler always prefers queuing a request rather than
-     * adding a new thread. - If a request cannot be queued, a new thread is
-     * created unless this would exceed maxPoolSize, in which case, the task
-     * will be rejected.
-     * 
-     * QueueSize - The initial capacity for this priority queue used for holding
-     * tasks before they are executed.
-     * 
-     * The queue will hold only the Runnable tasks submitted by the execute
-     * method.
-     * 
-     * 
+     * Method used by the Scheduler Component to get the Queue Size for the srmPrepareToGet management. If no value is
+     * found in the configuration medium, then the default value is returned instead. Scheduler hold a blocking priority
+     * queue used to transfer and hols submitted tasks. The use of this queue interacts with pool sizing: - If fewer
+     * than corePoolSize threads are running, the Scheduler always prefers adding a new thread rather than queuing. - If
+     * corePoolSize or more threads are running, the Scheduler always prefers queuing a request rather than adding a new
+     * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
+     * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
+     * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
      * key="scheduler.chunksched.ptg.queueSize"; default value=100;
      */
     public int getPtGQueueSize() {
@@ -1563,28 +1174,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Core Pool Size
-     * for the srmCopy management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * corePoolSize - the number of threads to keep in the pool, even if they
-     * are idle.
-     * 
-     * 
+     * Method used by the Scheduler Component to get the Worker Core Pool Size for the srmCopy management. If no value
+     * is found in the configuration medium, then the default value is returned instead. Scheduler component uses a
+     * thread pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize
+     * and maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are
+     * running, a new thread is created to handle the request, even if other worker threads are idle. If there are more
+     * than corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue
+     * is full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize
+     * - the number of threads to keep in the pool, even if they are idle.
      * key="scheduler.chunksched.copy.workerCorePoolSize"; default value=10;
      */
     public int getCopyCorePoolSize() {
@@ -1598,27 +1196,16 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Max Pool Size
-     * for the srmCopy management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * maxPoolSize - the maximum number of threads to allow in the pool.
-     * 
-     * key="scheduler.chunksched.copy.workerMaxPoolSize"; default value=100;
+     * Method used by the Scheduler Component to get the Worker Max Pool Size for the srmCopy management. If no value is
+     * found in the configuration medium, then the default value is returned instead. Scheduler component uses a thread
+     * pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize and
+     * maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are running,
+     * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
+     * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
+     * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize -
+     * the maximum number of threads to allow in the pool. key="scheduler.chunksched.copy.workerMaxPoolSize"; default
+     * value=100;
      */
     public int getCopyMaxPoolSize() {
         String key = "scheduler.chunksched.copy.workerMaxPoolSize";
@@ -1631,31 +1218,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Queue Size for the
-     * srmCopy management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler hold a blocking priority queue used to transfer and hols
-     * submitted tasks.
-     * 
-     * The use of this queue interacts with pool sizing: - If fewer than
-     * corePoolSize threads are running, the Scheduler always prefers adding a
-     * new thread rather than queuing. - If corePoolSize or more threads are
-     * running, the Scheduler always prefers queuing a request rather than
-     * adding a new thread. - If a request cannot be queued, a new thread is
-     * created unless this would exceed maxPoolSize, in which case, the task
-     * will be rejected.
-     * 
-     * QueueSize - The initial capacity for this priority queue used for holding
-     * tasks before they are executed.
-     * 
-     * The queue will hold only the Runnable tasks submitted by the execute
-     * method.
-     * 
+     * Method used by the Scheduler Component to get the Queue Size for the srmCopy management. If no value is found in
+     * the configuration medium, then the default value is returned instead. Scheduler hold a blocking priority queue
+     * used to transfer and hols submitted tasks. The use of this queue interacts with pool sizing: - If fewer than
+     * corePoolSize threads are running, the Scheduler always prefers adding a new thread rather than queuing. - If
+     * corePoolSize or more threads are running, the Scheduler always prefers queuing a request rather than adding a new
+     * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
+     * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
+     * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
      * key="scheduler.chunksched.copy.queueSize"; default value=100;
      */
     public int getCopyQueueSize() {
@@ -1669,28 +1240,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Core Pool Size
-     * for the srmBoL management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * corePoolSize - the number of threads to keep in the pool, even if they
-     * are idle.
-     * 
-     * 
+     * Method used by the Scheduler Component to get the Worker Core Pool Size for the srmBoL management. If no value is
+     * found in the configuration medium, then the default value is returned instead. Scheduler component uses a thread
+     * pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize and
+     * maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are running,
+     * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
+     * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
+     * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize -
+     * the number of threads to keep in the pool, even if they are idle.
      * key="scheduler.chunksched.copy.workerCorePoolSize"; default value=10;
      */
     public int getBoLCorePoolSize() {
@@ -1704,27 +1262,16 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Max Pool Size
-     * for the srmBoL management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * maxPoolSize - the maximum number of threads to allow in the pool.
-     * 
-     * key="scheduler.chunksched.copy.workerMaxPoolSize"; default value=100;
+     * Method used by the Scheduler Component to get the Worker Max Pool Size for the srmBoL management. If no value is
+     * found in the configuration medium, then the default value is returned instead. Scheduler component uses a thread
+     * pool. Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize and
+     * maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are running,
+     * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
+     * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
+     * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize -
+     * the maximum number of threads to allow in the pool. key="scheduler.chunksched.copy.workerMaxPoolSize"; default
+     * value=100;
      */
     public int getBoLMaxPoolSize() {
         String key = "scheduler.chunksched.bol.workerMaxPoolSize";
@@ -1737,31 +1284,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Queue Size for the
-     * srmBoL management.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler hold a blocking priority queue used to transfer and hols
-     * submitted tasks.
-     * 
-     * The use of this queue interacts with pool sizing: - If fewer than
-     * corePoolSize threads are running, the Scheduler always prefers adding a
-     * new thread rather than queuing. - If corePoolSize or more threads are
-     * running, the Scheduler always prefers queuing a request rather than
-     * adding a new thread. - If a request cannot be queued, a new thread is
-     * created unless this would exceed maxPoolSize, in which case, the task
-     * will be rejected.
-     * 
-     * QueueSize - The initial capacity for this priority queue used for holding
-     * tasks before they are executed.
-     * 
-     * The queue will hold only the Runnable tasks submitted by the execute
-     * method.
-     * 
+     * Method used by the Scheduler Component to get the Queue Size for the srmBoL management. If no value is found in
+     * the configuration medium, then the default value is returned instead. Scheduler hold a blocking priority queue
+     * used to transfer and hols submitted tasks. The use of this queue interacts with pool sizing: - If fewer than
+     * corePoolSize threads are running, the Scheduler always prefers adding a new thread rather than queuing. - If
+     * corePoolSize or more threads are running, the Scheduler always prefers queuing a request rather than adding a new
+     * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
+     * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
+     * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
      * key="scheduler.chunksched.copy.queueSize"; default value=100;
      */
     public int getBoLQueueSize() {
@@ -1775,29 +1306,16 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Core Pool Size
-     * for the Crusher.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * corePoolSize - the number of threads to keep in the pool, even if they
-     * are idle.
-     * 
-     * 
-     * key="scheduler.crusher.workerCorePoolSize"; default value=10;
+     * Method used by the Scheduler Component to get the Worker Core Pool Size for the Crusher. If no value is found in
+     * the configuration medium, then the default value is returned instead. Scheduler component uses a thread pool.
+     * Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize and
+     * maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are running,
+     * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
+     * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
+     * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize -
+     * the number of threads to keep in the pool, even if they are idle. key="scheduler.crusher.workerCorePoolSize";
+     * default value=10;
      */
     public int getCorePoolSize() {
         String key = "scheduler.crusher.workerCorePoolSize";
@@ -1810,27 +1328,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Worker Max Pool Size
-     * for the Crisher.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler component uses a thread pool. Scheduler pool will automatically
-     * adjust the pool size according to the bounds set by corePoolSize and
-     * maximumPoolSize. When a new task is submitted in method execute, and
-     * fewer than corePoolSize threads are running, a new thread is created to
-     * handle the request, even if other worker threads are idle. If there are
-     * more than corePoolSize but less than maximumPoolSize threads running, a
-     * new thread will be created only if the queue is full. By setting
-     * corePoolSize and maximumPoolSize the same, you create a fixed-size thread
-     * pool.
-     * 
-     * maxPoolSize - the maximum number of threads to allow in the pool.
-     * 
-     * key="scheduler.crusher.workerMaxPoolSize"; default value=100;
+     * Method used by the Scheduler Component to get the Worker Max Pool Size for the Crisher. If no value is found in
+     * the configuration medium, then the default value is returned instead. Scheduler component uses a thread pool.
+     * Scheduler pool will automatically adjust the pool size according to the bounds set by corePoolSize and
+     * maximumPoolSize. When a new task is submitted in method execute, and fewer than corePoolSize threads are running,
+     * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
+     * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
+     * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize -
+     * the maximum number of threads to allow in the pool. key="scheduler.crusher.workerMaxPoolSize"; default value=100;
      */
     public int getMaxPoolSize() {
         String key = "scheduler.crusher.workerMaxPoolSize";
@@ -1843,32 +1349,15 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the Scheduler Component to get the Queue Size for the
-     * Crusher.
-     * 
-     * If no value is found in the configuration medium, then the default value
-     * is returned instead.
-     * 
-     * Scheduler hold a blocking priority queue used to transfer and hols
-     * submitted tasks.
-     * 
-     * The use of this queue interacts with pool sizing: - If fewer than
-     * corePoolSize threads are running, the Scheduler always prefers adding a
-     * new thread rather than queuing. - If corePoolSize or more threads are
-     * running, the Scheduler always prefers queuing a request rather than
-     * adding a new thread. - If a request cannot be queued, a new thread is
-     * created unless this would exceed maxPoolSize, in which case, the task
-     * will be rejected.
-     * 
-     * QueueSize - The initial capacity for this priority queue used for holding
-     * tasks before they are executed.
-     * 
-     * The queue will hold only the Runnable tasks submitted by the execute
-     * method.
-     * 
-     * 
+     * Method used by the Scheduler Component to get the Queue Size for the Crusher. If no value is found in the
+     * configuration medium, then the default value is returned instead. Scheduler hold a blocking priority queue used
+     * to transfer and hols submitted tasks. The use of this queue interacts with pool sizing: - If fewer than
+     * corePoolSize threads are running, the Scheduler always prefers adding a new thread rather than queuing. - If
+     * corePoolSize or more threads are running, the Scheduler always prefers queuing a request rather than adding a new
+     * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
+     * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
+     * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
      * key="scheduler.crusher.queueSize"; default value=100;
      */
     public int getQueueSize() {
@@ -1882,7 +1371,6 @@ public class Configuration {
         }
     }
 
-
     /**
      * getNamespaceConfigPath
      * 
@@ -1891,7 +1379,6 @@ public class Configuration {
     public String getNamespaceConfigPath() {
         return cr.configurationDirectory();
     }
-
 
     /**
      * getNamespaceConfigFilename
@@ -1909,7 +1396,6 @@ public class Configuration {
         }
     }
 
-
     public int getNamespaceConfigRefreshRateInSeconds() {
         String key = "namespace.refreshrate";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -1922,19 +1408,12 @@ public class Configuration {
 
     }
 
-
     /**
      * getNamespaceAutomaticReloading
      * 
-     * @return boolean
-     * 
-     *         Method used by Namespace Configuration Reloading Strategy
-     *         (Peeper). If "peeper" found namespace.xml config file changed it
-     *         checks if it can perform an automatic reload.
-     * 
-     *         If no value is found in the configuration medium, then the
-     *         default one is used instead.
-     * 
+     * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper" found
+     *         namespace.xml config file changed it checks if it can perform an automatic reload. If no value is found
+     *         in the configuration medium, then the default one is used instead.
      *         key="namespace.automatic-config-reload"; default value=false
      */
     public boolean getNamespaceAutomaticReloading() {
@@ -1948,15 +1427,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by the ECARAuthorizationSource to establish which ECAR end
-     * point to use.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="ecar.sea"; default value="https://egrid-2.egrid.it:8859"
+     * Method used by the ECARAuthorizationSource to establish which ECAR end point to use. If no value is found in the
+     * configuration medium, then the default one is used instead. key="ecar.sea"; default
+     * value="https://egrid-2.egrid.it:8859"
      */
     public String getECARServiceEndPoint() {
         String key = "ecar.sea";
@@ -1969,14 +1443,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by SFN to establish the FE binding port.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="fe.port"; default value="8444"
+     * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
+     * default one is used instead. key="fe.port"; default value="8444"
      */
     public int getFEPort() {
         String key = "fe.port";
@@ -1989,14 +1458,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by NaiveGridFTP internal client in srmCopy to establish the
-     * time out in milliseconds for a reply from the server.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
+     * Method used by NaiveGridFTP internal client in srmCopy to establish the time out in milliseconds for a reply from
+     * the server. If no value is found in the configuration medium, then the default one is used instead.
      * key="NaiveGridFTP.TimeOut"; default value="15000"
      */
     public int getGridFTPTimeOut() {
@@ -2010,15 +1474,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by SRM22Client in srmCopy to establish the PinLifeTime in
-     * seconds when issuing srmPtP.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="SRM22Client.PinLifeTime"; default value="300"
+     * Method used by SRM22Client in srmCopy to establish the PinLifeTime in seconds when issuing srmPtP. If no value is
+     * found in the configuration medium, then the default one is used instead. key="SRM22Client.PinLifeTime"; default
+     * value="300"
      */
     public int getSRM22ClientPinLifeTime() {
         String key = "SRM22Client.PinLifeTime";
@@ -2030,7 +1489,6 @@ public class Configuration {
             return cr.getConfiguration().getInt(key);
         }
     }
-
 
     public boolean getSURLInQueryForm() {
         boolean result = false;
@@ -2045,7 +1503,6 @@ public class Configuration {
         return result;
     }
 
-
     public String getSFNQueryStringPrefix() {
         String key = "storm.service.SFNQueryStringPrefix";
         String defaultValue = "SFN";
@@ -2057,7 +1514,6 @@ public class Configuration {
             return cr.getConfiguration().getString(key);
         }
     }
-
 
     /**
      * MANDATORY CONFIGURATION PARAMETER IF AND ONLY IF SURL is in QUERY FORM
@@ -2076,7 +1532,6 @@ public class Configuration {
         }
     }
 
-
     /**
      * MANDATORY CONFIGURATION PARAMETER!
      * 
@@ -2094,7 +1549,6 @@ public class Configuration {
         }
     }
 
-
     public int getServicePort() {
         String key = "storm.service.port";
         int defaultValue = getFEPort();
@@ -2107,15 +1561,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestCredentialsDAO to establish the directory that
-     * holds the proxy file.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="proxy.home"; default value="/opt/storm/var/proxies"
+     * Method used by RequestCredentialsDAO to establish the directory that holds the proxy file. If no value is found
+     * in the configuration medium, then the default one is used instead. key="proxy.home"; default
+     * value="/opt/storm/var/proxies"
      */
     public String getProxyHome() {
         String key = "proxy.home";
@@ -2128,16 +1577,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by PtPChunk to find out if missing local directories should
-     * be created automatically or not. SRM 2.2 specification forbids automatic
-     * creation.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="automatic.directory.creation"; default value=false
+     * Method used by PtPChunk to find out if missing local directories should be created automatically or not. SRM 2.2
+     * specification forbids automatic creation. If no value is found in the configuration medium, then the default one
+     * is used instead. key="automatic.directory.creation"; default value=false
      */
     public boolean getAutomaticDirectoryCreation() {
         String key = "automatic.directory.creation";
@@ -2150,15 +1593,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by TOverwriteModeConverter to establish the default
-     * OverwriteMode to use.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="default.overwrite"; default value="A"
+     * Method used by TOverwriteModeConverter to establish the default OverwriteMode to use. If no value is found in the
+     * configuration medium, then the default one is used instead. key="default.overwrite"; default value="A"
      */
     public String getDefaultOverwriteMode() {
         String key = "default.overwrite";
@@ -2171,15 +1608,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by FileStorageTypeConverter to establish the default
-     * TFileStorageType to use.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="default.storagetype"; default value="V"
+     * Method used by FileStorageTypeConverter to establish the default TFileStorageType to use. If no value is found in
+     * the configuration medium, then the default one is used instead. key="default.storagetype"; default value="V"
      */
     public String getDefaultFileStorageType() {
         String key = "default.storagetype";
@@ -2207,20 +1638,11 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryDAO to establish the time that must be
-     * elapsed for considering a request expired.
-     * 
-     * The time measure specified in the configuration medium is in _days_.
-     * 
-     * The value returned by this method, is expressed in _seconds_
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="expired.request.time"; default value=7 (days - which correspond to 7
-     * * 24 * 60 * 60 seconds)
+     * Method used by RequestSummaryDAO to establish the time that must be elapsed for considering a request expired.
+     * The time measure specified in the configuration medium is in _days_. The value returned by this method, is
+     * expressed in _seconds_ If no value is found in the configuration medium, then the default one is used instead.
+     * key="expired.request.time"; default value=7 (days - which correspond to 7 * 24 * 60 * 60 seconds)
      */
     public long getExpiredRequestTime() {
         String key = "expired.request.time";
@@ -2233,14 +1655,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryCatalog to establish the initial delay
-     * before starting the purging thread, in _seconds_.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
+     * Method used by RequestSummaryCatalog to establish the initial delay before starting the purging thread, in
+     * _seconds_. If no value is found in the configuration medium, then the default one is used instead.
      * key="purge.delay"; default value=10
      */
     public int getRequestPurgerDelay() {
@@ -2270,15 +1687,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryCatalog to establish if the purging of
-     * expired requests should be enabled or not.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="purging"; default value=true
+     * Method used by RequestSummaryCatalog to establish if the purging of expired requests should be enabled or not. If
+     * no value is found in the configuration medium, then the default one is used instead. key="purging"; default
+     * value=true
      */
     public boolean getExpiredRequestPurging() {
         String key = "purging";
@@ -2291,16 +1703,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by TURLBuilder to adding (in case) extra slashes after the
-     * "authority" part of a TURL
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="extraslashes.file"; default value="" (that is 'file:///) value = "/"
-     * ==> file:////
+     * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a TURL If no value is
+     * found in the configuration medium, then the default one is used instead. key="extraslashes.file"; default
+     * value="" (that is 'file:///) value = "/" ==> file:////
      */
     public String getExtraSlashesForFileTURL() {
         String key = "extraslashes.file";
@@ -2313,17 +1719,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by TURLBuilder to adding (in case) extra slashes after the
-     * "authority" part of a TURL
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="extraslashes.rfio"; default value="" (that is
-     * 'rfio://<hostname>:port<PhysicalFN>')) value = "/" ==>
-     * 'rfio://<hostname>:port/<PhysicalFN>'
+     * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a TURL If no value is
+     * found in the configuration medium, then the default one is used instead. key="extraslashes.rfio"; default
+     * value="" (that is 'rfio://<hostname>:port<PhysicalFN>')) value = "/" ==> 'rfio://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForRFIOTURL() {
         String key = "extraslashes.rfio";
@@ -2336,16 +1735,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by TURLBuilder to adding (in case) extra slashes after the
-     * "authority" part of a TURL
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="extraslashes.gsiftp"; default value="" (that is
-     * 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
+     * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a TURL If no value is
+     * found in the configuration medium, then the default one is used instead. key="extraslashes.gsiftp"; default
+     * value="" (that is 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
      * 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForGsiFTPTURL() {
@@ -2359,17 +1752,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by TURLBuilder to adding (in case) extra slashes after the
-     * "authority" part of a TURL
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="extraslashes.root"; default value="/" (that is
-     * 'root://<hostname>:port<PhysicalFN>')) value = "" ==>
-     * 'root://<hostname>:port<PhysicalFN>'
+     * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a TURL If no value is
+     * found in the configuration medium, then the default one is used instead. key="extraslashes.root"; default
+     * value="/" (that is 'root://<hostname>:port<PhysicalFN>')) value = "" ==> 'root://<hostname>:port<PhysicalFN>'
      */
     public String getExtraSlashesForROOTTURL() {
         String key = "extraslashes.root";
@@ -2382,16 +1768,10 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by Ping Executor to retrieve the Properties File Name where
-     * the properties <key,value> are stored.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="extraslashes.gsiftp"; default value="" (that is
-     * 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
+     * Method used by Ping Executor to retrieve the Properties File Name where the properties <key,value> are stored. If
+     * no value is found in the configuration medium, then the default one is used instead. key="extraslashes.gsiftp";
+     * default value="" (that is 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
      * 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getPingValuesPropertiesFilename() {
@@ -2405,15 +1785,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File
-     * Name
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="health.electrocardiogram.filename";
+     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
+     * configuration medium, then the default one is used instead. key="health.electrocardiogram.filename";
      */
     public String getHealthElectrocardiogramFile() {
         String key = "health.electrocardiogram.filename";
@@ -2426,15 +1800,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File
-     * Name
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="health.bookkeeping.filename";
+     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
+     * configuration medium, then the default one is used instead. key="health.bookkeeping.filename";
      */
     public String getBookKeepingLogFile() {
         String key = "health.bookkeeping.log.filename";
@@ -2447,15 +1815,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File
-     * Name
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
-     * key="health.performance.log.filename";
+     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
+     * configuration medium, then the default one is used instead. key="health.performance.log.filename";
      */
     public String getPerformanceMonitoringLogFile() {
         String key = "health.performance.log.filename";
@@ -2468,14 +1830,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used by RequestSummaryCatalog to establish the time interval in
-     * _seconds_ between successive purging checks.
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
+     * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between successive purging
+     * checks. If no value is found in the configuration medium, then the default one is used instead.
      * key="health.performance.log.verbosity"; default value=1 (0..3)
      */
     public int getPerformanceLogVerbosity() {
@@ -2489,12 +1846,8 @@ public class Configuration {
         }
     }
 
-
     /**
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead.
-     * 
+     * If no value is found in the configuration medium, then the default one is used instead.
      * key="health.electrocardiogram.period"; default value=60 (1 min)
      */
     public int getHearthbeatPeriod() {
@@ -2508,17 +1861,11 @@ public class Configuration {
         }
     }
 
-
     /**
      * getPerformanceGlancePeriod
      * 
-     * @return int
-     * 
-     *         If no value is found in the configuration medium, then the
-     *         default one is used instead.
-     * 
-     *         key="health.performance.glance.timeInterval"; default value=15
-     *         (15 sec)
+     * @return int If no value is found in the configuration medium, then the default one is used instead.
+     *         key="health.performance.glance.timeInterval"; default value=15 (15 sec)
      */
     public int getPerformanceGlanceTimeInterval() {
         String key = "health.performance.glance.timeInterval";
@@ -2531,17 +1878,11 @@ public class Configuration {
         }
     }
 
-
     /**
      * getPerformanceGlancePeriod
      * 
-     * @return int
-     * 
-     *         If no value is found in the configuration medium, then the
-     *         default one is used instead.
-     * 
-     *         key="health.performance.logbook.timeInterval"; default value=20
-     *         (20 sec)
+     * @return int If no value is found in the configuration medium, then the default one is used instead.
+     *         key="health.performance.logbook.timeInterval"; default value=20 (20 sec)
      */
     public int getPerformanceLogbookTimeInterval() {
         String key = "health.performance.logbook.timeInterval";
@@ -2554,16 +1895,10 @@ public class Configuration {
         }
     }
 
-
     /**
      * getPerformanceMeasuring
      * 
-     * @return boolean
-     * 
-     * 
-     *         If no value is found in the configuration medium, then the
-     *         default one is used instead.
-     * 
+     * @return boolean If no value is found in the configuration medium, then the default one is used instead.
      *         key="health.performance.mesauring.enabled"; default value=false
      */
     public boolean getPerformanceMeasuring() {
@@ -2577,20 +1912,13 @@ public class Configuration {
         }
     }
 
-
     /**
      * getBookKeppeingEnabled
      * 
-     * @return boolean
-     * 
-     *         Method used by Namespace Configuration Reloading Strategy
-     *         (Peeper). If "peeper" found namespace.xml config file changed it
-     *         checks if it can perform an automatic reload.
-     * 
-     *         If no value is found in the configuration medium, then the
-     *         default one is used instead.
-     * 
-     *         key="health.bookkeeping.enabled"; default value=false
+     * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper" found
+     *         namespace.xml config file changed it checks if it can perform an automatic reload. If no value is found
+     *         in the configuration medium, then the default one is used instead. key="health.bookkeeping.enabled";
+     *         default value=false
      */
     public boolean getBookKeepingEnabled() {
         String key = "health.bookkeeping.enabled";
@@ -2602,7 +1930,6 @@ public class Configuration {
             return cr.getConfiguration().getBoolean(key);
         }
     }
-
 
     public String getT1D1PluginName() {
         String key = "T1D1Plugin";
@@ -2616,7 +1943,6 @@ public class Configuration {
 
     }
 
-
     public String getT1D1HiddenFilePrefix() {
         String key = "T1D1HiddenFilePrefix";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -2628,10 +1954,8 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Enable write permission on new created directory for
-     * LocalAuthorizationSource usage.
+     * Enable write permission on new created directory for LocalAuthorizationSource usage.
      * 
      * @return false by default, otherwise what is specified in the properties
      */
@@ -2646,7 +1970,6 @@ public class Configuration {
         }
     }
 
-
     public int getMaxLoop() {
         String key = "abort.maxloop";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -2658,13 +1981,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the ClassName for the User Mapper Class
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead, that is "it.grid.storm.griduser.LcmapsMapper"
-     * 
+     * Method used to retrieve the ClassName for the User Mapper Class If no value is found in the configuration medium,
+     * then the default one is used instead, that is "it.grid.storm.griduser.LcmapsMapper"
      * key="griduser.mapper.classname";
      */
     public String getGridUserMapperClassname() {
@@ -2678,14 +1997,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the default path where the AuthzDB file are
-     * stored
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead, that is the "configuration directory"
-     * 
+     * Method used to retrieve the default path where the AuthzDB file are stored If no value is found in the
+     * configuration medium, then the default one is used instead, that is the "configuration directory"
      * key="authzdb.path";
      */
     public String getAuthzDBPath() {
@@ -2699,14 +2013,9 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the default refresh rate of the AuthzDB files
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead, that is the "5 sec"
-     * 
-     * key="authzdb.refreshrate";
+     * Method used to retrieve the default refresh rate of the AuthzDB files If no value is found in the configuration
+     * medium, then the default one is used instead, that is the "5 sec" key="authzdb.refreshrate";
      */
     public int getRefreshRateAuthzDBfilesInSeconds() {
         String key = "authzdb.refreshrate";
@@ -2718,7 +2027,6 @@ public class Configuration {
             return cr.getConfiguration().getInt(key);
         }
     }
-
 
     @Override
     public String toString() {
@@ -2747,7 +2055,7 @@ public class Configuration {
     public String[] getChecksumServiceURLArray() {
         String key = "checksum.serviceURL";
         String[] urlArray;
-        
+
         if (cr.getConfiguration().containsKey(key)) {
             urlArray = cr.getConfiguration().getStringArray(key);
         } else {
@@ -2755,7 +2063,6 @@ public class Configuration {
         }
         return urlArray;
     }
-
 
     public int getChecksumQueueSize() {
 
@@ -2768,7 +2075,7 @@ public class Configuration {
 
         return 100;
     }
-    
+
     public String getChecksumAlgorithm() {
 
         String key = "checksum.algorithm";
@@ -2792,14 +2099,9 @@ public class Configuration {
         return false;
     }
 
-
     /**
-     * Method used to retrieve the PORT where the Recall Table (RESTful) service
-     * listen
-     * 
-     * If no value is found in the configuration medium, then the default one is
-     * used instead, that is the "9998"
-     * 
+     * Method used to retrieve the PORT where the Recall Table (RESTful) service listen If no value is found in the
+     * configuration medium, then the default one is used instead, that is the "9998"
      * key="tape.recalltable.service.port";
      */
     public int getRecallTableServicePort() {
@@ -2813,11 +2115,8 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the key string used to pass RETRY-VALUE parameter
-     * to Recall Table service
-     * 
+     * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table service
      * key="tape.recalltable.service.param.retry-value";
      */
     public String getRetryValueKey() {
@@ -2831,11 +2130,8 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the key string used to pass RETRY-VALUE parameter
-     * to Recall Table service
-     * 
+     * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table service
      * key="tape.recalltable.service.param.status";
      */
     public String getStatusKey() {
@@ -2849,11 +2145,8 @@ public class Configuration {
         }
     }
 
-
     /**
-     * Method used to retrieve the key string used to pass RETRY-VALUE parameter
-     * to Recall Table service
-     * 
+     * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table service
      * key="tape.recalltable.service.param.takeover";
      */
     public String getTaskoverKey() {
@@ -2867,4 +2160,20 @@ public class Configuration {
         }
     }
 
+    /**
+     * This is the FLAG to support or not the checksum in the srmLS sull detailed list. Since the checksum is calculated
+     * run time each time and LS request in full detailed is done, it could be quite expensive for large file. Since FTS
+     * can use both srmls and gridftp based checksum, the support has been made optional. Default is false.
+     */
+    public boolean getChecksumEnabled() {
+        String key = "checksum.enabled";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return false;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
+
+    }
 }

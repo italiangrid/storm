@@ -34,7 +34,7 @@ public class ChecksumManager {
                 URL url = new URL(urlString);
 
                 urlList.add(urlString);
-                
+
                 log.info("Adding URL for external checksum server: " + urlString);
 
             } catch (MalformedURLException e) {
@@ -89,7 +89,7 @@ public class ChecksumManager {
             } catch (MalformedURLException e) {
                 log.error("BUG, this exception should had never be thrown.", e);
             }
-            
+
             isAlive = client.ping();
 
         } while ((index != currentURLIndex) && !isAlive);
@@ -112,8 +112,9 @@ public class ChecksumManager {
 
     /**
      * Return the computed checksum for the given file. If the checksum is already stored in an extended attribute then
-     * that value is given back, otherwise the checksum is computed by an external service and stored in an extended
-     * attribute. This method is blocking (i.e. waits for the checksum to be computed).
+     * that value is given back, otherwise: - check if the computation of checksum is enabled. - if ENABLED then the
+     * checksum is computed by an external service and stored in an extended attribute. - if NOT ENABLED return with a
+     * NULL value. This method is blocking (i.e. waits for the checksum to be computed, if it is enabled).
      * 
      * @param fileName file absolute path.
      * @return the computed checksum for the given file or <code>null</code> if some error occurred. The error is
@@ -122,19 +123,31 @@ public class ChecksumManager {
     public String getChecksum(String fileName) {
 
         log.debug("Requesting checksum for file: " + fileName);
-        
+
         String checksum = StormEA.getChecksum(fileName, algorithm);
 
         if (checksum == null) {
 
-            checksum = retrieveChecksumFromExternalService(fileName);
-            
-            if (checksum == null) {
-                return null;
+            // check if Checksum computation is Enabled or not
+            if (Configuration.getInstance().getChecksumEnabled()) {
+
+                // Get current time
+                long start = System.currentTimeMillis();
+
+                checksum = retrieveChecksumFromExternalService(fileName);
+
+                if (checksum == null) {
+                    return null;
+                }
+
+                // Get elapsed time in milliseconds
+                long elapsedTimeMillis = System.currentTimeMillis() - start;
+
+                log.debug("Checksum Computation: End. Elapsed Time (ms) = " + elapsedTimeMillis);
+                StormEA.setChecksum(fileName, checksum, algorithm);
+            } else {
+                log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
             }
-
-            StormEA.setChecksum(fileName, checksum, algorithm);
-
         }
 
         return checksum;
@@ -166,25 +179,24 @@ public class ChecksumManager {
     public boolean setChecksum(String fileName) {
 
         String checksum = retrieveChecksumFromExternalService(fileName);
-        
+
         if (checksum == null) {
             StormEA.removeChecksum(fileName);
             return false;
         }
-        
+
         StormEA.setChecksum(fileName, checksum, algorithm);
-        
+
         return true;
     }
 
     private String retrieveChecksumFromExternalService(String fileName) {
 
         if (urlList.isEmpty()) {
-            
+
             log.warn("No external checksum servers found, no checksum returned for file: " + fileName);
             return null;
         }
-        
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
@@ -194,7 +206,7 @@ public class ChecksumManager {
         }
 
         log.debug("Requesting checksum to service: " + targetURL);
-        
+
         ChecksumClient client = ChecksumClientFactory.getChecksumClient();
 
         try {
