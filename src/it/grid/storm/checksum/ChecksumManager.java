@@ -134,6 +134,8 @@ public class ChecksumManager {
                 // Get current time
                 long start = System.currentTimeMillis();
 
+                log.debug("Checksum Computation: START.");
+
                 checksum = retrieveChecksumFromExternalService(fileName);
 
                 if (checksum == null) {
@@ -143,7 +145,7 @@ public class ChecksumManager {
                 // Get elapsed time in milliseconds
                 long elapsedTimeMillis = System.currentTimeMillis() - start;
 
-                log.debug("Checksum Computation: End. Elapsed Time (ms) = " + elapsedTimeMillis);
+                log.debug("Checksum Computation: END. Elapsed Time (ms) = " + elapsedTimeMillis);
                 StormEA.setChecksum(fileName, checksum, algorithm);
             } else {
                 log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
@@ -200,8 +202,7 @@ public class ChecksumManager {
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
-            log.warn("Checksum computation (" + fileName
-                    + ") request failed: none of the servers has responded");
+            log.warn("Checksum computation (' + fileName + ') request failed: none of the servers has responded");
             return null;
         }
 
