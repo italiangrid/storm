@@ -13,9 +13,6 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.StorageClassType;
-import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
@@ -27,8 +24,6 @@ import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DataTransferCommand;
-import it.grid.storm.synchcall.common.HiddenFileT1D1Plugin;
-import it.grid.storm.synchcall.common.T1D1PluginInterface;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
@@ -44,28 +39,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- * 
- * 
  * Authors:
  * 
  * @author=lucamag luca.magnoniATcnaf.infn.it
  * @author Alberto Forti
  * @date = Oct 10, 2008
- * 
  */
 
 public class PutDoneCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
     private final String funcName = "PutDone: ";
 
-    public PutDoneCommand() {};
+    public PutDoneCommand() {
+    };
 
     /**
-     * Does a PutDone. Used to notify the SRM that the client completed a file transfer to the
-     * TransferURL in the allocated space (by a PrepareToPut).
+     * Does a PutDone. Used to notify the SRM that the client completed a file transfer to the TransferURL in the
+     * allocated space (by a PrepareToPut).
      */
     public OutputData execute(InputData absData) {
 
@@ -177,9 +169,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
 
         /*
-         * Execute a PutDone for all the SURLs specified in the request (the following for loop).
-         * Each requested SURL must be found in the catalog (as a SURL associated with the specified
-         * request token), otherwise the return status of the missing SURL indicates the error.
+         * Execute a PutDone for all the SURLs specified in the request (the following for loop). Each requested SURL
+         * must be found in the catalog (as a SURL associated with the specified request token), otherwise the return
+         * status of the missing SURL indicates the error.
          */
         ArrayList listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
         int num_SURLs = listOfSURLs.size();
@@ -320,12 +312,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
                 // 3- compute the checksum and store it in an extended attribute
                 LocalFile localFile = stori.getLocalFile();
-                boolean checksumComputed = localFile.setChecksum();
-                
-                if (!checksumComputed) {
-                    arrayOfFileStatus.getTSURLReturnStatus(i)
-                                     .getStatus()
-                                     .setExplanation("Failed to computed checksum");
+
+                if (Configuration.getInstance().getChecksumEnabled()) {
+
+                    boolean checksumComputed = localFile.setChecksum();
+                    if (!checksumComputed) {
+                        arrayOfFileStatus.getTSURLReturnStatus(i)
+                                         .getStatus()
+                                         .setExplanation("Failed to computed checksum");
+                    } else {
+                        log.debug("Checksum setted to SURL:" + surl.toString());
+                    }
+
                 }
 
                 // 4- Tape stuff management.
@@ -341,7 +339,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             }
 
         }
-        
+
         // WARNING! This purge overload the mysqld in case of large volatile table and multiple PD
         // requests
         // log.debug(funcName + "Purging VolatileAndJiTCatalog...");

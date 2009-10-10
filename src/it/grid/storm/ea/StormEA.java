@@ -80,7 +80,7 @@ public class StormEA {
     }
 
     public static long getPinned(String fileName) {
-
+        String longString = null;
         try {
             byte[] byteArray = ea.getXAttr(fileName, EA_PINNED);
 
@@ -88,7 +88,14 @@ public class StormEA {
                 return -1;
             }
 
-            String longString = new String(byteArray);
+            longString = new String(byteArray);
+            if (longString != null) {
+                log.debug("Retrieved PinLifeTime with value: '" + longString + "' (lenght:"
+                        + longString.length() + ")");
+            } else {
+                log.debug("PinLifeTime is null. Return -1.");
+                return -1;
+            }
 
             return Long.decode(longString);
 
@@ -99,7 +106,8 @@ public class StormEA {
         } catch (AttributeNotFoundException e) {
             log.debug("Cannot retrieve pinned (file is not pinned) EA to file: '" + fileName);
         } catch (NumberFormatException e) {
-            log.warn("Value of pinned EA is not a number, assuming -1. File: " + fileName);
+            log.warn("Value of pinned EA is not a number (found '" + longString + "'), assuming -1. File: "
+                    + fileName);
         } catch (ExtendedAttributesException e) {
             log.warn("Cannot retrieve pinned EA (" + e.getMessage() + ")to file: '" + fileName);
         }
