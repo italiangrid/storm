@@ -3,19 +3,17 @@
  */
 package it.grid.storm.authz.path.model;
 
-
 /**
  * @author zappi
- *
  */
 public class SRMFileRequest {
-  
-  /**
+
+    /**
      * WRITE_FILE 'W' READ_FILE 'R' RENAME 'F' DELETE 'D' TRAVERSE_DIRECTORY 'T' LIST_DIRECTORY 'L' MAKE_DIRECTORY 'M'
      * CREATE_FILE 'N' UNDEFINED '?'
      **/
 
-      //Operations to SURL
+    // Operations to SURL
     public final static SRMFileRequest PTP_Overwrite = new SRMFileRequest("srmPrepareToPut-overwrite",
                                                                           "PTP-Over",
                                                                           new PathOperation[] { PathOperation.WRITE_FILE });
@@ -24,7 +22,7 @@ public class SRMFileRequest {
                                                                 "PTP",
                                                                 new PathOperation[] {
                                                                         PathOperation.CREATE_FILE,
-                                                                        PathOperation.CREATE_FILE });
+                                                                        PathOperation.WRITE_FILE });
 
     public final static SRMFileRequest PTG = new SRMFileRequest("srmPrepareToGet",
                                                                 "PTG",
@@ -65,28 +63,27 @@ public class SRMFileRequest {
                                                                     new PathOperation[] {
                                                                             PathOperation.CREATE_FILE,
                                                                             PathOperation.WRITE_FILE });
-                                                                
 
+    private final String description;
+    private final String srmOp;
+    private final PathAccessMask requestedPathOps;
 
-      private String description;
-      private String srmOp;
-      private PathAccessMask requestedPathOps;
+    /**
+     * SRMOperation
+     */
+    private SRMFileRequest(String description, String srmOp, PathOperation[] pathOps) {
+        this.description = description;
+        this.srmOp = srmOp;
+        requestedPathOps = new PathAccessMask();
+        for (PathOperation pathOp : pathOps) {
+            requestedPathOps.addPathOperation(pathOp);
+        }
+    }
 
-      /**
-       * SRMOperation
-       */
-      private SRMFileRequest(String description, String srmOp, PathOperation[] pathOps) {
-          this.description = description;
-          this.srmOp = srmOp;
-          requestedPathOps = new PathAccessMask();
-          for (PathOperation pathOp : pathOps) {
-             requestedPathOps.addPathOperation(pathOp);
-          }
-      }
-
-      public String toString(){
-          String result;
-          result = srmOp + " : " + description + " = " + requestedPathOps;
-          return result;
-      }
+    @Override
+    public String toString() {
+        String result;
+        result = srmOp + " : " + description + " = " + requestedPathOps;
+        return result;
+    }
 }

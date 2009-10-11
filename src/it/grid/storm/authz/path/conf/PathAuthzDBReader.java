@@ -17,17 +17,15 @@ import org.slf4j.Logger;
 
 /**
  * @author zappi
- *
  */
 public class PathAuthzDBReader {
 
     private final Logger log = AuthzDirector.getLogger();
 
-    private String authzDBFilename;
+    private final String authzDBFilename;
     private PathAuthzDB pathAuthzDB;
-    
-    
-    
+    private String algorithmName = null;
+
     public PathAuthzDBReader(String filename) {
         log.info("Path Authorization : Inizializating ...");
         Configuration config = Configuration.getInstance();
@@ -37,36 +35,39 @@ public class PathAuthzDBReader {
         log.debug("Loading Path Authz DB : '" + authzDBFilename + "'.");
         loadPathAuthzDB();
     }
-    
+
     private void loadPathAuthzDB() {
         if (!(existsAuthzDBFile(authzDBFilename))) {
             log.debug("Path Authz DB does not exists. Use the default Path Authz DB.");
             // Load the default Path Authz DB
             pathAuthzDB = PathAuthzDB.makeEmpty();
-            
+
         } else {
             log.debug("Parsing the Path Authz DB ...");
-            pathAuthzDB = parsePathAuthzDB();   
+            pathAuthzDB = parsePathAuthzDB();
         }
-        log.info("Path Authz DB now contains '" + pathAuthzDB.getSize() + "' path ACE.");  
+        log.info("Path Authz DB contains '" + pathAuthzDB.getACLSize() + "' path ACE.");
     }
-    
+
     private PathAuthzDB parsePathAuthzDB() {
         PathAuthzDB result = new PathAuthzDB();
         try {
             BufferedReader in = new BufferedReader(new FileReader(authzDBFilename));
             String str;
             while ((str = in.readLine()) != null) {
-                PathACE ace = PathACE.PERMIT_ALL;
+                PathACE ace = null;
                 try {
                     ace = parseLine(str);
                     if (ace != null) {
                         result.addPathACE(ace);
                     } else {
                         // Found a comment line or algorithm definition.
-                        // Do nothing
+                        if (algorithmName != null) {
+                            log.debug("Evaluation Algorithm name: " + algorithmName);
+                            result.setPathAuthzEvaluationAlgorithm(algorithmName);
+                        }
                     }
-                    
+
                 } catch (AuthzException e) {
                     log.debug("No ACE line found");
                 }
@@ -91,16 +92,16 @@ public class PathAuthzDBReader {
         } else {
             if (pathACEString.startsWith(PathACE.ALGORITHM)) {
                 // EVALUATION ALGORITHM
-                // Skip the line (return null)
+                if (pathACEString.contains("=")) {
+                    String algName = pathACEString.substring(pathACEString.indexOf("="));
+                    algorithmName = algName.trim();
+                }
 
             } else {
                 // SUPPOSE ACE Line
                 result = PathACE.buildFromString(pathACEString);
             }
-            
-            
         }
-
         return result;
     }
 
@@ -109,7 +110,7 @@ public class PathAuthzDBReader {
     }
 
     public PathAuthzDB getPathAuthzDB() {
-       return pathAuthzDB;   
+        return pathAuthzDB;
     }
 
     /***********************************************
@@ -123,6 +124,5 @@ public class PathAuthzDBReader {
         }
         return exists;
     }
-    
-        
+
 }

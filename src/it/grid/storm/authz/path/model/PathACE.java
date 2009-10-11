@@ -12,35 +12,29 @@ import org.slf4j.Logger;
 
 /**
  * @author zappi
- *
  */
 public class PathACE {
-    
+
     private final Logger log = AuthzDirector.getLogger();
-    
+
     public static final String ALL_GROUPS = "*";
     public static final String FIELD_SEP = "\\s"; // * White space character **/
     private static final boolean PERMIT_ACE = true;
     public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
-    
-    
+
     public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS,
                                                          StFN.makeEmpty(),
                                                          PathAccessMask.DEFAULT,
                                                          PERMIT_ACE);
     public static final String COMMENT = "#";
 
-    
-    
-    
     private String localGroupName;
     private StFN storageFileName;
     private PathAccessMask pathAccessMask;
     private boolean isPermitACE;
 
-
     // =========== CONSTRUCTORs ============
-    
+
     public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask, boolean permitACE) {
         localGroupName = localGroup;
         storageFileName = stfn;
@@ -55,7 +49,6 @@ public class PathACE {
         isPermitACE = PERMIT_ACE;
     }
 
-    
     /**
      * @param pathACEString
      * @return
@@ -85,10 +78,10 @@ public class PathACE {
                 pAccessMask.addPathOperation(pathOper);
             }
             result.setPathAccessMask(pAccessMask);
-            
+
             // Check if the ACE is DENY or PERMIT
+            // ** IMP ** : permit is the default
             if (fields[3].toLowerCase().equals("deny")) {
-                // ** IMP ** : permit is the default
                 result.setIsPermitType(false);
             } else {
                 result.setIsPermitType(true);
@@ -96,8 +89,7 @@ public class PathACE {
         }
         return result;
     }
-    
-    
+
     public void setLocalGroupName(String localGroup) {
         localGroupName = localGroup;
     }
@@ -113,7 +105,7 @@ public class PathACE {
     public void setIsPermitType(boolean value) {
         isPermitACE = value;
     }
-    
+
     public String getLocalGroupName() {
         return localGroupName;
     }
@@ -125,7 +117,7 @@ public class PathACE {
     public PathAccessMask getPathAccessMask() {
         return pathAccessMask;
     }
-    
+
     public boolean isPermitAce() {
         return isPermitACE;
     }
@@ -133,7 +125,7 @@ public class PathACE {
     /**
      * ## BUSINESS Methods
      */
-    
+
     public boolean subjectMatch(String subjectGroup) {
         boolean result = false;
         if (localGroupName != null) {
@@ -153,6 +145,7 @@ public class PathACE {
     /**
      * 
      */
+    @Override
     public boolean equals(Object other) {
         boolean result = false;
         if (other instanceof PathACE) {
@@ -167,7 +160,8 @@ public class PathACE {
         }
         return result;
     }
-    
+
+    @Override
     public String toString() {
         String result = "";
         if (localGroupName == null) {
@@ -181,5 +175,5 @@ public class PathACE {
         result += pathAccessMask;
         return result;
     }
-    
+
 }
