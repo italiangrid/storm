@@ -106,192 +106,53 @@ public class VolatileAndJiTCatalog {
 
 
     /**
-     * Method that adds an entry to the catalogue that keeps track of Volatile
-     * files. The PFN and the fileLifetime are needed.
+     * Checks whether the given file exists in the volatile table or not.
      * 
-     * If no entry corresponding to the given PFN is found, a new one gets
-     * recorded. If the PFN is already present, then provided the new expiry
-     * (obtained by adding together current-time and requested-lifetime)
-     * exceeds the expiry in the catalogue, the entry is updated. Otherwise
-     * nothing takes place.
-     *
-     * If the supplied fileLifetime is zero, then a default value is used instead.
-     * This floor default value in seconds can be set from the configuration file,
-     * with the property:
-     *                          fileLifetime.default
-     *
-     * BEWARE: The intended use case for this method is during srmPrepareToPut.
-     * When files are uploaded into StoRM, they get specified as Volatile or
-     * Permanent. The PtP logic determines if the request is for a Volatile file
-     * and in that case it adds a new entry in the catalog. That is the purpose
-     * of this method. Any subsequent PtP call will just result in a modification
-     * of the expiry, provided the newer one lasts longer than the original one.
-     * Yet bear in mind that two or more PtP on the same file makes NO SENSE AT
-     * ALL!
-     *
-     * If any DB error occurs, then nothing gets added/updated and an error
-     * messagge gets logged.
+     * @param filename
+     * @return <code>true</code> if there is antry for the given file in the volatilte table, <code>false</code>
+     *         otherwise.
      */
-    synchronized public void trackVolatile(PFN pfn, Calendar start, TLifeTimeInSeconds fileLifetime) {
+    public boolean exists(PFN pfn) {
+        return dao.exists(pfn.getValue());
+    }
+
+    /**
+     * Method used to expire _all_ related entries in the JiT catalogue, that
+     * were setup during a PtG operation. The method is intended to be used by
+     * code handling srmAbort command.
+     *
+     * Notice that the Traverse on the parents is NOT removed! This is to
+     * accomodate for the use case of a user that has run many PtG on different
+     * SURLs but all contained in the same directory tree! In practice this
+     * method removes the R permission.
+     *
+     * If any entry does not exist, then nothing happens and a warning gets
+     * written in the logs; otherwise entries get their start time set to now,
+     * and the lifetime set to zero; in case more than one matching entry is
+     * found, a message gets written to the logs, and the updating continues
+     * anyway as explained.
+     *
+     * At this point, when the garbage collector wakes up the entries get cleanly
+     * handled (physical ACL is removed, catalog entry removed, etc.); or an
+     * earlier cleaning can be forced by invoking directly the purge mehod.
+     *
+     * The method returns FALSE in case an entry was not found or the supplied
+     * parameters were null, and TRUE otherwise. Yet keep in mind that it says
+     * nothing of whether the DB operation was successful or not.
+     */
+    synchronized public boolean expireGetJiTs(PFN pfn, LocalUser localUser) {
         boolean ok = pfn!=null &&
-        fileLifetime!=null &&
-        start!=null;
+        localUser!=null;
         if (!ok) {
-            log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="+pfn+" start="+start+" fileLifetime="+fileLifetime);
+            log.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked on null attributes; pfn="+pfn+" localUser="+localUser);
+            return false;
         } else {
-            String fileName = pfn.getValue();
-            long fileTime = fileLifetime.value();
-            if (fileTime<=0) {
-                fileTime = defaultFileLifetime;
-            }
-            long fileStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
-            int n = dao.numberVolatile(fileName);
-            if (n==-1) {
-                log.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "+pfn+"! Volatile entry NOT processed!");
-            } else if (n==0) {
-                dao.addVolatile(fileName,fileStart,fileTime);
-            } else {
-                dao.updateVolatile(fileName,fileStart,fileTime);
-                if (n>1) {
-                    log.warn("VolatileAndJiT CATALOG: More than one entry found for "+fileName+"; the catalogue could be corrupt!");
-                }
-            }
+            boolean result = true;
+            result = result && expireJiT(pfn,localUser,FilesystemPermission.Read);
+            return result;
         }
     }
 
-    /**
-     * Method used to remove a Volatile entry that matches the supplied pfn,
-     * from the DB.
-     *
-     * If null is supplied, an error message gets logged and nothing happens.
-     *
-     * If PFN is not found, nothing happens and _no_ message gets logged.
-     */
-    synchronized public void removeVolatile(PFN pfn) {
-        boolean ok = pfn!=null;
-        if (!ok) {
-            log.warn("VolatileAndJiT CATALOG: programming bug! removeVolatile invoked on null pfn!");
-        } else {
-            dao.removeVolatile(pfn.getValue());
-        }
-    }
-
-
-    /**
-     * Method that returns a List whose firt elemet is a Calendar with the starting
-     * date and time of the lifetime of the supplied PFN, and whose second element
-     * is the TLifeTime the system is keeping the PFN.
-     *
-     * If no entry is found for the given PFN, an empty List is returned. Likewise
-     * if any DB error occurs. In any case, proper error messagges get logged.
-     *
-     * Moreover notice that if for any reason the value for the Lifetime read from
-     * the DB does not allow creation of a valid TLifeTimeInSeconds, an Empty one
-     * is returned. Error messages in logs warn of the situation.
-     */
-    synchronized public List volatileInfoOn(PFN pfn) {
-        boolean ok = pfn!=null;
-        ArrayList aux = new ArrayList();
-        if (!ok) {
-            log.error("VolatileAndJiT CATALOG: programming bug! volatileInfoOn invoked on null PFN!");
-            return aux;
-        } else {
-            Collection c = dao.volatileInfoOn(pfn.getValue());
-            if (c.size()==2) {
-                Iterator i = c.iterator();
-                //start time
-                long startInMillis = ((Long)i.next()).longValue()*1000;
-                Calendar auxcal = Calendar.getInstance();
-                auxcal.setTimeInMillis(startInMillis);
-                aux.add(auxcal);
-                //lifeTime
-                long lifetimeInSeconds = ((Long)i.next()).longValue();
-                TLifeTimeInSeconds auxLifeTime = TLifeTimeInSeconds.makeEmpty();
-                try {
-                    auxLifeTime = TLifeTimeInSeconds.make(lifetimeInSeconds, TimeUnit.SECONDS);
-                } catch (InvalidTLifeTimeAttributeException e) {
-                    log.error("VolatileAndJiT CATALOG: programming bug! Retrieved long does not allow TLifeTimeCreation! long is: "+ lifetimeInSeconds +"; exception is: "+e);
-                }
-                aux.add(auxLifeTime);
-            }
-            return aux;
-        }
-    }
-
-
-
-
-    /**
-     * Method used to keep track of an ACL set up on a PFN; it needs the PFN,
-     * the LocalUser, the ACL and the desired pinLifeTime. If the 3-ple (PFN,
-     * ACL, LocalUser) is not present, it gets added; if it is already present,
-     * provided the new desired expiry occurs after the present one, it gets
-     * changed.
-     *
-     * If the supplied lifetime is zero, then a default value is used instead.
-     * If it is larger than a ceiling, that ceiling is used instead. The floor
-     * value in seconds can be set from the configuration file, with the property:
-     *                          pinLifetime.minimum
-     *
-     * While the ceiling value in seconds is set with:
-     *                          pinLifetime.maximum
-     *
-     * BEWARE: The intended use case is in both srmPrepareToGet and
-     * srmPrepareToPut, for the case of the _JiT_ security mechanism.
-     *
-     * The maximum is necessary because JiT ACLs cannot last longer than the
-     * amount of time the pool account is leased.
-     *
-     * Notice that for Volatile entries, a pinLifetime larger than the
-     * fileLifetime can be specified. However, when Volatile files expire
-     * any related JiTs automatically expire in anticipation!
-     */
-    synchronized public void trackJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
-        boolean ok = pfn!=null &&
-        localUser!=null &&
-        acl!=null &&
-        start!=null &&
-        pinLifetime!=null;
-        if (!ok) {
-            log.error("VolatileAndJiT CATALOG: programming bug! TrackACL invoked on null attributes; pfn="+pfn+" localUser="+localUser+" acl="+acl+" start="+start+" pinLifetime="+pinLifetime);
-        } else {
-            String fileName = pfn.getValue();
-            int uid = localUser.getUid();
-            int gid = localUser.getPrimaryGid();
-            int intacl = acl.getInt();
-            long pinStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
-            long pinTime = validatePinLifetime(pinLifetime.value());
-            int n = dao.numberJiT(fileName,uid,intacl);
-            if (n==0) {
-                dao.addJiT(fileName,uid,gid,intacl,pinStart,pinTime);
-            } else {
-                dao.updateJiT(fileName,uid,intacl,pinStart,pinTime);
-                if (n>1) {
-                    log.warn("VolatileAndJiT CATALOG: More than one entry found for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
-                }
-            }
-        }
-    }
-
-    /**
-     * Private method that makes sure that the lifeTime of the request:
-     *
-     * (1) It is not less than a predetermined value: this check is needed
-     * because clients may omit to supply a value and some default one must be
-     * used; moreover, it is feared that if the requested lifetime is very low,
-     * such as 0 or a few seconds, there could be strange problems in having a
-     * file written and erased immediately.
-     *
-     * (2) It is not larger than a given ceiling; this is necessary because in
-     * the JiT model, the underlying system may decide to remove the pool account
-     * mappings; it is paramount that no ACLs remain set up for the now
-     * un-associated pool account.
-     */
-    private long validatePinLifetime(long lifetime) {
-        long duration = lifetime<floor ? floor : lifetime; //adjust for lifetime set to zero!
-        duration = duration<=ceiling ? duration : ceiling; //make sure lifetime is not longer than the maximum set!
-        return duration;
-    }
 
     /**
      * Method used to expire an entry in the JiT catalogue. The method is intended
@@ -342,44 +203,7 @@ public class VolatileAndJiTCatalog {
             }
         }
     }
-
-    /**
-     * Method used to expire _all_ related entries in the JiT catalogue, that
-     * were setup during a PtG operation. The method is intended to be used by
-     * code handling srmAbort command.
-     *
-     * Notice that the Traverse on the parents is NOT removed! This is to
-     * accomodate for the use case of a user that has run many PtG on different
-     * SURLs but all contained in the same directory tree! In practice this
-     * method removes the R permission.
-     *
-     * If any entry does not exist, then nothing happens and a warning gets
-     * written in the logs; otherwise entries get their start time set to now,
-     * and the lifetime set to zero; in case more than one matching entry is
-     * found, a message gets written to the logs, and the updating continues
-     * anyway as explained.
-     *
-     * At this point, when the garbage collector wakes up the entries get cleanly
-     * handled (physical ACL is removed, catalog entry removed, etc.); or an
-     * earlier cleaning can be forced by invoking directly the purge mehod.
-     *
-     * The method returns FALSE in case an entry was not found or the supplied
-     * parameters were null, and TRUE otherwise. Yet keep in mind that it says
-     * nothing of whether the DB operation was successful or not.
-     */
-    synchronized public boolean expireGetJiTs(PFN pfn, LocalUser localUser) {
-        boolean ok = pfn!=null &&
-        localUser!=null;
-        if (!ok) {
-            log.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked on null attributes; pfn="+pfn+" localUser="+localUser);
-            return false;
-        } else {
-            boolean result = true;
-            result = result && expireJiT(pfn,localUser,FilesystemPermission.Read);
-            return result;
-        }
-    }
-
+    
     /**
      * Method used to expire _all_ related entries in the JiT catalogue, that
      * were setup during a PtP operation. The method is intended to be used by
@@ -415,25 +239,6 @@ public class VolatileAndJiTCatalog {
             result = result && expireJiT(pfn,localUser,FilesystemPermission.Read);
             result = result && expireJiT(pfn,localUser,FilesystemPermission.Write);
             return result;
-        }
-    }
-
-    /**
-     * Method used upon expiry of SRM_SPACE_AVAILABLE to remove all JiT entries
-     * in the DB table, related to the given PFN; Notice that _no_ distinction is
-     * made aboutthe specific user! This is because upon expiry of SRM_SPACE_AVAILABLE
-     * the file gets erased, so all JiTs on that file are automatically erased.
-     * This implies that all catalogue entries get removed.
-     *
-     * If no entries are present nothing happens.
-     */
-    synchronized public void removeAllJiTsOn(PFN pfn) {
-        boolean ok = pfn!=null;
-        if (!ok) {
-            log.error("VolatileAndJiT CATALOG: programming bug! removeAllJiTsOn invoked on null pfn!");
-        } else {
-            String fileName = pfn.getValue();
-            dao.removeAllJiTsOn(fileName);
         }
     }
 
@@ -504,21 +309,186 @@ public class VolatileAndJiTCatalog {
     }
 
     /**
-     * Private method used to return a String representation of
-     * the expired entries Collection of pfn Strings.
+     * Method used upon expiry of SRM_SPACE_AVAILABLE to remove all JiT entries
+     * in the DB table, related to the given PFN; Notice that _no_ distinction is
+     * made aboutthe specific user! This is because upon expiry of SRM_SPACE_AVAILABLE
+     * the file gets erased, so all JiTs on that file are automatically erased.
+     * This implies that all catalogue entries get removed.
+     *
+     * If no entries are present nothing happens.
      */
-    private String volatileString(Collection c) {
-        if (c==null) {
-            return "";
+    synchronized public void removeAllJiTsOn(PFN pfn) {
+        boolean ok = pfn!=null;
+        if (!ok) {
+            log.error("VolatileAndJiT CATALOG: programming bug! removeAllJiTsOn invoked on null pfn!");
+        } else {
+            String fileName = pfn.getValue();
+            dao.removeAllJiTsOn(fileName);
         }
-        StringBuffer sb = new StringBuffer();
-        for (Iterator i = c.iterator(); i.hasNext(); ) {
-            sb.append((String)i.next());
-            if (i.hasNext()) {
-                sb.append(",");
+    }
+
+    /**
+     * Method used to remove a Volatile entry that matches the supplied pfn,
+     * from the DB.
+     *
+     * If null is supplied, an error message gets logged and nothing happens.
+     *
+     * If PFN is not found, nothing happens and _no_ message gets logged.
+     */
+    synchronized public void removeVolatile(PFN pfn) {
+        boolean ok = pfn!=null;
+        if (!ok) {
+            log.warn("VolatileAndJiT CATALOG: programming bug! removeVolatile invoked on null pfn!");
+        } else {
+            dao.removeVolatile(pfn.getValue());
+        }
+    }
+
+    /**
+     * Method used to keep track of an ACL set up on a PFN; it needs the PFN,
+     * the LocalUser, the ACL and the desired pinLifeTime. If the 3-ple (PFN,
+     * ACL, LocalUser) is not present, it gets added; if it is already present,
+     * provided the new desired expiry occurs after the present one, it gets
+     * changed.
+     *
+     * If the supplied lifetime is zero, then a default value is used instead.
+     * If it is larger than a ceiling, that ceiling is used instead. The floor
+     * value in seconds can be set from the configuration file, with the property:
+     *                          pinLifetime.minimum
+     *
+     * While the ceiling value in seconds is set with:
+     *                          pinLifetime.maximum
+     *
+     * BEWARE: The intended use case is in both srmPrepareToGet and
+     * srmPrepareToPut, for the case of the _JiT_ security mechanism.
+     *
+     * The maximum is necessary because JiT ACLs cannot last longer than the
+     * amount of time the pool account is leased.
+     *
+     * Notice that for Volatile entries, a pinLifetime larger than the
+     * fileLifetime can be specified. However, when Volatile files expire
+     * any related JiTs automatically expire in anticipation!
+     */
+    synchronized public void trackJiT(PFN pfn, LocalUser localUser, FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
+        boolean ok = pfn!=null &&
+        localUser!=null &&
+        acl!=null &&
+        start!=null &&
+        pinLifetime!=null;
+        if (!ok) {
+            log.error("VolatileAndJiT CATALOG: programming bug! TrackACL invoked on null attributes; pfn="+pfn+" localUser="+localUser+" acl="+acl+" start="+start+" pinLifetime="+pinLifetime);
+        } else {
+            String fileName = pfn.getValue();
+            int uid = localUser.getUid();
+            int gid = localUser.getPrimaryGid();
+            int intacl = acl.getInt();
+            long pinStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
+            long pinTime = validatePinLifetime(pinLifetime.value());
+            int n = dao.numberJiT(fileName,uid,intacl);
+            if (n==0) {
+                dao.addJiT(fileName,uid,gid,intacl,pinStart,pinTime);
+            } else {
+                dao.updateJiT(fileName,uid,intacl,pinStart,pinTime);
+                if (n>1) {
+                    log.warn("VolatileAndJiT CATALOG: More than one entry found for ("+fileName+","+uid+","+intacl+"); the catalogue could be corrupt!");
+                }
             }
         }
-        return sb.toString();
+    }
+
+    /**
+     * Method that adds an entry to the catalogue that keeps track of Volatile
+     * files. The PFN and the fileLifetime are needed.
+     * 
+     * If no entry corresponding to the given PFN is found, a new one gets
+     * recorded. If the PFN is already present, then provided the new expiry
+     * (obtained by adding together current-time and requested-lifetime)
+     * exceeds the expiry in the catalogue, the entry is updated. Otherwise
+     * nothing takes place.
+     *
+     * If the supplied fileLifetime is zero, then a default value is used instead.
+     * This floor default value in seconds can be set from the configuration file,
+     * with the property:
+     *                          fileLifetime.default
+     *
+     * BEWARE: The intended use case for this method is during srmPrepareToPut.
+     * When files are uploaded into StoRM, they get specified as Volatile or
+     * Permanent. The PtP logic determines if the request is for a Volatile file
+     * and in that case it adds a new entry in the catalog. That is the purpose
+     * of this method. Any subsequent PtP call will just result in a modification
+     * of the expiry, provided the newer one lasts longer than the original one.
+     * Yet bear in mind that two or more PtP on the same file makes NO SENSE AT
+     * ALL!
+     *
+     * If any DB error occurs, then nothing gets added/updated and an error
+     * messagge gets logged.
+     */
+    synchronized public void trackVolatile(PFN pfn, Calendar start, TLifeTimeInSeconds fileLifetime) {
+        boolean ok = pfn!=null &&
+        fileLifetime!=null &&
+        start!=null;
+        if (!ok) {
+            log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="+pfn+" start="+start+" fileLifetime="+fileLifetime);
+        } else {
+            String fileName = pfn.getValue();
+            long fileTime = fileLifetime.value();
+            if (fileTime<=0) {
+                fileTime = defaultFileLifetime;
+            }
+            long fileStart = start.getTimeInMillis() / 1000; //seconds needed and not milliseconds!
+            int n = dao.numberVolatile(fileName);
+            if (n==-1) {
+                log.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "+pfn+"! Volatile entry NOT processed!");
+            } else if (n==0) {
+                dao.addVolatile(fileName,fileStart,fileTime);
+            } else {
+                dao.updateVolatile(fileName,fileStart,fileTime);
+                if (n>1) {
+                    log.warn("VolatileAndJiT CATALOG: More than one entry found for "+fileName+"; the catalogue could be corrupt!");
+                }
+            }
+        }
+    }
+
+    /**
+     * Method that returns a List whose firt elemet is a Calendar with the starting
+     * date and time of the lifetime of the supplied PFN, and whose second element
+     * is the TLifeTime the system is keeping the PFN.
+     *
+     * If no entry is found for the given PFN, an empty List is returned. Likewise
+     * if any DB error occurs. In any case, proper error messagges get logged.
+     *
+     * Moreover notice that if for any reason the value for the Lifetime read from
+     * the DB does not allow creation of a valid TLifeTimeInSeconds, an Empty one
+     * is returned. Error messages in logs warn of the situation.
+     */
+    synchronized public List volatileInfoOn(PFN pfn) {
+        boolean ok = pfn!=null;
+        ArrayList aux = new ArrayList();
+        if (!ok) {
+            log.error("VolatileAndJiT CATALOG: programming bug! volatileInfoOn invoked on null PFN!");
+            return aux;
+        } else {
+            Collection c = dao.volatileInfoOn(pfn.getValue());
+            if (c.size()==2) {
+                Iterator i = c.iterator();
+                //start time
+                long startInMillis = ((Long)i.next()).longValue()*1000;
+                Calendar auxcal = Calendar.getInstance();
+                auxcal.setTimeInMillis(startInMillis);
+                aux.add(auxcal);
+                //lifeTime
+                long lifetimeInSeconds = ((Long)i.next()).longValue();
+                TLifeTimeInSeconds auxLifeTime = TLifeTimeInSeconds.makeEmpty();
+                try {
+                    auxLifeTime = TLifeTimeInSeconds.make(lifetimeInSeconds, TimeUnit.SECONDS);
+                } catch (InvalidTLifeTimeAttributeException e) {
+                    log.error("VolatileAndJiT CATALOG: programming bug! Retrieved long does not allow TLifeTimeCreation! long is: "+ lifetimeInSeconds +"; exception is: "+e);
+                }
+                aux.add(auxLifeTime);
+            }
+            return aux;
+        }
     }
 
     /**
@@ -537,6 +507,44 @@ public class VolatileAndJiTCatalog {
             sb.append(aux.pfn()); sb.append(","); sb.append(aux.acl()); sb.append(","); sb.append(aux.uid()); sb.append(","); sb.append(aux.gid());
             if (i.hasNext()) {
                 sb.append("\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Private method that makes sure that the lifeTime of the request:
+     *
+     * (1) It is not less than a predetermined value: this check is needed
+     * because clients may omit to supply a value and some default one must be
+     * used; moreover, it is feared that if the requested lifetime is very low,
+     * such as 0 or a few seconds, there could be strange problems in having a
+     * file written and erased immediately.
+     *
+     * (2) It is not larger than a given ceiling; this is necessary because in
+     * the JiT model, the underlying system may decide to remove the pool account
+     * mappings; it is paramount that no ACLs remain set up for the now
+     * un-associated pool account.
+     */
+    private long validatePinLifetime(long lifetime) {
+        long duration = lifetime<floor ? floor : lifetime; //adjust for lifetime set to zero!
+        duration = duration<=ceiling ? duration : ceiling; //make sure lifetime is not longer than the maximum set!
+        return duration;
+    }
+
+    /**
+     * Private method used to return a String representation of
+     * the expired entries Collection of pfn Strings.
+     */
+    private String volatileString(Collection c) {
+        if (c==null) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        for (Iterator i = c.iterator(); i.hasNext(); ) {
+            sb.append((String)i.next());
+            if (i.hasNext()) {
+                sb.append(",");
             }
         }
         return sb.toString();

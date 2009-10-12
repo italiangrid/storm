@@ -2,6 +2,7 @@ package it.grid.storm.synchcall.command.directory;
 
 import it.grid.storm.authorization.AuthorizationCollector;
 import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
@@ -675,7 +676,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail) {
         LocalFile localElement = element.getLocalFile();
 
-        /** Retrive permissions information (used in both file or directory cases) */
+        /** Retrieve permissions information (used in both file or directory cases) */
         TUserPermission userPermission = null;
         TGroupPermission groupPermission = null;
         TPermissionMode otherPermission = null;
@@ -808,36 +809,8 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
 
             // checksum
-            boolean getChecksum = false;
+            if (checksumHasToBeRetrieved(localElement)) {
 
-            if (localElement.hasChecksum()) {
-                // Computation of checksum is not needed
-                getChecksum = true;
-            } else {
-                // Computation of checksum could be needed
-
-                if (Configuration.getInstance().getChecksumEnabled()) {
-
-                    // Computation is needed
-                    if (isFileOnDisk) {
-                        // Only one checksum computation is admitted
-                        if (doNotComputeMoreChecksums) {
-                            getChecksum = false;
-                        } else {
-                            log.debug("Checksum Computation is needed for file :'"
-                                    + localElement.getAbsolutePath() + "'");
-                            getChecksum = true;
-                            doNotComputeMoreChecksums = true;
-                        }
-                    }
-                } else {
-                    // Computation is needed but it is disabled
-                    getChecksum = false;
-                    log.debug("Checksum computation is disabled.");
-                }
-            }
-
-            if (getChecksum) {
                 String checksum = localElement.getChecksum();
 
                 if (checksum != null) {
@@ -851,15 +824,53 @@ public class LsCommand extends DirectoryCommand implements Command {
                     log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath()
                             + "'");
                 }
+            }
+            // Retrieve information on directory from PERSISTENCE
+            populateFileDetailsFromPersistence(element, elementDetail);
+        }
+    }
+
+    private boolean checksumHasToBeRetrieved(LocalFile localFile) {
+
+        boolean retrieveChecksum;
+
+        if (localFile.hasChecksum()) {
+
+            // Computation of checksum is not needed
+            retrieveChecksum = true;
+
+        } else {
+            // Computation of checksum could be needed
+
+            if (Configuration.getInstance().getChecksumEnabled()) {
+
+                if (localFile.isOnDisk()) {
+                    // Only one checksum computation is admitted
+                    if (doNotComputeMoreChecksums) {
+
+                        retrieveChecksum = false;
+
+                    } else {
+                        retrieveChecksum = true;
+                        doNotComputeMoreChecksums = true;
+                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
+                                + "'");
+                    }
+                } else {
+
+                    retrieveChecksum = false;
+
+                }
+
+            } else {
+
+                // Computation is needed but it is disabled
+                retrieveChecksum = false;
+                log.debug("Checksum computation is disabled.");
 
             }
         }
-
-        // Retrieve information on directory from PERSISTENCE
-        populateDetailFromPersistence(element, elementDetail);
-        /**
-         * @todo IMPLEMENT THIS
-         */
+        return retrieveChecksum;
     }
 
     /**
@@ -868,10 +879,15 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @param element StoRI
      * @param elementDetail TMetaDataPathDetail
      */
-    private void populateDetailFromPersistence(StoRI element, TMetaDataPathDetail elementDetail) {
-        /**
-         * @todo IMPLEMENT THIS
-         */
+    private void populateFileDetailsFromPersistence(StoRI element, TMetaDataPathDetail elementDetail) {
+        // TFileStorageType
+        boolean isVolatile = VolatileAndJiTCatalog.getInstance().exists(element.getPFN());
+        if (isVolatile) {
+            elementDetail.setTFileStorageType(TFileStorageType.VOLATILE);
+        } else {
+            elementDetail.setTFileStorageType(TFileStorageType.PERMANENT);
+        }
+
     }
 
     /**
