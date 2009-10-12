@@ -681,10 +681,6 @@ public class LsCommand extends DirectoryCommand implements Command {
         TGroupPermission groupPermission = null;
         TPermissionMode otherPermission = null;
 
-        /**
-         * Comment added to prevent BUG in FS Driver
-         */
-
         try {
             FilesystemPermission permission = null;
             if (element.hasJustInTimeACLs()) {
