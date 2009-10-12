@@ -80,6 +80,23 @@ public class PingCommand extends DiscoveryCommand implements Command {
                     }
                     extraInfoArray.addTExtraInfo(otherInfo);
                 } // end for
+            } else if (key.equals("test-takeover")) {
+                try {
+
+                    TapeRecallDAO tapeDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
+
+                    RecallTaskTO task = tapeDAO.takeoverTask();
+
+                    if (task != null) {
+                        tapeDAO.setTaskStatus(task.getTaskId(), RecallTaskStatus.SUCCESS.getStatusId());
+
+                        log.info("Task \"" + task.getTaskId() + "\" set to success: " + task.getFileName());
+                    }
+
+                } catch (DataAccessException e) {
+                    log.error("DB error", e);
+                }
+
             } else {
                 // Key unknown..
                 log.warn("Unable to retrieve KEY (key='" + key + "') value requested in srmPing.");
@@ -87,22 +104,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
             }
         }
 
-        try {
-
-            TapeRecallDAO tapeDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
-
-            RecallTaskTO task = tapeDAO.takeoverTask();
-
-            if (task != null) {
-                tapeDAO.setTaskStatus(task.getTaskId(), RecallTaskStatus.SUCCESS.getStatusId());
-
-                log.info("Task \"" + task.getTaskId() + "\" set to success: " + task.getFileName());
-            }
-
-        } catch (DataAccessException e) {
-            log.error("DB error", e);
-        }
-
+        
         // Build the Output Data
         outputData.setExtraInfoArray(extraInfoArray);
 
