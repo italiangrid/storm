@@ -1,5 +1,9 @@
 package it.grid.storm.ea;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import it.grid.storm.jna.ExtendedAttributesImpl;
 
 import org.slf4j.Logger;
@@ -205,7 +209,13 @@ public class StormEA {
 
         long existingPinValueInSEC = getPinned(fileName);
 
+        Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
         if (existingPinValueInSEC >= expirationDateInSEC) {
+            log.debug("The file '"
+                    + fileName
+                    + "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
+                    + formatter.format(new Date(existingPinValueInSEC * 1000)));
             return;
         }
 
@@ -213,6 +223,16 @@ public class StormEA {
 
         try {
             ea.setXAttr(fileName, EA_PINNED, longString.getBytes());
+
+            if (log.isDebugEnabled()) {
+                if (existingPinValueInSEC == -1) {
+                    log.debug("Added the Pinned EA to '" + fileName + "' with expiration: "
+                            + formatter.format(expirationDateInSEC));
+                } else {
+                    log.debug("Updated the Pinned EA to '" + fileName + "' with expiration: "
+                            + formatter.format(expirationDateInSEC));
+                }
+            }
 
         } catch (FileNotFoundException e) {
 

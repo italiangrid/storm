@@ -34,18 +34,13 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -146,19 +141,33 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 
     public void completeRequest(RecallTaskStatus recallStatus) {
 
-        boolean success = false;
+        boolean success;
 
         if (recallStatus == RecallTaskStatus.SUCCESS) {
 
-            success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+            if (bupLocalFile.isOnDisk()) {
+                
+                success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+                
+            } else {
+
+                log.error("File "
+                        + bupLocalFile.getAbsolutePath()
+                        + " not found on the disk, but it was reported to be successfully recalled from tape");
+                chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                success = false;
+                
+            }
 
         } else if (recallStatus == RecallTaskStatus.ABORTED) {
 
             chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+            success = false;
 
         } else {
 
             chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+            success = false;
 
         }
 
@@ -348,6 +357,14 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                     boolean canTraverse = managePermitTraverseStep(fileStoRI, localUser);
                     if (canTraverse) {
                         if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+                            
+                            // Compute the Expiration Time in seconds
+                            long expDate = (System.currentTimeMillis() / 1000 + chunkData.getPinLifeTime().value());
+                            StormEA.setPinned(localFile.getAbsolutePath(), expDate);
+                    
+                            // set group permission for tape quota management
+                            fileStoRI.setGroupTapeRead();
+                            chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                             if (localFile.isOnDisk()) {
                                 boolean canRead = managePermitReadFileStep(fileStoRI,
@@ -360,7 +377,6 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                                 }
                             } else {
                                 chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
-                                chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                                 String voName = null;
                                 if (gu instanceof VomsGridUser) {
@@ -380,6 +396,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                                  */
                             }
                         } else {
+                            log.debug("File is on SA without Tape, so no EA will be setted on it.");
                             boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
                             if (!canRead) {
                                 // roll back Read, and Traverse
@@ -416,7 +433,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 // I do not know the behaviour of Java File class!!!
                 chunkData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
                 failure = true; // gsm.failedChunk(chunkData);
-                log.error("ERROR in PtGChunk! StoRM process got an unexpected error! " + e);
+                log.error("ERROR in PtGChunk! StoRM process got an unexpected error! ", e);
             } catch (Error e) {
                 // This is a temporary measure to catch an arror occurring because of the use of deprecated
                 // method in VomsGridUser! It happens in exceptional conditions: when a user is mapped to
@@ -443,7 +460,6 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
             TTURL turl) {
 
         try {
-            chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
             FilesystemPermission fp = null;
             boolean effective = false;
             if (fileStoRI.hasJustInTimeACLs()) {
@@ -519,52 +535,6 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
             chunkData.setTransferURL(turl);
             chunkData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");
 
-            /**
-             * Pin the File (Version 1.5.0) - The pin life time starts when the file is available on disk
-             */
-            // Manage the case of TAPE enabled
-            if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                // set group permission for tape quota management
-                fileStoRI.setGroupTapeRead();
-                //
-                // set the EA pinned with the right value
-                //
-                // Compute the Expiration Time
-                TLifeTimeInSeconds lifeTime = chunkData.getPinLifeTime();
-  
-                // - expressed in Seconds
-                long expDate = (System.currentTimeMillis() / 1000 + lifeTime.value());
-
-                Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-                String absFN = localFile.getAbsolutePath();
-                boolean alreadyPinned = StormEA.isPinned(absFN);
-                if (alreadyPinned) {
-                    long currExpDate = StormEA.getPinned(absFN);
-                    if (currExpDate > expDate) {
-                        Date expDateTime = new Date(currExpDate * 1000);
-                        log.debug("The file '"
-                                + absFN
-                                + "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
-                                + formatter.format(expDateTime));
-                    } else {
-                        log.debug("The file '"
-                                + absFN
-                                + "' is already Pinned and the pre-existing PinLifeTime is lower than the new one. PinLifeTime will be updated.");
-                        StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                        Date expDateTime = new Date(expDate * 1000);
-                        log.debug("Updated the Pinned EA to '" + absFN + "' with expiration: "
-                                + formatter.format(expDateTime));
-                    }
-                } else {
-                    Date expDateTime = new Date(expDate * 1000);
-                    log.debug("Added the Pinned EA to '" + absFN + "' with expiration: "
-                            + formatter.format(expDateTime));
-                    StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                }
-            } else {
-                log.debug("File is on SA without Tape, so no EA will be setted on it.");
-            }
-
             failure = false; // gsm.successfulChunk(chunkData);
             return true;
         } catch (WrongFilesystemType e) {
@@ -594,13 +564,6 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
             failure = true; // gsm.failedChunk(chunkData);
             log.error("ERROR in PtGChunk! Java SecurityManager did not allow establishing file size for "
                     + localFile + "; exception: " + e);
-            return false;
-        } catch (InvalidTSizeAttributesException e) {
-            // Handle an invalid parameter for TSizeInBytes! This is a programming error: it should not occur!
-            chunkData.changeStatusSRM_FAILURE("Unable to decide TSizeInBytes!");
-            failure = true; // gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! Invalid parameter when creating TSizeInBytes for PtGChunkData caused an Exception to be thrown! "
-                    + e);
             return false;
         } catch (Exception e) {
             // We are using a filesystem with ACLs in place. I do not know exactly how Java s File object behaves in

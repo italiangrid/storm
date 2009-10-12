@@ -21,15 +21,10 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
-
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +87,12 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
     private boolean failure = false;
 
     /**
+     * variables used to backup values in case the request is suspended waiting for the file to be recalled from the
+     * tape
+     */
+    private LocalFile bupLocalFile;
+
+    /**
      * Constructor requiring the GridUser, the RequestSummaryData and the BoLChunkData about this chunk. If the supplied
      * attributes are null, an InvalidBoLChunkAttributesException is thrown.
      */
@@ -118,20 +119,33 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
     public void completeRequest(RecallTaskStatus recallStatus) {
 
-        boolean success = false;
+        boolean success;
 
         if (recallStatus == RecallTaskStatus.SUCCESS) {
 
-            chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
-            success = true;
+            if (bupLocalFile.isOnDisk()) {
+
+                chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
+                success = true;
+
+            } else {
+
+                log.error("File "
+                        + bupLocalFile.getAbsolutePath()
+                        + " not found on the disk, but it was reported to be successfully recalled from tape");
+                chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                success = false;
+            }
 
         } else if (recallStatus == RecallTaskStatus.ABORTED) {
 
             chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+            success = false;
 
         } else {
 
             chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+            success = false;
 
         }
 
@@ -252,6 +266,10 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         return result;
     }
 
+    private void backupData(LocalFile localFile) {
+        bupLocalFile = localFile;
+    }
+
     /**
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      */
@@ -266,48 +284,16 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                 chunkData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
                 failure = true;
                 log.debug("BoLChunk: the requested file either does not exist, or it is a directory!");
-            } else {
-                // File exists and it is not a directory
+
+            } else { // File exists and it is not a directory
 
                 if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 
-                    // set group permission for tape quota management
-                    fileStoRI.setGroupTapeRead();
-                    //
-                    // set the EA pinned with the right value
-                    //
-                    // Compute the Expiration Time
-                    TLifeTimeInSeconds lifeTime = chunkData.getLifeTime();
-                    // - expressed in Seconds
-                    long expDate = (System.currentTimeMillis() / 1000 + lifeTime.value());
-            
-                    Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-                    String absFN = localFile.getAbsolutePath();
-                    boolean alreadyPinned = StormEA.isPinned(absFN);
-                    if (alreadyPinned) {
-                        long currExpDate = StormEA.getPinned(absFN);
-                        if (currExpDate > expDate) {
-                            Date expDateTime = new Date(currExpDate * 1000);
-                            log.debug("The file '"
-                                    + absFN
-                                    + "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
-                                    + formatter.format(expDateTime));
-                        } else {
-                            log.debug("The file '"
-                                    + absFN
-                                    + "' is already Pinned and the pre-existing PinLifeTime is lower than the new one. PinLifeTime will be updated.");
-                            StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                            Date expDateTime = new Date(expDate * 1000);
-                            log.debug("Updated the Pinned EA to '" + absFN + "' with expiration: "
-                                    + formatter.format(expDateTime));
-                        }
-                    } else {
-                        Date expDateTime = new Date(expDate * 1000);
-                        log.debug("Added the Pinned EA to '" + absFN + "' with expiration: "
-                                + formatter.format(expDateTime));
-                        StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                    }
+                    // Compute the Expiration Time in seconds
+                    long expDate = (System.currentTimeMillis() / 1000 + chunkData.getLifeTime().value());
+                    StormEA.setPinned(localFile.getAbsolutePath(), expDate);
 
+                    // set group permission for tape quota management
                     fileStoRI.setGroupTapeRead();
                     chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
@@ -327,6 +313,8 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                         PersistenceDirector.getDAOFactory()
                                            .getTapeRecallDAO()
                                            .insertTask(this, voName, localFile.getAbsolutePath());
+
+                        backupData(localFile);
                     }
                 } else {
                     chunkData.changeStatusSRM_NOT_SUPPORTED("Tape not supported for this filesystem");
