@@ -505,8 +505,7 @@ public class RequestSummaryDAO {
         PreparedStatement update = null;
 
         String query = "UPDATE request_queue SET status=?, errstring=?, "
-                + "pinLifetime=pinLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)), "
-                + "fileLifetime=fileLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)) "
+                + "pinLifetime=pinLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)) "
                 + "WHERE r_token=?";
         
         try {
