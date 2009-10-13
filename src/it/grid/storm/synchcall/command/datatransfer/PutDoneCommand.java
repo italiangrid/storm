@@ -319,9 +319,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                     if (!checksumComputed) {
                         arrayOfFileStatus.getTSURLReturnStatus(i)
                                          .getStatus()
-                                         .setExplanation("Failed to computed checksum");
+                                         .setExplanation("Failed to compute checksum");
                     } else {
-                        log.debug("Checksum setted to SURL:" + surl.toString());
+                        log.debug("Checksum set to SURL:" + surl.toString());
                     }
 
                 }
