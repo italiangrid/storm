@@ -179,7 +179,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         // spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE
         // to SRM_SUCCESS.
-        ArrayList spaceAvailableSURLs = new ArrayList(num_SURLs);
+        ArrayList<ReducedPtPChunkData> spaceAvailableSURLs = new ArrayList<ReducedPtPChunkData>(num_SURLs);
 
         requestFailure = true;
         boolean requestSuccess = true;
