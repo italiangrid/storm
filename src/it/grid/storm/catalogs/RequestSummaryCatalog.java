@@ -144,7 +144,7 @@ public class RequestSummaryCatalog {
     private RequestSummaryData makeOne(RequestSummaryDataTO auxTO) {
         StringBuffer sb = new StringBuffer();
         // ID
-        long auxid = auxTO.primaryKey();
+//        long auxid = auxTO.primaryKey();
         // TRequestType
         TRequestType auxrtype = RequestTypeConverter.getInstance().toSTORM(auxTO.requestType());
         if (auxrtype == TRequestType.EMPTY) {
@@ -286,13 +286,24 @@ public class RequestSummaryCatalog {
 
 
     /**
-     * Method used to update the global status of a request identified by
-     * TRequestToken, to the supplied TReturnStatus.
-     * 
+     * Method used to update the global status of a request identified by TRequestToken, to the supplied TReturnStatus.
      * In case of any exception nothing happens.
      */
     synchronized public void updateGlobalStatus(TRequestToken rt, TReturnStatus status) {
-        dao.updateGlobalStatus(rt.toString(), StatusCodeConverter.getInstance().toDB(status.getStatusCode()), status.getExplanation());
+        dao.updateGlobalStatus(rt.toString(),
+                               StatusCodeConverter.getInstance().toDB(status.getStatusCode()),
+                               status.getExplanation());
+    }
+
+    /**
+     * Method used to update the global status of a request identified by TRequestToken, to the supplied TReturnStatus.
+     * The pin lifetime and the file lifetime are updated in order to start the countdown from the moment the status is
+     * updated. In case of any exception nothing happens.
+     */
+    synchronized public void updateGlobalStatusPinFileLifetime(TRequestToken rt, TReturnStatus status) {
+        dao.updateGlobalStatusPinFileLifetime(rt.toString(),
+                                              StatusCodeConverter.getInstance().toDB(status.getStatusCode()),
+                                              status.getExplanation());
     }
 
 

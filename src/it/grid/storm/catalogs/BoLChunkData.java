@@ -1,6 +1,8 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -229,7 +231,7 @@ public class BoLChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_INPROGRESS! " + e);
         }
     }
-    
+
     /**
      * Method that sets the status of this request to SRM_REQUEST_QUEUED; it needs the explanation
      * String which describes the situation in greater detail; if a null is passed, then an empty
@@ -245,7 +247,7 @@ public class BoLChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_QUEUED! " + e);
         }
     }
-    
+
     /**
      * Method that sets the status of this request to SRM_SUCCESS; it needs the explanation
      * String which describes the situation in greater detail; if a null is passed, then an empty
@@ -261,7 +263,7 @@ public class BoLChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SUCCESS! " + e);
         }
     }
-
+    
     @Override
     public boolean equals(Object o) {
         if (o == this) {
@@ -277,7 +279,7 @@ public class BoLChunkData implements ChunkData {
                 && fileSize.equals(cd.fileSize) && status.equals(cd.status)
                 && transferURL.equals(cd.transferURL) && (deferredStartTime == cd.deferredStartTime);
     }
-
+    
     public int getDeferredStartTime() {
         return deferredStartTime;
     }
@@ -324,7 +326,7 @@ public class BoLChunkData implements ChunkData {
     public TRequestToken getRequestToken() {
         return requestToken;
     }
-
+    
     /**
      * Method that returns the status for this chunk of the srm request.
      */
@@ -376,6 +378,18 @@ public class BoLChunkData implements ChunkData {
         }
     }
 
+    public void setLifeTime(long lifeTimeInSeconds) {
+        
+        TLifeTimeInSeconds lifeTime;
+        try {
+            lifeTime = TLifeTimeInSeconds.make(lifeTimeInSeconds, TimeUnit.SECONDS);
+        } catch (InvalidTLifeTimeAttributeException e) {
+            return;
+        }
+        
+        this.lifeTime = lifeTime;  
+    }
+    
     /**
      * Method used to set the primary key to be used in the persistence layer!
      */

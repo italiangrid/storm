@@ -32,7 +32,7 @@ public class GlobalStatusManager {
 
     private static Logger log = LoggerFactory.getLogger(GlobalStatusManager.class);
     private TRequestToken rt = null;
-    private Map chunks = new HashMap(); // HashMap containing handles to all chunks!
+    private Map<Long, Object> chunks = new HashMap<Long, Object>(); // HashMap containing handles to all chunks!
     private boolean finished = false; // boolean true if all chunks of the request have been added to the map
     private InternalState internal = InternalState.IN_PROGRESS;
     private Object mock = new Object(); // private mock object that will be put repeatedly in Map!
@@ -86,8 +86,11 @@ public class GlobalStatusManager {
      * written to the logs and the global state transits to ERROR.
      */
     synchronized public void successfulChunk(ChunkData c) {
+        
         log.debug("GlobalStatusManager: received successfulChunk signal for " + c);
+        
         if ((c != null) && (!chunks.isEmpty()) && (chunks.remove(new Long(c.primaryKey())) != null)) {
+            
             // manage state transition: c was indeed there
             if (finished && (chunks.isEmpty())) {
                 // no other chunk will be added to request, and none is left: this was the last one to be processed!
@@ -106,9 +109,12 @@ public class GlobalStatusManager {
                     log.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
                             + internal);
                 }
+                
                 log.debug("GlobalStatusManager: saving final global state " + internal);
                 saveRequestState();
+                
             } else if (finished && (!chunks.isEmpty())) {
+                
                 // no chunk will be added to request, but there are _more_ left to be processed!
                 log.debug("GlobalStatusManager: finished but there are more chunks to be processed... ");
                 if (internal == InternalState.IN_PROGRESS) {
@@ -126,8 +132,10 @@ public class GlobalStatusManager {
                             + internal);
                 }
                 log.debug("GlobalStatusManager: transited to " + internal);
+                
             } else if (!finished) {
-                // more chunks may be added to request, and it is all the same if there are or arent any left to be
+                
+                // more chunks may be added to request, and it is all the same if there are or aren't any left to be
                 // processed!
                 log.debug("GlobalStatusManager: still not finished adding chunks for consideration, but it is the same whether there are more to be processed or not...");
                 if (internal == InternalState.IN_PROGRESS) {
@@ -145,12 +153,14 @@ public class GlobalStatusManager {
                             + internal);
                 }
                 log.debug("GlobalStatusManager: transited to " + internal);
+                
             } else {
                 // This cannot possibly occur by logic! But there could be multithreading issues in case of bugs!
                 log.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic codition has materialised: it may be due to multithreading issues! Request is "
                         + rt);
                 internal = InternalState.ERROR;
             }
+            
         } else {
             // error situation!
             log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to signal a successful Chunk, but it is either null, or there are actually no Chunks left to be considered, or it was not originally asked to be considered in the evaluation!");
@@ -313,30 +323,59 @@ public class GlobalStatusManager {
      */
     private void saveRequestState() {
         log.debug("GlobalStatusManager: invoked saveRequestState.");
+        
         try {
+            
+            boolean updatePinFileLifetime;
+            
             TReturnStatus retstat = null;
+            
             if (internal == InternalState.ERROR) {
+                
+                updatePinFileLifetime = true;
                 retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
                                             "Global status cannot be evaluated: single file status must be checked.");
+                
             } else if (internal == InternalState.FAIL) {
+                
+                updatePinFileLifetime = false;
                 retstat = new TReturnStatus(TStatusCode.SRM_FAILURE, "All chunks failed!");
+                
             } else if (internal == InternalState.SUCCESS) {
+                
+                updatePinFileLifetime = true;
                 retstat = new TReturnStatus(TStatusCode.SRM_SUCCESS, "All chunks successfully handled!");
+                
             } else if (internal == InternalState.PARTIAL) {
+                
+                updatePinFileLifetime = true;
                 retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
                                             "Some chunks were successful while others failed!");
+                
             } else if (internal == InternalState.SPACEFAIL) {
+                
+                updatePinFileLifetime = false;
                 retstat = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
                                             "Supplied SpaceToken has expired lifetime!");
             } else {
+                
+                updatePinFileLifetime = true;
                 retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
                                             "Global status cannot be evaluated: single file status must be checked.");
                 log.error("ERROR IN GLOBAL STATUS EVALUATION! " + internal
                         + " was attempted to be written into persistence, but it is not a final state!");
                 log.error("Request: " + rt);
             }
+            
             log.debug("GlobalStatusManager: saving into persistence " + retstat);
-            RequestSummaryCatalog.getInstance().updateGlobalStatus(rt, retstat);
+            
+            if (updatePinFileLifetime) {
+                RequestSummaryCatalog.getInstance().updateGlobalStatusPinFileLifetime(rt, retstat);
+                
+            } else {
+                RequestSummaryCatalog.getInstance().updateGlobalStatus(rt, retstat);
+            }
+            
         } catch (InvalidTReturnStatusAttributeException e) {
             log.error("ERROR IN GLOBAL STATUS EVALUATION! Could not create a valid TReturnStatus: this is a programming bug! "
                     + e);

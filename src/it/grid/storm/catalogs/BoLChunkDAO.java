@@ -418,6 +418,7 @@ public class BoLChunkDAO {
                     + "WHERE r.r_token=? AND s.statusCode<>?";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
+            
             List<BoLChunkDataTO> list = new ArrayList<BoLChunkDataTO>();
 
             find.setString(1, strToken);
@@ -426,8 +427,10 @@ public class BoLChunkDAO {
             logWarnings(find.getWarnings());
 
             log.debug("BoL CHUNK DAO: find method; " + find.toString());
+            
             rs = find.executeQuery();
             logWarnings(find.getWarnings());
+            
             while (rs.next()) {
                 BoLChunkDataTO aux = new BoLChunkDataTO();
                 aux.setPrimaryKey(rs.getLong("s.ID"));

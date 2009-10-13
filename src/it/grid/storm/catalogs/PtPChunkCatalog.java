@@ -478,12 +478,10 @@ public class PtPChunkCatalog {
      * to SRM_SUCCESS. Chunks in any other starting state are not transited. In case
      * of any error nothing is done, but proper error messages get logged.
      */
-    synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(Collection chunks) {
-        List aux = new ArrayList();
+    synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(Collection<ReducedPtPChunkData> chunks) {
+        List<Long> aux = new ArrayList<Long>();
         long[] auxlong = null;
-        ReducedPtPChunkData auxData = null;
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
-            auxData = (ReducedPtPChunkData) i.next();
+        for (ReducedPtPChunkData auxData : chunks) {
             aux.add(new Long(auxData.primaryKey()));
         }
         int n = aux.size();

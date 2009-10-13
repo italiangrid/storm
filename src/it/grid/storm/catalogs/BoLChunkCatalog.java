@@ -86,11 +86,17 @@ public class BoLChunkCatalog {
         Collection<BoLChunkDataTO> chunkCollection = dao.find(rt);
         log.debug("BoL CHUNK CATALOG: retrieved data " + chunkCollection);
         List<BoLChunkData> list = new ArrayList<BoLChunkData>();
+        
         if (chunkCollection.isEmpty()) {
+            
             log.warn("BoL CHUNK CATALOG! No chunks found in persistence for specified request: " + rt);
+            
         } else {
+            
             for (BoLChunkDataTO auxTO : chunkCollection) {
+                
                 BoLChunkData aux = makeOne(auxTO, rt);
+                
                 if (aux != null) {
                     list.add(aux);
                 }
@@ -142,6 +148,7 @@ public class BoLChunkCatalog {
     }
 
     private BoLChunkData makeOne(BoLChunkDataTO auxTO, TRequestToken rt) {
+        
         StringBuffer sb = new StringBuffer();
         // fromSURL
         TSURL fromSURL = null;
@@ -199,6 +206,7 @@ public class BoLChunkCatalog {
                                                // will fill it in!!! So create an Empty TTURL by
                                                // default! Vital to avoid problems with unknown DPM
                                                // NULL/EMPTY logic policy!
+        
         // make BoLChunkData
         BoLChunkData aux = null;
         try {

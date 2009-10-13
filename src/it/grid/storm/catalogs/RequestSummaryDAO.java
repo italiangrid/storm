@@ -493,6 +493,46 @@ public class RequestSummaryDAO {
             close(update);
         }
     }
+    
+    /**
+     * Method used to update the global status of the request identified by the RequestToken rt. It gets updated the
+     * supplied status, with the supplied explanation String and pin and file lifetimes are updated in order to start
+     * the countdown from now. If the supplied request token does not exist, nothing happens.
+     */
+    public void updateGlobalStatusPinFileLifetime(String rt, int status, String explanation) {
+        
+        checkConnection();
+        PreparedStatement update = null;
+
+        String query = "UPDATE request_queue SET status=?, errstring=?, "
+                + "pinLifetime=pinLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)), "
+                + "fileLifetime=fileLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)) "
+                + "WHERE r_token=?";
+        
+        try {
+            update = con.prepareStatement(query);
+            logWarnings(con.getWarnings());
+            
+            update.setInt(1, status);
+            logWarnings(update.getWarnings());
+            
+            update.setString(2, explanation);
+            logWarnings(update.getWarnings());
+            
+            update.setString(3, rt);
+            logWarnings(update.getWarnings());
+            
+            log.debug("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
+            
+            update.executeUpdate();
+            logWarnings(update.getWarnings());
+            
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO: " + e);
+        } finally {
+            close(update);
+        }
+    }
 
 
     /**

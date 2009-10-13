@@ -604,45 +604,42 @@ public class PtPChunkDAO {
         return sb.toString();
     }
 
-
-
-
-
-
     /**
-     * Method that updates chunks in SRM_SPACE_AVAILABLE state, into SRM_SUCCESS.
-     * An array of long representing the primary key of each chunk is required.
-     *
-     * This is needed when the client invokes srmPutDone()
-     *
-     * In case of any error nothing happens and no exception is thrown, but
-     * proper messagges get logged.
+     * Method that updates chunks in SRM_SPACE_AVAILABLE state, into SRM_SUCCESS. An array of long representing the
+     * primary key of each chunk is required. This is needed when the client invokes srmPutDone() In case of any error
+     * nothing happens and no exception is thrown, but proper messagges get logged.
      */
     public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(long[] ids) {
         checkConnection();
-        String str = "UPDATE "+
-        "status_Put s JOIN (request_Put rp, request_queue r) ON s.request_PutID=rp.ID AND rp.request_queueID=r.ID "+
-        "SET s.statusCode=? "+
-        "WHERE s.statusCode=? AND s.ID IN " +
-        makeWhereString(ids);
+
+        String str = "UPDATE "
+                + "status_Put s JOIN (request_Put rp, request_queue r) ON s.request_PutID=rp.ID AND rp.request_queueID=r.ID "
+                + "SET s.statusCode=? " + "WHERE s.statusCode=? AND s.ID IN " + makeWhereString(ids);
+
         PreparedStatement stmt = null;
         try {
             stmt = con.prepareStatement(str);
             logWarnings(con.getWarnings());
-            stmt.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
+
+            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(stmt.getWarnings());
-            stmt.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SPACE_AVAILABLE));
+
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SPACE_AVAILABLE));
             logWarnings(stmt.getWarnings());
-            log.debug("PtP CHUNK DAO - transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: "+stmt.toString());
+
+            log.debug("PtP CHUNK DAO - transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: " + stmt.toString());
+
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
-            if (count==0) {
+
+            if (count == 0) {
                 log.debug("PtPChunkDAO! No chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
             } else {
-                log.info("PtPChunkDAO! "+count+" chunks of PtP requests were transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
+                log.info("PtPChunkDAO! " + count
+                        + " chunks of PtP requests were transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
             }
         } catch (SQLException e) {
-            log.error("PtPChunkDAO! Unable to transit chunks from SRM_SPACE_AVAILABLE to SRM_SUCCESS! "+e);
+            log.error("PtPChunkDAO! Unable to transit chunks from SRM_SPACE_AVAILABLE to SRM_SUCCESS! " + e);
         } finally {
             close(stmt);
         }
