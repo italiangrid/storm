@@ -33,7 +33,6 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -41,10 +40,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 
 import java.io.IOException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -783,44 +779,13 @@ public class PtPChunk implements Delegable, Chooser {
 
             // Manage the case of TAPE enabled
             if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+
+                // Compute the Expiration Time in seconds
+                long expDate = (System.currentTimeMillis() / 1000 + chunkData.pinLifetime().value());
+                StormEA.setPinned(localFile.getAbsolutePath(), expDate);
+                
                 // set group permission for tape quota management
                 fileStoRI.setGroupTapeWrite();
-                //
-                // set the EA pinned with the right value
-                //
-                // Compute the Expiration Time
-                TLifeTimeInSeconds lifeTime = chunkData.pinLifetime();
-              
-                // - expressed in Seconds
-                long expDate = (System.currentTimeMillis() / 1000 + lifeTime.value());
-
-                Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-                String absFN = localFile.getAbsolutePath();
-                boolean alreadyPinned = StormEA.isPinned(absFN);
-                if (alreadyPinned) {
-                    long currExpDate = StormEA.getPinned(absFN);
-                    if (currExpDate > expDate) {
-                        Date expDateTime = new Date(currExpDate * 1000);
-                        log.debug("The file '"
-                                + absFN
-                                + "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
-                                + formatter.format(expDateTime));
-                    } else {
-                        log.debug("The file '"
-                                + absFN
-                                + "' is already Pinned and the pre-existing PinLifeTime is lower than the new one. PinLifeTime will be updated.");
-                        StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                        Date expDateTime = new Date(expDate * 1000);
-                        log.debug("Updated the Pinned EA to '" + absFN + "' with expiration: "
-                                + formatter.format(expDateTime));
-                    }
-                } else {
-                    Date expDateTime = new Date(expDate * 1000);
-                    log.debug("Added the Pinned EA to '" + absFN + "' with expiration: "
-                            + formatter.format(expDateTime));
-                    StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                }
-
             }
 
             return true;

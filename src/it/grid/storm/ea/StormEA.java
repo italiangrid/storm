@@ -186,25 +186,12 @@ public class StormEA {
         }
     }
 
-    @Deprecated
-    public static void setPinned(String fileName) {
-
-        try {
-            ea.setXAttr(fileName, EA_PINNED, null);
-
-        } catch (FileNotFoundException e) {
-
-            log.warn("Cannot set pinned EA because file does not exists: " + fileName);
-
-        } catch (NotSupportedException e) {
-
-            log.warn("Cannot set pinned EA (operation not supported) to file: " + fileName);
-
-        } catch (ExtendedAttributesException e) {
-            log.warn("Cannot set pinned EA to file: " + fileName);
-        }
-    }
-
+    /**
+     * Set the Extended Attribute "pinned" ({@value StormEA#EA_PINNED}) to the given value.
+     * 
+     * @param fileName
+     * @param expirationDateInSEC expiration time of the pin expressed as "seconds since the epoch".
+     */
     public static void setPinned(String fileName, long expirationDateInSEC) {
 
         long existingPinValueInSEC = getPinned(fileName);
@@ -227,10 +214,10 @@ public class StormEA {
             if (log.isDebugEnabled()) {
                 if (existingPinValueInSEC == -1) {
                     log.debug("Added the Pinned EA to '" + fileName + "' with expiration: "
-                            + formatter.format(expirationDateInSEC));
+                            + formatter.format(new Date(existingPinValueInSEC * 1000)));
                 } else {
                     log.debug("Updated the Pinned EA to '" + fileName + "' with expiration: "
-                            + formatter.format(expirationDateInSEC));
+                            + formatter.format(new Date(existingPinValueInSEC * 1000)));
                 }
             }
 
