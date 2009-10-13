@@ -27,7 +27,7 @@ public class GPFSQuotaParameters implements QuotaParametersInterface {
    * @todo Implement this
    *   it.grid.storm.synchcall.space.quota.QuotaParametersInterface method
    */
-  public List getParameters() {
+  public List<String> getParameters() {
     return this.parameters;
   }
 }
