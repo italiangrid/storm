@@ -102,25 +102,20 @@ public class RequestSummaryCatalog {
      * signal such occurence in the DB. Only correctly formed requests are
      * returned.
      */
-    synchronized public Collection fetchNewRequests(int capacity) {
+    synchronized public Collection<RequestSummaryData> fetchNewRequests(int capacity) {
         // log.debug("Retrieving a maximum of " + capacity +
-        // " new reuqests. (remaining capacity in Crusher Scheduler) ");
-        Collection c = dao.findNew(capacity);
+        // " new requests. (remaining capacity in Crusher Scheduler) ");
+        Collection<RequestSummaryDataTO> c = dao.findNew(capacity);
 
         if ((c != null) && (!c.isEmpty())) {
             log.debug("REQUEST SUMMARY CATALOG: retrieved data " + c);
         }
-        List list = new ArrayList();
-        if (c.isEmpty()) {
-            // RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No new requests found.");
-        } else {
+        List<RequestSummaryData> list = new ArrayList<RequestSummaryData>();
+        if (!c.isEmpty()) {
             int fetched = c.size();
             log.debug("REQUEST SUMMARY CATALOG: " + fetched + " new requests picked up. "); // info
-            RequestSummaryDataTO auxTO;
-            RequestSummaryData aux;
-            for (Iterator i = c.iterator(); i.hasNext();) {
-                auxTO = (RequestSummaryDataTO) i.next();
-                aux = makeOne(auxTO);
+            for (RequestSummaryDataTO auxTO: c) {
+                RequestSummaryData aux = makeOne(auxTO);
                 if (aux != null) {
                     RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + aux.requestToken() + " associated to " + aux.gridUser().getDn() + " included for processing "); // info
                     list.add(aux);

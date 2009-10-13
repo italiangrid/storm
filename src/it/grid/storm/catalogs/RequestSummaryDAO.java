@@ -134,12 +134,12 @@ public class RequestSummaryDAO {
      * A Collection of RequestSummaryDataTO is returned: if none are found, an
      * empty collection is returned.
      */
-    public Collection findNew(int freeSlot) {
+    public Collection<RequestSummaryDataTO> findNew(int freeSlot) {
         checkConnection();
         PreparedStatement stmt2 = null;
         Statement stmt = null;
         ResultSet rs = null;
-        List list = new ArrayList(); // ArrayList containing all retrieved
+        List<RequestSummaryDataTO> list = new ArrayList<RequestSummaryDataTO>(); // ArrayList containing all retrieved
         // RequestSummaryDataTO
         try {
             // start transaction
@@ -165,13 +165,13 @@ public class RequestSummaryDAO {
             // log.debug("REQUEST SUMMARY DAO - findNew: executing "+query);
             rs = stmt.executeQuery(query);
             logWarnings(stmt.getWarnings());
-            List rowids = new ArrayList(); // arraylist with selected ids
+            List<Long> rowids = new ArrayList<Long>(); // arraylist with selected ids
             RequestSummaryDataTO aux = null; // RequestSummaryDataTO made from
             // retrieved row
             long auxid; // primary key of retrieved row
-            String auxreqtype = null; // request type of retrieved row
-            String auxreqtok = null; // request token of retrieved row
-            String auxdn = null; // dn of retrieved row
+//            String auxreqtype = null; // request type of retrieved row
+//            String auxreqtok = null; // request token of retrieved row
+//            String auxdn = null; // dn of retrieved row
             while (rs.next()) {
                 auxid = rs.getLong("ID");
                 rowids.add(new Long(auxid));
