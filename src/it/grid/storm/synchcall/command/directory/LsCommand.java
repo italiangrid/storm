@@ -455,6 +455,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
+                numberOfIterations.increment();
 
                 if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
 
@@ -523,6 +524,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
+                numberOfIterations.increment();
             }
 
         } else { // The local element does not exists in the underlying file system.
@@ -538,6 +540,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 numberOfResult.increment();
                 rootArray.addTMetaDataPathDetail(currentElementDetail);
             }
+            numberOfIterations.increment();
         }
         return errorCount;
     }
