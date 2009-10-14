@@ -300,10 +300,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                 if (lsAuth.isPermit()) {
                     log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
                             + "]");
-                    int error = 0;
 
                     // At this point starts the recursive call
-                    error = manageAuthorizedLS(guser,
+                    errorCount += manageAuthorizedLS(guser,
                                                stori,
                                                details,
                                                fileStorageType,
@@ -316,27 +315,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                numberOfReturnedEntries,
                                                0,
                                                numberOfIterations);
-
-                    if (error == 0) {
-                        
-                        if (details.size() == 0) {
-                            log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
-                                     + surlArray.size() + " [SURL:" + surl.toString()
-                                     + "] skipped because of offset.");
-                        } else {
-                            log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
-                                     + surlArray.size() + " [SURL:" + surl.toString()
-                                     + "] successfully done with [status:"
-                                     + details.getTMetaDataPathDetail(j).getStatus() + "].");
-                        }
-                        
-                    } else {
-                        log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
-                                + surlArray.size() + " [SURL:" + surl.toString() + "] failed with [status:"
-                                + details.getTMetaDataPathDetail(j).getStatus() + "]");
-                    }
-
-                    errorCount += error;
 
                 } else {
                     fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
