@@ -259,7 +259,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         TStatusCode fileLevelStatusCode = TStatusCode.EMPTY;
         String fileLevelExplanation = "";
         int errorCount = 0;
-        
+
         MutableInt numberOfReturnedEntries = new MutableInt(0);
         MutableInt numberOfIterations = new MutableInt(0);
 
@@ -303,18 +303,18 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     // At this point starts the recursive call
                     errorCount += manageAuthorizedLS(guser,
-                                               stori,
-                                               details,
-                                               fileStorageType,
-                                               allLevelRecursive,
-                                               numOfLevels,
-                                               fullDetailedList,
-                                               errorCount,
-                                               count,
-                                               offset,
-                                               numberOfReturnedEntries,
-                                               0,
-                                               numberOfIterations);
+                                                     stori,
+                                                     details,
+                                                     fileStorageType,
+                                                     allLevelRecursive,
+                                                     numOfLevels,
+                                                     fullDetailedList,
+                                                     errorCount,
+                                                     count,
+                                                     offset,
+                                                     numberOfReturnedEntries,
+                                                     0,
+                                                     numberOfIterations);
 
                 } else {
                     fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
@@ -443,6 +443,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 
             if (localElement.isDirectory()) {
 
+                boolean currentElementDetailHasBeenAdedded = false;
+
                 if (numberOfIterations.intValue() >= offset) {
                     // Retrieve information of the directory from the underlying file system
                     populateDetailFromFS(stori, currentElementDetail);
@@ -454,6 +456,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
+                    currentElementDetailHasBeenAdedded = true;
                 }
                 numberOfIterations.increment();
 
@@ -489,6 +492,10 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                             if (currentMetaDataArray.size() > 0) {
                                 currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
+                                if (!currentElementDetailHasBeenAdedded) {
+                                    rootArray.addTMetaDataPathDetail(currentElementDetail);
+                                    currentElementDetailHasBeenAdedded = true;
+                                }
                             }
 
                         } else {
