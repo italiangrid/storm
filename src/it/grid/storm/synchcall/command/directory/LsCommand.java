@@ -478,10 +478,12 @@ public class LsCommand extends DirectoryCommand implements Command {
                     currentElementDetailHasBeenAdedded = true;
                 }
 
-                // Create the nested array of TMetaDataPathDetails
-                ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
 
                 if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
+                    
+                    // Create the nested array of TMetaDataPathDetails
+                    ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
+                    currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
 
                     // Retrieve directory element
                     List<StoRI> childrenArray = getFirstLevel(stori);
@@ -494,7 +496,6 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                         if (numberOfIterations.intValue() >= offset) {
 
-                            // numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                currentMetaDataArray,
@@ -510,7 +511,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                numberOfIterations);
 
                             if (currentMetaDataArray.size() > 0) {
-                                currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
                                 if (!currentElementDetailHasBeenAdedded) {
                                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                                     currentElementDetailHasBeenAdedded = true;
