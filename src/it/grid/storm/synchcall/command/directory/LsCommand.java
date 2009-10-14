@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.mutable.MutableInt;
+
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
@@ -296,8 +298,8 @@ public class LsCommand extends DirectoryCommand implements Command {
                     log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
                             + "]");
                     int error = 0;
-                    int numberOfReturnedEntries = 0;
-                    int numberOfIterations = 1;
+                    MutableInt numberOfReturnedEntries = new MutableInt(0);
+                    MutableInt numberOfIterations = new MutableInt(0);
 
                     // At this point starts the recursive call
                     error = manageAuthorizedLS(guser,
@@ -414,12 +416,12 @@ public class LsCommand extends DirectoryCommand implements Command {
     private int manageAuthorizedLS(GridUserInterface guser, StoRI stori,
             ArrayOfTMetaDataPathDetail rootArray, TFileStorageType type, boolean allLevelRecursive,
             int numOfLevels, boolean fullDetailedList, int errorCount, int count_maxEntries, int offset,
-            int numberOfResult, int currentLevel, int numberOfIterations) {
+            MutableInt numberOfResult, int currentLevel, MutableInt numberOfIterations) {
 
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
         // Check if max number of requests has been reached
-        if (numberOfResult < count_maxEntries) {
+        if (numberOfResult.intValue() < count_maxEntries) {
             return errorCount;
         }
 
@@ -445,7 +447,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
             if (localElement.isDirectory()) {
 
-                if (numberOfIterations >= offset) {
+                if (numberOfIterations.intValue() >= offset) {
                     // Retrieve information of the directory from the underlying file system
                     populateDetailFromFS(stori, currentElementDetail);
                     if (fullDetailedList) {
@@ -454,7 +456,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     // In Any case set SURL value into TMetaDataPathDetail
                     currentElementDetail.setStFN(stori.getStFN());
 
-                    numberOfResult++;
+                    numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
 
@@ -465,11 +467,12 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     for (StoRI item : childrenArray) {
 
-                        if (numberOfResult >= count_maxEntries) {
+                        if (numberOfResult.intValue() >= count_maxEntries) {
                             break;
                         }
 
-                        if (numberOfIterations >= offset) {
+                        if (numberOfIterations.intValue() >= offset) {
+                            numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                currentMetaDataArray,
@@ -482,8 +485,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                offset,
                                                numberOfResult,
                                                currentLevel + 1,
-                                               numberOfIterations + 1);
+                                               numberOfIterations);
                         } else {
+                            numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                rootArray,
@@ -496,7 +500,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                offset,
                                                numberOfResult,
                                                currentLevel + 1,
-                                               numberOfIterations + 1);
+                                               numberOfIterations);
                         }
                     }
                 } // No More element
@@ -504,7 +508,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             } else { // The local element is a file
 
                 // Retrieve information on file from underlying file system
-                if (numberOfIterations >= offset) {
+                if (numberOfIterations.intValue() >= offset) {
                     populateDetailFromFS(stori, currentElementDetail);
                     if (fullDetailedList) {
                         fullDetail(stori, guser, currentElementDetail);
@@ -512,7 +516,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     // In Any case set SURL value into TMetaDataPathDetail
                     currentElementDetail.setStFN(stori.getStFN());
-                    numberOfResult++;
+                    numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
             }
@@ -520,14 +524,14 @@ public class LsCommand extends DirectoryCommand implements Command {
         } else { // The local element does not exists in the underlying file system.
 
             log.debug("srmLs: The file does not exists in underlying file system.");
-            if (numberOfIterations >= offset) {
+            if (numberOfIterations.intValue() >= offset) {
                 errorCount++;
                 // In Any case set SURL value into TMetaDataPathDetail
                 currentElementDetail.setStFN(stori.getStFN());
                 // Set Error Status Code and Explanation
                 populateDetailFromFS(stori, currentElementDetail);
                 // Add the information into details structure
-                numberOfResult++;
+                numberOfResult.increment();
                 rootArray.addTMetaDataPathDetail(currentElementDetail);
             }
         }
