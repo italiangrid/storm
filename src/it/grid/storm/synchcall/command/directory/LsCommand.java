@@ -365,10 +365,14 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         if (details.size() == 0) {
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "The offset is grater than the number of results");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                                 "The offset is grater than the number of results");
             } catch (InvalidTReturnStatusAttributeException e) {
                 // Never thrown
             }
+
+            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                    + "] status:" + globalStatus.toString());
             outputData.setStatus(globalStatus);
             return outputData;
         }
