@@ -460,6 +460,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                 }
                 numberOfIterations.increment();
 
+                // Create the nested array of TMetaDataPathDetails
+                ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
+                
                 if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
 
                     // Retrieve directory element
@@ -473,8 +476,6 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                         if (numberOfIterations.intValue() >= offset) {
 
-                            // Create the nested array of TMetaDataPathDetails
-                            ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
                             numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
