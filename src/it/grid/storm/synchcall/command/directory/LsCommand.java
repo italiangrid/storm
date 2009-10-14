@@ -71,6 +71,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     /** In case of ls on more than one file only one checksum computation is admitted */
     private boolean doNotComputeMoreChecksums = false;
+    private boolean atLeastOneInputSURLIsDir;
 
     public LsCommand() {
         namespace = NamespaceDirector.getNamespace();
@@ -203,6 +204,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
         }
 
+        boolean coutOrOffsetAreSpecified = false;
         int count;
         if (inputData.getCount() == null) {
             // Set to max entries value. Plus one in order to be able to return TOO_MANY_RESULTS.
@@ -222,6 +224,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 outputData.setStatus(globalStatus);
                 return outputData;
             }
+            coutOrOffsetAreSpecified = true;
         }
 
         int offset;
@@ -244,6 +247,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 outputData.setStatus(globalStatus);
                 return outputData;
             }
+            coutOrOffsetAreSpecified = true;
         }
 
         /********************************* Start LS Execution **********************************/
@@ -263,6 +267,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         MutableInt numberOfReturnedEntries = new MutableInt(0);
         MutableInt numberOfIterations = new MutableInt(-1);
+
+        atLeastOneInputSURLIsDir = false;
 
         // For each path within the request perform a distinct LS.
         for (int j = 0; j < surlArray.size(); j++) {
@@ -351,6 +357,20 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         } // for
 
+        if (details.size() == 0) {
+            try {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                                 "The offset is grater than the number of results");
+            } catch (InvalidTReturnStatusAttributeException e) {
+                // Never thrown
+            }
+
+            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
+                    + globalStatus.toString());
+            outputData.setStatus(globalStatus);
+            return outputData;
+        }
+
         if (numberOfReturnedEntries.intValue() >= maxEntries) {
             if (maxEntries < count) {
                 try {
@@ -368,40 +388,39 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
         }
 
-        if (details.size() == 0) {
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                 "The offset is grater than the number of results");
-            } catch (InvalidTReturnStatusAttributeException e) {
-                // Never thrown
-            }
-
-            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
-                    + globalStatus.toString());
-            outputData.setStatus(globalStatus);
-            return outputData;
-        }
-
         log.debug("srmLs: Number of details specified in srmLs request:" + details.size());
         log.debug("srmLs: Creation of srmLs outputdata");
 
         // Set the Global return status.
         try {
+            String warningMessage = "";
+
+            if ((numOfLevels > 0) && atLeastOneInputSURLIsDir && coutOrOffsetAreSpecified) {
+                warningMessage = "Warning: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
+                        + "may result in inconsistent results among different srmLs requests. ";
+            }
+
             if (errorCount == 0) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                                                 "All requests successfully completed");
+
+                globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, warningMessage
+                        + "All requests successfully completed");
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] successfully done with [status:" + globalStatus.toString() + "]");
+
             } else if (errorCount < surlArray.size()) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-                                                 "Check file statuses for details");
+
+                globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage
+                        + "Check file statuses for details");
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] partially done with [status:" + globalStatus.toString() + "]");
+
             } else {
+                
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
                 log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] failed with [status:" + globalStatus.toString() + "]");
             }
+            
         } catch (InvalidTReturnStatusAttributeException e) {
             // Nothing to do, it will never be thrown.
             log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
@@ -462,6 +481,8 @@ public class LsCommand extends DirectoryCommand implements Command {
         if (localElement.exists()) { // The local element exists in the underlying file system
 
             if (localElement.isDirectory()) {
+
+                atLeastOneInputSURLIsDir = true;
 
                 boolean directoryHasBeenAdedded = false;
 
