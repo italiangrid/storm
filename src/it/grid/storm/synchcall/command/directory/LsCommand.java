@@ -421,7 +421,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
         // Check if max number of requests has been reached
-        if (numberOfResult.intValue() < count_maxEntries) {
+        if (numberOfResult.intValue() >= count_maxEntries) {
             return errorCount;
         }
 
