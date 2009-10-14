@@ -31,7 +31,7 @@ public class PathCreator {
 
     }
 
-    public Collection generateChild(ArrayList list) {
+    public Collection<String> generateChild(ArrayList<String> list) {
 
         //log.debug("--------DIRECTORY="+file.isDirectory()+"rec: "+recursive);
 
@@ -55,7 +55,7 @@ public class PathCreator {
     }
 
 
-    public Collection generateFirstLevelChild(ArrayList list) {
+    public Collection<String> generateFirstLevelChild(ArrayList<String> list) {
 
         if (file.isDirectory() && (recursive || level > 0)) {
             array = file.list();

@@ -86,11 +86,11 @@ public interface StoRI {
         InvalidDescendantsPathRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsFileRequestException, InvalidDescendantsEmptyRequestException;
 
-    public ArrayList getChildren(TDirOption dirOption) throws
+    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws
         InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
 
-    public ArrayList getFirstLevelChildren(TDirOption dirOption) throws
+    public ArrayList<StoRI> getFirstLevelChildren(TDirOption dirOption) throws
        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
 
