@@ -53,11 +53,7 @@ import it.grid.storm.synchcall.data.directory.LSOutputData;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang.mutable.MutableInt;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -69,18 +65,13 @@ import org.apache.commons.lang.mutable.MutableInt;
  */
 
 public class LsCommand extends DirectoryCommand implements Command {
-    private int maxEntries = -1;
     private final NamespaceInterface namespace;
-    private final LinkedList buffer;
 
     /** In case of ls on more than one file only one checksum computation is admitted */
     private boolean doNotComputeMoreChecksums = false;
 
     public LsCommand() {
-        maxEntries = DirectoryCommand.config.get_LS_MaxNumberOfEntry();
         namespace = NamespaceDirector.getNamespace();
-        // buffer = Collections.synchronizedList(new LinkedList());
-        buffer = new LinkedList();
     }
 
     /**
@@ -95,6 +86,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         LSOutputData outputData = new LSOutputData();
         LSInputData inputData = (LSInputData) data;
         TReturnStatus globalStatus = null;
+        @SuppressWarnings("unused")
         TRequestToken requestToken = null; // Not used (now LS is synchronous).
 
         outputData.setRequestToken(null);
@@ -142,6 +134,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         }
 
         /***************** Check for DEFAULT parameters not specified in input Data **************/
+        @SuppressWarnings("unused")
         ArrayOfTExtraInfo storageSystemInfo = inputData.getStorageSystemInfo();
         // Default value for "storageSystemInfo" does not exists.
 
@@ -303,8 +296,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                     log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
                             + "]");
                     int error = 0;
-                    MutableInt numberOfReturnedEntries = new MutableInt(0);
-                    MutableInt numberOfIterations = new MutableInt(0);
+                    int numberOfReturnedEntries = 0;
+                    int numberOfIterations = 1;
+
                     // At this point starts the recursive call
                     error = manageAuthorizedLS(guser,
                                                stori,
@@ -360,8 +354,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                     elementDetail.setStFN(stori.getStFN());
                 } else {
                     elementDetail.setStFN(surl.sfn().stfn());
-                    // TOREMOVE
-                    // log.debug("StFN : "+surl.sfn().stfn());
                 }
 
                 details.addTMetaDataPathDetail(elementDetail);
@@ -422,173 +414,140 @@ public class LsCommand extends DirectoryCommand implements Command {
     private int manageAuthorizedLS(GridUserInterface guser, StoRI stori,
             ArrayOfTMetaDataPathDetail rootArray, TFileStorageType type, boolean allLevelRecursive,
             int numOfLevels, boolean fullDetailedList, int errorCount, int count_maxEntries, int offset,
-            MutableInt numberOfResult, int currentLevel, MutableInt numberOfIterations) {
+            int numberOfResult, int currentLevel, int numberOfIterations) {
 
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
-        // log.debug("srmLs: BFS visit of " +
-        // stori.getPFN()+"\n Number of entries: "+numberOfResult+"\n MaxEntriesToReturn: "+
-        // count_maxEntries+"\n NumOfLevel: "+numOfLevels+"\n CurrentLevel: "+currentLevel+"\n Offset: "+offset);
-
-        // Insert the StoRI into the buffer
-        // buffer.addLast(new BufferElement(stori, 0));
-
-        LocalFile localElement = null;
-        TMetaDataPathDetail currentElementDetail = null;
-        boolean anotherLevel = false;
-        // Current metaDataPath
-        currentElementDetail = new TMetaDataPathDetail();
-        ArrayOfTMetaDataPathDetail currentMetaDataArray = null;
-        // Create the annidate array of TMetaDataPathDetails
-        currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
-        // Set the hierarchial array of metaData
-        currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
-        // iter++
-        numberOfIterations.add(1);
         // Check if max number of requests has been reached
-        if (numberOfResult.intValue() < count_maxEntries) {
-            /**
-             * The recursive idea is: - if the StoRI is a directory, fill up with details, calculate the first level
-             * children and for each recurse on. - it the StoRI is a file, fill up with details and return. Please note
-             * that for each level the same ArrayOfTMetaData is passed as parameter, in order to collect results. this
-             * Array is referenced in the currentTMetaData element.
-             */
+        if (numberOfResult < count_maxEntries) {
+            return errorCount;
+        }
 
-            localElement = stori.getLocalFile();
+        // Current metaDataPath
+        TMetaDataPathDetail currentElementDetail = new TMetaDataPathDetail();
+        // Create the nested array of TMetaDataPathDetails
+        ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
 
-            // Ls of the current element
-            if (localElement.exists()) { // The local element exists in the underlying file system
-                if (localElement.isDirectory()) {
-                    if (numberOfIterations.intValue() >= offset) {
-                        // Retrieve information of the directory from the underlying file system
-                        populateDetailFromFS(stori, currentElementDetail);
-                        if (fullDetailedList) {
-                            fullDetail(stori, guser, currentElementDetail);
-                        }
-                        // In Any case set SURL value into TMetaDataPathDetail
-                        if (stori != null) {
-                            currentElementDetail.setStFN(stori.getStFN());
-                        }
-                        // Add the information into the details structure
+        // Set the hierarchical array of metaData
+        currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
 
-                        numberOfResult.add(1);
-                        rootArray.addTMetaDataPathDetail(currentElementDetail);
-                    }
-                    anotherLevel = checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel);
-                    currentLevel = currentLevel + 1;
-                    if (anotherLevel) {
-                        // Retrieve directory element
-                        ArrayList childrenArray = (ArrayList) getFirstLevel(stori);
-                        if (childrenArray != null) { // Populate the buffer
-                            for (Iterator<StoRI> iter = childrenArray.iterator(); iter.hasNext()
-                                    && (numberOfResult.intValue() < count_maxEntries);) {
-                                StoRI item = iter.next();
-                                if (numberOfResult.intValue() >= offset) {
-                                    manageAuthorizedLS(guser,
-                                                       item,
-                                                       currentMetaDataArray,
-                                                       type,
-                                                       allLevelRecursive,
-                                                       numOfLevels,
-                                                       fullDetailedList,
-                                                       errorCount,
-                                                       count_maxEntries,
-                                                       offset,
-                                                       numberOfResult,
-                                                       currentLevel,
-                                                       numberOfIterations);
-                                } else {
-                                    manageAuthorizedLS(guser,
-                                                       item,
-                                                       rootArray,
-                                                       type,
-                                                       allLevelRecursive,
-                                                       numOfLevels,
-                                                       fullDetailedList,
-                                                       errorCount,
-                                                       count_maxEntries,
-                                                       offset,
-                                                       numberOfResult,
-                                                       currentLevel,
-                                                       numberOfIterations);
-                                }
-                            }
-                        } // no valid children
-                    } // No More element
-                } else { // The local element is a file
-                    // Retrieve information on file from underlying file system
-                    if (numberOfIterations.intValue() >= offset) {
-                        populateDetailFromFS(stori, currentElementDetail);
-                        if (fullDetailedList) {
-                            fullDetail(stori, guser, currentElementDetail);
-                        }
-                        // In Any case set SURL value into TMetaDataPathDetail
-                        if (stori != null) {
-                            // elementDetail.setSurl(stori_tmp.getSURL());
-                            currentElementDetail.setStFN(stori.getStFN());
-                        }
-                        numberOfResult.add(1);
-                        rootArray.addTMetaDataPathDetail(currentElementDetail);
-                    } // Just do nothing. Skip this element.
-                }
-            } else { // The local element does not exists in the underlying file system.
-                log.debug("srmLs: The file does not exists in underlying file system.");
-                if (numberOfIterations.intValue() >= offset) {
-                    errorCount++;
-                    // In Any case set SURL value into TMetaDataPathDetail
-                    if (stori != null) {
-                        // elementDetail.setSurl(stori_tmp.getSURL());
-                        currentElementDetail.setStFN(stori.getStFN());
-                    }
-                    // Set Error Status Code and Explanation
+        /**
+         * The recursive idea is: - if the StoRI is a directory, fill up with details, calculate the first level
+         * children and for each recurse on. - it the StoRI is a file, fill up with details and return. Please note that
+         * for each level the same ArrayOfTMetaData is passed as parameter, in order to collect results. this Array is
+         * referenced in the currentTMetaData element.
+         */
+
+        LocalFile localElement = stori.getLocalFile();
+
+        // Ls of the current element
+        if (localElement.exists()) { // The local element exists in the underlying file system
+
+            if (localElement.isDirectory()) {
+
+                if (numberOfIterations >= offset) {
+                    // Retrieve information of the directory from the underlying file system
                     populateDetailFromFS(stori, currentElementDetail);
-                    // Add the information into details structure
-                    numberOfResult.add(1);
+                    if (fullDetailedList) {
+                        fullDetail(stori, guser, currentElementDetail);
+                    }
+                    // In Any case set SURL value into TMetaDataPathDetail
+                    currentElementDetail.setStFN(stori.getStFN());
+
+                    numberOfResult++;
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
+
+                if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
+
+                    // Retrieve directory element
+                    List<StoRI> childrenArray = getFirstLevel(stori);
+
+                    for (StoRI item : childrenArray) {
+
+                        if (numberOfResult >= count_maxEntries) {
+                            break;
+                        }
+
+                        if (numberOfIterations >= offset) {
+                            manageAuthorizedLS(guser,
+                                               item,
+                                               currentMetaDataArray,
+                                               type,
+                                               allLevelRecursive,
+                                               numOfLevels,
+                                               fullDetailedList,
+                                               errorCount,
+                                               count_maxEntries,
+                                               offset,
+                                               numberOfResult,
+                                               currentLevel + 1,
+                                               numberOfIterations + 1);
+                        } else {
+                            manageAuthorizedLS(guser,
+                                               item,
+                                               rootArray,
+                                               type,
+                                               allLevelRecursive,
+                                               numOfLevels,
+                                               fullDetailedList,
+                                               errorCount,
+                                               count_maxEntries,
+                                               offset,
+                                               numberOfResult,
+                                               currentLevel + 1,
+                                               numberOfIterations + 1);
+                        }
+                    }
+                } // No More element
+
+            } else { // The local element is a file
+
+                // Retrieve information on file from underlying file system
+                if (numberOfIterations >= offset) {
+                    populateDetailFromFS(stori, currentElementDetail);
+                    if (fullDetailedList) {
+                        fullDetail(stori, guser, currentElementDetail);
+                    }
+
+                    // In Any case set SURL value into TMetaDataPathDetail
+                    currentElementDetail.setStFN(stori.getStFN());
+                    numberOfResult++;
+                    rootArray.addTMetaDataPathDetail(currentElementDetail);
+                }
+            }
+
+        } else { // The local element does not exists in the underlying file system.
+
+            log.debug("srmLs: The file does not exists in underlying file system.");
+            if (numberOfIterations >= offset) {
+                errorCount++;
+                // In Any case set SURL value into TMetaDataPathDetail
+                currentElementDetail.setStFN(stori.getStFN());
+                // Set Error Status Code and Explanation
+                populateDetailFromFS(stori, currentElementDetail);
+                // Add the information into details structure
+                numberOfResult++;
+                rootArray.addTMetaDataPathDetail(currentElementDetail);
             }
         }
         return errorCount;
     }
 
-    /**
-     * getChildren
-     * 
-     * @param element StoRI
-     * @return StoRI[]
-     */
-    private List getChildren(StoRI element) {
-        ArrayList result = null;
+    private List<StoRI> getFirstLevel(StoRI element) {
+
+        List<StoRI> result = null;
         TDirOption dirOption = null;
+
         try {
             dirOption = new TDirOption(true, false, 1);
         } catch (InvalidTDirOptionAttributesException ex) {
+            // Never thrown
             log.debug("srmLs: Unable to create DIR OPTION. WOW!");
         }
-        try {
-            result = element.getChildren(dirOption);
 
-        } catch (InvalidDescendantsFileRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
-        } catch (InvalidDescendantsPathRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
-        } catch (InvalidDescendantsAuthRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
-        } catch (InvalidDescendantsEmptyRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
-        }
-        return result;
-    }
+        try {
 
-    private List getFirstLevel(StoRI element) {
-        ArrayList result = null;
-        TDirOption dirOption = null;
-        try {
-            dirOption = new TDirOption(true, false, 1);
-        } catch (InvalidTDirOptionAttributesException ex) {
-            log.debug("srmLs: Unable to create DIR OPTION. WOW!");
-        }
-        try {
             result = element.getFirstLevelChildren(dirOption);
 
         } catch (InvalidDescendantsFileRequestException ex1) {
@@ -600,6 +559,11 @@ public class LsCommand extends DirectoryCommand implements Command {
         } catch (InvalidDescendantsEmptyRequestException ex1) {
             log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
         }
+
+        if (result == null) {
+            result = new ArrayList<StoRI>(0);
+        }
+
         return result;
     }
 
@@ -717,15 +681,12 @@ public class LsCommand extends DirectoryCommand implements Command {
 
             /** Set common information (for files and directories) */
             // Set UserPermission
-            // elementDetail.setOwnerPermission( TUserPermission.makeDirectoryDefault() );
             elementDetail.setOwnerPermission(userPermission);
 
             // Set GroupPermission
-            // elementDetail.setGroupPermission( TGroupPermission.makeDirectoryDefault() );
             elementDetail.setGroupPermission(groupPermission);
 
             // Set otherPermission
-            // elementDetail.setOtherPermission( TPermissionMode.NONE );
             elementDetail.setOtherPermission(otherPermission);
 
         } else { // localElement is a file
@@ -816,7 +777,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     elementDetail.setCheckSumValue(checkSumValue);
                 } else {
                     // Checksum is not available
-                    // so StoRM don't set the attributes checkSumType and checkSumValue
+                    // so StoRM doesn't set the attributes checkSumType and checkSumValue
                     log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath()
                             + "'");
                 }
