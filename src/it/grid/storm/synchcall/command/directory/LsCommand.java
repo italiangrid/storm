@@ -317,10 +317,18 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                numberOfIterations);
 
                     if (error == 0) {
-                        log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
-                                + surlArray.size() + " [SURL:" + surl.toString()
-                                + "] successfully done with [status:"
-                                + details.getTMetaDataPathDetail(j).getStatus() + "].");
+                        
+                        if (details.size() == 0) {
+                            log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
+                                     + surlArray.size() + " [SURL:" + surl.toString()
+                                     + "] skipped because of offset.");
+                        } else {
+                            log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
+                                     + surlArray.size() + " [SURL:" + surl.toString()
+                                     + "] successfully done with [status:"
+                                     + details.getTMetaDataPathDetail(j).getStatus() + "].");
+                        }
+                        
                     } else {
                         log.info("srmLs: <" + guser + "> Listing on SURL " + (j + 1) + " of "
                                 + surlArray.size() + " [SURL:" + surl.toString() + "] failed with [status:"
@@ -371,8 +379,8 @@ public class LsCommand extends DirectoryCommand implements Command {
                 // Never thrown
             }
 
-            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                    + "] status:" + globalStatus.toString());
+            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
+                    + globalStatus.toString());
             outputData.setStatus(globalStatus);
             return outputData;
         }
