@@ -259,6 +259,9 @@ public class LsCommand extends DirectoryCommand implements Command {
         TStatusCode fileLevelStatusCode = TStatusCode.EMPTY;
         String fileLevelExplanation = "";
         int errorCount = 0;
+        
+        MutableInt numberOfReturnedEntries = new MutableInt(0);
+        MutableInt numberOfIterations = new MutableInt(0);
 
         // For each path within the request perform a distinct LS.
         for (int j = 0; j < surlArray.size(); j++) {
@@ -298,8 +301,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                     log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
                             + "]");
                     int error = 0;
-                    MutableInt numberOfReturnedEntries = new MutableInt(0);
-                    MutableInt numberOfIterations = new MutableInt(0);
 
                     // At this point starts the recursive call
                     error = manageAuthorizedLS(guser,
