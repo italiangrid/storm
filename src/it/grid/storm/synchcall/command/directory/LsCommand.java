@@ -425,6 +425,8 @@ public class LsCommand extends DirectoryCommand implements Command {
         if (numberOfResult.intValue() >= count_maxEntries) {
             return errorCount;
         }
+        
+        numberOfIterations.increment();
 
         // Current metaDataPath
         TMetaDataPathDetail currentElementDetail = new TMetaDataPathDetail();
@@ -458,7 +460,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                     currentElementDetailHasBeenAdedded = true;
                 }
-                numberOfIterations.increment();
+//                numberOfIterations.increment();
 
                 // Create the nested array of TMetaDataPathDetails
                 ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
@@ -476,7 +478,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                         if (numberOfIterations.intValue() >= offset) {
 
-                            numberOfIterations.increment();
+//                            numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                currentMetaDataArray,
@@ -500,7 +502,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                             }
 
                         } else {
-                            numberOfIterations.increment();
+//                            numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                rootArray,
@@ -532,7 +534,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     numberOfResult.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
-                numberOfIterations.increment();
+//                numberOfIterations.increment();
             }
 
         } else { // The local element does not exists in the underlying file system.
@@ -548,7 +550,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 numberOfResult.increment();
                 rootArray.addTMetaDataPathDetail(currentElementDetail);
             }
-            numberOfIterations.increment();
+//            numberOfIterations.increment();
         }
         return errorCount;
     }
