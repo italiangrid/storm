@@ -84,7 +84,6 @@ public class LsCommand extends DirectoryCommand implements Command {
      */
     public OutputData execute(InputData data) {
 
-        ArrayOfTMetaDataPathDetail details = new ArrayOfTMetaDataPathDetail();
         LSOutputData outputData = new LSOutputData();
         LSInputData inputData = (LSInputData) data;
         TReturnStatus globalStatus = null;
@@ -256,14 +255,14 @@ public class LsCommand extends DirectoryCommand implements Command {
          * From this point the log can be more verbose reporting also the SURL involved in the request.
          */
 
-        StoRI stori = null;
-        AuthorizationDecision lsAuth = null;
+        ArrayOfTMetaDataPathDetail details = new ArrayOfTMetaDataPathDetail();
         TStatusCode fileLevelStatusCode = TStatusCode.EMPTY;
         String fileLevelExplanation = "";
         int errorCount = 0;
 
         // For each path within the request perform a distinct LS.
         for (int j = 0; j < surlArray.size(); j++) {
+            StoRI stori = null;
             boolean failure = false;
 
             log.debug("srmLs: surlArray.size=" + surlArray.size());
@@ -292,7 +291,8 @@ public class LsCommand extends DirectoryCommand implements Command {
             // Check for authorization and execute Ls.
             if (!failure) {
 
-                lsAuth = AuthorizationCollector.getInstance().canListDirectory(guser, stori);
+                AuthorizationDecision lsAuth = AuthorizationCollector.getInstance().canListDirectory(guser,
+                                                                                                     stori);
 
                 if (lsAuth.isPermit()) {
                     log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
@@ -363,6 +363,16 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         } // for
 
+        if (details.size() == 0) {
+            try {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "The offset is grater than the number of results");
+            } catch (InvalidTReturnStatusAttributeException e) {
+                // Never thrown
+            }
+            outputData.setStatus(globalStatus);
+            return outputData;
+        }
+
         log.debug("srmLs: Number of details specified in srmLs request:" + details.size());
         log.debug("srmLs: Creation of srmLs outputdata");
 
@@ -427,11 +437,6 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         // Current metaDataPath
         TMetaDataPathDetail currentElementDetail = new TMetaDataPathDetail();
-        // Create the nested array of TMetaDataPathDetails
-        ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
-
-        // Set the hierarchical array of metaData
-        currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
 
         /**
          * The recursive idea is: - if the StoRI is a directory, fill up with details, calculate the first level
@@ -472,6 +477,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                         }
 
                         if (numberOfIterations.intValue() >= offset) {
+
+                            // Create the nested array of TMetaDataPathDetails
+                            ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
                             numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
@@ -486,6 +494,11 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                numberOfResult,
                                                currentLevel + 1,
                                                numberOfIterations);
+
+                            if (currentMetaDataArray.size() > 0) {
+                                currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
+                            }
+
                         } else {
                             numberOfIterations.increment();
                             manageAuthorizedLS(guser,
