@@ -396,7 +396,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             String warningMessage = "";
 
             if ((numOfLevels > 0) && atLeastOneInputSURLIsDir && coutOrOffsetAreSpecified) {
-                warningMessage = "Warning: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
+                warningMessage = "WARNING: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
                         + "may result in inconsistent results among different srmLs requests. ";
             }
 
