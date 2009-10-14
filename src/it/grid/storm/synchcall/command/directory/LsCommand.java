@@ -205,26 +205,22 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         int count;
         if (inputData.getCount() == null) {
-            // Set to the default value.
-            count = DirectoryCommand.config.get_LS_count();
+            // Set to max entries value. Plus one in order to be able to return TOO_MANY_RESULTS.
+            count = DirectoryCommand.config.get_LS_MaxNumberOfEntry() + 1;
         } else {
             count = inputData.getCount().intValue();
-            if (count < 0) {
+            if (count <= 0) {
                 try {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                     "Parameter 'count' is negative");
+                                                     "Parameter 'count' is less or equal zero");
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
-                } catch (InvalidTReturnStatusAttributeException ex1) {
+                } catch (InvalidTReturnStatusAttributeException e) {
                     // Nothing to do, it will never be thrown.
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed. Error creating returnStatus " + ex1);
+                    log.error("Programming BUG", e);
                 }
                 outputData.setStatus(globalStatus);
                 return outputData;
-            }
-            if (count == 0) {
-                count = DirectoryCommand.config.get_LS_count();
             }
         }
 
@@ -259,6 +255,11 @@ public class LsCommand extends DirectoryCommand implements Command {
         TStatusCode fileLevelStatusCode = TStatusCode.EMPTY;
         String fileLevelExplanation = "";
         int errorCount = 0;
+
+        int maxEntries = DirectoryCommand.config.get_LS_MaxNumberOfEntry();
+        if (count < maxEntries) {
+            maxEntries = count;
+        }
 
         MutableInt numberOfReturnedEntries = new MutableInt(0);
         MutableInt numberOfIterations = new MutableInt(-1);
@@ -310,7 +311,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                      numOfLevels,
                                                      fullDetailedList,
                                                      errorCount,
-                                                     count,
+                                                     maxEntries,
                                                      offset,
                                                      numberOfReturnedEntries,
                                                      0,
@@ -349,6 +350,22 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
 
         } // for
+
+        if (numberOfReturnedEntries.intValue() >= maxEntries) {
+            if (maxEntries < count) {
+                try {
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
+                                                     "Max returned entries is: " + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
+                } catch (InvalidTReturnStatusAttributeException e) {
+                    // Never thrown
+                }
+
+                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
+                        + globalStatus.toString());
+                outputData.setStatus(globalStatus);
+                return outputData;
+            }
+        }
 
         if (details.size() == 0) {
             try {
@@ -408,7 +425,7 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @param errorCount
      * @param count_maxEntries
      * @param offset
-     * @param numberOfResult
+     * @param numberOfResults
      * @param currentLevel
      * @param numberOfIterations
      * @return number of errors
@@ -417,15 +434,15 @@ public class LsCommand extends DirectoryCommand implements Command {
     private int manageAuthorizedLS(GridUserInterface guser, StoRI stori,
             ArrayOfTMetaDataPathDetail rootArray, TFileStorageType type, boolean allLevelRecursive,
             int numOfLevels, boolean fullDetailedList, int errorCount, int count_maxEntries, int offset,
-            MutableInt numberOfResult, int currentLevel, MutableInt numberOfIterations) {
+            MutableInt numberOfResults, int currentLevel, MutableInt numberOfIterations) {
 
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
         // Check if max number of requests has been reached
-        if (numberOfResult.intValue() >= count_maxEntries) {
+        if (numberOfResults.intValue() >= count_maxEntries) {
             return errorCount;
         }
-        
+
         numberOfIterations.increment();
 
         // Current metaDataPath
@@ -456,15 +473,14 @@ public class LsCommand extends DirectoryCommand implements Command {
                     // In Any case set SURL value into TMetaDataPathDetail
                     currentElementDetail.setStFN(stori.getStFN());
 
-                    numberOfResult.increment();
+                    numberOfResults.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                     currentElementDetailHasBeenAdedded = true;
                 }
-//                numberOfIterations.increment();
 
                 // Create the nested array of TMetaDataPathDetails
                 ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
-                
+
                 if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
 
                     // Retrieve directory element
@@ -472,13 +488,13 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     for (StoRI item : childrenArray) {
 
-                        if (numberOfResult.intValue() >= count_maxEntries) {
+                        if (numberOfResults.intValue() >= count_maxEntries) {
                             break;
                         }
 
                         if (numberOfIterations.intValue() >= offset) {
 
-//                            numberOfIterations.increment();
+                            // numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                currentMetaDataArray,
@@ -489,7 +505,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                errorCount,
                                                count_maxEntries,
                                                offset,
-                                               numberOfResult,
+                                               numberOfResults,
                                                currentLevel + 1,
                                                numberOfIterations);
 
@@ -502,7 +518,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                             }
 
                         } else {
-//                            numberOfIterations.increment();
+                            // numberOfIterations.increment();
                             manageAuthorizedLS(guser,
                                                item,
                                                rootArray,
@@ -513,12 +529,12 @@ public class LsCommand extends DirectoryCommand implements Command {
                                                errorCount,
                                                count_maxEntries,
                                                offset,
-                                               numberOfResult,
+                                               numberOfResults,
                                                currentLevel + 1,
                                                numberOfIterations);
                         }
-                    }
-                } // No More element
+                    } // for
+                }
 
             } else { // The local element is a file
 
@@ -531,10 +547,9 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     // In Any case set SURL value into TMetaDataPathDetail
                     currentElementDetail.setStFN(stori.getStFN());
-                    numberOfResult.increment();
+                    numberOfResults.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
                 }
-//                numberOfIterations.increment();
             }
 
         } else { // The local element does not exists in the underlying file system.
@@ -547,10 +562,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                 // Set Error Status Code and Explanation
                 populateDetailFromFS(stori, currentElementDetail);
                 // Add the information into details structure
-                numberOfResult.increment();
+                numberOfResults.increment();
                 rootArray.addTMetaDataPathDetail(currentElementDetail);
             }
-//            numberOfIterations.increment();
         }
         return errorCount;
     }
