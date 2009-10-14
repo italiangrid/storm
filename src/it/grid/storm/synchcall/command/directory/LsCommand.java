@@ -355,7 +355,8 @@ public class LsCommand extends DirectoryCommand implements Command {
             if (maxEntries < count) {
                 try {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
-                                                     "Max returned entries is: " + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
+                                                     "Max returned entries is: "
+                                                             + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
                 } catch (InvalidTReturnStatusAttributeException e) {
                     // Never thrown
                 }
@@ -462,7 +463,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
             if (localElement.isDirectory()) {
 
-                boolean currentElementDetailHasBeenAdedded = false;
+                boolean directoryHasBeenAdedded = false;
 
                 if (numberOfIterations.intValue() >= offset) {
                     // Retrieve information of the directory from the underlying file system
@@ -475,15 +476,19 @@ public class LsCommand extends DirectoryCommand implements Command {
 
                     numberOfResults.increment();
                     rootArray.addTMetaDataPathDetail(currentElementDetail);
-                    currentElementDetailHasBeenAdedded = true;
+                    directoryHasBeenAdedded = true;
                 }
 
-
                 if (checkAnotherLevel(allLevelRecursive, numOfLevels, currentLevel)) {
-                    
+
                     // Create the nested array of TMetaDataPathDetails
-                    ArrayOfTMetaDataPathDetail currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
-                    currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
+                    ArrayOfTMetaDataPathDetail currentMetaDataArray;
+                    if (directoryHasBeenAdedded) {
+                        currentMetaDataArray = new ArrayOfTMetaDataPathDetail();
+                        currentElementDetail.setArrayOfSubPaths(currentMetaDataArray);
+                    } else {
+                        currentMetaDataArray = rootArray;
+                    }
 
                     // Retrieve directory element
                     List<StoRI> childrenArray = getFirstLevel(stori);
@@ -494,45 +499,19 @@ public class LsCommand extends DirectoryCommand implements Command {
                             break;
                         }
 
-                        if (numberOfIterations.intValue() >= offset) {
-
-                            manageAuthorizedLS(guser,
-                                               item,
-                                               currentMetaDataArray,
-                                               type,
-                                               allLevelRecursive,
-                                               numOfLevels,
-                                               fullDetailedList,
-                                               errorCount,
-                                               count_maxEntries,
-                                               offset,
-                                               numberOfResults,
-                                               currentLevel + 1,
-                                               numberOfIterations);
-
-                            if (currentMetaDataArray.size() > 0) {
-                                if (!currentElementDetailHasBeenAdedded) {
-                                    rootArray.addTMetaDataPathDetail(currentElementDetail);
-                                    currentElementDetailHasBeenAdedded = true;
-                                }
-                            }
-
-                        } else {
-                            // numberOfIterations.increment();
-                            manageAuthorizedLS(guser,
-                                               item,
-                                               rootArray,
-                                               type,
-                                               allLevelRecursive,
-                                               numOfLevels,
-                                               fullDetailedList,
-                                               errorCount,
-                                               count_maxEntries,
-                                               offset,
-                                               numberOfResults,
-                                               currentLevel + 1,
-                                               numberOfIterations);
-                        }
+                        manageAuthorizedLS(guser,
+                                           item,
+                                           currentMetaDataArray,
+                                           type,
+                                           allLevelRecursive,
+                                           numOfLevels,
+                                           fullDetailedList,
+                                           errorCount,
+                                           count_maxEntries,
+                                           offset,
+                                           numberOfResults,
+                                           currentLevel + 1,
+                                           numberOfIterations);
                     } // for
                 }
 

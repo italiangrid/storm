@@ -1025,15 +1025,6 @@ public class Configuration {
     }
 
     /**
-     * Default value for the parameter "count" of the LS request.
-     * 
-     * @return int
-     */
-    public int get_LS_count() {
-        return get_LS_MaxNumberOfEntry();
-    }
-
-    /**
      * Default value for the parameter "offset" of the LS request.
      * 
      * @return int
