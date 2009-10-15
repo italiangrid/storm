@@ -211,7 +211,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             count = DirectoryCommand.config.get_LS_MaxNumberOfEntry() + 1;
         } else {
             count = inputData.getCount().intValue();
-            if (count <= 0) {
+            if (count < 0) {
                 try {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
                                                      "Parameter 'count' is less or equal zero");
@@ -223,6 +223,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                 }
                 outputData.setStatus(globalStatus);
                 return outputData;
+            }
+            if (count == 0) {
+                count = DirectoryCommand.config.get_LS_MaxNumberOfEntry() + 1;
             }
             coutOrOffsetAreSpecified = true;
         }
