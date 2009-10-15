@@ -112,7 +112,7 @@ public class VolatileAndJiTCatalog {
      * @return <code>true</code> if there is antry for the given file in the volatilte table, <code>false</code>
      *         otherwise.
      */
-    public boolean exists(PFN pfn) {
+    synchronized public boolean exists(PFN pfn) {
         return dao.exists(pfn.getValue());
     }
 
