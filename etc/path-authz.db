@@ -1,0 +1,35 @@
+#################################
+#  Path Authorization DataBase  #
+#################################
+
+# Evaluation algorithm
+#  - possible values are:
+#    1) it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
+#    2) it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
+
+algorithm=it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
+
+# ==================
+# Operations on Path
+# ==================
+#   'W'	: 	WRITE_FILE  			"Write data on existing files"
+#   'R' : 	READ_FILE   			"Read data"
+#   'F' : 	RENAME     				"Rename a file or a directory"
+#   'D' : 	DELETE  				"Delete a file or a directory"
+#   'T' : 	TRAVERSE_DIRECTORY 		"Traverse a directory"
+#   'L' : 	LIST_DIRECTORY			"Listing a directory"
+#   'M' : 	CREATE_DIRECTORY		"Create a directory"
+#   'N' : 	CREATE_FILE				"Create a new file"
+#
+
+#--------+-----------+--------------+----------
+# local	 | 	Path	 |	Permission	|	ACE
+# group	 |			 |	mask		|	Type
+#--------+-----------+--------------+----------
+  dteam		/dteam		WRFDTLMN		permit
+  dteam		/cms		----TL--		permit
+  cms		/cms		-R--TL--		permit
+  cmsprd	/cms		WRFDTLMN		permit
+  cmsphed	/cms		WR--TLMN		permit
+  @ALL@		/			WRFDTLMN		deny
+

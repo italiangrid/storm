@@ -17,70 +17,57 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * This class represents a StoRM as a whole: it sets the configuration file which
- * contains properties necessary for other classes of StoRM, it sets up logging,
- * as well as the advanced picker.
- *
- * @author  EGRID - ICTP Trieste; INFN - CNAF Bologna
- * @date    March 28th, 2005
+ * This class represents a StoRM as a whole: it sets the configuration file which contains properties necessary for
+ * other classes of StoRM, it sets up logging, as well as the advanced picker.
+ * 
+ * @author EGRID - ICTP Trieste; INFN - CNAF Bologna
+ * @date March 28th, 2005
  * @version 7.0
  */
 
-
 public class StoRM {
 
+    private AdvancedPicker picker = null; // Picker of StoRM
 
-    private AdvancedPicker picker = null; //Picker of StoRM
+    private XMLRPCHttpServer xmlrpcServer = null;
 
-    private XMLRPCHttpServer  xmlrpcServer= null;
-
-    private StringBuffer welcome = welcomeText(); //Text that displays general info about StoRM project
-    private StringBuffer defaultConfig = defaultText(); //Text that displays StoRM built in values
+    private final StringBuffer welcome = welcomeText(); // Text that displays general info about StoRM project
+    private final StringBuffer defaultConfig = defaultText(); // Text that displays StoRM built in values
 
     private static Logger log;
 
-    private final Timer GC = new Timer(); //Timer object in charge to call periodically the Space Garbace Collector
-
-
+    private final Timer GC = new Timer(); // Timer object in charge to call periodically the Space Garbace Collector
 
     /**
-     * Public constructor that requires a String containing the complete pathname
-     * to the configuration file, as well as the desired refresh rate in seconds
-     * for changes in configuration.
-     *
-     * Beware that by pathname it is meant the complete path starting from root,
-     * including the name of the file itself!
-     *
-     * If pathname is empty or null, then an attempt will be made to read properties
-     * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
-     * this attempt _will_ fail!
-     *
-     * In any case, failure to read the configuratin file causes StoRM to use
+     * Public constructor that requires a String containing the complete pathname to the configuration file, as well as
+     * the desired refresh rate in seconds for changes in configuration. Beware that by pathname it is meant the
+     * complete path starting from root, including the name of the file itself! If pathname is empty or null, then an
+     * attempt will be made to read properties off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows
+     * installations this attempt _will_ fail! In any case, failure to read the configuratin file causes StoRM to use
      * hardcoded default values.
      */
     public StoRM(String configurationPathname, int refresh) {
-        //verifying supplied configurationPathname and print to screen...
-        if ((configurationPathname==null) || (configurationPathname=="")) {
-            //built-in configuration file to be used if nothing gets specified!
-            configurationPathname="/opt/storm/etc/storm.properties";
+        // verifying supplied configurationPathname and print to screen...
+        if ((configurationPathname == null) || (configurationPathname == "")) {
+            // built-in configuration file to be used if nothing gets specified!
+            configurationPathname = "/opt/storm/backend/etc/storm.properties";
             System.out.print("This instance of StoRM Backend was invoked without explicitly specifying ");
             System.out.print("a configuration file. Looking for the standard one in ");
             System.out.println(configurationPathname);
         } else {
-            //look for given configuration file...
+            // look for given configuration file...
             System.out.print("Looking for configuration file ");
             System.out.println(configurationPathname);
         }
-        //load properties from configuration...
-        Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname,refresh));
-        //set and print current configuration string...
+        // load properties from configuration...
+        Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname, refresh));
+        // set and print current configuration string...
         StringBuffer currentConfig = new StringBuffer();
         currentConfig.append(Configuration.getInstance().toString());
         System.out.println("\nCurrent configuration:");
         System.out.println(currentConfig.toString());
-        //print welcome
+        // print welcome
         System.out.println();
         System.out.println(welcome.toString());
 
@@ -91,19 +78,19 @@ public class StoRM {
         String logFile = configurationDir + "logging.xml";
         Bootstrap.initializeLogging(logFile);
 
-        log = LoggerFactory.getLogger(StoRM.class);
+        StoRM.log = LoggerFactory.getLogger(StoRM.class);
 
         //
-        log.error(welcome.toString()); //log welcome string!
-        log.debug(defaultConfig.toString()); //log default values!
-        log.info("CurrentConfiguration:\n" + currentConfig.toString()); //log actually used values!
+        StoRM.log.error(welcome.toString()); // log welcome string!
+        StoRM.log.debug(defaultConfig.toString()); // log default values!
+        StoRM.log.info("CurrentConfiguration:\n" + currentConfig.toString()); // log actually used values!
 
-        //Force the loadind and the parsing of Namespace configuration
-        boolean verboseMode = false; //true generates verbose logging
-        boolean testingMode = false; //True if you wants testing namespace
+        // Force the loadind and the parsing of Namespace configuration
+        boolean verboseMode = false; // true generates verbose logging
+        boolean testingMode = false; // True if you wants testing namespace
         NamespaceDirector.initializeDirector(verboseMode, testingMode);
 
-        //Hearthbeat
+        // Hearthbeat
         HealthDirector.initializeDirector(false);
 
         /**
@@ -112,13 +99,13 @@ public class StoRM {
         try {
             RecallTableService.start();
         } catch (IOException e) {
-            log.error("Unable to start internal HTTP Server listening for RESTFul services");
+            StoRM.log.error("Unable to start internal HTTP Server listening for RESTFul services");
             e.printStackTrace();
         }
-        
+
         //
         picker = new AdvancedPicker();
-        //this.xmlrpcServer = new SynchCallServer();
+        // this.xmlrpcServer = new SynchCallServer();
         xmlrpcServer = new XMLRPCHttpServer();
     }
 
@@ -162,8 +149,7 @@ public class StoRM {
     }
 
     /**
-     * Auxiliary method that returns a StringBuffer containing a text with
-     * StoRM s built in default values.
+     * Auxiliary method that returns a StringBuffer containing a text with StoRM s built in default values.
      */
     private StringBuffer defaultText() {
         StringBuffer defaultValuesText = new StringBuffer();
@@ -173,7 +159,6 @@ public class StoRM {
         defaultValuesText.append(Configuration.getInstance().toString());
         return defaultValuesText;
     }
-
 
     /**
      * Method used to start the picker.
@@ -189,7 +174,6 @@ public class StoRM {
         picker.stopIt();
     }
 
-
     /**
      * Method used to start xmlrpcServer.
      */
@@ -199,11 +183,10 @@ public class StoRM {
 
     /**
      * Method use to start the space Garbage Collection Thread.
-     *
      */
     synchronized public void startSpaceGC() {
-        log.debug("Space GC started.");
-        final ReservedSpaceCatalog  spaceCatalog = new ReservedSpaceCatalog();
+        StoRM.log.debug("Space GC started.");
+        final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
         TimerTask cleaningTask = new TimerTask() {
             @Override
             public void run() {
@@ -211,10 +194,12 @@ public class StoRM {
             }
         };
 
-        long delay = Configuration.getInstance().getCleaningInitialDelay()*1000;  //Delay time before starting cleaning thread! Set to 1 minute
-        long period = Configuration.getInstance().getCleaningTimeInterval()*1000; //Period of execution of cleaning! Set to 1 hour
+        long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay time before starting
+                                                                                   // cleaning thread! Set to 1 minute
+        long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period of execution of cleaning!
+                                                                                    // Set to 1 hour
 
-        GC.scheduleAtFixedRate(cleaningTask,delay,period);
+        GC.scheduleAtFixedRate(cleaningTask, delay, period);
 
     }
 

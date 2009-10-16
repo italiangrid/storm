@@ -31,6 +31,11 @@ public class PathAuthzDBReader {
         Configuration config = Configuration.getInstance();
         // configurationPATH = System.getProperty("user.dir") + File.separator + "etc";
         String configurationPATH = config.getNamespaceConfigPath();
+        if (configurationPATH.length() == 0) {
+            String userDir = System.getProperty("user.dir");
+            log.debug("Unable to found the configuration path. Assume: '" + userDir + "'");
+            configurationPATH = userDir + File.separator + "etc";
+        }
         authzDBFilename = configurationPATH + File.separator + filename;
         log.debug("Loading Path Authz DB : '" + authzDBFilename + "'.");
         loadPathAuthzDB();
@@ -93,13 +98,19 @@ public class PathAuthzDBReader {
             if (pathACEString.startsWith(PathACE.ALGORITHM)) {
                 // EVALUATION ALGORITHM
                 if (pathACEString.contains("=")) {
-                    String algName = pathACEString.substring(pathACEString.indexOf("="));
+                    String algName = pathACEString.substring(pathACEString.indexOf("=") + 1);
                     algorithmName = algName.trim();
+                    log.debug("Algorithm class name is '" + algorithmName + "'");
                 }
 
             } else {
-                // SUPPOSE ACE Line
-                result = PathACE.buildFromString(pathACEString);
+                // Check if it is an empty line
+                if (pathACEString.trim().length() == 0) {
+                    log.debug("Empty line");
+                } else {
+                    // SUPPOSE ACE Line
+                    result = PathACE.buildFromString(pathACEString);
+                }
             }
         }
         return result;

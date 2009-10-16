@@ -16,8 +16,7 @@ public class StrategyFactory {
         case GFTPLOAD: return new GFTPLoadStrategy<E>(pool);
         }
         throw new AssertionError("StrategyFactory: Unknown op: ");
-        
-      
+     
     }
 
 }

@@ -42,13 +42,18 @@ public class PathAuthzDB {
     public PathAuthzDB() {
     }
 
-    public void setPathAuthzEvaluationAlgorithm(String authzClassName) throws AuthzException {
+    void setPathAuthzEvaluationAlgorithm(String authzClassName) throws AuthzException {
         authzAlgorithm = authzClassName;
         Class<?> authzAlgClass = null;
         try {
+            Class thisClass = PathAuthzAlgBestMatch.class;
+            String thisClassName = thisClass.getName();
+            log.debug("This class name  = " + thisClassName);
             authzAlgClass = Class.forName(authzClassName);
+
         } catch (ClassNotFoundException e) {
-            log.error("Unable to load the Path Authz Algorithm Class '" + authzClassName + "'");
+            log.error("Unable to load the Path Authz Algorithm Class '" + authzClassName + "'\n" + e);
+
             // Manage the exceptional case (Use the default Algorithm)
         }
         if (authzAlgClass != null) {

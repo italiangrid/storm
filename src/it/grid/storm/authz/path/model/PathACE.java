@@ -8,6 +8,8 @@ import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 
 /**
@@ -22,10 +24,10 @@ public class PathACE {
     private static final boolean PERMIT_ACE = true;
     public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
 
-    public static final PathACE PERMIT_ALL = new PathACE(ALL_GROUPS,
+    public static final PathACE PERMIT_ALL = new PathACE(PathACE.ALL_GROUPS,
                                                          StFN.makeEmpty(),
                                                          PathAccessMask.DEFAULT,
-                                                         PERMIT_ACE);
+                                                         PathACE.PERMIT_ACE);
     public static final String COMMENT = "#";
 
     private String localGroupName;
@@ -46,7 +48,7 @@ public class PathACE {
         localGroupName = null;
         storageFileName = StFN.makeEmpty();
         pathAccessMask = PathAccessMask.DEFAULT;
-        isPermitACE = PERMIT_ACE;
+        isPermitACE = PathACE.PERMIT_ACE;
     }
 
     /**
@@ -56,32 +58,39 @@ public class PathACE {
      */
     public static PathACE buildFromString(String pathACEString) throws AuthzException {
         PathACE result = new PathACE();
-        String[] fields = pathACEString.split(FIELD_SEP, -1);
-        if (fields.length < 4) {
+        String[] fieldsRough = pathACEString.split(PathACE.FIELD_SEP, -1);
+        // Remove empty fields
+        ArrayList<String> fields = new ArrayList<String>();
+        for (String element : fieldsRough) {
+            if (element.length() > 0) {
+                fields.add(element);
+            }
+        }
+        if (fields.size() < 4) {
             throw new AuthzException("Error while parsing the Path ACE '" + pathACEString + "'");
         } else {
             // Setting the Local Group Name
-            result.setLocalGroupName(fields[0]);
+            result.setLocalGroupName(fields.get(0));
 
             // Setting the StFN
             try {
-                StFN stfn = StFN.make(fields[1]);
+                StFN stfn = StFN.make(fields.get(1));
                 result.setStorageFileName(stfn);
             } catch (InvalidStFNAttributeException e) {
-                throw new AuthzException("Error while parsing the StFN '" + fields[1] + "' in Path ACE ");
+                throw new AuthzException("Error while parsing the StFN '" + fields.get(1) + "' in Path ACE ");
             }
 
             // Setting the Permission Mask
             PathAccessMask pAccessMask = new PathAccessMask();
-            for (int i = 0; i < fields[2].length(); i++) {
-                PathOperation pathOper = PathOperation.getSpaceOperation(fields[2].charAt(i));
+            for (int i = 0; i < fields.get(2).length(); i++) {
+                PathOperation pathOper = PathOperation.getSpaceOperation(fields.get(2).charAt(i));
                 pAccessMask.addPathOperation(pathOper);
             }
             result.setPathAccessMask(pAccessMask);
 
             // Check if the ACE is DENY or PERMIT
             // ** IMP ** : permit is the default
-            if (fields[3].toLowerCase().equals("deny")) {
+            if (fields.get(3).toLowerCase().equals("deny")) {
                 result.setIsPermitType(false);
             } else {
                 result.setIsPermitType(true);

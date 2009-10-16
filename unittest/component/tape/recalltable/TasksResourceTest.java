@@ -24,7 +24,7 @@ public class TasksResourceTest {
 
     private static void testPutTakeOverTasks(String putBodyString) throws IOException, HttpException {
 
-        PutMethod putMethod = new PutMethod("http://localhost:9998/recalltable/tasks");
+        PutMethod putMethod = new PutMethod("http://storm-test-04-a.cr.cnaf.infn.it:9998/recalltable/tasks");
         RequestEntity entity = new InputStreamRequestEntity(new ByteArrayInputStream(putBodyString.getBytes()),
                 "text/plain");
         putMethod.setRequestEntity(entity);
