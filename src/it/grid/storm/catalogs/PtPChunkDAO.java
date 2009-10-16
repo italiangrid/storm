@@ -454,8 +454,6 @@ public class PtPChunkDAO {
             stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SPACE_AVAILABLE));
             logWarnings(stmt.getWarnings());
 
-            log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: " + stmt.toString());
-
             rs = stmt.executeQuery();
             logWarnings(stmt.getWarnings());
 
