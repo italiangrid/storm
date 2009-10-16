@@ -34,10 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DAO class for BoLChunkCatalog. This DAO is specifically designed to connect to a MySQL DB. The raw data
- * found in those tables is pre-treated in order to turn it into the Object Model of StoRM. See Method
- * comments for further info.
- * 
+ * DAO class for BoLChunkCatalog. This DAO is specifically designed to connect to a MySQL DB. The raw data found in
+ * those tables is pre-treated in order to turn it into the Object Model of StoRM. See Method comments for further info.
  * BEWARE! DAO Adjusts for extra fields in the DB that are not present in the object model.
  * 
  * @author CNAF
@@ -93,11 +91,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to
-     * the one assigned by the DB.
-     * 
-     * The supplied BoLChunkData is used to fill in only the DB table where file specific info gets recorded:
-     * it does _not_ add a new request! So if spurious data is supplied, it will just stay there because of a
+     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to the one
+     * assigned by the DB. The supplied BoLChunkData is used to fill in only the DB table where file specific info gets
+     * recorded: it does _not_ add a new request! So if spurious data is supplied, it will just stay there because of a
      * lack of a parent request!
      */
     public synchronized void addChild(BoLChunkDataTO to) {
@@ -132,7 +128,7 @@ public class BoLChunkDAO {
             logWarnings(con.getWarnings());
             id.setString(1, to.getRequestToken());
             logWarnings(id.getWarnings());
-            log.debug("BoL CHUNK DAO: addChild; " + id.toString());
+            log.trace("BoL CHUNK DAO: addChild; " + id.toString());
             rsid = id.executeQuery();
             logWarnings(id.getWarnings());
             int request_id = extractID(rsid); // ID of request in request_process!
@@ -147,7 +143,7 @@ public class BoLChunkDAO {
             logWarnings(addDirOption.getWarnings());
             addDirOption.setInt(3, to.getNumLevel());
             logWarnings(addDirOption.getWarnings());
-            log.debug("BoL CHUNK DAO: addChild; " + addDirOption.toString());
+            log.trace("BoL CHUNK DAO: addChild; " + addDirOption.toString());
             addDirOption.execute();
             logWarnings(addDirOption.getWarnings());
             rsdo = addDirOption.getGeneratedKeys();
@@ -163,7 +159,7 @@ public class BoLChunkDAO {
             logWarnings(addBoL.getWarnings());
             addBoL.setString(3, to.getFromSURL());
             logWarnings(addBoL.getWarnings());
-            log.debug("BoL CHUNK DAO: addChild; " + addBoL.toString());
+            log.trace("BoL CHUNK DAO: addChild; " + addBoL.toString());
             addBoL.execute();
             logWarnings(addBoL.getWarnings());
             rsg = addBoL.getGeneratedKeys();
@@ -179,7 +175,7 @@ public class BoLChunkDAO {
             logWarnings(addChild.getWarnings());
             addChild.setString(3, to.getErrString());
             logWarnings(addChild.getWarnings());
-            log.debug("BoL CHUNK DAO: addChild; " + addChild.toString());
+            log.trace("BoL CHUNK DAO: addChild; " + addChild.toString());
             addChild.execute();
             logWarnings(addChild.getWarnings());
             rs = addChild.getGeneratedKeys();
@@ -214,11 +210,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to
-     * the one assigned by the DB. The client_dn must also be supplied as a String.
-     * 
-     * The supplied BoLChunkData is used to fill in all the DB tables where file specific info gets recorded:
-     * it _adds_ a new request!
+     * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey changed to the one
+     * assigned by the DB. The client_dn must also be supplied as a String. The supplied BoLChunkData is used to fill in
+     * all the DB tables where file specific info gets recorded: it _adds_ a new request!
      */
     public synchronized void addNew(BoLChunkDataTO to, String client_dn) {
         checkConnection();
@@ -265,7 +259,7 @@ public class BoLChunkDAO {
             logWarnings(addNew.getWarnings());
             addNew.setInt(9, to.getDeferredStartTime());
             logWarnings(addNew.getWarnings());
-            log.debug("BoL CHUNK DAO: addNew; " + addNew.toString());
+            log.trace("BoL CHUNK DAO: addNew; " + addNew.toString());
             addNew.execute();
             logWarnings(addNew.getWarnings());
             rs_new = addNew.getGeneratedKeys();
@@ -280,7 +274,7 @@ public class BoLChunkDAO {
                 logWarnings(addProtocols.getWarnings());
                 addProtocols.setString(2, (String) i.next());
                 logWarnings(addProtocols.getWarnings());
-                log.debug("BoL CHUNK DAO: addNew; " + addProtocols.toString());
+                log.trace("BoL CHUNK DAO: addNew; " + addProtocols.toString());
                 addProtocols.execute();
                 logWarnings(addProtocols.getWarnings());
             }
@@ -297,7 +291,7 @@ public class BoLChunkDAO {
             logWarnings(addDirOption.getWarnings());
             addDirOption.setInt(3, to.getNumLevel());
             logWarnings(addDirOption.getWarnings());
-            log.debug("BoL CHUNK DAO: addNew; " + addDirOption.toString());
+            log.trace("BoL CHUNK DAO: addNew; " + addDirOption.toString());
             addDirOption.execute();
             logWarnings(addDirOption.getWarnings());
             rs_do = addDirOption.getGeneratedKeys();
@@ -313,7 +307,7 @@ public class BoLChunkDAO {
             logWarnings(addBoL.getWarnings());
             addBoL.setString(3, to.getFromSURL());
             logWarnings(addBoL.getWarnings());
-            log.debug("BoL CHUNK DAO: addNew; " + addBoL.toString());
+            log.trace("BoL CHUNK DAO: addNew; " + addBoL.toString());
             addBoL.execute();
             logWarnings(addBoL.getWarnings());
             rs_g = addBoL.getGeneratedKeys();
@@ -329,7 +323,7 @@ public class BoLChunkDAO {
             logWarnings(addChild.getWarnings());
             addChild.setString(3, to.getErrString());
             logWarnings(addChild.getWarnings());
-            log.debug("BoL CHUNK DAO: addNew; " + addChild.toString());
+            log.trace("BoL CHUNK DAO: addNew; " + addChild.toString());
             addChild.execute();
             logWarnings(addChild.getWarnings());
             rs_s = addChild.getGeneratedKeys();
@@ -365,24 +359,14 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that queries the MySQL DB to find all entries matching the supplied TRequestToken. The
-     * Collection contains the corresponding BoLChunkDataTO objects.
-     * 
-     * An initial simple query establishes the list of protocols associated with the request. A second complex
-     * query establishes all chunks associated with the request, by properly joining request_queue,
-     * request_BoL, status_BoL and request_DirOption. The considered fields are:
-     * 
-     * (1) From status_BoL: the ID field which becomes the TOs primary key, and statusCode.
-     * 
-     * (2) From request_BoL: sourceSURL
-     * 
-     * (3) From request_queue: pinLifetime
-     * 
-     * (4) From request_DirOption: isSourceADirectory, alLevelRecursive, numOfLevels
-     * 
-     * In case of any error, a log gets written and an empty collection is returned. No exception is thrown.
-     * 
-     * NOTE! Chunks in SRM_ABORTED status are NOT returned!
+     * Method that queries the MySQL DB to find all entries matching the supplied TRequestToken. The Collection contains
+     * the corresponding BoLChunkDataTO objects. An initial simple query establishes the list of protocols associated
+     * with the request. A second complex query establishes all chunks associated with the request, by properly joining
+     * request_queue, request_BoL, status_BoL and request_DirOption. The considered fields are: (1) From status_BoL: the
+     * ID field which becomes the TOs primary key, and statusCode. (2) From request_BoL: sourceSURL (3) From
+     * request_queue: pinLifetime (4) From request_DirOption: isSourceADirectory, alLevelRecursive, numOfLevels In case
+     * of any error, a log gets written and an empty collection is returned. No exception is thrown. NOTE! Chunks in
+     * SRM_ABORTED status are NOT returned!
      */
     public synchronized Collection<BoLChunkDataTO> find(TRequestToken requestToken) {
         checkConnection();
@@ -401,7 +385,7 @@ public class BoLChunkDAO {
             List<String> protocols = new ArrayList<String>();
             find.setString(1, strToken);
             logWarnings(find.getWarnings());
-            log.debug("BoL CHUNK DAO: find method; " + find.toString());
+            log.trace("BoL CHUNK DAO: find method; " + find.toString());
             rs = find.executeQuery();
             logWarnings(find.getWarnings());
             while (rs.next()) {
@@ -418,7 +402,7 @@ public class BoLChunkDAO {
                     + "WHERE r.r_token=? AND s.statusCode<>?";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
-            
+
             List<BoLChunkDataTO> list = new ArrayList<BoLChunkDataTO>();
 
             find.setString(1, strToken);
@@ -426,11 +410,11 @@ public class BoLChunkDAO {
             find.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
             logWarnings(find.getWarnings());
 
-            log.debug("BoL CHUNK DAO: find method; " + find.toString());
-            
+            log.trace("BoL CHUNK DAO: find method; " + find.toString());
+
             rs = find.executeQuery();
             logWarnings(find.getWarnings());
-            
+
             while (rs.next()) {
                 BoLChunkDataTO aux = new BoLChunkDataTO();
                 aux.setPrimaryKey(rs.getLong("s.ID"));
@@ -457,8 +441,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given TRequestToken
-     * expressed as String.
+     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given TRequestToken expressed as
+     * String.
      */
     public synchronized Collection<ReducedBoLChunkDataTO> findReduced(String reqtoken) {
         checkConnection();
@@ -474,7 +458,7 @@ public class BoLChunkDAO {
             List<ReducedBoLChunkDataTO> list = new ArrayList<ReducedBoLChunkDataTO>();
             find.setString(1, reqtoken);
             logWarnings(find.getWarnings());
-            log.debug("BoL CHUNK DAO! findReduced with request token; " + find.toString());
+            log.trace("BoL CHUNK DAO! findReduced with request token; " + find.toString());
             rs = find.executeQuery();
             logWarnings(find.getWarnings());
             while (rs.next()) {
@@ -496,8 +480,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and whose
-     * SURLs are contained in the supplied array of Strings.
+     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and whose SURLs are
+     * contained in the supplied array of Strings.
      */
     public synchronized Collection<ReducedBoLChunkDataTO> findReduced(String griduser, String[] surls) {
         checkConnection();
@@ -514,7 +498,7 @@ public class BoLChunkDAO {
             List<ReducedBoLChunkDataTO> list = new ArrayList<ReducedBoLChunkDataTO>();
             find.setString(1, griduser);
             logWarnings(find.getWarnings());
-            log.debug("BoL CHUNK DAO! findReduced with griduser+surlarray; " + find.toString());
+            log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; " + find.toString());
             rs = find.executeQuery();
             logWarnings(find.getWarnings());
             while (rs.next()) {
@@ -536,11 +520,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that returns the number of BoL requests on the given SURL, that are in SRM_SUCCESS state.
-     * 
-     * This method is intended to be used by BoLChunkCatalog in the isSRM_SUCCESS method invocation.
-     * 
-     * In case of any error, 0 is returned.
+     * Method that returns the number of BoL requests on the given SURL, that are in SRM_SUCCESS state. This method is
+     * intended to be used by BoLChunkCatalog in the isSRM_SUCCESS method invocation. In case of any error, 0 is
+     * returned.
      */
     public synchronized int numberInSRM_SUCCESS(String surl) {
         checkConnection();
@@ -554,7 +536,7 @@ public class BoLChunkDAO {
             stmt.setString(1, surl); // Prepared statement spares DB-specific String notation!
             logWarnings(stmt.getWarnings());
             stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
-            log.debug("BoL CHUNK DAO - numberInSRM_SUCCESS method: " + stmt.toString());
+            log.trace("BoL CHUNK DAO - numberInSRM_SUCCESS method: " + stmt.toString());
             rs = stmt.executeQuery();
             logWarnings(stmt.getWarnings());
             int aux = 0;
@@ -573,14 +555,10 @@ public class BoLChunkDAO {
     }
 
     /**
-     * TODO WARNING! THIS IS A WORK IN PROGRESS!!!
-     * 
-     * Method used to refresh the BoLChunkDataTO information from the MySQL DB.
-     * 
-     * In this first version, only the statusCode is reloaded from the DB. TODO The next version must contains
-     * all the information related to the Chunk!
-     * 
-     * In case of any error, an error message gets logged but no exception is thrown.
+     * TODO WARNING! THIS IS A WORK IN PROGRESS!!! Method used to refresh the BoLChunkDataTO information from the MySQL
+     * DB. In this first version, only the statusCode is reloaded from the DB. TODO The next version must contains all
+     * the information related to the Chunk! In case of any error, an error message gets logged but no exception is
+     * thrown.
      */
 
     public synchronized BoLChunkDataTO refresh(long primary_key) {
@@ -598,7 +576,7 @@ public class BoLChunkDAO {
             find.setLong(1, primary_key);
 
             logWarnings(find.getWarnings());
-            log.debug("BoL CHUNK DAO: refresh status method; " + find.toString());
+            log.trace("BoL CHUNK DAO: refresh status method; " + find.toString());
 
             rs = find.executeQuery();
 
@@ -630,17 +608,13 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used in extraordinary situations to signal that data retrieved from the DB was malformed and
-     * could not be translated into the StoRM object model.
-     * 
-     * This method attempts to change the status of the request to SRM_FAILURE and record it in the DB.
-     * 
-     * This operation could potentially fail because the source of the malformed problems could be a
-     * problematic DB; indeed, initially only log messages where recorded.
-     * 
-     * Yet it soon became clear that the source of malformed data were the clients and/or FE recording info in
-     * the DB. In these circumstances the client would see its request as being in the SRM_IN_PROGRESS state
-     * for ever. Hence the pressing need to inform it of the encountered problems.
+     * Method used in extraordinary situations to signal that data retrieved from the DB was malformed and could not be
+     * translated into the StoRM object model. This method attempts to change the status of the request to SRM_FAILURE
+     * and record it in the DB. This operation could potentially fail because the source of the malformed problems could
+     * be a problematic DB; indeed, initially only log messages where recorded. Yet it soon became clear that the source
+     * of malformed data were the clients and/or FE recording info in the DB. In these circumstances the client would
+     * see its request as being in the SRM_IN_PROGRESS state for ever. Hence the pressing need to inform it of the
+     * encountered problems.
      */
     public synchronized void signalMalformedBoLChunk(BoLChunkDataTO auxTO) {
         checkConnection();
@@ -654,7 +628,7 @@ public class BoLChunkDAO {
             signal.setString(1, "Request is malformed!"); // Prepared statement spares DB-specific
             // String notation!
             logWarnings(signal.getWarnings());
-            log.debug("BoL CHUNK DAO: signalMalformed; " + signal.toString());
+            log.trace("BoL CHUNK DAO: signalMalformed; " + signal.toString());
             signal.executeUpdate();
             logWarnings(signal.getWarnings());
         } catch (SQLException e) {
@@ -666,9 +640,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that updates all expired requests in SRM_SUCCESS state, into SRM_RELEASED.
-     * 
-     * This is needed when the client forgets to invoke srmReleaseFiles().
+     * Method that updates all expired requests in SRM_SUCCESS state, into SRM_RELEASED. This is needed when the client
+     * forgets to invoke srmReleaseFiles().
      */
     public synchronized void transitExpiredSRM_SUCCESS() {
 
@@ -688,8 +661,7 @@ public class BoLChunkDAO {
 
             str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
-                    + "WHERE s.statusCode="
-                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
+                    + "WHERE s.statusCode=" + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
             ResultSet res = statement.executeQuery(str);
@@ -701,7 +673,7 @@ public class BoLChunkDAO {
 
             if (expiredSurlList.isEmpty()) {
                 commit(con);
-                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+                log.trace("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
                 return;
             }
 
@@ -728,13 +700,13 @@ public class BoLChunkDAO {
             preparedStatement.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(preparedStatement.getWarnings());
 
-            log.debug("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: " + preparedStatement.toString());
+            log.trace("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: " + preparedStatement.toString());
 
             int count = preparedStatement.executeUpdate();
             logWarnings(preparedStatement.getWarnings());
 
             if (count == 0) {
-                log.debug("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+                log.trace("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
             } else {
                 log.info("BoLChunkDAO! " + count
                         + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
@@ -755,8 +727,7 @@ public class BoLChunkDAO {
 
             str = "SELECT sourceSURL FROM "
                     + "request_BoL rb JOIN (status_BoL s, request_queue r) ON s.request_BoLID=rb.ID AND rb.request_queueID=r.ID "
-                    + "WHERE s.statusCode="
-                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
+                    + "WHERE s.statusCode=" + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
                     + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
 
             ResultSet res = statement.executeQuery(str);
@@ -800,7 +771,7 @@ public class BoLChunkDAO {
                     if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
                         StormEA.removePinned(stori.getAbsolutePath());
                     }
-                    
+
                 } catch (NamespaceException e) {
                     log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
                     continue;
@@ -813,11 +784,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that transits chunks in SRM_SUCCESS to SRM_ABORTED, for the given SURL: the overall request
-     * status of the requests containing that chunk, is not changed! The TURL is set to null.
-     * 
-     * Beware, that the chunks may be part of requests that have finished, or that still have not finished
-     * because other chunks are still being processed.
+     * Method that transits chunks in SRM_SUCCESS to SRM_ABORTED, for the given SURL: the overall request status of the
+     * requests containing that chunk, is not changed! The TURL is set to null. Beware, that the chunks may be part of
+     * requests that have finished, or that still have not finished because other chunks are still being processed.
      */
     public synchronized void transitSRM_SUCCESStoSRM_ABORTED(String surl, String explanation) {
         checkConnection();
@@ -837,11 +806,15 @@ public class BoLChunkDAO {
             logWarnings(stmt.getWarnings());
             stmt.setString(4, surl);
             logWarnings(stmt.getWarnings());
-            log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_ABORTED: " + stmt.toString());
+            log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_ABORTED: " + stmt.toString());
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
-            log.debug("BoL CHUNK DAO! " + count
-                    + " chunks were transited from SRM_SUCCESS to SRM_ABORTED.");
+            if (count > 0) {
+                log.info("BoL CHUNK DAO! " + count
+                        + " chunks were transited from SRM_SUCCESS to SRM_ABORTED.");
+            } else {
+                log.trace("BoL CHUNK DAO! No chunks were transited from SRM_SUCCESS to SRM_ABORTED.");
+            }
         } catch (SQLException e) {
             log.error("BoL CHUNK DAO! Unable to transitSRM_SUCCESStoSRM_ABORTED! " + e);
         } finally {
@@ -850,13 +823,10 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method that updates all chunks in SRM_SUCCESS state, into SRM_RELEASED. An array of long
-     * representing the primary key of each chunk is required: only they get the status changed provided their
-     * current status is SRM_SUCCESS.
-     * 
-     * This method is used during srmReleaseFiles
-     * 
-     * In case of any error nothing happens and no exception is thrown, but proper messages get logged.
+     * Method that updates all chunks in SRM_SUCCESS state, into SRM_RELEASED. An array of long representing the primary
+     * key of each chunk is required: only they get the status changed provided their current status is SRM_SUCCESS.
+     * This method is used during srmReleaseFiles In case of any error nothing happens and no exception is thrown, but
+     * proper messages get logged.
      */
     public synchronized void transitSRM_SUCCESStoSRM_RELEASED(long[] ids) {
         checkConnection();
@@ -871,11 +841,11 @@ public class BoLChunkDAO {
             logWarnings(stmt.getWarnings());
             stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
             logWarnings(stmt.getWarnings());
-            log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
+            log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
             int count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
             if (count == 0) {
-                log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+                log.trace("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
             } else {
                 log.info("BoL CHUNK DAO! " + count
                         + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
@@ -892,8 +862,8 @@ public class BoLChunkDAO {
             transitSRM_SUCCESStoSRM_RELEASED(ids);
         } else {
             /*
-             * If a request token has been specified, only the related BoL requests have to be released. This
-             * is done adding the r.r_token="..." clause in the where subquery.
+             * If a request token has been specified, only the related BoL requests have to be released. This is done
+             * adding the r.r_token="..." clause in the where subquery.
              */
             checkConnection();
             String str = "UPDATE "
@@ -908,18 +878,17 @@ public class BoLChunkDAO {
                 logWarnings(stmt.getWarnings());
                 stmt.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
                 logWarnings(stmt.getWarnings());
-                log.debug("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
+                log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: " + stmt.toString());
                 int count = stmt.executeUpdate();
                 logWarnings(stmt.getWarnings());
                 if (count == 0) {
-                    log.debug("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+                    log.trace("BoL CHUNK DAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
                 } else {
                     log.info("BoL CHUNK DAO! " + count
                             + " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
                 }
             } catch (SQLException e) {
-                log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS to SRM_RELEASED! "
-                        + e);
+                log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS to SRM_RELEASED! " + e);
             } finally {
                 close(stmt);
             }
@@ -928,12 +897,9 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Method used to save the changes made to a retrieved BoLChunkDataTO, back into the MySQL DB.
-     * 
-     * Only the fileSize, statusCode and explanation, of status_BoL table are written to the DB. Likewise for
-     * the request pinLifetime.
-     * 
-     * In case of any error, an error message gets logged but no exception is thrown.
+     * Method used to save the changes made to a retrieved BoLChunkDataTO, back into the MySQL DB. Only the fileSize,
+     * statusCode and explanation, of status_BoL table are written to the DB. Likewise for the request pinLifetime. In
+     * case of any error, an error message gets logged but no exception is thrown.
      */
     public synchronized void update(BoLChunkDataTO to) {
         checkConnection();
@@ -953,7 +919,7 @@ public class BoLChunkDAO {
             updateFileReq.setLong(5, to.getPrimaryKey());
             logWarnings(updateFileReq.getWarnings());
             // execute update
-            log.debug("BoL CHUNK DAO: update method; " + updateFileReq.toString());
+            log.trace("BoL CHUNK DAO: update method; " + updateFileReq.toString());
             updateFileReq.executeUpdate();
             logWarnings(updateFileReq.getWarnings());
         } catch (SQLException e) {
@@ -964,8 +930,8 @@ public class BoLChunkDAO {
     }
 
     /**
-     * Auxiliary method that checks if time for resetting the connection has come, and eventually takes it
-     * down and up back again.
+     * Auxiliary method that checks if time for resetting the connection has come, and eventually takes it down and up
+     * back again.
      */
     private void checkConnection() {
         if (reconnect) {
