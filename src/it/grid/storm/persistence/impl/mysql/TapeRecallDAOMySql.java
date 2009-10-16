@@ -494,7 +494,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             int count = statment.executeUpdate(query);
 
             if (count == 0) {
-                log.info("No entries have been purged from tape_recall table");
+                log.trace("No entries have been purged from tape_recall table");
             } else {
                 log.info(count + " entries have been purged from tape_recall table");
             }
