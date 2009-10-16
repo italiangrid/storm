@@ -9,6 +9,8 @@ import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 
@@ -19,7 +21,8 @@ public class PathACE {
 
     private final Logger log = AuthzDirector.getLogger();
 
-    public static final String ALL_GROUPS = "*";
+    public static final String ALL_GROUPS = "@ALL@?|\\*";
+    private static final Pattern allGroupsPattern = Pattern.compile(ALL_GROUPS);
     public static final String FIELD_SEP = "\\s"; // * White space character **/
     private static final boolean PERMIT_ACE = true;
     public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
@@ -137,10 +140,11 @@ public class PathACE {
 
     public boolean subjectMatch(String subjectGroup) {
         boolean result = false;
+        Matcher allGroupsMatcher = allGroupsPattern.matcher(subjectGroup);
         if (localGroupName != null) {
-            if (localGroupName.equals(PathACE.ALL_GROUPS)) {
+            if (allGroupsMatcher.matches()) {
                 result = true;
-                // WARNING. Here we don't check if the subjectGroup is a valid group Name.
+                log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
             } else {
                 if (localGroupName.equals(subjectGroup)) {
                     result = true;
@@ -167,6 +171,15 @@ public class PathACE {
                 }
             }
         }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result += 31 * result + (localGroupName == null ? 0 : localGroupName.hashCode());
+        result += 31 * result + (storageFileName == null ? 0 : storageFileName.hashCode());
+        result += 31 * result + (pathAccessMask == null ? 0 : pathAccessMask.hashCode());
         return result;
     }
 

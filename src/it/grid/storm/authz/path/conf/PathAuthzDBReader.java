@@ -25,6 +25,7 @@ public class PathAuthzDBReader {
     private final String authzDBFilename;
     private PathAuthzDB pathAuthzDB;
     private String algorithmName = null;
+    private boolean setAlgorithm = false;
 
     public PathAuthzDBReader(String filename) {
         log.info("Path Authorization : Inizializating ...");
@@ -67,9 +68,10 @@ public class PathAuthzDBReader {
                         result.addPathACE(ace);
                     } else {
                         // Found a comment line or algorithm definition.
-                        if (algorithmName != null) {
+                        if ((algorithmName != null) && (!setAlgorithm)) {
                             log.debug("Evaluation Algorithm name: " + algorithmName);
                             result.setPathAuthzEvaluationAlgorithm(algorithmName);
+                            setAlgorithm = true;
                         }
                     }
 

@@ -31,7 +31,8 @@ public class PathAuthzTest {
         Bootstrap.initializeLogging(logFile);
         PathAuthzTest test = new PathAuthzTest();
         PathAuthzDB pathAuthzDB = test.loadDB("path-authz.db");
-        pathAuthzDB.toString();
+        log.debug(pathAuthzDB.toString());
+
     }
 
     /**

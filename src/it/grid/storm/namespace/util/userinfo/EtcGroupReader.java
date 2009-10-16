@@ -26,6 +26,7 @@ public class EtcGroupReader {
     private static final Logger log = LoggerFactory.getLogger(EtcGroupReader.class);
     private HashSet<String> groups = null;
     private HashMap<String, Integer> groupId = null;
+    private final HashMap<Integer, String> groupName = null;
     private static final EtcGroupReader instanceLinux = new EtcGroupReader();
     private EtcGroupReader instanceTest;
 
@@ -35,6 +36,11 @@ public class EtcGroupReader {
 
     private EtcGroupReader(String filename) {
         init(filename);
+    }
+
+    public static void refresh() {
+        EtcGroupReader thiS = getInstance(false);
+        thiS.init(etcGroupLinuxFN);
     }
 
     private void init(String filename) {
@@ -47,11 +53,12 @@ public class EtcGroupReader {
                 // Parsing the line
                 String patternStr = ":";
                 String[] fields = str.split(patternStr);
-                String groupName = fields[0];
-                groups.add(groupName);
+                String groupNameStr = fields[0];
+                groups.add(groupNameStr);
                 int gid = Integer.parseInt(fields[2]);
                 Integer gId = new Integer(gid);
-                groupId.put(groupName, gId);
+                groupId.put(groupNameStr, gId);
+                groupName.put(gId, groupNameStr);
             }
             in.close();
         } catch (IOException e) {
@@ -114,4 +121,25 @@ public class EtcGroupReader {
         }
         return result;
     }
+
+    public static String getGroupName(int groupId) {
+        String result = "unknown";
+        EtcGroupReader gr = getInstance(false);
+        Integer gID = new Integer(groupId);
+        if (gr.groupId.containsValue(gID)) {
+            result = gr.groupName.get(gID);
+        }
+        return result;
+    }
+
+    public static String getGroupName(int groupId, boolean test) {
+        String result = "unknown";
+        EtcGroupReader gr = getInstance(test);
+        Integer gID = new Integer(groupId);
+        if (gr.groupId.containsValue(gID)) {
+            result = gr.groupName.get(gID);
+        }
+        return result;
+    }
+
 }

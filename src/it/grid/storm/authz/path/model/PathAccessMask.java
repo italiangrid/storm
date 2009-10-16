@@ -8,12 +8,12 @@ import java.util.List;
 
 /**
  * @author zappi
- *
  */
+@SuppressWarnings("serial")
 public class PathAccessMask {
-    
-    private List<PathOperation> pathAccessMask;
-    
+
+    private final List<PathOperation> pathAccessMask;
+
     private static List<PathOperation> operations = new ArrayList<PathOperation>() {
         {
             add(PathOperation.READ_FILE);
@@ -23,9 +23,7 @@ public class PathAccessMask {
     };
 
     public static PathAccessMask DEFAULT = new PathAccessMask(operations);
-    
-    
-    
+
     public PathAccessMask() {
         pathAccessMask = new ArrayList<PathOperation>();
     }
@@ -33,7 +31,7 @@ public class PathAccessMask {
     public PathAccessMask(List<PathOperation> operations) {
         pathAccessMask = operations;
     }
-    
+
     public void addPathOperation(PathOperation pathOp) {
         pathAccessMask.add(pathOp);
     }
@@ -46,22 +44,28 @@ public class PathAccessMask {
         return pathAccessMask;
     }
 
-    
     public int getSize() {
         return pathAccessMask != null ? pathAccessMask.size() : 0;
     }
-    
+
+    @Override
     public boolean equals(Object other) {
         boolean result = false;
         if (other instanceof PathAccessMask) {
-            PathAccessMask pOther = (PathAccessMask)other;
+            PathAccessMask pOther = (PathAccessMask) other;
             if (pathAccessMask.size() == pOther.getSize()) {
-                // Check all the bit
+                result = true;
+                for (PathOperation element : pathAccessMask) {
+                    if (!(pOther.containsPathOperation(element))) {
+                        result = false;
+                    }
+                }
             }
         }
         return result;
     }
-    
+
+    @Override
     public String toString() {
         String pathPermissionStr = "";
         for (PathOperation pathOp : PathOperation.values()) {
@@ -73,5 +77,15 @@ public class PathAccessMask {
         }
         return pathPermissionStr;
     }
-    
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (pathAccessMask != null) {
+            for (PathOperation element : pathAccessMask) {
+                result += 31 * result + element.hashCode();
+            }
+        }
+        return result;
+    }
 }

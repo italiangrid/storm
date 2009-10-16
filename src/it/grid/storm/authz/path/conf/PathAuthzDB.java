@@ -46,9 +46,9 @@ public class PathAuthzDB {
         authzAlgorithm = authzClassName;
         Class<?> authzAlgClass = null;
         try {
-            Class thisClass = PathAuthzAlgBestMatch.class;
-            String thisClassName = thisClass.getName();
-            log.debug("This class name  = " + thisClassName);
+            // Class thisClass = PathAuthzAlgBestMatch.class;
+            // String thisClassName = thisClass.getName();
+            // log.debug("This class name  = " + thisClassName);
             authzAlgClass = Class.forName(authzClassName);
 
         } catch (ClassNotFoundException e) {

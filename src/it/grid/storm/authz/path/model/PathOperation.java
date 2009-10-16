@@ -5,8 +5,8 @@ package it.grid.storm.authz.path.model;
 
 /**
  * @author zappi
- *
  */
+
 public enum PathOperation {
     WRITE_FILE('W', "WRITE_FILE", "Write data"),
     READ_FILE('R', "READ_FILE", "Read data"),
@@ -30,24 +30,24 @@ public enum PathOperation {
 
     public static PathOperation getSpaceOperation(char op) {
         switch (op) {
-        case 'W':
-            return WRITE_FILE;
-        case 'R':
-            return READ_FILE;
-        case 'F':
-            return RENAME;    
-        case 'D':
-            return DELETE;
-        case 'T':
-            return TRAVERSE_DIRECTORY;
-        case 'L':
-            return LIST_DIRECTORY;
-        case 'M':
-            return MAKE_DIRECTORY;
-        case 'N':
-            return CREATE_FILE;
-        default:
-            return UNDEFINED;
+            case 'W':
+                return WRITE_FILE;
+            case 'R':
+                return READ_FILE;
+            case 'F':
+                return RENAME;
+            case 'D':
+                return DELETE;
+            case 'T':
+                return TRAVERSE_DIRECTORY;
+            case 'L':
+                return LIST_DIRECTORY;
+            case 'M':
+                return MAKE_DIRECTORY;
+            case 'N':
+                return CREATE_FILE;
+            default:
+                return UNDEFINED;
         }
     }
 
