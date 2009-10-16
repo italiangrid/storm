@@ -86,6 +86,12 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 4- Tape stuff management.
         // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
+            
+            if (user == null) {
+                log.info("Executing implicit PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+            } else {
+                log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+            }
 
             ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
             TSURL surl = chunkData.toSURL();
