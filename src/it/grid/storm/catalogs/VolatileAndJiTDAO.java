@@ -577,12 +577,12 @@ public class VolatileAndJiTDAO {
      * In case no entry is found or there are errors, an empty List is returned
      * and proper error messagges get logged.
      */
-    public List  volatileInfoOn(String filename) {
+    public List<Long>  volatileInfoOn(String filename) {
         checkConnection();
         String sql = "SELECT UNIX_TIMESTAMP(start), fileLifetime FROM volatile WHERE file=?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        List aux = new ArrayList();
+        List<Long> aux = new ArrayList<Long>();
         try {
             stmt = con.prepareStatement(sql);
             logWarnings(con.getWarnings());
@@ -602,8 +602,8 @@ public class VolatileAndJiTDAO {
         } finally {
             close(rs);
             close(stmt);
-            return aux;
         }
+        return aux;
     }
 
 
