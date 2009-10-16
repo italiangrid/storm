@@ -2031,7 +2031,7 @@ public class Configuration {
                 if ((m[i].getName().substring(0, 3).equals("get")) && (!m[i].getName().equals("getInstance"))) {
                     sb.append(m[i].getName());
                     sb.append(" == ");
-                    aux = m[i].invoke(Configuration.instance, null);
+                    aux = m[i].invoke(Configuration.instance, new Object[0]);
                     sb.append(aux);
                     sb.append("\n");
                 }
