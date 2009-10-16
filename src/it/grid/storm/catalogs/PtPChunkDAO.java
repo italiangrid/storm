@@ -434,7 +434,7 @@ public class PtPChunkDAO {
      * a List containing the ID of the requests that were transited. This is needed when the client forgets to invoke
      * srmPutDone().
      */
-    public List<Long> transitExpiredSRM_SPACE_AVAILABLE() {
+    public List<Long> getExpiredSRM_SPACE_AVAILABLE() {
 
         checkConnection();
 
@@ -442,15 +442,12 @@ public class PtPChunkDAO {
                 + "status_Put s JOIN (request_Put rp, request_queue r) ON s.request_PutID=rp.ID AND rp.request_queueID=r.ID "
                 + "WHERE s.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
-        String updateStatus = "UPDATE " + "status_Put s " + "SET s.statusCode=? " + "WHERE s.ID IN ";
-
         List<Long> ids = new ArrayList<Long>();
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
         try {
 
-            // get ids
             stmt = con.prepareStatement(idsstr);
             logWarnings(con.getWarnings());
 
@@ -468,36 +465,9 @@ public class PtPChunkDAO {
             close(rs);
             close(stmt);
 
-            // Update the status of the selected ids to SRM_FILE_LIFETIME_EXPIRED
-            if (!ids.isEmpty()) {
-
-                String updateStatusNew = updateStatus + makeWhereString(ids);
-
-                stmt = con.prepareStatement(updateStatusNew);
-                logWarnings(con.getWarnings());
-
-                stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_LIFETIME_EXPIRED));
-                logWarnings(stmt.getWarnings());
-
-                log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: " + stmt.toString());
-
-                int count = stmt.executeUpdate();
-                logWarnings(stmt.getWarnings());
-
-                close(stmt);
-
-                log.info("PtPChunkDAO! "
-                        + count
-                        + " chunks of PtP requests were transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
-            } else {
-                log.debug("PtPChunkDAO! No chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
-            }
-
         } catch (SQLException e) {
             
-            log.error("PtPChunkDAO! Unable to transit expired SRM_SPACE_AVAILABLE chunks of PtP requests, to SRM_FILE_LIFETIME_EXPIRED! "
-                    + e);
-            // rollback(con);
+            log.error("PtPChunkDAO! Unable to select expired SRM_SPACE_AVAILABLE chunks of PtP requests.", e);
             ids = new ArrayList<Long>(); // make an empty list!
             
         } finally {

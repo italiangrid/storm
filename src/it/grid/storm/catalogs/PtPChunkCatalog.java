@@ -64,13 +64,14 @@ public class PtPChunkCatalog {
             @Override
             public void run() {
 
-                List<Long> ids = transitExpiredSRM_SPACE_AVAILABLE();
+                List<Long> ids = getExpiredSRM_SPACE_AVAILABLE();
 
                 if (ids.isEmpty()) {
                     return;
                 }
                 
                 List<ReducedPtPChunkData> reduced = fetchReducedPtPChunkDataFor(ids);
+                
                 if (reduced.isEmpty()) {
                     log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
                             + "No data could be translated from persitence for PtP Chunks with ID " + ids);
@@ -81,7 +82,6 @@ public class PtPChunkCatalog {
         };
 
         transiter.scheduleAtFixedRate(transitTask, delay, period);
-
     }
 
     /**
@@ -421,8 +421,8 @@ public class PtPChunkCatalog {
      * has expired and the state still has not been changed (a user forgot to run srmPutDone)! The method returns a List
      * containing all ids of transited chunks that are also Volatile.
      */
-    synchronized public List<Long> transitExpiredSRM_SPACE_AVAILABLE() {
-        return dao.transitExpiredSRM_SPACE_AVAILABLE();
+    synchronized public List<Long> getExpiredSRM_SPACE_AVAILABLE() {
+        return dao.getExpiredSRM_SPACE_AVAILABLE();
     }
 
     /**
