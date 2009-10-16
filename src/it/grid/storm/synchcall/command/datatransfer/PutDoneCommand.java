@@ -50,21 +50,127 @@ import org.slf4j.LoggerFactory;
 
 public class PutDoneCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
-    private final String funcName = "PutDone: ";
+    private static final String funcName = "PutDone: ";
+
+    private PutDoneOutputData outputData = new PutDoneOutputData();
+    private TReturnStatus globalStatus = null;
+    private boolean requestFailure;
+    private boolean requestSuccess = true;
+    private boolean requestAborted = true;
 
     public PutDoneCommand() {
     };
 
     /**
-     * Does a PutDone. Used to notify the SRM that the client completed a file transfer to the TransferURL in the
-     * allocated space (by a PrepareToPut).
+     * Executes the PutDone for the given SURLs. Function called also from the purge thread of PtPChunkCatalog.
+     * 
+     * @param spaceAvailableSURLs list of SURLs for which to execute the PutDone.
+     * @param arrayOfFileStatus array of file status for each of the given SURL (<code>null</code> when called from the
+     *            purge thread of PtPChunkCatalog)
+     * @param user the user requesting the PutDone (<code>null</code> when called from the purge thread of
+     *            PtPChunkCatalog)
+     * @param localUser the local user associate to the Grid user (<code>null</code> when called from the purge thread
+     *            of PtPChunkCatalog)
+     */
+    public static void executePutDone(List<ReducedPtPChunkData> spaceAvailableSURLs,
+            ArrayOfTSURLReturnStatus arrayOfFileStatus, GridUserInterface user, LocalUser localUser) {
+
+        VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
+
+        // Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone. To execute this
+        // operation
+        // three steps are needed for each SURL:
+        // 1- if the SURL is volatile than an entry in the table Volatile must be created;
+        // 2- JiTs must me removed from the TURL;
+        // 3- compute the checksum and store it in an extended attribute
+        // 4- Tape stuff management.
+        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
+
+            ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
+            TSURL surl = chunkData.toSURL();
+            StoRI stori = null;
+            // Retrieve the StoRI associate to the SURL
+            try {
+                NamespaceInterface namespace = NamespaceDirector.getNamespace();
+                if (user == null) {
+                    stori = namespace.resolveStoRIbySURL(surl);
+                } else {
+                    stori = namespace.resolveStoRIbySURL(surl, user);
+                }
+
+                // 1- if the SURL is volatile create an entry in the Volatile table
+                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
+                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
+                                                        Calendar.getInstance(),
+                                                        chunkData.fileLifetime());
+                }
+
+                // 2- JiTs must me removed from the TURL;
+                if (stori.hasJustInTimeACLs()) {
+                    log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
+                    // Retrieve the PFN of the SURL parents
+                    List<StoRI> storiParentsList = stori.getParents();
+                    List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+
+                    for (StoRI parentStoRI : storiParentsList) {
+                        pfnParentsList.add(parentStoRI.getPFN());
+                    }
+
+                    if (localUser == null) {
+                        volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), localUser);
+                    } else {
+                        VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
+                    }
+                }
+
+                // 3- compute the checksum and store it in an extended attribute
+                LocalFile localFile = stori.getLocalFile();
+
+                if (Configuration.getInstance().getChecksumEnabled()) {
+
+                    boolean checksumComputed = localFile.setChecksum();
+                    if (!checksumComputed) {
+                        if (arrayOfFileStatus != null) {
+                            arrayOfFileStatus.getTSURLReturnStatus(i)
+                                             .getStatus()
+                                             .setExplanation("Warning: failed to compute the checksum "
+                                                     + "(checksum computation is enabled in the server)");
+                        } else {
+                            log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
+                        }
+                    } else {
+                        log.debug("Checksum set to SURL:" + surl.toString());
+                    }
+
+                }
+
+                // 4- Tape stuff management.
+                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+                    String fileAbosolutePath = localFile.getAbsolutePath();
+                    StormEA.removePinned(fileAbosolutePath);
+                    StormEA.setPremigrate(fileAbosolutePath);
+                }
+
+            } catch (NamespaceException e1) {
+                log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
+                continue;
+            }
+        }
+
+        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        if (spaceAvailableSURLs.size() > 0) {
+            PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
+        }
+    }
+
+    /**
+     * Implements the srmPutDone. Used to notify the SRM that the client completed a file transfer to the TransferURL in
+     * the allocated space (by a PrepareToPut).
      */
     public OutputData execute(InputData absData) {
 
-        PutDoneOutputData outputData = new PutDoneOutputData();
         PutDoneInputData inputData = (PutDoneInputData) absData;
-        boolean requestFailure;
-        TReturnStatus globalStatus = null;
 
         log.debug(funcName + "Started.");
 
@@ -144,11 +250,74 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         /********************************** Start to manage the request ***********************************/
         TRequestToken requestToken = inputData.getRequestToken();
+        List<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
+        ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
+
+        /* spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS. */
+        List<ReducedPtPChunkData> spaceAvailableSURLs = new ArrayList<ReducedPtPChunkData>(listOfSURLs.size());
+
+        if (!findCandidateSURLs(requestToken,
+                                outputData,
+                                user,
+                                listOfSURLs,
+                                spaceAvailableSURLs,
+                                arrayOfFileStatus)) {
+            return outputData;
+        }
+
+        executePutDone(spaceAvailableSURLs, arrayOfFileStatus, user, lUser);
+
+        /* Set the request status */
+        try {
+            if (requestAborted) {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_ABORTED, "Request "
+                        + requestToken.toString());
+            } else if (requestFailure) {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All file requests are failed");
+            } else if (requestSuccess) {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+                                                 "All file requests are successfully completed");
+            } else {
+                globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+                                                 "Details are on the file statuses");
+            }
+
+            log.debug(funcName + "Finished with status: " + globalStatus.toString());
+        } catch (InvalidTReturnStatusAttributeException e) {
+            // Nothing to do, it will never be thrown
+            log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
+        }
+
+        if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] successfully done with: [status:"
+                    + globalStatus + "]");
+        } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
+            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] partially done with: [status:"
+                    + globalStatus + "]");
+        } else {
+            log.error("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] failed with: [status:" + globalStatus
+                    + "]");
+
+        }
+
+        outputData.setReturnStatus(globalStatus);
+        outputData.setArrayOfFileStatuses(arrayOfFileStatus);
+
+        return outputData;
+    }
+
+    private boolean findCandidateSURLs(TRequestToken requestToken, PutDoneOutputData outputData,
+            GridUserInterface user, List<TSURL> inputSURLs, List<ReducedPtPChunkData> spaceAvailableSURLs,
+            ArrayOfTSURLReturnStatus arrayOfFileStatus) {
+
         log.debug(funcName + "requestToken=" + requestToken.toString());
 
         /* Query the DB to find all the SURLs associated to the request token */
-        PtPChunkCatalog dbCatalog = PtPChunkCatalog.getInstance();
-        Collection<ReducedPtPChunkData> chunks = dbCatalog.lookupReducedPtPChunkData(requestToken);
+        Collection<ReducedPtPChunkData> chunks = PtPChunkCatalog.getInstance()
+                                                                .lookupReducedPtPChunkData(requestToken);
 
         if (chunks.isEmpty()) { // No SURLs found
             log.debug(funcName + "Invalid request token");
@@ -162,10 +331,16 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
-                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
-                    + "]failed with [status: " + globalStatus + "]");
-            return outputData;
+
+            StringBuffer sb = new StringBuffer();
+            for (TSURL surl : inputSURLs) {
+                sb.append(surl.toString() + " ");
+            }
+
+            log.error("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
+                    + sb.toString() + "]failed with [status: " + globalStatus + "]");
+
+            return false;
         }
 
         /*
@@ -173,25 +348,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
          * must be found in the catalog (as a SURL associated with the specified request token), otherwise the return
          * status of the missing SURL indicates the error.
          */
-        List<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
-        int num_SURLs = listOfSURLs.size();
-        ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
-
-        // spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE
-        // to SRM_SUCCESS.
-        ArrayList<ReducedPtPChunkData> spaceAvailableSURLs = new ArrayList<ReducedPtPChunkData>(num_SURLs);
 
         requestFailure = true;
-        boolean requestSuccess = true;
-        boolean requestAborted = true;
+        requestSuccess = true;
+        requestAborted = true;
 
-        // ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for
-        // loop
-        // the two boolean variables "requestFailure" and "requestSuccess" are correctly set.
+        /*
+         * ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for loop the two boolean
+         * variables "requestFailure" and "requestSuccess" are correctly set.
+         */
+        for (int i = 0; i < inputSURLs.size(); i++) {
 
-        for (int i = 0; i < num_SURLs; i++) {
-
-            TSURL surl = (TSURL) listOfSURLs.get(i);
+            TSURL surl = (TSURL) inputSURLs.get(i);
             log.debug(funcName + "Checking SURL[" + i + "]: " + surl.toString());
 
             // Search SURL[i] (specified in the request) inside the catalog
@@ -267,124 +435,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             }
         }
 
-        // Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone. To execute this
-        // operation
-        // three steps are needed for each SURL:
-        // 1- if the SURL is volatile than an entry in the table Volatile must be created;
-        // 2- JiTs must me removed from the TURL;
-        // 3- compute the checksum and store it in an extended attribute
-        // 4- Tape stuff management.
-        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
-        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
-
-            ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs.get(i);
-            TSURL surl = chunkData.toSURL();
-            StoRI stori = null;
-            // Retrieve the StoRI associate to the SURL
-            try {
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                stori = namespace.resolveStoRIbySURL(surl, user);
-
-                // 1- if the SURL is volatile create an entry in the Volatile table
-                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
-                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
-                                                        Calendar.getInstance(),
-                                                        chunkData.fileLifetime());
-                }
-                
-                // 2- JiTs must me removed from the TURL;
-                if (stori.hasJustInTimeACLs()) {
-                    log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
-                    // Retrieve the PFN of the SURL parents
-                    List<StoRI> storiParentsList = stori.getParents();
-                    List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
-
-                    for (StoRI parentStoRI : storiParentsList) {
-                        pfnParentsList.add(parentStoRI.getPFN());
-                    }
-                    volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
-                }
-
-                // 3- compute the checksum and store it in an extended attribute
-                LocalFile localFile = stori.getLocalFile();
-
-                if (Configuration.getInstance().getChecksumEnabled()) {
-
-                    boolean checksumComputed = localFile.setChecksum();
-                    if (!checksumComputed) {
-                        arrayOfFileStatus.getTSURLReturnStatus(i)
-                                         .getStatus()
-                                         .setExplanation("Failed to compute checksum");
-                    } else {
-                        log.debug("Checksum set to SURL:" + surl.toString());
-                    }
-
-                }
-
-                // 4- Tape stuff management.
-                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                    String fileAbosolutePath = localFile.getAbsolutePath();
-                    StormEA.removePinned(fileAbosolutePath);
-                    StormEA.setPremigrate(fileAbosolutePath);
-                }
-
-            } catch (NamespaceException e1) {
-                log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
-                continue;
-            }
-
-        }
-
-        // WARNING! This purge overload the mysqld in case of large volatile table and multiple PD
-        // requests
-        // log.debug(funcName + "Purging VolatileAndJiTCatalog...");
-        // volatileAndJiTCatalog.purge();
-
-        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        if (spaceAvailableSURLs.size() > 0) {
-            dbCatalog.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
-        }
-
-        /* Set the request status */
-        try {
-            if (requestAborted) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_ABORTED, "Request "
-                        + requestToken.toString());
-            } else if (requestFailure) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All file requests are failed");
-            } else if (requestSuccess) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                                                 "All file requests are successfully completed");
-            } else {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-                                                 "Details are on the file statuses");
-            }
-
-            log.debug(funcName + "Finished with status: " + globalStatus.toString());
-        } catch (InvalidTReturnStatusAttributeException e) {
-            // Nothing to do, it will never be thrown
-            log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
-        }
-
-        if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
-                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] successfully done with: [status:"
-                    + globalStatus + "]");
-        } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
-                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] partially done with: [status:"
-                    + globalStatus + "]");
-        } else {
-            log.error("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
-                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] failed with: [status:" + globalStatus
-                    + "]");
-
-        }
-
-        outputData.setReturnStatus(globalStatus);
-        outputData.setArrayOfFileStatuses(arrayOfFileStatus);
-
-        return outputData;
+        return true;
     }
 }

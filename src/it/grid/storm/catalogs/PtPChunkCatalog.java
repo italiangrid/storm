@@ -1,15 +1,10 @@
 package it.grid.storm.catalogs;
 
-import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -25,6 +20,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,54 +63,25 @@ public class PtPChunkCatalog {
         TimerTask transitTask = new TimerTask() {
             @Override
             public void run() {
+
                 List<Long> ids = transitExpiredSRM_SPACE_AVAILABLE();
-                if (!ids.isEmpty()) {
-                    List<ReducedPtPChunkData> reduced = fetchReducedPtPChunkDataFor(ids);
-                    if (reduced.isEmpty()) {
-                        log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
-                                + "No data could be translated from persitence for PtP Chunks with ID " + ids);
-                    }
-                    for (ReducedPtPChunkData auxReduced : reduced) {
-                        try {
-                            StoRI auxStoRI = NamespaceDirector.getNamespace()
-                                                              .resolveStoRIbySURL(auxReduced.toSURL());
-                            PFN auxPFN = auxStoRI.getPFN();
-                            //
-                            // remove file
-                            try {
-                                log.info("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. Deleting file "
-                                        + auxPFN);
-                                LocalFile auxFile = NamespaceDirector.getNamespace()
-                                                                     .resolveStoRIbyPFN(auxPFN)
-                                                                     .getLocalFile();
-                                boolean ok = auxFile.delete();
-                                if (!ok) {
-                                    throw new Exception("Java File deletion failed!");
-                                }
-                            } catch (Exception e) {
-                                // log exceptions
-                                log.error("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. "
-                                        + "Request status transited to SRM_FILE_LIFETIME_EXPIRED but physical file "
-                                        + auxPFN + " could NOT be deleted!");
-                                log.error(e.getMessage(), e);
-                            }
-                            //
-                            // remove any Jit
-                            VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(auxPFN);
-                            //
-                            // remove any Volatile
-                            VolatileAndJiTCatalog.getInstance().removeVolatile(auxPFN);
-                        } catch (NamespaceException e) {
-                            log.error("ATTENTION IN PtP CHUNK CATALOG! While transiting expired requests in SRM_SPACE_AVAILABLE, "
-                                    + "there were problems with the NameSpace!\nChunk: "
-                                    + auxReduced
-                                    + "\nError: " + e);
-                        }
-                    }
+
+                if (ids.isEmpty()) {
+                    return;
                 }
+                
+                List<ReducedPtPChunkData> reduced = fetchReducedPtPChunkDataFor(ids);
+                if (reduced.isEmpty()) {
+                    log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
+                            + "No data could be translated from persitence for PtP Chunks with ID " + ids);
+                }
+                
+                PutDoneCommand.executePutDone(reduced, null, null, null);
             }
         };
+
         transiter.scheduleAtFixedRate(transitTask, delay, period);
+
     }
 
     /**
@@ -179,11 +146,13 @@ public class PtPChunkCatalog {
     }
 
     /**
-     * Method that returns a Collection of ReducedPtPChunkData Objects corresponding to each of the IDs contained inthe
-     * supplied List of Long objects. If any of the data retrieved for a given chunk is not well formed and so does not
-     * allow a ReducedPtPChunkData Object to be created, then that chunk is dropped and gets logged, while processing
-     * continues with the next one. All valid chunks get returned: the others get dropped. WARNING! If there are no
-     * chunks associated to any of the given IDs, no messagge gets written in the logs!
+     * Method that returns a Collection of ReducedPtPChunkData Objects corresponding to each of the IDs else {
+     * log.debug(
+     * "PtPChunkDAO! No chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
+     * }contained inthe supplied List of Long objects. If any of the data retrieved for a given chunk is not well formed
+     * and so does not allow a ReducedPtPChunkData Object to be created, then that chunk is dropped and gets logged,
+     * while processing continues with the next one. All valid chunks get returned: the others get dropped. WARNING! If
+     * there are no chunks associated to any of the given IDs, no messagge gets written in the logs!
      */
     synchronized public List<ReducedPtPChunkData> fetchReducedPtPChunkDataFor(List<Long> volids) {
         Collection<ReducedPtPChunkDataTO> cl = dao.fetchReduced(volids);

@@ -136,8 +136,8 @@ public class VolatileAndJiTCatalog {
      * command. If the entry does not exist, then nothing happens and a warning gets written in the logs; otherwise the
      * entry gets its start time set to now, and its lifetime set to zero; in case more than one matching entry is
      * found, a message gets written to the logs, and the updating continues anyway as explained. At this point, when
-     * the garbage colelctor wakes up the entry is cleanly handled (physical ACL is removed, catalog entry removed,
-     * etc.); or an earlier cleaning can be forced by invoking directly the purge mehod. The method returns FALSE in
+     * the garbage collector wakes up the entry is cleanly handled (physical ACL is removed, catalog entry removed,
+     * etc.); or an earlier cleaning can be forced by invoking directly the purge method. The method returns FALSE in
      * case no entry was found or the supplied parameters were null, and TRUE otherwise. Yet keep in mind that is says
      * nothing of whether the DB operation was successful or not.
      */
