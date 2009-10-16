@@ -386,11 +386,12 @@ public class VolatileAndJiTCatalog {
     }
 
     /**
-     * Method that returns a List whose first element is a Calendar with the starting date and time of the lifetime of the
-     * supplied PFN, and whose second element is the TLifeTime the system is keeping the PFN. If no entry is found for
-     * the given PFN, an empty List is returned. Likewise if any DB error occurs. In any case, proper error messagges
-     * get logged. Moreover notice that if for any reason the value for the Lifetime read from the DB does not allow
-     * creation of a valid TLifeTimeInSeconds, an Empty one is returned. Error messages in logs warn of the situation.
+     * Method that returns a List whose first element is a Calendar with the starting date and time of the lifetime of
+     * the supplied PFN, and whose second element is the TLifeTime the system is keeping the PFN. If no entry is found
+     * for the given PFN, an empty List is returned. Likewise if any DB error occurs. In any case, proper error
+     * messagges get logged. Moreover notice that if for any reason the value for the Lifetime read from the DB does not
+     * allow creation of a valid TLifeTimeInSeconds, an Empty one is returned. Error messages in logs warn of the
+     * situation.
      */
     synchronized public List volatileInfoOn(PFN pfn) {
         boolean ok = pfn != null;
