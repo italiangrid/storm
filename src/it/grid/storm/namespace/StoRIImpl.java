@@ -462,10 +462,10 @@ implements StoRI {
         return this.winnerRule;
     }
 
-    public List getParents() {
+    public List<StoRI> getParents() {
 
         StoRI createdStoRI = null;
-        ArrayList parentList = new ArrayList();
+        ArrayList<StoRI> parentList = new ArrayList<StoRI>();
         String consumeElements = this.relativePath;
         String consumed;
         boolean lastElements = false;

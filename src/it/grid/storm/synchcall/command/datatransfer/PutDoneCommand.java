@@ -3,6 +3,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
@@ -32,7 +33,6 @@ import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -91,8 +91,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             outputData.setArrayOfFileStatuses(null);
 
             if (inputData == null) {
-                log.error("srmPutDone: <> Request for [token:] [SURL:] failed with [status: "
-                        + globalStatus + "]");
+                log.error("srmPutDone: <> Request for [token:] [SURL:] failed with [status: " + globalStatus
+                        + "]");
             } else {
                 log.error("srmPutDone: <" + inputData.getUser() + "> Request for [token:"
                         + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
@@ -148,7 +148,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         /* Query the DB to find all the SURLs associated to the request token */
         PtPChunkCatalog dbCatalog = PtPChunkCatalog.getInstance();
-        Collection chunks = dbCatalog.lookupReducedPtPChunkData(requestToken);
+        Collection<ReducedPtPChunkData> chunks = dbCatalog.lookupReducedPtPChunkData(requestToken);
 
         if (chunks.isEmpty()) { // No SURLs found
             log.debug(funcName + "Invalid request token");
@@ -173,7 +173,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
          * must be found in the catalog (as a SURL associated with the specified request token), otherwise the return
          * status of the missing SURL indicates the error.
          */
-        ArrayList listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
+        List<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
         int num_SURLs = listOfSURLs.size();
         ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
@@ -194,16 +194,11 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             TSURL surl = (TSURL) listOfSURLs.get(i);
             log.debug(funcName + "Checking SURL[" + i + "]: " + surl.toString());
 
-            // auxChunkData stores information about a single item (SURL) in the catalog
-            ReducedPtPChunkData auxChunkData = null;
-
             // Search SURL[i] (specified in the request) inside the catalog
-            Iterator j = chunks.iterator();
-            boolean surlFound = false;
-            while (j.hasNext()) {
-                auxChunkData = (ReducedPtPChunkData) j.next();
-                if (surl.equals(auxChunkData.toSURL())) {
-                    surlFound = true;
+            ReducedPtPChunkData auxChunkData = null;
+            for (ReducedPtPChunkData chunk : chunks) {
+                if (surl.equals(chunk.toSURL())) {
+                    auxChunkData = chunk;
                     break;
                 }
             }
@@ -211,7 +206,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             // Execute the PutDone on SURL[i]
             TReturnStatus surlReturnStatus = null;
             try {
-                if (surlFound) { // SURL found, go on with PutDone
+                if (auxChunkData != null) { // SURL found, go on with PutDone
                     log.debug(funcName + "SURL[" + i + "] found!");
                     surlReturnStatus = auxChunkData.status();
                     if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_SPACE_AVAILABLE) {
@@ -256,9 +251,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, surlReturnStatus);
 
                 if (surlReturnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                    log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken
-                            + "] for [SURL:" + surl + "] successfully done with: [status:" + surlReturnStatus
-                            + "]");
+                    log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
+                            + surl + "] successfully done with: [status:" + surlReturnStatus + "]");
                 } else {
                     log.error("srmPutDone: <" + user + "> Request for [token:" + requestToken
                             + "] for [SURL:" + surl + "] failed with: [status:" + surlReturnStatus + "]");
@@ -298,14 +292,16 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                                                         Calendar.getInstance(),
                                                         chunkData.fileLifetime());
                 }
+                
                 // 2- JiTs must me removed from the TURL;
                 if (stori.hasJustInTimeACLs()) {
                     log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
                     // Retrieve the PFN of the SURL parents
-                    List storiParentsList = stori.getParents();
-                    List pfnParentsList = new ArrayList(storiParentsList.size());
-                    for (int j = 0; j < storiParentsList.size(); j++) {
-                        pfnParentsList.add(((StoRI) storiParentsList.get(j)).getPFN());
+                    List<StoRI> storiParentsList = stori.getParents();
+                    List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+
+                    for (StoRI parentStoRI : storiParentsList) {
+                        pfnParentsList.add(parentStoRI.getPFN());
                     }
                     volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), lUser);
                 }
@@ -372,17 +368,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
 
         if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            log.info("srmPutDone: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
-                    + "] successfully done with: [status:" + globalStatus + "]");
+            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] successfully done with: [status:"
+                    + globalStatus + "]");
         } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-            log.info("srmPutDone: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
-                    + "] partially done with: [status:" + globalStatus + "]");
+            log.info("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] partially done with: [status:"
+                    + globalStatus + "]");
         } else {
-            log.error("srmPutDone: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] for [SURL:" + inputData.getArrayOfSURLs()
-                    + "] failed with: [status:" + globalStatus + "]");
+            log.error("srmPutDone: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                    + "] for [SURL:" + inputData.getArrayOfSURLs() + "] failed with: [status:" + globalStatus
+                    + "]");
 
         }
 

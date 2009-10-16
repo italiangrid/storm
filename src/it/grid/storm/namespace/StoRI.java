@@ -104,7 +104,7 @@ public interface StoRI {
      * the root and excluding the StoRI itself. If no parents are present, an empty
      * List is returned instead.
      */
-    public List getParents();
+    public List<StoRI> getParents();
 
     public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException;
 

@@ -8,20 +8,19 @@
 
 package it.grid.storm.srm.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-
-import java.io.Serializable;
 
 public class ArrayOfSURLs implements Serializable {
 
+    private static final long serialVersionUID = -6162739978949956886L;
+
     public static String ARRAYOFSURLS = "arrayOfSURLs";
     
-    ArrayList  surlList;
+    ArrayList<TSURL>  surlList;
 
     
     /**
@@ -36,11 +35,11 @@ public class ArrayOfSURLs implements Serializable {
     } 
 	
     public ArrayOfSURLs() {
-	    surlList = new ArrayList();
+	    surlList = new ArrayList<TSURL>();
     }
    
     
-    public ArrayList getArrayList()
+    public List<TSURL> getArrayList()
     {
       return  surlList;
     }
@@ -63,10 +62,10 @@ public class ArrayOfSURLs implements Serializable {
     
     public static ArrayOfSURLs decode(Map inputParam, String name) throws InvalidArrayOfSURLsAttributeException
     {
-        List list = null;
+        List<String> list = null;
         ArrayOfSURLs surlArray = new ArrayOfSURLs();
         try {
-        	list = (List) Arrays.asList((Object[])inputParam.get(name));
+        	list = Arrays.asList((String[])inputParam.get(name));
         } catch (NullPointerException e) {
         	//log.warn("Empty SURL array found!");
         }
