@@ -28,7 +28,6 @@ import it.grid.storm.srm.types.TTURL;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -72,8 +71,8 @@ public class PtPChunkCatalog {
                 if (!ids.isEmpty()) {
                     List<ReducedPtPChunkData> reduced = fetchReducedPtPChunkDataFor(ids);
                     if (reduced.isEmpty()) {
-                        log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! No data could be translated from persitence for PtP Chunks with ID "
-                                + ids);
+                        log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
+                                + "No data could be translated from persitence for PtP Chunks with ID " + ids);
                     }
                     for (ReducedPtPChunkData auxReduced : reduced) {
                         try {
@@ -94,7 +93,8 @@ public class PtPChunkCatalog {
                                 }
                             } catch (Exception e) {
                                 // log exceptions
-                                log.error("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. Request status transited to SRM_FILE_LIFETIME_EXPIRED but physical file "
+                                log.error("PtP CHUNK CATALOG: transition of expired SRM_SPACE_AVAILABLE. "
+                                        + "Request status transited to SRM_FILE_LIFETIME_EXPIRED but physical file "
                                         + auxPFN + " could NOT be deleted!");
                                 log.error(e.getMessage(), e);
                             }
@@ -105,8 +105,10 @@ public class PtPChunkCatalog {
                             // remove any Volatile
                             VolatileAndJiTCatalog.getInstance().removeVolatile(auxPFN);
                         } catch (NamespaceException e) {
-                            log.error("ATTENTION IN PtP CHUNK CATALOG! While transiting expired requests in SRM_SPACE_AVAILABLE, there were problems with the NameSpace!\nChunk: "
-                                    + auxReduced + "\nError: " + e);
+                            log.error("ATTENTION IN PtP CHUNK CATALOG! While transiting expired requests in SRM_SPACE_AVAILABLE, "
+                                    + "there were problems with the NameSpace!\nChunk: "
+                                    + auxReduced
+                                    + "\nError: " + e);
                         }
                     }
                 }
@@ -157,17 +159,15 @@ public class PtPChunkCatalog {
      * an empty Collection is returned and a messagge gets logged. All ReducedChunks, regardless of their status, are
      * returned.
      */
-    synchronized public Collection lookupReducedPtPChunkData(TRequestToken rt) {
-        Collection cl = dao.findReduced(rt.getValue());
+    synchronized public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(TRequestToken rt) {
+        Collection<ReducedPtPChunkDataTO> cl = dao.findReduced(rt.getValue());
         log.debug("PtP CHUNK CATALOG: retrieved data " + cl);
-        List list = new ArrayList();
+        List<ReducedPtPChunkData> list = new ArrayList<ReducedPtPChunkData>();
         if (cl.isEmpty()) {
             log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " + rt);
         } else {
-            ReducedPtPChunkDataTO auxTO;
             ReducedPtPChunkData aux;
-            for (Iterator i = cl.iterator(); i.hasNext();) {
-                auxTO = (ReducedPtPChunkDataTO) i.next();
+            for (ReducedPtPChunkDataTO auxTO : cl) {
                 aux = makeReducedPtPChunkData(auxTO);
                 if (aux != null) {
                     list.add(aux);

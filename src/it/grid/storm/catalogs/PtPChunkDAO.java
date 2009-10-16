@@ -34,7 +34,7 @@ public class PtPChunkDAO {
 
     private static final Logger log = LoggerFactory.getLogger(PtPChunkDAO.class);
     private final String driver = Configuration.getInstance().getDBDriver();// String with the name of the class for the
-                                                                            // DB driver
+    // DB driver
     private final String url = Configuration.getInstance().getDBURL(); // String referring to the URL of the DB
     private final String password = Configuration.getInstance().getDBPassword(); // String with the password for the DB
     private final String name = Configuration.getInstance().getDBUserName(); // String with the name for the DB
@@ -44,11 +44,11 @@ public class PtPChunkDAO {
 
     private Timer clock = null; // timer thread that will run a task to alert when reconnecting is necessary!
     private TimerTask clockTask = null; // timer task that will update the boolean signalling that a reconnection is
-                                        // neede!
+    // neede!
     private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;// milliseconds that must pass
-                                                                                    // before reconnecting to DB
+    // before reconnecting to DB
     private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;// initial delay in millseconds before
-                                                                                  // starting timer
+    // starting timer
     private boolean reconnect = false; // boolean that tells whether reconnection is needed because of MySQL bug!
 
     private PtPChunkDAO() {
@@ -158,7 +158,7 @@ public class PtPChunkDAO {
      * Method that returns a Collection of ReducedPtPChunkDataTO associated to the given TRequestToken expressed as
      * String.
      */
-    public Collection findReduced(String reqtoken) {
+    public Collection<ReducedPtPChunkDataTO> findReduced(String reqtoken) {
         checkConnection();
         PreparedStatement find = null;
         ResultSet rs = null;
@@ -169,7 +169,7 @@ public class PtPChunkDAO {
                     + "ON (p.request_queueID=r.ID AND s.request_PutID=p.ID) " + "WHERE r.r_token=?";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
-            List list = new ArrayList();
+            List<ReducedPtPChunkDataTO> list = new ArrayList<ReducedPtPChunkDataTO>();
             find.setString(1, reqtoken);
             logWarnings(find.getWarnings());
             log.debug("PtP CHUNK DAO! findReduced with request token; " + find.toString());
@@ -192,8 +192,8 @@ public class PtPChunkDAO {
             log.error("PTP CHUNK DAO: " + e);
             close(rs);
             close(find);
-            return new ArrayList(); // return empty Collection!
         }
+        return new ArrayList<ReducedPtPChunkDataTO>(); // return empty Collection!
     }
 
     /**
@@ -307,7 +307,7 @@ public class PtPChunkDAO {
             // get protocols for the request
             stmt = con.prepareStatement(prot);
             logWarnings(con.getWarnings());
-            List protocols = new ArrayList();
+            List<String> protocols = new ArrayList<String>();
             stmt.setLong(1, primary_key);
             logWarnings(stmt.getWarnings());
             log.debug("PtP CHUNK DAO - refresh method: " + stmt.toString());
@@ -380,7 +380,7 @@ public class PtPChunkDAO {
             signal = con.prepareStatement(signalSQL);
             logWarnings(con.getWarnings());
             signal.setString(1, "This chunk of the request is malformed!"); // NB: Prepared statement spares DB-specific
-                                                                            // String notation!
+            // String notation!
             logWarnings(signal.getWarnings());
             log.debug("PtP CHUNK DAO - signalMalformedPtPChunk method: " + signal.toString());
             signal.executeUpdate();
@@ -431,73 +431,61 @@ public class PtPChunkDAO {
 
     /**
      * Method that updates all expired requests in SRM_SPACE_AVAILABLE state, into SRM_FILE_LIFTIME_EXPIRED. It returns
-     * a List containing the ID of the requests that were transited. This is needed to delete the corresponding physical
-     * files. This is needed when the client forgets to invoke srmPutDone().
+     * a List containing the ID of the requests that were transited. This is needed when the client forgets to invoke
+     * srmPutDone().
      */
     public List<Long> transitExpiredSRM_SPACE_AVAILABLE() {
+
         checkConnection();
+
         String idsstr = "SELECT s.ID FROM "
                 + "status_Put s JOIN (request_Put rp, request_queue r) ON s.request_PutID=rp.ID AND rp.request_queueID=r.ID "
                 + "WHERE s.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
 
-        // String nonvolidsstr = "SELECT s.ID FROM "+
-        // "status_Put s JOIN (request_Put rp, request_queue r) ON s.request_PutID=rp.ID AND rp.request_queueID=r.ID "+
-        // "WHERE s.statusCode=? AND r.config_FileStorageTypeID<>? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) >= r.pinLifetime ";
-
         String updateStatus = "UPDATE " + "status_Put s " + "SET s.statusCode=? " + "WHERE s.ID IN ";
 
         List<Long> ids = new ArrayList<Long>();
-        // List nonvolids = new ArrayList();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+
         try {
 
             // get ids
             stmt = con.prepareStatement(idsstr);
             logWarnings(con.getWarnings());
+
             stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SPACE_AVAILABLE));
             logWarnings(stmt.getWarnings());
-            // stmt.setString(2,FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE));
-            // logWarnings(stmt.getWarnings());
+
             log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: " + stmt.toString());
+
             rs = stmt.executeQuery();
             logWarnings(stmt.getWarnings());
+
             while (rs.next()) {
                 ids.add(new Long(rs.getLong("s.ID")));
             }
             close(rs);
             close(stmt);
 
-            // get non volatile ids
-            // stmt = con.prepareStatement(nonvolidsstr);
-            // logWarnings(con.getWarnings());
-            // stmt.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SPACE_AVAILABLE));
-            // logWarnings(stmt.getWarnings());
-            // stmt.setString(2,FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE));
-            // logWarnings(stmt.getWarnings());
-            // log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: "+stmt.toString());
-            // rs = stmt.executeQuery();
-            // logWarnings(stmt.getWarnings());
-            // while (rs.next()) {
-            // nonvolids.add(new Long(rs.getLong("s.ID")));
-            // }
-            // close(rs);
-            // close(stmt);
-
-            // start transaction
-            // con.setAutoCommit(false);
-
-            // update volatile ids
+            // Update the status of the selected ids to SRM_FILE_LIFETIME_EXPIRED
             if (!ids.isEmpty()) {
+
                 String updateStatusNew = updateStatus + makeWhereString(ids);
+
                 stmt = con.prepareStatement(updateStatusNew);
                 logWarnings(con.getWarnings());
+
                 stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_LIFETIME_EXPIRED));
                 logWarnings(stmt.getWarnings());
+
                 log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: " + stmt.toString());
+
                 int count = stmt.executeUpdate();
                 logWarnings(stmt.getWarnings());
+
                 close(stmt);
+
                 log.info("PtPChunkDAO! "
                         + count
                         + " chunks of PtP requests were transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
@@ -505,36 +493,18 @@ public class PtPChunkDAO {
                 log.debug("PtPChunkDAO! No chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
             }
 
-            // update non volatile ids
-            // if (!nonvolids.isEmpty()) {
-            // String updateStatusNonVol = updateStatus + makeWhereString(nonvolids);
-            // stmt = con.prepareStatement(updateStatusNonVol);
-            // logWarnings(con.getWarnings());
-            // stmt.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
-            // logWarnings(stmt.getWarnings());
-            // log.debug("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: "+stmt.toString());
-            // int count = stmt.executeUpdate();
-            // logWarnings(stmt.getWarnings());
-            // close(stmt);
-            // log.info("PtPChunkDAO! "+count+" non-volatile chunks of PtP requests were transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
-            // } else {
-            // log.debug("PtPChunkDAO! No non-volatile chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
-            // }
-
-            // end transaction
-            // con.commit();
-            // logWarnings(con.getWarnings());
-            // con.setAutoCommit(true);
-            // logWarnings(con.getWarnings());
-
         } catch (SQLException e) {
+            
             log.error("PtPChunkDAO! Unable to transit expired SRM_SPACE_AVAILABLE chunks of PtP requests, to SRM_FILE_LIFETIME_EXPIRED! "
                     + e);
             // rollback(con);
             ids = new ArrayList<Long>(); // make an empty list!
+            
         } finally {
+            
             close(rs);
             close(stmt);
+            
         }
         return ids;
     }
@@ -650,6 +620,7 @@ public class PtPChunkDAO {
     /**
      * Auxiliary method used to roll back a failed transaction
      */
+    @SuppressWarnings("unused")
     private void rollback(Connection con) {
         if (con != null) {
             try {

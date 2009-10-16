@@ -1,14 +1,12 @@
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TFileStorageType;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.List;
-import java.util.Arrays;
-import it.grid.storm.namespace.model.Protocol;
 
 /**
  * Class that represents a row in the Persistence Layer: this is all raw data
@@ -35,7 +33,7 @@ public class PtPChunkDataTO {
     private String fileStorageType = null; //initialised in constructor
     private String spaceToken = " ";
     private long expectedFileSize = 0;
-    private List protocolList = null; //initialised in constructor
+    private List<String> protocolList = null; //initialised in constructor
     private String overwriteOption = null; //initialised in constructor
     private int status; //initialised in constructor
     private String errString = " ";
@@ -139,11 +137,11 @@ public class PtPChunkDataTO {
         expectedFileSize = l;
     }
 
-    public List protocolList() {
+    public List<String> protocolList() {
         return protocolList;
     }
 
-    public void setProtocolList(List l) {
+    public void setProtocolList(List<String> l) {
         empty = false;
         if ((l!=null) && (!l.isEmpty())) protocolList = l;
     }

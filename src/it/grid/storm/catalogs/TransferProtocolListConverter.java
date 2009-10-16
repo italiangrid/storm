@@ -22,7 +22,6 @@ class TransferProtocolListConverter {
      */
     public static List<String> toDB(TURLPrefix turlPrefix) {
         List<String> result = new ArrayList<String>();
-        String str = null;
         Protocol protocol;
         for (Iterator<Protocol> it = turlPrefix.getDesiredProtocols().iterator(); it.hasNext(); ) {
           protocol = it.next();
