@@ -152,18 +152,16 @@ public class PathACE {
 
     public boolean subjectMatch(String subjectGroup) {
         boolean result = false;
-        Matcher allGroupsMatcher = allGroupsPattern.matcher(subjectGroup);
-        if (localGroupName != null) {
-            if (allGroupsMatcher.find()) {
-                result = true;
-                log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
-            } else {
-                if (localGroupName.equals(subjectGroup)) {
-                    result = true;
-                    log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
-                }
-            }
+        Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
+
+        if (allGroupsMatcher.matches() || (localGroupName.equals("*"))) {
+            result = true;
+            log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
+        } else if (localGroupName.equals(subjectGroup)) {
+            result = true;
+            log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
         }
+        log.debug("ACE.localGroupName=" + localGroupName + " matches with '" + subjectGroup + "' = " + result);
         return result;
     }
 
