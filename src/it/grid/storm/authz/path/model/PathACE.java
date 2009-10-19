@@ -153,8 +153,7 @@ public class PathACE {
     public boolean subjectMatch(String subjectGroup) {
         boolean result = false;
         Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
-
-        if (allGroupsMatcher.matches() || (localGroupName.equals("*"))) {
+        if (allGroupsMatcher.matches()) {
             result = true;
             log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
         } else if (localGroupName.equals(subjectGroup)) {
