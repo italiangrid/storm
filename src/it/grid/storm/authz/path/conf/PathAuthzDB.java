@@ -93,6 +93,7 @@ public class PathAuthzDB {
     // ============= INFORMATIONALs ========
 
     public PathAuthzEvaluationAlgorithm getAuthorizationAlgorithm() {
+        evaluationAlg.setACL(authzDB);
         return evaluationAlg;
     }
 

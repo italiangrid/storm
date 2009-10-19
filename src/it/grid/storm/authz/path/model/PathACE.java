@@ -22,6 +22,7 @@ public class PathACE {
     private final Logger log = AuthzDirector.getLogger();
 
     public static final String ALL_GROUPS = "@ALL@?|\\*";
+
     private static final Pattern allGroupsPattern = Pattern.compile(ALL_GROUPS);
     public static final String FIELD_SEP = "\\s"; // * White space character **/
     private static final boolean PERMIT_ACE = true;
@@ -39,6 +40,17 @@ public class PathACE {
     private boolean isPermitACE;
 
     // =========== CONSTRUCTORs ============
+
+    /**
+     * Quite similar to clone
+     */
+    public static PathACE build(PathACE other) {
+        PathACE result = new PathACE(other.localGroupName,
+                                     other.getStorageFileName(),
+                                     other.getPathAccessMask(),
+                                     other.isPermitAce());
+        return result;
+    }
 
     public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask, boolean permitACE) {
         localGroupName = localGroup;
@@ -142,7 +154,7 @@ public class PathACE {
         boolean result = false;
         Matcher allGroupsMatcher = allGroupsPattern.matcher(subjectGroup);
         if (localGroupName != null) {
-            if (allGroupsMatcher.matches()) {
+            if (allGroupsMatcher.find()) {
                 result = true;
                 log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
             } else {
@@ -180,6 +192,7 @@ public class PathACE {
         result += 31 * result + (localGroupName == null ? 0 : localGroupName.hashCode());
         result += 31 * result + (storageFileName == null ? 0 : storageFileName.hashCode());
         result += 31 * result + (pathAccessMask == null ? 0 : pathAccessMask.hashCode());
+        result += 31 * result + (isPermitACE ? 0 : 1);
         return result;
     }
 
@@ -195,6 +208,8 @@ public class PathACE {
         result += storageFileName;
         result += " ";
         result += pathAccessMask;
+        result += " ";
+        result += isPermitACE ? "PERMIT" : "DENY";
         return result;
     }
 

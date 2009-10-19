@@ -8,7 +8,7 @@
  ***********************************************************************/
 package it.grid.storm.authz.path.model;
 
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.common.types.StFN;
 
@@ -36,7 +36,7 @@ public abstract class PathAuthzEvaluationAlgorithm {
         return pathACL.size();
     }
 
-    public abstract AuthorizationDecision evaluate(StFN fileName, PathOperation pathOperation);
+    public abstract AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation);
 
     /**
      * @return

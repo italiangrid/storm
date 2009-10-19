@@ -29,6 +29,7 @@ algorithm=it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
   dteam		/dteam		WRFDTLMN		permit
   dteam		/cms		----TL--		permit
   cms		/cms		-R--TL--		permit
+  cms		/cms/prd	WR----MN		permit
   cmsprd	/cms		WRFDTLMN		permit
   cmsphed	/cms		WR--TLMN		permit
   @ALL@		/			WRFDTLMN		deny

@@ -69,10 +69,12 @@ public class PathAccessMask {
     public String toString() {
         String pathPermissionStr = "";
         for (PathOperation pathOp : PathOperation.values()) {
-            if (pathAccessMask.contains(pathOp)) {
-                pathPermissionStr += pathOp.getSpaceOperationValue();
-            } else {
-                pathPermissionStr += "-";
+            if (!(pathOp.equals(PathOperation.UNDEFINED))) {
+                if (pathAccessMask.contains(pathOp)) {
+                    pathPermissionStr += pathOp.getSpaceOperationValue();
+                } else {
+                    pathPermissionStr += "-";
+                }
             }
         }
         return pathPermissionStr;
