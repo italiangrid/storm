@@ -249,6 +249,13 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
+    @Override
+    public int getTaskId(String requestToken, String pfn) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+
     /*
      */
     @Override
@@ -448,30 +455,6 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    /*
-     */
-    @Override
-    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
-        boolean result = false;
-        RecallTaskTO task = getTask(taskId);
-        if (task != null) {
-            task.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
-            PropertiesDB tasksDB = getTasksDB();
-            try {
-                tasksDB.addRecallTask(task);
-                result = true;
-            } catch (FileNotFoundException e) {
-                log.error("RecallTask DB does not exists!");
-                e.printStackTrace();
-            } catch (IOException e) {
-                log.error("IO Error while reading RecallTaskDB.");
-                e.printStackTrace();
-            }
-        }
-        return result;
-    }
-
-
     private ArrayList<RecallTaskTO> getOrderedTasks() throws DataAccessException {
         tasks = getTasks();
         ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>(tasks.values());
@@ -498,6 +481,30 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     private PropertiesDB getTasksDB() {
         tasksDB = new PropertiesDB(test);
         return tasksDB;
+    }
+
+
+    /*
+     */
+    @Override
+    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
+        boolean result = false;
+        RecallTaskTO task = getTask(taskId);
+        if (task != null) {
+            task.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
+            PropertiesDB tasksDB = getTasksDB();
+            try {
+                tasksDB.addRecallTask(task);
+                result = true;
+            } catch (FileNotFoundException e) {
+                log.error("RecallTask DB does not exists!");
+                e.printStackTrace();
+            } catch (IOException e) {
+                log.error("IO Error while reading RecallTaskDB.");
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
 }
