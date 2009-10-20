@@ -31,7 +31,7 @@ public class PutTaskStatLogic {
         
 //        String 
         
-        return Response.ok(new String("SURL=" + surl + "&REQUEST_TOKEN=" + requestToken)).type(MediaType.TEXT_PLAIN_TYPE).build();
+        return Response.ok(new String("SURL=" + surl + "&REQUEST_TOKEN=" + requestToken)).type(MediaType.TEXT_PLAIN_TYPE).status(201).build();
     }
 
 }
