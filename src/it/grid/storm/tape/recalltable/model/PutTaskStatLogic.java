@@ -1,10 +1,9 @@
 package it.grid.storm.tape.recalltable.model;
 
-import it.grid.storm.namespace.Namespace;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.StoRIImpl;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
 
@@ -29,9 +28,16 @@ public class PutTaskStatLogic {
             return Response.status(400).build();
         }
         
-//        String 
+        LocalFile localFile = stori.getLocalFile();
         
-        return Response.ok(new String("SURL=" + surl + "&REQUEST_TOKEN=" + requestToken)).type(MediaType.TEXT_PLAIN_TYPE).status(201).build();
+        String outputMessage;
+        
+        if (localFile.isOnDisk()) {
+            outputMessage = "true";
+        } else {
+            outputMessage = "false";
+        }
+        
+        return Response.ok(outputMessage, MediaType.TEXT_PLAIN_TYPE).status(200).build();
     }
-
 }
