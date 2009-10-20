@@ -8,6 +8,7 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
+import it.grid.storm.tape.recalltable.model.PutTaskStatLogic;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
@@ -68,12 +69,15 @@ public class TaskResource {
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putTaskStatus(InputStream input) {
+    public Response putTaskStat(InputStream input) {
 
         String inputString = buildInputString(input);
-
+        log.debug("putTaskStatus() - Input:" + inputString);
+        
+        /* Parse and validate input */
         StringTokenizer tokenizer = new StringTokenizer(inputString, "\n");
         if (tokenizer.countTokens() != 2) {
+            log.debug("putTaskStatus() - input error");
             return Response.status(400).build();
         }
 
@@ -81,14 +85,22 @@ public class TaskResource {
         String surlInput = tokenizer.nextToken();
 
         if ((!requestTokenInput.startsWith("requestToken=")) || (!surlInput.startsWith("surl="))) {
+            log.debug("putTaskStatus() - input error");
             return Response.status(400).build();
         }
         
-        String requestToken = requestTokenInput.substring(requestTokenInput.indexOf('='));
-        String surl = surlInput.substring(surlInput.indexOf('='));
+        String requestToken = requestTokenInput.substring(requestTokenInput.indexOf('=') + 1);
+        String surl = surlInput.substring(surlInput.indexOf('=') + 1);
         
-        return Response.ok(new String("SURL=" + surl + "&REQUEST_TOKEN=" + requestToken)).build();
-
+        if ((requestToken.length() == 0) || (surl.length() == 0)) {
+            log.debug("putTaskStatus() - input error");
+            return Response.status(400).build();
+        }
+        
+        /* Business logic */
+        Response response = PutTaskStatLogic.serveRequest(requestToken, surl);
+        
+        return response;
     }
 
     @PUT
