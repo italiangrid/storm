@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.StringTokenizer;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -64,6 +65,31 @@ public class TaskResource {
         return "doGetTaskStatus: TASK-ID = " + taskId;
     }
 
+    @PUT
+    @Path("/")
+    @Consumes("text/plain")
+    public Response putTaskStatus(InputStream input) {
+
+        String inputString = buildInputString(input);
+
+        StringTokenizer tokenizer = new StringTokenizer(inputString, "\n");
+        if (tokenizer.countTokens() != 2) {
+            return Response.status(400).build();
+        }
+
+        String requestTokenInput = tokenizer.nextToken();
+        String surlInput = tokenizer.nextToken();
+
+        if ((!requestTokenInput.startsWith("requestToken=")) || (!surlInput.startsWith("surl="))) {
+            return Response.status(400).build();
+        }
+        
+        String requestToken = requestTokenInput.substring(requestTokenInput.indexOf('='));
+        String surl = surlInput.substring(surlInput.indexOf('='));
+        
+        return Response.ok(new String("SURL=" + surl + "&REQUEST_TOKEN=" + requestToken)).build();
+
+    }
 
     @PUT
     @Path("/{taskId}")
