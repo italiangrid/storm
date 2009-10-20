@@ -18,7 +18,6 @@ public class PathAccessMask {
         {
             add(PathOperation.READ_FILE);
             add(PathOperation.LIST_DIRECTORY);
-            add(PathOperation.TRAVERSE_DIRECTORY);
         }
     };
 

@@ -12,7 +12,7 @@ public enum PathOperation {
     READ_FILE('R', "READ_FILE", "Read data"),
     RENAME('F', "RENAME", "Rename a file or a directory"),
     DELETE('D', "DELETE", "Delete a file or a directory"),
-    TRAVERSE_DIRECTORY('T', "TRAVERSE_DIRECTORY", "Traverse a directory"),
+    // TRAVERSE_DIRECTORY('T', "TRAVERSE_DIRECTORY", "Traverse a directory"),
     LIST_DIRECTORY('L', "LIST_DIRECTORY", "Listing a directory"),
     MAKE_DIRECTORY('M', "CREATE_DIRECTORY", "Create a directory"),
     CREATE_FILE('N', "CREATE_FILE", "Create a new file"),
@@ -38,8 +38,8 @@ public enum PathOperation {
                 return RENAME;
             case 'D':
                 return DELETE;
-            case 'T':
-                return TRAVERSE_DIRECTORY;
+                // case 'T':
+                // return TRAVERSE_DIRECTORY;
             case 'L':
                 return LIST_DIRECTORY;
             case 'M':
