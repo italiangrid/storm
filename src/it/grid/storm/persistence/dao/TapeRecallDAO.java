@@ -62,7 +62,11 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract RecallTaskTO getTask(int taskId) throws DataAccessException;
 
+    public abstract int getTaskId(String requestToken, String pfn)  throws DataAccessException;
+    
     public abstract int getTaskStatus(int taskId) throws DataAccessException;
+
+    public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
 
     public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
 
@@ -83,8 +87,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         return taskId;
     }
-
-    public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
 
     /**
      * Method called by a garbage collector
@@ -150,8 +152,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void updateTask(RecallTaskTO task) throws DataAccessException;
 
-    protected abstract boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException;
-
     private RecallTaskTO getTaskFromChunk(ChunkData chunkData) {
 
         RecallTaskTO task = new RecallTaskTO();
@@ -186,4 +186,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         return task;
     }
+
+    protected abstract boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException;
 }

@@ -203,16 +203,23 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              COL_DEFERRED_STARTTIME);
     }
 
+    public String getQueryRetrieveTaskId(String requestToken, String pfn) {
+
+        String queryFormat = "SELECT %s FROM %s WHERE %s='%s' AND %s='%s'";
+
+        return String.format(queryFormat, COL_TASK_ID, TABLE_NAME, COL_REQUEST_TOKEN, requestToken, COL_FILE_NAME, pfn);
+    }
+    
     public String getQueryRetrieveTaskStatus(int taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
+        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
     public String getQuerySetRetryValue(int taskId, int value) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
+        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
 
         return String.format(queryFormat,
                              TABLE_NAME,

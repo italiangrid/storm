@@ -31,17 +31,14 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author zappi
- * 
  */
 @Path("/recalltable/task")
 public class TaskResource {
 
     private static final Logger log = LoggerFactory.getLogger(TaskResource.class);
     private static Configuration config = Configuration.getInstance();
-
 
     @GET
     @Path("/{taskId}")
@@ -50,14 +47,12 @@ public class TaskResource {
         return "doGetWholeTask: TASK-ID = " + taskId;
     }
 
-
     @GET
     @Path("/{taskId}/retry")
     @Produces("text/plain")
     public String doGetTaskRetry(@PathParam("taskId") String taskId) {
         return "doGetTaskRetry: TASK-ID = " + taskId;
     }
-
 
     @GET
     @Path("/{taskId}/status")
@@ -69,11 +64,11 @@ public class TaskResource {
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putTaskStat(InputStream input) {
+    public Response putTaskStat(InputStream input) throws RecallTableException {
 
         String inputString = buildInputString(input);
         log.debug("putTaskStatus() - Input:" + inputString);
-        
+
         /* Parse and validate input */
         StringTokenizer tokenizer = new StringTokenizer(inputString, "\n");
         if (tokenizer.countTokens() != 2) {
@@ -88,18 +83,18 @@ public class TaskResource {
             log.debug("putTaskStatus() - input error");
             return Response.status(400).build();
         }
-        
+
         String requestToken = requestTokenInput.substring(requestTokenInput.indexOf('=') + 1);
         String surl = surlInput.substring(surlInput.indexOf('=') + 1);
-        
+
         if ((requestToken.length() == 0) || (surl.length() == 0)) {
             log.debug("putTaskStatus() - input error");
             return Response.status(400).build();
         }
-        
+
         /* Business logic */
         Response response = PutTaskStatLogic.serveRequest(requestToken, surl);
-        
+
         return response;
     }
 
@@ -181,7 +176,6 @@ public class TaskResource {
         }
     }
 
-
     @POST
     @Path("/")
     @Consumes("text/plain")
@@ -229,7 +223,6 @@ public class TaskResource {
         }
         return result;
     }
-
 
     /**
      * UTILITY METHODS

@@ -16,16 +16,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author zappi
- * 
  */
 public class RecallTableCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(RecallTableCatalog.class);
     private final TapeRecallDAO tapeRecallDAO;
-
 
     /**
      * Default constructor
@@ -42,6 +39,56 @@ public class RecallTableCatalog {
         }
     }
 
+    public void changeRetryValue(int taskId, int newValue) {
+        try {
+            tapeRecallDAO.setRetryValue(taskId, newValue);
+        } catch (DataAccessException e) {
+            log.error("Unable to takeover a task");
+            e.printStackTrace();
+        }
+    }
+
+    public void changeStatus(int taskId, RecallTaskStatus newStatus) {
+        try {
+            tapeRecallDAO.setTaskStatus(taskId, newStatus.getStatusId());
+        } catch (DataAccessException e) {
+            log.error("Unable to takeover a task");
+            e.printStackTrace();
+        }
+    }
+
+    public List<RecallTaskTO> getInProgressTasks() {
+        ArrayList<RecallTaskTO> taskList = new ArrayList<RecallTaskTO>();
+        try {
+            taskList.addAll(tapeRecallDAO.getInProgressTask());
+        } catch (DataAccessException e) {
+            log.error("Unable to takeover a task");
+            e.printStackTrace();
+        }
+        return taskList;
+    }
+
+    public int getNumberTask(RecallTaskStatus status) {
+        int result = -1;
+        try {
+            result = tapeRecallDAO.getNumberOfTasksWithStatus(status, null);
+        } catch (DataAccessException e) {
+            log.error("AHH!");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public int getNumberTaskInProgress() {
+        int result = -1;
+        try {
+            result = tapeRecallDAO.getNumberInProgress();
+        } catch (DataAccessException e) {
+            log.error("AHH!");
+            e.printStackTrace();
+        }
+        return result;
+    }
 
     public int getNumberTaskQueued() {
         int result = -1;
@@ -55,30 +102,16 @@ public class RecallTableCatalog {
 
     }
 
-
-    public int getNumberTaskInProgress() {
+    public int getReadyForTakeOver() {
         int result = -1;
         try {
-            result = tapeRecallDAO.getNumberInProgress();
+            result = tapeRecallDAO.getReadyForTakeOver();
         } catch (DataAccessException e) {
             log.error("AHH!");
             e.printStackTrace();
         }
         return result;
     }
-
-
-    public int getNumberTask(RecallTaskStatus status) {
-        int result = -1;
-        try {
-            result = tapeRecallDAO.getNumberOfTasksWithStatus(status, null);
-        } catch (DataAccessException e) {
-            log.error("AHH!");
-            e.printStackTrace();
-        }
-        return result;
-    }
-
 
     public int getRecallTableSize() {
         int result = -1;
@@ -96,83 +129,15 @@ public class RecallTableCatalog {
         return result;
     }
 
-
-    public RecallTaskTO takeoverTask() {
-        RecallTaskTO task = null;
-        try {
-            task = tapeRecallDAO.takeoverTask();
-        } catch (DataAccessException e) {
-            log.error("Unable to takeover a task");
-            e.printStackTrace();
-        }
-        return task;
-    }
-
-
-    public List<RecallTaskTO> getInProgressTasks() {
-        ArrayList<RecallTaskTO> taskList = new ArrayList<RecallTaskTO>();
-        try {
-            taskList.addAll(tapeRecallDAO.getInProgressTask());
-        } catch (DataAccessException e) {
-            log.error("Unable to takeover a task");
-            e.printStackTrace();
-        }
-        return taskList;
-    }
-
-
     public RecallTaskTO getTask(int taskId) throws DataAccessException {
         RecallTaskTO task = null;
         task = tapeRecallDAO.getTask(taskId);
         return task;
     }
 
-
-    public void changeStatus(int taskId, RecallTaskStatus newStatus) {
-        try {
-            tapeRecallDAO.setTaskStatus(taskId, newStatus.getStatusId());
-        } catch (DataAccessException e) {
-            log.error("Unable to takeover a task");
-            e.printStackTrace();
-        }
+    public int getTaskId(String requestToken, String pfn) throws DataAccessException {
+        return tapeRecallDAO.getTaskId(requestToken, pfn);
     }
-
-
-    public void changeRetryValue(int taskId, int newValue) {
-        try {
-            tapeRecallDAO.setRetryValue(taskId, newValue);
-        } catch (DataAccessException e) {
-            log.error("Unable to takeover a task");
-            e.printStackTrace();
-        }
-    }
-
-
-    public RecallTaskTO taskOverTask() {
-        RecallTaskTO task = null;
-        try {
-            task = tapeRecallDAO.takeoverTask();
-        } catch (DataAccessException e) {
-            if (task == null) {
-                log.error("Unable to update the task. It is NULL!");
-            } else {
-                log.error("Unable to update the task " + task.getTaskId());
-            }
-            e.printStackTrace();
-        }
-        return task;
-    }
-
-
-    public void updateTask(RecallTaskTO task) {
-        try {
-            tapeRecallDAO.updateTask(task);
-        } catch (DataAccessException e) {
-            log.error("Unable to update the task : " + task.toString());
-            e.printStackTrace();
-        }
-    }
-
 
     public void insertNewTask(RecallTaskTO task) {
         try {
@@ -183,18 +148,15 @@ public class RecallTableCatalog {
         }
     }
 
-
-    public int getReadyForTakeOver() {
-        int result = -1;
+    public void purgeCatalog(int n) {
         try {
-            result = tapeRecallDAO.getReadyForTakeOver();
+            log.debug("purging.. '" + n + "' tasks.");
+            tapeRecallDAO.purgeCompletedTasks(n);
         } catch (DataAccessException e) {
-            log.error("AHH!");
+            log.error("Unable to takeover a task");
             e.printStackTrace();
         }
-        return result;
     }
-
 
     /**
      * @param n
@@ -211,13 +173,37 @@ public class RecallTableCatalog {
         return taskList;
     }
 
-
-    public void purgeCatalog(int n) {
+    public RecallTaskTO takeoverTask() {
+        RecallTaskTO task = null;
         try {
-            log.debug("purging.. '" + n + "' tasks.");
-            tapeRecallDAO.purgeCompletedTasks(n);
+            task = tapeRecallDAO.takeoverTask();
         } catch (DataAccessException e) {
             log.error("Unable to takeover a task");
+            e.printStackTrace();
+        }
+        return task;
+    }
+
+    public RecallTaskTO taskOverTask() {
+        RecallTaskTO task = null;
+        try {
+            task = tapeRecallDAO.takeoverTask();
+        } catch (DataAccessException e) {
+            if (task == null) {
+                log.error("Unable to update the task. It is NULL!");
+            } else {
+                log.error("Unable to update the task " + task.getTaskId());
+            }
+            e.printStackTrace();
+        }
+        return task;
+    }
+
+    public void updateTask(RecallTaskTO task) {
+        try {
+            tapeRecallDAO.updateTask(task);
+        } catch (DataAccessException e) {
+            log.error("Unable to update the task : " + task.toString());
             e.printStackTrace();
         }
     }
