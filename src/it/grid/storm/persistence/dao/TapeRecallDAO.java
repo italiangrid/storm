@@ -104,12 +104,14 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         if (!setTaskStatusDBImpl(taskId, recallTaskStatus.getStatusId())) {
             /*
-             * The status of the given task hasn't been changed.
+             * The status of the given task hasn't been changed. The most probable reason is that the new status was
+             * equal to the one already stored in the DB.
              * 
-             * "taskId" is not removed from the hash map, something strange is happened. If it's just a temporary
-             * failure of the DB then this is the correct behavior, because the status of the task can be set later. If
-             * this operation cannot be retried anymore (hoping in a successful result), then there's nothing we can do.
+             * "taskId" is not removed from the hash map.
              */
+            
+            log.debug("Task status has been left unchanged. TaskId=" + taskId + " requestedStatus=" + status);
+            
             return false;
         }
 

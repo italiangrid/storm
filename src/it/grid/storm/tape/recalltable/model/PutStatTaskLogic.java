@@ -38,8 +38,14 @@ public class PutStatTaskLogic {
 
             try {
 
-                taskId = rtCat.getTaskId(requestToken, localFile.getAbsolutePath());
-                rtCat.changeStatus(taskId, RecallTaskStatus.SUCCESS);
+                String pfn = localFile.getAbsolutePath();
+                
+                taskId = rtCat.getTaskId(requestToken, pfn);
+                boolean statusUpdated = rtCat.changeStatus(taskId, RecallTaskStatus.SUCCESS);
+                
+                if (statusUpdated) {
+                    log.info("Task status set to SUCCESS. taskId=" + taskId + " requestToken=" + requestToken + " pfn=" + pfn);
+                }
 
             } catch (DataAccessException e) {
                 if (taskId == -1) {
