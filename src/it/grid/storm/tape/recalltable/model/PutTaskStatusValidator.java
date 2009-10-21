@@ -13,16 +13,16 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutStatTaskValidator {
+public class PutTaskStatusValidator {
 
-    private static final Logger log = LoggerFactory.getLogger(PutStatTaskValidator.class);
+    private static final Logger log = LoggerFactory.getLogger(PutTaskStatusValidator.class);
 
     private String requestToken = null;
     private StoRI stori = null;
     private String inputString = null;
     private Response validationResponse = null;
 
-    public PutStatTaskValidator(String inputString) {
+    public PutTaskStatusValidator(String inputString) {
         this.inputString = inputString;
     }
 

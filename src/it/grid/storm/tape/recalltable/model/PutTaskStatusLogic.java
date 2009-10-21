@@ -12,9 +12,9 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutStatTaskLogic {
+public class PutTaskStatusLogic {
 
-    private static final Logger log = LoggerFactory.getLogger(PutStatTaskLogic.class);
+    private static final Logger log = LoggerFactory.getLogger(PutTaskStatusLogic.class);
 
     public static Response serveRequest(String requestToken, StoRI stori) throws RecallTableException {
 

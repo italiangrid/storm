@@ -8,8 +8,8 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
-import it.grid.storm.tape.recalltable.model.PutStatTaskLogic;
-import it.grid.storm.tape.recalltable.model.PutStatTaskValidator;
+import it.grid.storm.tape.recalltable.model.PutTaskStatusLogic;
+import it.grid.storm.tape.recalltable.model.PutTaskStatusValidator;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
@@ -64,20 +64,20 @@ public class TaskResource {
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putStatTask(InputStream input) throws RecallTableException {
+    public Response putTaskStatus(InputStream input) throws RecallTableException {
 
         String inputString = buildInputString(input);
 
         log.trace("putTaskStatus() - Input:" + inputString);
         
-        PutStatTaskValidator validator = new PutStatTaskValidator(inputString);
+        PutTaskStatusValidator validator = new PutTaskStatusValidator(inputString);
         
         if (!validator.validate()) {
             return validator.getResponse();
         }
         
         /* Business logic */
-        Response response = PutStatTaskLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+        Response response = PutTaskStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
 
         return response;
     }
