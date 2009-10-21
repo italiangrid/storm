@@ -26,7 +26,7 @@ public class EtcGroupReader {
     private static final Logger log = LoggerFactory.getLogger(EtcGroupReader.class);
     private HashSet<String> groups = null;
     private HashMap<String, Integer> groupId = null;
-    private final HashMap<Integer, String> groupName = null;
+    private HashMap<Integer, String> groupName = null;
     private static final EtcGroupReader instanceLinux = new EtcGroupReader();
     private EtcGroupReader instanceTest;
 
@@ -46,6 +46,7 @@ public class EtcGroupReader {
     private void init(String filename) {
         groups = new HashSet<String>();
         groupId = new HashMap<String, Integer>();
+        groupName = new HashMap<Integer, String>();
         try {
             BufferedReader in = new BufferedReader(new FileReader("/etc/group"));
             String str;
