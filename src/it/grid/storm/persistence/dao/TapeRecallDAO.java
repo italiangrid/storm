@@ -41,8 +41,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             throws DataAccessException;
 
     /**
-     * Method used to monitor the status of the Recall Table Return the number of tasks with the status =
-     * QUEUED or IN_PROGRESS
+     * Method used to monitor the status of the Recall Table Return the number of tasks with the status = QUEUED or
+     * IN_PROGRESS
      * 
      * @throws DataAccessException
      */
@@ -62,13 +62,14 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract RecallTaskTO getTask(int taskId) throws DataAccessException;
 
-    public abstract int getTaskId(String requestToken, String pfn)  throws DataAccessException;
-    
+    public abstract int getTaskId(String requestToken, String pfn) throws DataAccessException;
+
     public abstract int getTaskStatus(int taskId) throws DataAccessException;
 
     public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
 
-    public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
+    public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
+            throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
@@ -103,10 +104,11 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
         if (!setTaskStatusDBImpl(taskId, recallTaskStatus.getStatusId())) {
             /*
-             * "taskId" is not removed from the hash map, something strange is happened. If it's just a
-             * temporary failure of the DB then this is the correct behavior, because the status of the task
-             * can be set later. If this operation cannot be retried anymore (hoping in a successful result),
-             * then there's nothing we can do.
+             * The status of the given task hasn't been changed.
+             * 
+             * "taskId" is not removed from the hash map, something strange is happened. If it's just a temporary
+             * failure of the DB then this is the correct behavior, because the status of the task can be set later. If
+             * this operation cannot be retried anymore (hoping in a successful result), then there's nothing we can do.
              */
             return false;
         }
@@ -114,7 +116,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         if ((recallTaskStatus == RecallTaskStatus.IN_PROGRESS)
                 || (recallTaskStatus == RecallTaskStatus.QUEUED)) {
 
-            log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, taskId="
+            log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, doing it anyway. taskId="
                     + taskId);
             return true;
 
@@ -123,9 +125,12 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         SuspendedChunk chunk = chunkMap.remove(taskId);
 
         if (chunk == null) {
-            // Happens when the task is inserted with insertTask(RecallTaskTO task)
-            log.info("Set status with no internal data. taskId=\"" + taskId + "\" status="
-                    + recallTaskStatus.getStatusId());
+            /*
+             * Happens when the task is inserted with insertTask(RecallTaskTO task) or when the status of the same task
+             * has been set multiple times.
+             */
+            log.info("Task status has been set but no information found about PtG or BoL. taskId=\"" + taskId
+                    + "\" status=" + recallTaskStatus.getStatusId());
             return true;
         }
 
@@ -144,8 +149,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             throws DataAccessException;
 
     /**
-     * Method used to store an updated Task. If the task does not exits then a DataAccessException will be
-     * thrown.
+     * Method used to store an updated Task. If the task does not exits then a DataAccessException will be thrown.
      * 
      * @param task
      * @throws DataAccessException

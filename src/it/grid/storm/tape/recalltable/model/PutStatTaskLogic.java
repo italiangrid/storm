@@ -1,12 +1,8 @@
 package it.grid.storm.tape.recalltable.model;
 
 import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
 
@@ -16,25 +12,11 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutTaskStatLogic {
+public class PutStatTaskLogic {
 
-    private static final Logger log = LoggerFactory.getLogger(PutTaskStatLogic.class);
+    private static final Logger log = LoggerFactory.getLogger(PutStatTaskLogic.class);
 
-    public static Response serveRequest(String requestToken, String surlString) throws RecallTableException {
-
-        TSURL surl;
-        try {
-            surl = TSURL.makeFromString(surlString);
-        } catch (InvalidTSURLAttributesException e) {
-            return Response.status(400).build();
-        }
-
-        StoRI stori = null;
-        try {
-            stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-        } catch (NamespaceException e) {
-            return Response.status(400).build();
-        }
+    public static Response serveRequest(String requestToken, StoRI stori) throws RecallTableException {
 
         LocalFile localFile = stori.getLocalFile();
 

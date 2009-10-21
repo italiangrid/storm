@@ -8,7 +8,8 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
-import it.grid.storm.tape.recalltable.model.PutTaskStatLogic;
+import it.grid.storm.tape.recalltable.model.PutStatTaskLogic;
+import it.grid.storm.tape.recalltable.model.PutStatTaskValidator;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.StringTokenizer;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -64,36 +64,20 @@ public class TaskResource {
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putTaskStat(InputStream input) throws RecallTableException {
+    public Response putStatTask(InputStream input) throws RecallTableException {
 
         String inputString = buildInputString(input);
-        log.debug("putTaskStatus() - Input:" + inputString);
 
-        /* Parse and validate input */
-        StringTokenizer tokenizer = new StringTokenizer(inputString, "\n");
-        if (tokenizer.countTokens() != 2) {
-            log.debug("putTaskStatus() - input error");
-            return Response.status(400).build();
+        log.trace("putTaskStatus() - Input:" + inputString);
+        
+        PutStatTaskValidator validator = new PutStatTaskValidator(inputString);
+        
+        if (!validator.validate()) {
+            return validator.getResponse();
         }
-
-        String requestTokenInput = tokenizer.nextToken();
-        String surlInput = tokenizer.nextToken();
-
-        if ((!requestTokenInput.startsWith("requestToken=")) || (!surlInput.startsWith("surl="))) {
-            log.debug("putTaskStatus() - input error");
-            return Response.status(400).build();
-        }
-
-        String requestToken = requestTokenInput.substring(requestTokenInput.indexOf('=') + 1);
-        String surl = surlInput.substring(surlInput.indexOf('=') + 1);
-
-        if ((requestToken.length() == 0) || (surl.length() == 0)) {
-            log.debug("putTaskStatus() - input error");
-            return Response.status(400).build();
-        }
-
+        
         /* Business logic */
-        Response response = PutTaskStatLogic.serveRequest(requestToken, surl);
+        Response response = PutStatTaskLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
 
         return response;
     }

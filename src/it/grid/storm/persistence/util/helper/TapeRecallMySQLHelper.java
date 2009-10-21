@@ -56,21 +56,21 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryGetRequestToken(int taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
+        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
     public String getQueryGetRetryValue(int taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%s";
+        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
     public String getQueryGetTask(int taskId) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%s";
+        String queryFormat = "SELECT * FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, taskId);
     }
@@ -264,7 +264,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         }
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
-        String whereClauseFormat = " OR " + COL_TASK_ID + "=%s";
+        String whereClauseFormat = " OR " + COL_TASK_ID + "=%d";
 
         StringBuffer sb = new StringBuffer(String.format(queryFormat,
                                                          TABLE_NAME,
@@ -282,7 +282,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryTakeoverTaskUpdate(int taskId) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
+        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
 
         return String.format(queryFormat,
                              TABLE_NAME,
@@ -294,9 +294,9 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryUpdateTaskStatus(int taskId, int status) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
+        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d AND %s!=%d";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, taskId);
+        return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, taskId, COL_STATUS, status);
     }
 
     private String formatString(String s) {
