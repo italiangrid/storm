@@ -25,5 +25,5 @@ storm_libcutil: storm_libcutil.c
 #	gcc -shared -Wall -o $(DESTDIR)/libstorm_cutil.so -ldmapi $(BUILDDIR)/storm_dmutil.o $(BUILDDIR)/storm_libcutil.o
 
 lib: storm_libcutil
-	gcc -shared -Wall -o $(DESTDIR)/libstorm_cutil.so $(BUILDDIR)/storm_libcutil.o
+	gcc -shared -Wall -o $(DESTDIR)/libstorm_cutil.so $(BUILDDIR)/storm_libcutil.o -l gpfs
 
