@@ -1,9 +1,9 @@
 package it.grid.storm.asynch;
 
-import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkCatalog;
@@ -119,8 +119,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
      * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this chunk. If the supplied
      * attributes are null, an InvalidPtGChunkAttributesException is thrown.
      */
-    public PtGChunk(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData,
-            GlobalStatusManager gsm) throws InvalidPtGChunkAttributesException {
+    public PtGChunk(GridUserInterface gu, RequestSummaryData rsd, PtGChunkData chunkData, GlobalStatusManager gsm)
+            throws InvalidPtGChunkAttributesException {
         boolean ok = (gu != null) && (rsd != null) && (chunkData != null) && (gsm != null);
         if (!ok) {
             throw new InvalidPtGChunkAttributesException(gu, rsd, chunkData, gsm);
@@ -146,17 +146,16 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         if (recallStatus == RecallTaskStatus.SUCCESS) {
 
             if (bupLocalFile.isOnDisk()) {
-                
+
                 success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
-                
+
             } else {
 
-                log.error("File "
-                        + bupLocalFile.getAbsolutePath()
+                log.error("File " + bupLocalFile.getAbsolutePath()
                         + " not found on the disk, but it was reported to be successfully recalled from tape");
                 chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
                 success = false;
-                
+
             }
 
         } else if (recallStatus == RecallTaskStatus.ABORTED) {
@@ -176,8 +175,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         if (success) {
 
             gsm.successfulChunk(chunkData);
-            log.info("Completed PtG request (" + rsd.requestToken()
-                    + "), file successfully recalled from tape: " + chunkData.fromSURL().toString());
+            log.info("Completed PtG request (" + rsd.requestToken() + "), file successfully recalled from tape: "
+                    + chunkData.fromSURL().toString());
 
         } else {
             gsm.failedChunk(chunkData);
@@ -201,25 +200,20 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         } else {
             // proceed normally!
             try {
-                StoRI fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(),
-                                                                                      gu);
-                AuthorizationDecision ad = AuthorizationCollector.getInstance().canReadFile(gu, fileStoRI); // PolicyCollector
-                // decision
-                // on
-                // whether
-                // the StoRI
-                // has read
-                // rights
-                if (ad.isPermit()) {
+                StoRI fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(), gu);
+                // AuthorizationDecision ad = AuthorizationCollector.getInstance().canReadFile(gu, fileStoRI); //
+                // PolicyCollector
+
+                AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
+
+                if (ptgAuthz.equals(AuthzDecision.PERMIT)) {
                     manageIsPermit(fileStoRI);
-                } else if (ad.isDeny()) {
+                } else if (ptgAuthz.equals(AuthzDecision.DENY)) {
                     manageIsDeny();
-                } else if (ad.isIndeterminate()) {
-                    manageIsIndeterminate(ad);
-                } else if (ad.isNotApplicable()) {
-                    manageIsNotApplicabale(ad);
+                } else if (ptgAuthz.equals(AuthzDecision.INDETERMINATE)) {
+                    manageIsIndeterminate(ptgAuthz);
                 } else {
-                    manageUnexpected(ad);
+                    manageIsNotApplicabale(ptgAuthz);
                 }
             } catch (NamespaceException e) {
                 // The Supplied SURL does not contain a root that could be identified by the StoRI factory
@@ -245,9 +239,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 gsm.successfulChunk(chunkData); // update global status!!!
             }
         }
-        log.info("Finished handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
-                + chunkData.fromSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
-                + chunkData.status());
+        log.info("Finished handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: " + chunkData.fromSURL()
+                + "; for requestToken: " + rsd.requestToken() + "; result is: " + chunkData.status());
     }
 
     public ChunkData getChunkData() {
@@ -304,7 +297,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
      * Manager of the IsIndeterminate state: this state indicates that an error in the PolicySource occured and so the
      * policy Collector does not know what do to!
      */
-    private void manageIsIndeterminate(AuthorizationDecision ad) {
+    private void manageIsIndeterminate(AuthzDecision ad) {
         chunkData.changeStatusSRM_FAILURE("Failure in PolicySource prevented PolicyCollector from establishing access rights! Processing failed!");
         failure = true; // gsm.failedChunk(chunkData);
         log.error("ERROR in PtGChunk! PolicyCollector received an error from PolicySource!");
@@ -319,7 +312,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
      * Manager of the IsNotApplicable state: this state indicates that the PolicyCollector has not got any info on the
      * requested file, so it does not know what to answer.
      */
-    private void manageIsNotApplicabale(AuthorizationDecision ad) {
+    private void manageIsNotApplicabale(AuthzDecision ad) {
         chunkData.changeStatusSRM_FAILURE("No policies found for the requested SURL! Therefore access rights cannot be established! Processing cannot continue!");
         failure = true; // gsm.failedChunk(chunkData);
         log.warn("PtGChunk: PolicyCollector found no policy for the supplied SURL!"); // info
@@ -357,20 +350,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                     boolean canTraverse = managePermitTraverseStep(fileStoRI, localUser);
                     if (canTraverse) {
                         if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                            
+
                             // Compute the Expiration Time in seconds
                             long expDate = (System.currentTimeMillis() / 1000 + chunkData.getPinLifeTime().value());
                             StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-                    
+
                             // set group permission for tape quota management
                             fileStoRI.setGroupTapeRead();
                             chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                             if (localFile.isOnDisk()) {
-                                boolean canRead = managePermitReadFileStep(fileStoRI,
-                                                                           localFile,
-                                                                           localUser,
-                                                                           turl);
+                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
                                 if (!canRead) {
                                     // roll back Read, and Traverse
                                     // URGENT!
@@ -456,8 +446,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
     /**
      * Private method used to set Read Permission on existing file. Returns false if something goes wrong
      */
-    private boolean managePermitReadFileStep(StoRI fileStoRI, LocalFile localFile, LocalUser localUser,
-            TTURL turl) {
+    private boolean managePermitReadFileStep(StoRI fileStoRI, LocalFile localFile, LocalUser localUser, TTURL turl) {
 
         try {
             FilesystemPermission fp = null;
@@ -495,8 +484,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                                 + localFile.toString() + "!");
                     }
                 } else {
-                    log.error("ERROR in PTPChunk! Read FilesystemPermission was set on "
-                            + fileStoRI.getAbsolutePath() + " for group " + localUser.toString()
+                    log.error("ERROR in PTPChunk! Read FilesystemPermission was set on " + fileStoRI.getAbsolutePath()
+                            + " for group " + localUser.toString()
                             + " but when subsequently verifying its effectivity, a null ACE was found!");
                 }
             }
@@ -508,8 +497,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 // There are ACLs to set n file
                 List<ACLEntry> dacl_list = dacl.getACL();
                 for (ACLEntry ace : dacl_list) {
-                    PtGChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
-                            + " with permission: " + ace.getFilePermissionString());
+                    PtGChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
+                            + ace.getFilePermissionString());
                     LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
                     localFile.grantGroupPermission(u, ace.getFilesystemPermission());
                 }
@@ -562,8 +551,8 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
             // Could not establish size of File because Java SecurityManager threw a SecurityException!
             chunkData.changeStatusSRM_FAILURE("StoRM cannot interact with the filesystem to establish the file size!");
             failure = true; // gsm.failedChunk(chunkData);
-            log.error("ERROR in PtGChunk! Java SecurityManager did not allow establishing file size for "
-                    + localFile + "; exception: " + e);
+            log.error("ERROR in PtGChunk! Java SecurityManager did not allow establishing file size for " + localFile
+                    + "; exception: " + e);
             return false;
         } catch (Exception e) {
             // We are using a filesystem with ACLs in place. I do not know exactly how Java s File object behaves in
@@ -598,8 +587,9 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
             if (anomaly) {
                 // error situation!
                 // The parent directory either does not exist or is not a directory! The request should fail!
-                String srmString = "The requested SURL is: " + fileStoRI.getSURL().toString()
-                        + ", but its parent " + parentStoRI.getSURL().toString();
+                String srmString =
+                        "The requested SURL is: " + fileStoRI.getSURL().toString() + ", but its parent "
+                                + parentStoRI.getSURL().toString();
                 if (!exists) {
                     srmString = srmString + " does not exist!";
                 } else {
@@ -632,9 +622,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                             }
                         } else {
                             log.error("ERROR in PTPChunk! A Traverse User-ACL was set on "
-                                    + fileStoRI.getAbsolutePath()
-                                    + " for user "
-                                    + localUser.toString()
+                                    + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
                                     + " but when subsequently verifying its effectivity, a null ACE was found!");
                         }
                     } else {
@@ -649,9 +637,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                             }
                         } else {
                             log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
-                                    + fileStoRI.getAbsolutePath()
-                                    + " for user "
-                                    + localUser.toString()
+                                    + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
                                     + " but when subsequently verifying its effectivity, a null ACE was found!");
                         }
                     }
@@ -704,16 +690,4 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         return !anomaly;
     }
 
-    /**
-     * Manage unknown state of AuthorizationDecision! This happens if new states are added and this class is not
-     * updated!
-     */
-    private void manageUnexpected(AuthorizationDecision ad) {
-        chunkData.changeStatusSRM_FAILURE("Unexpected authorization state! Processing failed!");
-        failure = true; // gsm.failedChunk(chunkData);
-        log.error("UNEXPECTED ERROR in PtGChunk! The authorization state received from the PolicyCollector is unknown!");
-        log.error("Received state: " + ad);
-        log.error("Request: " + rsd.requestToken());
-        log.error("Requested SURL: " + chunkData.fromSURL());
-    }
 }

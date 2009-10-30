@@ -45,9 +45,9 @@ public class RecallTableService {
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put(PackagesResourceConfig.PROPERTY_PACKAGES, "it.grid.storm.tape.recalltable.resources");
 
-        System.out.print("Starting RecallTable Servive ... ");
+        log.info("Starting RecallTable Servive ... ");
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(BASE_URI, initParams);
-        System.out.println(" ... started!");
+        log.info(" ... started!");
         return threadSelector;
     }
 

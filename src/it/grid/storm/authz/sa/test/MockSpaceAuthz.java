@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 public class MockSpaceAuthz implements SpaceAuthzInterface {
 
+    private static final String MOCK_ID = "mock-space-authz";
     private final Logger log = AuthzDirector.getLogger();
 
     public MockSpaceAuthz() {
@@ -17,7 +18,7 @@ public class MockSpaceAuthz implements SpaceAuthzInterface {
 
     /**
      * authorize
-     *
+     * 
      * @param guser GridUserInterface
      * @param srmSpaceOp SRMSpaceRequest
      * @return boolean
@@ -28,20 +29,19 @@ public class MockSpaceAuthz implements SpaceAuthzInterface {
     }
 
     /**
-     * refreshAuthzDB
-     *
-     * @todo Implement this it.grid.storm.authz.SpaceAuthzInterface method
-     */
-    public void refreshAuthzDB() {
-        log.debug("MOCK Space Authz : Refresh DB : ;) ");
-    }
-
-    /**
      * setAuthzDB
-     *
+     * 
      * @param authzDB AuthzDBInterface
      */
     public void setAuthzDB(AuthzDBInterface authzDB) {
         log.debug("MOCK Space Authz : Set Authz DB :D ");
+    }
+
+    public void refresh() {
+        log.debug("MOCK Space Authz : Refresh DB : ;) ");
+    }
+
+    public String getSpaceAuthzID() {
+        return MOCK_ID;
     }
 }

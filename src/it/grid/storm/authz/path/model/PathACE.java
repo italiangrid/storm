@@ -7,6 +7,7 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
+import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -21,17 +22,15 @@ public class PathACE {
 
     private final Logger log = AuthzDirector.getLogger();
 
-    public static final String ALL_GROUPS = "@ALL@?|\\*";
-
-    private static final Pattern allGroupsPattern = Pattern.compile(ALL_GROUPS);
+    public static final String ALL_GROUPS_PATTERN = "@ALL@?|\\*";
+    public static final String ALL_GROUPS = "@ALL@";
+    private static final Pattern allGroupsPattern = Pattern.compile(ALL_GROUPS_PATTERN);
     public static final String FIELD_SEP = "\\s"; // * White space character **/
     private static final boolean PERMIT_ACE = true;
     public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
 
-    public static final PathACE PERMIT_ALL = new PathACE(PathACE.ALL_GROUPS,
-                                                         StFN.makeEmpty(),
-                                                         PathAccessMask.DEFAULT,
-                                                         PathACE.PERMIT_ACE);
+    public static final PathACE PERMIT_ALL =
+            new PathACE(PathACE.ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT, PathACE.PERMIT_ACE);
     public static final String COMMENT = "#";
 
     private String localGroupName;
@@ -45,10 +44,11 @@ public class PathACE {
      * Quite similar to clone
      */
     public static PathACE build(PathACE other) {
-        PathACE result = new PathACE(other.localGroupName,
-                                     other.getStorageFileName(),
-                                     other.getPathAccessMask(),
-                                     other.isPermitAce());
+        PathACE result =
+                new PathACE(other.localGroupName,
+                            other.getStorageFileName(),
+                            other.getPathAccessMask(),
+                            other.isPermitAce());
         return result;
     }
 
@@ -114,8 +114,18 @@ public class PathACE {
         return result;
     }
 
-    public void setLocalGroupName(String localGroup) {
-        localGroupName = localGroup;
+    public void setLocalGroupName(String localGroup) throws AuthzException {
+        // Check if the GroupName is a special case
+        Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroup);
+        if (allGroupsMatcher.matches()) {
+            localGroupName = PathACE.ALL_GROUPS;
+        }
+        // Check if the GroupName exists in the configuration
+        else if (EtcGroupReader.isGroupDefined(localGroup)) {
+            localGroupName = localGroup;
+        } else {
+            throw new AuthzException("The local group :'" + localGroup + "' is not defined");
+        }
     }
 
     public void setStorageFileName(StFN stfn) {
@@ -155,12 +165,12 @@ public class PathACE {
         Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
         if (allGroupsMatcher.matches()) {
             result = true;
-            log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
+            log.debug("ACE (" + toString() + ") matches with the requestor '" + subjectGroup + "'");
         } else if (localGroupName.equals(subjectGroup)) {
             result = true;
             log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
         }
-        log.debug("ACE.localGroupName=" + localGroupName + " matches with '" + subjectGroup + "' = " + result);
+        // log.debug("ACE.localGroupName=" + localGroupName + " matches with '" + subjectGroup + "' = " + result);
         return result;
     }
 

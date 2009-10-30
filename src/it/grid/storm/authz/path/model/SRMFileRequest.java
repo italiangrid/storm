@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author zappi
  */
-public class SRMFileRequest {
+public enum SRMFileRequest {
 
     /**
      * WRITE_FILE 'W' READ_FILE 'R' RENAME 'F' DELETE 'D' TRAVERSE_DIRECTORY 'T' LIST_DIRECTORY 'L' MAKE_DIRECTORY 'M'
@@ -18,96 +18,76 @@ public class SRMFileRequest {
      **/
 
     // Operations to SURL
-    public final static SRMFileRequest PTP_Overwrite = new SRMFileRequest("srmPrepareToPut-overwrite",
-                                                                          "PTP-Over",
-                                                                          new ArrayList<PathOperation>() {
-                                                                              {
-                                                                                  add(PathOperation.WRITE_FILE);
-                                                                              }
-                                                                          });
+    PTP_Overwrite("srmPrepareToPut-overwrite", "PTP-Over", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.WRITE_FILE);
+        }
+    }),
 
-    public final static SRMFileRequest PTP = new SRMFileRequest("srmPrepareToPut",
-                                                                "PTP",
-                                                                new ArrayList<PathOperation>() {
-                                                                    {
-                                                                        add(PathOperation.CREATE_FILE);
-                                                                        add(PathOperation.WRITE_FILE);
-                                                                    }
-                                                                });
+    PTP("srmPrepareToPut", "PTP", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.CREATE_FILE);
+            add(PathOperation.WRITE_FILE);
+        }
+    }),
 
-    public final static SRMFileRequest PTG = new SRMFileRequest("srmPrepareToGet",
-                                                                "PTG",
-                                                                new ArrayList<PathOperation>() {
-                                                                    {
-                                                                        add(PathOperation.READ_FILE);
-                                                                    }
-                                                                });
+    PTG("srmPrepareToGet", "PTG", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.READ_FILE);
+        }
+    }),
 
-    public final static SRMFileRequest CPto = new SRMFileRequest("srmCopy to",
-                                                                 "CPto",
-                                                                 new ArrayList<PathOperation>() {
-                                                                     {
-                                                                         add(PathOperation.WRITE_FILE);
-                                                                         add(PathOperation.CREATE_FILE);
-                                                                     }
-                                                                 });
+    CPto("srmCopy to", "CPto", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.WRITE_FILE);
+            add(PathOperation.CREATE_FILE);
+        }
+    }),
 
-    public final static SRMFileRequest CPfrom = new SRMFileRequest("srmCopy from",
-                                                                   "CPfrom",
-                                                                   new ArrayList<PathOperation>() {
-                                                                       {
-                                                                           add(PathOperation.READ_FILE);
-                                                                       }
-                                                                   });
+    CPfrom("srmCopy from", "CPfrom", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.READ_FILE);
+        }
+    }),
 
     // OVERLOAD with OP
-    public final static SRMFileRequest RM = new SRMFileRequest("srmRemove",
-                                                               "RM",
-                                                               new ArrayList<PathOperation>() {
-                                                                   {
-                                                                       add(PathOperation.DELETE);
-                                                                   }
-                                                               });
+    RM("srmRemove", "RM", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.DELETE);
+        }
+    }),
 
-    public final static SRMFileRequest RMD = new SRMFileRequest("srmRemoveDir",
-                                                                "RMD",
-                                                                new ArrayList<PathOperation>() {
-                                                                    {
-                                                                        add(PathOperation.DELETE);
-                                                                    }
-                                                                });
+    RMD("srmRemoveDir", "RMD", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.DELETE);
+        }
+    }),
 
-    public final static SRMFileRequest MD = new SRMFileRequest("srmMakeDir",
-                                                               "MD",
-                                                               new ArrayList<PathOperation>() {
-                                                                   {
-                                                                       add(PathOperation.MAKE_DIRECTORY);
-                                                                   }
-                                                               });
+    MD("srmMakeDir", "MD", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.MAKE_DIRECTORY);
+        }
+    }),
 
-    public final static SRMFileRequest LS = new SRMFileRequest("srmLS", "LS", new ArrayList<PathOperation>() {
+    LS("srmLS", "LS", new ArrayList<PathOperation>() {
         {
             add(PathOperation.LIST_DIRECTORY);
         }
+    }),
+
+    MV_source("srmMove-source", "MV-source", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.READ_FILE);
+            add(PathOperation.DELETE);
+        }
+    }),
+
+    MV_dest("srmMove-dest", "MV-dest", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.CREATE_FILE);
+            add(PathOperation.WRITE_FILE);
+        }
     });
-
-    public final static SRMFileRequest MV_source = new SRMFileRequest("srmMove-source",
-                                                                      "MV-source",
-                                                                      new ArrayList<PathOperation>() {
-                                                                          {
-                                                                              add(PathOperation.READ_FILE);
-                                                                              add(PathOperation.DELETE);
-                                                                          }
-                                                                      });
-
-    public final static SRMFileRequest MV_dest = new SRMFileRequest("srmMove-dest",
-                                                                    "MV-dest",
-                                                                    new ArrayList<PathOperation>() {
-                                                                        {
-                                                                            add(PathOperation.CREATE_FILE);
-                                                                            add(PathOperation.WRITE_FILE);
-                                                                        }
-                                                                    });
 
     private final String description;
     private final String srmOp;

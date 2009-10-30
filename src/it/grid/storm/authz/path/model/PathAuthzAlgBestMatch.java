@@ -14,8 +14,9 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * @author zappi
@@ -35,11 +36,21 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
      * @return List<PathACE> : the list contains all the ACE compatible with the requestor subject
      */
     private List<PathACE> getCompatibleACE(String subjectGroup) {
+        log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
         ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
-        for (PathACE pathACE : pathACL) {
-            if (pathACE.subjectMatch(subjectGroup)) {
-                compatibleACE.add(pathACE);
+        if ((pathACL != null) || (!(pathACL.isEmpty()))) {
+            for (PathACE pathACE : pathACL) {
+                if (pathACE.subjectMatch(subjectGroup)) {
+                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' match with subject='" + subjectGroup
+                            + "'");
+                    compatibleACE.add(pathACE);
+                } else {
+                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' DOESN'T match with subject='"
+                            + subjectGroup + "'");
+                }
             }
+        } else {
+            log.debug("<BestMatch>-compatibleACE: ACL db is empty");
         }
         return compatibleACE;
     }
@@ -49,7 +60,7 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
      * @param compatibleACE
      * @return null if there are not ACE.
      */
-    private List<PathACE> getOrderedACEs(StFN fileName, List<PathACE> compatibleACE) {
+    private List<OrderedACE> getOrderedACEs(StFN fileName, List<PathACE> compatibleACE) {
         ArrayList<OrderedACE> bestACEs = new ArrayList<OrderedACE>();
         int distance = 0;
         for (PathACE pathAce : compatibleACE) {
@@ -59,13 +70,9 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
             bestACEs.add(new OrderedACE(pathAce, distance));
 
         } // End of cycle
-        LinkedList<PathACE> result = new LinkedList<PathACE>();
-        if (!(bestACEs.isEmpty())) {
-            for (OrderedACE ordACE : bestACEs) {
-                result.add(PathACE.build(ordACE.ace));
-            }
-        }
-        return result;
+        // Sort the BestACE in base of distance
+        Collections.sort(bestACEs);
+        return bestACEs;
     }
 
     @Override
@@ -89,26 +96,36 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         }
 
         // Retrieve the best ACE within compatible ones.
-        List<PathACE> orderedACEs = getOrderedACEs(fileName, compACE);
+        List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
         log.debug("There are '" + orderedACEs.size() + "' ACEs regarding the subject '" + subject + "'");
+        // Print the ACE to evaluate
+        int count = 0;
+        for (OrderedACE oAce : orderedACEs) {
+            log.debug("ACE[" + count + "]=" + oAce.ace + " Distance:" + oAce.distance);
+            count++;
+        }
 
         // Retrieve the list of Path Operation needed to authorize the SRM request
         PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
         ArrayList<PathOperation> ops = new ArrayList<PathOperation>(requestedOps.getPathOperations());
-
+        log.trace("<Best-Match> Operation to authorize: " + ops);
         HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
 
+        String explanation = "Operations to authorize to '" + subject + "' are :" + ops + "\n";
         // Check iterativly every needed Path Operation
         for (PathOperation op : ops) {
-            for (PathACE ace : orderedACEs) {
-                if (ace.getPathAccessMask().containsPathOperation(op)) {
-                    if (ace.isPermitAce()) {
+            explanation += " op('" + op + "') is ";
+            for (OrderedACE oAce : orderedACEs) {
+                if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
+                    if (oAce.ace.isPermitAce()) {
                         // Path Operation is PERMIT
+                        explanation += "PERMIT, thanks to ACE: '" + oAce + "'\n";
                         log.trace("Path Operation '" + op + "' is PERMIT");
                         decision.put(op, AuthzDecision.PERMIT);
                         break;
                     } else {
                         // Path Operation is DENY
+                        explanation += "DENY, thanks to ACE: '" + oAce + "'\n";
                         log.trace("Path Operation '" + op + "' is DENY");
                         decision.put(op, AuthzDecision.DENY);
                         break;
@@ -121,7 +138,7 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         }
 
         // Print the decision
-        log.debug("Decision explanation : " + decision);
+        log.debug("Decision explanation : \n --------------" + explanation + "--------------");
 
         // Make the final results
         // - PERMIT if and only if ALL the permissions are PERMIT
@@ -138,7 +155,12 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
     }
 
-    private class OrderedACE implements Comparable {
+    // =========================================
+
+    /**
+     * @author ritz
+     */
+    private class OrderedACE implements Comparable<OrderedACE> {
 
         private final PathACE ace;
         private final int distance;
@@ -148,16 +170,16 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
             this.distance = distance;
         }
 
-        @Override
-        public int compareTo(Object other) {
+        // @Override
+        public int compareTo(OrderedACE other) {
             int result = -1;
-            if (other instanceof OrderedACE) {
-                OrderedACE otherACE = (OrderedACE) other;
-                if (distance < otherACE.distance) {
-                    result = -1;
-                } else if (distance == otherACE.distance) {
-                    result = 0;
-                }
+            OrderedACE otherACE = other;
+            if (distance < otherACE.distance) {
+                result = -1;
+            } else if (distance == otherACE.distance) {
+                result = 0;
+            } else {
+                result = 1;
             }
             return result;
         }
@@ -172,6 +194,11 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
                 }
             }
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + ace.toString() + "]  distance:" + distance;
         }
 
     }

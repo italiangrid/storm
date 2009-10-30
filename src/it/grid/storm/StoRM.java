@@ -81,9 +81,9 @@ public class StoRM {
         StoRM.log = LoggerFactory.getLogger(StoRM.class);
 
         //
-        StoRM.log.error(welcome.toString()); // log welcome string!
-        StoRM.log.debug(defaultConfig.toString()); // log default values!
-        StoRM.log.info("CurrentConfiguration:\n" + currentConfig.toString()); // log actually used values!
+        log.warn(welcome.toString()); // log welcome string!
+        log.debug(defaultConfig.toString()); // log default values!
+        log.info("CurrentConfiguration:\n" + currentConfig.toString()); // log actually used values!
 
         // Force the loadind and the parsing of Namespace configuration
         boolean verboseMode = false; // true generates verbose logging
@@ -92,6 +92,10 @@ public class StoRM {
 
         // Hearthbeat
         HealthDirector.initializeDirector(false);
+
+        // Path Authz Initialization
+        String pathAuthzDBFileName = configurationDir + "path-authz.db";
+        Bootstrap.initializePathAuthz(pathAuthzDBFileName);
 
         /**
          * RESTFul Service Start-up
@@ -195,9 +199,9 @@ public class StoRM {
         };
 
         long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay time before starting
-                                                                                   // cleaning thread! Set to 1 minute
+        // cleaning thread! Set to 1 minute
         long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period of execution of cleaning!
-                                                                                    // Set to 1 hour
+        // Set to 1 hour
 
         GC.scheduleAtFixedRate(cleaningTask, delay, period);
 

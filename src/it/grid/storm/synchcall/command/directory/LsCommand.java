@@ -1,7 +1,8 @@
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
@@ -101,10 +102,8 @@ public class LsCommand extends DirectoryCommand implements Command {
         if ((inputData == null) || ((inputData != null) && (inputData.getSurlArray() == null))) {
             log.debug("srmLs: Input parameters for srmLs request NOT found!");
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                 "Invalid input parameters specified");
-                log.error("srmLs: <> Request for [SURL:] failed with: [status:" + globalStatus.toString()
-                        + "]");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
+                log.error("srmLs: <> Request for [SURL:] failed with: [status:" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown.
                 log.error("srmLs: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
@@ -120,10 +119,9 @@ public class LsCommand extends DirectoryCommand implements Command {
         if (guser == null) {
             log.debug("srmLs: Unable to get user credential. ");
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                                                 "Unable to get user credential!");
-                log.error("srmLs: <> Request for [SURL:] failed with: [status" + globalStatus.toString()
-                        + "]");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
+                log.error("srmLs: <> Request for [SURL:] failed with: [status" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown.
                 log.error("srmLs: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
@@ -152,8 +150,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                     + "> Request for [SURL:] failed since not supported filtering by FileStorageType:"
                     + fileStorageType.toString());
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
-                                                 "Filtering result by fileStorageType not supported.");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
+                                          "Filtering result by fileStorageType not supported.");
                 log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] failed with [status" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
@@ -189,8 +188,8 @@ public class LsCommand extends DirectoryCommand implements Command {
             numOfLevels = inputData.getNumOfLevels().intValue();
             if (numOfLevels < 0) {
                 try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                     "Parameter 'numOfLevels' is negative");
+                    globalStatus =
+                            new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'numOfLevels' is negative");
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
@@ -213,8 +212,9 @@ public class LsCommand extends DirectoryCommand implements Command {
             count = inputData.getCount().intValue();
             if (count < 0) {
                 try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                     "Parameter 'count' is less or equal zero");
+                    globalStatus =
+                            new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                              "Parameter 'count' is less or equal zero");
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException e) {
@@ -238,8 +238,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             offset = inputData.getOffset().intValue();
             if (offset < 0) {
                 try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                     "Parameter 'offset' is negative");
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'offset' is negative");
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
@@ -289,49 +288,50 @@ public class LsCommand extends DirectoryCommand implements Command {
                     fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
                     fileLevelExplanation = "Invalid path";
                     log.info("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
-                            + "] failed with [status:" + fileLevelStatusCode + " : " + fileLevelExplanation
-                            + " ]");
+                            + "] failed with [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + " ]");
                 }
             } else {
                 log.debug("srmLs: SURL not specified as input parameter!");
                 failure = true;
                 fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
                 fileLevelExplanation = "Invalid path";
-                log.info("srmLs: <" + guser + "> Listing on SURL [SURL:] failed with [status:"
-                        + fileLevelStatusCode + " : " + fileLevelExplanation + " ]");
+                log.info("srmLs: <" + guser + "> Listing on SURL [SURL:] failed with [status:" + fileLevelStatusCode
+                        + " : " + fileLevelExplanation + " ]");
             }
 
             // Check for authorization and execute Ls.
             if (!failure) {
 
-                AuthorizationDecision lsAuth = AuthorizationCollector.getInstance().canListDirectory(guser,
-                                                                                                     stori);
+                // AuthorizationDecision lsAuth = AuthorizationCollector.getInstance().canListDirectory(guser, stori);
+                /**
+                 * 1.5.0 Path Authorization
+                 */
+                AuthzDecision lsAuthz = AuthzDirector.getPathAuthz().authorize(guser, SRMFileRequest.LS, stori);
 
-                if (lsAuth.isPermit()) {
-                    log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN()
-                            + "]");
+                if (lsAuthz.equals(AuthzDecision.PERMIT)) {
+                    log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN() + "]");
 
                     // At this point starts the recursive call
-                    errorCount += manageAuthorizedLS(guser,
-                                                     stori,
-                                                     details,
-                                                     fileStorageType,
-                                                     allLevelRecursive,
-                                                     numOfLevels,
-                                                     fullDetailedList,
-                                                     errorCount,
-                                                     maxEntries,
-                                                     offset,
-                                                     numberOfReturnedEntries,
-                                                     0,
-                                                     numberOfIterations);
+                    errorCount +=
+                            manageAuthorizedLS(guser,
+                                               stori,
+                                               details,
+                                               fileStorageType,
+                                               allLevelRecursive,
+                                               numOfLevels,
+                                               fullDetailedList,
+                                               errorCount,
+                                               maxEntries,
+                                               offset,
+                                               numberOfReturnedEntries,
+                                               0,
+                                               numberOfIterations);
 
                 } else {
                     fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
                     fileLevelExplanation = "User does not have valid permissions";
                     log.info("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
-                            + "] failed with: [status:" + fileLevelStatusCode + " : " + fileLevelExplanation
-                            + "]");
+                            + "] failed with: [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + "]");
                     failure = true;
                 }
             }
@@ -340,8 +340,8 @@ public class LsCommand extends DirectoryCommand implements Command {
                 TReturnStatus status = null;
                 try {
                     status = new TReturnStatus(fileLevelStatusCode, fileLevelExplanation);
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString()
-                            + "] failed with [status" + status.toString() + "]");
+                    log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString() + "] failed with [status"
+                            + status.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString()
                             + "] failed. Error creating returnStatus " + ex1);
@@ -362,8 +362,9 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         if (details.size() == 0) {
             try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                 "The offset is grater than the number of results");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                          "The offset is grater than the number of results");
             } catch (InvalidTReturnStatusAttributeException e) {
                 // Never thrown
             }
@@ -377,9 +378,9 @@ public class LsCommand extends DirectoryCommand implements Command {
         if (numberOfReturnedEntries.intValue() >= maxEntries) {
             if (maxEntries < count) {
                 try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
-                                                     "Max returned entries is: "
-                                                             + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
+                    globalStatus =
+                            new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS, "Max returned entries is: "
+                                    + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
                 } catch (InvalidTReturnStatusAttributeException e) {
                     // Never thrown
                 }
@@ -399,31 +400,34 @@ public class LsCommand extends DirectoryCommand implements Command {
             String warningMessage = "";
 
             if ((numOfLevels > 0) && atLeastOneInputSURLIsDir && coutOrOffsetAreSpecified) {
-                warningMessage = "WARNING: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
-                        + "may result in inconsistent results among different srmLs requests. ";
+                warningMessage =
+                        "WARNING: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
+                                + "may result in inconsistent results among different srmLs requests. ";
             }
 
             if (errorCount == 0) {
 
-                globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, warningMessage
-                        + "All requests successfully completed");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_SUCCESS, warningMessage
+                                + "All requests successfully completed");
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] successfully done with [status:" + globalStatus.toString() + "]");
 
             } else if (errorCount < surlArray.size()) {
 
-                globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage
-                        + "Check file statuses for details");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage
+                                + "Check file statuses for details");
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] partially done with [status:" + globalStatus.toString() + "]");
 
             } else {
-                
+
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
                 log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] failed with [status:" + globalStatus.toString() + "]");
             }
-            
+
         } catch (InvalidTReturnStatusAttributeException e) {
             // Nothing to do, it will never be thrown.
             log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
@@ -454,10 +458,10 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @return number of errors
      */
 
-    private int manageAuthorizedLS(GridUserInterface guser, StoRI stori,
-            ArrayOfTMetaDataPathDetail rootArray, TFileStorageType type, boolean allLevelRecursive,
-            int numOfLevels, boolean fullDetailedList, int errorCount, int count_maxEntries, int offset,
-            MutableInt numberOfResults, int currentLevel, MutableInt numberOfIterations) {
+    private int manageAuthorizedLS(GridUserInterface guser, StoRI stori, ArrayOfTMetaDataPathDetail rootArray,
+            TFileStorageType type, boolean allLevelRecursive, int numOfLevels, boolean fullDetailedList,
+            int errorCount, int count_maxEntries, int offset, MutableInt numberOfResults, int currentLevel,
+            MutableInt numberOfIterations) {
 
         /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
@@ -691,10 +695,12 @@ public class LsCommand extends DirectoryCommand implements Command {
                 permission = localElement.getGroupPermission(guser.getLocalUser());
             }
             if (permission != null) {
-                userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()),
-                                                     TPermissionMode.getTPermissionMode(permission));
-                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()),
-                                                       TPermissionMode.getTPermissionMode(permission));
+                userPermission =
+                        new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()),
+                                            TPermissionMode.getTPermissionMode(permission));
+                groupPermission =
+                        new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()),
+                                             TPermissionMode.getTPermissionMode(permission));
                 otherPermission = TPermissionMode.getTPermissionMode(permission);
             }
         } catch (CannotMapUserException e1) {
@@ -816,8 +822,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 } else {
                     // Checksum is not available
                     // so StoRM doesn't set the attributes checkSumType and checkSumValue
-                    log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath()
-                            + "'");
+                    log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath() + "'");
                 }
             }
             // Retrieve information on directory from PERSISTENCE
@@ -848,8 +853,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     } else {
                         retrieveChecksum = true;
                         doNotComputeMoreChecksums = true;
-                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
-                                + "'");
+                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
                     }
                 } else {
 
