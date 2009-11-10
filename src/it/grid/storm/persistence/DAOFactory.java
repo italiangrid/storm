@@ -12,7 +12,6 @@ import it.grid.storm.persistence.dao.PtGChunkDAO;
 import it.grid.storm.persistence.dao.PtPChunkDAO;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
 import it.grid.storm.persistence.dao.StorageAreaDAO;
-import it.grid.storm.persistence.dao.StorageFileDAO;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -26,8 +25,7 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 public interface DAOFactory {
 
     /**
-     * Returns an implementation of StorageSpaceCatalog, specific to a
-     * particular datastore.
+     * Returns an implementation of StorageSpaceCatalog, specific to a particular datastore.
      * 
      * @throws DataAccessException
      * @return StorageSpaceDAO
@@ -37,8 +35,6 @@ public interface DAOFactory {
     public TapeRecallDAO getTapeRecallDAO() throws DataAccessException;
 
     public TapeRecallDAO getTapeRecallDAO(boolean test) throws DataAccessException;
-
-    public StorageFileDAO getStorageFileDAO() throws DataAccessException;
 
     public PermissionDAO getPermissionDAO() throws DataAccessException;
 
@@ -53,7 +49,6 @@ public interface DAOFactory {
     public RequestSummaryDAO getRequestSummaryDAO() throws DataAccessException;
 
     /**
-     * public PendingRequestDAO getPendingRequestDAO() throws
-     * DataAccessException;
+     * public PendingRequestDAO getPendingRequestDAO() throws DataAccessException;
      **/
 }

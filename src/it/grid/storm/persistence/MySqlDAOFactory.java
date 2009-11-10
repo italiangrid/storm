@@ -7,12 +7,10 @@ import it.grid.storm.persistence.dao.PtGChunkDAO;
 import it.grid.storm.persistence.dao.PtPChunkDAO;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
 import it.grid.storm.persistence.dao.StorageAreaDAO;
-import it.grid.storm.persistence.dao.StorageFileDAO;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.exceptions.PersistenceException;
-import it.grid.storm.persistence.impl.mysql.StorageFileDAOMySql;
 import it.grid.storm.persistence.impl.mysql.StorageSpaceDAOMySql;
 import it.grid.storm.persistence.impl.mysql.TapeRecallDAOMySql;
 import it.grid.storm.persistence.util.db.DBConnection;
@@ -76,19 +74,7 @@ public class MySqlDAOFactory implements DAOFactory {
     }
 
     /**
-     * getStorageFileDAO
-     * 
-     * @return StorageFileDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public StorageFileDAO getStorageFileDAO() throws DataAccessException {
-        return new StorageFileDAOMySql();
-    }
-
-    /**
-     * Returns an implementation of StorageSpaceCatalog, specific to a
-     * particular datastore.
+     * Returns an implementation of StorageSpaceCatalog, specific to a particular datastore.
      * 
      * @throws DataAccessException
      * @return StorageSpaceDAO
@@ -99,8 +85,7 @@ public class MySqlDAOFactory implements DAOFactory {
     }
 
     /**
-     * Returns an implementation of TapeRecallCatalog, specific to a particular
-     * datastore.
+     * Returns an implementation of TapeRecallCatalog, specific to a particular datastore.
      * 
      * @throws DataAccessException
      * @return TapeReallDAO
@@ -111,7 +96,6 @@ public class MySqlDAOFactory implements DAOFactory {
     }
 
     /**
-     * 
      * @return String
      */
     @Override
