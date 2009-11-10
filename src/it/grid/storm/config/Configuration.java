@@ -1419,22 +1419,6 @@ public class Configuration {
     }
 
     /**
-     * Method used by the ECARAuthorizationSource to establish which ECAR end point to use. If no value is found in the
-     * configuration medium, then the default one is used instead. key="ecar.sea"; default
-     * value="https://egrid-2.egrid.it:8859"
-     */
-    public String getECARServiceEndPoint() {
-        String key = "ecar.sea";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "https://egrid-2.egrid.it:8859";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
      * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
      * default one is used instead. key="fe.port"; default value="8444"
      */

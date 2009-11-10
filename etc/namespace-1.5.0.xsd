@@ -316,7 +316,6 @@
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="permit-all"/>
 			<xs:enumeration value="deny-all"/>
-			<xs:enumeration value="file-catalog-ecar"/>
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
