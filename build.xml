@@ -354,13 +354,7 @@ test.junit.dir
 	<include name="xmlrpc-common-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
     <include name="ws-commons-util-1.0.1.jar"/> <!-- PART of XML-RPC 3.0 -->
 	<include name="xsdlib.jar"/>
-    <include name="ECARClient.jar"/>
-
-    <!-- <include name="jline-0.9.9.jar"/> --> <!-- Used for Console feature (NS-Admin) -->
-    <!-- <include name="QuickServer.jar"/> --> <!-- Administration Server -->
-    <!-- <include name="QSAdminGUI.jar"/> --> <!-- Administration Server GUI -->
-
-  	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
+ 	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
   	<include name="dim-18.r2.jar"/>
   	
   	<include name="logback-classic-0.9.15.jar"/> <!-- New LOGGING system -->
