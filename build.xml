@@ -336,7 +336,6 @@ test.junit.dir
 	<include name="dom.jar"/>
 	<!-- <include name="ehcache-0.9.jar"/> -->
 	<!-- <include name="hibernate-2.1.6.jar"/> -->
-	<!-- <include name="hsqldb.jar"/> -->
     <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
 	<include name="jaxrpc.jar"/>
     <include name="jce-jdk13-131.jar"/>
