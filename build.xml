@@ -331,7 +331,7 @@ test.junit.dir
 	<include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
  	<include name="cryptix32.jar"/>
 	<include name="cryptix-asn1.jar"/>
-	<include name="cryptix.jar"/>
+	<!--<include name="cryptix.jar"/>  Old jar, out-of-date by cryptix32.jar -->
 	<include name="dom4j-1.4.jar"/>
 	<include name="dom.jar"/>
 	<!-- <include name="ehcache-0.9.jar"/> -->
@@ -467,20 +467,6 @@ test.junit.dir
   </target>
 
 
-  <!-- preprocess source files -->
-  <target name="preprocess">
-	<!--
-	  it's faster to rebuild this file each time than checking for
-	  up-to-date-ness...
-	-->
-    <exec executable="cpp"
-        input="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.jappo"
-        output="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.java"
-        logError="true">
-      <arg line="-P -C"/>
-    </exec>
-  </target>
-
   <!-- make c libs used by JNA -->
   <target name="clibs-jna" depends="init,libs.dmutil"/>
 
@@ -576,7 +562,7 @@ test.junit.dir
 	depends="libs.lcmaps,libs.filesystem, clibs-jna"/>
 
   <target name="precompile"
-	depends="init,preprocess,swig"/>
+	depends="init,swig"/>
 
   <!-- compile the .java source files -->
   <target name="javac"
@@ -587,7 +573,7 @@ test.junit.dir
       destdir="${build.classes.dir}"
       debug="true"
       deprecation="true"
-      source="1.5"
+      source="1.6"
       target="1.5">
 	  <!-- Javac needs a *directory* as argument... -->
 	  <!-- <src path="${src.java.dir}/it/grid/storm/"/> -->
@@ -913,7 +899,7 @@ test.junit.dir
       destdir="${test.junit.dir}"
       debug="true"
       deprecation="true"
-      source="1.4"
+      source="1.6"
       target="1.5"
       sourcepath="${src.java.dir}">
 	  <!-- Javac needs a *directory* as argument... -->
