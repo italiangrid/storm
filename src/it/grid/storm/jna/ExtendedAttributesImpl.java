@@ -11,13 +11,13 @@ import com.sun.jna.Native;
 
 public class ExtendedAttributesImpl implements ExtendedAttributes {
 
-    public interface DMAPILibrary extends Library {
+    /* Functions implemented by libattr */
+    private interface DMAPILibrary extends Library {
+        
         DMAPILibrary INSTANCE = (DMAPILibrary) Native.loadLibrary(("attr"), DMAPILibrary.class);
 
         int getxattr(String fileName, String attributeName, byte[] bufp, int bufpsize);
-
         int removexattr(String fileName, String attributeName);
-        
         int setxattr(String fileName, String attributeName, byte[] bufp, int bufpSize, int flags);
 
     }
