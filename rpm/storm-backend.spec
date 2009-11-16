@@ -13,8 +13,8 @@
 ### Package Naming 
 
 Name: storm-backend
-Version: 1.4.1
-Release: 00.sl4
+Version: 1.5.0
+Release: rc1.sl4
 Summary: The StoRM BackEnd component.
 Copyright:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
