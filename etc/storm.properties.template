@@ -97,9 +97,5 @@ checksum.enabled=false
 # note: the value must be separated by comma ','.
 #checksum.serviceURL=
 
-# The queue of checksum represents the max number of simultaneous checksum computation.
-# The number should be balanced in respect of the number of external checksum agent.
-#checksum.queueSize=30
-
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
 #checksum.algorithm=CRC32 

@@ -2039,18 +2039,6 @@ public class Configuration {
         return urlArray;
     }
 
-    public int getChecksumQueueSize() {
-
-        String key = "checksum.queueSize";
-
-        if (cr.getConfiguration().containsKey(key)) {
-
-            return cr.getConfiguration().getInt(key);
-        }
-
-        return 100;
-    }
-
     public String getChecksumAlgorithm() {
 
         String key = "checksum.algorithm";
