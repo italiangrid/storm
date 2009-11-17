@@ -89,6 +89,7 @@ separately in the ``storm-backend-jars`` package.
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
 %config(noreplace) %{prefix}/etc/storm.properties.template
+%config(noreplace) %{prefix}/etc/path-authz.db.template
 %config(noreplace) %{prefix}/etc/namespace.xml
 %{prefix}/lib/storm-backend/libgpfsapi_interface.so
 %{prefix}/lib/storm-backend/storm-backend.jar
@@ -103,7 +104,7 @@ separately in the ``storm-backend-jars`` package.
 
 %config(noreplace) %{prefix}/sbin/storm-backend-configure
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
-%config(noreplace) /etc/init.d/storm-backend
+%config /etc/init.d/storm-backend
 
 # Temp solution... find another way to make the directories readable by the
 # user running StoRM... i.e. the user may not be "storm"
