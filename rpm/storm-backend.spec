@@ -16,7 +16,7 @@ Name: storm-backend
 Version: 1.5.0
 Release: rc1.sl4
 Summary: The StoRM BackEnd component.
-Copyright:  Apache License, Version 2.0. See included file LICENSE.txt
+License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
 Vendor: INFN - CNAF (2009)
 Group: Application/Generic
@@ -102,7 +102,6 @@ separately in the ``storm-backend-jars`` package.
 %defattr(755,root,root)
 
 %config(noreplace) %{prefix}/sbin/storm-backend-configure
-#%config(noreplace) %{prefix}/etc/init.d/storm-backend
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
 %config(noreplace) /etc/init.d/storm-backend
 
@@ -140,13 +139,10 @@ StoRM BackEnd server.
 %files jars
 %defattr(-,root,root)
 
-%{prefix}/lib/storm-backend/jar/odmg-3.0.jar
 %{prefix}/lib/storm-backend/jar/commons-codec-1.3.jar
-%{prefix}/lib/storm-backend/jar/c3p0-0.8.4.5.jar
 %{prefix}/lib/storm-backend/jar/saaj.jar
 %{prefix}/lib/storm-backend/jar/xmlrpc-server-3.0.jar
 %{prefix}/lib/storm-backend/jar/dom.jar
-%{prefix}/lib/storm-backend/jar/cryptix.jar
 %{prefix}/lib/storm-backend/jar/activation.jar
 %{prefix}/lib/storm-backend/jar/wsdl4j-1.5.1.jar
 %{prefix}/lib/storm-backend/jar/cog-jglobus.jar
@@ -160,7 +156,6 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/dim-18.r2.jar
 %{prefix}/lib/storm-backend/jar/xml-apis.jar
 %{prefix}/lib/storm-backend/jar/xmlrpc-common-3.0.jar
-%{prefix}/lib/storm-backend/jar/xsdlib.jar
 %{prefix}/lib/storm-backend/jar/mail.jar
 %{prefix}/lib/storm-backend/jar/cryptix-asn1.jar
 %{prefix}/lib/storm-backend/jar/axis.jar
@@ -172,7 +167,6 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/commons-validator-1.3.0.jar
 %{prefix}/lib/storm-backend/jar/cog-axis.jar
 %{prefix}/lib/storm-backend/jar/commons-beanutils.jar
-%{prefix}/lib/storm-backend/jar/ECARClient.jar
 %{prefix}/lib/storm-backend/jar/jce-jdk13-131.jar
 %{prefix}/lib/storm-backend/jar/xercesImpl.jar
 %{prefix}/lib/storm-backend/jar/srm22client.jar
@@ -188,25 +182,28 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/commons-discovery-0.2.jar
 %{prefix}/lib/storm-backend/jar/cog-jobmanager.jar
 %{prefix}/lib/storm-backend/jar/jakarta-oro-2.0.8.jar
-%{prefix}/lib/storm-backend/jar/dom4j-1.4.jar
 %{prefix}/lib/storm-backend/jar/asm-3.1.jar
 %{prefix}/lib/storm-backend/jar/grizzly-webserver-1.9.15b.jar
 %{prefix}/lib/storm-backend/jar/jersey-core-1.1.0-ea.jar
 %{prefix}/lib/storm-backend/jar/jersey-server-1.1.0-ea.jar
 %{prefix}/lib/storm-backend/jar/jna.jar
 %{prefix}/lib/storm-backend/jar/jsr311-api-1.1.jar
+%{prefix}/lib/storm-backend/jar/json-20080701.jar
 
-%{prefix}/doc/ehcache-0.9.LICENSE
 %{prefix}/doc/apache2.LICENSE
 %{prefix}/doc/puretls.LICENSE
 %{prefix}/doc/junit.LICENSE
 %{prefix}/doc/bouncycastle.LICENSE
 %{prefix}/doc/commons-logging.LICENSE
 %{prefix}/doc/cog.LICENSE
-%{prefix}/doc/dom4j.LICENSE
-%{prefix}/doc/cglib-full-2.0.1.LICENSE
 %{prefix}/doc/cryptix.LICENSE
 %{prefix}/doc/ACKNOWLEDGEMENTS.txt
+%{prefix}/doc/RESTful-RecallTable.txt
+%{prefix}/doc/RecallTable-RESTful-URIDesign.pdf
+%{prefix}/doc/codetemplates-1.0..xml
+%{prefix}/doc/request-to-garbage.qbquery
+%{prefix}/doc/space-token-acls-03062008.pdf
+%{prefix}/doc/storm-code-formatter-2.0.xml
 
 #%files jars -f ../filelist.jars.%{name}
 #%defattr(-,root,root)
