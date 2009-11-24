@@ -761,38 +761,6 @@ public class Configuration {
     }
 
     /**
-     * Method used in space reservation component to get the port number for SpaceReservationSocketServer. If no value
-     * is found in the configuration medium, then the default value is returned instead. key="synchcall.spaceres.port";
-     * default value=5544;
-     */
-    public int getSpaceResSocketPORT() {
-        String key = "synchcall.spaceres.port";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 5544;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
-        }
-    }
-
-    /**
-     * Method used in space reservation component to get the port number for the GetSpaceMetaDataSocketServer method. If
-     * no value is found in the configuration medium, then the default value is returned instead.
-     * key="synchcall.getspace.port"; default value=5545;
-     */
-    public int getGetSpaceSocketPORT() {
-        String key = "synchcall.getspace.port";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 5545;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
-        }
-    }
-
-    /**
      * Method used in Persistence Component It returns the DB vendor name. If no value is found in the configuration
      * medium, then the default value is returned instead. key="persistence.db.vendor"; default value="mysql";
      */
@@ -932,22 +900,6 @@ public class Configuration {
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 8080;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
-        }
-    }
-
-    /**
-     * Method used by the Synch Component to set the binding port for the _secure_ xmlrpc server in the BE. If no value
-     * is found in the configuration medium, then the default value is returned instead.
-     * key="synchcall.xmlrpc.secureServerPort"; default value=8089;
-     */
-    public int getSecureXmlRpcServerPort() {
-        String key = "synchcall.xmlrpc.secureServerPort";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 8089;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(key);
@@ -1727,67 +1679,6 @@ public class Configuration {
     }
 
     /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
-     * configuration medium, then the default one is used instead. key="health.electrocardiogram.filename";
-     */
-    public String getHealthElectrocardiogramFile() {
-        String key = "health.electrocardiogram.filename";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "./var/log/hearthbeat.log";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
-     * configuration medium, then the default one is used instead. key="health.bookkeeping.filename";
-     */
-    public String getBookKeepingLogFile() {
-        String key = "health.bookkeeping.log.filename";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "./var/log/bookkeeping.log";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * Method used by HEALTH component to retrieve the LOG4j Properties File Name If no value is found in the
-     * configuration medium, then the default one is used instead. key="health.performance.log.filename";
-     */
-    public String getPerformanceMonitoringLogFile() {
-        String key = "health.performance.log.filename";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "./var/log/performance.log";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between successive purging
-     * checks. If no value is found in the configuration medium, then the default one is used instead.
-     * key="health.performance.log.verbosity"; default value=1 (0..3)
-     */
-    public int getPerformanceLogVerbosity() {
-        String key = "health.performance.log.verbosity";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 1;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
-        }
-    }
-
-    /**
      * If no value is found in the configuration medium, then the default one is used instead.
      * key="health.electrocardiogram.period"; default value=60 (1 min)
      */
@@ -1950,8 +1841,8 @@ public class Configuration {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         try {
-            Class c = Configuration.instance.getClass(); // This class!!!
-            Method m[] = c.getDeclaredMethods();
+            // This class methods!!!
+            Method m[] = Configuration.instance.getClass().getDeclaredMethods();
 
             Object aux = null;
             for (int i = 0; i < m.length; i++) {
