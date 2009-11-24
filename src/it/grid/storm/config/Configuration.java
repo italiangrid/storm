@@ -674,13 +674,6 @@ public class Configuration {
      */
     public String getConfigurationDir() {
         return cr.configurationDirectory();
-        /*
-         * String key = "storm.configuration.dir"; String dirValue = ""; if (!cr.getConfiguration().containsKey(key)) {
-         * //default dirValue = "/home/storm/config"; } else { //load from external source dirValue =
-         * cr.getConfiguration().getString(key); } // String config = dirValue;
-         * if(!config_file.endsWith(java.io.File.separator)) //original: if(!config.endsWith("/")) config = config +
-         * java.io.File.separator; return config;
-         */
     }
 
     /**
@@ -1595,8 +1588,8 @@ public class Configuration {
     public long getExpiredRequestTime() {
         String key = "expired.request.time";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 7 * 24 * 60 * 60;
+            // 7 * 24 * 60 * 60
+            return 604800;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(key);
