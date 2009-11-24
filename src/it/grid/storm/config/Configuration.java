@@ -467,26 +467,19 @@ public class Configuration {
      * 
      * @return
      */
-    public List getListOfDefaultSpaceToken() {
+    public List<String> getListOfDefaultSpaceToken() {
         String key = "storm.service.defaultSpaceTokens";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return new ArrayList();
+        
+        if (cr.getConfiguration().containsKey(key)) {
+            
+            String[] namesArray = cr.getConfiguration().getStringArray(key);
+            if (namesArray == null) {
+                return new ArrayList<String>();
+            }
+            return Arrays.asList(namesArray);
+            
         } else {
-            // load from external source
-            // String[] names = cr.getConfiguration().getString(key).split(",");
-            // //split around commas!
-            List names = cr.getConfiguration().getList(key); // split around
-            // commas!
-
-            // for (int i=0; i<names.size(); i++) {
-            // names[i] = names[i].trim().toLowerCase(); //for each bit remove
-            // leading and trailing spaces! And make it lower case!
-            // System.out.println("Default space token:"+names.get(i));
-            // }
-
-            // return Arrays.asList(names);
-            return names;
+            return new ArrayList<String>();
         }
     }
 
@@ -533,32 +526,15 @@ public class Configuration {
      */
     public List<String> getListOfMachineNames() {
         String key = "storm.machinenames";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return Arrays.asList(new String[] { "testbed006.cnaf.infn.it" });
-        } else {
-            // load from external source
-            // String[] names = cr.getConfiguration().getString(key).split(";");
-            // //split around commas!
-            List<String> names = cr.getConfiguration().getList(key); // split around
-            // commas!
+        if (cr.getConfiguration().containsKey(key)) {
+            String[] names = cr.getConfiguration().getStringArray(key);
 
-            for (int i = 0; i < names.size(); i++) {
-                names.set(i, (names.get(i)).trim().toLowerCase()); // for
-                // each
-                // bit
-                // remove
-                // leading
-                // and
-                // trailing
-                // spaces!
-                // And
-                // make
-                // it
-                // lower
-                // case!
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim().toLowerCase();
             }
-            return names;
+            return Arrays.asList(names);
+        } else {
+            return Arrays.asList(new String[] { "testbed006.cnaf.infn.it" });
         }
     }
 
@@ -570,24 +546,19 @@ public class Configuration {
      * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
      * key="storm.machineIPs"; default value={"127.0.0.1"};
      */
-    public List getListOfMachineIPs() {
+    public List<String> getListOfMachineIPs() {
         String key = "storm.machineIPs";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return Arrays.asList(new String[] { "127.0.0.1" });
-        } else {
-            // load from external source
+        
+        if (cr.getConfiguration().containsKey(key)) {
+            
             String[] names = cr.getConfiguration().getString(key).split(";"); // split
-            // around
-            // commas!
             for (int i = 0; i < names.length; i++) {
                 names[i] = names[i].trim().toLowerCase(); // for each bit remove
-                // leading and
-                // trailing spaces!
-                // And make it lower
-                // case!
             }
             return Arrays.asList(names);
+            
+        } else {
+            return Arrays.asList(new String[] { "127.0.0.1" });
         }
     }
 
@@ -606,7 +577,8 @@ public class Configuration {
      *             ://www-106.ibm.com/developerworks/library/j-jtp05254.html? ca=drs-j2204 key="authorization.sources";
      *             default value=DenyAllAuthorizationSource;
      */
-    public Collection getAuthorizationSources() {
+    @SuppressWarnings("unchecked")
+    public Collection<Object> getAuthorizationSources() {
         String key = "authorization.sources";
         String value = "";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -617,7 +589,7 @@ public class Configuration {
             value = cr.getConfiguration().getString(key);
         }
         //
-        Collection result = new ArrayList();
+        Collection<Object> result = new ArrayList<Object>();
         String[] authorizationSources = value.trim().split("\\s*,\\s*");
 
         for (String configValue : authorizationSources) {
@@ -666,6 +638,7 @@ public class Configuration {
      *             ibm.com/developerworks/library/j-jtp05254.html?ca=drs-j2204 key="authorization.combining.algorithm";
      *             default value=FirstProper;
      */
+    @SuppressWarnings("unchecked")
     public Class getAuthorizationCombiningAlgorithm() {
         String key = "authorization.combining.algorithm";
         String value = "";
@@ -1903,29 +1876,6 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getBoolean(key);
-        }
-    }
-
-    public String getT1D1PluginName() {
-        String key = "T1D1Plugin";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "HiddenFile";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-
-    }
-
-    public String getT1D1HiddenFilePrefix() {
-        String key = "T1D1HiddenFilePrefix";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "STORM_T1D1_";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
         }
     }
 
