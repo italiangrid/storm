@@ -93,7 +93,7 @@ extraslashes.gsiftp=/
 # The computation is blocking.
 checksum.enabled=false  
 
-# The array of URLs where external checksum agent are running
+# The array of URLs (e.g. http://host:port/) where external checksum agent are running
 # note: the value must be separated by comma ','.
 #checksum.serviceURL=
 
