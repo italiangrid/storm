@@ -91,6 +91,10 @@ public class ChecksumManager {
             }
 
             isAlive = client.ping();
+            
+            if (!isAlive) {
+                log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
+            }
 
         } while ((index != currentURLIndex) && !isAlive);
 
