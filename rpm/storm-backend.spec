@@ -120,6 +120,10 @@ echo "The StoRM BackEnd server is installed but NOT configured yet.
 You need to launch the storm-backend-configure script, or to use 
 yaim to configure the server.
 "
+
+%preun server
+/etc/init.d/storm-backend stop
+
 %postun server
 rm -f /etc/cron.d/storm-backend.cron
 # glite-info-dynamic-storm is a file created by YAIM
