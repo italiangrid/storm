@@ -122,7 +122,8 @@ yaim to configure the server.
 "
 %postun server
 rm -f /etc/cron.d/storm-backend.cron
-
+# glite-info-dynamic-storm is a file created by YAIM
+rm -f /etc/cron.d/glite-info-dynamic-storm
 
 %package jars
 
