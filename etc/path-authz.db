@@ -47,12 +47,58 @@ algorithm=it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
 # local	 | 	      Path          |   Permission  |   ACE
 # group	 |                      |   mask        |   Type
 #--------+----------------------+---------------+----------
-  dteam	   /dteam                 WRFDLMN         permit
-  dteam    /dteam/ritz            WRF-LMN         permit
-  dteam    /cms                   ----L--         permit
-  cms      /cms                   -R--L--         permit
-  cms      /cms/prd               WR---MN         permit
-  cmsprd   /cms                   WRFDLMN         permit
-  cmsphed  /cms                   WR--LMN         permit
-  @ALL@    /                      WRFDLMN         deny
+  dteam	    /dteam                 WRFDLMN         permit
+  dteam     /dteam/ritz            WRF-LMN         permit
+  dteam     /infngrid              ----L--         permit
+  infngrid  /infngrid              -R--L--         permit
+  infngrid  /infngrid/prd          WR---MN         permit
+  @ALL@     /                      WRFDLMN         deny
 
+# ==================
+# EXAMPLEs
+# ==================
+
+#### EXAMPLE - 1 ###
+  
+User "ritz" (mapped to group "dteam") want create a new directory in /infngrid.
+ 
+ACL entries actived: 
+-)  dteam	  /dteam                 WRFDLMN         permit
+-)  dteam     /dteam/ritz            WRF-LMN         permit
+-)  dteam     /infngrid              ----L--         permit
+-)  @ALL@     /                      WRFDLMN         deny
+
+ACL entries ordered by distance:
+a)  dteam     /infngrid              ----L--         permit
+b)  @ALL@     /                      WRFDLMN         deny
+c)  dteam	  /dteam                 WRFDLMN         permit
+d)  dteam     /dteam/ritz            WRF-LMN         permit
+
+
+Actions Requested:
+  'M' : 	CREATE_DIRECTORY		"Create a directory"
+
+Result will be:    DENY  
+
+
+#### EXAMPLE - 2 ###
+  
+User "ritz" (mapped to group "dteam") want create a new directory in /infngrid.
+ 
+ACL entries actived: 
+-)  dteam	  /dteam                 WRFDLMN         permit
+-)  dteam     /dteam/ritz            WRF-LMN         permit
+-)  dteam     /infngrid              ----L--         permit
+-)  @ALL@     /                      WRFDLMN         deny
+
+ACL entries ordered by distance:
+a)  dteam     /infngrid              ----L--         permit
+b)  @ALL@     /                      WRFDLMN         deny
+c)  dteam	  /dteam                 WRFDLMN         permit
+d)  dteam     /dteam/ritz            WRF-LMN         permit
+
+
+Actions Requested:
+  'M' : 	CREATE_DIRECTORY		"Create a directory"
+
+Result will be:    DENY  

@@ -20,27 +20,30 @@
 algorithm=it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
 
 # ==================
+# SRM Operations 
+# ==================
+# PTP    -->   WRITE_FILE + CREATE_FILE
+# RM     -->   DELETE_FILE
+# MKDIR  -->   CREATE_DIRECTORY
+# RMDIR  -->   DELETE
+# LS     -->   LIST_DIRECTORY
+# PTG    -->   READ_FILE
+
+# ==================
 # Operations on Path
 # ==================
-#   'W' : 	WRITE_FILE  			"Write data on existing files"
-#   'R' : 	READ_FILE   			"Read data"
-#   'F' : 	RENAME     			"Rename a file or a directory"
-#   'D' : 	DELETE  			"Delete a file or a directory"
-#   'L' : 	LIST_DIRECTORY			"Listing a directory"
-#   'M' : 	CREATE_DIRECTORY		"Create a directory"
-#   'N' : 	CREATE_FILE			"Create a new file"
+#   'W' : 	WRITE_FILE              "Write data on existing files"
+#   'R' : 	READ_FILE               "Read data"
+#   'F' : 	MOVE/RENAME             "Move a file"
+#   'D' : 	DELETE                  "Delete a file or a directory"
+#   'L' : 	LIST_DIRECTORY          "Listing a directory"
+#   'M' : 	CREATE_DIRECTORY        "Create a directory"
+#   'N' : 	CREATE_FILE             "Create a new file"
 #
 
 #--------+----------------------+---------------+----------
-# local	 | 	      Path          |   Permission  |   ACE
-# group	 |                      |   mask        |   Type
+# user	 | 	      Path          |   Permission  |   ACE
+# class	 |                      |   mask        |   Type
 #--------+----------------------+---------------+----------
-  dteam	   /dteam                 WRFDLMN         permit
-  dteam    /dteam/ritz            WRF-LMN         permit
-  dteam    /cms                   ----L--         permit
-  cms      /cms                   -R--L--         permit
-  cms      /cms/prd               WR---MN         permit
-  cmsprd   /cms                   WRFDLMN         permit
-  cmsphed  /cms                   WR--LMN         permit
-  @ALL@    /                      WRFDLMN         deny
+  @ALL@     /                        WRFDLMN          permit
 

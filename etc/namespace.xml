@@ -1,12 +1,13 @@
 <namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.4.0.xsd" version="1.4.0">
   <filesystems>
-    <filesystem name="DTEAM" fs_type="gpfs">
+   
+   <filesystem name="DTEAM" fs_type="gpfs">
       <space-token-description>DTEAM</space-token-description>
       <root>/storage/dteam</root>
       <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
       <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
       <storage-area-authz>
-				<authz-db>pippo</authz-db>
+			<authz-db>dteam-authzdb</authz-db>
       </storage-area-authz>
       <properties>
           <RetentionPolicy>replica</RetentionPolicy>
@@ -17,11 +18,14 @@
       </properties>
       <capabilities>
         <aclMode>AoT</aclMode>
-        <!--
+
         <default-acl>
-          <acl-entry><groupName>cmsprd</groupName><permissions>RW</permissions></acl-entry>
+			<acl-entry>
+				<groupName>cmsprd</groupName>
+				<permissions>RW</permissions>
+			</acl-entry>
         </default-acl>
-        -->
+
         <quota enabled="true">
           <properties>
             <quotaType>
@@ -30,6 +34,7 @@
             <device>gpfs_storm</device>
             </properties>
         </quota>
+		
         <trans-prot>
           <prot name="file">
             <schema>file</schema>
@@ -61,6 +66,7 @@
 				<member member-id="2"><weight>30</weight></member>
 			</members>
 		</pool>
+		
      </capabilities>
       <defaults-values>
         <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
