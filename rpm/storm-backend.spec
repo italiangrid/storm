@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.0
-Release: rc3.sl4
+Release: rc4.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -49,7 +49,7 @@ Group: Application/Generic
 
 ###### Package Dependency
 
-Requires: storm-backend-jars >= 1.4.0
+Requires: storm-backend-jars >= 1.5.0
 # this causes a conflict error between postfix and torque-client packages. 
 # Requires: redhat-lsb
 Requires: nc
@@ -79,7 +79,7 @@ separately in the ``storm-backend-jars`` package.
 
 %{prefix}/doc/LICENSE.txt
 %{prefix}/doc/INSTALL.txt
-%config(noreplace) %{prefix}/etc/namespace.xsd
+%config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.0.0_to_1.3.2000.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
@@ -89,7 +89,7 @@ separately in the ``storm-backend-jars`` package.
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
 %config(noreplace) %{prefix}/etc/storm.properties.template
-%config(noreplace) %{prefix}/etc/path-authz.db.template
+%config(noreplace) %{prefix}/etc/path-authz.db
 %config(noreplace) %{prefix}/etc/namespace.xml
 %{prefix}/lib/storm-backend/libgpfsapi_interface.so
 %{prefix}/lib/storm-backend/storm-backend.jar
@@ -244,6 +244,15 @@ rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 ### Package ChangeLog
 
 %changelog
+* Tue Dec 22 2009 <Riccardo Zappi> <riccardo.zappi@cnaf.infn.it>
+- version 1.5.0-rc4
+  - changed 'path-authz.db' from 'path-authz.db.template'
+  - changed 'namespace-1.5.0.xsd' from 'namespace.xsd'
+
+* Tue Dec 22 2009 <Alberto Forti> <alberto.forti@cnaf.infn.it>
+- version 1.5.0-rc1/rc2/rc3
+  - ...  
+  
 * Thu May 14 2009 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - final 1.4.0 release
 
