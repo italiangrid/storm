@@ -380,10 +380,11 @@ test.junit.dir
      dir="${src.config.dir}">
     <include name="*.properties"/>
     <include name="namespace.xml"/>
-    <include name="namespace.xsd"/>
+    <include name="namespace-1.5.0.xsd"/>
     <include name="lcmaps.db"/>
     <include name="logging.xml"/>
-    <include name="*.template"/>
+    <include name="storm.properties.template"/>
+  	<include name="path-authz.db"/>
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
     <include name="logrotate.d/storm-backend.logrotate"/>
