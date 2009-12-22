@@ -119,7 +119,7 @@
 			<xs:element name="id" type="xs:integer" nillable="false" minOccurs="0"/>
 			<xs:element ref="schema"/>
 			<xs:element ref="host" minOccurs="0"/>
-			<xs:element ref="port" minOccurs="0">
+			<xs:element name="port" minOccurs="0">
 				<xs:simpleType>
 					<xs:restriction base="xs:int">
 						<xs:minExclusive value="0"></xs:minExclusive>
