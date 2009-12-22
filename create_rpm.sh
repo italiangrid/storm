@@ -29,7 +29,7 @@ if [ ! -d ./RPMS/SRPMS ]; then
     mkdir ./RPMS/SRPMS
 fi
 
-# Retrieving version from spe file
+# Retrieving version from spec file
 VERSION=`cat ./rpm/storm-backend.spec | grep "Version:" | awk '{ print $2 }'`
 
 echo "Building RPMs for version: $VERSION (retrieved from spec file: "./rpm/storm-backend.spec")"
