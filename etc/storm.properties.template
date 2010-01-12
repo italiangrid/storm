@@ -93,8 +93,8 @@ extraslashes.gsiftp=/
 # The computation is blocking.
 checksum.enabled=false  
 
-# The array of URLs (e.g. http://host:port/) where external checksum agent are running
-# note: the value must be separated by comma ','.
+# The array of URLs (e.g. http://host:port/) runnimg the external checksum agents
+# note: it is a comma separated list of URLs. (e.g. checksum.serviceURL=http://host1:port/,http://host2:port/)
 #checksum.serviceURL=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
