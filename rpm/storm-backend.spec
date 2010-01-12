@@ -106,11 +106,8 @@ separately in the ``storm-backend-jars`` package.
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
 %config /etc/init.d/storm-backend
 
-# Temp solution... find another way to make the directories readable by the
-# user running StoRM... i.e. the user may not be "storm"
-%defattr(-,storm,storm)
-
 # empty directories; nonetheless include in RPM
+%defattr(-,root,root)
 %dir %{prefix}/var/log
 %dir %{prefix}/var/tmp
 %dir %{prefix}/lib/storm-backend/jar
