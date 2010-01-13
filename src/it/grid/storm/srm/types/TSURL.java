@@ -1,5 +1,6 @@
 package it.grid.storm.srm.types;
 
+import it.grid.storm.common.types.EndPoint;
 import it.grid.storm.common.types.InvalidMachineAttributeException;
 import it.grid.storm.common.types.InvalidPortAttributeException;
 import it.grid.storm.common.types.InvalidSFNAttributesException;
@@ -9,6 +10,7 @@ import it.grid.storm.common.types.Port;
 import it.grid.storm.common.types.SFN;
 import it.grid.storm.common.types.SiteProtocol;
 import it.grid.storm.common.types.StFN;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
@@ -31,8 +33,8 @@ import org.slf4j.Logger;
  */
 public class TSURL {
 
-    private SiteProtocol sp;
-    private SFN sfn;
+    private final SiteProtocol sp;
+    private final SFN sfn;
     private boolean empty = true;
     private static Logger log = NamespaceDirector.getLogger();
 
@@ -50,7 +52,7 @@ public class TSURL {
      * Static factory method that returns an empty TSURL.
      */
     public static TSURL makeEmpty() {
-        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true );
+        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
     }
 
     /**
@@ -60,8 +62,8 @@ public class TSURL {
      * Check for ".." in Storage File Name for security issues.
      */
     public static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
-        if ((sp==null) || (sfn==null) || (sp==SiteProtocol.EMPTY) || sfn.isEmpty() ) {
-            throw new InvalidTSURLAttributesException(sp,sfn);
+        if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
+            throw new InvalidTSURLAttributesException(sp, sfn);
         }
         return new TSURL(sp, sfn, false);
     }
@@ -71,33 +73,55 @@ public class TSURL {
      * or malformed then an Invalid TSURLAttributesException is thrown.
      */
     public static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
-        if (s==null) {
-            throw new InvalidTSURLAttributesException(null,null);
+        if (s == null) {
+            throw new InvalidTSURLAttributesException(null, null);
         }
         int separator = s.indexOf("://"); //first occurence of ://
-        if ((separator==-1) || (separator==0)) {
-            throw new InvalidTSURLAttributesException(null,null); //separator not found or right at the beginning!
+        if ((separator == -1) || (separator == 0)) {
+            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
         }
-        String spString = s.substring(0,separator);
+        String spString = s.substring(0, separator);
         SiteProtocol sp = null;
         try {
             sp = SiteProtocol.fromString(spString);
         } catch (IllegalArgumentException e) {
             //do nothing - sp remains null and that is fine!
         }
-        if ((separator+3) > (s.length())) {
-            throw new InvalidTSURLAttributesException(sp,null); //separator found at the end!
+        if ((separator + 3) > (s.length())) {
+            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
         }
-        String sfnString = s.substring(separator+3,s.length());
+        String sfnString = s.substring(separator + 3, s.length());
         SFN sfn = null;
         try {
             sfn = SFN.makeFromString(sfnString);
         } catch (InvalidSFNAttributesException e) {
             //do nothing - sfn remains null and that is fine!
         }
-        return TSURL.make(sp,sfn);
+        return TSURL.make(sp, sfn);
     }
 
+    /**
+     * Auxiliary method that returns true if the supplied TSURL corresponds to the host
+     * where StoRM is installed.
+     */
+    public static boolean isValid(TSURL surl) {
+        boolean result = false;
+        String serviceHost = surl.sfn().machine().toString().toLowerCase();
+        EndPoint ep = surl.sfn().endPoint();
+        int port = surl.sfn().port().toInt();
+
+        String expectedServiceHostname = Configuration.getInstance().getServiceHostname();
+        int expectedServicePort = Configuration.getInstance().getServicePort();
+        String expectedServiceEndpoint = Configuration.getInstance().getServiceEndpoint();
+
+        if ((serviceHost.equals(expectedServiceHostname)) && (expectedServicePort == port)) {
+            if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(expectedServiceEndpoint))) {
+                result = true;
+            }
+        }
+
+        return result;
+    }
 
     /**
      * Method that returns a Collection of all parent TSURLs. The following example clarifies
@@ -121,9 +145,9 @@ public class TSURL {
         }
         try {
             Collection aux = new ArrayList();
-            Collection auxSFN = this.sfn.getParents();
-            for (Iterator i = auxSFN.iterator(); i.hasNext(); ) {
-                aux.add(TSURL.make(this.sp , (SFN)i.next()));
+            Collection auxSFN = sfn.getParents();
+            for (Iterator i = auxSFN.iterator(); i.hasNext();) {
+                aux.add(TSURL.make(sp, (SFN) i.next()));
             }
             return aux;
         } catch (InvalidTSURLAttributesException e) {
@@ -149,7 +173,7 @@ public class TSURL {
             return makeEmpty();
         }
         try {
-            return TSURL.make(this.sp,this.sfn.getParent());
+            return TSURL.make(sp, sfn.getParent());
         } catch (InvalidTSURLAttributesException e) {
             return makeEmpty();
         }
@@ -165,7 +189,7 @@ public class TSURL {
      */
     public String getSURLString() {
         if (empty) {
-            return new String();
+            return "";
         }
         return sp + "://" + sfn;
     }
@@ -192,10 +216,6 @@ public class TSURL {
         return sfn;
     }
 
-
-
-
-
     /*
     /**
      * Method that returns the StoRI, a StoRM object/concept that handles file names!
@@ -211,12 +231,11 @@ public class TSURL {
      */
     public static TSURL makeFromStringValidate(String surlString) throws InvalidTSURLAttributesException {
 
-        log.debug("MAKE SURL in Validating mode: '"+surlString+"'");
+        log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
         SURL surl;
         try {
             surl = SURL.makeSURLfromString(surlString);
-        }
-        catch (NamespaceException ex) {
+        } catch (NamespaceException ex) {
             log.error("SURL '" + surlString + "' is invalid! ");
             throw new InvalidTSURLAttributesException(null, null);
         }
@@ -226,9 +245,8 @@ public class TSURL {
         Machine m = null;
         try {
             m = Machine.make(surl.getServiceHost());
-            log.debug("Machine built : '"+m+"'");
-        }
-        catch (InvalidMachineAttributeException ex1) {
+            log.debug("Machine built : '" + m + "'");
+        } catch (InvalidMachineAttributeException ex1) {
             log.error("MACHINE '" + surl.getServiceHost() + "' is invalid! ");
             throw new InvalidTSURLAttributesException(null, null);
         }
@@ -237,9 +255,8 @@ public class TSURL {
         StFN stfnClass = null;
         try {
             stfnClass = StFN.make(stfn);
-            log.debug("StFN Class built : '"+stfnClass+"'");
-        }
-        catch (InvalidStFNAttributeException ex2) {
+            log.debug("StFN Class built : '" + stfnClass + "'");
+        } catch (InvalidStFNAttributeException ex2) {
             log.error("StFN '" + stfn + "' is invalid! ");
             throw new InvalidTSURLAttributesException(null, null);
         }
@@ -249,27 +266,23 @@ public class TSURL {
             Port p = null;
             try {
                 p = Port.make(port);
-                log.debug("PORT built : '"+p+"'");
-            }
-            catch (InvalidPortAttributeException ex3) {
+                log.debug("PORT built : '" + p + "'");
+            } catch (InvalidPortAttributeException ex3) {
                 log.error("PORT '" + port + "' is invalid! ");
                 throw new InvalidTSURLAttributesException(null, null);
             }
             try {
                 sfn = SFN.make(m, p, stfnClass);
-                log.debug("SFN built : '"+sfn+"'");
-            }
-            catch (InvalidSFNAttributesException ex4) {
+                log.debug("SFN built : '" + sfn + "'");
+            } catch (InvalidSFNAttributesException ex4) {
                 log.error("SFN building problem");
                 throw new InvalidTSURLAttributesException(null, null);
             }
-        }
-        else {
+        } else {
             try {
                 sfn = SFN.make(m, stfnClass);
-                log.debug("SFN built : '"+sfn+"'");
-            }
-            catch (InvalidSFNAttributesException ex5) {
+                log.debug("SFN built : '" + sfn + "'");
+            } catch (InvalidSFNAttributesException ex5) {
                 log.error("SFN building problem");
                 throw new InvalidTSURLAttributesException(null, null);
             }
@@ -303,38 +316,34 @@ public class TSURL {
         return result;
     }
 
-
     /**
      * Method that create a TSURL from structure received from FE.
      * @throws InvalidTSURLAttributesException
      */
     public static TSURL decode(Map inputParam, String name) throws InvalidTSURLAttributesException {
-        String surlstring =  (String) inputParam.get(name);
+        String surlstring = (String) inputParam.get(name);
         //return TSURL.makeFromStringValidate(surlstring);
         return TSURL.makeFromString(surlstring);
     }
+
     /**
      * Encode TSURL for FE communication.
      */
     public void encode(Map param, String name) {
-        param.put(name, this.toString());
+        param.put(name, toString());
     }
-
-
-
-
 
     @Override
     public String toString() {
         if (empty) {
             return "Empty TSURL";
         }
-        return sp+"://"+sfn;
+        return sp + "://" + sfn;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o==this) {
+        if (o == this) {
             return true;
         }
         if (!(o instanceof TSURL)) {
@@ -353,8 +362,8 @@ public class TSURL {
             return 0;
         }
         int hash = 17;
-        hash = 37*hash + sp.hashCode();
-        hash = 37*hash + sfn.hashCode();
+        hash = 37 * hash + sp.hashCode();
+        hash = 37 * hash + sfn.hashCode();
         return hash;
     }
 

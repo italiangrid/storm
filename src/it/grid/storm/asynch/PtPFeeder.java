@@ -4,8 +4,6 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
@@ -13,7 +11,6 @@ import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,40 +51,36 @@ public final class PtPFeeder implements Delegable {
      * request.
      */
     public PtPFeeder(RequestSummaryData rsd) throws InvalidPtPFeederAttributesException {
-        if (rsd==null) {
-            throw new InvalidPtPFeederAttributesException(null,null,null);
+        if (rsd == null) {
+            throw new InvalidPtPFeederAttributesException(null, null, null);
         }
-        if (rsd.gridUser()==null) {
-            throw new InvalidPtPFeederAttributesException(rsd,null,null);
+        if (rsd.gridUser() == null) {
+            throw new InvalidPtPFeederAttributesException(rsd, null, null);
         }
         try {
-            this.gu = rsd.gridUser();
+            gu = rsd.gridUser();
             this.rsd = rsd;
-            this.gsm = new GlobalStatusManager(rsd.requestToken());
+            gsm = new GlobalStatusManager(rsd.requestToken());
         } catch (InvalidOverallRequestAttributeException e) {
-            log.error("ATTENTION in PtPFeeder! Programming bug when creating GlobalStatusManager! "+e);
-            throw new InvalidPtPFeederAttributesException(rsd,gu,null);
+            log.error("ATTENTION in PtPFeeder! Programming bug when creating GlobalStatusManager! " + e);
+            throw new InvalidPtPFeederAttributesException(rsd, gu, null);
         }
     }
-
-
-
-
 
     /**
      * This method splits a multifile request; it then creates the necessary tasks and
      * loads them into the PtP chunk scheduler.
      */
     public void doIt() {
-        log.debug("PtPFeeder: pre-processing "+rsd.requestToken()); //info
+        log.debug("PtPFeeder: pre-processing " + rsd.requestToken()); //info
         //Get all parts in request
         Collection chunks = PtPChunkCatalog.getInstance().lookup(rsd.requestToken());
         if (chunks.isEmpty()) {
             log.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing to process! " + rsd.requestToken());
-            RequestSummaryCatalog.getInstance().failRequest(rsd,"This SRM put request contained nothing to process!");
+            RequestSummaryCatalog.getInstance().failRequest(rsd, "This SRM put request contained nothing to process!");
         } else {
             manageChunks(chunks);
-            log.debug("PtPFeeder: finished pre-processing "+rsd.requestToken()); //info
+            log.debug("PtPFeeder: finished pre-processing " + rsd.requestToken()); //info
         }
     }
 
@@ -96,12 +89,12 @@ public final class PtPFeeder implements Delegable {
      * the srm command!
      */
     private void manageChunks(Collection chunks) {
-        log.debug("PtPFeeder: number of chunks in request "+ chunks.size());
+        log.debug("PtPFeeder: number of chunks in request " + chunks.size());
         PtPChunkData auxChunkData; //chunk currently being processed
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
+        for (Iterator i = chunks.iterator(); i.hasNext();) {
             auxChunkData = (PtPChunkData) i.next();
             gsm.addChunk(auxChunkData); //add chunk for global status consideration
-            if (correct(auxChunkData.toSURL())) {
+            if (TSURL.isValid(auxChunkData.toSURL())) {
                 manage(auxChunkData); //manage the request
             } else {
                 //toSURL does _not_ correspond to this installation of StoRM: fail chunk!
@@ -117,31 +110,6 @@ public final class PtPFeeder implements Delegable {
     }
 
     /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to the host
-     * where StoRM is installed.
-     */
-    private boolean correct(TSURL surl) {
-        String machine = surl.sfn().machine().toString().toLowerCase();
-        EndPoint ep = surl.sfn().endPoint();
-        int port = surl.sfn().port().toInt();
-        List stormNames = Configuration.getInstance().getListOfMachineNames();
-        String stormEndpoint = Configuration.getInstance().getServiceEndpoint().toLowerCase();
-        int stormPort = Configuration.getInstance().getFEPort();
-        log.debug("PtP FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
-        log.debug("PtP FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) {
-            return false;
-        }
-        if (stormPort!=port) {
-            return false;
-        }
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Private method that handles the chunk!
      */
     private void manage(PtPChunkData auxChunkData) {
@@ -149,17 +117,17 @@ public final class PtPFeeder implements Delegable {
         try {
             auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToPut chunk is being processed!"); //change status of this chunk to being processed!
             PtPChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            SchedulerFacade.getInstance().chunkScheduler().schedule(new PtPChunk(gu,rsd,auxChunkData,gsm)); //hand it to scheduler!
+            SchedulerFacade.getInstance().chunkScheduler().schedule(new PtPChunk(gu, rsd, auxChunkData, gsm)); //hand it to scheduler!
             log.debug("PtPFeeder - chunk scheduled.");
         } catch (InvalidPtPChunkAttributesException e) {
             //for some reason gu, or, rsd, or auxChunkData may be null! This should not be so!
-            log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n" +e);
+            log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n" + e);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not allow this chunk to be processed!");
             PtPChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
             gsm.failedChunk(auxChunkData);
         } catch (SchedulerException e) {
             //Internal error of scheduler!
-            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" +e);
+            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler error prevented this chunk from being processed!");
             PtPChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
             gsm.failedChunk(auxChunkData);
@@ -171,6 +139,6 @@ public final class PtPFeeder implements Delegable {
      * token!
      */
     public String getName() {
-        return "PtPFeeder of request: "+rsd.requestToken();
+        return "PtPFeeder of request: " + rsd.requestToken();
     }
 }

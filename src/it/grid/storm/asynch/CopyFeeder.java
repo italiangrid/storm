@@ -4,8 +4,6 @@ import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.CopyChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
@@ -13,12 +11,9 @@ import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 
 /**
  * This class represents a Copy Feeder: the Feeder that will handle the
@@ -58,40 +53,37 @@ public final class CopyFeeder implements Delegable {
      * InvalidCopyFeederAttributesException is thrown.
      */
     public CopyFeeder(RequestSummaryData rsd) throws InvalidCopyFeederAttributesException {
-        if (rsd==null) {
-            throw new InvalidCopyFeederAttributesException(null,null,null);
+        if (rsd == null) {
+            throw new InvalidCopyFeederAttributesException(null, null, null);
         }
-        if (rsd.gridUser()==null) {
-            throw new InvalidCopyFeederAttributesException(rsd,null,null);
+        if (rsd.gridUser() == null) {
+            throw new InvalidCopyFeederAttributesException(rsd, null, null);
         }
         try {
-            this.gu = rsd.gridUser();
+            gu = rsd.gridUser();
             this.rsd = rsd;
-            this.gsm = new GlobalStatusManager(rsd.requestToken());
+            gsm = new GlobalStatusManager(rsd.requestToken());
         } catch (InvalidOverallRequestAttributeException e) {
-            log.error("ATTENTION in CopyFeeder! Programming bug when creating GlobalStatusManager! "+e);
-            throw new InvalidCopyFeederAttributesException(rsd,gu,gsm);
+            log.error("ATTENTION in CopyFeeder! Programming bug when creating GlobalStatusManager! " + e);
+            throw new InvalidCopyFeederAttributesException(rsd, gu, gsm);
         }
     }
-
-
-
-
 
     /**
      * This method splits a multifile request; it then creates the necessary tasks and
      * loads them into the Copy chunk scheduler.
      */
     public void doIt() {
-        log.debug("CopyFeeder: pre-processing "+rsd.requestToken()); //info
+        log.debug("CopyFeeder: pre-processing " + rsd.requestToken()); //info
         //Get all parts in request
         Collection chunks = CopyChunkCatalog.getInstance().lookup(rsd.requestToken());
         if (chunks.isEmpty()) {
-            log.warn("ATTENTION in CopyFeeder! This SRM Copy request contained nothing to process! " + rsd.requestToken());
-            RequestSummaryCatalog.getInstance().failRequest(rsd,"This SRM Copy request contained nothing to process!");
+            log.warn("ATTENTION in CopyFeeder! This SRM Copy request contained nothing to process! "
+                    + rsd.requestToken());
+            RequestSummaryCatalog.getInstance().failRequest(rsd, "This SRM Copy request contained nothing to process!");
         } else {
             manageChunks(chunks);
-            log.debug("CopyFeeder: finished pre-processing "+rsd.requestToken()); //info
+            log.debug("CopyFeeder: finished pre-processing " + rsd.requestToken()); //info
         }
     }
 
@@ -100,13 +92,13 @@ public final class CopyFeeder implements Delegable {
      * the srm command!
      */
     private void manageChunks(Collection chunks) {
-        log.debug("CopyFeeder: number of chunks in request "+chunks.size()); //info
+        log.debug("CopyFeeder: number of chunks in request " + chunks.size()); //info
         CopyChunkData auxChunkData; //chunk currently being processed
-        int counter=0; //counter of the number of chunk retrieved
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
+        int counter = 0; //counter of the number of chunk retrieved
+        for (Iterator i = chunks.iterator(); i.hasNext();) {
             auxChunkData = (CopyChunkData) i.next();
             gsm.addChunk(auxChunkData); //add chunk for global status consideration
-            manage(auxChunkData,counter++); //manage the request
+            manage(auxChunkData, counter++); //manage the request
         }
         gsm.finishedAdding(); //no more chunks need to be cosidered for the overall status computation
     }
@@ -114,13 +106,13 @@ public final class CopyFeeder implements Delegable {
     /**
      * Private method that handles the chunk!
      */
-    private void manage(CopyChunkData auxChunkData,int counter) {
+    private void manage(CopyChunkData auxChunkData, int counter) {
         log.debug("CopyFeeder: scheduling chunk... "); //info
         try {
             auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmCopy chunk is being processed!"); //change status of this chunk to being processed!
             CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            boolean okfrom = correct(auxChunkData.fromSURL());
-            boolean okto = correct(auxChunkData.toSURL());
+            boolean okfrom = TSURL.isValid(auxChunkData.fromSURL());
+            boolean okto = TSURL.isValid(auxChunkData.toSURL());
             if (okfrom && okto) {
                 //source and destination are the same physical machine!
                 //make a local copy!
@@ -130,7 +122,11 @@ public final class CopyFeeder implements Delegable {
                 log.info("CopyFeeder: chunk is localCopy.");
                 log.debug("Request: " + rsd.requestToken());
                 log.debug("Chunk: " + auxChunkData);
-                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,rsd,auxChunkData,counter,gsm));
+                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,
+                                                                                          rsd,
+                                                                                          auxChunkData,
+                                                                                          counter,
+                                                                                          gsm));
                 log.info("CopyFeeder: chunk scheduled.");
             } else if (okfrom && (!okto)) {
                 //source is this machine, but destination is elsewhere!
@@ -138,7 +134,11 @@ public final class CopyFeeder implements Delegable {
                 log.info("CopyFeeder: chunk is pushCopy.");
                 log.debug("Request: " + rsd.requestToken());
                 log.debug("Chunk: " + auxChunkData);
-                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,rsd,auxChunkData,counter,gsm));
+                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,
+                                                                                          rsd,
+                                                                                          auxChunkData,
+                                                                                          counter,
+                                                                                          gsm));
                 log.info("CopyFeeder: chunk scheduled.");
             } else if ((!okfrom) && okto) {
                 //destiantion is this machine, but _source_ is elsewhere!
@@ -164,7 +164,7 @@ public final class CopyFeeder implements Delegable {
             }
         } catch (InvalidCopyChunkAttributesException e) {
             //for some reason gu, rsd or auxChunkData may be null! This should not be so!
-            log.error("UNEXPECTED ERROR in CopyFeeder! Chunk could not be created!\n" +e);
+            log.error("UNEXPECTED ERROR in CopyFeeder! Chunk could not be created!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not allow this chunk to be processed!");
@@ -172,7 +172,7 @@ public final class CopyFeeder implements Delegable {
             gsm.failedChunk(auxChunkData); //inform global status computation of the chunk s failure
         } catch (SchedulerException e) {
             //Internal error of scheduler!
-            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" +e);
+            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler error prevented this chunk from being processed!");
@@ -182,35 +182,10 @@ public final class CopyFeeder implements Delegable {
     }
 
     /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to the host
-     * where StoRM is installed.
-     */
-    private boolean correct(TSURL surl) {
-        String machine = surl.sfn().machine().toString().toLowerCase();
-        EndPoint ep = surl.sfn().endPoint();
-        int port = surl.sfn().port().toInt();
-        List stormNames = Configuration.getInstance().getListOfMachineNames();
-        String stormEndpoint = Configuration.getInstance().getServiceEndpoint().toLowerCase();
-        int stormPort = Configuration.getInstance().getFEPort();
-        log.debug("COPY FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
-        log.debug("COPY FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) {
-            return false;
-        }
-        if (stormPort!=port) {
-            return false;
-        }
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Method used by chunk scheduler for internal logging; it returns the request
      * token!
      */
     public String getName() {
-        return "CopyFeeder of request: "+rsd.requestToken();
+        return "CopyFeeder of request: " + rsd.requestToken();
     }
 }

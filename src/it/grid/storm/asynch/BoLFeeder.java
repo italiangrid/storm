@@ -5,8 +5,6 @@ import it.grid.storm.catalogs.BoLChunkData;
 import it.grid.storm.catalogs.InvalidBoLChunkDataAttributesException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
@@ -23,7 +21,6 @@ import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,9 +95,9 @@ public final class BoLFeeder implements Delegable {
             throw new InvalidBoLFeederAttributesException(rsd, null, null);
         }
         try {
-            this.gu = rsd.gridUser();
+            gu = rsd.gridUser();
             this.rsd = rsd;
-            this.gsm = new GlobalStatusManager(rsd.requestToken());
+            gsm = new GlobalStatusManager(rsd.requestToken());
         } catch (InvalidOverallRequestAttributeException e) {
             log.error("ATTENTION in BoLFeeder! Programming bug when creating GlobalStatusManager! " + e);
             throw new InvalidBoLFeederAttributesException(rsd, gu, null);
@@ -116,10 +113,8 @@ public final class BoLFeeder implements Delegable {
         // Get all parts in request
         Collection<BoLChunkData> chunks = BoLChunkCatalog.getInstance().lookup(rsd.requestToken());
         if (chunks.isEmpty()) {
-            log.warn("ATTENTION in BoLFeeder! This SRM BoL request contained nothing to process! "
-                    + rsd.requestToken());
-            RequestSummaryCatalog.getInstance()
-                                 .failRequest(rsd, "This SRM Get request contained nothing to process!");
+            log.warn("ATTENTION in BoLFeeder! This SRM BoL request contained nothing to process! " + rsd.requestToken());
+            RequestSummaryCatalog.getInstance().failRequest(rsd, "This SRM Get request contained nothing to process!");
         } else {
             manageChunks(chunks);
             log.debug("BoLFeeder: finished pre-processing " + rsd.requestToken());
@@ -135,7 +130,7 @@ public final class BoLFeeder implements Delegable {
         for (Iterator<BoLChunkData> i = chunks.iterator(); i.hasNext();) {
             auxChunkData = i.next();
             gsm.addChunk(auxChunkData); // add chunk for global status consideration
-            if (correct(auxChunkData.getFromSURL())) {
+            if (TSURL.isValid(auxChunkData.getFromSURL())) {
                 // fromSURL corresponds to This installation of StoRM: go on with processing!
                 if (auxChunkData.getDirOption().isDirectory()) {
                     manageIsDirectory(auxChunkData); // expand the directory and manage the
@@ -156,32 +151,6 @@ public final class BoLFeeder implements Delegable {
         }
         gsm.finishedAdding(); // no more chunks need to be considered for the overall status
         // computation
-    }
-
-    /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to the host where StoRM
-     * is installed.
-     */
-    private boolean correct(TSURL surl) {
-        String machine = surl.sfn().machine().toString().toLowerCase();
-        EndPoint ep = surl.sfn().endPoint();
-        int port = surl.sfn().port().toInt();
-        List<String> stormNames = Configuration.getInstance().getListOfMachineNames();
-        String stormEndpoint = Configuration.getInstance().getServiceEndpoint().toLowerCase();
-        int stormPort = Configuration.getInstance().getFEPort();
-        log.debug("BoL FEEDER: machine=" + machine + "; port=" + port + "; endPoint=" + ep.toString());
-        log.debug("BoL FEEDER: storm-machines=" + stormNames + "; storm-port=" + stormPort + "; endPoint="
-                + stormEndpoint);
-        if (!stormNames.contains(machine)) {
-            return false;
-        }
-        if (stormPort != port) {
-            return false;
-        }
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -222,8 +191,7 @@ public final class BoLFeeder implements Delegable {
         auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmBringOnLine chunk is being processed!");
         BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
         try {
-            StoRI auxStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(auxChunkData.getFromSURL(),
-                                                                                 gu);
+            StoRI auxStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(auxChunkData.getFromSURL(), gu);
             // Collection of children!
             Collection<StoRI> auxCol = auxStoRI.getChildren(gu, auxChunkData.getDirOption());
             log.debug("BoLFeeder - Number of children in parent: " + auxCol.size());
@@ -232,15 +200,16 @@ public final class BoLFeeder implements Delegable {
 
             for (StoRI childStoRI : auxCol) {
                 try {
-                    childData = new BoLChunkData(auxChunkData.getRequestToken(),
-                                                 childStoRI.getSURL(),
-                                                 auxChunkData.getLifeTime(),
-                                                 notDir,
-                                                 auxChunkData.getDesiredProtocols(),
-                                                 auxChunkData.getFileSize(),
-                                                 auxChunkData.getStatus(),
-                                                 auxChunkData.getTransferURL(),
-                                                 auxChunkData.getDeferredStartTime());
+                    childData =
+                            new BoLChunkData(auxChunkData.getRequestToken(),
+                                             childStoRI.getSURL(),
+                                             auxChunkData.getLifeTime(),
+                                             notDir,
+                                             auxChunkData.getDesiredProtocols(),
+                                             auxChunkData.getFileSize(),
+                                             auxChunkData.getStatus(),
+                                             auxChunkData.getTransferURL(),
+                                             auxChunkData.getDeferredStartTime());
                     // fill in new db row and set the PrimaryKey of ChildData!
                     BoLChunkCatalog.getInstance().addChild(childData);
                     log.debug("BoLFeeder - added child data: " + childData);
@@ -258,7 +227,7 @@ public final class BoLFeeder implements Delegable {
             log.debug("BoLFeeder - expansion completed."); // info
             // A request on a Directory is considered done whether there is somethig to expand or
             // not!
-//            auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!");
+            //            auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!");
             auxChunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption set: request successfully expanded!");
             BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
             gsm.successfulChunk(auxChunkData);
@@ -275,8 +244,7 @@ public final class BoLFeeder implements Delegable {
             // Could not create TDirOption that specifies no-expansion!
             auxChunkData.changeStatusSRM_FAILURE("srmBringOnLine with dirOption set: expansion failure due to internal error!");
             BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
-            log.error("UNEXPECTED ERROR in BoLFeeder! Could not create TDirOption specifying non-expansion!\n"
-                    + e);
+            log.error("UNEXPECTED ERROR in BoLFeeder! Could not create TDirOption specifying non-expansion!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             gsm.failedChunk(auxChunkData);
@@ -284,7 +252,7 @@ public final class BoLFeeder implements Delegable {
             // The expanded directory was empty
             // A request on a Directory is considered done whether there is somethig to expand or
             // not!
-//            auxChunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
+            //            auxChunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
             auxChunkData.changeStatusSRM_SUCCESS("BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!");
             BoLChunkCatalog.getInstance().update(auxChunkData); // update persistence!!!
             log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to expand empty directory."); // info

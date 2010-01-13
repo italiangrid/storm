@@ -1,8 +1,8 @@
 package it.grid.storm.namespace.naming;
 
-import java.util.*;
+import it.grid.storm.config.Configuration;
 
-import it.grid.storm.config.*;
+import java.util.Properties;
 
 public class NamingConst {
 
@@ -22,12 +22,12 @@ public class NamingConst {
     public static final String ROOT_PATH = "/";
 
     private static NamingConst instance = new NamingConst();
-    private Properties prop = new Properties();
+    private final Properties prop = new Properties();
 
-    private Configuration config;
+    private final Configuration config;
 
     private NamingConst() {
-        config = config.getInstance();
+        config = Configuration.getInstance();
     }
 
     private Properties getProperties() {
@@ -35,7 +35,7 @@ public class NamingConst {
     }
 
     public static String getServiceDefaultHost() {
-        return instance.config.getServiceHost();
+        return instance.config.getServiceHostname();
     }
 
     public static String getServiceEndpoint() {
@@ -47,22 +47,23 @@ public class NamingConst {
     }
 
     public static String getServiceSFNQueryPrefix() {
-        return instance.config.getSFNQueryStringPrefix();
+        return "SFN";
+        // return instance.config.getSFNQueryStringPrefix();
     }
 
-    public static boolean isWithQueryStringForm() {
-        return instance.config.getSURLInQueryForm();
-    }
+    // public static boolean isWithQueryStringForm() {
+    // return instance.config.getSURLInQueryForm();
+    // }
 
-    public static String getServiceQueryPrefix() {
-        StringBuffer result = new StringBuffer("");
-        if (isWithQueryStringForm()) {
-            result.append(getServiceEndpoint());
-            result.append("?");
-            result.append(getServiceSFNQueryPrefix());
-            result.append("=");
-        }
-        return result.toString();
-    }
+    // public static String getServiceQueryPrefix() {
+    // StringBuffer result = new StringBuffer("");
+    // if (isWithQueryStringForm()) {
+    // result.append(getServiceEndpoint());
+    // result.append("?");
+    // result.append(getServiceSFNQueryPrefix());
+    // result.append("=");
+    // }
+    // return result.toString();
+    // }
 
 }

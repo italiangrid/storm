@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS `storage_space` (
   `SS_ID` bigint(20) NOT NULL auto_increment,
   `USERDN` VARCHAR(150) NOT NULL default '',
   `VOGROUP` VARCHAR(20) NOT NULL default '',
-  `ALIAS` VARCHAR(100) default NULL BINARY,
+  `ALIAS` VARCHAR(100) default NULL,
   `SPACE_TOKEN` VARCHAR(100) NOT NULL default '' BINARY,
   `CREATED` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `TOTAL_SIZE` bigint(20) NOT NULL default '0',

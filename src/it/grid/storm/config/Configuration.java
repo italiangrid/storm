@@ -9,14 +9,24 @@
 
 package it.grid.storm.config;
 
+import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from configuration files,
@@ -29,7 +39,8 @@ import org.slf4j.LoggerFactory;
 
 public class Configuration {
 
-    private final Logger logger = LoggerFactory.getLogger(Configuration.class);
+    private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
+
     private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
     // as default
     private static Configuration instance = new Configuration(); // only
@@ -55,6 +66,127 @@ public class Configuration {
     public void setConfigReader(ConfigReader cr) {
         if (cr != null) {
             this.cr = cr;
+        }
+    }
+
+    /*
+        ############################################################
+        ##
+        ##   MANDATORY PROPERTIES
+        ##
+        ############################################################
+        
+         NEW KEY                              |   OLD KEY
+       ---------------------------------------+--------------------------------------------------------
+        storm.service.SURL.hostname           |   storm.service.hostname
+        storm.service.SURL.port               |   storm.service.port           fe.port 
+        storm.service.SURL.service-path       |   storm.service.endpoint
+                                              |
+        storm.service.FE-list.hostnames       |   storm.machinenames
+        storm.service.FE-list.IPs             |   storm.machineIPs
+                                              |
+        storm.service.request-db.dbms-vendor  |   asynch.picker.db.driver       asynch.picker.db.protocol
+        storm.service.request-db.host         |   asynch.picker.db.host
+        storm.service.request-db.db-name      |   asynch.picker.db.name
+        storm.service.request-db.username     |   asynch.picker.db.username
+        storm.service.request-db.passwd       |   asynch.picker.db.passwd
+                                              |
+        --------------------------------------+----------------------------------------------------------
+    *
+    */
+    /**
+     * 
+     * @return String
+     */
+    public String getServiceEndpoint() {
+        String key = "storm.service.endpoint";
+        String defaultValue = "UNDEFINED_SERVICE_ENDPOINT";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /**
+     * MANDATORY CONFIGURATION PARAMETER!
+     * 
+     * @return String
+     */
+    public String getServiceHostname() {
+        String key = "storm.service.SURL.hostname";
+        String defaultValue = "UNDEFINED_STORM_HOSTNAME";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /**
+     * Method used by SFN to establish the FE binding port. 
+     * 
+     * If no value is found in the configuration medium, then the default one is used instead. 
+     * key="storm.service.port"; 
+     * default value="8444"
+     */
+    public int getServicePort() {
+        String key = "storm.service.port";
+        int defaultValue = 8444;
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    /**
+     * Method used to get a List of Strings of the names of the machine hosting the FE for _this_ StoRM instance! Used
+     * in srmCopy to understand if the fromSURL/toSURL refer to the server itself or to some other foreign server! The
+     * List contains Strings in _lower_case_!!! If no value is found in the configuration medium, then the default value
+     * is returned instead. key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
+     */
+    public List<String> getListOfMachineNames() {
+        String key = "storm.service.FE-list.hostnames";
+        if (cr.getConfiguration().containsKey(key)) {
+            String[] names = cr.getConfiguration().getStringArray(key);
+
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim().toLowerCase();
+            }
+            return Arrays.asList(names);
+        } else {
+            return Arrays.asList(new String[] { "localhost" });
+        }
+    }
+
+    /**
+     * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM instance! Used in
+     * the xmlrcp server configuration, to allow request coming from the specified IP. (Into the xmlrpc server the
+     * filter is done by IP, not hostname.) This paramter is mandatory when a distribuited FE-BE installation of StoRM
+     * is used togheter with a dynamic DNS on the FE hostname. In that case the properties storm.machinenames is not
+     * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
+     * key="storm.machineIPs"; default value={"127.0.0.1"};
+     */
+    public List<String> getListOfMachineIPs() {
+        String key = "storm.service.FE-list.IPs";
+
+        if (cr.getConfiguration().containsKey(key)) {
+
+            String[] names = cr.getConfiguration().getString(key).split(";"); // split
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim().toLowerCase(); // for each bit remove
+            }
+            return Arrays.asList(names);
+
+        } else {
+            return Arrays.asList(new String[] { "127.0.0.1" });
         }
     }
 
@@ -144,6 +276,14 @@ public class Configuration {
             return cr.getConfiguration().getString(key);
         }
     }
+
+    /*
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ##
+    ##   END definition of MANDATORY PROPERTIESs
+    ##
+    ############################################################
+    */
 
     /**
      * Method used by all DAOs to establish the reconnection period in _seconds_: after such period the DB connection
@@ -469,15 +609,15 @@ public class Configuration {
      */
     public List<String> getListOfDefaultSpaceToken() {
         String key = "storm.service.defaultSpaceTokens";
-        
+
         if (cr.getConfiguration().containsKey(key)) {
-            
+
             String[] namesArray = cr.getConfiguration().getStringArray(key);
             if (namesArray == null) {
                 return new ArrayList<String>();
             }
             return Arrays.asList(namesArray);
-            
+
         } else {
             return new ArrayList<String>();
         }
@@ -519,155 +659,6 @@ public class Configuration {
     }
 
     /**
-     * Method used to get a List of Strings of the names of the machine hosting the FE for _this_ StoRM instance! Used
-     * in srmCopy to understand if the fromSURL/toSURL refer to the server itself or to some other foreign server! The
-     * List contains Strings in _lower_case_!!! If no value is found in the configuration medium, then the default value
-     * is returned instead. key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
-     */
-    public List<String> getListOfMachineNames() {
-        String key = "storm.machinenames";
-        if (cr.getConfiguration().containsKey(key)) {
-            String[] names = cr.getConfiguration().getStringArray(key);
-
-            for (int i = 0; i < names.length; i++) {
-                names[i] = names[i].trim().toLowerCase();
-            }
-            return Arrays.asList(names);
-        } else {
-            return Arrays.asList(new String[] { "testbed006.cnaf.infn.it" });
-        }
-    }
-
-    /**
-     * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM instance! Used in
-     * the xmlrcp server configuration, to allow request coming from the specified IP. (Into the xmlrpc server the
-     * filter is done by IP, not hostname.) This paramter is mandatory when a distribuited FE-BE installation of StoRM
-     * is used togheter with a dynamic DNS on the FE hostname. In that case the properties storm.machinenames is not
-     * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
-     * key="storm.machineIPs"; default value={"127.0.0.1"};
-     */
-    public List<String> getListOfMachineIPs() {
-        String key = "storm.machineIPs";
-        
-        if (cr.getConfiguration().containsKey(key)) {
-            
-            String[] names = cr.getConfiguration().getString(key).split(";"); // split
-            for (int i = 0; i < names.length; i++) {
-                names[i] = names[i].trim().toLowerCase(); // for each bit remove
-            }
-            return Arrays.asList(names);
-            
-        } else {
-            return Arrays.asList(new String[] { "127.0.0.1" });
-        }
-    }
-
-    /**
-     * Reads the 'authorization.sources' configuration key and tries to instanciate a <code>List</code> of classes whose
-     * name matches the configuration key given.
-     * <p>
-     * The configuration value is a comma-separated list of class names; therefore, they are case-sensitive. If a name
-     * contains no dots, then it is considered the name of a class in the
-     * <code>it.grid.storm.authorization.sources</code> package. If no value is found in the configuration medium, then
-     * the default value "DenyAllAuthorizationSource" is returned instead. FIXME: there should be no default value;
-     * failing to configure an authorization source should be a critical error instead.
-     * 
-     * @throws RuntimeException if the extracted configuration value cannot be mapped to a Java class, as we cannot
-     *             properly handle this condition. The use of a RuntimeException was chosen after suggestions in http
-     *             ://www-106.ibm.com/developerworks/library/j-jtp05254.html? ca=drs-j2204 key="authorization.sources";
-     *             default value=DenyAllAuthorizationSource;
-     */
-    @SuppressWarnings("unchecked")
-    public Collection<Object> getAuthorizationSources() {
-        String key = "authorization.sources";
-        String value = "";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // default (FIXME: no default, this should be explicitly configured)
-            value = "DenyAllAuthorizationSource";
-        } else {
-            // load from external source
-            value = cr.getConfiguration().getString(key);
-        }
-        //
-        Collection<Object> result = new ArrayList<Object>();
-        String[] authorizationSources = value.trim().split("\\s*,\\s*");
-
-        for (String configValue : authorizationSources) {
-            if (-1 == configValue.indexOf('.')) {
-                // unqualified name, prepend
-                // 'it.grid.storm.authorization.sources'
-                configValue = "it.grid.storm.authorization.sources." + configValue;
-            }
-            try {
-                Class sourceClass = Class.forName(configValue);
-                result.add(sourceClass.newInstance());
-            } catch (ClassNotFoundException e) {
-                logger.error("Cannot find class '" + configValue + " to handle '" + configValue
-                        + "' (from configuration value " + "'authorization.sources'): " + e.getMessage());
-                logger.warn("Ignoring authorization source '" + configValue + "'");
-            } catch (InstantiationException e) {
-                logger.error("Cannot instanciate class '" + configValue
-                        + " as an instance of AuthorizationQueryInterface" + " (from configuration value "
-                        + "'authorization.sources'): " + e.getMessage());
-                logger.warn("Ignoring authorization source '" + configValue + "'");
-            } catch (IllegalAccessException e) {
-                logger.error("Cannot instanciate class '" + configValue
-                        + " as an instance of AuthorizationQueryInterface" + " (from configuration value "
-                        + "'authorization.sources'): " + e.getMessage());
-                logger.warn("Ignoring authorization source '" + configValue + "'");
-            }
-        }
-        if (0 == result.size()) {
-            String msg = "Abort: No AuthorizationSource could be loaded; "
-                    + "all configuration values in 'authorization.sources'"
-                    + " were ignored because of errors (see log)";
-            logger.error(msg);
-            throw new RuntimeException(msg);
-        }
-        return result;
-    }
-
-    /**
-     * Reads the 'authorization.combining.algorithm' configuration key and tries to instanciate a
-     * <code>DecisionCombiningAlgorithm</code> whose name matches the configuration key given. If no value is found in
-     * the configuration medium, then the default value is returned instead.
-     * 
-     * @throws IllegalArgumentException if the extracted configuration value cannot be mapped to a subclass of
-     *             {@link it.grid.storm.authorization.DecisionCombiningAlgorithm} , as we cannot properly handle this
-     *             condition. The use of a RuntimeExcpetion was chosen after suggestions in http://www-106.
-     *             ibm.com/developerworks/library/j-jtp05254.html?ca=drs-j2204 key="authorization.combining.algorithm";
-     *             default value=FirstProper;
-     */
-    @SuppressWarnings("unchecked")
-    public Class getAuthorizationCombiningAlgorithm() {
-        String key = "authorization.combining.algorithm";
-        String value = "";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // default
-            value = "FirstProperDecisionCombiningAlgorithm";
-        } else {
-            // load from external source
-            value = cr.getConfiguration().getString(key);
-        }
-        //
-        // XXX: should define its own exception
-        String algorithmName = value;
-        if (-1 == algorithmName.indexOf('.')) {
-            // unqualified name, prepend 'it.grid.storm.authorization.sources'
-            algorithmName = "it.grid.storm.authorization.combiners." + algorithmName;
-        }
-        try {
-            return Class.forName(algorithmName);
-        } catch (ClassNotFoundException e) {
-            String msg = "Cannot find class'" + algorithmName + " to handle '" + value
-                    + "' (from configuration key " + "'authorization.combining.algorithm'): "
-                    + e.getMessage();
-            logger.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-    }
-
-    /**
      * Method that returns the directory holding the configuration file. The methods that make use of it are
      * uncertain... must be found soon!!! Beware that the configuration directory is implicit in the complete pathname
      * to the configuration file supplied in the command line when starting StoRM BE.
@@ -683,16 +674,17 @@ public class Configuration {
      * does not find it then a default value for such directory is used. The returned String is of the form:
      * storm.configuration.dir + "/" + "namespace.xml" key=storm.configuration.dir; default value="/home/storm/config";
      */
-    public String getNamespaceConfigurationFile() {
-        String dirValue = "";
-        dirValue = cr.configurationDirectory();
-        String config_file = dirValue;
-        if (!config_file.endsWith(java.io.File.separator)) {
-            config_file = config_file + java.io.File.separator;
+    /*    public String getNamespaceConfigurationFile() {
+            String dirValue = "";
+            dirValue = cr.configurationDirectory();
+            String config_file = dirValue;
+            if (!config_file.endsWith(java.io.File.separator)) {
+                config_file = config_file + java.io.File.separator;
+            }
+            config_file = config_file + "namespace.xml";
+            return config_file;
         }
-        config_file = config_file + "namespace.xml";
-        return config_file;
-    }
+    */
 
     /**
      * Method used in filesystem wrapper to get the directory path for temporary file creation: StoRM crates a temporary
@@ -700,33 +692,11 @@ public class Configuration {
      * found in the configuration medium, then the default value is returned instead.
      * key="wrapper.filesystem.acl.tmpdir"; default value="/tmp";
      */
-    public String getTempDir() {
-        String key = "wrapper.filesystem.acl.tmpdir";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "/tmp";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * Method used in experimental persistence layer implementation to get DATASOURCE type to use in DataSourceFactory.
-     * DataSource in test model must be MemoryObect, while soon it will become a HYBERNATE object. If no value is found
-     * in the configuration medium, then the default value is returned instead. key="data_source_type"; default
-     * value="MEMORY_OBJECT";
+    /*
+     * public String getTempDir() { String key = "wrapper.filesystem.acl.tmpdir"; if
+     * (!cr.getConfiguration().containsKey(key)) { // return default return "/tmp"; } else { // load from external
+     * source return cr.getConfiguration().getString(key); } }
      */
-    public String getDataSourceType() {
-        String key = "data_source_type";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "MEMORY_OBJECT";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
 
     /**
      * Method used by StoRMCommandServer to establish the listening port to which it should bind. If no value is found
@@ -1305,6 +1275,53 @@ public class Configuration {
         }
     }
 
+    /**
+     * Retrieve the namespace schema file name from the first line (attribute) of namespace.xml.
+     * 
+     * @return String
+     */
+    public String getNamespaceSchemaFilename() {
+        String key = "namespace.schema.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // scan the first line of namespace.xml 
+            String namespaceSchemaFN = "namespace.xsd";
+            String namespaceFN = getNamespaceConfigPath() + File.pathSeparator + getNamespaceConfigFilename();
+            File namespaceFile = new File(namespaceFN);
+            if (namespaceFile.exists()) {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                try {
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    Document doc = builder.parse(namespaceFN);
+                    Element rootElement = doc.getDocumentElement();
+                    if (!(rootElement.getTagName().equals("namespace"))) {
+                        if (rootElement.hasAttributes()) {
+                            String value = rootElement.getAttribute("xsi:noNamespaceSchemaLocation");
+                            if ((value != null) && (value.length() > 0)) {
+                                namespaceSchemaFN = value;
+                                log.debug("namespace schema is : " + namespaceSchemaFN);
+                            }
+                        } else {
+                            log.error("namespace.xml don't have a valid root element attributes");
+                        }
+                    } else {
+                        log.error("namespace.xml don't have a valid root element.");
+                    }
+
+                } catch (ParserConfigurationException e) {
+                    log.error("Error while parsing namespace.xml." + e.getMessage());
+                } catch (SAXException e) {
+                    log.error("Error while parsing namespace.xml." + e.getMessage());
+                } catch (IOException e) {
+                    log.error("Error while parsing namespace.xml." + e.getMessage());
+                }
+            }
+            return namespaceSchemaFN;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
     public int getNamespaceConfigRefreshRateInSeconds() {
         String key = "namespace.refreshrate";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -1340,17 +1357,17 @@ public class Configuration {
      * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
      * default one is used instead. key="fe.port"; default value="8444"
      */
-    public int getFEPort() {
-        String key = "fe.port";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return 8444;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
+    /*    public int getFEPort() {
+            String key = "fe.port";
+            if (!cr.getConfiguration().containsKey(key)) {
+                // return default
+                return 8444;
+            } else {
+                // load from external source
+                return cr.getConfiguration().getInt(key);
+            }
         }
-    }
-
+    */
     /**
      * Method used by NaiveGridFTP internal client in srmCopy to establish the time out in milliseconds for a reply from
      * the server. If no value is found in the configuration medium, then the default one is used instead.
@@ -1383,76 +1400,30 @@ public class Configuration {
         }
     }
 
-    public boolean getSURLInQueryForm() {
-        boolean result = false;
-        String key = "storm.service.inQueryForm";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return result;
-        } else {
-            // load from external source
-            result = cr.getConfiguration().getBoolean(key);
-        }
-        return result;
-    }
+    // public boolean getSURLInQueryForm() {
+    // boolean result = false;
+    // String key = "storm.service.inQueryForm";
+    // if (!cr.getConfiguration().containsKey(key)) {
+    // // return default
+    // return result;
+    // } else {
+    // // load from external source
+    // result = cr.getConfiguration().getBoolean(key);
+    // }
+    // return result;
+    // }
 
-    public String getSFNQueryStringPrefix() {
-        String key = "storm.service.SFNQueryStringPrefix";
-        String defaultValue = "SFN";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * MANDATORY CONFIGURATION PARAMETER IF AND ONLY IF SURL is in QUERY FORM
-     * 
-     * @return String
-     */
-    public String getServiceEndpoint() {
-        String key = "storm.service.endpoint";
-        String defaultValue = "UNDEFINED_SERVICE_ENDPOINT";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    /**
-     * MANDATORY CONFIGURATION PARAMETER!
-     * 
-     * @return String
-     */
-    public String getServiceHost() {
-        String key = "storm.service.hostname";
-        String defaultValue = "UNDEFINED_STORM_HOSTNAME";
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(key);
-        }
-    }
-
-    public int getServicePort() {
-        String key = "storm.service.port";
-        int defaultValue = getFEPort();
-        if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(key);
-        }
-    }
+    // public String getSFNQueryStringPrefix() {
+    // String key = "storm.service.SFNQueryStringPrefix";
+    // String defaultValue = "SFN";
+    // if (!cr.getConfiguration().containsKey(key)) {
+    // // return default
+    // return defaultValue;
+    // } else {
+    // // load from external source
+    // return cr.getConfiguration().getString(key);
+    // }
+    // }
 
     /**
      * Method used by RequestCredentialsDAO to establish the directory that holds the proxy file. If no value is found
