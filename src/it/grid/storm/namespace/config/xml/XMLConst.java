@@ -1,9 +1,9 @@
 package it.grid.storm.namespace.config.xml;
 
-import java.util.*;
-
-import it.grid.storm.namespace.*;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.SAAuthzType;
+
+import java.util.List;
 
 /**
  * <p>Title: </p>
@@ -93,7 +93,7 @@ public interface XMLConst {
     public String DEF_FILE_LT = DEF_FILE + "[@lifetime]";
     public String DEF_FILE_TYPE = DEF_FILE + "[@type]";
     //    PROPERTIES-TYPE
-    public String RETENTION_POLICY= FS_PROPERTIES + ".RetentionPolicy";
+    public String RETENTION_POLICY = FS_PROPERTIES + ".RetentionPolicy";
     public String ACCESS_LATENCY = FS_PROPERTIES + ".AccessLatency";
     public String EXPIRATION_MODE = FS_PROPERTIES + ".ExpirationMode";
     public String ONLINE_SIZE = FS_PROPERTIES + ".TotalOnlineSize";
@@ -119,8 +119,8 @@ public interface XMLConst {
     public String ACL_ENTRY_COUNTING = DEFAULT_ACL + ".acl-entry.groupName";
 
     //    QUOTA-PROPERTIES
-    public String QUOTA_PROPERTIES = QUOTA + ".properties";
-    public String QUOTA_PROPERTIES_FILE = QUOTA + ".properties-file";
+    //    public String QUOTA_PROPERTIES = QUOTA + ".properties";
+    //    public String QUOTA_PROPERTIES_FILE = QUOTA + ".properties-file";
     //    TRANS-PROT-TYPE
     public String PROTOCOL_BY_NAME = TRANS_PROT + ".prot[@name]";
     public String PROTOCOL_COUNTING = TRANS_PROT + ".prot.schema";
@@ -133,19 +133,18 @@ public interface XMLConst {
     public String PERMISSIONS = ACL_ENTRY + ".permissions";
 
     //    QUOTA-TYPE
-    public String QUOTA_TYPE = QUOTA_PROPERTIES + ".quotaType";
-    public String QUOTA_DEVICE = QUOTA_PROPERTIES + ".device";
+    public String QUOTA_ELEMENT = QUOTA + ".quotaElement";
+    public String QUOTA_DEVICE = QUOTA + ".device";
 
     //    PROT-TYPE
-    public String PROT_ID = PROTOCOL + ".id";    //1.4.0
+    public String PROT_ID = PROTOCOL + ".id"; //1.4.0
     public String PROT_SCHEMA = PROTOCOL + ".schema";
     public String PROT_HOST = PROTOCOL + ".host";
     public String PROT_PORT = PROTOCOL + ".port";
 
     //    POOL DETAILS
-    public String BALANCE_STRATEGY = POOL + ".balance-strategy";    //1.4.0
-    public String POOL_MEMBERS = POOL + ".members";    //1.4.0
-
+    public String BALANCE_STRATEGY = POOL + ".balance-strategy"; //1.4.0
+    public String POOL_MEMBERS = POOL + ".members"; //1.4.0
 
     //#########     Level-7     #########
     //    POOL MEMBER
@@ -156,9 +155,9 @@ public interface XMLConst {
     public String POOL_MEMBER_WEIGHT = POOL_MEMBER + ".weight"; //1.4.0
 
     //    QUOTA-TYPE-ID
-    public String FILE_SET_ID = QUOTA_TYPE + ".filesetID";
-    public String GROUP_ID = QUOTA_TYPE + ".groupID";
-    public String USER_ID = QUOTA_TYPE + ".userID";
+    public String QUOTA_FILE_SET_NAME = QUOTA_ELEMENT + ".filesetName";
+    public String QUOTA_GROUP_NAME = QUOTA_ELEMENT + ".groupName";
+    public String QUOTA_USER_NAME = QUOTA_ELEMENT + ".userName";
 
     //#####################################
     // OPTIONAL ELEMENT and DEFAULT VALUES
@@ -223,12 +222,6 @@ public interface XMLConst {
 
     public boolean getQuotaEnabled(String nameOfFS) throws NamespaceException;
 
-    public boolean getQuotaPropertiesFileDefined(String nameOfFS) throws NamespaceException;
-
-    public boolean getQuotaPropertiesDefined(String nameOfFS) throws NamespaceException;
-
-    public String getQuotaPropertiesFile(String nameOfFS) throws NamespaceException;
-
     public boolean getQuotaDeviceDefined(String nameOfFS) throws NamespaceException;
 
     public String getQuotaDevice(String nameOfFS) throws NamespaceException;
@@ -249,13 +242,13 @@ public interface XMLConst {
 
     public String getProtName(String nameOfFS, int numOfProt) throws NamespaceException;
 
-    public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException;  //1.4.0
+    public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException; //1.4.0
 
     public String getProtSchema(String nameOfFS, int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
-    public String getProtHost(String nameOfFS,  int numOfProt) throws NamespaceException; //Modified in 1.4.0
+    public String getProtHost(String nameOfFS, int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
-    public String getProtPort(String nameOfFS,  int numOfProt) throws NamespaceException; //Modified in 1.4.0
+    public String getProtPort(String nameOfFS, int numOfProt) throws NamespaceException; //Modified in 1.4.0
 
     public String getRetentionPolicyType(String nameOfFS) throws NamespaceException;
 
@@ -265,7 +258,7 @@ public interface XMLConst {
 
     public String getOnlineSpaceUnitType(String nameOfFS) throws NamespaceException;
 
-    public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException;  //1.4.0
+    public boolean getOnlineSpaceLimitedSize(String nameOfFS) throws NamespaceException; //1.4.0
 
     public long getOnlineSpaceSize(String nameOfFS) throws NamespaceException;
 
@@ -273,15 +266,15 @@ public interface XMLConst {
 
     public long getNearlineSpaceSize(String nameOfFS) throws NamespaceException;
 
-    public boolean getPoolDefined(String nameOfFS) throws NamespaceException;  //1.4.0
+    public boolean getPoolDefined(String nameOfFS) throws NamespaceException; //1.4.0
 
-    public String getBalancerStrategy(String nameOfFS) throws NamespaceException;  //1.4.0
+    public String getBalancerStrategy(String nameOfFS) throws NamespaceException; //1.4.0
 
-    public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException;  //1.4.0
+    public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException; //1.4.0
 
-    public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException;  //1.4.0
+    public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException; //1.4.0
 
-    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException;  //1.4.0
+    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException; //1.4.0
 
     public int getNumberOfMappingRule() throws NamespaceException;
 

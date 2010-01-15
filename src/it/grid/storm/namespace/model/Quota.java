@@ -6,35 +6,27 @@ import org.slf4j.Logger;
 
 public class Quota {
 
-    private Logger log = NamespaceDirector.getLogger();
+    private final Logger log = NamespaceDirector.getLogger();
 
     private boolean defined = false;
     private boolean enabled = false;
-    private String propertiesFile = null;
     private String device = null;
-    private QuotaType quotaID = null;
+    private QuotaType quotaType = null;
+    private String quotaElementName = null;
 
     public Quota() {
         super();
     }
 
-    public Quota(boolean enabled, String device, QuotaType quotaID) {
-        this.defined = true;
+    public Quota(boolean enabled, String device, QuotaType quotaType) {
+        defined = true;
         this.enabled = enabled;
         this.device = device;
-        this.quotaID = quotaID;
-        this.propertiesFile = null;
-    }
-
-    public Quota(boolean enabled, String propertiesFile) {
-        this.defined = true;
-        this.enabled = enabled;
-        this.propertiesFile = propertiesFile;
-        parsingPropertiesFile();
+        this.quotaType = quotaType;
     }
 
     /**
-     * READ ONLY PROPERTY
+     * Read only attribute
      * @return boolean
      */
     public boolean getDefined() {
@@ -42,7 +34,7 @@ public class Quota {
     }
 
     public boolean getEnabled() {
-        return this.enabled;
+        return enabled;
     }
 
     public void setEnabled(boolean enabled) {
@@ -50,42 +42,45 @@ public class Quota {
     }
 
     public String getDevice() {
-        return this.device;
+        return device;
     }
 
     public void setDevice(String device) {
         this.device = device;
     }
 
-    public QuotaType getQuotaID() {
-        return this.quotaID;
+    public QuotaType getQuotaType() {
+        return quotaType;
     }
 
-    public void setQuotaID(QuotaType quotaID){
-        this.quotaID = quotaID;
+    public void setQuotaType(QuotaType quotaType) {
+        this.quotaType = quotaType;
     }
 
     /**
-     * Method used to retrieve Quota Parameters
-     * @todo
+     * Return the value of UserName or GroupName or FileSetName.
+     * The meaning of the value depends on QuotaType.
+     * 
+     * @return the quotaElementName 
      */
-    private void parsingPropertiesFile(){
-        log.warn("WARNING! Parsing of Quota Properties File is not enabled in this version of StoRM!");
+    public String getQuotaElementName() {
+        return quotaElementName;
+    }
+
+    /**
+     * @param quotaElementName the quotaElementName to set
+     */
+    public void setQuotaElementName(String quotaElementName) {
+        this.quotaElementName = quotaElementName;
     }
 
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
-        result.append("Quota : [ Defined:'"+this.defined+"' ");
-        result.append("Enabled:'"+this.enabled+"' ");
-        if (this.propertiesFile==null) {
-            result.append("device:'"+this.device+"', ");
-            result.append("quotaID:'"+this.quotaID+" ");
-        } else {
-            result.append("Property-file:'"+this.propertiesFile+"' --> [");
-            result.append("device:'"+this.device+"', ");
-            result.append("quotaID:'"+this.quotaID+"' ]");
-        }
+        result.append("Quota : [ Defined:'" + defined + "' ");
+        result.append("Enabled:'" + enabled + "' ");
+        result.append("device:'" + device + "', ");
+        result.append("quotaType:'" + quotaType + " ");
         result.append("]");
         return result.toString();
     }

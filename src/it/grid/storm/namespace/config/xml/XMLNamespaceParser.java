@@ -478,30 +478,26 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         Quota quota = null;
         if (quotaDefined) {
             boolean quotaEnabled = parserUtil.getQuotaEnabled(fsName);
-            if (parserUtil.getQuotaPropertiesFileDefined(fsName)) {
-                String propertiesFile = parserUtil.getQuotaPropertiesFile(fsName);
-                quota = new Quota(quotaEnabled, propertiesFile);
+            String device = parserUtil.getQuotaDevice(fsName);
+            QuotaType quotaType;
+            String quotaValue = null;
+            if (parserUtil.getQuotaFilesetDefined(fsName)) {
+                quotaType = QuotaType.buildQuotaType(QuotaType.FILESET);
+                quotaValue = parserUtil.getQuotaFileset(fsName);
             } else {
-                String device = parserUtil.getQuotaDevice(fsName);
-                QuotaType quotaType;
-                String quotaValue = null;
-                if (parserUtil.getQuotaFilesetDefined(fsName)) {
-                    quotaType = QuotaType.buildQuotaType(QuotaType.FILESET);
-                    quotaValue = parserUtil.getQuotaFileset(fsName);
+                if (parserUtil.getQuotaGroupIDDefined(fsName)) {
+                    quotaType = QuotaType.buildQuotaType(QuotaType.GRP);
+                    quotaValue = parserUtil.getQuotaGroupID(fsName);
                 } else {
-                    if (parserUtil.getQuotaGroupIDDefined(fsName)) {
-                        quotaType = QuotaType.buildQuotaType(QuotaType.GRP);
-                        quotaValue = parserUtil.getQuotaGroupID(fsName);
+                    if (parserUtil.getQuotaUserIDDefined(fsName)) {
+                        quotaType = QuotaType.buildQuotaType(QuotaType.USR);
+                        quotaValue = parserUtil.getQuotaUserID(fsName);
                     } else {
-                        if (parserUtil.getQuotaUserIDDefined(fsName)) {
-                            quotaType = QuotaType.buildQuotaType(QuotaType.USR);
-                            quotaValue = parserUtil.getQuotaUserID(fsName);
-                        } else {
-                            quotaType = QuotaType.buildQuotaType(QuotaType.UNKNOWN);
-                            quotaValue = "unknown";
-                        }
+                        quotaType = QuotaType.buildQuotaType(QuotaType.UNKNOWN);
+                        quotaValue = "unknown";
                     }
                 }
+
                 quotaType.setValue(quotaValue);
                 quota = new Quota(quotaEnabled, device, quotaType);
             }
