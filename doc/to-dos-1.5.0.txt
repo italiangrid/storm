@@ -1,0 +1,193 @@
+StoRM 1.5.0
+===========
+
+###
+1) Constants e le Entry.
+- Dove recuperare le costanti?
+- Inserire nelle costanti (Major, Minor, Revision, Update, Name) per il versioning
+- Queste costanti devono essere condivise per versionare:
+  - namespace-<M.m.r>.xsd
+- Valori inseriti in build.properties  
+  
+###
+2) storm.properties
+ - prevedere un sistema di warning (exception? / log.warn ) in caso di proprietà mandatory non definite
+ - modifica delle specifiche di array di valori. Es. [ .. , .. ] e necessità di specificarlo nella key (list)
+ - possibilità di specificare proprietà già definite ${key.name}. Attenzione alla circolarità (NO-LOOP, e LOOP-Detection).
+   - XProperties
+   - eProperties (code.google)   : http://code.google.com/p/eproperties/downloads/list
+   - possibilità di referenziare variabili di sistema ${user.dir}, ....
+   - coma anche variabili definite in shell $GPFS_HOME ..
+   - per fare questo si può pensare di estendere Properties con StoRMProperties.   
+
+###
+3) Namespace Validator e Loader
+- namespace.xml valid with schema
+- Check semantico
+  - i fs-root devono esistere
+  - devono possedere i permessi corretti per l'utente storm
+
+###
+4) L'RPM va aggiornato con
+- Licenza corretta
+- Copyright corretto
+- Documentazione allegata e distribuita
+
+###
+5) Estrazione dell'interfaccia File System
+- spunto da JDK 7.0 - NIO.2
+  - > Methods throw exceptions!
+  - > Path operations (relative etc.)
+  - > File operations (copy, check access, symlink)
+  - > Directories (iterate)
+  - > Recursive operations
+  - > File change notification
+  - > File attributes (NFSv4 ACL, Posix)
+  - > Provider interface
+- FileSystem class as a factory ( FileSystemProvider --> FileSystem )
+- Separazione del progetto, come jar distinto
+  
+###
+6) Check storage_space in StoRM_BE_ISAM
+- Cambiare il nome al DB.. con uno un po' più significativo
+  - storm_internal
+- Eliminare la tabella storage_file che non è utilizzata 
+  - nello script etc/db/storm_mysql_tbl.sql
+- Verificare chi crea la tabella e il DB
+  - nello script etc/db/storm_mysql_tbl.sql
+- fare un thread che ricostruisce l'albero delle directory per ogni SA
+  - limite del numero di livelli definibile da configurazione
+  - per ogni nodo dell'albero:
+    - quando fatta l'ultima scansione
+	- nr. files
+	- nr. sotto-directories
+	- spazio utilizzato
+- implementare una coda nella quale inserire i path da dover analizzare
+  - elementi in coda inseriti in seguito alle operazioni 
+    - PtP/PutDone
+	- rm
+  - periodicamente (def. via configurazione) inserisce le root delle S.A. o sotto-alberi. 
+- Thread che prende elementi dalla coda :
+  - aggiorna il nodo dell'albero relativo al path nell'elemento in coda
+  - aggiorna la tabella storage_space (storage_area) con lo spazio utilizzato
+- Il task effettua una visita a ventaglio dell'albero con partenza il path nel nodo
+  - calcola la somma dello spazio occupato dai files gestiti da StoRM.
+  - se presente l'owner (un EA inserito all'atto della creazione del file), effettua l'accounting per owner.
+    - se non è presente come EA (al momento non lo memorizziamo) lo ricava dai permessi ACE inseriti.  
+  - prendere spunto da DU.java in Hadoop (org.apache.hadoop.fs.*) e da ProcessBuilder in Java
+    - DU esegue un processo esterno (command line in linux)
+  - L'esecuzione del task può avvenire presso il checksum (storm-agent).
+- Ownership delle S.A.
+  - Static S.A. vengono create da StoRM per conto di una VO/Group.
+    - L'ownership dovrebbe essere di VO/Group.
+	  - Per il momento l'ownership si può ricavare dalle approachable-rules.
+	  - Successivamente si può prevedere un campo owner in FS in Namespace.
+- Invoice header (intestazione della fattura)
+  - Può essere differente dalla VO owner della S.A.
+- Cambiare lo schema di storage_space per renderlo adeguato alle S.A. (rinominare in storage_area):
+  - id
+  - alias
+  - creation-time
+  - expiration-time       # for S.A. this information is not usefull (was lifetime)
+  - spaceType             # for S.A. this information is not usefull 
+  - storageInfo           # Is really needed / used ? 
+  - ownership
+  - invoice-header        # could be different from ownership
+  - space-protection (*)  # list of space-ace (?)
+  - total-online-size
+  - used-size
+  - guar-size             # Is really needed?
+  - quota-enabled
+  - overall-checktime     # Complete scanning of the S.A.
+  - update-time           # The sum is updated upon PtP/PutDone and Rm successfull command
+  - nr-files              # this information could be used to a future quota on inodes (!?)
+  
+###
+7) authz 
+- Modifica di path-authz.db per includere subject non solo local-group ma anche dn e fqan con reg.expr.
+  - in questo modo si ampliano le possibilità di generalizzazione
+- Studio dell'HP di cambiare anche l'object.
+  - aggiungere la possibilità di specificare anche lo storage-space-token-description
+  - in questo caso le operazioni possibili sono differenti, ovvero le op. su space.
+- Path authz-db
+  - subject category : local-group / fqan / dn 
+  - prendere spunto da <??>
+  
+###
+8) storm.properties
+- Renderle omogenee  "<component>.<property>"
+  - <component> : 
+     - storm-service, 
+     - asynch (picker,..), 
+	 - synch (fe-be-channels, ..), 
+	 - persistence, ... 
+
+###
+9) copyright
+- Verifica di sviluppo di un task in ANT che aggiunga/corregga il copyright dei files
+  - vedi JCommando 
+- Checkstyle e Header.txt
+  - vedi il progetto VFS di Apache
+  
+  
+###
+10) Service monitoring
+- Verifica di sviluppo di un appender per Nagios
+  - vedi chukwa-0.3.0 (hadoop subproject)
+
+### 
+11) StoRM-agent (was checksum)
+- interfaccia che espone metodi che richiedono I/O throughput
+  - long value = checksum (file, algorithm)
+  - long value = diskusage (file-path, user|group, DN, [FQAN])
+
+###
+12) Script di MySQL 
+- prendere spunto da "create_schema-1.1.sql" di LMT (Lustre Monitoring Tool) per la creazione delle tabelle.
+  - formattazione
+- prendere spunto da "create_db.sql" di robinhood. 
+  - In questo script ci sono una serie di test di verifica della configurazione di MySQL.
+
+###
+13) Start-up
+  - Cambiare il welcome string e altre info nello start-up 
+  - evitare di elencare i metodi di configuration
+  - Effettuare un check se le variabili mandatory sono state definite.
+  - Effettuare un check sulla definizione dei root dei FS definiti in namespace.xml
+
+### 
+14) Aggiungere la creazione della tabella recall-table
+  - aggiunger la creazione nello script etc/db/storm_mysql_tbl.sql
+
+###
+15) File System abstraction
+  - vedere l'interfaccia FUSE e l'implementazione fuse-j e jfuse
+  - jna-posix : progetto che crea un jar che permette l'utilizzo di posix da java.
+  
+###
+
+
+======================================
+
+1) File System Abstraction
+2) Information Provider  e Space Accounting
+3) Namespace Configurator e StoRM configurator 
+4) Persistence unification
+5) Maven 
+6) SL5
+7) IPv6
+
+=========
+
+YAIM
+----
+
+1) tabelle mysql.
+  - functions/config_storm_mysql  --> call : <storm-home>/etc/db/storm_database_config.sh
+  - CHECK :  
+    - Dove vengono costruite le tabelle dell'altro DB ?
+    - E' necessario avere due DB ?
+
+2) Modifica dell'info provider fatta da M.David (mail del 1/7/2009 (luglio scorso)).
+	
+3) 

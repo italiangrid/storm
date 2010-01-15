@@ -38,10 +38,6 @@ public class NamingConst {
         return instance.config.getServiceHostname();
     }
 
-    public static String getServiceEndpoint() {
-        return instance.config.getServiceEndpoint();
-    }
-
     public static int getServicePort() {
         return instance.config.getServicePort();
     }

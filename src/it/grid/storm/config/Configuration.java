@@ -96,22 +96,24 @@ public class Configuration {
     */
     /**
      * 
-     * @return String
+     * MANDATORY CONFIGURATION PARAMETER!
+     * Define the SURL endpoints.
+     * 
+     * @return String[]
      */
-    public String getServiceEndpoint() {
-        String key = "storm.service.endpoint";
-        String defaultValue = "UNDEFINED_SERVICE_ENDPOINT";
+    public String[] getManagedSURLs() {
+        String key = "storm.service.SURL.endpoint";
+        String[] defaultValue = { "UNDEFINED_SERVICE_ENDPOINT" };
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return defaultValue;
         } else {
             // load from external source
-            return cr.getConfiguration().getString(key);
+            return cr.getConfiguration().getStringArray(key);
         }
     }
 
     /**
-     * MANDATORY CONFIGURATION PARAMETER!
      * 
      * @return String
      */
@@ -329,7 +331,7 @@ public class Configuration {
      * key="pinnedfiles.cleaning.delay"; default value=10;
      */
     public long getCleaningInitialDelay() {
-        String key = "pinnedfiles.cleaning.delay";
+        String key = "gc.pinnedfiles.cleaning.delay";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
@@ -345,7 +347,7 @@ public class Configuration {
      * value=300; Keep in mind that 300 seconds = 5 minutes.
      */
     public long getCleaningTimeInterval() {
-        String key = "pinnedfiles.cleaning.interval";
+        String key = "gc.pinnedfiles.cleaning.interval";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 300;
@@ -1374,7 +1376,7 @@ public class Configuration {
      * key="NaiveGridFTP.TimeOut"; default value="15000"
      */
     public int getGridFTPTimeOut() {
-        String key = "NaiveGridFTP.TimeOut";
+        String key = "asynch.srmcopy.gridftp.timeout";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 15000;
@@ -1447,7 +1449,7 @@ public class Configuration {
      * is used instead. key="automatic.directory.creation"; default value=false
      */
     public boolean getAutomaticDirectoryCreation() {
-        String key = "automatic.directory.creation";
+        String key = "directory.automatic-creation";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;

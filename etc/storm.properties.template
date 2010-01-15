@@ -1,89 +1,36 @@
-# ============================
-# StoRM General config
-# ============================
-storm.machinenames=@HOSTNAME@
-# BEWARE! storm.machinenames is a list of comma separated strings
-# identifying the various names of the FE. For example:
-# storm.machinenames=frontend-1.cnaf.infn.it,frontend-2.cnaf.infn.it,storm.cnaf.infn.it
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#    TEMPLATE for HEP,
+#      version 1.0
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-storm.service.hostname=@HOSTNAME@
-storm.service.port=8444
-fe.port = 8444
-storm.service.inQueryForm=true
-storm.service.endpoint=/srm/managerv2
-proxy.home=/opt/storm/backend/var/proxies
+# ============================
+# Managed SURL endpoints 
+# ============================
+#
+# Add managed SURL endpoint. This entries are used to check the SURL validity. 
+# Add duplicated key for every valid SURL.
+# Example: srm://@SURL_HOSTNAME@:8444/srm/managerv2 
+# storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>  
+storm.service.SURL.endpoint =  @SURL_ENDPOINT@
 
+
+# ============================
+# Front End hosts
+# ============================
+# 
+# comma-separated list of hostnames composing the FE.
+storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
+
+  
 # ============================
 # FE/BE communication RDBMS
 # ============================
-asynch.picker.db.host = @DB_HOSTNAME@
-asynch.picker.db.username = @DB_USER@
-asynch.picker.db.passwd = @DB_PASSWD@
 
-# ============================
-# SYNCHCALL Component parameter
-# ============================
-synchcall.directoryManager.maxLsEntry=2000
-synchcall.xmlrpc.maxthread=100
+storm.service.request-db.dbms-vendor = mysql
+storm.service.request-db.host = @DB_HOSTNAME@
+storm.service.request-db.username = @DB_USER@ 
+storm.service.request-db.passwd = @DB_PASSWD@
 
-# ============================
-# BE-private RDBMS
-# ============================
-persistence.db.host = @DB_HOSTNAME@
-persistence.db.username = @DB_USER@
-persistence.db.passwd = @DB_PASSWD@
-
-persistence.db.pool = true
-persistence.db.pool.maxActive = 10
-persistence.db.pool.maxWait = 50
-
-# =======================
-# Authorization Component
-# =======================
-authorization.sources = PermitAllAuthorizationSource
-
-# =======================
-# Default Lifetime
-# =======================
-
-# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
-# without any pinLifetime specified. 
-pinLifetime.minimum=259200
-
-# Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
-fileLifetime.default=259200
-
-# Deault PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
-# This value is the one specified in the remote SrmPrepareToGet request.
-SRM22Client.PinLifeTime=259200
-
-
-
-# ========================================================
-# Polling time in seconds for pick up new requests from DB
-# ========================================================
-
-asynch.PickingTimeInterval = 2
-
-
-# ===================
-# GridFTP parameter
-# ===================
-
-extraslashes.gsiftp=/
-
-
-# ===========================
-# Garbage Collector parameter
-# ===========================
-#Time interval for request garbage collection
-#purge.interval=21600
-#
-#Number of requests removed at each run
-#purge.size=1000
-#
-#Time after that the GC consider a _terminated_ request as garbage
-#expired.request.time=3600
 
 # ===========================
 # Checksum parameters
@@ -99,3 +46,164 @@ checksum.enabled=false
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
 #checksum.algorithm=CRC32 
+
+#############################################
+############  PROFILE PARAMETERS #############
+#############################################
+
+# ============================
+# StoRM Service Generic Behaviour
+# ============================
+directory.automatic-creation = false             
+directory.writeperm = false  # To enable file creation within directories. Useful when authz is not defined.                      
+
+# ============================
+# StoRM Service PINNED Behaviour
+# ============================
+pinnedfiles.cleaning.delay=10
+pinnedfiles.cleaning.interval=300
+pinLifetime.minimum=259200
+pinLifetime.maximum=1814400
+
+# ============================
+# StoRM Service TURL Behaviour
+# ============================
+extraslashes.file=""                           
+extraslashes.rfio=""                           
+extraslashes.gsiftp="/"                        
+extraslashes.root=""                        
+
+# =======================
+# Default Lifetime
+# =======================
+
+# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
+# without any pinLifetime specified. 
+pinLifetime.minimum=259200
+
+# Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
+fileLifetime.default=259200
+
+default.overwrite   = A       # N:Never,     A:Always
+default.storagetype = P       # V:Volatile,  P:Permanent,  D:Durable
+
+
+
+pinLifetime.minimum=259200
+pinLifetime.maximum=1814400
+
+#############################################
+############  TUNING PARAMETERS #############
+#############################################
+
+
+# ============================
+# BE-private RDBMS
+# ============================
+persistence.internal-db.host = @DB_HOSTNAME@
+persistence.internal-db.db-name = storm_be_ISAM
+persistence.internal-db.username = @DB_USER@
+persistence.internal-db.passwd = @DB_PASSWD@
+persistence.internal-db.connection-pool = true
+persistence.internal-db.connection-pool.maxActive = 10
+persistence.internal-db.connection-pool.maxWait = 50
+
+
+# ============================
+# ASYNCH SCHEDULER Component parameters
+# ============================
+scheduler.serial=false
+scheduler.crusher.workerCorePoolSize=10
+scheduler.crusher.workerMaxPoolSize=50
+scheduler.crusher.queueSize=100
+scheduler.chunksched.ptp.workerCorePoolSize=50
+scheduler.chunksched.ptp.workerMaxPoolSize=200
+scheduler.chunksched.ptp.queueSize=1000
+scheduler.chunksched.ptg.workerCorePoolSize=50
+scheduler.chunksched.ptg.workerMaxPoolSize=200
+scheduler.chunksched.ptg.queueSize=1000
+scheduler.chunksched.bol.workerCorePoolSize=50
+scheduler.chunksched.bol.workerMaxPoolSize=200
+scheduler.chunksched.bol.queueSize=1000
+scheduler.chunksched.copy.workerCorePoolSize=10
+scheduler.chunksched.copy.workerMaxPoolSize=50
+scheduler.chunksched.copy.queueSize=500
+
+
+# ============================
+# ASYNCH PICKER Component parameters
+# ============================
+asynch.db.ReconnectPeriod=18000
+asynch.db.DelayPeriod=30
+asynch.PickingInitialDelay=1
+# Polling time in seconds for pick up new requests from DB
+asynch.PickingTimeInterval=2
+asynch.PickingMaxBatchSize=100
+
+
+# ======================================
+# SYNCH CALL Component tuning parameters
+# ======================================
+synchcall.directoryManager.maxLsEntry=2000
+
+
+# ============================
+# XMLRPC Server parameter
+# ============================
+synchcall.xmlrpc.unsecureServerPort=8080
+synchcall.xmlrpc.maxthread=100
+
+
+# =======================
+# Garbage Collector parameters
+# =======================
+# Initial delay in seconds before starting the garbage collector thread
+gc.pinnedfiles.cleaning.delay = 10
+# Garbage Collector time interval in seconds.
+gc.pinnedfiles.cleaning.interval = 300
+
+
+# ===============================
+# TAPE RECALL Component parameter
+# ===============================
+tape.recalltable.service.port=9998
+tape.recalltable.service.param.retry-value=retry-value
+tape.recalltable.service.param.status=status
+tape.recalltable.service.param.takeover=first
+
+
+# ============================
+# srmCopy parameters
+# ============================
+proxy.home=/opt/storm/backend/tmp
+asynch.srmclient.retrytime=60
+asynch.srmclient.timeout=180
+asynch.srmclient.sleeptime=5
+asynch.srmclient.putdone.sleeptime=1
+asynch.srmclient.putdone.timeout=60
+asynch.gridftpclient=it.grid.storm.asynch.NaiveGridFTPTransferClient
+asynch.srmclient=it.grid.storm.asynch.SRM22Client
+# Deault PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
+# This value is the one specified in the remote SrmPrepareToGet request.
+SRM22Client.PinLifeTime=259200
+asynch.srmcopy.gridftp.timeout = 15000  #in msec.
+
+# ===========================
+# Garbage Collector parameter
+# ===========================
+#Time interval for request garbage collection
+#purge.interval=21600
+#
+#Number of requests removed at each run
+#purge.size=1000
+#
+#Time after that the GC consider a _terminated_ request as garbage
+#expired.request.time=3600
+
+# ==========================================
+# -- READ ONLY Properties
+# ==========================================
+#
+# READ ONLY key; please don't edit that value
+storm.properties.version = 1
+#

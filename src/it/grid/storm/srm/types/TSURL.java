@@ -42,6 +42,8 @@ public class TSURL {
     public static String PNAME_FROMSURL = "fromSURL";
     public static String PNAME_TOSURL = "toSURL";
 
+    private static ArrayList<TSURL> tsurlValid = new ArrayList<TSURL>();
+
     private TSURL(SiteProtocol sp, SFN sfn, boolean empty) {
         this.sp = sp;
         this.sfn = sfn;
@@ -101,25 +103,56 @@ public class TSURL {
     }
 
     /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to the host
-     * where StoRM is installed.
+     * Auxiliary method that returns true if the supplied TSURL corresponds to
+     * some managed SURL as declared in Configuration. 
+     * 
      */
     public static boolean isValid(TSURL surl) {
         boolean result = false;
-        String serviceHost = surl.sfn().machine().toString().toLowerCase();
-        EndPoint ep = surl.sfn().endPoint();
-        int port = surl.sfn().port().toInt();
 
-        String expectedServiceHostname = Configuration.getInstance().getServiceHostname();
-        int expectedServicePort = Configuration.getInstance().getServicePort();
-        String expectedServiceEndpoint = Configuration.getInstance().getServiceEndpoint();
-
-        if ((serviceHost.equals(expectedServiceHostname)) && (expectedServicePort == port)) {
-            if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(expectedServiceEndpoint))) {
-                result = true;
+        // Lazy initialization from Configuration
+        if (tsurlValid.isEmpty()) {
+            // This is the first call 
+            String[] surlValid = Configuration.getInstance().getManagedSURLs();
+            for (String checkSurl : surlValid) {
+                //Building TSURL 
+                try {
+                    TSURL checkTSURL = TSURL.makeFromStringValidate(checkSurl);
+                    tsurlValid.add(checkTSURL);
+                } catch (InvalidTSURLAttributesException e) {
+                    log.error("Unable to build a TSURL : '" + checkSurl + "'");
+                }
             }
         }
 
+        for (TSURL tsurlReference : tsurlValid) {
+            if (surlValid(surl, tsurlReference)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+
+    }
+
+    private static boolean surlValid(TSURL comingSURL, TSURL managedSURL) {
+        boolean result = false;
+
+        String serviceHostname = comingSURL.sfn().machine().toString().toLowerCase();
+        int port = comingSURL.sfn().port().toInt();
+        EndPoint ep = comingSURL.sfn().endPoint();
+
+        String expectedServiceHostname = managedSURL.sfn().machine().toString().toLowerCase();
+        int expectedServicePort = managedSURL.sfn().port().toInt();
+        EndPoint expectedServiceEndpoint = managedSURL.sfn().endPoint();
+
+        if ((serviceHostname.equals(expectedServiceHostname)) && (expectedServicePort == port)) {
+            if ((ep != null) && (expectedServiceEndpoint != null)) {
+                if ((ep.equals(expectedServiceEndpoint))) {
+                    result = true;
+                }
+            }
+        }
         return result;
     }
 
@@ -216,15 +249,6 @@ public class TSURL {
         return sfn;
     }
 
-    /*
-    /**
-     * Method that returns the StoRI, a StoRM object/concept that handles file names!
-     * See docs!
-
-    public StoRI stori() {
-        return StoRI.make(this);
-    }
-     */
     /**
      * Static factory method that returns a TSURL from a String representation: if it is null
      * or malformed then an Invalid TSURLAttributesException is thrown.
@@ -299,18 +323,6 @@ public class TSURL {
      * @return TSURL
      */
     public static TSURL make(String host, int port, String path) {
-        TSURL result = null;
-
-        return result;
-    }
-
-    /**
-     *
-     * @param s String
-     * @return TSURL
-     * @throws InvalidTSURLAttributesException
-     */
-    public static TSURL makeFromString2(String s) throws InvalidTSURLAttributesException {
         TSURL result = null;
 
         return result;
