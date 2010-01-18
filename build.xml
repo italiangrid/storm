@@ -420,8 +420,7 @@ test.junit.dir
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
 	dir="${src.doc.dir}">
-  	<exclude name="VomsGridUser.txt"/>
-  	<exclude name="EGEE-FQAN_wildcard.pdf"/>	
+    <include name="INSTALL.txt"/>	
   </fileset>	
   <fileset id="src.docs.license"
 	dir="${src.dir}"
