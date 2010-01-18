@@ -41,7 +41,7 @@ public class SpaceDBAuthz extends SpaceAuthz {
 
     public SpaceDBAuthz(String dbFileName) {
         Configuration config = Configuration.getInstance();
-        configurationPATH = config.getNamespaceConfigPath();
+        configurationPATH = config.namespaceConfigPath();
         if (existsAuthzDBFile(dbFileName)) {
             this.dbFileName = dbFileName;
             spaceAuthzDBID = dbFileName;

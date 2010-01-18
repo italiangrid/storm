@@ -29,7 +29,7 @@ public class PathAuthzTest {
 
     public static void main(String[] args) {
 
-        String configurationDir = Configuration.getInstance().getConfigurationDir();
+        String configurationDir = Configuration.getInstance().configurationDir();
         if ((configurationDir == null) || (configurationDir.length() == 0)) {
             configurationDir = System.getProperty("user.dir") + File.separator + "unittest" + File.separator;
         }

@@ -9,8 +9,6 @@
 
 package it.grid.storm.config;
 
-import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -39,11 +37,11 @@ import org.xml.sax.SAXException;
 
 public class Configuration {
 
-    private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
+    private static Logger log = LoggerFactory.getLogger(Configuration.class);
 
     private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
     // as default
-    private static Configuration instance = new Configuration(); // only
+    static Configuration instance = new Configuration(); // only
 
     // instance of
     // this
@@ -197,7 +195,7 @@ public class Configuration {
      * the default value is returned instead. key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
      */
     public String getDBDriver() {
-        String key = "asynch.picker.db.driver";
+        String key = "storm.service.request-db.dbms-vendor";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "com.mysql.jdbc.Driver";
@@ -216,11 +214,11 @@ public class Configuration {
      */
     public String getDBURL() {
         String prefix = "";
-        String key1 = "asynch.picker.db.protocol";
+        String key1 = "storm.service.request-db.protocol";
         String host = "";
-        String key2 = "asynch.picker.db.host";
+        String key2 = "storm.service.request-db.host";
         String name = "";
-        String key3 = "asynch.picker.db.name";
+        String key3 = "storm.service.request-db.db-name";
         // get prefix...
         if (!cr.getConfiguration().containsKey(key1)) {
             // use default
@@ -254,7 +252,7 @@ public class Configuration {
      * default value is returned instead. Default value = "storm"; key searched in medium = "asynch.picker.db.username".
      */
     public String getDBUserName() {
-        String key = "asynch.picker.db.username";
+        String key = "storm.service.request-db.username";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm";
@@ -269,7 +267,7 @@ public class Configuration {
      * default value is returned instead. Deafult value = "storm"; key searched in medium = "asynch.picker.db.passwd".
      */
     public String getDBPassword() {
-        String key = "asynch.picker.db.passwd";
+        String key = "storm.service.request-db.passwd";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm";
@@ -665,7 +663,7 @@ public class Configuration {
      * uncertain... must be found soon!!! Beware that the configuration directory is implicit in the complete pathname
      * to the configuration file supplied in the command line when starting StoRM BE.
      */
-    public String getConfigurationDir() {
+    public String configurationDir() {
         return cr.configurationDirectory();
     }
 
@@ -737,7 +735,7 @@ public class Configuration {
      * medium, then the default value is returned instead. key="persistence.db.vendor"; default value="mysql";
      */
     public String getBE_PersistenceDBVendor() {
-        String key = "persistence.db.vendor";
+        String key = "persistence.internal-db.dbms-vendor";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "mysql";
@@ -753,7 +751,7 @@ public class Configuration {
      * value="localhost";
      */
     public String getBE_PersistenceDBMSUrl() {
-        String key = "persistence.db.host";
+        String key = "persistence.internal-db.host";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "localhost";
@@ -769,7 +767,7 @@ public class Configuration {
      * value="storm_be_ISAM";
      */
     public String getBE_PersistenceDBName() {
-        String key = "persistence.db.name";
+        String key = "persistence.internal-db.db-name";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm_be_ISAM";
@@ -785,7 +783,7 @@ public class Configuration {
      * value="storm";
      */
     public String getBE_PersistenceDBUserName() {
-        String key = "persistence.db.username";
+        String key = "persistence.internal-db.username";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm";
@@ -801,7 +799,7 @@ public class Configuration {
      * default value="storm";
      */
     public String getBE_PersistenceDBPassword() {
-        String key = "persistence.db.passwd";
+        String key = "persistence.internal-db.passwd";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm";
@@ -817,7 +815,7 @@ public class Configuration {
      * key="persistence.db.pool"; default value=false;
      */
     public boolean getBE_PersistencePoolDB() {
-        String key = "persistence.db.pool";
+        String key = "persistence.internal-db.connection-pool";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
@@ -834,7 +832,7 @@ public class Configuration {
      * returned instead. key="persistence.db.pool.maxActive"; default value=10;
      */
     public int getBE_PersistencePoolDB_MaxActive() {
-        String key = "persistence.db.pool.maxActive";
+        String key = "persistence.internal-db.connection-pool.maxActive";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
@@ -852,7 +850,7 @@ public class Configuration {
      * key="persistence.db.pool.maxWait"; default value=50;
      */
     public int getBE_PersistencePoolDB_MaxWait() {
-        String key = "persistence.db.pool.maxWait";
+        String key = "persistence.internal-db.connection-pool.maxWait";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 50;
@@ -902,7 +900,15 @@ public class Configuration {
      * @return boolean
      */
     public boolean get_LS_allLevelRecursive() {
-        return false;
+
+        String key = "synchcall.directoryManager.default.AllLevelRecursive";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return false;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(key);
+        }
     }
 
     /**
@@ -911,7 +917,14 @@ public class Configuration {
      * @return int
      */
     public int get_LS_numOfLevels() {
-        return 1;
+        String key = "synchcall.directoryManager.default.Levels";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 1;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -920,7 +933,14 @@ public class Configuration {
      * @return int
      */
     public int get_LS_offset() {
-        return 0;
+        String key = "synchcall.directoryManager.default.Offset";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 0;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
     }
 
     /**
@@ -1257,7 +1277,7 @@ public class Configuration {
      * 
      * @return String
      */
-    public String getNamespaceConfigPath() {
+    public String namespaceConfigPath() {
         return cr.configurationDirectory();
     }
 
@@ -1287,7 +1307,7 @@ public class Configuration {
         if (!cr.getConfiguration().containsKey(key)) {
             // scan the first line of namespace.xml 
             String namespaceSchemaFN = "namespace.xsd";
-            String namespaceFN = getNamespaceConfigPath() + File.pathSeparator + getNamespaceConfigFilename();
+            String namespaceFN = namespaceConfigPath() + File.pathSeparator + getNamespaceConfigFilename();
             File namespaceFile = new File(namespaceFN);
             if (namespaceFile.exists()) {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -1810,30 +1830,6 @@ public class Configuration {
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        try {
-            // This class methods!!!
-            Method m[] = Configuration.instance.getClass().getDeclaredMethods();
-
-            Object aux = null;
-            for (int i = 0; i < m.length; i++) {
-                if ((m[i].getName().substring(0, 3).equals("get")) && (!m[i].getName().equals("getInstance"))) {
-                    sb.append(m[i].getName());
-                    sb.append(" == ");
-                    aux = m[i].invoke(Configuration.instance, new Object[0]);
-                    sb.append(aux);
-                    sb.append("\n");
-                }
-            }
-            return sb.toString();
-        } catch (Exception e2) {
-            String partialOutput = "!!! Cannot do toString! Got an Exception: " + e2 + "\n" + sb.toString();
-            return partialOutput;
-        }
-    }
-
     public String[] getChecksumServiceURLArray() {
         String key = "checksum.serviceURL";
         String[] urlArray;
@@ -1944,6 +1940,41 @@ public class Configuration {
             // load from external source
             return cr.getConfiguration().getBoolean(key);
         }
-
     }
+
+    public int getStoRMPropertiesVersion() {
+        String key = "storm.properties.version";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return -1;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        try {
+            // This class methods!!!
+            Method m[] = Configuration.instance.getClass().getDeclaredMethods();
+
+            Object aux = null;
+            for (int i = 0; i < m.length; i++) {
+                if ((m[i].getName().substring(0, 3).equals("get")) && (!m[i].getName().equals("getInstance"))) {
+                    sb.append(m[i].getName());
+                    sb.append(" == ");
+                    aux = m[i].invoke(Configuration.instance, new Object[0]);
+                    sb.append(aux);
+                    sb.append("\n");
+                }
+            }
+            return sb.toString();
+        } catch (Exception e2) {
+            String partialOutput = "!!! Cannot do toString! Got an Exception: " + e2 + "\n" + sb.toString();
+            return partialOutput;
+        }
+    }
+
 }

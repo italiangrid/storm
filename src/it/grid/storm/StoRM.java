@@ -74,7 +74,7 @@ public class StoRM {
         /**
          * INIT LOGGING COMPONENT
          */
-        String configurationDir = Configuration.getInstance().getConfigurationDir();
+        String configurationDir = Configuration.getInstance().configurationDir();
         String logFile = configurationDir + "logging.xml";
         Bootstrap.initializeLogging(logFile);
 

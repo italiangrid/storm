@@ -37,7 +37,7 @@ public class PropertiesDB {
 
 
     public PropertiesDB() {
-        String configurationDir = PropertiesDB.config.getConfigurationDir();
+        String configurationDir = PropertiesDB.config.configurationDir();
         char sep = File.separatorChar;
         propertiesDBName = configurationDir + sep + "etc" + sep + "db" + sep + dataFileName;
         log.debug("Properties RecallTable-DB = " + propertiesDBName);
@@ -49,7 +49,7 @@ public class PropertiesDB {
         if (test) {
             configurationDir = System.getProperty("user.dir");
         } else {
-            configurationDir = PropertiesDB.config.getConfigurationDir();
+            configurationDir = PropertiesDB.config.configurationDir();
         }
         char sep = File.separatorChar;
         propertiesDBName = configurationDir + sep + "etc" + sep + "db" + sep + dataFileName;

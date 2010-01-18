@@ -74,7 +74,7 @@ public class NamespaceDirector {
             log.info("    Production Mode      ");
             log.info(" +++++++++++++++++++++++ ");
             runningMode = testingMode;
-            configurationPATH = config.getNamespaceConfigPath(); //Default = "./etc/"
+            configurationPATH = config.namespaceConfigPath(); //Default = "./etc/"
             namespaceConfigFileName = config.getNamespaceConfigFilename(); //Default = "namespace.xml"
             refreshInSeconds = config.getNamespaceConfigRefreshRateInSeconds(); //Default = "3 seconds"
             loader = new XMLNamespaceLoader(configurationPATH, namespaceConfigFileName, refreshInSeconds, verboseMode);

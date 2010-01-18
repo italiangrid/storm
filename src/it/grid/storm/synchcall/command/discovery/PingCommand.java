@@ -140,7 +140,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
         Properties properties = new Properties();
 
         Configuration config = Configuration.getInstance();
-        String configurationPATH = config.getNamespaceConfigPath(); // Default = "./etc/"
+        String configurationPATH = config.namespaceConfigPath(); // Default = "./etc/"
         String pingPropertiesFileName = config.getPingValuesPropertiesFilename(); // Default =
                                                                                   // "ping-values.properties"
         String propertiesFile = configurationPATH + File.separator + pingPropertiesFileName;

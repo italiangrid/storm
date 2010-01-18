@@ -21,7 +21,7 @@ public class PathACETest {
     private static final Logger log = LoggerFactory.getLogger(PathACETest.class);
 
     private static void initLogging() {
-        String configurationDir = Configuration.getInstance().getConfigurationDir();
+        String configurationDir = Configuration.getInstance().configurationDir();
         if ((configurationDir == null) || (configurationDir.length() == 0)) {
             configurationDir = System.getProperty("user.dir") + File.separator + "unittest" + File.separator;
         }

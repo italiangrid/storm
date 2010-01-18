@@ -43,7 +43,7 @@ public class PathAuthzDBReader {
             // Try to build the default path
             Configuration config = Configuration.getInstance();
             // configurationPATH = System.getProperty("user.dir") + File.separator + "etc";
-            String configurationPATH = config.getNamespaceConfigPath();
+            String configurationPATH = config.namespaceConfigPath();
             if (configurationPATH.length() == 0) {
                 String userDir = System.getProperty("user.dir");
                 log.debug("Unable to found the configuration path. Assume: '" + userDir + "'");

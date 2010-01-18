@@ -69,7 +69,7 @@ public class EtcGroupReader {
 
     private static EtcGroupReader getInstance(boolean test) {
         if (test) {
-            String configurationDir = Configuration.getInstance().getConfigurationDir();
+            String configurationDir = Configuration.getInstance().configurationDir();
             String etcGroupFN = configurationDir + File.pathSeparator + etcGroupTest;
             log.debug("TEST etc-group filename = " + etcGroupFN);
             return new EtcGroupReader(etcGroupFN);

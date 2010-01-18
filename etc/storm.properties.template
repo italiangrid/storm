@@ -21,7 +21,7 @@ storm.service.SURL.endpoint =  @SURL_ENDPOINT@
 # comma-separated list of hostnames composing the FE.
 storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
 
-  
+
 # ============================
 # FE/BE communication RDBMS
 # ============================
@@ -42,10 +42,12 @@ checksum.enabled=false
 
 # The array of URLs (e.g. http://host:port/) runnimg the external checksum agents
 # note: it is a comma separated list of URLs. (e.g. checksum.serviceURL=http://host1:port/,http://host2:port/)
-#checksum.serviceURL=
+checksum.serviceURL=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
-#checksum.algorithm=CRC32 
+checksum.algorithm=CRC32 
+
+
 
 #############################################
 ############  PROFILE PARAMETERS #############
@@ -60,8 +62,8 @@ directory.writeperm = false  # To enable file creation within directories. Usefu
 # ============================
 # StoRM Service PINNED Behaviour
 # ============================
-pinnedfiles.cleaning.delay=10
-pinnedfiles.cleaning.interval=300
+# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
+# without any pinLifetime specified. 
 pinLifetime.minimum=259200
 pinLifetime.maximum=1814400
 
@@ -74,23 +76,14 @@ extraslashes.gsiftp="/"
 extraslashes.root=""                        
 
 # =======================
-# Default Lifetime
+# Default 
 # =======================
-
-# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
-# without any pinLifetime specified. 
-pinLifetime.minimum=259200
-
 # Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
 fileLifetime.default=259200
-
 default.overwrite   = A       # N:Never,     A:Always
 default.storagetype = P       # V:Volatile,  P:Permanent,  D:Durable
 
 
-
-pinLifetime.minimum=259200
-pinLifetime.maximum=1814400
 
 #############################################
 ############  TUNING PARAMETERS #############
@@ -100,6 +93,7 @@ pinLifetime.maximum=1814400
 # ============================
 # BE-private RDBMS
 # ============================
+persistence.internal-db.dbms-vendor = mysql
 persistence.internal-db.host = @DB_HOSTNAME@
 persistence.internal-db.db-name = storm_be_ISAM
 persistence.internal-db.username = @DB_USER@
@@ -192,14 +186,18 @@ asynch.srmcopy.gridftp.timeout = 15000  #in msec.
 # Garbage Collector parameter
 # ===========================
 #Time interval for request garbage collection
-#purge.interval=21600
+purge.interval=21600
 #
 #Number of requests removed at each run
-#purge.size=1000
+purge.size=1000
 #
 #Time after that the GC consider a _terminated_ request as garbage
-#expired.request.time=3600
+expired.request.time=3600
 
+
+#############################################
+############  PRIVATE PARAMETERS #############
+#############################################
 # ==========================================
 # -- READ ONLY Properties
 # ==========================================

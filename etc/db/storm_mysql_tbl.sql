@@ -20,8 +20,10 @@ CREATE TABLE IF NOT EXISTS db_version (
   minor    int,
   revision int,
   description VARCHAR(100));
-REPLACE INTO db_version (major,minor,revision,description) VALUES (1,4,0000,'1 Dec 2008');
 
+REPLACE INTO db_version (major,minor,revision,description) VALUES (1,5,00,'1 Feb 2010');
+  
+  
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
   config_FileStorageTypeID CHAR(1),
@@ -225,4 +227,21 @@ CREATE TABLE IF NOT EXISTS `storage_space` (
   KEY `SPACE_NAME` (`SPACE_TOKEN`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
+
+USE storm_be_ISAM;
+CREATE TABLE IF NOT EXISTS tape_recall (
+  taskId MEDIUMINT NOT NULL AUTO_INCREMENT,
+  requestToken VARCHAR(255) BINARY,
+  requestType char(3),
+  fileName text not null,
+  pinLifetime int,
+  status int,
+  voName VARCHAR(255) BINARY,
+  userID VARCHAR(255) BINARY,
+  retryAttempt int,
+  timeStamp datetime not null,
+  deferredStartTime datetime not null,
+  primary key (taskId)) type=InnoDB;
+
+ALTER TABLE tape_recall ADD INDEX deferredStartTime (deferredStartTime);
 
