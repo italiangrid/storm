@@ -201,12 +201,12 @@ StoRM BackEnd server.
 %{prefix}/doc/cog.LICENSE
 %{prefix}/doc/cryptix.LICENSE
 %{prefix}/doc/ACKNOWLEDGEMENTS.txt
-%{prefix}/doc/RESTful-RecallTable.txt
-%{prefix}/doc/RecallTable-RESTful-URIDesign.pdf
-%{prefix}/doc/codetemplates-1.0..xml
-%{prefix}/doc/request-to-garbage.qbquery
-%{prefix}/doc/space-token-acls-03062008.pdf
-%{prefix}/doc/storm-code-formatter-2.0.xml
+#%{prefix}/doc/RESTful-RecallTable.txt
+#%{prefix}/doc/RecallTable-RESTful-URIDesign.pdf
+#%{prefix}/doc/codetemplates-1.0..xml
+#%{prefix}/doc/request-to-garbage.qbquery
+#%{prefix}/doc/space-token-acls-03062008.pdf
+#%{prefix}/doc/storm-code-formatter-2.0.xml
 
 #%files jars -f ../filelist.jars.%{name}
 #%defattr(-,root,root)
