@@ -201,7 +201,14 @@ public class Configuration {
             return "com.mysql.jdbc.Driver";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(key);
+            String vendor = cr.getConfiguration().getString(key);
+            String driver = "";
+            if (vendor.toLowerCase().equals("mysql")) {
+                driver = "com.mysql.jdbc.Driver";
+            } else {
+                log.error("CONFIG ERROR 'RDBMS Vendor ('" + vendor + "')unknown.' ");
+            }
+            return driver;
         }
     }
 

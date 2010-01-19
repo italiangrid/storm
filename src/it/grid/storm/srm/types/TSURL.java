@@ -1,6 +1,5 @@
 package it.grid.storm.srm.types;
 
-import it.grid.storm.common.types.EndPoint;
 import it.grid.storm.common.types.InvalidMachineAttributeException;
 import it.grid.storm.common.types.InvalidPortAttributeException;
 import it.grid.storm.common.types.InvalidSFNAttributesException;
@@ -138,20 +137,17 @@ public class TSURL {
     private static boolean surlValid(TSURL comingSURL, TSURL managedSURL) {
         boolean result = false;
 
-        String serviceHostname = comingSURL.sfn().machine().toString().toLowerCase();
+        String serviceHost = comingSURL.sfn().machine().toString().toLowerCase();
         int port = comingSURL.sfn().port().toInt();
-        EndPoint ep = comingSURL.sfn().endPoint();
 
-        String expectedServiceHostname = managedSURL.sfn().machine().toString().toLowerCase();
+        String expectedServiceHost = managedSURL.sfn().machine().toString().toLowerCase();
         int expectedServicePort = managedSURL.sfn().port().toInt();
-        EndPoint expectedServiceEndpoint = managedSURL.sfn().endPoint();
 
-        if ((serviceHostname.equals(expectedServiceHostname)) && (expectedServicePort == port)) {
-            if ((ep != null) && (expectedServiceEndpoint != null)) {
-                if ((ep.equals(expectedServiceEndpoint))) {
-                    result = true;
-                }
-            }
+        log.debug("SURL VALID [ coming-service-host = '" + serviceHost + "' expected : '" + expectedServiceHost + "'");
+        log.debug("SURL VALID [ coming-service-port = '" + port + "' expected : '" + expectedServicePort + "'");
+
+        if ((serviceHost.equals(expectedServiceHost)) && (expectedServicePort == port)) {
+            result = true;
         }
         return result;
     }
