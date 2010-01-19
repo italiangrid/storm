@@ -45,7 +45,11 @@ public class TasksCardinality {
         try {
             rtCat = new RecallTableCatalog(test);
             nQueued = rtCat.getNumberTaskQueued();
-            log.trace("Number of tasks queued = " + nQueued);
+            if (nQueued > 0) {
+                log.info("Number of tasks queued = " + nQueued);
+            } else {
+                log.trace("Number of tasks queued = " + nQueued);
+            }
             numberQueued += nQueued;
         } catch (DataAccessException e) {
             errorStr = "Unable to use RecallTable DB.";
