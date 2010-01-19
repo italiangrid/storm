@@ -15,7 +15,6 @@ import javax.ws.rs.Produces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author ritz
  * 
@@ -25,7 +24,6 @@ public class TasksCardinality {
 
     private static final Logger log = LoggerFactory.getLogger(TaskResource.class);
     private static Configuration config = Configuration.getInstance();
-
 
     @GET
     @Path("/queued")
@@ -47,7 +45,7 @@ public class TasksCardinality {
         try {
             rtCat = new RecallTableCatalog(test);
             nQueued = rtCat.getNumberTaskQueued();
-            log.debug("Number of tasks queued = " + nQueued);
+            log.trace("Number of tasks queued = " + nQueued);
             numberQueued += nQueued;
         } catch (DataAccessException e) {
             errorStr = "Unable to use RecallTable DB.";
@@ -56,7 +54,6 @@ public class TasksCardinality {
         }
         return numberQueued;
     }
-
 
     @GET
     @Path("/readyTakeOver")

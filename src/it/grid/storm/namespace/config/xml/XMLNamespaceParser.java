@@ -479,8 +479,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         if (quotaDefined) {
             boolean quotaEnabled = parserUtil.getQuotaEnabled(fsName);
             String device = parserUtil.getQuotaDevice(fsName);
+
             QuotaType quotaType;
             String quotaValue = null;
+
             if (parserUtil.getQuotaFilesetDefined(fsName)) {
                 quotaType = QuotaType.buildQuotaType(QuotaType.FILESET);
                 quotaValue = parserUtil.getQuotaFileset(fsName);
@@ -497,16 +499,18 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
                         quotaValue = "unknown";
                     }
                 }
-
-                quotaType.setValue(quotaValue);
-                quota = new Quota(quotaEnabled, device, quotaType);
             }
+
+            quotaType.setValue(quotaValue);
+            quota = new Quota(quotaEnabled, device, quotaType);
+
         } else {
             quota = new Quota();
         }
         cap.setQuota(quota);
 
         verboseLog("VFS(" + fsName + ").Capabilities.quota = '" + quota + "'");
+        log.debug("VFS(" + fsName + ").Capabilities.quota = '" + quota + "'");
 
         /**
          * TRANSFER PROTOCOL

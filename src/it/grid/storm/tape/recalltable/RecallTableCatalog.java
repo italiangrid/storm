@@ -30,7 +30,7 @@ public class RecallTableCatalog {
      * @throws DataAccessException
      */
     public RecallTableCatalog(boolean test) throws DataAccessException {
-        log.debug("Building RECALL TABLE Catalog ...");
+        //log.debug("Building RECALL TABLE Catalog ...");
 
         if (test) {
             tapeRecallDAO = new TapeRecallDAOProperties(true);

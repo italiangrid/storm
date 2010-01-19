@@ -20,7 +20,6 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * This class is in charge of periodically polling the DB for newly added
  * requests.
@@ -34,43 +33,43 @@ public class AdvancedPicker {
     private static final Logger log = LoggerFactory.getLogger(AdvancedPicker.class);
 
     private final Scheduler s = SchedulerFacade.getInstance().crusherScheduler(); // link
-                                                                                  // to
-                                                                                  // scheduler
-                                                                                  // that
-                                                                                  // handles
-                                                                                  // Feeder
-                                                                                  // taks
-                                                                                  // in
-                                                                                  // StoRM!
+    // to
+    // scheduler
+    // that
+    // handles
+    // Feeder
+    // taks
+    // in
+    // StoRM!
     private Timer retriever = null; // Timer object in charge of retrieving info
-                                    // from the DB!
+    // from the DB!
     private TimerTask retrievingTask = null;
     private final long delay = Configuration.getInstance().getPickingInitialDelay() * 1000; // Delay
-                                                                                            // time
-                                                                                            // before
-                                                                                            // starting
-                                                                                            // retriever
-                                                                                            // thread!
-                                                                                            // Set
-                                                                                            // to
-                                                                                            // 5
-                                                                                            // seconds
+    // time
+    // before
+    // starting
+    // retriever
+    // thread!
+    // Set
+    // to
+    // 5
+    // seconds
     private final long period = Configuration.getInstance().getPickingTimeInterval() * 1000; // Period
-                                                                                             // of
-                                                                                             // execution
-                                                                                             // of
-                                                                                             // retrieving!
-                                                                                             // Set
-                                                                                             // to
-                                                                                             // 1
-                                                                                             // minute
+    // of
+    // execution
+    // of
+    // retrieving!
+    // Set
+    // to
+    // 1
+    // minute
 
     private boolean abort = false; // boolean that indicates there is a token to
-                                   // abort!
+    // abort!
     private Collection abortSURLS = null; // Collection with chunks to abort!
     private TRequestToken abortToken = null; // TRequestToken of request to
-                                             // abort!
 
+    // abort!
 
     /**
      * Method used to command This AdvancedPicker to stop periodic reading of
@@ -83,7 +82,6 @@ public class AdvancedPicker {
             retriever.cancel();
         }
     }
-
 
     /**
      * Method used to command This AdvancedPicker to start periodic reading of
@@ -104,7 +102,6 @@ public class AdvancedPicker {
         }; // retrieving task
         retriever.scheduleAtFixedRate(retrievingTask, delay, period);
     }
-
 
     /**
      * Private method that connects to the DB and retrieves requests in status
@@ -144,7 +141,7 @@ public class AdvancedPicker {
 
         Collection c = RequestSummaryCatalog.getInstance().fetchNewRequests(crusherCapacity);
         if (c.isEmpty()) {
-            log.debug("ADVANCED PICKER: no request to dispatch.");
+            log.trace("ADVANCED PICKER: no request to dispatch.");
         } else {
             log.info("ADVANCED PICKER: dispatching " + c.size() + " requests.");
         }
@@ -163,7 +160,7 @@ public class AdvancedPicker {
                     RequestSummaryCatalog.getInstance().abortChunksOfInProgressRequest(abortToken, abortSURLS);
                 }
                 abortToken = null; // BE CAREFUL!!! FIRST set abortToken to
-                                   // null, and THEN set the flag to false!
+                // null, and THEN set the flag to false!
                 abortSURLS = null;
                 abort = false;
             } else {
@@ -179,34 +176,57 @@ public class AdvancedPicker {
                         s.schedule(new BoLFeeder(rsd));
                     } else {
                         // RequestType not supported!
-                        log.warn("ADVANCED PICKER received request " + rt + " of type " + rtype + " which is NOT currently supported. Dropping request... ");
-                        log.warn("ADVANCED PICKER: Beware that the global status of request " + rt + " will transit to SRM_FAILURE, but each chunk in the request will remain in SRM_REQUEST_QUEUED!");
+                        log.warn("ADVANCED PICKER received request " + rt + " of type " + rtype
+                                + " which is NOT currently supported. Dropping request... ");
+                        log.warn("ADVANCED PICKER: Beware that the global status of request "
+                                + rt
+                                + " will transit to SRM_FAILURE, but each chunk in the request will remain in SRM_REQUEST_QUEUED!");
                         try {
-                            RequestSummaryCatalog.getInstance().updateGlobalStatus(rt, new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, "Request of type " + rtype + " is currently not supported!"));
+                            RequestSummaryCatalog.getInstance()
+                                                 .updateGlobalStatus(rt,
+                                                                     new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
+                                                                                       "Request of type "
+                                                                                               + rtype
+                                                                                               + " is currently not supported!"));
                         } catch (InvalidTReturnStatusAttributeException ex) {
                             log.error("ADVANCED PICKER! Unable to change global status in DB: " + ex);
                         }
                     }
                 } catch (InvalidPtGFeederAttributesException e) {
-                    log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created because of invalid attributes:\n" + e);
+                    log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created because of invalid attributes:\n"
+                            + e);
                     log.error("PtG Request is being dropped: " + rsd.requestToken());
-                    RequestSummaryCatalog.getInstance().failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+                    RequestSummaryCatalog.getInstance()
+                                         .failRequest(rsd,
+                                                      "Internal error does not allow request to be fed to scheduler.");
                 } catch (InvalidPtPFeederAttributesException e) {
-                    log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created because of invalid attributes:\n" + e);
+                    log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created because of invalid attributes:\n"
+                            + e);
                     log.error("PtP Request is being dropped: " + rsd.requestToken());
-                    RequestSummaryCatalog.getInstance().failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+                    RequestSummaryCatalog.getInstance()
+                                         .failRequest(rsd,
+                                                      "Internal error does not allow request to be fed to scheduler.");
                 } catch (InvalidCopyFeederAttributesException e) {
-                    log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created because of invalid attributes:\n" + e);
+                    log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created because of invalid attributes:\n"
+                            + e);
                     log.error("Copy Request is being dropped: " + rsd.requestToken());
-                    RequestSummaryCatalog.getInstance().failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+                    RequestSummaryCatalog.getInstance()
+                                         .failRequest(rsd,
+                                                      "Internal error does not allow request to be fed to scheduler.");
                 } catch (InvalidBoLFeederAttributesException e) {
-                    log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created because of invalid attributes:\n" + e);
+                    log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created because of invalid attributes:\n"
+                            + e);
                     log.error("BoL Request is being dropped: " + rsd.requestToken());
-                    RequestSummaryCatalog.getInstance().failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+                    RequestSummaryCatalog.getInstance()
+                                         .failRequest(rsd,
+                                                      "Internal error does not allow request to be fed to scheduler.");
                 } catch (SchedulerException e) {
-                    log.error("ADVANCED PICKER ERROR! The request could not be scheduled because of scheduler errors!\n" + e);
-                    log.error("ADVANCED PICKER ERROR! Request " + rsd.requestToken() + " of type " + rsd.requestType() + " dropped.");
-                    RequestSummaryCatalog.getInstance().failRequest(rsd, "Internal scheduler has problems accepting request feed.");
+                    log.error("ADVANCED PICKER ERROR! The request could not be scheduled because of scheduler errors!\n"
+                            + e);
+                    log.error("ADVANCED PICKER ERROR! Request " + rsd.requestToken() + " of type " + rsd.requestType()
+                            + " dropped.");
+                    RequestSummaryCatalog.getInstance()
+                                         .failRequest(rsd, "Internal scheduler has problems accepting request feed.");
                 }
             }
         }
@@ -215,13 +235,12 @@ public class AdvancedPicker {
         // executed)
         if (abort) {
             abortToken = null; // BE CAREFUL!!! FIRST set abortToken and
-                               // abortSURLS to null, and THEN set the flag to
-                               // false!
+            // abortSURLS to null, and THEN set the flag to
+            // false!
             abortSURLS = null;
             abort = false;
         }
     }
-
 
     /**
      * Method used to remove the request identified by the supplied
@@ -239,11 +258,10 @@ public class AdvancedPicker {
             return false;
         }
         abortToken = rt; // BE CAREFUL!!! FIRST set the token, and THEN the
-                         // abort flag!
+        // abort flag!
         abort = true;
         return true;
     }
-
 
     /**
      * Method used to remove chunks of the request identified by the supplied
@@ -262,11 +280,10 @@ public class AdvancedPicker {
             return false;
         }
         abortToken = rt; // BE CAREFUL!!! FIRST set the token and collection,
-                         // and THEN the abort flag!
+        // and THEN the abort flag!
         abortSURLS = c;
         abort = true;
         return true;
     }
-
 
 }

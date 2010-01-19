@@ -70,6 +70,7 @@ public class MySqlDAOFactory implements DAOFactory {
                 MySqlDAOFactory.log.error("Exception while setting up DB connection", ex1);
             }
         }
+        log.debug("RECALL TABLE Catalog/DAO ");
 
     }
 

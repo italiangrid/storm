@@ -3,6 +3,21 @@
 #      version 1.0
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+# ============================
+# StoRM Service DNS
+# ============================ 
+storm.service.FE-public.hostname = @FE_PUBLIC_HOSTNAME@ 
+
+
+# ============================
+# Front End hosts
+# ============================
+# 
+# comma-separated list of hostnames composing the FE.
+storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
+
+
 # ============================
 # Managed SURL endpoints 
 # ============================
@@ -12,14 +27,6 @@
 # Example: srm://@SURL_HOSTNAME@:8444/srm/managerv2 
 # storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>  
 storm.service.SURL.endpoint =  @SURL_ENDPOINT@
-
-
-# ============================
-# Front End hosts
-# ============================
-# 
-# comma-separated list of hostnames composing the FE.
-storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
 
 
 # ============================
@@ -36,11 +43,13 @@ storm.service.request-db.passwd = @DB_PASSWD@
 # Checksum parameters
 # ===========================
 
-# If enabled the computation will be enabled for one file per requests.
-# The computation is blocking.
+# If checksum is enabled the computation will be done for one file per requests. 
+# The computation of checksum is blocking. If the checksum value is found, the computation will not take place.
+# If the checksum is disabled, the computation will not happen.  
 checksum.enabled=false  
 
-# The array of URLs (e.g. http://host:port/) runnimg the external checksum agents
+# The array of URLs (e.g. http://host:port/) running the external checksum agents
+# This value is ignored if the checksum is disabled (checksum.enabled=false). 
 # note: it is a comma separated list of URLs. (e.g. checksum.serviceURL=http://host1:port/,http://host2:port/)
 checksum.serviceURL=
 
@@ -70,10 +79,10 @@ pinLifetime.maximum=1814400
 # ============================
 # StoRM Service TURL Behaviour
 # ============================
-extraslashes.file=""                           
-extraslashes.rfio=""                           
-extraslashes.gsiftp="/"                        
-extraslashes.root=""                        
+extraslashes.file=
+extraslashes.rfio=
+extraslashes.gsiftp=/
+extraslashes.root=
 
 # =======================
 # Default 

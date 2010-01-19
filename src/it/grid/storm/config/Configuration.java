@@ -116,7 +116,7 @@ public class Configuration {
      * @return String
      */
     public String getServiceHostname() {
-        String key = "storm.service.SURL.hostname";
+        String key = "storm.service.FE-public.hostname";
         String defaultValue = "UNDEFINED_STORM_HOSTNAME";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
@@ -672,6 +672,15 @@ public class Configuration {
      */
     public String configurationDir() {
         return cr.configurationDirectory();
+    }
+
+    /**
+     * getNamespaceConfigPath
+     * 
+     * @return String
+     */
+    public String namespaceConfigPath() {
+        return configurationDir();
     }
 
     /**
@@ -1280,15 +1289,6 @@ public class Configuration {
     }
 
     /**
-     * getNamespaceConfigPath
-     * 
-     * @return String
-     */
-    public String namespaceConfigPath() {
-        return cr.configurationDirectory();
-    }
-
-    /**
      * getNamespaceConfigFilename
      * 
      * @return String
@@ -1314,6 +1314,7 @@ public class Configuration {
         if (!cr.getConfiguration().containsKey(key)) {
             // scan the first line of namespace.xml 
             String namespaceSchemaFN = "namespace.xsd";
+
             String namespaceFN = namespaceConfigPath() + File.pathSeparator + getNamespaceConfigFilename();
             File namespaceFile = new File(namespaceFN);
             if (namespaceFile.exists()) {
