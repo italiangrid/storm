@@ -297,8 +297,6 @@ start () {
 
     cd "$STORM_HOME"
 
-    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_HOME/var
-
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
     run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
         java \
