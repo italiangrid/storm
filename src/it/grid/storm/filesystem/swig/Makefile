@@ -84,6 +84,7 @@ XFSAPI_LIBS ?= -lhandle -L/usr/lib
 # non-portable GNU-only features we depend on
 #defines += -DHAVE_HASH_MAP
 defines += -DHAVE_STDIO_FILEBUF
+defines += -fPIC
 
 
 # largefile support

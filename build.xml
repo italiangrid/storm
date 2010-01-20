@@ -544,7 +544,8 @@ test.junit.dir
 	  failonerror="true"
 	  logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
-	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+      <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+      <arg value="ARCH=${arch}"/>
     </exec>
   </target>
 
