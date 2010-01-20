@@ -6,7 +6,7 @@
     ant -Darch=64 clean build
 
 ## RPM CREATION ##
-Remeber to modify the release version, then use the provided script "create_rpm.sh".
+Remeber to modify the release version (in rpm/storm-backen.spec), then use the provided script "create_rpm.sh".
 
 32-bit architecture:
     sh create_rpm.sh
