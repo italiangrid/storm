@@ -216,8 +216,7 @@ StoRM BackEnd server.
 
 
 %build
-ant -Dversion="%{version}" -Darch="%{arch}" clean build
-
+ant -Dversion="%{version}" -Darch="%{?arch_bit}" clean build
 
 %install
 rm -rf $RPM_BUILD_ROOT

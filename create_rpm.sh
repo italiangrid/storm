@@ -29,6 +29,14 @@ if [ ! -d ./RPMS/SRPMS ]; then
     mkdir ./RPMS/SRPMS
 fi
 
+ARCH_BIT=$1
+
+if [ $ARCH_BIT == 64 ]; then
+    echo "Selected 64 bit architecture"
+else
+    echo "Selected 32 bit architecture"
+fi
+
 # Retrieving version from spec file
 VERSION=`cat ./rpm/storm-backend.spec | grep "Version:" | awk '{ print $2 }'`
 
@@ -48,5 +56,9 @@ cp $CUR_DIR/rpm/storm-backend.spec $CUR_DIR/RPMS/SPECS/storm-backend.spec
 cp storm-backend-$VERSION.tar.gz ./RPMS/SOURCES/
 
 # Generate RPMs
-rpmbuild --define "_topdir $CUR_DIR/RPMS" -ba $CUR_DIR/RPMS/SPECS/storm-backend.spec
+if [ $ARCH_BIT == 64 ]; then
+    rpmbuild --define "_topdir $CUR_DIR/RPMS" --define "arch_bit 64" -ba $CUR_DIR/RPMS/SPECS/storm-backend.spec
+else
+    rpmbuild --define "_topdir $CUR_DIR/RPMS" -ba $CUR_DIR/RPMS/SPECS/storm-backend.spec
+fi
 
