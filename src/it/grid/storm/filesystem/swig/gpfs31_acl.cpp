@@ -17,6 +17,10 @@
  * in the accompanying file LICENCE.txt
  */
 
+#define __USE_LARGEFILE64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include "gpfs31_acl.hpp"
 
 #include <gpfs.h>
@@ -28,7 +32,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/stat.h>
 
 using std::string;
 
@@ -189,7 +193,6 @@ gpfs31_acl::load(const string& path, const bool delete_permission_too)
       msg << "No GPFS filesystem on '" << path << "'";
       throw fs::wrong_filesystem_type(msg.str());
     } else { // ENOSYS, ENOENT, EPERM
-      int err = errno;
       std::ostringstream msg;
       msg << __FILE__ 
           << ": gpfs_stat(" << path << ") failed";
