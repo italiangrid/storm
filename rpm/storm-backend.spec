@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.0
-Release: rc7.sl4
+Release: rc5.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -216,7 +216,7 @@ StoRM BackEnd server.
 
 
 %build
-ant -Dversion="%{version}" clean build
+ant -Dversion="%{version}" -Darch="%{arch}" clean build
 
 
 %install
