@@ -7,7 +7,9 @@
 		<ImmediateFlush>true</ImmediateFlush>
 
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log</FileNamePattern>
+			<FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <!-- keep 365 days' worth of history -->
+            <!-- <MaxHistory>365</MaxHistory> -->
         </rollingPolicy>
 
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -22,7 +24,9 @@
 		<ImmediateFlush>true</ImmediateFlush>
 
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log</FileNamePattern>
+			<FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <!-- keep 365 days' worth of history -->
+            <!-- <MaxHistory>365</MaxHistory> -->
         </rollingPolicy>
 
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -35,7 +39,9 @@
         <ImmediateFlush>true</ImmediateFlush>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <!-- keep 365 days' worth of history -->
+            <!-- <MaxHistory>365</MaxHistory> -->
         </rollingPolicy>
 
         <layout class="ch.qos.logback.classic.PatternLayout">
