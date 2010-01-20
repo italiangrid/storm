@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS status_Get (
   transferURL text,
   request_GetID int not null,
   primary key (ID)) type=InnoDB;
-CREATE TABLE IF NOT EXISTS request_DirOption (ID int not null auto_increment, isSourceADirectory tinyint(1) default 'false' not null, allLevelRecursive tinyint(1) default 'false', numOfLevels int default 1, primary key (ID)) type=InnoDB;
+CREATE TABLE IF NOT EXISTS request_DirOption (ID int not null auto_increment, isSourceADirectory tinyint(1) default 0 not null, allLevelRecursive tinyint(1) default 0, numOfLevels int default 1, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS request_Put (ID int not null auto_increment, request_queueID int not null, targetSURL text not null, expectedFileSize bigint, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS status_Put (ID int not null auto_increment, statusCode int not null, explanation VARCHAR(255), fileSize bigint, estimatedWaitTime int, remainingPinTime int, remainingFileTime int, transferURL text, request_PutID int not null, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS request_Copy (ID int not null auto_increment, request_queueID int, request_DirOptionID int, sourceSURL text not null, targetSURL text not null, primary key (ID)) type=InnoDB;
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `storage_space` (
   `USERDN` VARCHAR(150) NOT NULL default '',
   `VOGROUP` VARCHAR(20) NOT NULL default '',
   `ALIAS` VARCHAR(100) default NULL,
-  `SPACE_TOKEN` VARCHAR(100) NOT NULL default '' BINARY,
+  `SPACE_TOKEN` VARCHAR(100) BINARY NOT NULL default '',
   `CREATED` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `TOTAL_SIZE` bigint(20) NOT NULL default '0',
   `GUAR_SIZE` bigint(20) NOT NULL default '0',
