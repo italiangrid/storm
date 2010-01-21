@@ -28,7 +28,7 @@
 # ============================ 
 # hostname with which the service is published
 #   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.FE-public.hostname = @FE_PUBLIC_HOSTNAME@  
+storm.service.FE-public.hostname =   
 
 
 # ============================
@@ -36,7 +36,7 @@ storm.service.FE-public.hostname = @FE_PUBLIC_HOSTNAME@
 # ============================
 # comma-separated list of hostnames composing the FE. 
 #   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
+storm.service.FE-list.hostnames =  
 
 
 # ============================
@@ -48,7 +48,7 @@ storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
 # storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>
 # Example: Example: srm://storm.cnaf.infn.it:8444/srm/managerv2
 #   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.SURL.endpoint =  @SURL_ENDPOINT@
+storm.service.SURL.endpoint =   
 
 
 # ============================
@@ -57,9 +57,9 @@ storm.service.SURL.endpoint =  @SURL_ENDPOINT@
 #
 # Parameters to connect to the DB used as channel for the requests. 
 #   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.request-db.host = @DB_HOSTNAME@
-storm.service.request-db.username = @DB_USER@ 
-storm.service.request-db.passwd = @DB_PASSWD@
+storm.service.request-db.host =  
+storm.service.request-db.username =   
+storm.service.request-db.passwd =  
 
 
 # ===========================
@@ -108,6 +108,7 @@ directory.writeperm = false
 pinLifetime.minimum=259200
 pinLifetime.maximum=1814400
 
+
 # ============================
 # StoRM Service TURL Behaviour
 # ============================
@@ -116,14 +117,16 @@ extraslashes.rfio=
 extraslashes.gsiftp=/
 extraslashes.root=
 
+
 # =======================
 # Default 
 # =======================
 # Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
 fileLifetime.default=259200
-default.overwrite   = A       # N:Never,     A:Always
-default.storagetype = P       # V:Volatile,  P:Permanent,  D:Durable
-
+# Possible values are :   N (Never) and  A (Always)
+default.overwrite   = A
+# Possible values are  V (Volatile), P (Permanent) and  D (Durable)      
+default.storagetype = P       
 
 
 #############################################
@@ -222,6 +225,7 @@ asynch.srmclient=it.grid.storm.asynch.SRM22Client
 # This value is the one specified in the remote SrmPrepareToGet request.
 SRM22Client.PinLifeTime=259200
 asynch.srmcopy.gridftp.timeout = 15000  #in msec.
+
 
 # ===========================
 # Garbage Collector parameter

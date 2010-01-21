@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -26,12 +27,8 @@ public class ConfigurationKeys {
     private final String configFN =
             "src" + fs + "it" + fs + "grid" + fs + "storm" + fs + "config" + fs + "Configuration.java";
 
-    /**
-     * 
-     * @return
-     */
-    public List<String> getKeys() {
-        ArrayList<String> definedKeys = new ArrayList<String>();
+    public HashMap<String, String> getMethodsKeys() {
+
         HashMap<String, String> method_key = new HashMap<String, String>();
 
         try {
@@ -113,6 +110,18 @@ public class ConfigurationKeys {
             }
         }
 
+        return method_key;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public List<String> getKeys() {
+        ArrayList<String> definedKeys = new ArrayList<String>();
+
+        HashMap<String, String> method_key = getMethodsKeys();
+
         // Print out method-keys
         Set<String> methods = method_key.keySet();
         for (String meth : methods) {
@@ -187,10 +196,50 @@ public class ConfigurationKeys {
         return duplicatedKeys;
     }
 
+    public HashMap<String, String> getKeyValue() {
+
+        HashMap<String, String> method_keys = getMethodsKeys();
+        HashMap<String, String> keys_values = new HashMap<String, String>();
+        Method[] allMethods = Configuration.instance.getClass().getDeclaredMethods();
+        Set<String> methodNames = method_keys.keySet();
+        System.out.println("sizes KeySet= " + methodNames.size());
+        System.out.println("sizes methods = " + allMethods.length);
+        for (Method m : allMethods) {
+            //System.out.println("scanning for method '" + m + "'");
+            if (methodNames.contains(m.getName())) {
+                System.out.println("method invocable : " + m.getName());
+                try {
+                    Object result = m.invoke(Configuration.instance, new Object[0]);
+                    System.out.println("Output = '" + result.toString() + "'");
+                } catch (IllegalArgumentException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // aux = methodName.invoke(Configuration.instance, new Object[0]);
+
+        return keys_values;
+
+    }
+
     /**
      * @param args
      */
     public static void main(String[] args) {
+        String configurationPathname =
+                System.getProperty("user.dir") + File.separator + "etc" + File.separator + "storm.properties";
+
+        System.out.println("config file: " + configurationPathname);
+        Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname, 0));
+
         ConfigurationKeys instance = new ConfigurationKeys();
         List<String> keys = instance.getKeys();
         int count = 1;
@@ -233,6 +282,9 @@ public class ConfigurationKeys {
         for (String key : dupKeys) {
             System.out.println("dup-key: " + key);
         }
+
+        System.out.println(" ####################### ");
+        instance.getKeyValue();
     }
 
 }

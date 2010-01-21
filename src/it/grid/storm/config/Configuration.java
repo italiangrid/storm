@@ -680,7 +680,9 @@ public class Configuration {
      * @return String
      */
     public String namespaceConfigPath() {
-        return configurationDir();
+        String storm_home = System.getProperty("user.dir");
+        String configDir = storm_home + File.separator + "etc";
+        return configDir;
     }
 
     /**
