@@ -768,9 +768,15 @@ public class Configuration {
      */
     public String getBE_PersistenceDBMSUrl() {
         String key = "persistence.internal-db.host";
+        String alternativeKey = "storm.service.request-db.host";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "localhost";
+            // Try with the alternative key
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
+                // return default
+                return "localhost";
+            } else {
+                return cr.getConfiguration().getString(alternativeKey);
+            }
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
@@ -800,9 +806,15 @@ public class Configuration {
      */
     public String getBE_PersistenceDBUserName() {
         String key = "persistence.internal-db.username";
+        String alternativeKey = "storm.service.request-db.username";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "storm";
+            // Try with the alternative key
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
+                // return default
+                return "storm";
+            } else {
+                return cr.getConfiguration().getString(alternativeKey);
+            }
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
@@ -816,9 +828,15 @@ public class Configuration {
      */
     public String getBE_PersistenceDBPassword() {
         String key = "persistence.internal-db.passwd";
+        String alternativeKey = "storm.service.request-db.username";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
-            return "storm";
+            // Try with the alternative key
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
+                // return default
+                return "storm";
+            } else {
+                return cr.getConfiguration().getString(alternativeKey);
+            }
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
@@ -1776,7 +1794,7 @@ public class Configuration {
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(key);
+            return cr.getConfiguration().getBoolean(key, false);
         }
     }
 

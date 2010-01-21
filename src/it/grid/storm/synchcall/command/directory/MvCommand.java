@@ -248,8 +248,11 @@ public class MvCommand extends DirectoryCommand implements Command {
         /**
          * 1.5.0 Path Authorization
          */
-        AuthzDecision mvAuthz = AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.RM, fromStori, toStori);
-        if (mvAuthz.equals(AuthzDecision.PERMIT)) {
+        AuthzDecision mvAuthz_source =
+                AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.MV_source, fromStori, toStori);
+        AuthzDecision mvAuthz_dest =
+                AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.MV_dest, fromStori, toStori);
+        if ((mvAuthz_source.equals(AuthzDecision.PERMIT)) && (mvAuthz_dest.equals(AuthzDecision.PERMIT))) {
             log.debug("SrmMv: Mv authorized for " + user + " for Source file = " + fromStori.getPFN()
                     + " to Target file =" + toStori.getPFN());
             returnStatus = manageAuthorizedMV(user, fromStori, toFile, hasJiTACL);
@@ -257,16 +260,28 @@ public class MvCommand extends DirectoryCommand implements Command {
                 log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] successfully done with [status: " + returnStatus.toString() + "]");
             } else {
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] failed with [status: " + returnStatus.toString() + "]");
             }
 
         } else {
+            String errMess = "Authz failure for unknown reasons";
+            boolean srcFailure = false;
+            if (!(mvAuthz_source.equals(AuthzDecision.PERMIT))) {
+                srcFailure = true;
+                errMess = "User is not authorized to read and/or delete (needed for Mv) the source file.";
+            }
+            if (!(mvAuthz_dest.equals(AuthzDecision.PERMIT))) {
+                if (srcFailure) {
+                    errMess +=
+                            "and User is not authorized to create and/or write (needed for Mv) the destination file.";
+                } else {
+                    errMess = "User is not authorized to create and/or write (needed for Mv) the destination file.";
+                }
+            }
             try {
-                returnStatus =
-                        new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                                          "User is not authorized to make a new directory");
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, errMess);
+                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL

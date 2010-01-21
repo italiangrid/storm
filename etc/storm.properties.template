@@ -1,20 +1,41 @@
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#    TEMPLATE for HEP,
+#    storm.properties   
 #      version 1.0
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+#   This file contains properties that govern the operation of StoRM. 
+#   The file is read at startup of the service. 
+#   Your changes will be applied when the service will be restarted.
+#
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+############################
+###  SERVICE PARAMETERS  ###
+############################
+## 
+##  NOTE: 
+##        The SERVICE PARAMETERS are managed also by YAIM. 
+##        So, if you install and configure the service with YAIM, please 
+##        remember that the parameters tagged as YAIM will be overwrite at every  
+##        reconfiguration done with YAIM, so if you want change some parameters 
+##        you should use the YAIM configuration files:
+##           <siteinfo_dir>/services/ig-se_storm_backend  (or equivalent)
+## 
 
 # ============================
 # StoRM Service DNS
 # ============================ 
-storm.service.FE-public.hostname = @FE_PUBLIC_HOSTNAME@ 
+# hostname with which the service is published
+#   <!! managed by YAIM; please read the above NOTE !!>
+storm.service.FE-public.hostname = @FE_PUBLIC_HOSTNAME@  
 
 
 # ============================
 # Front End hosts
 # ============================
-# 
-# comma-separated list of hostnames composing the FE.
+# comma-separated list of hostnames composing the FE. 
+#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
 
 
@@ -22,18 +43,20 @@ storm.service.FE-list.hostnames = @FE_HOSTNAME_LIST@
 # Managed SURL endpoints 
 # ============================
 #
-# Add managed SURL endpoint. This entries are used to check the SURL validity. 
-# Add duplicated key for every valid SURL.
-# Example: srm://@SURL_HOSTNAME@:8444/srm/managerv2 
-# storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>  
+# comma-separated list of managed SURL. 
+# These entries are used to check the SURL validity. 
+# storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>
+# Example: Example: srm://storm.cnaf.infn.it:8444/srm/managerv2
+#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.SURL.endpoint =  @SURL_ENDPOINT@
 
 
 # ============================
 # FE/BE communication RDBMS
 # ============================
-
-storm.service.request-db.dbms-vendor = mysql
+#
+# Parameters to connect to the DB used as channel for the requests. 
+#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.request-db.host = @DB_HOSTNAME@
 storm.service.request-db.username = @DB_USER@ 
 storm.service.request-db.passwd = @DB_PASSWD@
@@ -45,28 +68,37 @@ storm.service.request-db.passwd = @DB_PASSWD@
 
 # If checksum is enabled the computation will be done for one file per requests. 
 # The computation of checksum is blocking. If the checksum value is found, the computation will not take place.
-# If the checksum is disabled, the computation will not happen.  
+# If the checksum is disabled, the computation will not happen.
+#   <!! managed by YAIM; please read the above NOTE !!>
 checksum.enabled=false  
 
 # The array of URLs (e.g. http://host:port/) running the external checksum agents
 # This value is ignored if the checksum is disabled (checksum.enabled=false). 
 # note: it is a comma separated list of URLs. (e.g. checksum.serviceURL=http://host1:port/,http://host2:port/)
+#   <!! managed by YAIM; please read the above NOTE !!>
 checksum.serviceURL=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
+#   <!! managed by YAIM; please read the above NOTE !!>
 checksum.algorithm=CRC32 
 
 
-
 #############################################
-############  PROFILE PARAMETERS #############
+############  PROFILE PARAMETERS ############
 #############################################
+##
+## NOTE: 
+##  The PROFILE PARAMETERS are not managed by YAIM in any case, 
+##  so any change must be managed by directly editing this file.
+##
 
 # ============================
 # StoRM Service Generic Behaviour
 # ============================
-directory.automatic-creation = false             
-#directory.writeperm = false  # To enable file creation within directories. Useful when authz is not defined.                      
+directory.automatic-creation = false
+# To enable file creation within directories. Useful when authz is not defined.              
+directory.writeperm = false
+
 
 # ============================
 # StoRM Service PINNED Behaviour
@@ -97,16 +129,16 @@ default.storagetype = P       # V:Volatile,  P:Permanent,  D:Durable
 #############################################
 ############  TUNING PARAMETERS #############
 #############################################
+##
+## NOTE: 
+##  The TUNING PARAMETERS are not managed by YAIM in any case, 
+##  so any change must be managed by directly editing this file.
+##
 
 
 # ============================
 # BE-private RDBMS
 # ============================
-persistence.internal-db.dbms-vendor = mysql
-persistence.internal-db.host = @DB_HOSTNAME@
-persistence.internal-db.db-name = storm_be_ISAM
-persistence.internal-db.username = @DB_USER@
-persistence.internal-db.passwd = @DB_PASSWD@
 persistence.internal-db.connection-pool = true
 persistence.internal-db.connection-pool.maxActive = 10
 persistence.internal-db.connection-pool.maxWait = 50
@@ -205,7 +237,7 @@ expired.request.time=3600
 
 
 #############################################
-############  PRIVATE PARAMETERS #############
+############  PRIVATE PARAMETERS ############
 #############################################
 # ==========================================
 # -- READ ONLY Properties
