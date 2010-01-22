@@ -4,6 +4,7 @@ import it.grid.storm.namespace.NamespaceValidator;
 import it.grid.storm.namespace.config.NamespaceLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,11 +13,18 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  * <p>Title: </p>
@@ -184,11 +192,62 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
     }
 
     private String getNamespaceFileName() {
-        return it.grid.storm.config.Configuration.getInstance().getNamespaceConfigFilename();
+    	String configurationDir = it.grid.storm.config.Configuration.getInstance().configurationDir();
+    	//Looking for namespace configuration file
+    	String namespaceFN = it.grid.storm.config.Configuration.getInstance().getNamespaceConfigFilename();
+    	//Build the filename
+    	String namespaceAbsFN = configurationDir + File.separatorChar + namespaceFN; 
+    	//Check the namespace conf file accessibility
+    	File nsFile = new File(namespaceAbsFN);
+    	if (nsFile.exists()) {
+    		log.debug("Found the namespace file : "+namespaceAbsFN);
+    	} else {
+    		log.error("Unable to find the namespace file :"+namespaceAbsFN);
+    	}
+        return namespaceAbsFN; 
     }
 
     private String getNamespaceSchemaFileName() {
-        return it.grid.storm.config.Configuration.getInstance().getNamespaceSchemaFilename();
+        String schemaName = it.grid.storm.config.Configuration.getInstance().getNamespaceSchemaFilename();
+       
+        if (schemaName.equals("Schema UNKNOWN!")) {
+        	
+        	schemaName = "namespace.xsd";
+        	String namespaceFN = getNamespaceFileName();
+            File namespaceFile = new File(namespaceFN);
+            if (namespaceFile.exists()) {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                try {
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    Document doc = builder.parse(namespaceFN);
+                    Element rootElement = doc.getDocumentElement();
+                    String tagName = rootElement.getTagName();
+                    if (tagName.equals("namespace")) {
+                        if (rootElement.hasAttributes()) {
+                            String value = rootElement.getAttribute("xsi:noNamespaceSchemaLocation");
+                            if ((value != null) && (value.length() > 0)) {
+                            	schemaName = value;
+                                //log.debug("namespace schema is : " + schemaName);
+                            }
+                        } else {
+                            log.error(namespaceFN + " don't have a valid root element attributes");
+                        }
+                    } else {
+                        log.error(namespaceFN + "  don't have a valid root element.");
+                    }
+
+                } catch (ParserConfigurationException e) {
+                    log.error("Error while parsing " + namespaceFN + e.getMessage());
+                } catch (SAXException e) {
+                    log.error("Error while parsing " + namespaceFN  + e.getMessage());
+                } catch (IOException e) {
+                    log.error("Error while parsing " + namespaceFN  + e.getMessage());
+                }
+            }	
+        }
+        
+        return schemaName;
+        
     }
 
     public Configuration getConfiguration() {

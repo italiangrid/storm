@@ -1332,40 +1332,7 @@ public class Configuration {
     public String getNamespaceSchemaFilename() {
         String key = "namespace.schema.filename";
         if (!cr.getConfiguration().containsKey(key)) {
-            // scan the first line of namespace.xml 
-            String namespaceSchemaFN = "namespace.xsd";
-
-            String namespaceFN = namespaceConfigPath() + File.pathSeparator + getNamespaceConfigFilename();
-            File namespaceFile = new File(namespaceFN);
-            if (namespaceFile.exists()) {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                try {
-                    DocumentBuilder builder = factory.newDocumentBuilder();
-                    Document doc = builder.parse(namespaceFN);
-                    Element rootElement = doc.getDocumentElement();
-                    if (!(rootElement.getTagName().equals("namespace"))) {
-                        if (rootElement.hasAttributes()) {
-                            String value = rootElement.getAttribute("xsi:noNamespaceSchemaLocation");
-                            if ((value != null) && (value.length() > 0)) {
-                                namespaceSchemaFN = value;
-                                log.debug("namespace schema is : " + namespaceSchemaFN);
-                            }
-                        } else {
-                            log.error("namespace.xml don't have a valid root element attributes");
-                        }
-                    } else {
-                        log.error("namespace.xml don't have a valid root element.");
-                    }
-
-                } catch (ParserConfigurationException e) {
-                    log.error("Error while parsing namespace.xml." + e.getMessage());
-                } catch (SAXException e) {
-                    log.error("Error while parsing namespace.xml." + e.getMessage());
-                } catch (IOException e) {
-                    log.error("Error while parsing namespace.xml." + e.getMessage());
-                }
-            }
-            return namespaceSchemaFN;
+        	return "Schema UNKNOWN!";
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
