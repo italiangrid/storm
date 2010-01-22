@@ -85,6 +85,7 @@ separately in the ``storm-backend-jars`` package.
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.3.2000_to_1.4.0.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db

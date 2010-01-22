@@ -401,6 +401,7 @@ test.junit.dir
 	<include name="README"/>
 	<include name="storm_mysql_update_from_1.0.0_to_1.3.2000.sql"/>
 	<include name="storm_mysql_update_from_1.3.2000_to_1.4.0.sql"/>
+    <include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql"/>
   </fileset>	
 	
   <!-- start/stop scripts -->
