@@ -248,5 +248,5 @@ expired.request.time=3600
 # ==========================================
 #
 # READ ONLY key; please don't edit that value
-storm.properties.version = 1
+storm.properties.version = $Revision$
 #
