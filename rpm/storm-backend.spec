@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.0
-Release: rc10.sl4
+Release: rc11.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -120,7 +120,12 @@ yaim to configure the server.
 "
 
 %preun server
-/etc/init.d/storm-backend stop
+if /etc/init.d/storm-backend status &> /dev/null ; then
+  echo "storm-backend is running"
+  /etc/init.d/storm-backend stop &> /dev/null
+else
+  echo "storm-backend is not running"
+fi
 
 %postun server
 rm -f /etc/cron.d/storm-backend.cron

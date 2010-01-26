@@ -10,21 +10,13 @@
 package it.grid.storm.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from configuration files,
@@ -830,7 +822,7 @@ public class Configuration {
      */
     public String getBE_PersistenceDBPassword() {
         String key = "persistence.internal-db.passwd";
-        String alternativeKey = "storm.service.request-db.username";
+        String alternativeKey = "storm.service.request-db.passwd";
         if (!cr.getConfiguration().containsKey(key)) {
             // Try with the alternative key
             if (!cr.getConfiguration().containsKey(alternativeKey)) {
@@ -1332,7 +1324,7 @@ public class Configuration {
     public String getNamespaceSchemaFilename() {
         String key = "namespace.schema.filename";
         if (!cr.getConfiguration().containsKey(key)) {
-        	return "Schema UNKNOWN!";
+            return "Schema UNKNOWN!";
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);

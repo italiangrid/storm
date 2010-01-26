@@ -43,7 +43,7 @@ public class TasksResource {
     public String putTakeoverTasks(InputStream input) throws RecallTableException {
 
         Response response = Response.noContent().build();
-        
+
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
         // @todo : REMOVE THIS
@@ -65,7 +65,7 @@ public class TasksResource {
             log.error("Unable to use RecallTable DB.");
             throw new RecallTableException("Unable to use RecallTable DB.");
         }
-        
+
         // Retrieve the number of tasks to takeover (default = 1)
         int numbOfTask = 1;
         // Retrieve value from Body param
@@ -93,7 +93,7 @@ public class TasksResource {
 
         // Build the response
         String result = buildTakeoverTasksResponse(tasks);
-        
+
         return result;
     }
 
@@ -135,5 +135,5 @@ public class TasksResource {
         String inputStr = sb.toString();
         return inputStr;
     }
-    
+
 }
