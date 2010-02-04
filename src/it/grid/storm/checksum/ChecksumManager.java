@@ -52,9 +52,9 @@ public class ChecksumManager {
         String url;
 
         ChecksumServerStatus status;
-        
+        int index;
         do {
-            int index = getNextIndex();
+            index = getNextIndex();
             
             url = statusUrlList.get(index);
 
@@ -72,7 +72,6 @@ public class ChecksumManager {
             } catch (IOException e) {
                 return null;
             }
-            isAlive = client.ping();
             
             if (!isAlive) {
                 log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
@@ -88,7 +87,7 @@ public class ChecksumManager {
         
         log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads());
 
-        return url;
+        return serviceUrlList.get(index);
     } 
 
     private ChecksumManager(String[] urlStringArray) {
