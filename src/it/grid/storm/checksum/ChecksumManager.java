@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public class ChecksumManager {
 
     private static Logger log = LoggerFactory.getLogger(ChecksumManager.class);
+    
     private static ChecksumManager instance = null;
     private static List<String> urlList;
     private static int urlListSize;

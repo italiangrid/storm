@@ -10,19 +10,23 @@ import java.net.URL;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ChecksumClientStormRESTIMPL implements ChecksumClient {
+public class ChecksumClientImpl implements ChecksumClient {
 
+    private static Logger log = LoggerFactory.getLogger(ChecksumClientImpl.class);
+    
     private static final String GET_CHECKSUM_SERVICE = "storm/checksum.json";
     private static final String PING_SERVICE = "storm/ping.json";
     private static final String STATUS_SERVICE = "status";
 
     private String endpoint = null;
 
-    public ChecksumClientStormRESTIMPL() {
+    public ChecksumClientImpl() {
     }
 
-    public ChecksumClientStormRESTIMPL(String endpoint) throws MalformedURLException {
+    public ChecksumClientImpl(String endpoint) throws MalformedURLException {
         setEndpoint(endpoint);
     }
 
@@ -100,6 +104,8 @@ public class ChecksumClientStormRESTIMPL implements ChecksumClient {
         String responseBody = getResponse(connection);
 
         connection.disconnect();
+        
+        log.trace("Checksum server status response: " + responseBody);
 
         if (connection.getResponseCode() != 200) {
             return new ChecksumServerStatus(false, "HTML error: " + connection.getResponseCode(), -1, -1);
