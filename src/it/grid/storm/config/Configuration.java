@@ -1824,15 +1824,16 @@ public class Configuration {
      * @return the list of the defined checksum services id.
      */
     public List<String> getChecksumServiceIds() {
-        String key = "checksum.hostname";
+        String hostkey = "checksum.hostname";
         
         @SuppressWarnings("unchecked")
-        Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(key);
+        Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(hostkey);
         
         List<String> keyList = new ArrayList<String>();
         
         while (keyIterator.hasNext()) {
-            keyList.add(keyIterator.next());
+            String key = keyIterator.next();
+            keyList.add(key.substring(key.lastIndexOf('.') + 1));
         }
         return keyList;
     }
