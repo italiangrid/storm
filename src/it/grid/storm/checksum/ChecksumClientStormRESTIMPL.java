@@ -13,8 +13,9 @@ import org.json.JSONObject;
 
 public class ChecksumClientStormRESTIMPL implements ChecksumClient {
 
-    private static String GET_CHECKSUM_SERVICE = "storm/checksum.json";
-    private static String PING_SERVICE = "storm/ping.json";
+    private static final String GET_CHECKSUM_SERVICE = "storm/checksum.json";
+    private static final String PING_SERVICE = "storm/ping.json";
+    private static final String STATUS_SERVICE = "status";
 
     private String endpoint = null;
 
@@ -65,6 +66,55 @@ public class ChecksumClientStormRESTIMPL implements ChecksumClient {
 
             throw new ChecksumRuntimeException("Error computing checksum (" + url.toString() + "): "
                     + jsonResponse.getString("explanation"));
+
+        } catch (JSONException e) {
+            throw new ChecksumRuntimeException("Malformed result from URL: " + url.toString() + " Response="
+                    + responseBody);
+        }
+    }
+
+    private String getResponse(HttpURLConnection connection) throws IOException {
+
+        InputStream responseBodyStream = connection.getInputStream();
+        StringBuffer responseBody = new StringBuffer();
+
+        byte buffer[] = new byte[connection.getContentLength()];
+        int read = 0;
+        while ((read = responseBodyStream.read(buffer)) != -1) {
+            responseBody.append(new String(buffer, 0, read));
+        }
+
+        return responseBody.toString();
+    }
+
+    @Override
+    public ChecksumServerStatus getStatus() throws IOException {
+        
+        URL url = new URL(endpoint + STATUS_SERVICE);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        connection.connect();
+
+        String responseBody = getResponse(connection);
+
+        connection.disconnect();
+
+        if (connection.getResponseCode() != 200) {
+            return new ChecksumServerStatus(false, "HTML error: " + connection.getResponseCode(), -1, -1);
+        }
+
+        try {
+            JSONObject jsonServerStatus = new JSONObject(responseBody);
+            
+            ChecksumServerStatus serverStatus = new ChecksumServerStatus(true);
+            
+            serverStatus.setStatusString(jsonServerStatus.getString(ChecksumServerStatus.STATUS_STRING_KEY));
+            serverStatus.setRequestQueue(jsonServerStatus.getInt(ChecksumServerStatus.REQUEST_QUEUE_KEY));
+            serverStatus.setIdleThreads(jsonServerStatus.getInt(ChecksumServerStatus.IDLE_THREADS_KEY));
+            
+            return serverStatus;
 
         } catch (JSONException e) {
             throw new ChecksumRuntimeException("Malformed result from URL: " + url.toString() + " Response="
@@ -146,19 +196,5 @@ public class ChecksumClientStormRESTIMPL implements ChecksumClient {
         } else {
             this.endpoint = endpoint + "/";
         }
-    }
-
-    private String getResponse(HttpURLConnection connection) throws IOException {
-
-        InputStream responseBodyStream = connection.getInputStream();
-        StringBuffer responseBody = new StringBuffer();
-
-        byte buffer[] = new byte[connection.getContentLength()];
-        int read = 0;
-        while ((read = responseBodyStream.read(buffer)) != -1) {
-            responseBody.append(new String(buffer, 0, read));
-        }
-
-        return responseBody.toString();
     }
 }

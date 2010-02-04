@@ -17,7 +17,8 @@ public class ChecksumManager {
     private static Logger log = LoggerFactory.getLogger(ChecksumManager.class);
     private static ChecksumManager instance = null;
     private static List<String> urlList;
-    private static int currentURLIndex = -1;
+    private static int urlListSize;
+    private static volatile int currentURLIndex = -1;
     private static String algorithm;
 
     private ChecksumManager(String[] urlStringArray, String checksumAlgorithm) {
@@ -41,6 +42,7 @@ public class ChecksumManager {
                 log.error("Skipping malformed URL in storm.properties (checksum.serviceURL): " + urlString);
             }
         }
+        urlListSize = urlList.size();
     }
 
     public static ChecksumManager getInstance() {
@@ -69,20 +71,19 @@ public class ChecksumManager {
      * 
      * @return the checksum service URL. Return <code>null</code> if all the servers do not respond.
      */
-    private synchronized static String getTargetURL() {
+    private static String getTargetURL() {
 
         ChecksumClient client = ChecksumClientFactory.getChecksumClient();
         boolean isAlive = false;
-        int index = currentURLIndex;
+        int iter = 0;
         String url;
 
+        ChecksumServerStatus status;
+        
         do {
-            currentURLIndex++;
-            if (currentURLIndex >= urlList.size()) {
-                currentURLIndex = 0;
-            }
-
-            url = urlList.get(currentURLIndex);
+            int index = getNextIndex();
+            
+            url = urlList.get(index);
 
             try {
                 client.setEndpoint(url);
@@ -90,19 +91,39 @@ public class ChecksumManager {
                 log.error("BUG, this exception should had never be thrown.", e);
             }
 
+            try {
+                
+                status = client.getStatus();
+                isAlive = status.isRunning();
+                
+            } catch (IOException e) {
+                return null;
+            }
             isAlive = client.ping();
             
             if (!isAlive) {
                 log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
             }
 
-        } while ((index != currentURLIndex) && !isAlive);
+            iter++;
+            
+        } while ((iter < urlListSize) && !isAlive);
 
-        if ((index == currentURLIndex) && !isAlive) {
+        if ((iter == urlListSize) && !isAlive) {
             return null;
         }
+        
+        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads());
 
         return url;
+    }
+    
+    private static synchronized int getNextIndex() {
+        currentURLIndex++;
+        if (currentURLIndex >= urlList.size()) {
+            currentURLIndex = 0;
+        }
+        return currentURLIndex;
     }
 
     /**

@@ -13,11 +13,19 @@ public interface ChecksumClient {
     public boolean ping();
 
     /**
-     * Return all the supported checksum algorithms.
+     * Returns all the supported checksum algorithms.
      * 
      * @return the supported checksum algorithms.
      */
     public String[] getSupportedAlgorithms() throws IOException;
+
+    /**
+     * Returns the status of the server.
+     * 
+     * @return the status of the server.
+     * @throws IOException
+     */
+    public ChecksumServerStatus getStatus() throws IOException;
 
     /**
      * Contacts the checksum service and returns the computed checksum for the given file.
