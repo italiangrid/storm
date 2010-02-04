@@ -85,7 +85,7 @@ public class ChecksumManager {
             return null;
         }
         
-        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads());
+        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads() + ")");
 
         return serviceUrlList.get(index);
     } 
