@@ -13,6 +13,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -1817,6 +1818,69 @@ public class Configuration {
         }
     }
 
+    /**
+     * Returns the list of the defined checksum services id (the format of the key is: checksum.hostname.id).
+     * 
+     * @return the list of the defined checksum services id.
+     */
+    public List<String> getChecksumServiceIds() {
+        String key = "checksum.hostname";
+        
+        @SuppressWarnings("unchecked")
+        Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(key);
+        
+        List<String> keyList = new ArrayList<String>();
+        
+        while (keyIterator.hasNext()) {
+            keyList.add(keyIterator.next());
+        }
+        return keyList;
+    }
+    
+    /**
+     * Return the checksum service hostname associated to the given checksum service id.
+     * 
+     * @param serviceId
+     * @return the checksum service hostname associated to the given checksum service id, or <code>null</code> if no
+     *         hostname for the given id were found.
+     */
+    public String getChecksumHost(String serviceId) {
+        String key = "checksum.hostname." + serviceId;
+        return cr.getConfiguration().getString(key);
+    }
+
+    /**
+     * Return the checksum service service_port associated to the given checksum service id.
+     * 
+     * @param serviceId
+     * @return the checksum service service_port associated to the given checksum service id, or <code>-1</code> if no
+     *         service_port for the given id were found.
+     */
+    public int getChecksumServicePort(String serviceId) {
+        String key = "checksum.service_port." + serviceId;
+        if (cr.getConfiguration().containsKey(key)) {
+            return cr.getConfiguration().getInt(key);
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Return the checksum service status_port associated to the given checksum service id.
+     * 
+     * @param serviceId
+     * @return the checksum service status_port associated to the given checksum service id, or <code>-1</code> if no
+     *         status_port for the given id were found.
+     */
+    public int getChecksumStatusPort(String serviceId) {
+        String key = "checksum.status_port." + serviceId;
+        if (cr.getConfiguration().containsKey(key)) {
+            return cr.getConfiguration().getInt(key);
+        } else {
+            return -1;
+        }
+    }
+    
     public String[] getChecksumServiceURLArray() {
         String key = "checksum.serviceURL";
         String[] urlArray;

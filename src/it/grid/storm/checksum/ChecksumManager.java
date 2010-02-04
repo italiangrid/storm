@@ -14,57 +14,29 @@ import org.slf4j.LoggerFactory;
 
 public class ChecksumManager {
 
-    private static Logger log = LoggerFactory.getLogger(ChecksumManager.class);
+    private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
+    private static final String URL_FORMAT= "http://%s:%d/";
     
     private static ChecksumManager instance = null;
-    private static List<String> urlList;
+    private static List<String> serviceUrlList;
+    private static List<String> statusUrlList;
     private static int urlListSize;
-    private static volatile int currentURLIndex = -1;
+    private static volatile int currentUrlIndex = -1;
     private static String algorithm;
-
-    private ChecksumManager(String[] urlStringArray, String checksumAlgorithm) {
-
-        algorithm = checksumAlgorithm.toLowerCase();
-
-        urlList = new ArrayList<String>(urlStringArray.length);
-
-        for (String urlString : urlStringArray) {
-            try {
-
-                // Check the URL is not malformed
-                @SuppressWarnings("unused")
-                URL url = new URL(urlString);
-
-                urlList.add(urlString);
-
-                log.info("Adding URL for external checksum server: " + urlString);
-
-            } catch (MalformedURLException e) {
-                log.error("Skipping malformed URL in storm.properties (checksum.serviceURL): " + urlString);
-            }
-        }
-        urlListSize = urlList.size();
-    }
 
     public static ChecksumManager getInstance() {
         if (instance == null) {
-            instance = new ChecksumManager(Configuration.getInstance().getChecksumServiceURLArray(),
-                                           Configuration.getInstance().getChecksumAlgorithm());
+            instance = new ChecksumManager(Configuration.getInstance().getChecksumServiceURLArray());
         }
         return instance;
     }
-
-    public static void main(String[] args) {
-
-        String[] urlA = new String[2];
-
-        urlA[0] = "http://localhost:8080/pippo";
-        urlA[1] = "http://storm-devel1.cnaf.infn.it:9997/";
-
-        ChecksumManager cm = new ChecksumManager(urlA, "crc32");
-
-        System.out.println("PIPPO: " + cm.getChecksum("/home/alb/portfolio-1.0.0-1.noarch.rpm") + " :PIPPO");
-
+    
+    private static synchronized int getNextIndex() {
+        currentUrlIndex++;
+        if (currentUrlIndex >= urlListSize) {
+            currentUrlIndex = 0;
+        }
+        return currentUrlIndex;
     }
 
     /**
@@ -84,7 +56,7 @@ public class ChecksumManager {
         do {
             int index = getNextIndex();
             
-            url = urlList.get(index);
+            url = statusUrlList.get(index);
 
             try {
                 client.setEndpoint(url);
@@ -117,16 +89,15 @@ public class ChecksumManager {
         log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads());
 
         return url;
+    } 
+
+    private ChecksumManager(String[] urlStringArray) {
+
+        algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
+        initUrlArrays();
+        
     }
     
-    private static synchronized int getNextIndex() {
-        currentURLIndex++;
-        if (currentURLIndex >= urlList.size()) {
-            currentURLIndex = 0;
-        }
-        return currentURLIndex;
-    }
-
     /**
      * Return the algorithm used to compute checksums as well as retrieve the value from extended attributes.
      * 
@@ -199,28 +170,63 @@ public class ChecksumManager {
         return true;
     }
 
-    /**
-     * Computes the checksum of the given file and stores it in to an extended attribute.
-     * 
-     * @param fileName fileName file absolute path.
-     */
-    public boolean setChecksum(String fileName) {
+    private void initUrlArrays() {
+        List<String> idList = Configuration.getInstance().getChecksumServiceIds();
+        
+        urlListSize = idList.size();
+        serviceUrlList = new ArrayList<String>(urlListSize);
+        statusUrlList = new ArrayList<String>(urlListSize);
+        
+        for (String id : idList) {
+            
+            String hostname = Configuration.getInstance().getChecksumHost(id);
+            if (hostname == null) {
+                log.error("Configuration error: hostname not defined for checksum server id: " + id + ". Skipping it.");
+                continue;
+            }
+            
+            int servicePort = Configuration.getInstance().getChecksumServicePort(id);
+            if (servicePort == -1) {
+                log.error("Configuration error: service_port not defined for checksum server id: " + id + ". Skipping it.");
+                continue;
+            }
+            
+            int statusPort = Configuration.getInstance().getChecksumStatusPort(id);
+            if (statusPort == -1) {
+                log.error("Configuration error: status_port not defined for checksum server id: " + id + ". Skipping it.");
+                continue;
+            }
+            
+            URL url;
+            try {
+                
+                url = new URL(String.format(URL_FORMAT, hostname, servicePort));
+                serviceUrlList.add(url.toString());
+                log.info("Added checksum service: " + url.toString());
+                
+            } catch (MalformedURLException e) {
+                log.error("Configuration error: unable to build an URL for the following hostname and port: " + hostname + ":" + servicePort);
+                continue;
+            }
+            
 
-        String checksum = retrieveChecksumFromExternalService(fileName);
+            try {
 
-        if (checksum == null) {
-            StormEA.removeChecksum(fileName);
-            return false;
+                url = new URL(String.format(URL_FORMAT, hostname, statusPort));
+                statusUrlList.add(url.toString());
+                log.info("Added checksum service for status request: " + url.toString());
+
+            } catch (MalformedURLException e) {
+                log.error("Configuration error: unable to build an URL for the following hostname and port: "
+                        + hostname + ":" + statusPort);
+                continue;
+            }                
         }
-
-        StormEA.setChecksum(fileName, checksum, algorithm);
-
-        return true;
     }
 
     private String retrieveChecksumFromExternalService(String fileName) {
 
-        if (urlList.isEmpty()) {
+        if (serviceUrlList.isEmpty()) {
 
             log.warn("No external checksum servers found, no checksum returned for file: " + fileName);
             return null;
@@ -255,4 +261,24 @@ public class ChecksumManager {
             return null;
         }
     }
+
+    /**
+     * Computes the checksum of the given file and stores it in to an extended attribute.
+     * 
+     * @param fileName fileName file absolute path.
+     */
+    public boolean setChecksum(String fileName) {
+
+        String checksum = retrieveChecksumFromExternalService(fileName);
+
+        if (checksum == null) {
+            StormEA.removeChecksum(fileName);
+            return false;
+        }
+
+        StormEA.setChecksum(fileName, checksum, algorithm);
+
+        return true;
+    }
 }
+
