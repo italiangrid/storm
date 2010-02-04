@@ -112,7 +112,7 @@ public class ChecksumClientImpl implements ChecksumClient {
         }
 
         try {
-            JSONObject jsonServerStatus = new JSONObject(responseBody);
+            JSONObject jsonServerStatus = (new JSONObject(responseBody)).getJSONObject("ChecksumServerStatus");
             
             ChecksumServerStatus serverStatus = new ChecksumServerStatus(true);
             

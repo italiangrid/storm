@@ -228,7 +228,7 @@ public class ChecksumManager {
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
-            log.warn("Checksum computation (' + fileName + ') request failed: none of the servers has responded");
+            log.warn("Checksum computation ('" + fileName + "') request failed: none of the servers has responded");
             return null;
         }
 
