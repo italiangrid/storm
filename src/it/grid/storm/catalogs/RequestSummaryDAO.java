@@ -939,7 +939,10 @@ public class RequestSummaryDAO {
                 // request_Get.request_DirOptionID IS NULL AND
                 // request_BoL.request_DirOptionID IS NULL ;
 
-                stmt = "DELETE request_DirOption FROM request_DirOption "
+/* 
+ *              This   
+ *                
+ *                stmt = "DELETE request_DirOption FROM request_DirOption "
                         + " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID"
                         + " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID "
                         + " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID"
@@ -960,6 +963,7 @@ public class RequestSummaryDAO {
                     log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No Deleted DirOption related to expired requests.");
                 }
                 close(ps);
+*/
             }
             // commit and finish transaction
             con.commit();

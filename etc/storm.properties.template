@@ -93,15 +93,15 @@ checksum.algorithm=CRC32
 ##
 
 # ============================
-# StoRM Service Generic Behaviour
+# StoRM Service Generic Behavior
 # ============================
 directory.automatic-creation = false
-# To enable file creation within directories. Useful when authz is not defined.              
+# To enable file creation within directories. Useful when authorization is not defined.              
 directory.writeperm = false
 
 
 # ============================
-# StoRM Service PINNED Behaviour
+# StoRM Service PINNED Behavior
 # ============================
 # Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
 # without any pinLifetime specified. 
@@ -110,7 +110,7 @@ pinLifetime.maximum=1814400
 
 
 # ============================
-# StoRM Service TURL Behaviour
+# StoRM Service TURL Behavior
 # ============================
 extraslashes.file=
 extraslashes.rfio=
@@ -193,7 +193,7 @@ synchcall.xmlrpc.maxthread=100
 
 
 # =======================
-# Garbage Collector parameters
+# Pinned Files cleaning parameters
 # =======================
 # Initial delay in seconds before starting the garbage collector thread
 gc.pinnedfiles.cleaning.delay = 10
@@ -221,20 +221,21 @@ asynch.srmclient.putdone.sleeptime=1
 asynch.srmclient.putdone.timeout=60
 asynch.gridftpclient=it.grid.storm.asynch.NaiveGridFTPTransferClient
 asynch.srmclient=it.grid.storm.asynch.SRM22Client
-# Deault PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
+# Default PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
 # This value is the one specified in the remote SrmPrepareToGet request.
 SRM22Client.PinLifeTime=259200
-asynch.srmcopy.gridftp.timeout = 15000  #in msec.
+# Time expressed in millisec.
+asynch.srmcopy.gridftp.timeout = 15000  
 
 
 # ===========================
 # Garbage Collector parameter
 # ===========================
-#Time interval for request garbage collection
-purge.interval=21600
+#Time interval for between two requests in garbage collection. In seconds
+purge.interval=600
 #
-#Number of requests removed at each run
-purge.size=1000
+#Number of requests removed at each run. Every run purge max 800 requests in final status 
+purge.size=800
 #
 #Time after that the GC consider a _terminated_ request as garbage
 expired.request.time=3600
