@@ -60,7 +60,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     private static final Object lock = new Object();
 
     private static TReturnStatus anotherPutDoneActiveReturnStatus;
-    
+
     private final PutDoneOutputData outputData = new PutDoneOutputData();
     private TReturnStatus globalStatus = null;
     private boolean requestFailure;
@@ -279,7 +279,10 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         List<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
         ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
-        /* spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS. */
+        /*
+         * spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS,
+         * i.e. the not-null elements.
+         */
         List<ReducedPtPChunkData> spaceAvailableSURLs = new ArrayList<ReducedPtPChunkData>(listOfSURLs.size());
 
         if (!findCandidateSURLs(requestToken,
@@ -292,7 +295,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
 
         executePutDone(spaceAvailableSURLs, arrayOfFileStatus, user, lUser);
-        
+
         /* unlock SURLs */
         for (ReducedPtPChunkData chunckData : spaceAvailableSURLs) {
             TSURL surl = chunckData.toSURL();
@@ -341,6 +344,19 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         return outputData;
     }
 
+    /**
+     * A 1:1 match is guaranteed among the Lists: inputSURLs, spaceAvailableSURLs and arrayOfFileStatus. That means the
+     * list spaceAvailableSURLs may contain null elements corresponding to the SURLs not in the SPACE_AVAILABLE state
+     * (for these entries the corresponding element in arrayOfFileStatus is properly set).
+     * 
+     * @param requestToken
+     * @param outputData
+     * @param user
+     * @param inputSURLs
+     * @param spaceAvailableSURLs
+     * @param arrayOfFileStatus
+     * @return
+     */
     private boolean findCandidateSURLs(TRequestToken requestToken, PutDoneOutputData outputData,
             GridUserInterface user, List<TSURL> inputSURLs, List<ReducedPtPChunkData> spaceAvailableSURLs,
             ArrayOfTSURLReturnStatus arrayOfFileStatus) {
@@ -405,6 +421,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
             // Execute the PutDone on SURL[i]
             TReturnStatus surlReturnStatus = null;
+            boolean surlIsSpaceAvailable = false;
             try {
                 if (auxChunkData != null) { // SURL found, select it for PutDone
                     log.debug(funcName + "SURL[" + i + "] found!");
@@ -418,10 +435,12 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                             surlReturnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
                             // Select the SURL, the DB will be updated at once after
                             spaceAvailableSURLs.add(auxChunkData);
+                            surlIsSpaceAvailable = true;
                             requestFailure = false;
                             requestAborted = false;
                         } else { // there is an active PutDone on this SURL
-                            arrayOfFileStatus.getTSURLReturnStatus(i).setStatus(anotherPutDoneActiveReturnStatus);
+                            arrayOfFileStatus.getTSURLReturnStatus(i)
+                                             .setStatus(anotherPutDoneActiveReturnStatus);
                             requestSuccess = false;
                             requestAborted = false;
                         }
@@ -453,6 +472,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 // Nothing to do, it will never be thrown
                 surlReturnStatus = null;
                 log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
+            }
+            if (!surlIsSpaceAvailable) { // Keep 1:1 match with arrayOfFileStatus
+                spaceAvailableSURLs.add(null);
             }
 
             /* Add the TSURLReturnStatus of SURL[i] to arrayOfFileStatus */
@@ -487,6 +509,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         String requestTokenString = requestToken.toString();
         String surlString = surl.getSURLString();
+        
+        log.info("##################################### SURL: " + surlString);
+        log.info("##################################### SFN : " + surl.sfn());
 
         synchronized (lock) {
             if (lockedSurls.containsKey(requestTokenString)) {
