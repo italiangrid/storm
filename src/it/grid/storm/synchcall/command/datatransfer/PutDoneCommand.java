@@ -33,10 +33,8 @@ import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -56,7 +54,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
     private static final String funcName = "PutDone: ";
 
-    private static final Map<String, Set<String>> lockedSurls = new HashMap<String, Set<String>>();
+    private static final Set<String> lockedSurls = new HashSet<String>();
     private static final Object lock = new Object();
 
     private static TReturnStatus anotherPutDoneActiveReturnStatus;
@@ -106,15 +104,29 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
+            ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
+            
+            if (chunkData == null) {
+                continue;
+            }
+            
+            TSURL surl = chunkData.toSURL();
+
             if (user == null) {
-                log.info("Executing implicit PutDone for SURL: "
-                        + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+
+                boolean goOnWithPutDone = lockSurl(surl);
+
+                if (goOnWithPutDone) {
+                    log.info("Executing implicit PutDone for SURL: "
+                            + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+                } else {
+                    continue;
+                }
+                
             } else {
                 log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
             }
 
-            ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
-            TSURL surl = chunkData.toSURL();
             StoRI stori = null;
             // Retrieve the StoRI associate to the SURL
             try {
@@ -185,8 +197,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
 
         // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        if (spaceAvailableSURLs.size() > 0) {
-            PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
+        PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
+        
+        /* Unlock the SURLs */
+        for (ReducedPtPChunkData chunk : spaceAvailableSURLs) {
+            if (chunk != null) {
+                unlockSurl(chunk.toSURL());
+            }
         }
     }
 
@@ -295,12 +312,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
 
         executePutDone(spaceAvailableSURLs, arrayOfFileStatus, user, lUser);
-
-        /* unlock SURLs */
-        for (ReducedPtPChunkData chunckData : spaceAvailableSURLs) {
-            TSURL surl = chunckData.toSURL();
-            unlockSurl(requestToken, surl);
-        }
 
         /* Set the request status */
         try {
@@ -429,7 +440,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
                     if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_SPACE_AVAILABLE) {
 
-                        boolean goOnWithPutDone = lockSurl(requestToken, surl);
+                        boolean goOnWithPutDone = lockSurl(surl);
 
                         if (goOnWithPutDone) {
                             surlReturnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
@@ -505,39 +516,51 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         return true;
     }
 
-    private boolean lockSurl(TRequestToken requestToken, TSURL surl) {
-
-        String requestTokenString = requestToken.toString();
-        String surlString = surl.getSURLString();
-        
-        log.info("##################################### SURL: " + surlString);
-        log.info("##################################### SFN : " + surl.sfn());
-
+    private static boolean lockSurl(TSURL surl) {
         synchronized (lock) {
-            if (lockedSurls.containsKey(requestTokenString)) {
-                Set<String> surlSet = lockedSurls.get(requestTokenString);
-                return surlSet.add(surlString);
-            }
-            Set<String> surlSet = new HashSet<String>();
-            surlSet.add(surlString);
-            lockedSurls.put(requestTokenString, surlSet);
-            return true;
+            return lockedSurls.add(surl.getSURLString());
         }
     }
 
-    private void unlockSurl(TRequestToken requestToken, TSURL surl) {
-
-        String requestTokenString = requestToken.toString();
-        String surlString = surl.getSURLString();
-
+    private static void unlockSurl(TSURL surl) {
         synchronized (lock) {
-            Set<String> surlSet = lockedSurls.get(requestTokenString);
-            if (surlSet == null) {
-                log.warn("Request token not found inside the map of PutDone locked surls (coudl be a bug). Token: "
-                        + requestTokenString);
-                return;
-            }
-            surlSet.remove(surlString);
+            lockedSurls.remove(surl.getSURLString());
         }
     }
+
+    // private boolean lockSurl(TRequestToken requestToken, TSURL surl) {
+    //
+    // String requestTokenString = requestToken.toString();
+    // String surlString = surl.getSURLString();
+    //        
+    // log.info("##################################### SURL: " + surlString);
+    // log.info("##################################### SFN : " + surl.sfn());
+    //
+    // synchronized (lock) {
+    // if (lockedSurls.containsKey(requestTokenString)) {
+    // Set<String> surlSet = lockedSurls.get(requestTokenString);
+    // return surlSet.add(surlString);
+    // }
+    // Set<String> surlSet = new HashSet<String>();
+    // surlSet.add(surlString);
+    // lockedSurls.put(requestTokenString, surlSet);
+    // return true;
+    // }
+    // }
+
+    // private void unlockSurl(TRequestToken requestToken, TSURL surl) {
+    //
+    // String requestTokenString = requestToken.toString();
+    // String surlString = surl.getSURLString();
+    //
+    // synchronized (lock) {
+    // Set<String> surlSet = lockedSurls.get(requestTokenString);
+    // if (surlSet == null) {
+    // log.warn("Request token not found inside the map of PutDone locked surls (coudl be a bug). Token: "
+    // + requestTokenString);
+    // return;
+    // }
+    // surlSet.remove(surlString);
+    // }
+    // }
 }

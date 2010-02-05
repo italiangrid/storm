@@ -427,13 +427,20 @@ public class PtPChunkCatalog {
 
     /**
      * Method used to transit the specified Collection of ReducedPtPChunkData of the request identified by the supplied
-     * TRequestToken, from SRM_SPACE_AVAILABLE to SRM_SUCCESS. Chunks in any other starting state are not transited. In
-     * case of any error nothing is done, but proper error messages get logged.
+     * TRequestToken, from SRM_SPACE_AVAILABLE to SRM_SUCCESS. Chunks in any other starting state are not transited.
+     * <code>null</code> entries in the collection are permitted and skipped. In case of any error nothing is done, but
+     * proper error messages get logged.
      */
     synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(Collection<ReducedPtPChunkData> chunks) {
+        if (chunks.size() == 0) {
+            return;
+        }
         List<Long> aux = new ArrayList<Long>();
         long[] auxlong = null;
         for (ReducedPtPChunkData auxData : chunks) {
+            if (auxData == null) {
+                continue;
+            }
             aux.add(new Long(auxData.primaryKey()));
         }
         int n = aux.size();
