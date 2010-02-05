@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,13 +191,13 @@ public class ChecksumManager {
     }
 
     private void initUrlArrays() {
-        List<String> idList = Configuration.getInstance().getChecksumServiceIds();
+        Set<String> idSet = Configuration.getInstance().getChecksumServiceIds();
 
-        urlListSize = idList.size();
+        urlListSize = idSet.size();
         serviceUrlList = new ArrayList<String>(urlListSize);
         statusUrlList = new ArrayList<String>(urlListSize);
 
-        for (String id : idList) {
+        for (String id : idSet) {
 
             String hostname = Configuration.getInstance().getChecksumHost(id);
             if (hostname == null) {

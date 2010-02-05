@@ -13,8 +13,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1823,21 +1825,21 @@ public class Configuration {
      * 
      * @return the list of the defined checksum services id.
      */
-    public List<String> getChecksumServiceIds() {
+    public Set<String> getChecksumServiceIds() {
         String hostkey = "checksum.server";
         
         @SuppressWarnings("unchecked")
         Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(hostkey);
         
-        List<String> keyList = new ArrayList<String>();
+        Set<String> keySet = new HashSet<String>();
         
         while (keyIterator.hasNext()) {
             String key = keyIterator.next();
             // from the second dot onwards.
             int idStartIndex = key.indexOf('.', key.indexOf('.') + 1) + 1;
-            keyList.add(key.substring(idStartIndex, key.indexOf('.', idStartIndex)));
+            keySet.add(key.substring(idStartIndex, key.indexOf('.', idStartIndex)));
         }
-        return keyList;
+        return keySet;
     }
     
     /**
