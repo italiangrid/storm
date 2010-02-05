@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 public class ChecksumManager {
 
     private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
-    private static final String URL_FORMAT= "http://%s:%d/";
-    
+    private static final String URL_FORMAT = "http://%s:%d/";
+
     private static ChecksumManager instance = null;
     private static List<String> serviceUrlList;
     private static List<String> statusUrlList;
@@ -28,9 +28,9 @@ public class ChecksumManager {
 
         algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
         initUrlArrays();
-        
+
     }
-    
+
     public static ChecksumManager getInstance() {
         if (instance == null) {
             instance = new ChecksumManager();
@@ -44,7 +44,7 @@ public class ChecksumManager {
             currentUrlIndex = 0;
         }
         return currentUrlIndex;
-    } 
+    }
 
     /**
      * Return the algorithm used to compute checksums as well as retrieve the value from extended attributes.
@@ -54,7 +54,7 @@ public class ChecksumManager {
     public String getAlgorithm() {
         return algorithm;
     }
-    
+
     /**
      * Return the computed checksum for the given file. If the checksum is already stored in an extended attribute then
      * that value is given back, otherwise: - check if the computation of checksum is enabled. - if ENABLED then the
@@ -153,80 +153,82 @@ public class ChecksumManager {
         int index;
         do {
             index = getNextIndex();
-            
+
             url = statusUrlList.get(index);
 
             try {
-                client.setEndpoint(url);
-            } catch (MalformedURLException e) {
-                log.error("BUG, this exception should had never be thrown.", e);
-            }
 
-            try {
-                
+                client.setEndpoint(url);
                 status = client.getStatus();
                 isAlive = status.isRunning();
-                
+
+            } catch (MalformedURLException e) {
+                log.error("BUG, this exception should had never be thrown.", e);
+                return null;
             } catch (IOException e) {
                 return null;
             }
-            
+
             if (!isAlive) {
                 log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
             }
 
             iter++;
-            
+
         } while ((iter < urlListSize) && !isAlive);
 
         if ((iter == urlListSize) && !isAlive) {
             return null;
         }
-        
-        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads() + ")");
+
+        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue()
+                + ", idleThreads=" + status.getIdleThreads() + ")");
 
         return serviceUrlList.get(index);
     }
 
     private void initUrlArrays() {
         List<String> idList = Configuration.getInstance().getChecksumServiceIds();
-        
+
         urlListSize = idList.size();
         serviceUrlList = new ArrayList<String>(urlListSize);
         statusUrlList = new ArrayList<String>(urlListSize);
-        
+
         for (String id : idList) {
-            
+
             String hostname = Configuration.getInstance().getChecksumHost(id);
             if (hostname == null) {
-                log.error("Configuration error: hostname not defined for checksum server id: " + id + ". Skipping it.");
+                log.error("Configuration error: hostname not defined for checksum server id: " + id
+                        + ". Skipping it.");
                 continue;
             }
-            
+
             int servicePort = Configuration.getInstance().getChecksumServicePort(id);
             if (servicePort == -1) {
-                log.error("Configuration error: service_port not defined for checksum server id: " + id + ". Skipping it.");
+                log.error("Configuration error: service_port not defined for checksum server id: " + id
+                        + ". Skipping it.");
                 continue;
             }
-            
+
             int statusPort = Configuration.getInstance().getChecksumStatusPort(id);
             if (statusPort == -1) {
-                log.error("Configuration error: status_port not defined for checksum server id: " + id + ". Skipping it.");
+                log.error("Configuration error: status_port not defined for checksum server id: " + id
+                        + ". Skipping it.");
                 continue;
             }
-            
+
             URL url;
             try {
-                
+
                 url = new URL(String.format(URL_FORMAT, hostname, servicePort));
                 serviceUrlList.add(url.toString());
                 log.info("Added checksum " + id + " service_port: " + url.toString());
-                
+
             } catch (MalformedURLException e) {
-                log.error("Configuration error: unable to build an URL for the following hostname and port: " + hostname + ":" + servicePort);
+                log.error("Configuration error: unable to build an URL for the following hostname and port: "
+                        + hostname + ":" + servicePort);
                 continue;
             }
-            
 
             try {
 
@@ -238,7 +240,7 @@ public class ChecksumManager {
                 log.error("Configuration error: unable to build an URL for the following hostname and port: "
                         + hostname + ":" + statusPort);
                 continue;
-            }                
+            }
         }
     }
 
@@ -252,7 +254,8 @@ public class ChecksumManager {
 
         String targetURL = getTargetURL();
         if (targetURL == null) {
-            log.warn("Checksum computation ('" + fileName + "') request failed: none of the servers has responded");
+            log.warn("Checksum computation ('" + fileName
+                    + "') request failed: none of the servers has responded");
             return null;
         }
 
@@ -280,4 +283,3 @@ public class ChecksumManager {
         }
     }
 }
-
