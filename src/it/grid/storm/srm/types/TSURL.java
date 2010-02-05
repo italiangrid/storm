@@ -50,55 +50,13 @@ public class TSURL {
     }
 
     /**
-     * Static factory method that returns an empty TSURL.
+     * Method that create a TSURL from structure received from FE.
+     * @throws InvalidTSURLAttributesException
      */
-    public static TSURL makeEmpty() {
-        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
-    }
-
-    /**
-     * Static factory method that returns a TSURL and that requires the SiteProtocol
-     * and the SFN of this TSURL: if any is null or empty an InvalidTSURLAttributesException
-     * is thrown.
-     * Check for ".." in Storage File Name for security issues.
-     */
-    public static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
-        if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
-            throw new InvalidTSURLAttributesException(sp, sfn);
-        }
-        return new TSURL(sp, sfn, false);
-    }
-
-    /**
-     * Static factory method that returns a TSURL from a String representation: if it is null
-     * or malformed then an Invalid TSURLAttributesException is thrown.
-     */
-    public static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
-        if (s == null) {
-            throw new InvalidTSURLAttributesException(null, null);
-        }
-        int separator = s.indexOf("://"); //first occurence of ://
-        if ((separator == -1) || (separator == 0)) {
-            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
-        }
-        String spString = s.substring(0, separator);
-        SiteProtocol sp = null;
-        try {
-            sp = SiteProtocol.fromString(spString);
-        } catch (IllegalArgumentException e) {
-            //do nothing - sp remains null and that is fine!
-        }
-        if ((separator + 3) > (s.length())) {
-            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
-        }
-        String sfnString = s.substring(separator + 3, s.length());
-        SFN sfn = null;
-        try {
-            sfn = SFN.makeFromString(sfnString);
-        } catch (InvalidSFNAttributesException e) {
-            //do nothing - sfn remains null and that is fine!
-        }
-        return TSURL.make(sp, sfn);
+    public static TSURL decode(Map inputParam, String name) throws InvalidTSURLAttributesException {
+        String surlstring = (String) inputParam.get(name);
+        //return TSURL.makeFromStringValidate(surlstring);
+        return TSURL.makeFromString(surlstring);
     }
 
     /**
@@ -134,115 +92,69 @@ public class TSURL {
 
     }
 
-    private static boolean surlValid(TSURL comingSURL, TSURL managedSURL) {
-        boolean result = false;
-
-        String serviceHost = comingSURL.sfn().machine().toString().toLowerCase();
-        int port = comingSURL.sfn().port().toInt();
-
-        String expectedServiceHost = managedSURL.sfn().machine().toString().toLowerCase();
-        int expectedServicePort = managedSURL.sfn().port().toInt();
-
-        log.debug("SURL VALID [ coming-service-host = '" + serviceHost + "' expected : '" + expectedServiceHost + "'");
-        log.debug("SURL VALID [ coming-service-port = '" + port + "' expected : '" + expectedServicePort + "'");
-
-        if ((serviceHost.equals(expectedServiceHost)) && (expectedServicePort == port)) {
-            result = true;
+    /**
+     * Static factory method that returns a TSURL and that requires the SiteProtocol
+     * and the SFN of this TSURL: if any is null or empty an InvalidTSURLAttributesException
+     * is thrown.
+     * Check for ".." in Storage File Name for security issues.
+     */
+    public static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
+        if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
+            throw new InvalidTSURLAttributesException(sp, sfn);
         }
+        return new TSURL(sp, sfn, false);
+    }
+
+    /**
+     *
+     * @param host String
+     * @param port int
+     * @param path String
+     * @return TSURL
+     */
+    public static TSURL make(String host, int port, String path) {
+        TSURL result = null;
+
         return result;
     }
 
     /**
-     * Method that returns a Collection of all parent TSURLs. The following example clarifies
-     * what is meant by parent TSURLs.
-     *
-     * Original TSURL:
-     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
-     *
-     * Parent TSURLs:
-     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
-     *       srm://storage.egrid.it:8444/EGRID/original/data
-     *       srm://storage.egrid.it:8444/EGRID/original
-     *       srm://storage.egrid.it:8444/EGRID
-     *
-     * An empty collection is returned if any error occurs during creation of parent SURLs.
-     * Likewise if This is an EmptySURL.
+     * Static factory method that returns an empty TSURL.
      */
-    public Collection getParents() {
-        if (empty) {
-            return new ArrayList();
+    public static TSURL makeEmpty() {
+        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
+    }
+
+    /**
+     * Static factory method that returns a TSURL from a String representation: if it is null
+     * or malformed then an Invalid TSURLAttributesException is thrown.
+     */
+    public static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
+        if (s == null) {
+            throw new InvalidTSURLAttributesException(null, null);
         }
+        int separator = s.indexOf("://"); //first occurence of ://
+        if ((separator == -1) || (separator == 0)) {
+            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
+        }
+        String spString = s.substring(0, separator);
+        SiteProtocol sp = null;
         try {
-            Collection aux = new ArrayList();
-            Collection auxSFN = sfn.getParents();
-            for (Iterator i = auxSFN.iterator(); i.hasNext();) {
-                aux.add(TSURL.make(sp, (SFN) i.next()));
-            }
-            return aux;
-        } catch (InvalidTSURLAttributesException e) {
-            return new ArrayList();
+            sp = SiteProtocol.fromString(spString);
+        } catch (IllegalArgumentException e) {
+            //do nothing - sp remains null and that is fine!
         }
-    }
-
-    /**
-     * Method that return the parent TSURL. The following example clarifies
-     * what is meant by parent TSURL.
-     *
-     * Original TSURL:
-     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
-     *
-     * Parent TSURL:
-     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
-     *
-     * An empty TSURL is returned if any error occurs during creation of parent TSURL.
-     * Likewise if This is an EmptyTSURL.
-     */
-    public TSURL getParent() {
-        if (empty) {
-            return makeEmpty();
+        if ((separator + 3) > (s.length())) {
+            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
         }
+        String sfnString = s.substring(separator + 3, s.length());
+        SFN sfn = null;
         try {
-            return TSURL.make(sp, sfn.getParent());
-        } catch (InvalidTSURLAttributesException e) {
-            return makeEmpty();
+            sfn = SFN.makeFromString(sfnString);
+        } catch (InvalidSFNAttributesException e) {
+            //do nothing - sfn remains null and that is fine!
         }
-    }
-
-    public boolean isEmpty() {
-        return empty;
-    }
-
-    /**
-     * Returns a string representation of the SURL.
-     * @return String
-     */
-    public String getSURLString() {
-        if (empty) {
-            return "";
-        }
-        return sp + "://" + sfn;
-    }
-
-    /**
-     * Method that returns the SiteProtocol of this TSURL. If this is empty,
-     * then an empty SiteProtocol is returned.
-     */
-    public SiteProtocol protocol() {
-        if (empty) {
-            return SiteProtocol.EMPTY;
-        }
-        return sp;
-    }
-
-    /**
-     * Method that returns the SFN of this SURL. If this is empty, then
-     * an empty SFN is returned.
-     */
-    public SFN sfn() {
-        if (empty) {
-            return SFN.makeEmpty();
-        }
-        return sfn;
+        return TSURL.make(sp, sfn);
     }
 
     /**
@@ -311,27 +223,22 @@ public class TSURL {
         return result;
     }
 
-    /**
-     *
-     * @param host String
-     * @param port int
-     * @param path String
-     * @return TSURL
-     */
-    public static TSURL make(String host, int port, String path) {
-        TSURL result = null;
+    private static boolean surlValid(TSURL comingSURL, TSURL managedSURL) {
+        boolean result = false;
 
+        String serviceHost = comingSURL.sfn().machine().toString().toLowerCase();
+        int port = comingSURL.sfn().port().toInt();
+
+        String expectedServiceHost = managedSURL.sfn().machine().toString().toLowerCase();
+        int expectedServicePort = managedSURL.sfn().port().toInt();
+
+        log.debug("SURL VALID [ coming-service-host = '" + serviceHost + "' expected : '" + expectedServiceHost + "'");
+        log.debug("SURL VALID [ coming-service-port = '" + port + "' expected : '" + expectedServicePort + "'");
+
+        if ((serviceHost.equals(expectedServiceHost)) && (expectedServicePort == port)) {
+            result = true;
+        }
         return result;
-    }
-
-    /**
-     * Method that create a TSURL from structure received from FE.
-     * @throws InvalidTSURLAttributesException
-     */
-    public static TSURL decode(Map inputParam, String name) throws InvalidTSURLAttributesException {
-        String surlstring = (String) inputParam.get(name);
-        //return TSURL.makeFromStringValidate(surlstring);
-        return TSURL.makeFromString(surlstring);
     }
 
     /**
@@ -339,14 +246,6 @@ public class TSURL {
      */
     public void encode(Map param, String name) {
         param.put(name, toString());
-    }
-
-    @Override
-    public String toString() {
-        if (empty) {
-            return "Empty TSURL";
-        }
-        return sp + "://" + sfn;
     }
 
     @Override
@@ -364,6 +263,73 @@ public class TSURL {
         return (!empty) && (!surlo.empty) && sp.equals(surlo.sp) && sfn.equals(surlo.sfn);
     }
 
+    /**
+     * Method that return the parent TSURL. The following example clarifies
+     * what is meant by parent TSURL.
+     *
+     * Original TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
+     *
+     * Parent TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
+     *
+     * An empty TSURL is returned if any error occurs during creation of parent TSURL.
+     * Likewise if This is an EmptyTSURL.
+     */
+    public TSURL getParent() {
+        if (empty) {
+            return makeEmpty();
+        }
+        try {
+            return TSURL.make(sp, sfn.getParent());
+        } catch (InvalidTSURLAttributesException e) {
+            return makeEmpty();
+        }
+    }
+
+    /**
+     * Method that returns a Collection of all parent TSURLs. The following example clarifies
+     * what is meant by parent TSURLs.
+     *
+     * Original TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
+     *
+     * Parent TSURLs:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
+     *       srm://storage.egrid.it:8444/EGRID/original/data
+     *       srm://storage.egrid.it:8444/EGRID/original
+     *       srm://storage.egrid.it:8444/EGRID
+     *
+     * An empty collection is returned if any error occurs during creation of parent SURLs.
+     * Likewise if This is an EmptySURL.
+     */
+    public Collection getParents() {
+        if (empty) {
+            return new ArrayList();
+        }
+        try {
+            Collection aux = new ArrayList();
+            Collection auxSFN = sfn.getParents();
+            for (Iterator i = auxSFN.iterator(); i.hasNext();) {
+                aux.add(TSURL.make(sp, (SFN) i.next()));
+            }
+            return aux;
+        } catch (InvalidTSURLAttributesException e) {
+            return new ArrayList();
+        }
+    }
+
+    /**
+     * Returns a string representation of the SURL.
+     * @return String
+     */
+    public String getSURLString() {
+        if (empty) {
+            return "";
+        }
+        return sp + "://" + sfn;
+    }
+
     @Override
     public int hashCode() {
         if (empty) {
@@ -373,6 +339,40 @@ public class TSURL {
         hash = 37 * hash + sp.hashCode();
         hash = 37 * hash + sfn.hashCode();
         return hash;
+    }
+
+    public boolean isEmpty() {
+        return empty;
+    }
+
+    /**
+     * Method that returns the SiteProtocol of this TSURL. If this is empty,
+     * then an empty SiteProtocol is returned.
+     */
+    public SiteProtocol protocol() {
+        if (empty) {
+            return SiteProtocol.EMPTY;
+        }
+        return sp;
+    }
+
+    /**
+     * Method that returns the SFN of this SURL. If this is empty, then
+     * an empty SFN is returned.
+     */
+    public SFN sfn() {
+        if (empty) {
+            return SFN.makeEmpty();
+        }
+        return sfn;
+    }
+
+    @Override
+    public String toString() {
+        if (empty) {
+            return "Empty TSURL";
+        }
+        return sp + "://" + sfn;
     }
 
     /*

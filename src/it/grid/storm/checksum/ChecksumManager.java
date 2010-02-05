@@ -24,72 +24,6 @@ public class ChecksumManager {
     private static volatile int currentUrlIndex = -1;
     private static String algorithm;
 
-    public static ChecksumManager getInstance() {
-        if (instance == null) {
-            instance = new ChecksumManager();
-        }
-        return instance;
-    }
-    
-    private static synchronized int getNextIndex() {
-        currentUrlIndex++;
-        if (currentUrlIndex >= urlListSize) {
-            currentUrlIndex = 0;
-        }
-        return currentUrlIndex;
-    }
-
-    /**
-     * Round-robin load balancer of checksum services.
-     * 
-     * @return the checksum service URL. Return <code>null</code> if all the servers do not respond.
-     */
-    private static String getTargetURL() {
-
-        ChecksumClient client = ChecksumClientFactory.getChecksumClient();
-        boolean isAlive = false;
-        int iter = 0;
-        String url;
-
-        ChecksumServerStatus status;
-        int index;
-        do {
-            index = getNextIndex();
-            
-            url = statusUrlList.get(index);
-
-            try {
-                client.setEndpoint(url);
-            } catch (MalformedURLException e) {
-                log.error("BUG, this exception should had never be thrown.", e);
-            }
-
-            try {
-                
-                status = client.getStatus();
-                isAlive = status.isRunning();
-                
-            } catch (IOException e) {
-                return null;
-            }
-            
-            if (!isAlive) {
-                log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
-            }
-
-            iter++;
-            
-        } while ((iter < urlListSize) && !isAlive);
-
-        if ((iter == urlListSize) && !isAlive) {
-            return null;
-        }
-        
-        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads() + ")");
-
-        return serviceUrlList.get(index);
-    } 
-
     private ChecksumManager() {
 
         algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
@@ -97,6 +31,21 @@ public class ChecksumManager {
         
     }
     
+    public static ChecksumManager getInstance() {
+        if (instance == null) {
+            instance = new ChecksumManager();
+        }
+        return instance;
+    }
+
+    private static synchronized int getNextIndex() {
+        currentUrlIndex++;
+        if (currentUrlIndex >= urlListSize) {
+            currentUrlIndex = 0;
+        }
+        return currentUrlIndex;
+    } 
+
     /**
      * Return the algorithm used to compute checksums as well as retrieve the value from extended attributes.
      * 
@@ -105,7 +54,7 @@ public class ChecksumManager {
     public String getAlgorithm() {
         return algorithm;
     }
-
+    
     /**
      * Return the computed checksum for the given file. If the checksum is already stored in an extended attribute then
      * that value is given back, otherwise: - check if the computation of checksum is enabled. - if ENABLED then the
@@ -167,6 +116,76 @@ public class ChecksumManager {
         }
 
         return true;
+    }
+
+    /**
+     * Computes the checksum of the given file and stores it in to an extended attribute.
+     * 
+     * @param fileName fileName file absolute path.
+     */
+    public boolean setChecksum(String fileName) {
+
+        String checksum = retrieveChecksumFromExternalService(fileName);
+
+        if (checksum == null) {
+            StormEA.removeChecksum(fileName);
+            return false;
+        }
+
+        StormEA.setChecksum(fileName, checksum, algorithm);
+
+        return true;
+    }
+
+    /**
+     * Round-robin load balancer of checksum services.
+     * 
+     * @return the checksum service URL. Return <code>null</code> if all the servers do not respond.
+     */
+    private String getTargetURL() {
+
+        ChecksumClient client = ChecksumClientFactory.getChecksumClient();
+        boolean isAlive = false;
+        int iter = 0;
+        String url;
+
+        ChecksumServerStatus status;
+        int index;
+        do {
+            index = getNextIndex();
+            
+            url = statusUrlList.get(index);
+
+            try {
+                client.setEndpoint(url);
+            } catch (MalformedURLException e) {
+                log.error("BUG, this exception should had never be thrown.", e);
+            }
+
+            try {
+                
+                status = client.getStatus();
+                isAlive = status.isRunning();
+                
+            } catch (IOException e) {
+                return null;
+            }
+            
+            if (!isAlive) {
+                log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
+            }
+
+            iter++;
+            
+        } while ((iter < urlListSize) && !isAlive);
+
+        if ((iter == urlListSize) && !isAlive) {
+            return null;
+        }
+        
+        log.info("Selected checksum server: " + url + " (requestQueue=" + status.getRequestQueue() + ", idleThreads=" + status.getIdleThreads() + ")");
+
+        return serviceUrlList.get(index);
     }
 
     private void initUrlArrays() {
@@ -259,25 +278,6 @@ public class ChecksumManager {
             log.error("Error contacting server: " + targetURL.toString());
             return null;
         }
-    }
-
-    /**
-     * Computes the checksum of the given file and stores it in to an extended attribute.
-     * 
-     * @param fileName fileName file absolute path.
-     */
-    public boolean setChecksum(String fileName) {
-
-        String checksum = retrieveChecksumFromExternalService(fileName);
-
-        if (checksum == null) {
-            StormEA.removeChecksum(fileName);
-            return false;
-        }
-
-        StormEA.setChecksum(fileName, checksum, algorithm);
-
-        return true;
     }
 }
 
