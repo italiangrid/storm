@@ -1824,7 +1824,7 @@ public class Configuration {
      * @return the list of the defined checksum services id.
      */
     public List<String> getChecksumServiceIds() {
-        String hostkey = "checksum.hostname";
+        String hostkey = "checksum.server";
         
         @SuppressWarnings("unchecked")
         Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(hostkey);
@@ -1833,7 +1833,9 @@ public class Configuration {
         
         while (keyIterator.hasNext()) {
             String key = keyIterator.next();
-            keyList.add(key.substring(key.lastIndexOf('.') + 1));
+            // from the second dot onwards.
+            int idStartIndex = key.indexOf('.', key.indexOf('.') + 1) + 1;
+            keyList.add(key.substring(idStartIndex, key.indexOf('.', idStartIndex)));
         }
         return keyList;
     }
@@ -1846,7 +1848,7 @@ public class Configuration {
      *         hostname for the given id were found.
      */
     public String getChecksumHost(String serviceId) {
-        String key = "checksum.hostname." + serviceId;
+        String key = "checksum.server." + serviceId + ".hostname";
         return cr.getConfiguration().getString(key);
     }
 
@@ -1858,7 +1860,7 @@ public class Configuration {
      *         service_port for the given id were found.
      */
     public int getChecksumServicePort(String serviceId) {
-        String key = "checksum.service_port." + serviceId;
+        String key = "checksum.server." + serviceId + ".service_port";
         if (cr.getConfiguration().containsKey(key)) {
             return cr.getConfiguration().getInt(key);
         } else {
@@ -1874,7 +1876,7 @@ public class Configuration {
      *         status_port for the given id were found.
      */
     public int getChecksumStatusPort(String serviceId) {
-        String key = "checksum.status_port." + serviceId;
+        String key = "checksum.server." + serviceId + ".status_port";
         if (cr.getConfiguration().containsKey(key)) {
             return cr.getConfiguration().getInt(key);
         } else {
