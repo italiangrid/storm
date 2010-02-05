@@ -68,7 +68,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     static {
         try {
             anotherPutDoneActiveReturnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                                                                 "There is another PutDone executing on this SURL.");
+                                                                 "There is another PutDone in execution on this SURL.");
         } catch (InvalidTReturnStatusAttributeException e) {
             // Never thrown
             anotherPutDoneActiveReturnStatus = null;
@@ -105,11 +105,11 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
             ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
-            
+
             if (chunkData == null) {
                 continue;
             }
-            
+
             TSURL surl = chunkData.toSURL();
 
             if (user == null) {
@@ -122,7 +122,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 } else {
                     continue;
                 }
-                
+
             } else {
                 log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
             }
@@ -198,7 +198,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
-        
+
         /* Unlock the SURLs */
         for (ReducedPtPChunkData chunk : spaceAvailableSURLs) {
             if (chunk != null) {
