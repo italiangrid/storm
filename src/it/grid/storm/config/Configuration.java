@@ -1882,18 +1882,6 @@ public class Configuration {
         }
     }
     
-    public String[] getChecksumServiceURLArray() {
-        String key = "checksum.serviceURL";
-        String[] urlArray;
-
-        if (cr.getConfiguration().containsKey(key)) {
-            urlArray = cr.getConfiguration().getStringArray(key);
-        } else {
-            urlArray = new String[0];
-        }
-        return urlArray;
-    }
-
     public String getChecksumAlgorithm() {
 
         String key = "checksum.algorithm";

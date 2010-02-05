@@ -26,7 +26,7 @@ public class ChecksumManager {
 
     public static ChecksumManager getInstance() {
         if (instance == null) {
-            instance = new ChecksumManager(Configuration.getInstance().getChecksumServiceURLArray());
+            instance = new ChecksumManager();
         }
         return instance;
     }
@@ -90,7 +90,7 @@ public class ChecksumManager {
         return serviceUrlList.get(index);
     } 
 
-    private ChecksumManager(String[] urlStringArray) {
+    private ChecksumManager() {
 
         algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
         initUrlArrays();
