@@ -450,8 +450,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                             requestFailure = false;
                             requestAborted = false;
                         } else { // there is an active PutDone on this SURL
-                            arrayOfFileStatus.getTSURLReturnStatus(i)
-                                             .setStatus(anotherPutDoneActiveReturnStatus);
+                            surlReturnStatus = anotherPutDoneActiveReturnStatus;
                             requestSuccess = false;
                             requestAborted = false;
                         }
