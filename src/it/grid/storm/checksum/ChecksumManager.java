@@ -164,9 +164,11 @@ public class ChecksumManager {
 
             } catch (MalformedURLException e) {
                 log.error("BUG, this exception should had never be thrown.", e);
-                return null;
+                status = null;
+                isAlive = false;
             } catch (IOException e) {
-                return null;
+                status = null;
+                isAlive = false;
             }
 
             if (!isAlive) {
