@@ -201,7 +201,7 @@ public class ChecksumManager {
                 
                 url = new URL(String.format(URL_FORMAT, hostname, servicePort));
                 serviceUrlList.add(url.toString());
-                log.info("Added checksum service: " + url.toString());
+                log.info("Added checksum " + id + " service_port: " + url.toString());
                 
             } catch (MalformedURLException e) {
                 log.error("Configuration error: unable to build an URL for the following hostname and port: " + hostname + ":" + servicePort);
@@ -213,7 +213,7 @@ public class ChecksumManager {
 
                 url = new URL(String.format(URL_FORMAT, hostname, statusPort));
                 statusUrlList.add(url.toString());
-                log.info("Added checksum service for status request: " + url.toString());
+                log.info("Added checksum " + id + " status_port: " + url.toString());
 
             } catch (MalformedURLException e) {
                 log.error("Configuration error: unable to build an URL for the following hostname and port: "
