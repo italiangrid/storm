@@ -61,7 +61,8 @@ public class RequestSummaryCatalog {
 
                 @Override
                 public void run() {
-                    purgeExpiredRequests();
+                    ArrayList<String> expiredRequests = purgeExpiredRequests();
+                    removeOrphanProxies(expiredRequests);
                 }
             };
             clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000, Configuration.getInstance().getRequestPurgerPeriod() * 1000);
@@ -99,7 +100,7 @@ public class RequestSummaryCatalog {
      * 
      * If no new request is found, an empty Collection is returned. if a request
      * is malformed, then that request is failed and an attempt is made to
-     * signal such occurence in the DB. Only correctly formed requests are
+     * signal such occurrence in the DB. Only correctly formed requests are
      * returned.
      */
     synchronized public Collection<RequestSummaryData> fetchNewRequests(int capacity) {
@@ -428,31 +429,57 @@ public class RequestSummaryCatalog {
      * Method used to purge the DB of expired requests, and remove the
      * corresponding proxies if available.
      */
-    synchronized private void purgeExpiredRequests() {
+    synchronized private ArrayList<String> purgeExpiredRequests() {
 
+    	ArrayList<String> expiredRequests = new ArrayList<String>();
+    	
         PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
         BoLChunkCatalog.getInstance().transitExpiredSRM_SUCCESS();
 
-        List<String> r_tokens = dao.purgeExpiredRequests();
-        if (r_tokens.isEmpty()) {
-            log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");
+        int garbageChunkSize = Configuration.getInstance().getPurgeBatchSize();
+        int minChunkSize = garbageChunkSize / 2;
+        
+        int nrExpiredTasks = dao.getNumberExpired();
+        int nrChunks = nrExpiredTasks / garbageChunkSize;
+        if (nrChunks<1) {
+        	//Check the minimum chunk
+        	if (nrExpiredTasks>minChunkSize) {
+        		//Single step garbaging
+        		log.debug("Purging the expired in single step (expired requests:"+nrExpiredTasks+")");
+        	} else {
+        		//not enough events to remove. Skip the purging phase
+        		log.debug("Skipping the purging phase of expired requests. (expired requests:"+nrExpiredTasks+")");
+        	}
         } else {
-            log.info("REQUEST SUMMARY CATALOG; removed from DB < " + r_tokens.size() + " > expired requests");
-            log.debug("REQUEST SUMMARY CATALOG; removed from DB the following expired requests: " + r_tokens);                
-
-            for (String rt : r_tokens) {
-                String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
-                File proxyFile = new File(proxyFileName);
-                if (proxyFile.exists()) {
-                    boolean deleted = proxyFile.delete();
-                    if (!deleted) {
-                        RequestSummaryCatalog.log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file " + proxyFileName + " failed!");
-                    } else {
-                        RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
-                    }
-                }
-            }   
+        	// Multiple chunks
+        	log.debug("Purging the expired requests in "+nrChunks+" steps (expired requests:"+nrExpiredTasks+")");
+        	for (int i = 0; i < nrChunks; i++) {
+        		expiredRequests.addAll(dao.purgeExpiredRequests());	
+			}
+        	log.info("REQUEST SUMMARY CATALOG; removed from DB < " + expiredRequests.size() + " > expired requests");
         }
+        
+        return expiredRequests;
     }
+    
+    
+	private void removeOrphanProxies(ArrayList<String> expiredRequests) {
+		if (expiredRequests.isEmpty()) {
+
+		} else {
+			for (String rt : expiredRequests) {
+				String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
+				File proxyFile = new File(proxyFileName);
+				if (proxyFile.exists()) {
+					boolean deleted = proxyFile.delete();
+					if (!deleted) {
+						RequestSummaryCatalog.log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file " + proxyFileName + " failed!");
+					} else {
+						RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
+					}
+				}
+			}
+		}
+	}
 
 }

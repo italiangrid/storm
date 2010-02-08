@@ -939,10 +939,7 @@ public class RequestSummaryDAO {
                 // request_Get.request_DirOptionID IS NULL AND
                 // request_BoL.request_DirOptionID IS NULL ;
 
-/* 
- *              This   
- *                
- *                stmt = "DELETE request_DirOption FROM request_DirOption "
+                stmt = "DELETE request_DirOption FROM request_DirOption "
                         + " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID"
                         + " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID "
                         + " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID"
@@ -963,7 +960,7 @@ public class RequestSummaryDAO {
                     log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No Deleted DirOption related to expired requests.");
                 }
                 close(ps);
-*/
+
             }
             // commit and finish transaction
             con.commit();
@@ -980,6 +977,51 @@ public class RequestSummaryDAO {
         return requestTokens;
     }
 
+    
+    /**
+     * Retrieve the total number of expired requests.
+     * 
+     * @return
+     */
+    public int getNumberExpired() {
+    	
+    	int result = 0;
+    	
+        checkConnection();
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            // start transaction
+            con.setAutoCommit(false);
+
+            String stmt = "SELECT count(*) FROM request_queue WHERE"
+                    + " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "
+                    + Configuration.getInstance().getExpiredRequestTime() + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
+                    + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) ;
+
+            ps = con.prepareStatement(stmt);
+            logWarnings(con.getWarnings());
+            log.trace("REQUEST SUMMARY DAO - Number of expired requests: " + ps);
+            rs = ps.executeQuery();
+            logWarnings(ps.getWarnings());
+            close(rs);
+            close(ps);
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: " + e);
+            rollback(con);
+        } finally {
+            close(rs);
+            close(ps);
+        }
+        
+        return result;
+        
+    }
+    
     /**
      * Private method that returns a String of all IDs retrieved by the last SELECT.
      */
@@ -996,7 +1038,7 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Auxiliary method that sets up the conenction to the DB, as well as the prepared statement.
+     * Auxiliary method that sets up the connection to the DB, as well as the prepared statement.
      */
     private void setUpConnection() {
         try {
@@ -1015,7 +1057,7 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Auxiliary method that tales down a conenctin to the DB.
+     * Auxiliary method that tales down a connection to the DB.
      */
     private void takeDownConnection() {
         try {
