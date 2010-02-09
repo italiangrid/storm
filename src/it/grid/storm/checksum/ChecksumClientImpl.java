@@ -91,7 +91,6 @@ public class ChecksumClientImpl implements ChecksumClient {
         return responseBody.toString();
     }
 
-    @Override
     public ChecksumServerStatus getStatus() throws IOException {
         
         URL url = new URL(endpoint + STATUS_SERVICE);
