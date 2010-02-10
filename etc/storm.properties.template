@@ -105,7 +105,9 @@ directory.writeperm = false
 # ============================
 # Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
 # without any pinLifetime specified. 
-pinLifetime.minimum=259200
+pinLifetime.default=259200
+# Maximum allowed value for Pin LifeTime. 
+# Values beyond the max will be dropped to max value.
 pinLifetime.maximum=1814400
 
 

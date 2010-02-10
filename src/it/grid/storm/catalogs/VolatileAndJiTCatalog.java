@@ -66,7 +66,7 @@ public class VolatileAndJiTCatalog {
     /** fileLifetime to use if user specified a non-positive value */
     private final long defaultFileLifetime = Configuration.getInstance().getFileLifetimeDefault();
     /** Number of seconds to use as default if the supplied lifetime is zero! */
-    private final long floor = Configuration.getInstance().getPinLifetimeMinimum();
+    private final long floor = Configuration.getInstance().getPinLifetimeDefault();
     /**
      * Maximum number of seconds that an ACL can live: the life time requested by the user cannot be greater than this
      * value! This ceiling is needed because of the cron job that removes pool account mappings: when the mapping is
@@ -75,7 +75,7 @@ public class VolatileAndJiTCatalog {
     private final long ceiling = Configuration.getInstance().getPinLifetimeMaximum();
 
     /**
-     * Private costructor that starts the cleaning timer.
+     * Private constructor that starts the cleaning timer.
      */
     private VolatileAndJiTCatalog() {
         TimerTask cleaningTask = new TimerTask() {

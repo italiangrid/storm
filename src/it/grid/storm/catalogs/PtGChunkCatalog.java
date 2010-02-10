@@ -176,7 +176,14 @@ public class PtGChunkCatalog {
         //lifeTime
         TLifeTimeInSeconds lifeTime=null;
         try {
-            lifeTime = TLifeTimeInSeconds.make(PinLifetimeConverter.getInstance().toStoRM(auxTO.lifeTime()), TimeUnit.SECONDS);
+            long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(auxTO.lifeTime());
+            // Check for max value allowed
+            long max = Configuration.getInstance().getPinLifetimeMaximum();
+            if (pinLifeTime>max) {
+               log.warn("PinLifeTime is greater than the max value allowed. Drop the value to the max = "+max+" seconds"); 
+               pinLifeTime = max;
+            }
+            lifeTime = TLifeTimeInSeconds.make((pinLifeTime), TimeUnit.SECONDS);
         } catch (InvalidTLifeTimeAttributeException e) {
             sb.append("\n");
             sb.append(e);

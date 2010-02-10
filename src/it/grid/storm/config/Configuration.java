@@ -395,8 +395,8 @@ public class Configuration {
      * NULL/0/negative value to a default one. Measured in _seconds_. If no value is found in the configuration medium,
      * then the default value is returned instead. key="pinLifetime.minimum"; default value=30;
      */
-    public long getPinLifetimeMinimum() {
-        String key = "pinLifetime.minimum";
+    public long getPinLifetimeDefault() {
+        String key = "pinLifetime.default";
         if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 259200;
