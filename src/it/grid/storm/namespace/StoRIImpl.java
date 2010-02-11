@@ -9,6 +9,7 @@ import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -660,21 +661,18 @@ implements StoRI {
 
     public void setGroupTapeRead() {
         
-        String groupName = "storm-SA-read";
-        
+        String groupName = Configuration.getInstance().getGroupTapeReadBuffer(); 
         LocalFile localFile = getLocalFile();
-        
         localFile.setGroupOwnership(groupName);
     }
     
     public void setGroupTapeWrite() {
         
-        String groupName = "storm-SA-write";
-        
-        LocalFile localFile = getLocalFile();
-        
+        String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
+        LocalFile localFile = getLocalFile();       
         localFile.setGroupOwnership(groupName);
     }
+    
     
     public void setMappingRule(MappingRule winnerRule) {
         this.winnerRule = winnerRule;

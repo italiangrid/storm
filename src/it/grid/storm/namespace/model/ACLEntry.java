@@ -47,6 +47,10 @@ public class ACLEntry {
         return groupId;
     }
 
+    public String getGroupName() {
+        return groupName;
+    }
+    
     public String getFilePermissionString() {
         return permission.getPermissionString();
     }

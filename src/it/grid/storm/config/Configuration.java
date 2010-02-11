@@ -1997,6 +1997,31 @@ public class Configuration {
         }
     }
 
+    
+    public String getGroupTapeReadBuffer() {
+        String key = "tape.buffer.group.read";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "storm-SA-read";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }        
+    }
+    
+
+    public String getGroupTapeWriteBuffer() {
+        String key = "tape.buffer.group.write";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "storm-SA-write";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }        
+    }
+    
+    
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();

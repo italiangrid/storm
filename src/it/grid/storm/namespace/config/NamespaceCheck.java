@@ -1,15 +1,21 @@
 package it.grid.storm.namespace.config;
 
+import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.slf4j.Logger;
 
@@ -40,11 +46,72 @@ public class NamespaceCheck {
     }
 
     public boolean check() {
-        boolean result = true;
-        result = checkVFS() && checkMapRules() && checkAppRules();
-        return result;
+        boolean totalResult = true;
+        boolean vfsCheck = checkVFS();
+        boolean mapRulesCheck = checkMapRules();
+        boolean appRules = checkAppRules();
+        boolean checkGroups = checkGroups(vfsCheck);
+        totalResult =  vfsCheck && mapRulesCheck && appRules;
+        return totalResult;
     }
 
+    
+    
+    private boolean checkGroups(boolean vfsCheckResult) {
+        log.info("Namespace check. Checking of the existence of the needed Local group ...");
+        boolean result = true;
+        if (!vfsCheckResult){
+            log.warn("Skip the check of the needed Local Group, because check of VFSs failed."); 
+        } else {
+             
+             ArrayList<VirtualFSInterface> vf = new ArrayList<VirtualFSInterface>(vfss.values());
+             for (VirtualFSInterface vfs : vf) {
+                try {
+                    if (vfs.getStorageClassType().isTapeEnabled()) {
+                       //Checking the existence of groups for the buffers
+                       String groupRead = Configuration.getInstance().getGroupTapeReadBuffer(); 
+                       if (!EtcGroupReader.isGroupDefined(groupRead)) {
+                           log.warn("!!!!! Local Group for READ BUFFER ('"+groupRead+"') is not defined!");
+                           result = false;
+                       }
+                       String groupWrite = Configuration.getInstance().getGroupTapeWriteBuffer();
+                       if (!EtcGroupReader.isGroupDefined(groupWrite)) {
+                           log.warn("!!!!! Local Group for WRITE BUFFER ('"+groupWrite+"') is not defined!");
+                       }
+                    }
+                    // Check the presence of Default ACL
+                    CapabilityInterface cap = vfs.getCapabilities();
+                    if (cap!=null) {
+                        DefaultACL defACL = cap.getDefaultACL();
+                        if (defACL!=null) {
+                            ArrayList<ACLEntry> acl = new ArrayList<ACLEntry>(defACL.getACL());
+                            if (!acl.isEmpty()) {
+                                for (ACLEntry aclEntry : acl) {
+                                    if (!EtcGroupReader.isGroupDefined(aclEntry.getGroupName())) {
+                                        log.warn("!!!!! Local Group for ACL ('"+aclEntry+"') is not defined!");
+                                        result = false;
+                                    }
+                                }
+                            }
+                        }  
+                    }
+                    
+                    
+                } catch (NamespaceException e) {
+                    log.error("Error while checking VFS.", e);
+                    result = false;   
+                }    
+            }
+        }
+        if (result) {
+            log.info("All local groups are defined. ");    
+        } else {
+            log.warn("Please check the local group needed to StoRM");
+        }
+        return result;
+    }
+    
+    
     /**
      * Check if the root of the VFS exists.
      * @todo: this method don't check if the root is accessible by storm user.
@@ -53,8 +120,10 @@ public class NamespaceCheck {
      *         false otherwise
      */
     private boolean checkVFS() {
+        log.info("Namespace checking VFSs ..");
         boolean result = true;
         if (vfss == null) {
+            log.error("Anyone VFS is defined in namespace!");
             return false;
         } else {
             ArrayList<VirtualFSInterface> rules = new ArrayList<VirtualFSInterface>(vfss.values());
@@ -75,12 +144,17 @@ public class NamespaceCheck {
                     }
                 } catch (NamespaceException ex) {
                     log.error("Error while checking VFS.", ex);
+                    result = false;
                 }
             }
+        }
+        if (result) {
+            log.info(" VFSs are well-defined.");    
         }
         return result;
     }
 
+    
     private boolean checkMapRules() {
         boolean result = true;
         if (maprules == null) {
