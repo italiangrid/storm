@@ -27,6 +27,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jna.Native;
+
 /**
  * Façade for operations on a filesystem entry (file or directory). All operations on the filesystem should be performed
  * by creating an instance of the {@link it.grid.storm.filesystem.File} class, and using its methods to create or modify
@@ -543,15 +545,15 @@ public class LocalFile {
      * @param groupName name of the group
      * @return <code>true</code> if the group was correctly set, <code>false</code> otherwise
      */
-    public boolean setGroupOwnership(String groupName) {
+    public void setGroupOwnership(String groupName) throws FSException {
 
         int ret = CUtil.setFileGroup(localFile.getAbsolutePath(), groupName);
 
-        if (ret == 0) {
-            return true;
+        if (ret != 0) {            
+            FSException fsexecp = new FSException("Err. CUtil ErrNo :"+ret);
+            throw fsexecp;
         }
-
-        return false;
+        
 
         // String command = String.format("chgrp %s %s", groupName, localFile.getAbsoluteFile());
         // Process process;

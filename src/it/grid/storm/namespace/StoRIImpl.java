@@ -10,6 +10,7 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -663,14 +664,22 @@ implements StoRI {
         
         String groupName = Configuration.getInstance().getGroupTapeReadBuffer(); 
         LocalFile localFile = getLocalFile();
-        localFile.setGroupOwnership(groupName);
+        try {
+            localFile.setGroupOwnership(groupName);
+        } catch (FSException e) {
+            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        }
     }
     
     public void setGroupTapeWrite() {
         
         String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
         LocalFile localFile = getLocalFile();       
-        localFile.setGroupOwnership(groupName);
+        try {
+            localFile.setGroupOwnership(groupName);
+        } catch (FSException e) {
+            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        }
     }
     
     

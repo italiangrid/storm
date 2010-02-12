@@ -1,5 +1,7 @@
 package it.grid.storm.jna;
 
+import it.grid.storm.filesystem.FSException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

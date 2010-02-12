@@ -211,6 +211,11 @@ tape.recalltable.service.param.retry-value=retry-value
 tape.recalltable.service.param.status=status
 tape.recalltable.service.param.takeover=first
 
+# ========================================
+# BUFFERs for Stage and Recall from/to Tape
+# ========================================
+tape.buffer.group.read=storm-SA-read
+tape.buffer.group.write=storm-SA-write
 
 # ============================
 # srmCopy parameters
