@@ -12,8 +12,8 @@
 ### Package Naming 
 
 Name: glite-info-dynamic-storm
-Version: 1.4.0
-Release: 03.sl4
+Version: 1.5.0
+Release: 00.sl4
 Summary: The StoRM dynamic information provider plugin.
 Copyright:  Apache License, Version 2.0. 
 Url: http://storm.forge.cnaf.infn.it
@@ -23,7 +23,7 @@ Packager: Luca Magnoni <luca.magnoni@cnaf.infn.it>
 Prefix: /opt/glite/libexec
 
 #BuildRoot: %{_tmppath}/%{name}
-BuildRoot: %{_topdir}/BUILD/glite-info-dynamic-storm-1.4.0
+BuildRoot: %{_topdir}/BUILD/glite-info-dynamic-storm-1.5.0
 #BuildRoot: %{_tmppath}/info-provider
 
 Source: %{name}-%{version}.tar.gz
@@ -37,7 +37,7 @@ This plugin provides dynamic information on space usage and other parameters pub
 %{prefix}/glite-info-dynamic-storm
 
 %prep
-%setup -n glite-info-dynamic-storm-1.4.0
+%setup -n glite-info-dynamic-storm-1.5.0
 
 
 

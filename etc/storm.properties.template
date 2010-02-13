@@ -72,11 +72,15 @@ storm.service.request-db.passwd =
 #   <!! managed by YAIM; please read the above NOTE !!>
 checksum.enabled=false  
 
-# The array of URLs (e.g. http://host:port/) running the external checksum agents
-# This value is ignored if the checksum is disabled (checksum.enabled=false). 
-# note: it is a comma separated list of URLs. (e.g. checksum.serviceURL=http://host1:port/,http://host2:port/)
+# The array of servers running the external checksum agents
+# These values are ignored if the checksum is disabled (checksum.enabled=false). 
+# note: 
+#   There are 3 keys for each server you define : hostname, status_port and service_port
+#   The key-name include also the 'alias' of the server. The alias could be a number or a string, as you prefer. 
 #   <!! managed by YAIM; please read the above NOTE !!>
-checksum.serviceURL=
+checksum.server.{alias}.hostname=
+checksum.server.{alias}.status_port=
+checksum.server.{alias}.service_port=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
 #   <!! managed by YAIM; please read the above NOTE !!>
