@@ -31,6 +31,10 @@ fi
 
 ARCH_BIT=$1
 
+if [ -z $ARCH_BIT ]; then
+    ARCH_BIT=32
+fi
+
 if [ $ARCH_BIT == 64 ]; then
     echo "Selected 64 bit architecture"
 else
