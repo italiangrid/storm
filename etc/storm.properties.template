@@ -67,7 +67,8 @@ storm.service.request-db.passwd =
 # ===========================
 
 # If checksum is enabled the computation will be done for one file per requests. 
-# The computation of checksum is blocking. If the checksum value is found, the computation will not take place.
+# The computation of checksum is blocking. If the checksum value is found, the
+# computation will not take place.
 # If the checksum is disabled, the computation will not happen.
 #   <!! managed by YAIM; please read the above NOTE !!>
 checksum.enabled=false  
@@ -75,12 +76,21 @@ checksum.enabled=false
 # The array of servers running the external checksum agents
 # These values are ignored if the checksum is disabled (checksum.enabled=false). 
 # note: 
-#   There are 3 keys for each server you define : hostname, status_port and service_port
-#   The key-name include also the 'alias' of the server. The alias could be a number or a string, as you prefer. 
-#   <!! managed by YAIM; please read the above NOTE !!>
-checksum.server.{alias}.hostname=
-checksum.server.{alias}.status_port=
-checksum.server.{alias}.service_port=
+#   There are 3 properties for each server you define : hostname, status_port
+#   and service_port. These 3 properties are defined using three arrays:
+#   checksum.server.hostnames, checksum.server.service_ports
+#   and checksum.server.status_ports.
+#   There must be an exact 1:1 match among the elements of these arrays. For
+#   example, given that definition:
+#   checksum.server.hostnames = test1.cnaf.infn.it, test2.cnaf.infn.it
+#   checksum.server.service_ports = 9996, 9986
+#   checksum.server.status_ports = 9995, 9985
+#
+#   ports 9996 and 9995 are associated to the hostname test1.cnaf.infn.it and
+#   ports 9986 and 9985 are associated to the hostname test2.cnaf.infn.it
+checksum.server.hostnames=
+checksum.server.status_ports=
+checksum.server.service_ports=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
 #   <!! managed by YAIM; please read the above NOTE !!>

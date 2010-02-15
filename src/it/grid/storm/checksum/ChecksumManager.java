@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,41 +190,47 @@ public class ChecksumManager {
     }
 
     private void initUrlArrays() {
-        Set<String> idSet = Configuration.getInstance().getChecksumServiceIds();
+        
+        String[] hostArray = Configuration.getInstance().getChecksumHosts();
+        urlListSize = hostArray.length;
+        
+        int[] servicePortArray = Configuration.getInstance().getChecksumServicePorts();
+        if (servicePortArray.length != urlListSize) {
+            log.error("Configuration error: 'checksum.server.hostnames' and 'checksum.server.service_ports' have different sizes. Assuming empty list of checksum servers.");
+            serviceUrlList = new ArrayList<String>(0);
+            statusUrlList = new ArrayList<String>(0);
+        }
+        
+        int[] statusPortArray = Configuration.getInstance().getChecksumStatusPorts();
+        if (servicePortArray.length != urlListSize) {
+            log.error("Configuration error: 'checksum.server.hostnames' and 'checksum.server.status_ports' have different sizes. Assuming empty list of checksum servers.");
+            serviceUrlList = new ArrayList<String>(0);
+            statusUrlList = new ArrayList<String>(0);
+        }
 
-        urlListSize = idSet.size();
         serviceUrlList = new ArrayList<String>(urlListSize);
         statusUrlList = new ArrayList<String>(urlListSize);
-
-        for (String id : idSet) {
-
-            String hostname = Configuration.getInstance().getChecksumHost(id);
-            if (hostname == null) {
-                log.error("Configuration error: hostname not defined for checksum server id: " + id
-                        + ". Skipping it.");
-                continue;
-            }
-
-            int servicePort = Configuration.getInstance().getChecksumServicePort(id);
+        
+        for (int i=0; i<urlListSize; i++) {
+            String hostname = hostArray[i];
+            int servicePort = servicePortArray[i];
+            int statusPort = statusPortArray[i];
+            
             if (servicePort == -1) {
-                log.error("Configuration error: service_port not defined for checksum server id: " + id
-                        + ". Skipping it.");
+                log.error("Configuration error: invalid service port element '" + i + "', '" + servicePort + "'. Skipping checksum server '" + hostname + "'.");
                 continue;
             }
-
-            int statusPort = Configuration.getInstance().getChecksumStatusPort(id);
             if (statusPort == -1) {
-                log.error("Configuration error: status_port not defined for checksum server id: " + id
-                        + ". Skipping it.");
+                log.error("Configuration error: invalid status port element '" + i + "', '" + statusPort + "'. Skipping checksum server '" + hostname + "'.");
                 continue;
             }
-
+            
             URL url;
             try {
 
                 url = new URL(String.format(URL_FORMAT, hostname, servicePort));
                 serviceUrlList.add(url.toString());
-                log.info("Added checksum " + id + " service_port: " + url.toString());
+                log.info("Added checksum service_port: " + url.toString());
 
             } catch (MalformedURLException e) {
                 log.error("Configuration error: unable to build an URL for the following hostname and port: "
@@ -237,13 +242,14 @@ public class ChecksumManager {
 
                 url = new URL(String.format(URL_FORMAT, hostname, statusPort));
                 statusUrlList.add(url.toString());
-                log.info("Added checksum " + id + " status_port: " + url.toString());
+                log.info("Added checksum status_port: " + url.toString());
 
             } catch (MalformedURLException e) {
                 log.error("Configuration error: unable to build an URL for the following hostname and port: "
                         + hostname + ":" + statusPort);
                 continue;
             }
+            
         }
     }
 

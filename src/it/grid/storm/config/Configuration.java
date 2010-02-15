@@ -13,10 +13,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,34 +60,21 @@ public class Configuration {
     }
 
     /*
-        ############################################################
-        ##
-        ##   MANDATORY PROPERTIES
-        ##
-        ############################################################
-        
-         NEW KEY                              |   OLD KEY
-       ---------------------------------------+--------------------------------------------------------
-        storm.service.SURL.hostname           |   storm.service.hostname
-        storm.service.SURL.port               |   storm.service.port           fe.port 
-        storm.service.SURL.service-path       |   storm.service.endpoint
-                                              |
-        storm.service.FE-list.hostnames       |   storm.machinenames
-        storm.service.FE-list.IPs             |   storm.machineIPs
-                                              |
-        storm.service.request-db.dbms-vendor  |   asynch.picker.db.driver       asynch.picker.db.protocol
-        storm.service.request-db.host         |   asynch.picker.db.host
-        storm.service.request-db.db-name      |   asynch.picker.db.name
-        storm.service.request-db.username     |   asynch.picker.db.username
-        storm.service.request-db.passwd       |   asynch.picker.db.passwd
-                                              |
-        --------------------------------------+----------------------------------------------------------
-    *
-    */
-    /**
+     * ############################################################ ## ## MANDATORY PROPERTIES ##
+     * ############################################################
      * 
-     * MANDATORY CONFIGURATION PARAMETER!
-     * Define the SURL endpoints.
+     * NEW KEY | OLD KEY
+     * ---------------------------------------+--------------------------------------------------------
+     * storm.service.SURL.hostname | storm.service.hostname storm.service.SURL.port | storm.service.port fe.port
+     * storm.service.SURL.service-path | storm.service.endpoint | storm.service.FE-list.hostnames | storm.machinenames
+     * storm.service.FE-list.IPs | storm.machineIPs | storm.service.request-db.dbms-vendor | asynch.picker.db.driver
+     * asynch.picker.db.protocol storm.service.request-db.host | asynch.picker.db.host storm.service.request-db.db-name
+     * | asynch.picker.db.name storm.service.request-db.username | asynch.picker.db.username
+     * storm.service.request-db.passwd | asynch.picker.db.passwd |
+     * --------------------------------------+----------------------------------------------------------
+     */
+    /**
+     * MANDATORY CONFIGURATION PARAMETER! Define the SURL endpoints.
      * 
      * @return String[]
      */
@@ -107,7 +91,6 @@ public class Configuration {
     }
 
     /**
-     * 
      * @return String
      */
     public String getServiceHostname() {
@@ -123,11 +106,8 @@ public class Configuration {
     }
 
     /**
-     * Method used by SFN to establish the FE binding port. 
-     * 
-     * If no value is found in the configuration medium, then the default one is used instead. 
-     * key="storm.service.port"; 
-     * default value="8444"
+     * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
+     * default one is used instead. key="storm.service.port"; default value="8444"
      */
     public int getServicePort() {
         String key = "storm.service.port";
@@ -280,12 +260,9 @@ public class Configuration {
     }
 
     /*
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ##
-    ##   END definition of MANDATORY PROPERTIESs
-    ##
-    ############################################################
-    */
+     * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ## ## END definition of MANDATORY PROPERTIESs ##
+     * ############################################################
+     */
 
     /**
      * Method used by all DAOs to establish the reconnection period in _seconds_: after such period the DB connection
@@ -687,17 +664,11 @@ public class Configuration {
      * does not find it then a default value for such directory is used. The returned String is of the form:
      * storm.configuration.dir + "/" + "namespace.xml" key=storm.configuration.dir; default value="/home/storm/config";
      */
-    /*    public String getNamespaceConfigurationFile() {
-            String dirValue = "";
-            dirValue = cr.configurationDirectory();
-            String config_file = dirValue;
-            if (!config_file.endsWith(java.io.File.separator)) {
-                config_file = config_file + java.io.File.separator;
-            }
-            config_file = config_file + "namespace.xml";
-            return config_file;
-        }
-    */
+    /*
+     * public String getNamespaceConfigurationFile() { String dirValue = ""; dirValue = cr.configurationDirectory();
+     * String config_file = dirValue; if (!config_file.endsWith(java.io.File.separator)) { config_file = config_file +
+     * java.io.File.separator; } config_file = config_file + "namespace.xml"; return config_file; }
+     */
 
     /**
      * Method used in filesystem wrapper to get the directory path for temporary file creation: StoRM crates a temporary
@@ -1369,17 +1340,10 @@ public class Configuration {
      * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
      * default one is used instead. key="fe.port"; default value="8444"
      */
-    /*    public int getFEPort() {
-            String key = "fe.port";
-            if (!cr.getConfiguration().containsKey(key)) {
-                // return default
-                return 8444;
-            } else {
-                // load from external source
-                return cr.getConfiguration().getInt(key);
-            }
-        }
-    */
+    /*
+     * public int getFEPort() { String key = "fe.port"; if (!cr.getConfiguration().containsKey(key)) { // return default
+     * return 8444; } else { // load from external source return cr.getConfiguration().getInt(key); } }
+     */
     /**
      * Method used by NaiveGridFTP internal client in srmCopy to establish the time out in milliseconds for a reply from
      * the server. If no value is found in the configuration medium, then the default one is used instead.
@@ -1820,72 +1784,55 @@ public class Configuration {
         }
     }
 
-    /**
-     * Returns the list of the defined checksum services id (the format of the key is: checksum.hostname.id).
-     * 
-     * @return the list of the defined checksum services id.
-     */
-    public Set<String> getChecksumServiceIds() {
-        String hostkey = "checksum.server";
-        
-        @SuppressWarnings("unchecked")
-        Iterator<String> keyIterator = (Iterator<String>) cr.getConfiguration().getKeys(hostkey);
-        
-        Set<String> keySet = new HashSet<String>();
-        
-        while (keyIterator.hasNext()) {
-            String key = keyIterator.next();
-            // from the second dot onwards.
-            int idStartIndex = key.indexOf('.', key.indexOf('.') + 1) + 1;
-            keySet.add(key.substring(idStartIndex, key.indexOf('.', idStartIndex)));
+    public String[] getChecksumHosts() {
+        String hostsKey = "checksum.server.hostnames";
+
+        String[] hostArray = cr.getConfiguration().getStringArray(hostsKey);
+
+        if (hostArray == null) {
+            return new String[0];
         }
-        return keySet;
-    }
-    
-    /**
-     * Return the checksum service hostname associated to the given checksum service id.
-     * 
-     * @param serviceId
-     * @return the checksum service hostname associated to the given checksum service id, or <code>null</code> if no
-     *         hostname for the given id were found.
-     */
-    public String getChecksumHost(String serviceId) {
-        String key = "checksum.server." + serviceId + ".hostname";
-        return cr.getConfiguration().getString(key);
+
+        return hostArray;
     }
 
-    /**
-     * Return the checksum service service_port associated to the given checksum service id.
-     * 
-     * @param serviceId
-     * @return the checksum service service_port associated to the given checksum service id, or <code>-1</code> if no
-     *         service_port for the given id were found.
-     */
-    public int getChecksumServicePort(String serviceId) {
-        String key = "checksum.server." + serviceId + ".service_port";
-        if (cr.getConfiguration().containsKey(key)) {
-            return cr.getConfiguration().getInt(key);
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * Return the checksum service status_port associated to the given checksum service id.
-     * 
-     * @param serviceId
-     * @return the checksum service status_port associated to the given checksum service id, or <code>-1</code> if no
-     *         status_port for the given id were found.
-     */
-    public int getChecksumStatusPort(String serviceId) {
-        String key = "checksum.server." + serviceId + ".status_port";
-        if (cr.getConfiguration().containsKey(key)) {
-            return cr.getConfiguration().getInt(key);
-        } else {
-            return -1;
-        }
+    public int[] getChecksumServicePorts() {
+        return getChecksumPorts("checksum.server.service_ports");
     }
     
+    public int[] getChecksumStatusPorts() {
+        return getChecksumPorts("checksum.server.status_ports");
+    }
+    
+    
+    private int[] getChecksumPorts(String key) {
+
+        String[] portStringArray = cr.getConfiguration().getStringArray(key);
+
+        if (portStringArray == null) {
+            return new int[0];
+        }
+
+        int size = portStringArray.length;
+        if (size == 0) {
+            return new int[0];
+        }
+
+        int[] portArray = new int[size];
+
+        for (int i = 0; i < size; i++) {
+            int port = -1;
+            try {
+                port = Integer.valueOf(portStringArray[i]);
+            } catch (NumberFormatException e) {
+                // nothing to do, port is already defined to -1.
+            }
+            portArray[i] = port;
+        }
+        
+        return portArray;
+    }
+
     public String getChecksumAlgorithm() {
 
         String key = "checksum.algorithm";
@@ -1997,7 +1944,6 @@ public class Configuration {
         }
     }
 
-    
     public String getGroupTapeReadBuffer() {
         String key = "tape.buffer.group.read";
         if (!cr.getConfiguration().containsKey(key)) {
@@ -2006,9 +1952,8 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
-        }        
+        }
     }
-    
 
     public String getGroupTapeWriteBuffer() {
         String key = "tape.buffer.group.write";
@@ -2018,10 +1963,9 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getString(key);
-        }        
+        }
     }
-    
-    
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
