@@ -72,7 +72,7 @@ XFSAPI_INCLUDES ?= -I/usr/include
 XFSAPI_LIBS ?= -lhandle -L/usr/lib
 
 # the SWIG interface generator invocation
-#SWIG ?= swig -verbose
+SWIG ?= swig
 
 
 # ====================================================================
@@ -119,17 +119,6 @@ endif
 override CXXFLAGS += $(defines)
 override CPPFLAGS += $(defines)
 
-
-# gLite's swig-1.3.21 needs to be explicitly told where to find
-# its library files...  I would report the bug if I were able
-# to find the URL for the software packaging bugs....
-ifdef GLITE_LOCATION
-SWIG ?= $(GLITE_LOCATION)/externals/swig-1.3.21/bin/swig \
-			-I$(GLITE_LOCATION)/externals/swig-1.3.21/lib/swig1.3 \
-			-I$(GLITE_LOCATION)/externals/swig-1.3.21/lib/swig1.3/java
-else
-SWIG ?= swig
-endif
 
 
 # allow DESTDIR to be empty (builds in current dir)

@@ -42,7 +42,7 @@ LCMAPS_LIBS ?= /opt/glite/lib$(ARCH)/liblcmaps_return_poolindex_without_gsi.so \
                /opt/glite/lib$(ARCH)/modules/liblcmaps_voms.so
 
 # the swig binary
-#SWIG ?= swig
+SWIG ?= swig
 
 
 ### NO CUSTOMIZATION BELOW THIS LINE!!
@@ -50,23 +50,6 @@ LCMAPS_LIBS ?= /opt/glite/lib$(ARCH)/liblcmaps_return_poolindex_without_gsi.so \
 override CXXFLAGS += -DDEBUG -D__USE_BSD -Wall -O2
 override INCLUDES += $(JAVA_INCLUDES) $(LCMAPS_INCLUDES)
 override LIBS     += $(LCMAPS_LIBS)
-
-#SWIG ?= $(GLITE_LOCATION)/externals/swig-1.3.21/bin/swig \
-#		-I$(GLITE_LOCATION)/externals/swig-1.3.21/lib/swig1.3 \
-#		-I$(GLITE_LOCATION)/externals/swig-1.3.21/lib/swig1.3/java
-#SWIG ?= /opt/glite/externals/swig-1.3.31/bin/swig \
-#		-I/opt/glite/externals/swig-1.3.31/share/swig/1.3.31/ \
-#		-I/opt/glite/externals/swig-1.3.31/share/swig/1.3.31/java
-
-ifdef GLITE_LOCATION
-SWIG ?= /opt/glite/externals/swig-1.3.31/bin/swig \
-		-I/opt/glite/externals/swig-1.3.31/share/swig/1.3.31/ \
-		-I/opt/glite/externals/swig-1.3.31/share/swig/1.3.31/java
-
-else
-SWIG ?= swig
-endif
-
 
 swig_interface := lcmaps_interface.i
 h := lcmaps_interface.h
