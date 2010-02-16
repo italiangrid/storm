@@ -20,6 +20,8 @@ public class StormLCMAPS {
         // void map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid, int **gids, int *ngids)
         void map_user(String user_dn, String[] fqan_list, int nfqan, IntByReference uid,
                 PointerByReference gids, IntByReference ngids);
+   
+        void prova(PointerByReference uid);
 
     }
 
@@ -46,6 +48,24 @@ public class StormLCMAPS {
         
         System.out.println();
         System.out.println("Game over");
+
+    }
+
+    public static void main(String[] args) {
+        
+//        test();
+        PointerByReference uid = new PointerByReference();
+        StormLcmapsLibrary.INSTANCE.prova(uid);
+
+        System.out.println("OK");
+
+        Pointer p = uid.getValue();
+        int[] gidsArray = p.getIntArray(0, 10);
+
+        for (int gid:gidsArray) {
+            System.out.println("  gid[" + gid + "]: " + gid);
+        }
+
 
     }
 
