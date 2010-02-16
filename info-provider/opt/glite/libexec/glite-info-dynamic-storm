@@ -273,26 +273,30 @@ function get_total_size_gb () {
     # Remove DNS-like characters from SA_UPP names
     SA_UPP=`echo ${SA_UPP} | sed -e 's/-//g' -e 's/\.//g'`
 
-    x=STORM_${SA_UPP}_ROOT;            ROOT=${!x:-${STORM_DEFAULT_ROOT}/${SA_LOW}}
-    x=STORM_${SA_UPP}_VONAME;          VONAME=${!x:-${SA_LOW}}
-    x=STORM_${SA_UPP}_QUOTA;           QUOTA=${!x}
-    x=STORM_${SA_UPP}_QUOTA_FILESET;   FILESET=${!x}
-    x=STORM_${SA_UPP}_QUOTA_DEVICE;    DEVICE=${!x}
+    x=STORM_${SA_UPP}_ROOT;            SA_ROOT=${!x:-${STORM_DEFAULT_ROOT}/${SA_LOW}}
+    x=STORM_${SA_UPP}_QUOTA;           SA_QUOTA=${!x}
+    x=STORM_${SA_UPP}_QUOTA_FILESET;   SA_FILESET=${!x}
+    x=STORM_${SA_UPP}_QUOTA_DEVICE;    SA_DEVICE=${!x}
+    x=STORM_${SA_UPP}_VONAME;          SA_VONAME=${!x:-${SA_LOW}}
 
     # Get size values on SA_ROOT (in GB)
-    get_used_size_gb  ${ROOT} PARAMETER ${QUOTA} ${FILESET} ${DEVICE};   hash_insert SA_USED_SIZE_GB  ${SA_UPP} ${PARAMETER}
-    get_free_size_gb  ${ROOT} PARAMETER ${QUOTA} ${FILESET} ${DEVICE};   hash_insert SA_FREE_SIZE_GB  ${SA_UPP} ${PARAMETER}
-    get_total_size_gb ${ROOT} PARAMETER ${QUOTA} ${FILESET} ${DEVICE};   hash_insert SA_TOTAL_SIZE_GB ${SA_UPP} ${PARAMETER}
+    get_used_size_gb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_USED_SIZE_GB  ${SA_UPP} ${PARAMETER}
+    get_free_size_gb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_FREE_SIZE_GB  ${SA_UPP} ${PARAMETER}
+    get_total_size_gb ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_TOTAL_SIZE_GB ${SA_UPP} ${PARAMETER}
     # Get size values on SA_ROOT (in KB)
-    get_used_size_kb  ${ROOT} PARAMETER ${QUOTA} ${FILESET} ${DEVICE};   hash_insert SA_USED_SIZE_KB  ${SA_UPP} ${PARAMETER}
-    get_free_size_kb  ${ROOT} PARAMETER ${QUOTA} ${FILESET} ${DEVICE};   hash_insert SA_FREE_SIZE_KB  ${SA_UPP} ${PARAMETER}
+    get_used_size_kb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_USED_SIZE_KB  ${SA_UPP} ${PARAMETER}
+    get_free_size_kb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_FREE_SIZE_KB  ${SA_UPP} ${PARAMETER}
 
     # Prepare per-VO and global values
-    PERVO_VONAME_INDEX=`echo ${VONAME} | sed 's/\.//g'`
+    PERVO_VONAME_INDEX=`echo ${SA_VONAME} | sed 's/\.//g'`
     # Add VONAME if missing
-    if ! [[ "${PERVO_VONAMES}" =~ "${VONAME}" ]]; then
-      PERVO_VONAMES="${PERVO_VONAMES} ${VONAME}"
-      x=STORM_${SA_UPP}_ACCESSPOINT;   hash_insert PERVO_ACCESSPOINT ${PERVO_VONAME_INDEX} ${!x:-/${SA_LOW}}
+    if ! [[ "${PERVO_VONAMES}" =~ "${SA_VONAME}" ]]; then
+      PERVO_VONAMES="${PERVO_VONAMES} ${SA_VONAME}"
     fi
     # Sum size values for VONAME and global(in GB)
     x=`hash_find PERVO_USED_SIZE_GB ${PERVO_VONAME_INDEX}`
@@ -352,30 +356,54 @@ EOF
     # Remove DNS-like characters from SA_UPP names
     SA_UPP=`echo ${SA_UPP} | sed -e 's/-//g' -e 's/\.//g'`
 
-    x=STORM_${SA_UPP}_ROOT;            ROOT=${!x:-${STORM_DEFAULT_ROOT}/${SA_LOW}}
-    x=STORM_${SA_UPP}_VONAME;          VONAME=${!x:-${SA_LOW}}
-    x=STORM_${SA_UPP}_QUOTA;           QUOTA=${!x}
-    x=STORM_${SA_UPP}_QUOTA_FILESET;   FILESET=${!x}
-    x=STORM_${SA_UPP}_QUOTA_DEVICE;    DEVICE=${!x}
-    x=STORM_${SA_UPP}_STORAGECLASS;    STORAGECLASS=${!x}
+    x=STORM_${SA_UPP}_VONAME;          SA_VONAME=${!x:-${SA_LOW}}
+    x=STORM_${SA_UPP}_STORAGECLASS;    SA_STORAGECLASS=${!x:-${STORM_STORAGECLASS}}
+    # Convert in uppercase
+    SA_STORAGECLASS=`echo ${SA_STORAGECLASS} | tr '[:lower:]' '[:upper:]'`
 
     # Check the STORAGECLASS
-    if ! [ -z "${STORAGECLASS}" ]; then
-      RET_POLICY_ACCESS_LATENCY="custodial:online"
-    else
-      RET_POLICY_ACCESS_LATENCY="replica:online"
+    SA_RETENTION_POLICY="replica"   # default
+    SA_ACCESS_LATENCY="online"      # default
+    if ! [ -z "${SA_STORAGECLASS}" ]; then
+      case ${SA_STORAGECLASS} in
+        "T1D0")
+          SA_RETENTION_POLICY="custodial"
+          SA_ACCESS_LATENCY="nearline"
+          SA_INSTALLED_ONLINE_CAPACITY=0
+          SA_INSTALLED_NEARLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          ;;
+        "T1D1")
+          SA_RETENTION_POLICY="custodial"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+        "T0D1")
+          SA_RETENTION_POLICY="replica"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+        *)
+          SA_RETENTION_POLICY="replica"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+      esac
     fi
 
     cat >> ${FILE} << EOF
 #
-# GlueSALocalID ${SA_LOW}:${RET_POLICY_ACCESS_LATENCY} SA (${VONAME} VO)
+# GlueSALocalID ${SA_LOW}:${SA_RETENTION_POLICY}:${SA_ACCESS_LATENCY} SA (${SA_VONAME} VO)
 #
-dn: GlueSALocalID=${SA_LOW}:${RET_POLICY_ACCESS_LATENCY},GlueSEUniqueID=${STORM_FRONTEND_PUBLIC_HOST},mds-vo-name=resource,o=grid
+dn: GlueSALocalID=${SA_LOW}:${SA_RETENTION_POLICY}:${SA_ACCESS_LATENCY},GlueSEUniqueID=${STORM_FRONTEND_PUBLIC_HOST},mds-vo-name=resource,o=grid
 GlueSATotalOnlineSize: `hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
 GlueSAUsedOnlineSize: `hash_find SA_USED_SIZE_GB ${SA_UPP}`
 GlueSAFreeOnlineSize: `hash_find SA_FREE_SIZE_GB ${SA_UPP}`
 GlueSAReservedOnlineSize: `hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
-GlueSACapability: InstalledOnlineCapacity=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+GlueSACapability: InstalledOnlineCapacity=${SA_INSTALLED_ONLINE_CAPACITY}
+GlueSACapability: InstalledNearlineCapacity=${SA_INSTALLED_NEARLINE_CAPACITY}
 GlueSAStateAvailableSpace: `hash_find SA_FREE_SIZE_KB ${SA_UPP}`
 GlueSAStateUsedSpace: `hash_find SA_USED_SIZE_KB ${SA_UPP}`
 
