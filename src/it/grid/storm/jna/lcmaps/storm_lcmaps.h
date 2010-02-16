@@ -15,16 +15,17 @@
 #ifndef STORM_LCMAPS_H_
 #define STORM_LCMAPS_H_
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-	int init_lcmaps();
-	int map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid, int **gids, int *ngids);
-	void free_gids(void **p);
+int init_lcmaps();
+int map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid, void **gids, int *ngids);
+void free_gids(void **p);
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 }
 #endif
 
 #endif /* STORM_LCMAPS_H_ */
+

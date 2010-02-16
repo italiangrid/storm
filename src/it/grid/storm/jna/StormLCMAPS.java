@@ -17,12 +17,12 @@ public class StormLCMAPS {
         StormLcmapsLibrary INSTANCE = (StormLcmapsLibrary) Native.loadLibrary(("storm_lcmaps"),
                                                                               StormLcmapsLibrary.class);
 
-        // void map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid, int **gids, int *ngids)
-        void map_user(String user_dn, String[] fqan_list, int nfqan, IntByReference uid,
-                PointerByReference gids, IntByReference ngids);
-   
-        void prova(PointerByReference uid);
 
+        int init_lcmaps();
+        // void map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid, int **gids, int *ngids)
+        int map_user(String user_dn, String[] fqan_list, int nfqan, IntByReference uid,
+                PointerByReference gids, IntByReference ngids);
+        void free_gids(PointerByReference gids);
     }
 
     private static final Logger log = LoggerFactory.getLogger(StormLCMAPS.class);
@@ -52,21 +52,49 @@ public class StormLCMAPS {
     }
 
     public static void main(String[] args) {
+
+        if (args.length != 1) {
+            System.out.println("usage: <dn> [[fqan]... [fqan]");
+            System.exit(1);
+        }
         
-//        test();
-        PointerByReference uid = new PointerByReference();
-        StormLcmapsLibrary.INSTANCE.prova(uid);
+        String dn = args[0];
+        String[] fqanArray = new String[args.length - 1];
+        
+        for (int i = 1; i< args.length; i++) {
+            fqanArray[i-1] = args[i];
+            System.out.println("fqan: " + fqanArray[i]);
+        }
+        
+        IntByReference uid = new IntByReference();
+        IntByReference ngids = new IntByReference();
+        PointerByReference gids = new PointerByReference();
 
-        System.out.println("OK");
+        int rc = StormLcmapsLibrary.INSTANCE.init_lcmaps();
+        System.out.println("Return code for initialization: " + rc);
+        if (rc != 0) {
+            System.exit(2);
+        }
+        
+        rc = StormLcmapsLibrary.INSTANCE.map_user(dn, fqanArray, fqanArray.length, uid, gids, ngids);
 
-        Pointer p = uid.getValue();
-        int[] gidsArray = p.getIntArray(0, 10);
+        System.out.println("Return code map_user: " + rc);
+        if (rc != 0) {
+            System.exit(2);
+        }
+
+        System.out.println("uid: " + uid.getValue());
+        System.out.println("Number of gids: " + ngids.getValue());
+        
+        Pointer p = gids.getValue();
+        int[] gidsArray = p.getIntArray(0, ngids.getValue());
 
         for (int gid:gidsArray) {
             System.out.println("  gid[" + gid + "]: " + gid);
-        }
+        }        
 
+        StormLcmapsLibrary.INSTANCE.free_gids(gids);
 
     }
-
 }
+

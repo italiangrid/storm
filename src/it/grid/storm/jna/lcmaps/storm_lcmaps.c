@@ -33,6 +33,10 @@ int init_lcmaps() {
 	char* log_file_name = getenv(LCMAPS_LOG_FILE);
 	unsetenv(LCMAPS_LOG_FILE);
 
+        setenv("LCMAPS_DB_FILE", "/opt/storm/backend/etc/lcmaps.db", 1);
+
+        log_file_name = "alb-lcmaps.log";
+
 	int rc = lcmaps_init_and_logfile(log_file_name, NULL, (unsigned short) 0x0001);
 
 	return rc;
@@ -41,27 +45,59 @@ int init_lcmaps() {
 int map_user(const char *user_dn, const char **fqan_list, int nfqan, int *uid,
 		void **gids, int *ngids) {
 
-	*uid = 14;
-	*gids = (int *) malloc(sizeof(int) * 10);
+	lcmaps_account_info_t lcmaps_account;
+	lcmaps_account_info_init(&lcmaps_account);
 
-	int i;
-	for (i = 0; i < 10; i++) {
-		*gids[i] = i;
-	}
+	//int rc = lcmaps_return_poolindex_without_gsi(const_cast<char*>(user_dn), const_cast<char**>(fqan_list), nfqan, &lcmaps_account);
 
-	lcmaps_account_info_t plcmaps_account;
-	lcmaps_account_info_init(&plcmaps_account);
+        int rc = lcmaps_return_account_without_gsi(const_cast<char*>(user_dn), const_cast<char**>(fqan_list), nfqan, 0, &lcmaps_account);
+        if (rc != 0) {
+            lcmaps_account_info_clean(&lcmaps_account);
+            return rc;
+        }
 
-	int rc = lcmaps_return_poolindex_without_gsi(const_cast<char*>(user_dn), const_cast<char**>(fqan_list), nfqan, &plcmaps_account);
+        int npgid = lcmaps_account.npgid;
+        int nsgid = lcmaps_account.nsgid;
+        int arraySize = npgid + nsgid;
 
-	printf("Result code: %d\n", rc);
-	printf("uid: %d\n", plcmaps_account.uid);
+        // Set output data uid and ngids
+        *uid = lcmaps_account.uid;
+        *ngids = arraySize;
+        
+         if (arraySize == 0) {
+             *gids = NULL;
+              lcmaps_account_info_clean(&lcmaps_account);
+             return rc;
+         }
 
-	lcmaps_account_info_clean(&plcmaps_account);
+        // Alloc memory for the array of gids in the output data gids
+        *gids = malloc(sizeof(int) * arraySize);
 
+        int* gidArray = (int*) *gids;
+
+        // Copy primary gids first
+        int index = 0;
+        int* sourceArray;
+
+        if (npgid > 0) {
+            sourceArray = (int*) lcmaps_account.pgid_list;
+            for (; index < npgid; index++) {
+                gidArray[index] = sourceArray[index];
+            }
+        }
+
+        if (nsgid > 0) {
+            sourceArray = (int*) lcmaps_account.sgid_list;
+            for (int i = 0; index < arraySize; index++, i++) {
+                gidArray[index] = sourceArray[i];
+            }
+        }
+
+	lcmaps_account_info_clean(&lcmaps_account);
 	return rc;
 }
 
 void free_gids(void **p) {
 	free(*p);
 }
+

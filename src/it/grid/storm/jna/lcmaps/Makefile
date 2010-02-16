@@ -24,7 +24,7 @@ clean:
 	rm -f *.o lib*
 
 storm_lcmaps: storm_lcmaps.c
-	$(CXX) -o $(BUILDDIR)/storm_lcmaps.o $(CXXFLAGS) storm_lcmaps.c
+	$(CXX) -o $(BUILDDIR)/storm_lcmaps.o $(CXXFLAGS) storm_lcmaps.h storm_lcmaps.c
 
 lib: storm_lcmaps
 	$(CXX) -shared -Wall -o $(DESTDIR)/libstorm_lcmaps.so $(BUILDDIR)/storm_lcmaps.o $(LCMAPS_LDFLAGS) $(LCMAPS_LDADD)
