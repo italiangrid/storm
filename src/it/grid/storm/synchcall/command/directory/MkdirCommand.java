@@ -277,15 +277,29 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                 creationDone = file.mkdir();
 
                 if (creationDone) {
+                    
                     log.debug("SrmMkdir: Request success!");
                     failure = false;
                     explanation = "Directory created with success";
                     statusCode = TStatusCode.SRM_SUCCESS;
+                    
                 } else {
-                    log.debug("SrmMkdir: Request fails because the path is invalid.");
-                    failure = true;
-                    explanation = "Invalid path";
-                    statusCode = TStatusCode.SRM_INVALID_PATH;
+                    
+                    if (file.exists()) { // Race condition, the directory has been created by another mkdir or
+                                         // a PtP running concurrently.
+                        log.debug("SrmMkdir: Request fails because it specifies an existent file or directory.");
+                        failure = true;
+                        explanation = "The given SURL identifies an existing file or directory";
+                        statusCode = TStatusCode.SRM_DUPLICATION_ERROR;
+                        
+                    } else {
+                        
+                        log.debug("SrmMkdir: Request fails because the path is invalid.");
+                        failure = true;
+                        explanation = "Invalid path";
+                        statusCode = TStatusCode.SRM_INVALID_PATH;
+                        
+                    }
                 }
             } else { // Directory exists!
                 if (!file.isDirectory()) { // and it is a file
