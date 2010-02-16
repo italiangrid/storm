@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.0
-Release: rc13.sl4
+Release: rc14.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -139,6 +139,7 @@ Group: Application/Generic
 Prefix: /opt/storm/backend
 Requires: storm-backend-server >= 1.4.0
 Obsoletes: storm-backend-jars
+
 
 %description jars
 This package contains the 3rd party .jar libraries needed to run the
