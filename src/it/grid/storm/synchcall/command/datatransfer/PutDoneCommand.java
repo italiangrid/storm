@@ -205,6 +205,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 unlockSurl(chunk.toSURL());
             }
         }
+        
+        log.trace("Number of SURLs locked: " + lockedSurls.size());
     }
 
     /**
