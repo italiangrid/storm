@@ -362,8 +362,10 @@ EOF
     SA_STORAGECLASS=`echo ${SA_STORAGECLASS} | tr '[:lower:]' '[:upper:]'`
 
     # Check the STORAGECLASS
-    SA_RETENTION_POLICY="replica"   # default
-    SA_ACCESS_LATENCY="online"      # default
+    SA_RETENTION_POLICY="replica"                                         # default
+    SA_ACCESS_LATENCY="online"                                            # default
+    SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`   # default
+    SA_INSTALLED_NEARLINE_CAPACITY=0                                      # default
     if ! [ -z "${SA_STORAGECLASS}" ]; then
       case ${SA_STORAGECLASS} in
         "T1D0")
