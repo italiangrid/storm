@@ -32,18 +32,6 @@ public class StormLcmapsJna {
     /** To synchronize on LCMAPS invocation. */
     private static Object lock = new Object();
     
-    static {
-        if (StormLcmapsLibrary.INSTANCE.init_lcmaps() != 0) {
-            String lcmapsLogFile = System.getenv("LCMAPS_LOG_FILE");
-            
-            if (lcmapsLogFile == null) {
-                lcmapsLogFile = "";
-            }
-            
-            log.error("Error while initializing LCMAPS, see LCMAPS logfile: " + lcmapsLogFile);
-        }
-    }
-    
     /*
      * To be used for test purposes. In order to correctly initialize the lcmaps library be sure the following
      * environment variable are set: LCMAPS_LOG_FILE (path to the log file) and LCMAPS_DB_FILE (path to the lcmaps db
@@ -95,7 +83,18 @@ public class StormLcmapsJna {
 
     }
 
-    public LocalUser map(final String dn, final String[] fqans) throws CannotMapUserException {
+    public static LocalUser map(final String dn, final String[] fqans) throws CannotMapUserException {
+        
+        if (StormLcmapsLibrary.INSTANCE.init_lcmaps() != 0) {
+            String lcmapsLogFile = System.getenv("LCMAPS_LOG_FILE");
+
+            if (lcmapsLogFile == null) {
+                lcmapsLogFile = "";
+            }
+
+            log.error("Error while initializing LCMAPS, see LCMAPS logfile: " + lcmapsLogFile);
+            throw new CannotMapUserException("LCMAPS error, cannot map user credentials to local user.");
+        }
         
         IntByReference uid = new IntByReference();
         IntByReference ngids = new IntByReference();
