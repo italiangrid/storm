@@ -29,8 +29,8 @@ public class EtcGroupReader {
     private HashMap<Integer, String> groupName = null;
     private static final EtcGroupReader instanceLinux = new EtcGroupReader();
     private long parsingInstant = 0;
-    private long minimumLifetime = 1000*60; //1 minute;
-       
+    private final long minimumLifetime = 1000 * 60; //1 minute;
+
     private EtcGroupReader() {
         init(etcGroupLinuxFN);
     }
@@ -41,10 +41,10 @@ public class EtcGroupReader {
 
     public static void refresh() {
         EtcGroupReader thiS = getInstance(false);
-		if (thiS.parsedAge() > thiS.minimumLifetime) {
-			thiS.init(etcGroupLinuxFN); // Re-parse the /etc/group file
-			thiS.parsingInstant = System.currentTimeMillis();
-		}
+        if (thiS.parsedAge() > thiS.minimumLifetime) {
+            thiS.init(etcGroupLinuxFN); // Re-parse the /etc/group file
+            thiS.parsingInstant = System.currentTimeMillis();
+        }
     }
 
     private void init(String filename) {
@@ -60,7 +60,14 @@ public class EtcGroupReader {
                 String[] fields = str.split(patternStr);
                 String groupNameStr = fields[0];
                 groups.add(groupNameStr);
-                int gid = Integer.parseInt(fields[2]);
+                int gid = 33333; //Default group name
+                try {
+                    gid = Integer.parseInt(fields[2]);
+                } catch (NumberFormatException nfe) {
+                    log.error("Unable to parse the GID '" + fields[2]
+                            + "' and convert it to an Integer. Use the default group 33333");
+                    gid = 33333;
+                }
                 Integer gId = Integer.valueOf(gid);
                 groupId.put(groupNameStr, gId);
                 groupName.put(gId, groupNameStr);
@@ -78,16 +85,14 @@ public class EtcGroupReader {
             String etcGroupFN = configurationDir + File.pathSeparator + etcGroupTest;
             log.debug("TEST etc-group filename = " + etcGroupFN);
             return new EtcGroupReader(etcGroupFN);
-        } 
+        }
         return instanceLinux;
     }
 
-    
     public long parsedAge() {
-    	return System.currentTimeMillis() - parsingInstant;
+        return System.currentTimeMillis() - parsingInstant;
     }
-    
-    
+
     public static boolean isGroupDefined(String groupName) {
         boolean result = false;
         EtcGroupReader gr = getInstance(false);
