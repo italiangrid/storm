@@ -54,7 +54,17 @@ public class SURLNamingTest {
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            surlTest = "srm://storm.cnaf.infn.it:8444/atlas/test/ciccio:pluto.text";
+            tsurl = TSURL.makeFromStringValidate(surlTest);
+            System.out.println("TSURL : "+tsurl);
             
+            surlTest = "srm://storm.cnaf.infn.it:8444/srmv2/manager?SFN=atlas/test/ciccio:pluto.text";
+            tsurl = TSURL.makeFromStringValidate(surlTest);
+            System.out.println("TSURL : "+tsurl);
+            
+            surlTest = "srm://stormx.cnaf.infn.it:8444/atlas/test/ciccio:pluto.text";
+            tsurl = TSURL.makeFromStringValidate(surlTest);
+            System.out.println("TSURL : "+tsurl);
             
             
         } catch (InvalidTSURLAttributesException e) {
