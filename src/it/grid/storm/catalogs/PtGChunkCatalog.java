@@ -169,7 +169,7 @@ public class PtGChunkCatalog {
         //fromSURL
         TSURL fromSURL=null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
@@ -316,7 +316,7 @@ public class PtGChunkCatalog {
         //fromSURL
         TSURL fromSURL=null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }

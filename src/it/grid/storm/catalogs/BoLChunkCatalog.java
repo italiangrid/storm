@@ -153,7 +153,7 @@ public class BoLChunkCatalog {
         // fromSURL
         TSURL fromSURL = null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.getFromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.getFromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
@@ -313,7 +313,7 @@ public class BoLChunkCatalog {
         // fromSURL
         TSURL fromSURL = null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }

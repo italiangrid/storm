@@ -548,7 +548,7 @@ implements StoRI {
          */
         if (this.surl == null) {
             try {
-                this.surl = TSURL.makeFromString(buildSURLString());
+                this.surl = TSURL.makeFromStringValidate(buildSURLString());
             }
             catch (InvalidTSURLAttributesException ex) {
                 log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);

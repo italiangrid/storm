@@ -218,7 +218,7 @@ public class MvCommand extends DirectoryCommand implements Command {
                 log.debug("srmMv: New toSURL: " + toSURLString);
                 StoRI toStoriFile = null;
                 try {
-                    TSURL toSURLFile = TSURL.makeFromString(toSURLString);
+                    TSURL toSURLFile = TSURL.makeFromStringValidate(toSURLString);
                     toStoriFile = namespace.resolveStoRIbySURL(toSURLFile, guser);
                 } catch (NamespaceException ex1) {
                     log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'", ex1);

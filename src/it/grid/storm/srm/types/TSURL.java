@@ -41,8 +41,29 @@ public class TSURL {
     public static String PNAME_FROMSURL = "fromSURL";
     public static String PNAME_TOSURL = "toSURL";
 
-    private static ArrayList<TSURL> tsurlValid = new ArrayList<TSURL>();
+    private static ArrayList<TSURL> tsurlManaged = new ArrayList<TSURL>();
 
+    
+    static {
+        // Lazy initialization from Configuration
+        if (tsurlManaged.isEmpty()) {
+            // This is the first call 
+            TSURL checkTSURL;
+            String[] surlValid = Configuration.getInstance().getManagedSURLs();
+            for (String checkSurl : surlValid) {
+                //Building TSURL 
+                try {
+                    checkTSURL = TSURL.makeFromStringWellFormed(checkSurl);
+                    tsurlManaged.add(checkTSURL);
+                    log.debug("### SURL Managed : "+checkTSURL);
+                } catch (InvalidTSURLAttributesException e) {
+                    log.error("Unable to build a TSURL : '" + checkSurl + "'");
+                }
+            }
+        }
+    }
+    
+    
     private TSURL(SiteProtocol sp, SFN sfn, boolean empty) {
         this.sp = sp;
         this.sfn = sfn;
@@ -59,118 +80,13 @@ public class TSURL {
         return TSURL.makeFromString(surlstring);
     }
 
-    /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to
-     * some managed SURL as declared in Configuration. 
-     * 
-     */
-    public static boolean isValid(TSURL surl) {
-        boolean result = false;
+    
 
-        // Lazy initialization from Configuration
-        if (tsurlValid.isEmpty()) {
-            // This is the first call 
-            String[] surlValid = Configuration.getInstance().getManagedSURLs();
-            for (String checkSurl : surlValid) {
-                //Building TSURL 
-                try {
-                    TSURL checkTSURL = TSURL.makeFromStringValidate(checkSurl);
-                    tsurlValid.add(checkTSURL);
-                } catch (InvalidTSURLAttributesException e) {
-                    log.error("Unable to build a TSURL : '" + checkSurl + "'");
-                }
-            }
-        }
+    
 
-        for (TSURL tsurlReference : tsurlValid) {
-            if (surlValid(surl, tsurlReference)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
 
-    }
-
-    /**
-     * Static factory method that returns a TSURL and that requires the SiteProtocol
-     * and the SFN of this TSURL: if any is null or empty an InvalidTSURLAttributesException
-     * is thrown.
-     * Check for ".." in Storage File Name for security issues.
-     */
-    public static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
-        if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
-            throw new InvalidTSURLAttributesException(sp, sfn);
-        }
-        return new TSURL(sp, sfn, false);
-    }
-
-    /**
-     *
-     * @param host String
-     * @param port int
-     * @param path String
-     * @return TSURL
-     */
-    public static TSURL make(String host, int port, String path) {
-        TSURL result = null;
-
-        return result;
-    }
-
-    /**
-     * Static factory method that returns an empty TSURL.
-     */
-    public static TSURL makeEmpty() {
-        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
-    }
-
-    /**
-     * Static factory method that returns a TSURL from a String representation: if it is null
-     * or malformed then an Invalid TSURLAttributesException is thrown.
-     */
-    public static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
-        if (s == null) {
-            throw new InvalidTSURLAttributesException(null, null);
-        }
-        int separator = s.indexOf("://"); //first occurence of ://
-        if ((separator == -1) || (separator == 0)) {
-            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
-        }
-        String spString = s.substring(0, separator);
-        SiteProtocol sp = null;
-        try {
-            sp = SiteProtocol.fromString(spString);
-        } catch (IllegalArgumentException e) {
-            //do nothing - sp remains null and that is fine!
-        }
-        if ((separator + 3) > (s.length())) {
-            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
-        }
-        String sfnString = s.substring(separator + 3, s.length());
-        SFN sfn = null;
-        try {
-            sfn = SFN.makeFromString(sfnString);
-        } catch (InvalidSFNAttributesException e) {
-            //do nothing - sfn remains null and that is fine!
-        }
-        return TSURL.make(sp, sfn);
-    }
-
-    /**
-     * Static factory method that returns a TSURL from a String representation: if it is null
-     * or malformed then an Invalid TSURLAttributesException is thrown.
-     */
-    public static TSURL makeFromStringValidate(String surlString) throws InvalidTSURLAttributesException {
-
-        log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
-        SURL surl;
-        try {
-            surl = SURL.makeSURLfromString(surlString);
-        } catch (NamespaceException ex) {
-            log.error("SURL '" + surlString + "' is invalid! ");
-            throw new InvalidTSURLAttributesException(null, null);
-        }
+    
+    public static TSURL getWellFormed(SURL surl) throws InvalidTSURLAttributesException {
         TSURL result;
 
         SFN sfn;
@@ -221,9 +137,132 @@ public class TSURL {
         }
         result = TSURL.make(SiteProtocol.SRM, sfn);
         return result;
+        
+    }
+    
+    /**
+     * Static factory method that returns a TSURL and that requires the SiteProtocol
+     * and the SFN of this TSURL: if any is null or empty an InvalidTSURLAttributesException
+     * is thrown.
+     * Check for ".." in Storage File Name for security issues.
+     */
+    private static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
+        if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
+            throw new InvalidTSURLAttributesException(sp, sfn);
+        }
+        return new TSURL(sp, sfn, false);
     }
 
-    private static boolean surlValid(TSURL comingSURL, TSURL managedSURL) {
+
+
+    /**
+     * Static factory method that returns an empty TSURL.
+     */
+    public static TSURL makeEmpty() {
+        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
+    }
+
+    /**
+     * Static factory method that returns a TSURL from a String representation: if it is null
+     * or malformed then an Invalid TSURLAttributesException is thrown.
+     */
+    private static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
+        if (s == null) {
+            throw new InvalidTSURLAttributesException(null, null);
+        }
+        int separator = s.indexOf("://"); //first occurence of ://
+        if ((separator == -1) || (separator == 0)) {
+            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
+        }
+        String spString = s.substring(0, separator);
+        SiteProtocol sp = null;
+        try {
+            sp = SiteProtocol.fromString(spString);
+        } catch (IllegalArgumentException e) {
+            //do nothing - sp remains null and that is fine!
+        }
+        if ((separator + 3) > (s.length())) {
+            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
+        }
+        String sfnString = s.substring(separator + 3, s.length());
+        SFN sfn = null;
+        try {
+            sfn = SFN.makeFromString(sfnString);
+        } catch (InvalidSFNAttributesException e) {
+            //do nothing - sfn remains null and that is fine!
+        }
+        return TSURL.make(sp, sfn);
+    }
+
+    /**
+     * Static factory method that returns a TSURL from a String representation: if it is null
+     * or malformed then an Invalid TSURLAttributesException is thrown.
+     */
+    public static TSURL makeFromStringWellFormed(String surlString) throws InvalidTSURLAttributesException {
+
+        TSURL result = null;
+
+        log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
+        SURL surl;
+        try {
+            surl = SURL.makeSURLfromString(surlString);
+        } catch (NamespaceException ex) {
+            log.error("SURL '" + surlString + "' is invalid! ");
+            throw new InvalidTSURLAttributesException(null, null);
+        }
+        result = getWellFormed(surl);
+        
+        return result;
+    }
+    
+    /**
+     * Static factory method that returns a TSURL from a String representation: if it is null
+     * or malformed then an Invalid TSURLAttributesException is thrown.
+     */
+    public static TSURL makeFromStringValidate(String surlString) throws InvalidTSURLAttributesException {
+
+        log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
+        SURL surl;
+        try {
+            surl = SURL.makeSURLfromString(surlString);
+        } catch (NamespaceException ex) {
+            log.error("SURL '" + surlString + "' is invalid! ");
+            throw new InvalidTSURLAttributesException(null, null);
+        }
+
+        TSURL tsurl = getWellFormed(surl);
+        if (!(isValid(tsurl))) {
+            log.warn("The SURL '"+tsurl+"' is not managed by this instance of StoRM");
+            throw new InvalidTSURLAttributesException(tsurl.sp, tsurl.sfn());            
+        }
+        return tsurl;
+    }
+
+    
+    
+    /**
+     * Auxiliary method that returns true if the supplied TSURL corresponds to
+     * some managed SURL as declared in Configuration. 
+     * 
+     */
+    public static boolean isValid(TSURL surl) {
+        boolean result = false;
+        for (TSURL tsurlReference : tsurlManaged) {
+            if (isSURLManaged(surl, tsurlReference)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * 
+     * @param comingSURL
+     * @param managedSURL
+     * @return
+     */
+    private static boolean isSURLManaged(TSURL comingSURL, TSURL managedSURL) {
         boolean result = false;
 
         String serviceHost = comingSURL.sfn().machine().toString().toLowerCase();
@@ -241,6 +280,8 @@ public class TSURL {
         return result;
     }
 
+    
+    
     /**
      * Encode TSURL for FE communication.
      */

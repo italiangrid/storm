@@ -81,7 +81,7 @@ public class StoRITest {
     public StoRI createStoRI(String surl) {
         StoRI stori = null;
         try {
-            TSURL tsurl = TSURL.makeFromString(surl);
+            TSURL tsurl = TSURL.makeFromStringValidate(surl);
             log.debug(" TSURL : "+tsurl);
             stori = namespace.resolveStoRIbySURL(tsurl);
         }

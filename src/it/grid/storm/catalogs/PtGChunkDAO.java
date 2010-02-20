@@ -782,7 +782,7 @@ public class PtGChunkDAO {
 
                 try {
 
-                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(TSURL.makeFromString(surl));
+                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(TSURL.makeFromStringValidate(surl));
 
                     if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
                         StormEA.removePinned(stori.getAbsolutePath());

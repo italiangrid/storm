@@ -67,10 +67,14 @@ public abstract class SRMURL {
 
     private String makeInAbsoluteForm(String path) {
         StringBuffer absolutePath = new StringBuffer();
-
-        absolutePath.append(path);
-        if (absolutePath.charAt(0) != NamingConst.SEPARATOR_CHAR) {
-            absolutePath.insert(0, NamingConst.ROOT_PATH);
+   
+        if ((path==null)||(path.length()==0)) {
+            absolutePath.append(NamingConst.ROOT_PATH);
+        } else {
+            absolutePath.append(path);
+            if (absolutePath.charAt(0) != NamingConst.SEPARATOR_CHAR) {
+                absolutePath.insert(0, NamingConst.ROOT_PATH);
+            }    
         }
         return absolutePath.toString();
     }

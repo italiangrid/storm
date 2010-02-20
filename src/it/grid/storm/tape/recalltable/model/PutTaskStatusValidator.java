@@ -98,7 +98,7 @@ public class PutTaskStatusValidator {
         
         try {
             
-            surl = TSURL.makeFromString(surlString);
+            surl = TSURL.makeFromStringValidate(surlString);
             
         } catch (InvalidTSURLAttributesException e) {
             validationResponse = Response.status(400).build();

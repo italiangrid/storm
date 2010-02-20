@@ -67,7 +67,7 @@ public class AdHocTestNaming {
         SURL surl = new SURL("testbed006.cnaf.infn.it",1234,"cnaf/test/pippo.txt", null);
         TSURL tsurl = null;
         try {
-            tsurl = TSURL.makeFromString(surl.toString());
+            tsurl = TSURL.makeFromStringValidate(surl.toString());
         }
         catch (InvalidTSURLAttributesException ex) {
             ex.printStackTrace();
@@ -154,8 +154,8 @@ public class AdHocTestNaming {
         log.debug("SURL = "+surl);
         String stfnStr = surl.getStFN();
         log.debug("StFN = "+stfnStr);
-        String parh = surl.getPath();
-        log.debug("Path = "+stfnStr);
+        String path = surl.getPath();
+        log.debug("Path = "+path);
 
         NamespaceInterface ns = new Namespace(parser);
 

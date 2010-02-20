@@ -73,7 +73,7 @@ public class ArrayOfSURLs implements Serializable {
         for (int i = 0; i < list.size(); i++) {
             TSURL surl = null;
             try {
-                surl = TSURL.makeFromString((String) list.get(i));
+                surl = TSURL.makeFromStringValidate((String) list.get(i));
             } catch (InvalidTSURLAttributesException e) {
                 throw new InvalidArrayOfSURLsAttributeException(null);
             }

@@ -88,14 +88,14 @@ public class CopyChunkCatalog {
         //fromSURL
         TSURL fromSURL=null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
         //toSURL
         TSURL toSURL=null;
         try {
-            toSURL = TSURL.makeFromString(auxTO.toSURL());
+            toSURL = TSURL.makeFromStringValidate(auxTO.toSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
