@@ -377,8 +377,7 @@ test.junit.dir
 
   <!-- config files; needed at runtime -->
   <fileset id="src.config"
-     dir="${src.config.dir}">
-    <include name="*.properties"/>
+     dir="${src.config.dir}">   
     <include name="namespace.xml"/>
     <include name="namespace-1.5.0.xsd"/>
     <include name="lcmaps.db"/>
