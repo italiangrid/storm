@@ -10,12 +10,15 @@
 package it.grid.storm.srm.types;
 
 import java.io.Serializable;
-import java.util.Hashtable;
 import java.util.Map;
 
-public class TUserID implements Serializable
-{
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class TUserID implements Serializable {
+
+    private static final long serialVersionUID = -7547071983406828938L;
+    private static final Logger log = LoggerFactory.getLogger(TUserID.class);
     public static String PNAME_USERID = "userID";
     public static String PNAME_OWNER  = "owner";
 
@@ -23,32 +26,30 @@ public class TUserID implements Serializable
 
     //TO Complete with  Exception if null string speified
     public TUserID(String id) throws InvalidTUserIDAttributeException {
-        if ((id == null) || (id == ""))
+        if ((id == null) || (id.length()==0))
             throw new InvalidTUserIDAttributeException(id);
         userID = id;
     }
 
-    public static TUserID makeEmpty()
-    {
+    public static TUserID makeEmpty() {
         try {
             return new TUserID("Unknown.");
-        } catch (InvalidTUserIDAttributeException e) {}
-        ;
+        } catch (InvalidTUserIDAttributeException e) {
+            log.error("Strange. Exception shold be never thrown here."+e);
+        }
         return null;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return userID;
     }
 
-    public String getValue()
-    {
+    public String getValue() {
         return userID;
     }
 
-    public void encode(Map param, String name)
-    {
+    public void encode(Map param, String name) {
         param.put(name, userID);
     }
-};
+
+}

@@ -119,6 +119,7 @@ public class GPFSQuotaCommand implements QuotaCommandInterface{
                 stdInput.close();
                 stdError.close();
             } catch (IOException e) {
+                log.warn("getQuota. Error occurred closing the Std-I/O " + e );
             }
             
             child.destroy();

@@ -88,12 +88,11 @@ public class SRMSpace {
 
         String relativeSpaceFN = null;
         try {
-            log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath()
-                    + " spaceFN:" + spaceFN);
-            relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs
-                    .getRootPath(), spaceFN);
+            log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:" + spaceFN);
+            relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(), spaceFN);
             log.debug("relativeSpaceFN:" + relativeSpaceFN);
         } catch (NamespaceException ex3) {
+            log.warn("SRMSpace. Unable to extract the relative Space FN. Using the root '/'. "+ex3);
         }
 
 

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractGridUser implements GridUserInterface {
 
-    protected static Logger log = LoggerFactory.getLogger(AbstractGridUser.class);
+    protected static final Logger log = LoggerFactory.getLogger(AbstractGridUser.class);
     protected DistinguishedName subjectDN = null;
     protected String proxyString = null;
     protected MapperInterface userMapperClass = null;

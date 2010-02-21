@@ -123,7 +123,7 @@ public class SFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine!
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
             String stfnString = s.substring(slash, s.length());
@@ -131,7 +131,7 @@ public class SFN {
             try {
                 stfn = StFN.make(stfnString);
             } catch (InvalidStFNAttributeException e) {
-                //do nothing - stfn remains null and that is fine!
+                log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
             }
             return SFN.make(m, stfn);
         } else if ((colon == -1) && (question != -1)) {
@@ -145,7 +145,7 @@ public class SFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine!
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             //EndPoint
             String epString = s.substring(slash, question);
@@ -153,7 +153,7 @@ public class SFN {
             try {
                 ep = EndPoint.make(epString);
             } catch (InvalidEndPointAttributeException e) {
-                //do nothing ep remains null and that is fine!
+                log.warn("SFN: Unable to build -endpoint- attribute with the String '"+epString+"'."+e);
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
             if (question + 5 >= s.length()) {
@@ -165,7 +165,7 @@ public class SFN {
             try {
                 stfn = StFN.make(stfnString);
             } catch (InvalidStFNAttributeException e) {
-                //do nothing - stfn remains null and that is fine!
+                log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
             }
             return SFN.makeInQueryForm(m, ep, stfn);
         } else if ((colon != -1) && (question == -1)) {
@@ -179,7 +179,7 @@ public class SFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine!
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             if ((colon + 1) == slash) {
                 throw new ParsingSFNAttributesException(s,
@@ -190,9 +190,9 @@ public class SFN {
             try {
                 p = Port.make(Integer.parseInt(pString));
             } catch (InvalidPortAttributeException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("SFN: Unable to build -port- attribute with the String '"+pString+"'."+e);
             } catch (NumberFormatException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+pString+"'."+e);
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
             String stfnString = s.substring(slash, s.length());
@@ -200,7 +200,7 @@ public class SFN {
             try {
                 stfn = StFN.make(stfnString);
             } catch (InvalidStFNAttributeException e) {
-                //do nothing - stfn remains null and that is fine!
+                log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
             }
             return SFN.make(m, p, stfn);
         } else {
@@ -215,7 +215,7 @@ public class SFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine!
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             if ((colon + 1) == slash) {
                 throw new ParsingSFNAttributesException(s,
@@ -226,9 +226,9 @@ public class SFN {
             try {
                 p = Port.make(Integer.parseInt(pString));
             } catch (InvalidPortAttributeException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("SFN: Unable to build -port- attribute with the String '"+pString+"'."+e);
             } catch (NumberFormatException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+pString+"'."+e);
             }
             //EndPoint
             String epString = s.substring(slash, question);
@@ -236,7 +236,7 @@ public class SFN {
             try {
                 ep = EndPoint.make(epString);
             } catch (InvalidEndPointAttributeException e) {
-                //Do nothing! ep remains null and that is fine!
+                log.warn("SFN: Unable to build -endpoint- attribute with the String '"+epString+"'."+e);
             }
             //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
             if (question + 5 >= s.length()) {
@@ -248,7 +248,7 @@ public class SFN {
             try {
                 stfn = StFN.make(stfnString);
             } catch (InvalidStFNAttributeException e) {
-                //do nothing - stfn remains null and that is fine!
+                log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
             }
             return SFN.makeInQueryForm(m, p, ep, stfn);
         }

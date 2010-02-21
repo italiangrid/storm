@@ -1825,7 +1825,7 @@ public class Configuration {
             try {
                 port = Integer.valueOf(portStringArray[i]);
             } catch (NumberFormatException e) {
-                // nothing to do, port is already defined to -1.
+                log.error("Unable to parse the Checksum port String '"+portStringArray[i]+"'."+e);
             }
             portArray[i] = port;
         }

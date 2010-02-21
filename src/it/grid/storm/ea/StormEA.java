@@ -126,18 +126,18 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.warn("Cannot remove pinned EA because file does not exists: " + fileName);
+            log.warn("Cannot remove '"+EA_CHECKSUM+"' EA because file does not exists: " + fileName);
 
         } catch (AttributeNotFoundException e) {
 
-            // nothing to do
+            log.info("Cannot remove '"+EA_CHECKSUM+"' EA because unable to find the attribute (Maybe already removed): " + fileName);
 
         } catch (NotSupportedException e) {
 
-            log.warn("Cannot remove pinned EA (operation not supported) to file: " + fileName);
+            log.warn("Cannot remove '"+EA_CHECKSUM+"' EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.warn("Cannot remove pinned EA to file: " + fileName);
+            log.warn("Cannot remove '"+EA_CHECKSUM+"' EA to file: " + fileName);
         }
     }
 
@@ -148,18 +148,18 @@ public class StormEA {
 
         } catch (FileNotFoundException e) {
 
-            log.warn("Cannot remove pinned EA because file does not exists: " + fileName);
+            log.warn("Cannot remove '"+EA_PINNED+"' EA because file does not exists: " + fileName);
 
         } catch (AttributeNotFoundException e) {
 
-            // nothing to do
+            log.info("Cannot remove '"+EA_PINNED+"' EA because unable to find the attribute (Maybe already removed): " + fileName);
 
         } catch (NotSupportedException e) {
 
-            log.warn("Cannot remove pinned EA (operation not supported) to file: " + fileName);
+            log.warn("Cannot remove '"+EA_PINNED+"' EA (operation not supported) to file: " + fileName);
 
         } catch (ExtendedAttributesException e) {
-            log.warn("Cannot remove pinned EA to file: " + fileName);
+            log.warn("Cannot remove '"+EA_PINNED+"' EA to file: " + fileName);
         }
     }
 

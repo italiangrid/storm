@@ -138,8 +138,7 @@ public class BoLChunkCatalog {
                 try {
                     status = new TReturnStatus(code, auxTO.getErrString());
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    // sb.append("\n");
-                    // sb.append(e);
+                    log.equals("BoL Chunk: Unable to build the Return Status from the String '"+auxTO.getErrString()+" and code '"+auxTO.getStatus()+"''."+e);
                 }
             }
             inputChunk.setStatus(status);

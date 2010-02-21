@@ -11,6 +11,9 @@
  */
 package it.grid.storm.griduser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Encapsulates a POSIX account numeric data: the UID, the primary GID
@@ -29,6 +32,9 @@ package it.grid.storm.griduser;
  * @see it.grid.storm.griduser.swig.LocalUserInfo;
  */
 public class LocalUser {
+    
+    private static final Logger log = LoggerFactory.getLogger(LocalUser.class);
+    
 	private int   __uid;  /* FIXME: uid_t on Linux is unsigned 32-bit */
 	private int[] __gids;
 
@@ -100,7 +106,7 @@ public class LocalUser {
                     this.__uid = auxuid;
                     this.__gids = auxgid;
                 } catch (NumberFormatException e) {
-                    //Do nothing! Defaults are ok!
+                    log.error("LocalUser: Error while setting uid/gid. NFE:"+e);
                 }
             }
         }

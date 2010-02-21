@@ -414,7 +414,7 @@ public class ReservedSpaceCatalog {
             ReservedSpaceCatalog.log.error("Error while retrieving StorageSpace", daEx);
         }
         catch (Exception e) {
-            //...
+            ReservedSpaceCatalog.log.error("Generic Error while retrieving StorageSpace", e);
         }
         return result;
     }

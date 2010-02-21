@@ -140,8 +140,7 @@ public class PtGChunkCatalog {
                 try {
                     status = new TReturnStatus(code,auxTO.errString());
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    //sb.append("\n");
-                    //sb.append(e);
+                    log.error("PtGChunk : Unable to build the Return Status Code.");
                 }
             }
             inputChunk.setStatus(status);

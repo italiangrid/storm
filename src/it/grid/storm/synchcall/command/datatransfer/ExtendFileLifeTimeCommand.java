@@ -296,7 +296,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                                                  "Details are on the file statuses");
             }
         } catch (InvalidTReturnStatusAttributeException e) {
-            // Nothing to do, it will never be thrown
+            log.error("Unable to build Return Status in Extend Lifetime."+e);
         }
         return globalStatus;
     }

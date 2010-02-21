@@ -180,6 +180,7 @@ public class TSURL {
             sp = SiteProtocol.fromString(spString);
         } catch (IllegalArgumentException e) {
             //do nothing - sp remains null and that is fine!
+            log.warn("TSURL: Site protocol by '"+spString+"' is empty, but that's fine.");
         }
         if ((separator + 3) > (s.length())) {
             throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
@@ -190,6 +191,7 @@ public class TSURL {
             sfn = SFN.makeFromString(sfnString);
         } catch (InvalidSFNAttributesException e) {
             //do nothing - sfn remains null and that is fine!
+            log.warn("TSURL: SFN by '"+sfnString+"' is empty, but that's fine.");
         }
         return TSURL.make(sp, sfn);
     }

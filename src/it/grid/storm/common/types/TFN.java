@@ -1,5 +1,8 @@
 package it.grid.storm.common.types;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class represents a TFN Transfer File Name.
  *
@@ -10,6 +13,8 @@ package it.grid.storm.common.types;
  */
 public class TFN {
 
+    private static Logger log = LoggerFactory.getLogger(TFN.class);
+    
     private Machine m=null;
     private Port p=null;
     private PFN pfn=null;
@@ -69,8 +74,9 @@ public class TFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine because the exception will be thrown later on!
+                log.warn("TFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
+            
             //Port is empty because it is optional specification
             Port p = Port.makeEmpty();
             //PFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
@@ -79,7 +85,7 @@ public class TFN {
             try {
                 pfn = PFN.make(pfnString);
             } catch (InvalidPFNAttributeException e) {
-                //do nothing - pfn remains null and that is fine because the exception will be thrown later on!
+                log.warn("TFN: Unable to build -pfn- attribute with the String '"+pfnString+"'."+e);
             }
             return TFN.make(m,p,pfn);
         } else if ((slash!=-1) && (colon>slash)) {
@@ -92,7 +98,7 @@ public class TFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - m remains null and that is fine because the exception will be thrown later on!
+                log.warn("TFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             //Port is empty because it is optional specification
             Port p = Port.makeEmpty();
@@ -102,7 +108,7 @@ public class TFN {
             try {
                 pfn = PFN.make(pfnString);
             } catch (InvalidPFNAttributeException e) {
-                //do nothing - pfn remains null and that is fine because the exception will be thrown later on!
+                log.warn("TFN: Unable to build -pfn- attribute with the String '"+pfnString+"'."+e);
             }
             return TFN.make(m,p,pfn);
         } else if ((slash!=-1) && (colon<slash)) {
@@ -114,7 +120,7 @@ public class TFN {
             try {
                 m = Machine.make(mString);
             } catch (InvalidMachineAttributeException e) {
-                //do nothing - sp remains null and that is fine!
+                log.warn("TFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
             }
             //port
             if ((colon+1) == slash) throw new InvalidTFNAttributesException(m,null,null); //slash found right after colon! There is no port!
@@ -123,9 +129,9 @@ public class TFN {
             try {
                 p = Port.make(Integer.parseInt(pString));
             } catch (InvalidPortAttributeException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("TFN: Unable to build -port- attribute with the String '"+pString+"'."+e);
             } catch (NumberFormatException e) {
-                //do nothing - p remains null and that is fine!
+                log.warn("TFN: Unable to build -port- attribute with the String (NFE) '"+pString+"'."+e);
             }
             //PFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
             String pfnString = s.substring(slash,s.length());
@@ -133,7 +139,7 @@ public class TFN {
             try {
                 pfn = PFN.make(pfnString);
             } catch (InvalidPFNAttributeException e) {
-                //do nothing - pfn remains null and that is fine!
+                log.warn("TFN: Unable to build -pfn- attribute with the String '"+pfnString+"'."+e);
             }
             return TFN.make(m,p,pfn);
         } else {

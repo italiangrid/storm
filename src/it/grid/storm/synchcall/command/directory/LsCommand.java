@@ -366,7 +366,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                         new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
                                           "The offset is grater than the number of results");
             } catch (InvalidTReturnStatusAttributeException e) {
-                // Never thrown
+                log.error("Strange. Never Thrown."+e);
             }
 
             log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
@@ -382,7 +382,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                             new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS, "Max returned entries is: "
                                     + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    // Never thrown
+                    log.error("Strange. Never Thrown"+e);
                 }
 
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
