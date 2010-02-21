@@ -5,7 +5,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import component.authz.AuthzTest;
 import component.utiltest.SetUpTest;
 
 import it.grid.storm.config.ConfigReader;

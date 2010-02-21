@@ -80,10 +80,6 @@ public class TSURL {
         return TSURL.makeFromString(surlstring);
     }
 
-    
-
-    
-
 
     
     public static TSURL getWellFormed(SURL surl) throws InvalidTSURLAttributesException {
@@ -136,9 +132,9 @@ public class TSURL {
             }
         }
         result = TSURL.make(SiteProtocol.SRM, sfn);
-        return result;
-        
+        return result;   
     }
+    
     
     /**
      * Static factory method that returns a TSURL and that requires the SiteProtocol
@@ -196,6 +192,7 @@ public class TSURL {
         return TSURL.make(sp, sfn);
     }
 
+    
     /**
      * Static factory method that returns a TSURL from a String representation: if it is null
      * or malformed then an Invalid TSURLAttributesException is thrown.
