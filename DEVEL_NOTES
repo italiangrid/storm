@@ -1,0 +1,15 @@
+## COMPILE THE BE ##
+32-bit architecture:
+    ant clean build
+
+64-bit architecture:
+    ant -Darch=64 clean build
+
+## RPM CREATION ##
+Remeber to modify the release version (in rpm/storm-backen.spec), then use the provided script "create_rpm.sh".
+
+32-bit architecture:
+    sh create_rpm.sh
+
+64-bit architecture
+    sh create_rpm.sh 64

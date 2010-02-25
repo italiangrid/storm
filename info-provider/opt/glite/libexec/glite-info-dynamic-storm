@@ -1,136 +1,242 @@
 #!/bin/bash
 
-function get_used_size () {
+#
+# Used kB
+#
+function get_used_size_kb () {
 
-  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
-    prefix=/usr/lpp/mmfs/bin/
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
     if ! [ -z "$4" ] && ! [ -z "$5" ]; then
-      used=`$prefix/mmlsquota -j $4 $5 |  awk 'NR==3 {print $3}' | sed 's/\..*//'`
-      used=$(($used/(1024*1024)))
-    else
-      # Missing fileset or device or both
-      used=10
-    fi
-  else
-    # Quota off
-   used=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $3}'`
-  fi
-
-  export $2=$used
-
-  return 0
-
-}
-
-function get_free_size () {
-
-  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
-    prefix=/usr/lpp/mmfs/bin/
-    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
-      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
-      used=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
-      if ! [ -z "$used" ] && ! [ -z "total" ]; then
-        free=$(($total-$used))
-	free=$(($free/(1024*1024)))
-      else
-        free=10
+      used=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {print $3}' | sed 's/\..*//'`
+      if [ -z ${used} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
       fi
+      # convert in kB (base 10)
+      used=$((${used}*1024/1000))
     else
-      # Missing fileset or device or both
-      used=10
+      # Missing fileset, device or both
+      used=-1
     fi
+  # Quota off
   else
-    free=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $4}'`
+    # Get values from the storm_be_ISAM database
+    total=`echo "SELECT total_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    free=`echo "SELECT free_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${free}" ] && [ ! -z "${total}" ]; then
+      used=$((${total}-${free}))
+      # convert in kB (base 10)
+      used=$((${used}/1000))
+    else
+      # Missing sizes
+      used=-1
+    fi
   fi
 
-  export $2=$free
+  export $2=${used}
 
   return 0
 
 }
 
-function get_total_size () {
+#
+# Used GB
+#
+function get_used_size_gb () {
 
-  if ! [ `echo $@ | wc -w` = 2 ] && ! [ -z "$3" ] && [ $3 = true ]; then
-    # Quota on
-    prefix=/usr/lpp/mmfs/bin/
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
     if ! [ -z "$4" ] && ! [ -z "$5" ]; then
-      total=`$prefix/mmlsquota -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      used=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {print $3}' | sed 's/\..*//'`
+      if [ -z ${used} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
+      fi
+      # convert in GB (base 10)
+      used=$((${used}*1024/(1000*1000*1000)))
     else
       # Missing fileset or device or both
-      total=10
+      used=-1
     fi
+  # Quota off
   else
-    # Quota off
-    total=`df --block-size=1G $1 | sed 1d | tr -d '\n' | awk '{print $2}'`
+    # Get values from the storm_be_ISAM database
+    total=`echo "SELECT total_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    free=`echo "SELECT free_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${free}" ] && [ ! -z "${total}" ]; then
+      used=$((${total}-${free}))
+      # convert in GB (base 10)
+      used=$((${used}/(1000*1000*1000)))
+    else
+      # Missing sizes
+      used=-1
+    fi
   fi
 
-   export $2=$total
+  export $2=${used}
 
   return 0
 
 }
 
-function create_ldif_SEEntries () {
+#
+# Free kB
+#
+function get_free_size_kb () {
 
-  # Get free and use space on STORM_DEFAULT_ROOT
-  get_used_size $STORM_DEFAULT_ROOT USEDSIZE
-  get_free_size $STORM_DEFAULT_ROOT FREESIZE
-  get_total_size $STORM_DEFAULT_ROOT TOTALSIZE
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      used=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
+      if [ -z ${total} ] || [ -z ${used} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
+      fi
+      free=$((${total}-${used}))
+      # convert in kB (base 10)
+      free=$((${free}*1024/1000))
+    else
+      # Missing fileset or device or both
+      free=-1
+    fi
+  # Quota off
+  else
+    # Get values from the storm_be_ISAM database
+    free=`echo "SELECT free_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${free}" ]; then
+      # convert in kB (base 10)
+      free=$((${free}/1000))
+    else
+      # Missing sizes
+      free=-1
+    fi
+  fi
 
-  cat >> $TMPFILE <<EOF
-
-dn: GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSESizeTotal: $TOTALSIZE
-GlueSESizeFree: $FREESIZE
-GlueSETotalOnlineSize: $TOTALSIZE
-GlueSEUsedOnlineSize: $USEDSIZE
-GlueSETotalNearlineSize: 0
-GlueSEUsedNearlineSize: 0
-EOF
+  export $2=${free}
 
   return 0
 
 }
 
-function create_dynamic_ldif_SAEntries () {
+#
+# Free GB
+#
+function get_free_size_gb () {
 
-  # Get free and use space on SA_ROOT
-  get_used_size $ROOTVALUE USEDSIZE $QUOTA $FILESET $DEVICE
-  get_free_size $ROOTVALUE FREESIZE $QUOTA $FILESET $DEVICE
-  get_total_size $ROOTVALUE TOTALSIZE $QUOTA $FILESET $DEVICE
-
-  # Check the STORAGECLASS
-  if ! [ -z  $STORAGECLASS ] && test $STORAGECLASS = T1D1; then
-    RET_POLICY_ACCESS_LATENCY=custodial:online
-    RET_POLICY=custodial
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      used=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $3}' | sed 's/\..*//'`
+      if [ -z ${total} ] || [ -z ${used} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
+      fi
+      free=$((${total}-${used}))
+      # convert in GB (base 10)
+      free=$((${free}*1024/(1000*1000*1000)))
+    else
+      # Missing fileset or device or both
+      free=-1
+    fi
+  # Quota off
   else
-    RET_POLICY_ACCESS_LATENCY=replica:online
-    RET_POLICY=replica
+    # Get values from the storm_be_ISAM database
+    free=`echo "SELECT free_size from storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${free}" ]; then
+      # convert in GB (base 10)
+      free=$((${free}/(1000*1000*1000)))
+    else
+      # Missing sizes
+      free=-1
+    fi
   fi
 
-  cat >> $TMPFILE <<EOF
+  export $2=${free}
 
-dn: GlueSALocalID=$VOVALUE,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSAStateAvailableSpace: $FREESIZE
-GlueSAStateUsedSpace: $USEDSIZE
+  return 0
 
+}
 
-dn: GlueSALocalID=$VOVALUE:$RET_POLICY_ACCESS_LATENCY,GlueSEUniqueID=$STORM_ENDPOINT,mds-vo-name=resource,o=grid
-GlueSAStateAvailableSpace: $FREESIZE
-GlueSAStateUsedSpace: $USEDSIZE
-GlueSATotalOnlineSize: $TOTALSIZE
-GlueSAUsedOnlineSize: $USEDSIZE
-GlueSAFreeOnlineSize: $FREESIZE
-GlueSAReservedOnlineSize: $TOTALSIZE
-GlueSATotalNearlineSize: 0
-GlueSAUsedNearlineSize: 0
-GlueSAFreeNearlineSize: 0
-GlueSAReservedNearlineSize: 0
+#
+# Total kB
+#
+function get_total_size_kb () {
 
-EOF
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      if [ -z ${total} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
+      fi
+      # convert in kB (base 10)
+      total=$((${total}*1024/1000))
+    else
+      # Missing fileset or device or both
+      total=-1
+    fi
+  # Quota off
+  else
+    # Get values from the storm_be_ISAM database
+    total=`echo "SELECT total_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${total}" ]; then
+      # convert in kB (base 10)
+      total=$((${total}/1000))
+    else
+      # Missing sizes
+      total=-1
+    fi
+  fi
+
+  export $2=${total}
+
+  return 0
+
+}
+
+#
+# Total GB
+#
+function get_total_size_gb () {
+
+  # Quota on
+  if ! [ `echo $@ | wc -w` = 2 ] && [ "$3" == "true" ]; then
+    gpfs_quota_cmd="/usr/lpp/mmfs/bin/mmlsquota"
+    if ! [ -z "$4" ] && ! [ -z "$5" ]; then
+      total=`${gpfs_quota_cmd} -j $4 $5 | awk 'NR==3 {printf $4}' | sed 's/\..*//'`
+      if [ -z ${total} ]; then
+        echo "ERROR: ${gpfs_quota_cmd} return no value; check GPFS partition." 
+        exit 1
+      fi
+      # convert in GB (base 10)
+      total=$((${total}*1024/(1000*1000*1000)))
+    else
+      # Missing fileset or device or both
+      total=-1
+    fi
+  # Quota off
+  else
+    # Get values from the storm_be_ISAM database
+    total=`echo "SELECT total_size FROM storage_space WHERE space_file='$1' ;" | mysql --user=${STORM_USER} --password=${STORM_DB_PWD} -N storm_be_ISAM`   # in B
+    if [ ! -z "${total}" ]; then
+      # convert in GB (base 10)
+      total=$((${total}/(1000*1000*1000)))
+    else
+      # Missing sizes
+      total=-1
+    fi
+  fi
+
+  export $2=${total}
 
   return 0
 
@@ -140,55 +246,194 @@ EOF
 ### Main section
 ###
 
-# Source configuration file
-if [ $# = 1 ]; then
-  source $1
-else
-  exit 1
-fi
+  # Source configuration file
+  if [ $# = 1 ]; then
+    source $1
+  else
+    exit 1
+  fi
 
-TMPFILE=`mktemp`
+  # Source utils file
+  UTIL=/opt/glite/yaim/functions/utils/manage_conf
+  if [ -e ${UTIL} ]; then
+    source ${UTIL}
+  else
+    exit 1
+  fi
 
-# Create the basic SE Entires
-create_ldif_SEEntries
+  FILE=`mktemp`
 
-for SA in $STORM_STORAGEAREA_LIST; do
+  # Prepare need variables
+  for SA in ${STORM_STORAGEAREA_LIST}; do
 
-  # Convert case
-  SA=`echo $SA | tr '[:lower:]' '[:upper:]'`
-  SAVO=`echo $SA | tr '[:upper:]' '[:lower:]'`
+    # Convert case
+    SA_UPP=`echo ${SA} | tr '[:lower:]' '[:upper:]'`
+    SA_LOW=`echo ${SA} | tr '[:upper:]' '[:lower:]'`
 
-  x=STORM_${SA}_ACCESSPOINT
-  APVALUE=${!x:-/$SAVO}
+    # Remove DNS-like characters from SA_UPP names
+    SA_UPP=`echo ${SA_UPP} | sed -e 's/-//g' -e 's/\.//g'`
 
-  x=STORM_${SA}_ROOT
-  ROOTVALUE=${!x:-${STORM_DEFAULT_ROOT}/${SAVO}}
+    x=STORM_${SA_UPP}_ROOT;            SA_ROOT=${!x:-${STORM_DEFAULT_ROOT}/${SA_LOW}}
+    x=STORM_${SA_UPP}_QUOTA;           SA_QUOTA=${!x}
+    x=STORM_${SA_UPP}_QUOTA_FILESET;   SA_FILESET=${!x}
+    x=STORM_${SA_UPP}_QUOTA_DEVICE;    SA_DEVICE=${!x}
+    x=STORM_${SA_UPP}_VONAME;          SA_VONAME=${!x:-${SA_LOW}}
 
-  x=STORM_${SA}_TOKEN
-  TOKENVALUE=${!x:-${SA}_TOKEN}
+    # Get size values on SA_ROOT (in GB)
+    get_used_size_gb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_USED_SIZE_GB  ${SA_UPP} ${PARAMETER}
+    get_free_size_gb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_FREE_SIZE_GB  ${SA_UPP} ${PARAMETER}
+    get_total_size_gb ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_TOTAL_SIZE_GB ${SA_UPP} ${PARAMETER}
+    # Get size values on SA_ROOT (in KB)
+    get_used_size_kb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_USED_SIZE_KB  ${SA_UPP} ${PARAMETER}
+    get_free_size_kb  ${SA_ROOT} PARAMETER ${SA_QUOTA} ${SA_FILESET} ${SA_DEVICE}
+    hash_insert SA_FREE_SIZE_KB  ${SA_UPP} ${PARAMETER}
 
-  x=STORM_${SA}_VONAME
-  VOVALUE=${!x:-$SAVO}
+    # Prepare per-VO and global values
+    PERVO_VONAME_INDEX=`echo ${SA_VONAME} | sed 's/\.//g'`
+    # Add VONAME if missing
+    if ! [[ "${PERVO_VONAMES}" =~ "${SA_VONAME}" ]]; then
+      PERVO_VONAMES="${PERVO_VONAMES} ${SA_VONAME}"
+    fi
+    # Sum size values for VONAME and global(in GB)
+    x=`hash_find PERVO_USED_SIZE_GB ${PERVO_VONAME_INDEX}`
+    y=`hash_find SA_USED_SIZE_GB ${SA_UPP}`
+    hash_insert PERVO_USED_SIZE_GB ${PERVO_VONAME_INDEX} $((x+y))
+    let GLOBAL_USED_SIZE_GB+=$y
 
-  x=STORM_${SA}_QUOTA
-  QUOTA=${!x}
+    x=`hash_find PERVO_FREE_SIZE_GB ${PERVO_VONAME_INDEX}`
+    y=`hash_find SA_FREE_SIZE_GB ${SA_UPP}`
+    hash_insert PERVO_FREE_SIZE_GB ${PERVO_VONAME_INDEX} $((x+y))
+    let GLOBAL_FREE_SIZE_GB+=$y
 
-  x=STORM_${SA}_FILESET
-  FILESET=${!x}
+    x=`hash_find PERVO_TOTAL_SIZE_GB ${PERVO_VONAME_INDEX}`
+    y=`hash_find  SA_TOTAL_SIZE_GB ${SA_UPP}`
+    hash_insert PERVO_TOTAL_SIZE_GB ${PERVO_VONAME_INDEX} $((x+y))
+    let GLOBAL_TOTAL_SIZE_GB+=$y
 
-  x=STORM_${SA}_DEVICE
-  DEVICE=${!x}
+    # Sum size values for VONAME (in KB)
+    x=`hash_find PERVO_USED_SIZE_KB ${PERVO_VONAME_INDEX}`
+    y=`hash_find SA_USED_SIZE_KB ${SA_UPP}`
+    hash_insert PERVO_USED_SIZE_KB ${PERVO_VONAME_INDEX} $((x+y))
+    let GLOBAL_USED_SIZE_KB+=$y
 
-  x=STORM_${SA}_STORAGECLASS
-  STORAGECLASS=${!x}
+    x=`hash_find PERVO_FREE_SIZE_KB ${PERVO_VONAME_INDEX}`
+    y=`hash_find SA_FREE_SIZE_KB ${SA_UPP}`
+    hash_insert  PERVO_FREE_SIZE_KB ${PERVO_VONAME_INDEX} $((x+y))
+    let GLOBAL_FREE_SIZE_KB+=$y
 
-  # Create LDIF SA Entries
-  create_dynamic_ldif_SAEntries
+  done
 
-done
+  #==========================================================
+  # Create GlueSE entries
 
-# Print built file
-cat $TMPFILE
-rm -f $TMPFILE
+  cat >> ${FILE} << EOF
+#
+# GlueSE
+#
 
-exit 0
+dn: GlueSEUniqueID=${STORM_FRONTEND_PUBLIC_HOST},mds-vo-name=resource,o=grid
+GlueSESizeTotal: ${GLOBAL_TOTAL_SIZE_GB}
+GlueSESizeFree: ${GLOBAL_FREE_SIZE_GB}
+GlueSETotalOnlineSize: ${GLOBAL_TOTAL_SIZE_GB}
+GlueSEUsedOnlineSize: ${GLOBAL_USED_SIZE_GB}
+
+EOF
+  #==========================================================
+
+  #==========================================================
+  # Create GlueSA entries
+
+  for SA in ${STORM_STORAGEAREA_LIST}; do
+
+    # Convert case
+    SA_UPP=`echo ${SA} | tr '[:lower:]' '[:upper:]'`
+    SA_LOW=`echo ${SA} | tr '[:upper:]' '[:lower:]'`
+
+    # Remove DNS-like characters from SA_UPP names
+    SA_UPP=`echo ${SA_UPP} | sed -e 's/-//g' -e 's/\.//g'`
+
+    x=STORM_${SA_UPP}_VONAME;          SA_VONAME=${!x:-${SA_LOW}}
+    x=STORM_${SA_UPP}_STORAGECLASS;    SA_STORAGECLASS=${!x:-${STORM_STORAGECLASS}}
+    # Convert in uppercase
+    SA_STORAGECLASS=`echo ${SA_STORAGECLASS} | tr '[:lower:]' '[:upper:]'`
+
+    # Check the STORAGECLASS
+    SA_RETENTION_POLICY="replica"                                         # default
+    SA_ACCESS_LATENCY="online"                                            # default
+    SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`   # default
+    SA_INSTALLED_NEARLINE_CAPACITY=0                                      # default
+    if ! [ -z "${SA_STORAGECLASS}" ]; then
+      case ${SA_STORAGECLASS} in
+        "T1D0")
+          SA_RETENTION_POLICY="custodial"
+          SA_ACCESS_LATENCY="nearline"
+          SA_INSTALLED_ONLINE_CAPACITY=0
+          SA_INSTALLED_NEARLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          ;;
+        "T1D1")
+          SA_RETENTION_POLICY="custodial"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+        "T0D1")
+          SA_RETENTION_POLICY="replica"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+        *)
+          SA_RETENTION_POLICY="replica"
+          SA_ACCESS_LATENCY="online"
+          SA_INSTALLED_ONLINE_CAPACITY=`hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+          SA_INSTALLED_NEARLINE_CAPACITY=0
+          ;;
+      esac
+    fi
+
+    cat >> ${FILE} << EOF
+#
+# GlueSALocalID ${SA_LOW}:${SA_RETENTION_POLICY}:${SA_ACCESS_LATENCY} SA (${SA_VONAME} VO)
+#
+dn: GlueSALocalID=${SA_LOW}:${SA_RETENTION_POLICY}:${SA_ACCESS_LATENCY},GlueSEUniqueID=${STORM_FRONTEND_PUBLIC_HOST},mds-vo-name=resource,o=grid
+GlueSATotalOnlineSize: `hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+GlueSAUsedOnlineSize: `hash_find SA_USED_SIZE_GB ${SA_UPP}`
+GlueSAFreeOnlineSize: `hash_find SA_FREE_SIZE_GB ${SA_UPP}`
+GlueSAReservedOnlineSize: `hash_find SA_TOTAL_SIZE_GB ${SA_UPP}`
+GlueSACapability: InstalledOnlineCapacity=${SA_INSTALLED_ONLINE_CAPACITY}
+GlueSACapability: InstalledNearlineCapacity=${SA_INSTALLED_NEARLINE_CAPACITY}
+GlueSAStateAvailableSpace: `hash_find SA_FREE_SIZE_KB ${SA_UPP}`
+GlueSAStateUsedSpace: `hash_find SA_USED_SIZE_KB ${SA_UPP}`
+
+EOF
+
+  done
+
+  for PERVO_VONAME in ${PERVO_VONAMES}; do
+    PERVO_VONAME_INDEX=`echo ${PERVO_VONAME} | sed 's/\.//g'`
+    cat >> ${FILE} << EOF
+#
+# GlueSALocalID ${PERVO_VONAME}
+#
+dn: GlueSALocalID=${PERVO_VONAME},GlueSEUniqueID=${STORM_FRONTEND_PUBLIC_HOST},mds-vo-name=resource,o=grid
+GlueSATotalOnlineSize: `hash_find PERVO_TOTAL_SIZE_GB ${PERVO_VONAME_INDEX}`
+GlueSAUsedOnlineSize: `hash_find PERVO_USED_SIZE_GB ${PERVO_VONAME_INDEX}`
+GlueSAFreeOnlineSize: `hash_find PERVO_FREE_SIZE_GB ${PERVO_VONAME_INDEX}`
+GlueSAStateAvailableSpace: `hash_find PERVO_FREE_SIZE_KB ${PERVO_VONAME_INDEX}`
+GlueSAStateUsedSpace: `hash_find PERVO_USED_SIZE_KB ${PERVO_VONAME_INDEX}`
+
+EOF
+
+  done
+  #==========================================================
+
+  # Print built file
+  cat ${FILE}
+  rm -f ${FILE}
+
+  # Exit with success
+  exit 0

@@ -4,6 +4,7 @@ import it.grid.storm.namespace.NamespaceValidator;
 import it.grid.storm.namespace.config.NamespaceLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,11 +13,18 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  * <p>Title: </p>
@@ -30,8 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Riccardo Zappi
  * @version 1.0
  */
-public class XMLNamespaceLoader
-extends Observable implements NamespaceLoader {
+public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 
     private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
 
@@ -40,81 +47,79 @@ extends Observable implements NamespaceLoader {
     public int refresh; //refresh time in seconds before the configuration is
     //checked for a change in parameters!
     private XMLConfiguration config = null;
-    private int delay = 1000; // delay for 5 sec.
+    private final int delay = 1000; // delay for 5 sec.
     private long period = -1;
-    private Timer timer = new Timer();
+    private final Timer timer = new Timer();
     private XMLReloadingStrategy xmlStrategy;
     private String namespaceFN = null;
     private boolean verbose = false;
-    private String namespaceSchemaURL;
+    private final String namespaceSchemaURL;
 
     public boolean schemaValidity = false;
 
     public XMLNamespaceLoader() {
         //Build the namespaceFileName
-        this.namespaceFN = getNamespaceFileName();
+        namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : "+namespaceSchemaURL);
+        log.debug("Namespace XSD : " + namespaceSchemaURL);
         init(namespaceFN, refresh);
     }
 
     public XMLNamespaceLoader(int refresh) {
         if (refresh < 0) {
             this.refresh = 0;
-        }
-        else {
+        } else {
             this.refresh = refresh;
         }
-        this.namespaceFN = getNamespaceFileName();
+        namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : "+namespaceSchemaURL);
+        log.debug("Namespace XSD : " + namespaceSchemaURL);
         init(namespaceFN, refresh);
     }
 
     public XMLNamespaceLoader(String filename) {
         this.filename = filename;
-        this.namespaceFN = getNamespaceFileName();
+        namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : "+namespaceSchemaURL);
+        log.debug("Namespace XSD : " + namespaceSchemaURL);
         init(namespaceFN, refresh);
     }
 
     public XMLNamespaceLoader(String path, String filename) {
         this.path = path;
         this.filename = filename;
-        this.namespaceFN = getNamespaceFileName();
+        namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : "+namespaceSchemaURL);
+        log.debug("Namespace XSD : " + namespaceSchemaURL);
         init(namespaceFN, refresh);
     }
 
     public XMLNamespaceLoader(String path, String filename, int refresh, boolean verboseMode) {
         if (refresh < 0) {
             this.refresh = 0;
-        }
-        else {
+        } else {
             this.refresh = refresh;
         }
         this.path = path;
         this.filename = filename;
-        this.namespaceFN = getNamespaceFileName();
+        namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : "+namespaceSchemaURL);
-        this.verbose = verboseMode;
+        log.debug("Namespace XSD : " + namespaceSchemaURL);
+        verbose = verboseMode;
         init(namespaceFN, refresh);
     }
 
     public void setObserver(Observer obs) {
-        this.addObserver(obs);
+        addObserver(obs);
     }
 
     public void setNotifyManaged() {
-        this.xmlStrategy.notifingPerformed();
-        this.config.setReloadingStrategy(this.xmlStrategy);
+        xmlStrategy.notifingPerformed();
+        config.setReloadingStrategy(xmlStrategy);
     }
 
     public void setVerbosity(boolean verbosity) {
-        this.verbose = verbosity;
+        verbose = verbosity;
     }
 
     /**
@@ -126,9 +131,8 @@ extends Observable implements NamespaceLoader {
     }
 
     private void init(String namespaceFileName, int refresh) {
-        System.out.println("Reading Namespace configuration file " + namespaceFileName +
-                " and setting refresh rate to " + refresh +
-        " seconds.");
+        System.out.println("Reading Namespace configuration file " + namespaceFileName
+                + " and setting refresh rate to " + refresh + " seconds.");
 
         //create reloading strategy for refresh
         xmlStrategy = new XMLReloadingStrategy();
@@ -136,7 +140,7 @@ extends Observable implements NamespaceLoader {
         log.debug(" Refresh time is " + period + " millisec");
         xmlStrategy.setRefreshDelay(period); //Set to refresh sec the refreshing delay.
 
-        this.namespaceFN = namespaceFileName;
+        namespaceFN = namespaceFileName;
 
         //specify the properties file and set the reloading strategy for that file
         try {
@@ -152,20 +156,16 @@ extends Observable implements NamespaceLoader {
              */
             //config.setValidating(true);
 
-
             //Validation of Namespace.xml
             log.debug(" ... CHECK of VALIDITY of NAMESPACE Configuration ...");
 
-
             schemaValidity = XMLNamespaceLoader.checkValidity(namespaceSchemaURL, namespaceFileName);
-            if (! (schemaValidity)) {
+            if (!(schemaValidity)) {
                 log.error("NAMESPACE IS NOT VALID IN RESPECT OF NAMESPACE SCHEMA! ");
                 throw new ConfigurationException("XML is not valid!");
-            }
-            else {
+            } else {
                 log.debug("Namespace is valid in respect of NAMESPACE SCHEMA.");
             }
-
 
             // This will throw a ConfigurationException if the XML document does not
             // conform to its DTD.
@@ -182,22 +182,72 @@ extends Observable implements NamespaceLoader {
             config.load();
             log.debug("Namespace Configuration read!");
 
-        }
-        catch (ConfigurationException cex) {
+        } catch (ConfigurationException cex) {
             System.err.println("*****************************************************");
             System.err.println("   ATTENTION! Unable to load Namespace Configuration!");
             System.err.println("*****************************************************");
-            log.error(this.toString());
+            log.error(toString());
         }
 
     }
 
     private String getNamespaceFileName() {
-        return (path + File.separator + filename);
+    	String configurationDir = it.grid.storm.config.Configuration.getInstance().configurationDir();
+    	//Looking for namespace configuration file
+    	String namespaceFN = it.grid.storm.config.Configuration.getInstance().getNamespaceConfigFilename();
+    	//Build the filename
+    	String namespaceAbsFN = configurationDir + File.separatorChar + namespaceFN; 
+    	//Check the namespace conf file accessibility
+    	File nsFile = new File(namespaceAbsFN);
+    	if (nsFile.exists()) {
+    		log.debug("Found the namespace file : "+namespaceAbsFN);
+    	} else {
+    		log.error("Unable to find the namespace file :"+namespaceAbsFN);
+    	}
+        return namespaceAbsFN; 
     }
 
     private String getNamespaceSchemaFileName() {
-        return (path + File.separator + "namespace.xsd");
+        String schemaName = it.grid.storm.config.Configuration.getInstance().getNamespaceSchemaFilename();
+       
+        if (schemaName.equals("Schema UNKNOWN!")) {
+        	
+        	schemaName = "namespace.xsd";
+        	String namespaceFN = getNamespaceFileName();
+            File namespaceFile = new File(namespaceFN);
+            if (namespaceFile.exists()) {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                try {
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    Document doc = builder.parse(namespaceFN);
+                    Element rootElement = doc.getDocumentElement();
+                    String tagName = rootElement.getTagName();
+                    if (tagName.equals("namespace")) {
+                        if (rootElement.hasAttributes()) {
+                            String value = rootElement.getAttribute("xsi:noNamespaceSchemaLocation");
+                            if ((value != null) && (value.length() > 0)) {
+                            	schemaName = value;
+                                //log.debug("namespace schema is : " + schemaName);
+                            }
+                        } else {
+                            log.error(namespaceFN + " don't have a valid root element attributes");
+                        }
+                    } else {
+                        log.error(namespaceFN + "  don't have a valid root element.");
+                    }
+
+                } catch (ParserConfigurationException e) {
+                    log.error("Error while parsing " + namespaceFN + e.getMessage());
+                } catch (SAXException e) {
+                    log.error("Error while parsing " + namespaceFN  + e.getMessage());
+                } catch (IOException e) {
+                    log.error("Error while parsing " + namespaceFN  + e.getMessage());
+                }
+            }	
+        }
+        
+        return schemaName;
+        
     }
 
     public Configuration getConfiguration() {
@@ -223,16 +273,15 @@ extends Observable implements NamespaceLoader {
      * @author Riccardo Zappi
      * @version 1.0
      */
-    private class Peeper
-    extends TimerTask {
+    private class Peeper extends TimerTask {
 
         private XMLReloadingStrategy reloadingStrategy;
 
         private boolean signal;
-        private XMLNamespaceLoader observed;
+        private final XMLNamespaceLoader observed;
 
         public Peeper(XMLNamespaceLoader obs) {
-            this.observed = obs;
+            observed = obs;
         }
 
         @Override
@@ -264,18 +313,17 @@ extends Observable implements NamespaceLoader {
                     schemaValidity = false;
                     reloadingStrategy.notifingPerformed();
                     reloadingStrategy.reloadingPerformed();
-                }
-                else {
+                } else {
                     log.debug(" ... NAMESPACE Configuration is VALID in respect of Schema Grammar.");
                     log.debug(" ----> RELOADING  ");
 
                     schemaValidity = true;
 
-                    boolean forceReloading = it.grid.storm.config.Configuration.getInstance().getNamespaceAutomaticReloading();
+                    boolean forceReloading =
+                            it.grid.storm.config.Configuration.getInstance().getNamespaceAutomaticReloading();
                     if (forceReloading) {
                         config.reload();
-                    }
-                    else {
+                    } else {
                         log.debug(" ----> RELOAD of namespace don't be executed because NO AUTOMATIC RELOAD is configured.");
                     }
                     reloadingStrategy.reloadingPerformed();
@@ -283,7 +331,7 @@ extends Observable implements NamespaceLoader {
             }
 
             signal = reloadingStrategy.notifingRequired();
-            if ( (signal)) {
+            if ((signal)) {
                 observed.setChanged();
                 observed.notifyObservers(" MSG : Namespace is changed!");
                 reloadingStrategy.notifingPerformed();

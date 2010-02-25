@@ -66,6 +66,7 @@ public class TTURL {
             tp = TransferProtocol.getTransferProtocol(tpString);
         } catch (IllegalArgumentException e) {
             //do nothing - tp remains null and that is fine!
+            log.warn("TTURL: Transfer protocol by '"+tpString+"' is empty, but that's fine.");
         }
         if ((separator+3) > (s.length())) {
             throw new InvalidTTURLAttributesException(tp,null); //separator found at the end!

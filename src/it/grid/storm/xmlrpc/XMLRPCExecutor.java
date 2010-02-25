@@ -22,11 +22,9 @@ import org.slf4j.LoggerFactory;
  * 
  * @author lucamag
  * @date May 27, 2008
- * 
  */
 
 public class XMLRPCExecutor {
-
 
     private static ArrayList<BookKeeper> bookKeepers = HealthDirector.getHealthMonitor().getBookKeepers();
 
@@ -54,7 +52,7 @@ public class XMLRPCExecutor {
         // ******************
 
         log.debug("Call received : Structure size = " + inputParam.size());
-        log.debug("Call Type: "+type.toString());
+        log.debug("Call Type: " + type.toString());
         log.debug("toString: " + inputParam.toString());
 
         // InputData RmInputData uset for Rm method of DirectoryFunctionsManager
@@ -67,7 +65,7 @@ public class XMLRPCExecutor {
         // generic xmlrpc types
         Converter converter = ConveterFactory.getConverter(type);
 
-        assert(converter!=null): "CONVERTER_IS_NULL";
+        assert (converter != null) : "CONVERTER_IS_NULL";
 
         // Synchcall dispatcher da factory
 
@@ -87,7 +85,7 @@ public class XMLRPCExecutor {
 
         // ****** LOGs SYNCH OPERATION *********
         successResult = outputData.isSuccess();
-        //Compute of duration in NanoSeconds
+        // Compute of duration in NanoSeconds
         duration = System.nanoTime() - duration;
 
         logExecution(convertOperationType(type), dn, startTime, duration, successResult);
@@ -99,12 +97,12 @@ public class XMLRPCExecutor {
     /**
      * Method used to book the execution of SYNCH operation
      */
-    public void logExecution(it.grid.storm.health.OperationType opType, String dn, long startTime,
-            long duration, boolean successResult) {
+    public void logExecution(it.grid.storm.health.OperationType opType, String dn, long startTime, long duration,
+            boolean successResult) {
 
         LogEvent event = new LogEvent(opType, dn, startTime, duration, successResult);
-        if (!(bookKeepers.isEmpty())){
-            System.out.println("Found # "+bookKeepers.size()+"bookeepers.");
+        if (!(bookKeepers.isEmpty())) {
+            log.debug("Found # " + bookKeepers.size() + "bookeepers.");
             for (int i = 0; i < bookKeepers.size(); i++) {
                 bookKeepers.get(i).addLogEvent(event);
             }
@@ -112,40 +110,53 @@ public class XMLRPCExecutor {
     }
 
     /**
-     * TOREMOVE!
-     * this is a temporary code  since two different class of OperationTYpe are defined.
-     * This is to convert the two kind of operation type, from the onw used here, enum based, to the one
-     * requested by the hearthbeat.
-     * 
+     * TOREMOVE! this is a temporary code since two different class of OperationTYpe are defined. This is to convert the
+     * two kind of operation type, from the onw used here, enum based, to the one requested by the hearthbeat.
      */
     private it.grid.storm.health.OperationType convertOperationType(OperationType type) {
         switch (type) {
-        case PTG: return it.grid.storm.health.OperationType.PTG;
-        case PTP: return it.grid.storm.health.OperationType.PTP;
-        case COPY: return  it.grid.storm.health.OperationType.COPY;
-        case BOL: return it.grid.storm.health.OperationType.BOL;
-        case AF: return it.grid.storm.health.OperationType.AF;
-        case AR: return it.grid.storm.health.OperationType.AR;
-        case EFL: return it.grid.storm.health.OperationType.EFL;
-        case GSM: return it.grid.storm.health.OperationType.GSM;
-        case GST: return it.grid.storm.health.OperationType.GST;
-        case LS: return it.grid.storm.health.OperationType.LS;
-        case MKD: return it.grid.storm.health.OperationType.MKD;
-        case MV: return it.grid.storm.health.OperationType.MV;
-        case PNG: return it.grid.storm.health.OperationType.PNG;
-        case PD: return it.grid.storm.health.OperationType.PD;
-        case RF: return it.grid.storm.health.OperationType.RF;
-        case RESSP: return it.grid.storm.health.OperationType.RS;
-        case RELSP: return it.grid.storm.health.OperationType.RSP;
-        case RM: return it.grid.storm.health.OperationType.RM;
-        case RMD: return it.grid.storm.health.OperationType.RMD;
-        default:
-            return it.grid.storm.health.OperationType.UNDEF;
+            case PTG:
+                return it.grid.storm.health.OperationType.PTG;
+            case PTP:
+                return it.grid.storm.health.OperationType.PTP;
+            case COPY:
+                return it.grid.storm.health.OperationType.COPY;
+            case BOL:
+                return it.grid.storm.health.OperationType.BOL;
+            case AF:
+                return it.grid.storm.health.OperationType.AF;
+            case AR:
+                return it.grid.storm.health.OperationType.AR;
+            case EFL:
+                return it.grid.storm.health.OperationType.EFL;
+            case GSM:
+                return it.grid.storm.health.OperationType.GSM;
+            case GST:
+                return it.grid.storm.health.OperationType.GST;
+            case LS:
+                return it.grid.storm.health.OperationType.LS;
+            case MKD:
+                return it.grid.storm.health.OperationType.MKD;
+            case MV:
+                return it.grid.storm.health.OperationType.MV;
+            case PNG:
+                return it.grid.storm.health.OperationType.PNG;
+            case PD:
+                return it.grid.storm.health.OperationType.PD;
+            case RF:
+                return it.grid.storm.health.OperationType.RF;
+            case RESSP:
+                return it.grid.storm.health.OperationType.RS;
+            case RELSP:
+                return it.grid.storm.health.OperationType.RSP;
+            case RM:
+                return it.grid.storm.health.OperationType.RM;
+            case RMD:
+                return it.grid.storm.health.OperationType.RMD;
+            default:
+                return it.grid.storm.health.OperationType.UNDEF;
         }
 
-
     }
-
-
 
 }

@@ -63,25 +63,37 @@ public class GPFSQuotaCommand implements QuotaCommandInterface{
     }
 
     /**
-     *
      * @param command String[]
      * @return String
      */
     private String getOutput(String[] command) throws QuotaException {
         String result = null;
-        try {
-            Process child = Runtime.getRuntime().exec(command);
-            // Get the input stream and read from it
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(child.getInputStream()));
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+        Process child;
 
-            //process the Command Output (Input for StoRM ;) )
+        try {
+            child = Runtime.getRuntime().exec(command);
+            try {
+                child.waitFor();
+            } catch (InterruptedException e) {
+            }
+        } catch (IOException e) {
+            log.error("getQuota I/O Exception: " + e);
+            throw new QuotaException(e);
+        }
+
+        // Get the input stream and read from it
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(child.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+
+        try {
+
+            // process the Command Output (Input for StoRM ;) )
             String line;
             int row = 0;
             log.debug("Quota Command Output :");
-            while ( (line = stdInput.readLine()) != null) {
-                log.debug(row + ": "+line);
-                boolean lineOk = processOutput(row,line);
+            while ((line = stdInput.readLine()) != null) {
+                log.debug(row + ": " + line);
+                boolean lineOk = processOutput(row, line);
                 if (lineOk) {
                     result = line;
                     break;
@@ -89,18 +101,31 @@ public class GPFSQuotaCommand implements QuotaCommandInterface{
                 row++;
             }
 
-            //process the Errors
+            // process the Errors
             String errLine;
             while ((errLine = stdError.readLine()) != null) {
-                log.warn("Quota Command Output contains an ERROR message "+errLine);
+                log.warn("Quota Command Output contains an ERROR message " + errLine);
                 throw new QuotaException(errLine);
             }
 
-        }
-        catch (IOException ex) {
-            log.error("getQuota I/O Exception: "+ex);
+        } catch (IOException ex) {
+            
+            log.error("getQuota I/O Exception: " + ex);
             throw new QuotaException(ex);
+            
+        } finally {
+            
+            try {
+                stdInput.close();
+                stdError.close();
+            } catch (IOException e) {
+                log.warn("getQuota. Error occurred closing the Std-I/O " + e );
+            }
+            
+            child.destroy();
+            child = null;
         }
+        
         return result;
     }
 

@@ -21,50 +21,60 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * DAO class for RequestSummaryCatalog. This DAO is specifically designed to connect
- * to a MySQL DB.
- *
- * @author  EGRID ICTP
+ * DAO class for RequestSummaryCatalog. This DAO is specifically designed to connect to a MySQL DB.
+ * 
+ * @author EGRID ICTP
  * @version 3.0
- * @date    May 2005
+ * @date May 2005
  */
 public class RequestSummaryDAO {
 
     private static final Logger log = LoggerFactory.getLogger(RequestSummaryDAO.class);
 
-    private final String driver=Configuration.getInstance().getDBDriver();//String with the name of the class for the DB driver
-    private final String url=Configuration.getInstance().getDBURL(); //String referring to the URL of the DB
-    private final String password=Configuration.getInstance().getDBPassword(); //String with the password for the DB
-    private final String name=Configuration.getInstance().getDBUserName();     //String with the name for the DB
-    private int limit; //maximum number of requests that will be retrieved
-    private Connection con=null; //Connection to DB - WARNING!!! It is kept open all the time!
+    /** String with the name of the class for the DB driver */
+    private final String driver = Configuration.getInstance().getDBDriver();
+    /** String referring to the URL of the DB */
+    private final String url = Configuration.getInstance().getDBURL();
+    /** String with the password for the DB */
+    private final String password = Configuration.getInstance().getDBPassword();
+    /** String with the name for the DB */
+    private final String name = Configuration.getInstance().getDBUserName();
+    /** maximum number of requests that will be retrieved */
+    private int limit;
+    /** Connection to DB - WARNING!!! It is kept open all the time! */
+    private Connection con = null;
 
-    private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;//milliseconds that must pass before reconnecting to DB
-    private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;//initial delay in millseconds before starting timer
-    private Timer clock = null; //timer thread that will run a taask to alert when reconnecting is necessary!
-    private TimerTask clockTask = null; //timer task that will update the boolean signalling that a reconnection is neede!
-    private boolean reconnect = false; //boolean that tells whether reconnection is needed because of MySQL bug!
+    /** milliseconds that must pass before reconnecting to DB */
+    private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+    /** initial delay in milliseconds before starting timer */
+    private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+    /** timer thread that will run a task to alert when reconnecting is necessary! */
+    private Timer clock = null;
+    /** timer task that will update the boolean signaling that a reconnection is needed! */
+    private TimerTask clockTask = null;
+    /** boolean that tells whether reconnection is needed because of MySQL bug! */
+    private boolean reconnect = false;
 
-    private static final RequestSummaryDAO dao = new RequestSummaryDAO(); //DAO!
+    private static final RequestSummaryDAO dao = new RequestSummaryDAO();
 
     private RequestSummaryDAO() {
         int aux = Configuration.getInstance().getPickingMaxBatchSize();
-        if (aux>1) {
-            this.limit=aux;
+        if (aux > 1) {
+            limit = aux;
         } else {
-            this.limit=1;
+            limit = 1;
         }
         setUpConnection();
         clock = new Timer();
         clockTask = new TimerTask() {
+
             @Override
             public void run() {
                 reconnect = true;
             }
-        }; //clock task
-        clock.scheduleAtFixedRate(clockTask,delay,period);
+        }; // clock task
+        clock.scheduleAtFixedRate(clockTask, delay, period);
     }
 
     /**
@@ -74,53 +84,49 @@ public class RequestSummaryDAO {
         return dao;
     }
 
-
-
-
     /**
-     * Method that retrieves requests in the SRM_REQUEST_QUEUED status: retrieved
-     * requests are limited to the number specified by the Configuration method
-     * getPicker2MaxBatchSize.
-     *
-     * All retrieved requests get their global status transited to
-     * SRM_REQUEST_INPROGRESS.
-     *
-     * A Collection of RequestSummaryDataTO is returned: if none are found, an
+     * Method that retrieves requests in the SRM_REQUEST_QUEUED status: retrieved requests are limited to the number
+     * specified by the Configuration method getPicker2MaxBatchSize. All retrieved requests get their global status
+     * transited to SRM_REQUEST_INPROGRESS. A Collection of RequestSummaryDataTO is returned: if none are found, an
      * empty collection is returned.
      */
-    public Collection findNew(int freeSlot) {
+    public Collection<RequestSummaryDataTO> findNew(int freeSlot) {
         checkConnection();
         PreparedStatement stmt2 = null;
         Statement stmt = null;
         ResultSet rs = null;
-        List list = new ArrayList(); //ArrayList containing all retrieved RequestSummaryDataTO
+        List<RequestSummaryDataTO> list = new ArrayList<RequestSummaryDataTO>(); // ArrayList containing all retrieved
+        // RequestSummaryDataTO
         try {
-            //start transaction
+            // start transaction
             con.setAutoCommit(false);
 
             int howMuch = -1;
-            if (freeSlot > this.limit )  {
-                howMuch = this.limit;
-            }
-            else {
+            if (freeSlot > limit) {
+                howMuch = limit;
+            } else {
                 howMuch = freeSlot;
             }
-            log.debug("Retrieving "+howMuch+" new requests from request queue.");
-
-            //get id, request type, request token and client_DN of newly added requests, which must be in SRM_REQUEST_QUEUED state
+            // get id, request type, request token and client_DN of newly added
+            // requests, which must be in SRM_REQUEST_QUEUED state
             stmt = con.createStatement();
             logWarnings(con.getWarnings());
-            //String query = "SELECT ID, config_RequestTypeID, r_token, client_dn FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
-            String query = "SELECT ID, config_RequestTypeID, r_token, client_dn, proxy FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
-            log.debug("REQUEST SUMMARY DAO - findNew: executing "+query);
+            // String query =
+            // "SELECT ID, config_RequestTypeID, r_token, client_dn FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
+            String query = "SELECT ID, config_RequestTypeID, r_token, client_dn, proxy FROM request_queue WHERE status="
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
+                    + " LIMIT "
+                    + howMuch;
+            // log.debug("REQUEST SUMMARY DAO - findNew: executing "+query);
             rs = stmt.executeQuery(query);
             logWarnings(stmt.getWarnings());
-            List rowids = new ArrayList(); //arraylist with selected ids
-            RequestSummaryDataTO aux = null; //RequestSummaryDataTO made from retrieved row
-            long auxid; //primary key of retrieved row
-            String auxreqtype = null; //request type of retrieved row
-            String auxreqtok = null; //request token of retrieved row
-            String auxdn = null; //dn of retrieved row
+            List<Long> rowids = new ArrayList<Long>(); // arraylist with selected ids
+            RequestSummaryDataTO aux = null; // RequestSummaryDataTO made from
+            // retrieved row
+            long auxid; // primary key of retrieved row
+            // String auxreqtype = null; // request type of retrieved row
+            // String auxreqtok = null; // request token of retrieved row
+            // String auxdn = null; // dn of retrieved row
             while (rs.next()) {
                 auxid = rs.getLong("ID");
                 rowids.add(new Long(auxid));
@@ -131,14 +137,13 @@ public class RequestSummaryDAO {
                 aux.setClientDN(rs.getString("client_dn"));
 
                 /**
-                 * This code is only for the 1.3.18.
-                 * This is a workaround to get FQANs using the proxy field on request_queue.
-                 * The FE use the proxy field of request_queue to insert  a single FQAN string containing all
-                 * FQAN separeted by the "#" char.
-                 * The proxy is a BLOB, hence it has to be properly conveted in string.
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
                  */
                 java.sql.Blob blob = rs.getBlob("proxy");
-                if(blob != null) {
+                if (blob != null) {
                     byte[] bdata = blob.getBytes(1, (int) blob.length());
                     aux.setVomsAttributes(new String(bdata));
                 }
@@ -148,138 +153,130 @@ public class RequestSummaryDAO {
             close(rs);
             close(stmt);
 
-            //transit state from SRM_REQUEST_QUEUED to SRM_REQUEST_INPROGRESS
+            // transit state from SRM_REQUEST_QUEUED to SRM_REQUEST_INPROGRESS
             if (!list.isEmpty()) {
                 logWarnings(con.getWarnings());
                 String where = makeWhereString(rowids);
-                String update = "UPDATE request_queue SET status="+
-                StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
-                ", errstring=?" +
-                " WHERE ID IN "+
-                where;
+                String update = "UPDATE request_queue SET status="
+                        + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS)
+                        + ", errstring=?" + " WHERE ID IN " + where;
                 stmt2 = con.prepareStatement(update);
                 logWarnings(stmt2.getWarnings());
-                stmt2.setString(1,"Request handled!");
+                stmt2.setString(1, "Request handled!");
                 logWarnings(stmt2.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - findNew: executing "+stmt2);
+                log.trace("REQUEST SUMMARY DAO - findNew: executing " + stmt2);
                 stmt2.executeUpdate();
                 close(stmt2);
             }
 
-            //commit and finish transaction
+            // commit and finish transaction
             con.commit();
             logWarnings(con.getWarnings());
             con.setAutoCommit(true);
             logWarnings(con.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - findNew: Unable to complete picking... rolling back! "+e);
+            log.error("REQUEST SUMMARY DAO - findNew: Unable to complete picking... rolling back! " + e);
             rollback(con);
         } finally {
             close(rs);
             close(stmt);
             close(stmt2);
         }
-        //return collection of requests
-        if (!list.isEmpty()){
+        // return collection of requests
+        if (!list.isEmpty()) {
             log.debug("REQUEST SUMMARY DAO - findNew: returning " + list);
         } else {
-            log.debug("REQUEST SUMMARY DAO - findNew: returning EMPTY LIST");
+            // log.debug("REQUEST SUMMARY DAO - findNew: returning EMPTY LIST");
         }
         return list;
     }
 
-
     /**
-     * Method used to signal in the DB that a request failed: the status of the
-     * request identified by the primary key index is transited to SRM_FAILURE,
-     * with the supplied explanation String. The supplied index is the primary
-     * key of the global request.
-     *
-     * In case of any error, nothing gets done and no exception is thrown, but
-     * proper error messagges get logged.
+     * Method used to signal in the DB that a request failed: the status of the request identified by the primary key
+     * index is transited to SRM_FAILURE, with the supplied explanation String. The supplied index is the primary key of
+     * the global request. In case of any error, nothing gets done and no exception is thrown, but proper error
+     * messagges get logged.
      */
     public void failRequest(long index, String explanation) {
         checkConnection();
-        String signalSQL = "UPDATE request_queue r "+
-        "SET r.status="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", r.errstring=? "+
-        "WHERE r.ID=?";
+        String signalSQL = "UPDATE request_queue r " + "SET r.status="
+                + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) + ", r.errstring=? "
+                + "WHERE r.ID=?";
         PreparedStatement signal = null;
         try {
             signal = con.prepareStatement(signalSQL);
             logWarnings(con.getWarnings());
-            signal.setString(1,explanation); //Prepared statement spares DB-specific String notation!
+            signal.setString(1, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(signal.getWarnings());
-            signal.setLong(2,index);
+            signal.setLong(2, index);
             logWarnings(signal.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failRequest executing: "+signal);
+            log.trace("REQUEST SUMMARY DAO! failRequest executing: " + signal);
             signal.executeUpdate();
             logWarnings(signal.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Unable to transit request identified by ID "+index+" to SRM_FAILURE! Exception: "+e.toString());
+            log.error("REQUEST SUMMARY DAO! Unable to transit request identified by ID " + index
+                    + " to SRM_FAILURE! Exception: " + e.toString());
         } finally {
             close(signal);
         }
     }
 
     /**
-     * Method used to signal in the DB that a PtGRequest failed. The global status
-     * transits to SRM_FAILURE, as well as that of each chunk associated to the
-     * request. The supplied explanation string is used both for the global status
-     * as well as for each individual chunk. The supplied index is the primary key
-     * of the global request.
-     *
-     * In case of any error, nothing gets done and no exception is thrown, but
-     * proper error messagges get logged.
+     * Method used to signal in the DB that a PtGRequest failed. The global status transits to SRM_FAILURE, as well as
+     * that of each chunk associated to the request. The supplied explanation string is used both for the global status
+     * as well as for each individual chunk. The supplied index is the primary key of the global request. In case of any
+     * error, nothing gets done and no exception is thrown, but proper error messagges get logged.
      */
     public void failPtGRequest(long index, String explanation) {
         checkConnection();
-        String requestSQL = "UPDATE request_queue r "+
-        "SET r.status=?, r.errstring=? "+
-        "WHERE r.ID=?";
-        String chunkSQL = "UPDATE "+
-        "status_Get s JOIN (request_queue r, request_Get g) ON s.request_GetID=g.ID AND g.request_queueID=r.ID "+
-        "SET s.statusCode=?, s.explanation=? "+
-        "WHERE r.ID=?";
+        String requestSQL = "UPDATE request_queue r " + "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
+        String chunkSQL = "UPDATE "
+                + "status_Get s JOIN (request_queue r, request_Get g) ON s.request_GetID=g.ID AND g.request_queueID=r.ID "
+                + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
         try {
-            //start transaction
+            // start transaction
             con.setAutoCommit(false);
 
-            //update global status
+            // update global status
             request = con.prepareStatement(requestSQL);
             logWarnings(con.getWarnings());
-            request.setInt(1,failCode);
+            request.setInt(1, failCode);
             logWarnings(request.getWarnings());
-            request.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            request.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
-            request.setLong(3,index);
+            request.setLong(3, index);
             logWarnings(request.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failPtGRequest executing: "+request);
+            log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: " + request);
             request.executeUpdate();
             logWarnings(request.getWarnings());
 
-            //update each chunk status
+            // update each chunk status
             chunk = con.prepareStatement(chunkSQL);
             logWarnings(con.getWarnings());
-            chunk.setInt(1,failCode);
+            chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
-            chunk.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            chunk.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
-            chunk.setLong(3,index);
+            chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failPtGRequest executing: "+chunk);
+            log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: " + chunk);
             chunk.executeUpdate();
             logWarnings(chunk.getWarnings());
 
-            //commit and finish transaction
+            // commit and finish transaction
             con.commit();
             logWarnings(con.getWarnings());
             con.setAutoCommit(true);
             logWarnings(con.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Unable to transit PtG request identified by ID "+index+" to SRM_FAILURE! Exception: "+e.toString()+"\nRolling back...");
+            log.error("REQUEST SUMMARY DAO! Unable to transit PtG request identified by ID " + index
+                    + " to SRM_FAILURE! Exception: " + e.toString() + "\nRolling back...");
             rollback(con);
         } finally {
             close(request);
@@ -288,64 +285,60 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to signal in the DB that a PtPRequest failed. The global status
-     * transits to SRM_FAILURE, as well as that of each chunk associated to the
-     * request. The supplied explanation string is used both for the global status
-     * as well as for each individual chunk. The supplied index is the primary key
-     * of the global request.
-     *
-     * In case of any error, nothing gets done and no exception is thrown, but
-     * proper error messagges get logged.
+     * Method used to signal in the DB that a PtPRequest failed. The global status transits to SRM_FAILURE, as well as
+     * that of each chunk associated to the request. The supplied explanation string is used both for the global status
+     * as well as for each individual chunk. The supplied index is the primary key of the global request. In case of any
+     * error, nothing gets done and no exception is thrown, but proper error messagges get logged.
      */
     public void failPtPRequest(long index, String explanation) {
         checkConnection();
-        String requestSQL = "UPDATE request_queue r "+
-        "SET r.status=?, r.errstring=? "+
-        "WHERE r.ID=?";
-        String chunkSQL = "UPDATE "+
-        "status_Put s JOIN (request_queue r, request_Put p) ON s.request_PutID=p.ID AND p.request_queueID=r.ID "+
-        "SET s.statusCode=?, s.explanation=? "+
-        "WHERE r.ID=?";
+        String requestSQL = "UPDATE request_queue r " + "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
+        String chunkSQL = "UPDATE "
+                + "status_Put s JOIN (request_queue r, request_Put p) ON s.request_PutID=p.ID AND p.request_queueID=r.ID "
+                + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
         try {
-            //start transaction
+            // start transaction
             con.setAutoCommit(false);
 
-            //update global status
+            // update global status
             request = con.prepareStatement(requestSQL);
             logWarnings(con.getWarnings());
-            request.setInt(1,failCode);
+            request.setInt(1, failCode);
             logWarnings(request.getWarnings());
-            request.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            request.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
-            request.setLong(3,index);
+            request.setLong(3, index);
             logWarnings(request.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failPtPRequest executing: "+request);
+            log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: " + request);
             request.executeUpdate();
             logWarnings(request.getWarnings());
 
-            //update each chunk status
+            // update each chunk status
             chunk = con.prepareStatement(chunkSQL);
             logWarnings(con.getWarnings());
-            chunk.setInt(1,failCode);
+            chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
-            chunk.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            chunk.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
-            chunk.setLong(3,index);
+            chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failPtPRequest executing: "+chunk);
+            log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: " + chunk);
             chunk.executeUpdate();
             logWarnings(chunk.getWarnings());
 
-            //commit and finish transaction
+            // commit and finish transaction
             con.commit();
             logWarnings(con.getWarnings());
             con.setAutoCommit(true);
             logWarnings(con.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Unable to transit PtP request identified by ID "+index+" to SRM_FAILURE! Exception: "+e.toString()+"\nRolling back...");
+            log.error("REQUEST SUMMARY DAO! Unable to transit PtP request identified by ID " + index
+                    + " to SRM_FAILURE! Exception: " + e.toString() + "\nRolling back...");
             rollback(con);
         } finally {
             close(request);
@@ -354,64 +347,60 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to signal in the DB that a CopyRequest failed. The global status
-     * transits to SRM_FAILURE, as well as that of each chunk associated to the
-     * request. The supplied explanation string is used both for the global status
-     * as well as for each individual chunk. The supplied index is the primary key
-     * of the global request.
-     *
-     * In case of any error, nothing gets done and no exception is thrown, but
-     * proper error messagges get logged.
+     * Method used to signal in the DB that a CopyRequest failed. The global status transits to SRM_FAILURE, as well as
+     * that of each chunk associated to the request. The supplied explanation string is used both for the global status
+     * as well as for each individual chunk. The supplied index is the primary key of the global request. In case of any
+     * error, nothing gets done and no exception is thrown, but proper error messagges get logged.
      */
     public void failCopyRequest(long index, String explanation) {
         checkConnection();
-        String requestSQL = "UPDATE request_queue r "+
-        "SET r.status=?, r.errstring=? "+
-        "WHERE r.ID=?";
-        String chunkSQL = "UPDATE "+
-        "status_Copy s JOIN (request_queue r, request_Copy c) ON s.request_CopyID=c.ID AND c.request_queueID=r.ID "+
-        "SET s.statusCode=?, s.explanation=? "+
-        "WHERE r.ID=?";
+        String requestSQL = "UPDATE request_queue r " + "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
+        String chunkSQL = "UPDATE "
+                + "status_Copy s JOIN (request_queue r, request_Copy c) ON s.request_CopyID=c.ID AND c.request_queueID=r.ID "
+                + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
         PreparedStatement request = null;
         PreparedStatement chunk = null;
         int failCode = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE);
         try {
-            //start transaction
+            // start transaction
             con.setAutoCommit(false);
 
-            //update global status
+            // update global status
             request = con.prepareStatement(requestSQL);
             logWarnings(con.getWarnings());
-            request.setInt(1,failCode);
+            request.setInt(1, failCode);
             logWarnings(request.getWarnings());
-            request.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            request.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(request.getWarnings());
-            request.setLong(3,index);
+            request.setLong(3, index);
             logWarnings(request.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failCopyRequest executing: "+request);
+            log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: " + request);
             request.executeUpdate();
             logWarnings(request.getWarnings());
 
-            //update each chunk status
+            // update each chunk status
             chunk = con.prepareStatement(chunkSQL);
             logWarnings(con.getWarnings());
-            chunk.setInt(1,failCode);
+            chunk.setInt(1, failCode);
             logWarnings(chunk.getWarnings());
-            chunk.setString(2,explanation); //Prepared statement spares DB-specific String notation!
+            chunk.setString(2, explanation); // Prepared statement spares
+            // DB-specific String notation!
             logWarnings(chunk.getWarnings());
-            chunk.setLong(3,index);
+            chunk.setLong(3, index);
             logWarnings(chunk.getWarnings());
-            log.debug("REQUEST SUMMARY DAO! failCopyRequest executing: "+chunk);
+            log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: " + chunk);
             chunk.executeUpdate();
             logWarnings(chunk.getWarnings());
 
-            //commit and finish transaction
+            // commit and finish transaction
             con.commit();
             logWarnings(con.getWarnings());
             con.setAutoCommit(true);
             logWarnings(con.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Unable to transit Copy request identified by ID "+index+" to SRM_FAILURE! Exception: "+e.toString()+"\nRolling back...");
+            log.error("REQUEST SUMMARY DAO! Unable to transit Copy request identified by ID " + index
+                    + " to SRM_FAILURE! Exception: " + e.toString() + "\nRolling back...");
             rollback(con);
         } finally {
             close(request);
@@ -420,11 +409,9 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to update the global status of the request identified by the
-     * RequestToken rt. It gets updated the supplied status, with the supplied
-     * explanation String.
-     *
-     * If the supplied request token does not exist, nothing happens.
+     * Method used to update the global status of the request identified by the RequestToken rt. It gets updated the
+     * supplied status, with the supplied explanation String. If the supplied request token does not exist, nothing
+     * happens.
      */
     public void updateGlobalStatus(String rt, int status, String explanation) {
         checkConnection();
@@ -432,29 +419,64 @@ public class RequestSummaryDAO {
         try {
             update = con.prepareStatement("UPDATE request_queue SET status=?, errstring=? WHERE r_token=?");
             logWarnings(con.getWarnings());
-            update.setInt(1,status);
+            update.setInt(1, status);
             logWarnings(update.getWarnings());
-            update.setString(2,explanation);
+            update.setString(2, explanation);
             logWarnings(update.getWarnings());
-            update.setString(3,rt);
+            update.setString(3, rt);
             logWarnings(update.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - updateGlobalStatus: executing "+update);
+            log.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
             update.executeUpdate();
             logWarnings(update.getWarnings());
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO: "+e);
+            log.error("REQUEST SUMMARY DAO: " + e);
         } finally {
             close(update);
         }
     }
 
     /**
-     * Method used to transit the status of a request that is in SRM_REQUEST_QUEUED
-     * state, to SRM_ABORTED. All files associated with the request will also get
-     * their status changed to SRM_ABORTED.
-     *
-     * If the supplied token is null, or not found, or not in the SRM_REQUEST_QUEUED
-     * state, then nothing happens.
+     * Method used to update the global status of the request identified by the RequestToken rt. It gets updated the
+     * supplied status, with the supplied explanation String and pin and file lifetimes are updated in order to start
+     * the countdown from now. If the supplied request token does not exist, nothing happens.
+     */
+    public void updateGlobalStatusPinFileLifetime(String rt, int status, String explanation) {
+
+        checkConnection();
+        PreparedStatement update = null;
+
+        String query = "UPDATE request_queue SET status=?, errstring=?, "
+                + "pinLifetime=pinLifetime+(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(timeStamp)) " + "WHERE r_token=?";
+
+        try {
+            update = con.prepareStatement(query);
+            logWarnings(con.getWarnings());
+
+            update.setInt(1, status);
+            logWarnings(update.getWarnings());
+
+            update.setString(2, explanation);
+            logWarnings(update.getWarnings());
+
+            update.setString(3, rt);
+            logWarnings(update.getWarnings());
+
+            log.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
+
+            update.executeUpdate();
+            logWarnings(update.getWarnings());
+
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO: " + e);
+        } finally {
+            close(update);
+        }
+    }
+
+    /**
+     * Method used to transit the status of a request that is in SRM_REQUEST_QUEUED state, to SRM_ABORTED. All files
+     * associated with the request will also get their status changed to SRM_ABORTED. If the supplied token is null, or
+     * not found, or not in the SRM_REQUEST_QUEUED state, then nothing happens.
      */
     public void abortRequest(String rt) {
         checkConnection();
@@ -464,46 +486,46 @@ public class RequestSummaryDAO {
         try {
             query = con.prepareStatement("SELECT ID,config_RequestTypeID FROM request_queue WHERE r_token=? AND status=?");
             logWarnings(con.getWarnings());
-            query.setString(1,rt);
+            query.setString(1, rt);
             logWarnings(query.getWarnings());
-            query.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
+            query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
             logWarnings(query.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - abortRequest - "+query);
+            log.trace("REQUEST SUMMARY DAO - abortRequest - " + query);
             rs = query.executeQuery();
             logWarnings(query.getWarnings());
             if (rs.next()) {
-                //token found...
-                //get ID
+                // token found...
+                // get ID
                 long id = rs.getLong("ID");
                 String type = rs.getString("config_RequestTypeID");
-                //update global request status
+                // update global request status
                 update = con.prepareStatement("UPDATE request_queue SET status=?, errstring=? WHERE ID=?");
                 logWarnings(con.getWarnings());
-                update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                 logWarnings(update.getWarnings());
-                update.setString(2,"User aborted request!");
+                update.setString(2, "User aborted request!");
                 logWarnings(update.getWarnings());
-                update.setLong(3,id);
+                update.setLong(3, id);
                 logWarnings(update.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - abortRequest - "+update);
+                log.trace("REQUEST SUMMARY DAO - abortRequest - " + update);
                 update.executeUpdate();
                 logWarnings(update.getWarnings());
                 close(update);
-                //update single chunk file statuses
+                // update single chunk file statuses
                 TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
                 String status_table = null;
                 String request_table = null;
                 String join_column = null;
-                if (rtyp!=TRequestType.EMPTY) {
-                    if (rtyp==TRequestType.PREPARE_TO_GET) {
+                if (rtyp != TRequestType.EMPTY) {
+                    if (rtyp == TRequestType.PREPARE_TO_GET) {
                         status_table = "status_Get";
                         request_table = "request_Get";
                         join_column = "request_GetID";
-                    } else if (rtyp==TRequestType.PREPARE_TO_PUT) {
+                    } else if (rtyp == TRequestType.PREPARE_TO_PUT) {
                         request_table = "request_Put";
                         status_table = "status_Put";
                         join_column = "request_PutID";
-                    } else if (rtyp==TRequestType.COPY) {
+                    } else if (rtyp == TRequestType.COPY) {
                         request_table = "request_Copy";
                         status_table = "status_Copy";
                         join_column = "request_CopyID";
@@ -512,19 +534,18 @@ public class RequestSummaryDAO {
                         status_table = "status_BoL";
                         join_column = "request_BoLID";
                     }
-                    String auxstr = "UPDATE "+
-                    status_table+" s JOIN (request_queue r, "+request_table+" t) ON (s."+join_column+"=t.ID AND t.request_queueID=r.ID) "+
-                    "SET s.statusCode=?, s.explanation=? "+
-                    "WHERE r.ID=?";
+                    String auxstr = "UPDATE " + status_table + " s JOIN (request_queue r, " + request_table
+                            + " t) ON (s." + join_column + "=t.ID AND t.request_queueID=r.ID) "
+                            + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
-                    update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                    update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                     logWarnings(update.getWarnings());
-                    update.setString(2,"User aborted request!");
+                    update.setString(2, "User aborted request!");
                     logWarnings(update.getWarnings());
-                    update.setLong(3,id);
+                    update.setLong(3, id);
                     logWarnings(update.getWarnings());
-                    log.debug("REQUEST SUMMARY DAO - abortRequest - "+update);
+                    log.trace("REQUEST SUMMARY DAO - abortRequest - " + update);
                     update.executeUpdate();
                     logWarnings(update.getWarnings());
                 } else {
@@ -532,7 +553,7 @@ public class RequestSummaryDAO {
                 }
             }
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - abortRequest: "+e);
+            log.error("REQUEST SUMMARY DAO - abortRequest: " + e);
         } finally {
             close(rs);
             close(query);
@@ -541,12 +562,9 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to transit the status of a request that is in SRM_REQUEST_INPROGRESS
-     * state, to SRM_ABORTED. All files associated with the request will also get
-     * their status changed to SRM_ABORTED.
-     *
-     * If the supplied token is null, or not found, or not in the SRM_REQUEST_INPROGRESS
-     * state, then nothing happens.
+     * Method used to transit the status of a request that is in SRM_REQUEST_INPROGRESS state, to SRM_ABORTED. All files
+     * associated with the request will also get their status changed to SRM_ABORTED. If the supplied token is null, or
+     * not found, or not in the SRM_REQUEST_INPROGRESS state, then nothing happens.
      */
     public void abortInProgressRequest(String rt) {
         checkConnection();
@@ -556,46 +574,46 @@ public class RequestSummaryDAO {
         try {
             query = con.prepareStatement("SELECT ID,config_RequestTypeID FROM request_queue WHERE r_token=? AND status=?");
             logWarnings(con.getWarnings());
-            query.setString(1,rt);
+            query.setString(1, rt);
             logWarnings(query.getWarnings());
-            query.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
+            query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
             logWarnings(query.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - abortInProgressRequest - "+query);
+            log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + query);
             rs = query.executeQuery();
             logWarnings(query.getWarnings());
             if (rs.next()) {
-                //token found...
-                //get ID
+                // token found...
+                // get ID
                 long id = rs.getLong("ID");
                 String type = rs.getString("config_RequestTypeID");
-                //update global request status
+                // update global request status
                 update = con.prepareStatement("UPDATE request_queue SET status=?, errstring=? WHERE ID=?");
                 logWarnings(con.getWarnings());
-                update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                 logWarnings(update.getWarnings());
-                update.setString(2,"User aborted request!");
+                update.setString(2, "User aborted request!");
                 logWarnings(update.getWarnings());
-                update.setLong(3,id);
+                update.setLong(3, id);
                 logWarnings(update.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - abortInProgressRequest - "+update);
+                log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + update);
                 update.executeUpdate();
                 logWarnings(update.getWarnings());
                 close(update);
-                //update single chunk file statuses
+                // update single chunk file statuses
                 TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
                 String status_table = null;
                 String request_table = null;
                 String join_column = null;
-                if (rtyp!=TRequestType.EMPTY) {
-                    if (rtyp==TRequestType.PREPARE_TO_GET) {
+                if (rtyp != TRequestType.EMPTY) {
+                    if (rtyp == TRequestType.PREPARE_TO_GET) {
                         request_table = "request_Get";
                         status_table = "status_Get";
                         join_column = "request_GetID";
-                    } else if (rtyp==TRequestType.PREPARE_TO_PUT) {
+                    } else if (rtyp == TRequestType.PREPARE_TO_PUT) {
                         request_table = "request_Put";
                         status_table = "status_Put";
                         join_column = "request_PutID";
-                    } else if (rtyp==TRequestType.COPY) {
+                    } else if (rtyp == TRequestType.COPY) {
                         request_table = "request_Copy";
                         status_table = "status_Copy";
                         join_column = "request_CopyID";
@@ -604,19 +622,18 @@ public class RequestSummaryDAO {
                         status_table = "status_BoL";
                         join_column = "request_BoLID";
                     }
-                    String auxstr = "UPDATE "+
-                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID )"+
-                    "SET s.statusCode=?, s.explanation=? "+
-                    "WHERE r.ID=?";
+                    String auxstr = "UPDATE " + status_table + " s JOIN (request_queue r, " + request_table
+                            + " t ON s." + join_column + "=t.ID AND t.request_queueID=r.ID )"
+                            + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
-                    update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                    update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                     logWarnings(update.getWarnings());
-                    update.setString(2,"User aborted request!");
+                    update.setString(2, "User aborted request!");
                     logWarnings(update.getWarnings());
-                    update.setLong(3,id);
+                    update.setLong(3, id);
                     logWarnings(update.getWarnings());
-                    log.debug("REQUEST SUMMARY DAO - abortInProgressRequest - "+update);
+                    log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + update);
                     update.executeUpdate();
                     logWarnings(update.getWarnings());
                 } else {
@@ -624,7 +641,7 @@ public class RequestSummaryDAO {
                 }
             }
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - abortInProgressRequest: "+e);
+            log.error("REQUEST SUMMARY DAO - abortInProgressRequest: " + e);
         } finally {
             close(rs);
             close(query);
@@ -633,13 +650,10 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to transit the status of chunks of a request that is in
-     * SRM_REQUEST_QUEUED state, to SRM_ABORTED.
-     *
-     * If the supplied token is null, or not found, or not in the SRM_REQUEST_QUEUED
-     * state, then nothing happens.
+     * Method used to transit the status of chunks of a request that is in SRM_REQUEST_QUEUED state, to SRM_ABORTED. If
+     * the supplied token is null, or not found, or not in the SRM_REQUEST_QUEUED state, then nothing happens.
      */
-    public void abortChunksOfRequest(String rt, Collection surls) {
+    public void abortChunksOfRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
         PreparedStatement query = null;
@@ -647,36 +661,36 @@ public class RequestSummaryDAO {
         try {
             query = con.prepareStatement("SELECT ID,config_RequestTypeID FROM request_queue WHERE r_token=? AND status=?");
             logWarnings(con.getWarnings());
-            query.setString(1,rt);
+            query.setString(1, rt);
             logWarnings(query.getWarnings());
-            query.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
+            query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
             logWarnings(query.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - abortChunksOfRequest - "+query);
+            log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - " + query);
             rs = query.executeQuery();
             logWarnings(query.getWarnings());
             if (rs.next()) {
-                //token found...
-                //get ID
+                // token found...
+                // get ID
                 long id = rs.getLong("ID");
                 String type = rs.getString("config_RequestTypeID");
-                //update single chunk file statuses
+                // update single chunk file statuses
                 TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
                 String status_table = null;
                 String request_table = null;
                 String join_column = null;
                 String surl_column = null;
-                if (rtyp!=TRequestType.EMPTY) {
-                    if (rtyp==TRequestType.PREPARE_TO_GET) {
+                if (rtyp != TRequestType.EMPTY) {
+                    if (rtyp == TRequestType.PREPARE_TO_GET) {
                         request_table = "request_Get";
                         status_table = "status_Get";
                         join_column = "request_GetID";
                         surl_column = "sourceSURL";
-                    } else if (rtyp==TRequestType.PREPARE_TO_PUT) {
+                    } else if (rtyp == TRequestType.PREPARE_TO_PUT) {
                         request_table = "request_Put";
                         status_table = "status_Put";
                         join_column = "request_PutID";
                         surl_column = "targetSURL";
-                    } else if (rtyp==TRequestType.COPY) {
+                    } else if (rtyp == TRequestType.COPY) {
                         request_table = "request_Copy";
                         status_table = "status_Copy";
                         join_column = "request_CopyID";
@@ -687,19 +701,19 @@ public class RequestSummaryDAO {
                         join_column = "request_BoLID";
                         surl_column = "sourceSURL";
                     }
-                    String auxstr = "UPDATE "+
-                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
-                    "SET s.statusCode=?, s.explanation=? "+
-                    "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
+                    String auxstr = "UPDATE " + status_table + " s JOIN (request_queue r, " + request_table
+                            + " t ON s." + join_column + "=t.ID AND t.request_queueID=r.ID "
+                            + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=? AND " + surl_column
+                            + " IN " + makeInString(surls);
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
-                    update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                    update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                     logWarnings(update.getWarnings());
-                    update.setString(2,"User aborted request!");
+                    update.setString(2, "User aborted request!");
                     logWarnings(update.getWarnings());
-                    update.setLong(3,id);
+                    update.setLong(3, id);
                     logWarnings(update.getWarnings());
-                    log.debug("REQUEST SUMMARY DAO - abortChunksOfRequest - "+update);
+                    log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - " + update);
                     update.executeUpdate();
                     logWarnings(update.getWarnings());
                 } else {
@@ -707,7 +721,7 @@ public class RequestSummaryDAO {
                 }
             }
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: "+e);
+            log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: " + e);
         } finally {
             close(rs);
             close(query);
@@ -716,13 +730,10 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Method used to transit the status of chunks of a request that is in
-     * SRM_REQUEST_INPROGRESS state, to SRM_ABORTED.
-     *
-     * If the supplied token is null, or not found, or not in the SRM_REQUEST_INPROGRESS
-     * state, then nothing happens.
+     * Method used to transit the status of chunks of a request that is in SRM_REQUEST_INPROGRESS state, to SRM_ABORTED.
+     * If the supplied token is null, or not found, or not in the SRM_REQUEST_INPROGRESS state, then nothing happens.
      */
-    public void abortChunksOfInProgressRequest(String rt, Collection surls) {
+    public void abortChunksOfInProgressRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
         PreparedStatement query = null;
@@ -730,36 +741,36 @@ public class RequestSummaryDAO {
         try {
             query = con.prepareStatement("SELECT ID,config_RequestTypeID FROM request_queue WHERE r_token=? AND status=?");
             logWarnings(con.getWarnings());
-            query.setString(1,rt);
+            query.setString(1, rt);
             logWarnings(query.getWarnings());
-            query.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
+            query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
             logWarnings(query.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - "+query);
+            log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - " + query);
             rs = query.executeQuery();
             logWarnings(query.getWarnings());
             if (rs.next()) {
-                //token found...
-                //get ID
+                // token found...
+                // get ID
                 long id = rs.getLong("ID");
                 String type = rs.getString("config_RequestTypeID");
-                //update single chunk file statuses
+                // update single chunk file statuses
                 TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
                 String status_table = null;
                 String request_table = null;
                 String join_column = null;
                 String surl_column = null;
-                if (rtyp!=TRequestType.EMPTY) {
-                    if (rtyp==TRequestType.PREPARE_TO_GET) {
+                if (rtyp != TRequestType.EMPTY) {
+                    if (rtyp == TRequestType.PREPARE_TO_GET) {
                         request_table = "request_Get";
                         status_table = "status_Get";
                         join_column = "request_GetID";
                         surl_column = "sourceSURL";
-                    } else if (rtyp==TRequestType.PREPARE_TO_PUT) {
+                    } else if (rtyp == TRequestType.PREPARE_TO_PUT) {
                         request_table = "request_Put";
                         status_table = "status_Put";
                         join_column = "request_PutID";
                         surl_column = "targetSURL";
-                    } else if (rtyp==TRequestType.COPY) {
+                    } else if (rtyp == TRequestType.COPY) {
                         request_table = "request_Copy";
                         status_table = "status_Copy";
                         join_column = "request_CopyID";
@@ -770,19 +781,19 @@ public class RequestSummaryDAO {
                         join_column = "request_BoLID";
                         surl_column = "sourceSURL";
                     }
-                    String auxstr = "UPDATE "+
-                    status_table+" s JOIN (request_queue r, "+request_table+" t ON s."+join_column+"=t.ID AND t.request_queueID=r.ID "+
-                    "SET s.statusCode=?, s.explanation=? "+
-                    "WHERE r.ID=? AND "+surl_column+" IN "+makeInString(surls);
+                    String auxstr = "UPDATE " + status_table + " s JOIN (request_queue r, " + request_table
+                            + " t ON s." + join_column + "=t.ID AND t.request_queueID=r.ID "
+                            + "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=? AND " + surl_column
+                            + " IN " + makeInString(surls);
                     update = con.prepareStatement(auxstr);
                     logWarnings(con.getWarnings());
-                    update.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+                    update.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
                     logWarnings(update.getWarnings());
-                    update.setString(2,"User aborted request!");
+                    update.setString(2, "User aborted request!");
                     logWarnings(update.getWarnings());
-                    update.setLong(3,id);
+                    update.setLong(3, id);
                     logWarnings(update.getWarnings());
-                    log.debug("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - "+update);
+                    log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - " + update);
                     update.executeUpdate();
                     logWarnings(update.getWarnings());
                 } else {
@@ -790,7 +801,7 @@ public class RequestSummaryDAO {
                 }
             }
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: "+e);
+            log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: " + e);
         } finally {
             close(rs);
             close(query);
@@ -799,167 +810,11 @@ public class RequestSummaryDAO {
     }
 
     /**
-     * Private method that returns a String of all SURLS in the collection of
-     * String.
+     * Private method that returns a String of all SURLS in the collection of String.
      */
-    private String makeInString(Collection c) {
+    private String makeInString(Collection<String> c) {
         StringBuffer sb = new StringBuffer("(");
-        for (Iterator i = c.iterator(); i.hasNext(); ) {
-            sb.append((String)i.next());
-            if (i.hasNext()) {
-                sb.append(",");
-            }
-        }
-        sb.append(")");
-        return sb.toString();
-    }
-
-    /**
-     * Method that returns the config_RequestTypeID field present in request_queue
-     * table, for the request with the specified request token rt. In case of any
-     * error, the empty String "" is returned.
-     */
-    public String typeOf(String rt) {
-        checkConnection();
-        PreparedStatement query = null;
-        ResultSet rs = null;
-        String result = "";
-        try {
-            query = con.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
-            logWarnings(con.getWarnings());
-            query.setString(1,rt);
-            logWarnings(query.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - typeOf - "+query);
-            rs = query.executeQuery();
-            logWarnings(query.getWarnings());
-            if (rs.next()) {
-                result = rs.getString("config_RequestTypeID");
-            }
-        } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - typeOf - "+e);
-        } finally {
-            close(rs);
-            close(query);
-            return result;
-        }
-    }
-
-    /**
-     * Method that purges expired requests: it only removes up to a fixed value
-     * of expired requests at a time. The value is configured and obtained from
-     * the configuration property getPurgeBatchSize.
-     *
-     * A List of Strings with the request tokens removed is returned.
-     *
-     * In order to completely remove all expired requests, simply keep invoking
-     * this method until an empty List is returned. This batch processing is
-     * needed because there could be millions of expired requests which are
-     * likely to result in out-of-memory problems.
-     *
-     * Notice that in case of errors only error messages get logged. An empty
-     * List is also returned.
-     */
-    public List purgeExpiredRequests() {
-        checkConnection();
-        String stmt = "";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        List requestTokens = new ArrayList();
-        List ids = new ArrayList();
-        try {
-            //start transaction
-            con.setAutoCommit(false);
-
-            stmt =
-                "SELECT ID, r_token "+
-                "   FROM request_queue "+
-                "   WHERE "+
-                "      UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "+ Configuration.getInstance().getExpiredRequestTime() +
-                "      AND "+
-                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED) +
-                "      AND "+
-                "      status <> "+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) +
-                "   LIMIT "+ Configuration.getInstance().getPurgeBatchSize();
-            ps = con.prepareStatement(stmt);
-            logWarnings(con.getWarnings());
-            log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+ps);
-            rs = ps.executeQuery();
-            logWarnings(ps.getWarnings());
-            while (rs.next()) {
-                requestTokens.add( rs.getString("r_token") );
-                ids.add( new Long(rs.getLong("ID")) );
-            }
-            close(rs);
-            close(ps);
-            if (!ids.isEmpty()) {
-                //REMOVE BATCH OF EXPIRED REQUESTS!
-                stmt =
-                    "DELETE FROM request_queue "+
-                    "   WHERE ID in "+ makeWhereString(ids);
-                ps = con.prepareStatement(stmt);
-                logWarnings(con.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
-                int deleted = ps.executeUpdate();
-                logWarnings(ps.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" expired requests.");
-                close(ps);
-                //REMOVE ORPHANED DIR OPTION
-
-                //WARNING!! The subquery "WHERE ID NOT IN ..."  does not work for more than 1000 entries
-                //for a bug of MySQL, fixed in 5.1
-                //http://forums.mysql.com/read.php?121,143298,201486
-                //Change using left inner join
-
-                //stmt =
-                //        "DELETE FROM request_DirOption "+
-                //       "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
-                //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
-                //        "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
-
-
-                //QUERY : DELETE request_DirOption from request_DirOption left JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID  LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID where request_Copy.request_DirOptionID IS NULL AND request_Get.request_DirOptionID IS NULL AND request_BoL.request_DirOptionID IS NULL ;
-
-
-
-
-                stmt =  "DELETE request_DirOption FROM request_DirOption "+
-                " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID" +
-                " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID " +
-                " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID" +
-                " WHERE request_Copy.request_DirOptionID IS NULL AND" +
-                " request_Get.request_DirOptionID IS NULL AND" +
-                " request_BoL.request_DirOptionID IS NULL;";
-
-
-                ps = con.prepareStatement(stmt);
-                logWarnings(con.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - "+stmt);
-                deleted = ps.executeUpdate();
-                logWarnings(ps.getWarnings());
-                log.debug("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "+deleted+" DirOption related to expired requests.");
-                close(ps);
-            }
-            //commit and finish transaction
-            con.commit();
-            logWarnings(con.getWarnings());
-            con.setAutoCommit(true);
-            logWarnings(con.getWarnings());
-        } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: "+e);
-            rollback(con);
-        } finally {
-            close(rs);
-            close(ps);
-            return requestTokens;
-        }
-    }
-
-    /**
-     * Private method that returns a String of all IDs retrieved by the last SELECT.
-     */
-    private String makeWhereString(List rowids) {
-        StringBuffer sb = new StringBuffer("(");
-        for (Iterator i = rowids.iterator(); i.hasNext(); ) {
+        for (Iterator<String> i = c.iterator(); i.hasNext();) {
             sb.append(i.next());
             if (i.hasNext()) {
                 sb.append(",");
@@ -969,46 +824,252 @@ public class RequestSummaryDAO {
         return sb.toString();
     }
 
-
-
-
-
-
+    /**
+     * Method that returns the config_RequestTypeID field present in request_queue table, for the request with the
+     * specified request token rt. In case of any error, the empty String "" is returned.
+     */
+    public String typeOf(String rt) {
+        checkConnection();
+        PreparedStatement query = null;
+        ResultSet rs = null;
+        String result = "";
+        try {
+            query = con.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
+            logWarnings(con.getWarnings());
+            query.setString(1, rt);
+            logWarnings(query.getWarnings());
+            log.trace("REQUEST SUMMARY DAO - typeOf - " + query);
+            rs = query.executeQuery();
+            logWarnings(query.getWarnings());
+            if (rs.next()) {
+                result = rs.getString("config_RequestTypeID");
+            }
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO - typeOf - " + e);
+        } finally {
+            close(rs);
+            close(query);
+        }
+        return result;
+    }
 
     /**
-     * Auxiliary method that sets up the conenction to the DB, as well as the prepared
-     * statement.
+     * Method that purges expired requests: it only removes up to a fixed value of expired requests at a time. The value
+     * is configured and obtained from the configuration property getPurgeBatchSize. A List of Strings with the request
+     * tokens removed is returned. In order to completely remove all expired requests, simply keep invoking this method
+     * until an empty List is returned. This batch processing is needed because there could be millions of expired
+     * requests which are likely to result in out-of-memory problems. Notice that in case of errors only error messages
+     * get logged. An empty List is also returned.
+     */
+    public List<String> purgeExpiredRequests() {
+
+        checkConnection();
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<String> requestTokens = new ArrayList<String>();
+        List<Long> ids = new ArrayList<Long>();
+
+        try {
+            // start transaction
+            con.setAutoCommit(false);
+
+            String stmt = "SELECT ID, r_token FROM request_queue WHERE"
+                    + " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "
+                    + Configuration.getInstance().getExpiredRequestTime() + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
+                    + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) + " LIMIT "
+                    + Configuration.getInstance().getPurgeBatchSize();
+
+            ps = con.prepareStatement(stmt);
+            logWarnings(con.getWarnings());
+            log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + ps);
+
+            rs = ps.executeQuery();
+            logWarnings(ps.getWarnings());
+
+            while (rs.next()) {
+                requestTokens.add(rs.getString("r_token"));
+                ids.add(new Long(rs.getLong("ID")));
+            }
+
+            close(rs);
+            close(ps);
+
+            if (!ids.isEmpty()) {
+                // REMOVE BATCH OF EXPIRED REQUESTS!
+                stmt = "DELETE FROM request_queue WHERE ID in " + makeWhereString(ids);
+
+                ps = con.prepareStatement(stmt);
+                logWarnings(con.getWarnings());
+                log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
+
+                int deleted = ps.executeUpdate();
+                logWarnings(ps.getWarnings());
+                if (deleted > 0) {
+                    log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted " + deleted
+                            + " expired requests.");
+                } else {
+                    log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No deleted expired requests.");
+                }
+
+                close(ps);
+                // REMOVE ORPHANED DIR OPTION
+
+                // WARNING!! The subquery "WHERE ID NOT IN ..." does not work
+                // for more than 1000 entries
+                // for a bug of MySQL, fixed in 5.1
+                // http://forums.mysql.com/read.php?121,143298,201486
+                // Change using left inner join
+
+                // stmt =
+                // "DELETE FROM request_DirOption "+
+                // "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
+                // "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
+                // "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
+
+                // QUERY : DELETE request_DirOption from request_DirOption left
+                // JOIN request_Get ON request_DirOption.ID =
+                // request_Get.request_DirOptionID LEFT JOIN request_BoL ON
+                // request_DirOption.ID = request_BoL.request_DirOptionID LEFT
+                // JOIN request_Copy ON request_DirOption.ID =
+                // request_Copy.request_DirOptionID where
+                // request_Copy.request_DirOptionID IS NULL AND
+                // request_Get.request_DirOptionID IS NULL AND
+                // request_BoL.request_DirOptionID IS NULL ;
+
+                stmt = "DELETE request_DirOption FROM request_DirOption "
+                        + " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID"
+                        + " LEFT JOIN request_BoL ON request_DirOption.ID = request_BoL.request_DirOptionID "
+                        + " LEFT JOIN request_Copy ON request_DirOption.ID = request_Copy.request_DirOptionID"
+                        + " WHERE request_Copy.request_DirOptionID IS NULL AND"
+                        + " request_Get.request_DirOptionID IS NULL AND"
+                        + " request_BoL.request_DirOptionID IS NULL;";
+
+                ps = con.prepareStatement(stmt);
+                logWarnings(con.getWarnings());
+                log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
+                deleted = ps.executeUpdate();
+                logWarnings(ps.getWarnings());
+
+                if (deleted > 0) {
+                    log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted " + deleted
+                            + " DirOption related to expired requests.");
+                } else {
+                    log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No Deleted DirOption related to expired requests.");
+                }
+                close(ps);
+
+            }
+            // commit and finish transaction
+            con.commit();
+            logWarnings(con.getWarnings());
+            con.setAutoCommit(true);
+            logWarnings(con.getWarnings());
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: " + e);
+            rollback(con);
+        } finally {
+            close(rs);
+            close(ps);
+        }
+        return requestTokens;
+    }
+
+    
+    /**
+     * Retrieve the total number of expired requests.
+     * 
+     * @return
+     */
+    public int getNumberExpired() {
+    	
+    	int result = 0;
+    	
+        checkConnection();
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            // start transaction
+            con.setAutoCommit(false);
+
+            String stmt = "SELECT count(*) FROM request_queue WHERE"
+                    + " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "
+                    + Configuration.getInstance().getExpiredRequestTime() + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
+                    + " AND status <> "
+                    + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS) ;
+
+            ps = con.prepareStatement(stmt);
+            logWarnings(con.getWarnings());
+            log.trace("REQUEST SUMMARY DAO - Number of expired requests: " + ps);
+            rs = ps.executeQuery();
+            logWarnings(ps.getWarnings());
+            close(rs);
+            close(ps);
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: " + e);
+            rollback(con);
+        } finally {
+            close(rs);
+            close(ps);
+        }
+        
+        return result;
+        
+    }
+    
+    /**
+     * Private method that returns a String of all IDs retrieved by the last SELECT.
+     */
+    private String makeWhereString(List<Long> rowids) {
+        StringBuffer sb = new StringBuffer("(");
+        for (Iterator<Long> i = rowids.iterator(); i.hasNext();) {
+            sb.append(i.next());
+            if (i.hasNext()) {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
+     * Auxiliary method that sets up the connection to the DB, as well as the prepared statement.
      */
     private void setUpConnection() {
         try {
             Class.forName(driver);
-            con = DriverManager.getConnection(url,name,password);
-            if (con==null) {
+            con = DriverManager.getConnection(url, name, password);
+            if (con == null) {
                 log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
             } else {
                 logWarnings(con.getWarnings());
             }
         } catch (ClassNotFoundException e) {
-            log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! "+e);
+            log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! " + e);
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! "+e);
+            log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! " + e);
         }
     }
 
     /**
-     * Auxiliary method that tales down a conenctin to the DB.
+     * Auxiliary method that tales down a connection to the DB.
      */
     private void takeDownConnection() {
         try {
             con.close();
         } catch (SQLException e) {
-            log.error("REQUEST SUMMARY DAO! Exception in takeDownConnection method: "+e);
+            log.error("REQUEST SUMMARY DAO! Exception in takeDownConnection method: " + e);
         }
     }
 
     /**
-     * Auxiliary method that checks if time for resetting the connection has
-     * come, and eventually takes it down and up back again.
+     * Auxiliary method that checks if time for resetting the connection has come, and eventually takes it down and up
+     * back again.
      */
     private void checkConnection() {
         if (reconnect) {
@@ -1022,11 +1083,12 @@ public class RequestSummaryDAO {
      * Auxiliary method used to close a Statement
      */
     private void close(Statement stmt) {
-        if (stmt!=null) {
+        if (stmt != null) {
             try {
                 stmt.close();
             } catch (Exception e) {
-                log.error("REQUEST SUMMARY DAO! Unable to close Statement "+stmt.toString()+" - Exception: "+e);
+                log.error("REQUEST SUMMARY DAO! Unable to close Statement " + stmt.toString()
+                        + " - Exception: " + e);
             }
         }
     }
@@ -1035,11 +1097,11 @@ public class RequestSummaryDAO {
      * Auxiliary method used to close a ResultSet
      */
     private void close(ResultSet rset) {
-        if (rset!=null) {
+        if (rset != null) {
             try {
                 rset.close();
             } catch (Exception e) {
-                log.error("REQUEST SUMMARY DAO! Unable to close ResultSet! Exception: "+e);
+                log.error("REQUEST SUMMARY DAO! Unable to close ResultSet! Exception: " + e);
             }
         }
     }
@@ -1048,13 +1110,13 @@ public class RequestSummaryDAO {
      * Auxiliary method used to roll back a transaction
      */
     private void rollback(Connection con) {
-        if (con!=null) {
+        if (con != null) {
             try {
                 con.rollback();
                 logWarnings(con.getWarnings());
                 log.error("PICKER2: roll back successful!");
             } catch (SQLException e2) {
-                log.error("PICKER2: roll back failed! "+e2);
+                log.error("PICKER2: roll back failed! " + e2);
             }
         }
     }
@@ -1063,10 +1125,10 @@ public class RequestSummaryDAO {
      * Private auxiliary method used to log SQLWarnings.
      */
     private void logWarnings(SQLWarning warning) {
-        if (warning!=null) {
-            log.debug("REQUEST SUMMARY DAO: "+warning.toString());
-            while ((warning=warning.getNextWarning())!=null) {
-                log.debug("REQUEST SUMMARY DAO: "+warning.toString());
+        if (warning != null) {
+            log.debug("REQUEST SUMMARY DAO: " + warning.toString());
+            while ((warning = warning.getNextWarning()) != null) {
+                log.debug("REQUEST SUMMARY DAO: " + warning.toString());
             }
         }
     }

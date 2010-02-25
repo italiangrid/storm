@@ -86,11 +86,11 @@ public interface StoRI {
         InvalidDescendantsPathRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsFileRequestException, InvalidDescendantsEmptyRequestException;
 
-    public ArrayList getChildren(TDirOption dirOption) throws
+    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws
         InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
         InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
 
-    public ArrayList getFirstLevelChildren(TDirOption dirOption) throws
+    public ArrayList<StoRI> getFirstLevelChildren(TDirOption dirOption) throws
        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
 
@@ -104,7 +104,7 @@ public interface StoRI {
      * the root and excluding the StoRI itself. If no parents are present, an empty
      * List is returned instead.
      */
-    public List getParents();
+    public List<StoRI> getParents();
 
     public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException;
 

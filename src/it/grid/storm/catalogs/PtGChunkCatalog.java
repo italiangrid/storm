@@ -140,8 +140,7 @@ public class PtGChunkCatalog {
                 try {
                     status = new TReturnStatus(code,auxTO.errString());
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    //sb.append("\n");
-                    //sb.append(e);
+                    log.error("PtGChunk : Unable to build the Return Status Code.");
                 }
             }
             inputChunk.setStatus(status);
@@ -169,14 +168,21 @@ public class PtGChunkCatalog {
         //fromSURL
         TSURL fromSURL=null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
         //lifeTime
         TLifeTimeInSeconds lifeTime=null;
         try {
-            lifeTime = TLifeTimeInSeconds.make(PinLifetimeConverter.getInstance().toStoRM(auxTO.lifeTime()), TimeUnit.SECONDS);
+            long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(auxTO.lifeTime());
+            // Check for max value allowed
+            long max = Configuration.getInstance().getPinLifetimeMaximum();
+            if (pinLifeTime>max) {
+               log.warn("PinLifeTime is greater than the max value allowed. Drop the value to the max = "+max+" seconds"); 
+               pinLifeTime = max;
+            }
+            lifeTime = TLifeTimeInSeconds.make((pinLifeTime), TimeUnit.SECONDS);
         } catch (InvalidTLifeTimeAttributeException e) {
             sb.append("\n");
             sb.append(e);
@@ -237,34 +243,30 @@ public class PtGChunkCatalog {
 
 
     /**
-     * Method that returns a Collection of ReducedPtGChunkData Objects associated
-     * to the supplied TRequestToken.
-     *
-     * If any of the data retrieved for a given chunk is not well formed and so
-     * does not allow a ReducedPtGChunkData Object to be created, then that chunk
-     * is dropped and gets logged, while processing continues with the next one.
-     * All valid chunks get returned: the others get dropped.
-     *
-     * If there are no chunks associated to the given TRequestToken, then an
-     * empty Collection is returned and a messagge gets logged.
+     * Method that returns a Collection of ReducedPtGChunkData Objects associated to the supplied
+     * TRequestToken.
+     * 
+     * If any of the data retrieved for a given chunk is not well formed and so does not allow a
+     * ReducedPtGChunkData Object to be created, then that chunk is dropped and gets logged, while processing
+     * continues with the next one. All valid chunks get returned: the others get dropped.
+     * 
+     * If there are no chunks associated to the given TRequestToken, then an empty Collection is returned and
+     * a message gets logged.
      */
     synchronized public Collection lookupReducedPtGChunkData(TRequestToken rt) {
-        Collection cl = dao.findReduced(rt.getValue());
-        log.debug("PtG CHUNK CATALOG: retrieved data "+cl);
-        List list = new ArrayList();
+        Collection<ReducedPtGChunkDataTO> cl = dao.findReduced(rt.getValue());
+        log.debug("PtG CHUNK CATALOG: retrieved data " + cl);
+        List<ReducedPtGChunkData> list = new ArrayList<ReducedPtGChunkData>();
         if (cl.isEmpty()) {
-            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for "+rt);
+            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + rt);
         } else {
-            ReducedPtGChunkDataTO auxTO;
-            ReducedPtGChunkData aux;
-            for (Iterator i = cl.iterator(); i.hasNext(); ) {
-                auxTO = (ReducedPtGChunkDataTO) i.next();
-                aux = makeReducedPtGChunkData(auxTO);
-                if (aux!=null) {
+            for (ReducedPtGChunkDataTO auxTO : cl) {
+                ReducedPtGChunkData aux = makeReducedPtGChunkData(auxTO);
+                if (aux != null) {
                     list.add(aux);
                 }
             }
-            log.debug("PtG CHUNK CATALOG: returning "+ list);
+            log.debug("PtG CHUNK CATALOG: returning " + list);
         }
         return list;
     }
@@ -278,8 +280,8 @@ public class PtGChunkCatalog {
      * is dropped and gets logged, while processing continues with the next one.
      * All valid chunks get returned: the others get dropped.
      *
-     * If there are no chunks associated to the given GridUser and Colelction of
-     * TSURLs, then an empty Collection is returned and a messagge gets logged.
+     * If there are no chunks associated to the given GridUser and Collection of
+     * TSURLs, then an empty Collection is returned and a message gets logged.
      */
     synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
         Object[] surlsobj = (new ArrayList(c)).toArray();
@@ -313,7 +315,7 @@ public class PtGChunkCatalog {
         //fromSURL
         TSURL fromSURL=null;
         try {
-            fromSURL = TSURL.makeFromString(auxTO.fromSURL());
+            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
         } catch (InvalidTSURLAttributesException e) {
             sb.append(e);
         }
@@ -365,7 +367,7 @@ public class PtGChunkCatalog {
         to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
         to.setErrString(cd.status().getExplanation());
         to.setTurl(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
-        to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.lifeTime().value()));
+        to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
         dao.update(to);
     }
 
@@ -422,7 +424,7 @@ public class PtGChunkCatalog {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());
-        to.setLifeTime(new Long(chunkData.lifeTime().value()).intValue() );
+        to.setLifeTime(new Long(chunkData.getPinLifeTime().value()).intValue() );
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
         to.setNumLevel(chunkData.dirOption().getNumLevel());
@@ -447,25 +449,30 @@ public class PtGChunkCatalog {
     }
 
     /**
-     * Method used to transit the specified Collection of ReducedPtGChunkData
-     * from SRM_FILE_PINNED to SRM_RELEASED. Chunks in any other starting state
-     * are not transited. In case of any error nothing is done, but proper error
-     * messages get logged by the underlaying DAO.
+     * Method used to transit the specified Collection of ReducedPtGChunkData from SRM_FILE_PINNED to
+     * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
+     * done, but proper error messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection chunks, TRequestToken token) {
-        List aux = new ArrayList();
-        long[] auxlong = null;
-        ReducedPtGChunkData auxData = null;
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
-            auxData = (ReducedPtGChunkData) i.next();
+    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedPtGChunkData> chunks,
+            TRequestToken token) {
+        
+        if (chunks.isEmpty()) {
+            return;
+        }
+        
+        List<Long> aux = new ArrayList<Long>();
+        
+        for (ReducedPtGChunkData auxData : chunks) {
             aux.add(new Long(auxData.primaryKey()));
         }
+        
         int n = aux.size();
-        auxlong = new long[n];
-        for (int i=0; i<n; i++) {
-            auxlong[i] = ((Long)aux.get(i)).longValue();
+        long[] auxlong = new long[n];
+        for (int i = 0; i < n; i++) {
+            auxlong[i] = ((Long) aux.get(i)).longValue();
         }
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong,token);
+        
+        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong, token);
     }
 
     /**

@@ -4,20 +4,20 @@ import it.grid.storm.ea.AttributeNotFoundException;
 import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.FileNotFoundException;
-import it.grid.storm.ea.NotSupporterdException;
+import it.grid.storm.ea.NotSupportedException;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 public class ExtendedAttributesImpl implements ExtendedAttributes {
 
-    public interface DMAPILibrary extends Library {
+    /* Functions implemented by libattr */
+    private interface DMAPILibrary extends Library {
+        
         DMAPILibrary INSTANCE = (DMAPILibrary) Native.loadLibrary(("attr"), DMAPILibrary.class);
 
         int getxattr(String fileName, String attributeName, byte[] bufp, int bufpsize);
-
         int removexattr(String fileName, String attributeName);
-        
         int setxattr(String fileName, String attributeName, byte[] bufp, int bufpSize, int flags);
 
     }
@@ -147,7 +147,7 @@ public class ExtendedAttributesImpl implements ExtendedAttributes {
 
             } else if (errno == Errno.ENOTSUP) {
 
-                throw new NotSupporterdException();
+                throw new NotSupportedException();
 
             } else {
                 throw new ExtendedAttributesException("Error, errno value: " + errno);
@@ -181,7 +181,7 @@ public class ExtendedAttributesImpl implements ExtendedAttributes {
 
             } else if (errno == Errno.ENOTSUP) {
 
-                throw new NotSupporterdException();
+                throw new NotSupportedException();
 
             } else {
                 throw new ExtendedAttributesException("Error, errno value: " + errno);
@@ -222,7 +222,7 @@ public class ExtendedAttributesImpl implements ExtendedAttributes {
                 
             } else if (errno == Errno.ENOTSUP) {
 
-                throw new NotSupporterdException();
+                throw new NotSupportedException();
 
             } else {
                 throw new ExtendedAttributesException("Error, errno value: " + errno);

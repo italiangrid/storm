@@ -89,14 +89,14 @@ extends SRMURL {
                         result = new SURL(host, port, service, stfn);
                     }
                     else {
-                        log.error("SURL_String :'" + surlString + "' is not VALID! (query is in invalid form)");
+                        log.warn("SURL_String :'" + surlString + "' is not VALID! (query is in invalid form)");
                         throw new NamespaceException("SURL_String :'" + surlString + "' is not VALID within the Query!");
                     }
                 }
             }
         }
         else {
-            log.error("SURL_String :'" + surlString + "' is not VALID! (generic error)");
+            log.warn("SURL_String :'" + surlString + "' is not VALID! (generic error)");
             throw new NamespaceException("SURL_String :'" + surlString + "' is not VALID!");
         }
         return result;

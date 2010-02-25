@@ -1,47 +1,63 @@
 package it.grid.storm.namespace.model;
 
-public class StorageClassType {
+public enum StorageClassType {
 
-  private String storageClassType;
-  private String stringSchema;
+    T0D0("T0D0", "T0D0"),
+    T0D1("T0D1", "T0D1"),
+    T1D0("T1D0", "T1D0"),
+    T1D1("T1D1", "T1D1"),
+    UNKNOWN("UNKNOWN", "Storage Class Type UNKNOWN!");
+    
+    private String storageClassTypeString;
+    private String stringSchema;
 
-  public final static StorageClassType T0D0 = new StorageClassType("T0D0", "T0D0");
-  public final static StorageClassType T0D1 = new StorageClassType("T0D1", "T0D1");
-  public final static StorageClassType T1D0 = new StorageClassType("T1D0", "T1D0");
-  public final static StorageClassType T1D1 = new StorageClassType("T1D1", "T1D1");
-  public final static StorageClassType UNKNOWN = new StorageClassType("UNKNOWN", "Storage Class Type UNKNOWN!");
+    private StorageClassType(String storageClassTypeString, String stringSchema) {
 
-  public StorageClassType(String storageClassType, String stringSchema) {
-    this.storageClassType = storageClassType;
-    this.stringSchema = stringSchema;
-  }
+        this.storageClassTypeString = storageClassTypeString;
+        this.stringSchema = stringSchema;
+        
+    }
 
-  //Only get method for Name
-  public String getStorageClassType() {
-    return storageClassType;
-  }
+    /**
+     * 
+     * @param storageClassTypeString String
+     * @return StorageClassType
+     */
+    public static StorageClassType getStorageClassType(String storageClassTypeString) {
+        
+        for (StorageClassType sct : StorageClassType.values()) {
+            if (sct.getStorageClassTypeString().equals(storageClassTypeString)) {
+                return sct;
+            }
+        }
 
-  //Only get method for Schema
-  public String toString() {
-    return this.stringSchema;
-  }
+        return UNKNOWN;
+    }
 
-  /**
-   *
-   * @param storageClassType String
-   * @return StorageClassType
-   */
-  public static StorageClassType getStorageClassType(String storageClassType) {
-    if (storageClassType.equals(T0D0.toString()))
-      return StorageClassType.T0D0;
-    if (storageClassType.equals(T0D1.toString()))
-      return StorageClassType.T0D1;
-    if (storageClassType.equals(T1D0.toString()))
-      return StorageClassType.T1D0;
-    if (storageClassType.equals(T1D1.toString()))
-      return StorageClassType.T1D1;
-    return StorageClassType.UNKNOWN;
-  }
+    /**
+     * Returns the String representation of this storage class type instance.
+     * 
+     * @return the String representation of this storage class type instance.
+     */
+    public String getStorageClassTypeString() {
+        return storageClassTypeString;
+    }
 
+    public String getStringSchema() {
+        return stringSchema;
+    }
 
+    public boolean isTapeEnabled() {
+        
+        if (this.equals(T1D0) || this.equals(T1D1)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    //Only get method for Schema
+    public String toString() {
+        return this.stringSchema;
+    }
 }

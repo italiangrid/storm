@@ -10,23 +10,27 @@ import it.grid.storm.griduser.GridUserInterface;
 
 /**
  * @author zappi
- *
  */
 public class SpaceFixedAuthz extends SpaceAuthz {
+
+    private static final String FIXED_ID = "fixed-space-authz";
 
     public SpaceFixedAuthz(AuthzDBFixed fixedAuthzDB) throws AuthzDBReaderException {
 
     }
-    
-    ////////TEMPORARY FIX 
-    //////// THIS METHOD HAS BEEN ADDED TO MAKE EVERYTHING COMPILE
-    /* (non-Javadoc)
-     * @see it.grid.storm.authz.sa.SpaceAuthz#authorize(it.grid.storm.griduser.GridUserInterface, it.grid.storm.authz.sa.model.SRMSpaceRequest)
-     */
+
     @Override
     public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
-        // TODO Auto-generated method stub
+        // @todo : implement the simple algorithm.
         return true;
+    }
+
+    public String getSpaceAuthzID() {
+        return FIXED_ID;
+    }
+
+    public void refresh() {
+
     }
 
 }

@@ -1,35 +1,23 @@
-<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.4.0.xsd" version="1.4.0">
+<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.0.xsd" version="1.5.0">
+ 
   <filesystems>
-    <filesystem name="DTEAM" fs_type="gpfs">
-      <space-token-description>DTEAM</space-token-description>
-      <root>/storage/dteam</root>
-      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
-      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+    <filesystem name="DTEAM-FS" fs_type="gpfs">
+      <space-token-description>srm2_d1t0</space-token-description>
+      <root>/home/ritz/workspace/BE_1.5.0/storage/dteam</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
       <storage-area-authz>
-				<authz-db>pippo</authz-db>
+         <fixed>permit-all</fixed>
       </storage-area-authz>
       <properties>
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>
           <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" limited-size="true">500</TotalOnlineSize>
+          <TotalOnlineSize unit="GB" limited-size="true">146744</TotalOnlineSize>
           <TotalNearlineSize unit="GB">0</TotalNearlineSize>
       </properties>
       <capabilities>
         <aclMode>AoT</aclMode>
-        <!--
-        <default-acl>
-          <acl-entry><groupName>cmsprd</groupName><permissions>RW</permissions></acl-entry>
-        </default-acl>
-        -->
-        <quota enabled="true">
-          <properties>
-            <quotaType>
-              <filesetID>Cnaf</filesetID>
-            </quotaType>
-            <device>gpfs_storm</device>
-            </properties>
-        </quota>
         <trans-prot>
           <prot name="file">
             <schema>file</schema>
@@ -37,107 +25,78 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>storm01.cr.cnaf.infn.it</host>
-            <port>2811</port>
-          </prot>
-          <prot name="gsiftp">
-            <id>1</id>
-            <schema>gsiftp</schema>
-            <host>storm02.cr.cnaf.infn.it</host>
-            <port>2811</port>
-          </prot>
-          <prot name="gsiftp">
-            <id>2</id>
-            <schema>gsiftp</schema>
-            <host>storm03.cr.cnaf.infn.it</host>
+            <host>storm-be-lhcb-01.cr.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
         </trans-prot>
-        <pool>
-			<balance-strategy>round-robin</balance-strategy>
-			<members>
-				<member member-id="0"><weight>10</weight></member>
-				<member member-id="1"><weight>20</weight></member>
-				<member member-id="2"><weight>30</weight></member>
-			</members>
-		</pool>
-     </capabilities>
-      <defaults-values>
-        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
-        <file lifetime="3600" type="volatile"/>
-      </defaults-values>
+      </capabilities>
     </filesystem>
-    
-    <filesystem name="INFNGRID" fs_type="gpfs">
-      <space-token-description>INFNGRID</space-token-description>
-      <storage-class>T1D1</storage-class>
-      <root>/storage/infngrid</root>
-      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
-      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+
+    <filesystem name="LHCB_RAW-FS" fs_type="gpfs">
+      <space-token-description>LHCb_RAW</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/home/ritz/workspace/BE_1.5.0/storage/lhcb/raw</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
       <storage-area-authz>
-        <fixed>permit-all</fixed>      
+         <fixed>permit-all</fixed>
       </storage-area-authz>
       <properties>
           <RetentionPolicy>replica</RetentionPolicy>
           <AccessLatency>online</AccessLatency>
           <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" limited-size="false">500</TotalOnlineSize>
+          <TotalOnlineSize unit="GB" limited-size="true">146744</TotalOnlineSize>
           <TotalNearlineSize unit="GB">0</TotalNearlineSize>
       </properties>
       <capabilities>
         <aclMode>AoT</aclMode>
-        <!--
-        <default-acl>
-          <acl-entry><groupName>cmsprd</groupName><permissions>RW</permissions></acl-entry>
-          <acl-entry><groupName>cms</groupName><permissions>R</permissions></acl-entry>
-          <acl-entry><groupName>cmssupersburo</groupName><permissions>RW</permissions></acl-entry>
-        </default-acl>
-        
         <quota enabled="true">
-            <properties-file>filename</properties-file>
-        </quota>
-        -->
+          <device>gpfs_lhcb</device>
+            <quotaElement>
+              <filesetName>LHCb_RAW</filesetName>
+            </quotaElement>
+        </quota> 
         <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>storm01.cr.cnaf.infn.it</host>
+            <host>gridftp-storm-lhcb.cr.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
         </trans-prot>
-     </capabilities>
-      <defaults-values>
-        <space lifetime="86400" type="volatile" guarsize="10487560" totalsize="10487560"/>
-        <file lifetime="3600" type="volatile"/>
-      </defaults-values>
+      </capabilities>
     </filesystem>
   </filesystems>
 
   <mapping-rules>
     <map-rule name="dteam-maprule">
       <stfn-root>/dteam</stfn-root>
-      <mapped-fs>DTEAM</mapped-fs>
+      <mapped-fs>DTEAM-FS</mapped-fs>
     </map-rule>
-    <map-rule name="infngrid-maprule">
-      <stfn-root>/infngrid</stfn-root>
-      <mapped-fs>INFNGRID</mapped-fs>
+    <map-rule name="lhcb_raw-maprule">
+      <stfn-root>/t1d0/raw/lhcb</stfn-root>
+      <mapped-fs>LHCB_RAW-FS</mapped-fs>
     </map-rule>
   </mapping-rules>
 
   <approachable-rules>
-    <app-rule name="rule-1">
+    <app-rule name="dteam-rule">
       <subjects>
         <dn>*</dn>
+	<vo-name>dteam</vo-name>
       </subjects>
-      <approachable-fs>INFNGRID</approachable-fs>
-      <space-rel-path>/</space-rel-path>
+      <approachable-fs>DTEAM-FS</approachable-fs>
     </app-rule>
-    <app-rule name="rule-2">
+    <app-rule name="lhcb_raw-rule">
       <subjects>
         <dn>*</dn>
+	<vo-name>lhcb</vo-name>
       </subjects>
-      <approachable-fs>DTEAM</approachable-fs>
-      <space-rel-path>/</space-rel-path>
+      <approachable-fs>LHCB_RAW-FS</approachable-fs>
     </app-rule>
   </approachable-rules>
+
 </namespace>

@@ -10,4 +10,8 @@ public interface SpaceAuthzInterface {
 
     void setAuthzDB(AuthzDBInterface authzDB);
 
+    void refresh();
+
+    public String getSpaceAuthzID();
+
 }

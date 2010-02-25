@@ -28,7 +28,7 @@ public class ChunkScheduler implements Scheduler, Streets {
      *   Default values for Pools
      */
     // Value of "scheduler.chunksched.ptp.workerCorePoolSize"
-    private int ptp_workerCorePoolSize = Configuration.getInstance().getPtGCorePoolSize();
+    private int ptp_workerCorePoolSize = Configuration.getInstance().getPtPCorePoolSize();
 
     // Value of "scheduler.chunksched.ptp.workerMaxPoolSize"
     private int ptp_workerMaxPoolSize = Configuration.getInstance().getPtPMaxPoolSize();

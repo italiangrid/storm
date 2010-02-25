@@ -48,7 +48,7 @@ function set_transition_script_filename () {
 }
 
 function create_new_storm_db () {
-    echo "Create new db"
+    echo "Creating new db..."
     mysql -u root $MYSQL_PWD_OPTION < $STORM_DBSCRIPT_DIR/storm_mysql_tbl.sql
     tmp=`mktemp /tmp/sql.XXXXXX`
 

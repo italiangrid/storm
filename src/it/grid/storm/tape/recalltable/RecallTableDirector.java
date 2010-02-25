@@ -16,11 +16,12 @@ public class RecallTableDirector {
      */
     public static void main(String[] args) {
         try {
+            // RecallTableService.start();
             RecallTableService.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
     }
 
 }

@@ -1,7 +1,5 @@
 package it.grid.storm.srm.types;
 
-import it.grid.storm.filesystem.Checksum;
-
 import java.util.Map;
 
 /**
@@ -20,9 +18,9 @@ public class TCheckSumType {
 
     public static String PNAME_CHECKSUMTYPE = "checkSumType";
     
-    private Checksum.ChecksumType chkType = null;
+    private String chkType = null;
 
-    public TCheckSumType(Checksum.ChecksumType chkType) {
+    public TCheckSumType(String chkType) {
         this.chkType = chkType;
     }
 

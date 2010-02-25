@@ -239,11 +239,13 @@ if ! user_exists "$STORM_BE_USER"; then
 fi
 
 if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_TMPDIR'"; then
-    die 1 "Temporary files directory '$STORM_BE_TMPDIR' is not writable by user '$STORM_BE_USER' - aborting."
+    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_TMPDIR
+#    die 1 "Temporary files directory '$STORM_BE_TMPDIR' is not writable by user '$STORM_BE_USER' - aborting."
 fi
 
 if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
-    echo 1>&2 "Log files directory '$STORM_BE_LOGDIR' is not writable by user '$STORM_BE_USER' - StoRM might not be able to *create* log files."
+    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_LOGDIR
+#    echo 1>&2 "Log files directory '$STORM_BE_LOGDIR' is not writable by user '$STORM_BE_USER' - StoRM might not be able to *create* log files."
 fi
 
 
@@ -294,6 +296,7 @@ start () {
         run () { "$@" & : ; }
 
     cd "$STORM_HOME"
+
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
     run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
         java \

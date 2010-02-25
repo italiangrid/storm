@@ -3,7 +3,7 @@
  */
 package it.grid.storm.authz.sa;
 
-import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
+import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.model.FileAuthzDB;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.config.Configuration;
@@ -11,22 +11,48 @@ import it.grid.storm.griduser.GridUserInterface;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+
 /**
  * @author zappi
- * 
  */
 public class SpaceDBAuthz extends SpaceAuthz {
 
+    private final Logger log = AuthzDirector.getLogger();
+    public final static String UNDEF = "undef-SpaceAuthzDB";
+    private String spaceAuthzDBID = "not-defined";
     private static String configurationPATH;
     private String dbFileName;
     private FileAuthzDB authzDB;
 
-    public SpaceDBAuthz(String dbFileName) throws AuthzDBReaderException {
+    public SpaceDBAuthz() {
+
+    }
+
+    /**
+     * @return
+     */
+    public static SpaceDBAuthz makeEmpty() {
+        SpaceDBAuthz result = new SpaceDBAuthz();
+        result.setSpaceAuthzDBID("default-SpaceAuthzDB");
+        // * @todo other assignments
+        return result;
+    }
+
+    public SpaceDBAuthz(String dbFileName) {
         Configuration config = Configuration.getInstance();
-        configurationPATH = config.getNamespaceConfigPath();
+        configurationPATH = config.namespaceConfigPath();
         if (existsAuthzDBFile(dbFileName)) {
             this.dbFileName = dbFileName;
+            spaceAuthzDBID = dbFileName;
         }
+    }
+
+    /**
+     * @param string
+     */
+    void setSpaceAuthzDBID(String id) {
+        spaceAuthzDBID = id;
     }
 
     /**
@@ -56,8 +82,8 @@ public class SpaceDBAuthz extends SpaceAuthz {
 
     /**
      * Implementation of NFSv4.1 ACL evaluation algorithm - simplified version:
-     * http://tools.ietf.org/html/draft-ietf-nfsv4-acl-mapping-02#section-2 -
-     * full version: http://tools.ietf.org/html/rfc3530#section-5.11.2
+     * http://tools.ietf.org/html/draft-ietf-nfsv4-acl-mapping-02#section-2 - full version:
+     * http://tools.ietf.org/html/rfc3530#section-5.11.2
      */
     private boolean nfs4AuthzAlgorithm(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
         return false;
@@ -99,16 +125,15 @@ public class SpaceDBAuthz extends SpaceAuthz {
     /**
      * Check the existence of the AuthzDB file
      */
-    private boolean existsAuthzDBFile(String dbFileName) throws AuthzDBReaderException {
+    private boolean existsAuthzDBFile(String dbFileName) {
         String fileName = configurationPATH + File.separator + dbFileName;
         boolean exists = (new File(fileName)).exists();
-        if (!(exists) ) {
-            throw new AuthzDBReaderException("The AuthzDB File '"+dbFileName+"' does not exists");
+        if (!(exists)) {
+            log.error("The AuthzDB File '" + dbFileName + "' does not exists");
         }
         return exists;
     }
-    
-    
+
     /**
      * Return the AuthzDB FileName
      * 
@@ -119,7 +144,6 @@ public class SpaceDBAuthz extends SpaceAuthz {
     }
 
     /**
-     * 
      * @param authzDB
      */
     void setAuthzDB(FileAuthzDB authzDB) {
@@ -129,6 +153,13 @@ public class SpaceDBAuthz extends SpaceAuthz {
         this.authzDB = authzDB;
     }
 
-    
-    
+    public String getSpaceAuthzID() {
+        return spaceAuthzDBID;
+    }
+
+    public void refresh() {
+        // TODO Auto-generated method stub
+
+    }
+
 }

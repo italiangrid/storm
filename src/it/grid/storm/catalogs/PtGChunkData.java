@@ -33,7 +33,7 @@ public class PtGChunkData implements ChunkData {
     private long primaryKey = -1; //long representing the primary key for the persistence layer!
     private TRequestToken requestToken;   //This is the requestToken of the multifile srm request to which this chunk belongs
     private TSURL fromSURL;               //SURL that the srm command wants to get
-    private TLifeTimeInSeconds lifeTime;  //requested lifetime of TURL: it is the pin time!
+    private TLifeTimeInSeconds pinLifeTime;  //requested lifetime of TURL: it is the pin time!
     private TDirOption dirOption;         //specifies if the request regards a directory and related info
     private TURLPrefix desiredProtocols; //list of desired transport protocols for fromSURL
     private TSizeInBytes fileSize;        //size of file
@@ -64,7 +64,7 @@ public class PtGChunkData implements ChunkData {
 
         this.requestToken = requestToken;
         this.fromSURL = fromSURL;
-        this.lifeTime = lifeTime;
+        this.pinLifeTime = lifeTime;
         this.dirOption=dirOption;
         this.desiredProtocols=desiredProtocols;
         this.fileSize=fileSize;
@@ -106,8 +106,8 @@ public class PtGChunkData implements ChunkData {
     /**
      * Method that returns the requested pin life time for this chunk of the srm request.
      */
-    public TLifeTimeInSeconds lifeTime() {
-        return lifeTime;
+    public TLifeTimeInSeconds getPinLifeTime() {
+        return pinLifeTime;
     }
 
     /**
@@ -354,7 +354,7 @@ public class PtGChunkData implements ChunkData {
         sb.append("primaryKey="); sb.append(primaryKey); sb.append("; ");
         sb.append("RequestToken="); sb.append(requestToken); sb.append("; ");
         sb.append("fromSURL="); sb.append(fromSURL); sb.append("; ");
-        sb.append("lifeTime="); sb.append(lifeTime); sb.append("; ");
+        sb.append("lifeTime="); sb.append(pinLifeTime); sb.append("; ");
         sb.append("dirOption="); sb.append(dirOption); sb.append("; ");
         sb.append("desiredProtocols="); sb.append(desiredProtocols); sb.append("; ");
         sb.append("fileSize="); sb.append(fileSize); sb.append("; ");
@@ -369,7 +369,7 @@ public class PtGChunkData implements ChunkData {
         hash = 37*hash + new Long(primaryKey).hashCode();
         hash = 37*hash + requestToken.hashCode();
         hash = 37*hash + fromSURL.hashCode();
-        hash = 37*hash + lifeTime.hashCode();
+        hash = 37*hash + pinLifeTime.hashCode();
         hash = 37*hash + dirOption.hashCode();
         hash = 37*hash + desiredProtocols.hashCode();
         hash = 37*hash + fileSize.hashCode();
@@ -390,7 +390,7 @@ public class PtGChunkData implements ChunkData {
         return (primaryKey==cd.primaryKey) &&
         requestToken.equals(cd.requestToken) &&
         fromSURL.equals(cd.fromSURL) &&
-        lifeTime.equals(cd.lifeTime) &&
+        pinLifeTime.equals(cd.pinLifeTime) &&
         dirOption.equals(cd.dirOption) &&
         desiredProtocols.equals(cd.desiredProtocols) &&
         fileSize.equals(cd.fileSize) &&

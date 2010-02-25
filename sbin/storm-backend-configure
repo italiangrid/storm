@@ -207,16 +207,6 @@ download_and_extract \
     http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-3.1.11.tar.gz/from/http://mi.mirror.garr.it/mirrors/MySQL/ \
     "$STORM_BE_JARDIR"/mysql-connector-java-3.1.11-bin.jar
 
-
-## make additional links (not in the RPM)
-link_and_backup_if_different \
-    "$STORM_HOME/etc/init.d/storm-backend" \
-    /etc/init.d/storm-backend
-
-link_and_backup_if_different \
-    "$STORM_HOME/etc/sysconfig/storm-backend" \
-    /etc/sysconfig/storm-backend
-
 # activate the service
 chkconfig --add storm-backend
 chkconfig storm-backend on

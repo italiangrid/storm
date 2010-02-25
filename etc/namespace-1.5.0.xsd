@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="aclMode">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="AoT"/>
+				<xs:enumeration value="JiT"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:complexType name="app-ruleType">
+		<xs:sequence>
+			<xs:element name="subjects" type="subjectsType"/>
+			<xs:element ref="approachable-fs"/>
+			<xs:element ref="space-rel-path" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:NMTOKEN" use="required"/>
+	</xs:complexType>
+	<xs:element name="approachable-fs" type="xs:string"/>
+	<xs:complexType name="approachable-rulesType">
+		<xs:sequence>
+			<xs:element name="app-rule" type="app-ruleType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="capabilitiesType">
+		<xs:sequence>
+			<xs:element ref="aclMode"/>
+			<xs:element name="default-acl" type="default-aclType" minOccurs="0"/>
+			<xs:element name="quota" type="quotaType" minOccurs="0"/>
+			<xs:element name="trans-prot" type="trans-protType"/>
+			<xs:element name="pool" type="poolType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="defaults-valuesType">
+		<xs:sequence>
+			<xs:element name="space" type="spaceType"/>
+			<xs:element name="file" type="fileType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="dn" type="xs:string"/>
+	<xs:complexType name="fileType">
+		<xs:attribute name="lifetime" type="xs:long" use="required"/>
+		<xs:attribute name="type" type="xs:string" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="filesystemType">
+		<xs:sequence>
+			<xs:element name="space-token-description" minOccurs="0"/>
+			<xs:element name="storage-class" nillable="true" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="T0D0"/>
+						<xs:enumeration value="T0D1"/>
+						<xs:enumeration value="T1D1"/>
+						<xs:enumeration value="T1D0"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element ref="root"/>
+			<xs:element ref="filesystem-driver"/>
+			<xs:element ref="spacesystem-driver"/>
+			<xs:element ref="storage-area-authz"/>
+			<xs:element name="properties" type="propertiesType"/>
+			<xs:element name="capabilities" type="capabilitiesType"/>
+			<xs:element name="defaults-values" type="defaults-valuesType" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:NMTOKEN" use="required"/>
+		<xs:attribute name="fs_type" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:NMTOKEN">
+					<xs:enumeration value="ext3"/>
+					<xs:enumeration value="gpfs"/>
+					<xs:enumeration value="xfs"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="filesystem-driver" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="it.grid.storm.filesystem.swig.posixfs"/>
+				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs"/>
+				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs23"/>
+				<xs:enumeration value="it.grid.storm.filesystem.swig.xfs"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:complexType name="filesystemsType">
+		<xs:sequence>
+			<xs:element name="filesystem" type="filesystemType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="host" type="xs:string"/>
+	<xs:complexType name="map-ruleType">
+		<xs:sequence>
+			<xs:element ref="stfn-root"/>
+			<xs:element ref="mapped-fs"/>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:NMTOKEN" use="required"/>
+	</xs:complexType>
+	<xs:element name="mapped-fs" type="xs:string"/>
+	<xs:complexType name="mapping-rulesType">
+		<xs:sequence>
+			<xs:element name="map-rule" type="map-ruleType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="namespace">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="filesystems" type="filesystemsType"/>
+				<xs:element name="mapping-rules" type="mapping-rulesType"/>
+				<xs:element name="approachable-rules" type="approachable-rulesType"/>
+			</xs:sequence>
+			<xs:attribute name="version" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="port" type="xs:int"/>
+	<xs:complexType name="protType">
+		<xs:sequence>
+			<xs:element name="id" type="xs:integer" nillable="false" minOccurs="0"/>
+			<xs:element ref="schema"/>
+			<xs:element ref="host" minOccurs="0"/>
+			<xs:element name="port" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minExclusive value="0"></xs:minExclusive>
+						<xs:maxExclusive value="65535"></xs:maxExclusive>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="name" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:NMTOKEN">
+					<xs:enumeration value="file"/>
+					<xs:enumeration value="gsiftp"/>
+					<xs:enumeration value="rfio"/>
+					<xs:enumeration value="root"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="root" type="xs:string" nillable="false"/>
+	<xs:element name="schema">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="file"/>
+				<xs:enumeration value="gsiftp"/>
+				<xs:enumeration value="rfio"/>
+				<xs:enumeration value="root"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:complexType name="spaceType">
+		<xs:attribute name="lifetime" type="xs:long" use="required"/>
+		<xs:attribute name="type" type="xs:string" use="required"/>
+		<xs:attribute name="guarsize" type="xs:long" use="required"/>
+		<xs:attribute name="totalsize" type="xs:long" use="required"/>
+	</xs:complexType>
+	<xs:element name="space-rel-path" type="xs:string"/>
+	<xs:element name="spacesystem-driver" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="it.grid.storm.filesystem.GPFSSpaceSystem"/>
+				<xs:enumeration value="it.grid.storm.filesystem.MockSpaceSystem"/>
+				<xs:enumeration value="it.grid.storm.filesystem.XFSSpaceSystem"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="spacetype" type="xs:string"/>
+	<xs:element name="stfn-root" type="xs:string"/>
+	<xs:complexType name="subjectsType">
+		<xs:sequence>
+			<xs:element ref="dn"/>
+			<xs:element ref="vo-name" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="trans-protType">
+		<xs:sequence>
+			<xs:element name="prot" type="protType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="vo-name" type="xs:string"/>
+	<xs:element name="RetentionPolicy">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="custodial"/>
+				<xs:enumeration value="output"/>
+				<xs:enumeration value="replica"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="AccessLatency">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="online"/>
+				<xs:enumeration value="nearline"/>
+				<xs:enumeration value="offline"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="ExpirationMode">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="neverExpire"/>
+				<xs:enumeration value="warnWhenExpire"/>
+				<xs:enumeration value="releaseWhenExpire"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:simpleType name="UnitType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="Byte"/>
+			<xs:enumeration value="KB"/>
+			<xs:enumeration value="MB"/>
+			<xs:enumeration value="GB"/>
+			<xs:enumeration value="TB"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="propertiesType">
+		<xs:sequence>
+			<xs:element ref="RetentionPolicy"/>
+			<xs:element ref="AccessLatency"/>
+			<xs:element ref="ExpirationMode"/>
+			<xs:element name="TotalOnlineSize" type="TotalOnlineSizeType"/>
+			<xs:element name="TotalNearlineSize" type="TotalNearLineType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TotalOnlineSizeType">
+		<xs:simpleContent>
+			<xs:extension base="xs:long">
+				<xs:attribute name="unit" type="UnitType" use="optional" default="TB"/>
+				<xs:attribute name="limited-size" type="xs:boolean" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="TotalNearLineType">
+		<xs:simpleContent>
+			<xs:extension base="xs:long">
+				<xs:attribute name="unit" type="UnitType" use="optional" default="TB"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="quotaType">
+		<xs:sequence>
+			<xs:element name="device" maxOccurs="1" minOccurs="1" />
+			<xs:element name="quotaElement" maxOccurs="unbounded" minOccurs="1">
+				<xs:complexType>
+					<xs:choice>
+						<xs:element name="filesetName" type="xs:string" />
+						<xs:element name="groupName" type="xs:string" />
+						<xs:element name="userName" type="xs:string" />
+					</xs:choice>
+					<xs:attribute name="name" type="xs:string" use="optional"></xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="enabled" type="xs:boolean" use="required" />
+	</xs:complexType>
+	<xs:complexType name="default-aclType">
+		<xs:sequence>
+			<xs:element name="acl-entry" type="acl-entryType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="acl-entryType">
+		<xs:sequence>
+			<xs:element name="groupName"/>
+			<xs:element name="permissions" type="PermissionType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="PermissionType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="R"/>
+			<xs:enumeration value="W"/>
+			<xs:enumeration value="RW"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- POOL TYPE -->
+	<xs:complexType name="poolType">
+		<xs:sequence>
+			<xs:element ref="balance-strategy"/>
+			<xs:element ref="members"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="members" type="membersType" nillable="false"/>
+	<xs:element name="balance-strategy" type="balance-strategyType"/>
+	<xs:simpleType name="balance-strategyType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="round-robin"/>
+			<xs:enumeration value="random"/>
+			<xs:enumeration value="weight"/>
+			<xs:enumeration value="metric-1"/>
+			<xs:enumeration value="metric-2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="membersType">
+		<xs:sequence>
+			<xs:element name="member" maxOccurs="unbounded" type="memberType" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="memberType">
+		 <xs:sequence>
+            <xs:element name="weight" type="xs:integer" minOccurs="0" maxOccurs="1" nillable="false">
+            </xs:element>		 
+		 </xs:sequence>
+		<xs:attribute name="member-id" type="xs:integer" use="required"/>		
+	</xs:complexType>
+	<!-- AUTHORIZATION SOURCE ELEMENT -->
+	<xs:element name="storage-area-authz" type="StorageArea-Authz-Type" nillable="false"/>
+	<xs:complexType name="StorageArea-Authz-Type">
+		<xs:choice>
+			<xs:element name="authz-db" type="xs:string" nillable="false"/>
+			<xs:element name="fixed" type="authz-fixedType"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:simpleType name="authz-fixedType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="permit-all"/>
+			<xs:enumeration value="deny-all"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

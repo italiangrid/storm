@@ -240,7 +240,7 @@ public class AdHocTest {
         result.append(numStr);
         result.append(xpath.substring(pos+1));
         String ris = result.toString();
-        log.debug("Risultato finale è :");
+        log.debug("Risultato finale ï¿½ :");
         log.debug(ris);
 
     }
@@ -421,7 +421,7 @@ private void retrieveProtocol(String fsName, int nrProt) {
         SURL surl = new SURL("testbed006.cnaf.infn.it", 1234, "cnaf/test/pippo.txt", null);
         TSURL tsurl = null;
         try {
-            tsurl = TSURL.makeFromString(surl.toString());
+            tsurl = TSURL.makeFromStringValidate(surl.toString());
         }
         catch (InvalidTSURLAttributesException ex) {
             ex.printStackTrace();
@@ -611,7 +611,7 @@ private void retrieveProtocol(String fsName, int nrProt) {
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
             boolean result = capabilities.isPooledProtocol(Protocol.GSIFTP);
-            log.debug("GSIFTP è Pooled in VFS ("+vfsName+")?" + result);
+            log.debug("GSIFTP ï¿½ Pooled in VFS ("+vfsName+")?" + result);
         }
         catch (NamespaceException ex1) {
             log.error("AHAAH : "+ex1);

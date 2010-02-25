@@ -4,6 +4,8 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -26,6 +28,7 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Class that represents the RequestSummaryCatalog of StoRM. The rows in the
  * catalog are called RequestSummaryData. Methods are provided to: look up newly
@@ -39,27 +42,15 @@ import org.slf4j.LoggerFactory;
 public class RequestSummaryCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(RequestSummaryCatalog.class);
-    private static RequestSummaryCatalog cat = new RequestSummaryCatalog(); // Only
-    // instance
-    // of
-    // RequestSummaryCatalog
-    // for
-    // StoRM
-    // !
-    private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance(); // WARNING
-    // !
-    // !!
-    // TO
-    // BE
-    // MODIFIED
-    // WITH
-    // FACTORY
-    // !
-    // !!
+    /** Only instance of RequestSummaryCatalog for StoRM! */
+    private static RequestSummaryCatalog cat = new RequestSummaryCatalog();
+    /** WARNING!!! TO BE MODIFIED WITH FACTORY!!! */
+    private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
+    /** timer thread that will run a task to clean */
+    private Timer clock = null;
+    /** timer task that will remove expired */
+    private TimerTask clockTask = null;
 
-    private Timer clock = null; // timer thread that will run a task to clean
-    // expired requests!
-    private TimerTask clockTask = null; // timer task that will remove expired
 
     // requests and corresponding proxies!
 
@@ -67,15 +58,30 @@ public class RequestSummaryCatalog {
         if (Configuration.getInstance().getExpiredRequestPurging()) {
             clock = new Timer();
             clockTask = new TimerTask() {
+
                 @Override
                 public void run() {
-                    purgeExpiredRequests();
+                    ArrayList<String> expiredRequests = purgeExpiredRequests();
+                    removeOrphanProxies(expiredRequests);
                 }
             };
-            clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000,
-                    Configuration.getInstance().getRequestPurgerPeriod() * 1000);
+            clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000, Configuration.getInstance().getRequestPurgerPeriod() * 1000);
         }
+
+        TimerTask tableRecallPurgeTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                try {
+                    PersistenceDirector.getDAOFactory().getTapeRecallDAO().purgeCompletedTasks(Configuration.getInstance().getPurgeBatchSize());
+                } catch (DataAccessException e) {
+                    log.error("Cannot purge expired entries of tape_recall table.", e);
+                }
+            }
+        };
+        clock.scheduleAtFixedRate(tableRecallPurgeTask, Configuration.getInstance().getTransitInitialDelay() * 1000, Configuration.getInstance().getTransitTimeInterval() * 1000);
     }
+
 
     /**
      * Method that returns the only instance of RequestSummaryCatalog present in
@@ -85,6 +91,7 @@ public class RequestSummaryCatalog {
         return RequestSummaryCatalog.cat;
     }
 
+
     /**
      * Method in charge of retrieving RequestSummaryData associated to new
      * requests, that is those found in SRM_REQUETS_QUEUED global status; such
@@ -93,39 +100,33 @@ public class RequestSummaryCatalog {
      * 
      * If no new request is found, an empty Collection is returned. if a request
      * is malformed, then that request is failed and an attempt is made to
-     * signal such occurence in the DB. Only correctly formed requests are
+     * signal such occurrence in the DB. Only correctly formed requests are
      * returned.
      */
-    synchronized public Collection fetchNewRequests(int capacity) {
-        RequestSummaryCatalog.log.debug("Retrieving a maximum of " + capacity
-                + " new reuqests. (remaining capacity in Crusher Scheduler) ");
-        Collection c = dao.findNew(capacity);
-        //
-        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: retrieved data " + c);
-        List list = new ArrayList();
-        if (c.isEmpty()) {
-            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No new requests found.");
-        } else {
+    synchronized public Collection<RequestSummaryData> fetchNewRequests(int capacity) {
+        // log.debug("Retrieving a maximum of " + capacity +
+        // " new requests. (remaining capacity in Crusher Scheduler) ");
+        Collection<RequestSummaryDataTO> c = dao.findNew(capacity);
+
+        if ((c != null) && (!c.isEmpty())) {
+            log.debug("REQUEST SUMMARY CATALOG: retrieved data " + c);
+        }
+        List<RequestSummaryData> list = new ArrayList<RequestSummaryData>();
+        if (!c.isEmpty()) {
             int fetched = c.size();
-            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: " + fetched + " new requests picked up. "); // info
-            RequestSummaryDataTO auxTO;
-            RequestSummaryData aux;
-            for (Iterator i = c.iterator(); i.hasNext();) {
-                auxTO = (RequestSummaryDataTO) i.next();
-                aux = makeOne(auxTO);
+            log.debug("REQUEST SUMMARY CATALOG: " + fetched + " new requests picked up. "); // info
+            for (RequestSummaryDataTO auxTO: c) {
+                RequestSummaryData aux = makeOne(auxTO);
                 if (aux != null) {
-                    RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + aux.requestToken()
-                            + " associated to " + aux.gridUser().getDn() + " included for processing "); // info
+                    RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + aux.requestToken() + " associated to " + aux.gridUser().getDn() + " included for processing "); // info
                     list.add(aux);
                 }
             }
             int ret = list.size();
             if (ret < fetched) {
-                RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG: including " + ret
-                        + " requests for processing, since the dropped ones were malformed!");
+                RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG: including " + ret + " requests for processing, since the dropped ones were malformed!");
             } else {
-                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: including for processing all " + ret
-                        + " requests.");
+                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: including for processing all " + ret + " requests.");
             }
         }
         if (!list.isEmpty()) {
@@ -133,6 +134,7 @@ public class RequestSummaryCatalog {
         }
         return list;
     }
+
 
     /**
      * Private method used to create a RequestSummaryData object, from a
@@ -143,7 +145,7 @@ public class RequestSummaryCatalog {
     private RequestSummaryData makeOne(RequestSummaryDataTO auxTO) {
         StringBuffer sb = new StringBuffer();
         // ID
-        long auxid = auxTO.primaryKey();
+//        long auxid = auxTO.primaryKey();
         // TRequestType
         TRequestType auxrtype = RequestTypeConverter.getInstance().toSTORM(auxTO.requestType());
         if (auxrtype == TRequestType.EMPTY) {
@@ -183,15 +185,14 @@ public class RequestSummaryCatalog {
             aux.setPrimaryKey(auxTO.primaryKey());
         } catch (InvalidRequestSummaryDataAttributesException e) {
             dao.failRequest(auxTO.primaryKey(), "The request data is malformed!");
-            RequestSummaryCatalog.log
-            .warn("REQUEST SUMMARY CATALOG! Catalog retrieved malformed request, and it is being dropped: "
-                    + auxTO);
+            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved malformed request, and it is being dropped: " + auxTO);
             RequestSummaryCatalog.log.warn(e.getMessage(), e);
             RequestSummaryCatalog.log.warn(sb.toString());
         }
         // end...
         return aux;
     }
+
 
     /**
      * Private method that holds the logic for creating a VomsGridUser from
@@ -201,10 +202,9 @@ public class RequestSummaryCatalog {
     // private VomsGridUser loadVomsGridUser(String dn, String rtoken) throws
     // MalformedGridUserException {
     private GridUserInterface loadVomsGridUser(String dn, String fqans_string, String rtoken)
-    throws MalformedGridUserException {
+            throws MalformedGridUserException {
 
-        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn
-                + " " + rtoken);
+        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn + " " + rtoken);
         // set up proxy from file, if it exists!
         String proxyString = null;
         FQAN[] fqans_vector = null;
@@ -222,28 +222,22 @@ public class RequestSummaryCatalog {
                 in.close();
                 out.close();
                 proxyString = new String(out.toByteArray());
-                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: Loaded proxy file "
-                        + proxyFile.getAbsolutePath() + " for request " + rtoken);
+                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: Loaded proxy file " + proxyFile.getAbsolutePath() + " for request " + rtoken);
                 RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: proxy content is " + proxyString);
             } else {
-                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No proxy file " + proxyFile.getAbsolutePath()
-                        + " found for request " + rtoken);
+                RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No proxy file " + proxyFile.getAbsolutePath() + " found for request " + rtoken);
             }
         } catch (FileNotFoundException e) {
             // This should not happen given the existence test just performed!
-            RequestSummaryCatalog.log
-            .error("REQUEST SUMMARY CATALOG! The file containing the proxy was deleted just before reading its content! No proxy has been loaded!");
+            RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! The file containing the proxy was deleted just before reading its content! No proxy has been loaded!");
         } catch (IOException e) {
             // Some generic IO error occured!
-            RequestSummaryCatalog.log
-            .error("REQUEST SUMMARY CATALOG! The file containing the proxy could not be read! No proxy has been loaded! "
-                    + e);
+            RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! The file containing the proxy could not be read! No proxy has been loaded! " + e);
         } catch (Exception e) {
             // An unexpected error occured: I am including this generic catch
             // because the underlaying filesystem has ACLs, and I do not know
             // how exactly Java behaves!
-            RequestSummaryCatalog.log
-            .error("REQUEST SUMMARY CATALOG! There was an unexpected error while attempting to read the file containing the proxy! No proxy has been loaded!");
+            RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! There was an unexpected error while attempting to read the file containing the proxy! No proxy has been loaded!");
         }
 
         /**
@@ -265,18 +259,14 @@ public class RequestSummaryCatalog {
             fqans_string = null;
         }
 
-        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn
-                + " " + fqans_string + " " + proxyString);
+        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn + " " + fqans_string + " " + proxyString);
         if ((dn != null) && (fqans_string != null) && (proxyString != null)) {
             // all credentials available!
-            RequestSummaryCatalog.log
-            .info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request "
-                    + rtoken);
+            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request " + rtoken);
             return GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_vector);
         } else if ((dn != null) && (fqans_string != null) && (proxyString == null)) {
             // voms credentials without proxy
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request "
-                    + rtoken);
+            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request " + rtoken);
             return GridUserManager.makeVOMSGridUser(dn, fqans_vector);
         } else if ((dn != null) && (fqans_string == null) && (proxyString != null)) {
             // NON-voms credentials with proxy
@@ -288,25 +278,35 @@ public class RequestSummaryCatalog {
             return GridUserManager.makeGridUser(dn);
         } else {
             // unmanageble combination!
-            RequestSummaryCatalog.log
-            .warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials data for request " + rtoken);
-            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! proxy=" + fqans_string + "\n dn=" + dn
-                    + "\n attributes=" + fqans_string);
+            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials data for request " + rtoken);
+            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! proxy=" + fqans_string + "\n dn=" + dn + "\n attributes=" + fqans_string);
             throw new MalformedGridUserException();
         }
 
     }
 
+
     /**
-     * Method used to update the global status of a request identified by
-     * TRequestToken, to the supplied TReturnStatus.
-     * 
+     * Method used to update the global status of a request identified by TRequestToken, to the supplied TReturnStatus.
      * In case of any exception nothing happens.
      */
     synchronized public void updateGlobalStatus(TRequestToken rt, TReturnStatus status) {
-        dao.updateGlobalStatus(rt.toString(), StatusCodeConverter.getInstance().toDB(status.getStatusCode()), status
-                .getExplanation());
+        dao.updateGlobalStatus(rt.toString(),
+                               StatusCodeConverter.getInstance().toDB(status.getStatusCode()),
+                               status.getExplanation());
     }
+
+    /**
+     * Method used to update the global status of a request identified by TRequestToken, to the supplied TReturnStatus.
+     * The pin lifetime and the file lifetime are updated in order to start the countdown from the moment the status is
+     * updated. In case of any exception nothing happens.
+     */
+    synchronized public void updateGlobalStatusPinFileLifetime(TRequestToken rt, TReturnStatus status) {
+        dao.updateGlobalStatusPinFileLifetime(rt.toString(),
+                                              StatusCodeConverter.getInstance().toDB(status.getStatusCode()),
+                                              status.getExplanation());
+    }
+
 
     /**
      * Method used to change the global status of the supplied request to
@@ -333,6 +333,7 @@ public class RequestSummaryCatalog {
         }
     }
 
+
     /**
      * Method used to abort a request that has not yet been fetched for
      * processing; if the status of the request associated to the supplied
@@ -345,6 +346,7 @@ public class RequestSummaryCatalog {
             dao.abortRequest(rt.toString());
         }
     }
+
 
     /**
      * Method used to abort a request that has not yet been fetched for
@@ -364,12 +366,11 @@ public class RequestSummaryCatalog {
                 }
                 dao.abortChunksOfRequest(rt.toString(), aux);
             } catch (ClassCastException e) {
-                RequestSummaryCatalog.log
-                .error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfRequest: the supplied Collection did not contain TSURLs! "
-                        + c + e);
+                RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfRequest: the supplied Collection did not contain TSURLs! " + c + e);
             }
         }
     }
+
 
     /**
      * Method used to abort a request that HAS been fetched for processing;
@@ -389,12 +390,11 @@ public class RequestSummaryCatalog {
                 }
                 dao.abortChunksOfInProgressRequest(rt.toString(), aux);
             } catch (ClassCastException e) {
-                RequestSummaryCatalog.log
-                .error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfInProgressRequest: the supplied Collection did not contain TSURLs! "
-                        + c + e);
+                RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfInProgressRequest: the supplied Collection did not contain TSURLs! " + c + e);
             }
         }
     }
+
 
     /**
      * Method that returns the TRequestType associated to the request with the
@@ -410,6 +410,7 @@ public class RequestSummaryCatalog {
         return RequestTypeConverter.getInstance().toSTORM(type);
     }
 
+
     /**
      * Method used to abort a request that HAS been fetched for processing; if
      * the status of the request associated to the supplied request token tok is
@@ -423,34 +424,62 @@ public class RequestSummaryCatalog {
         }
     }
 
+
     /**
      * Method used to purge the DB of expired requests, and remove the
      * corresponding proxies if available.
      */
-    synchronized private void purgeExpiredRequests() {
-        List r_tokens = dao.purgeExpiredRequests();
-        if (r_tokens.isEmpty()) {
-            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: No expired requests found.");
+    synchronized private ArrayList<String> purgeExpiredRequests() {
+
+    	ArrayList<String> expiredRequests = new ArrayList<String>();
+    	
+        PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
+        BoLChunkCatalog.getInstance().transitExpiredSRM_SUCCESS();
+
+        int garbageChunkSize = Configuration.getInstance().getPurgeBatchSize();
+        int minChunkSize = garbageChunkSize / 2;
+        
+        int nrExpiredTasks = dao.getNumberExpired();
+        int nrChunks = nrExpiredTasks / garbageChunkSize;
+        if (nrChunks<1) {
+        	//Check the minimum chunk
+        	if (nrExpiredTasks>minChunkSize) {
+        		//Single step garbaging
+        		log.debug("Purging the expired in single step (expired requests:"+nrExpiredTasks+")");
+        	} else {
+        		//not enough events to remove. Skip the purging phase
+        		log.debug("Skipping the purging phase of expired requests. (expired requests:"+nrExpiredTasks+")");
+        	}
+        } else {
+        	// Multiple chunks
+        	log.debug("Purging the expired requests in "+nrChunks+" steps (expired requests:"+nrExpiredTasks+")");
+        	for (int i = 0; i < nrChunks; i++) {
+        		expiredRequests.addAll(dao.purgeExpiredRequests());	
+			}
+        	log.info("REQUEST SUMMARY CATALOG; removed from DB < " + expiredRequests.size() + " > expired requests");
         }
-        while (!r_tokens.isEmpty()) {
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG; removed from DB the following expired requests: "
-                    + r_tokens);
-            for (Iterator i = r_tokens.iterator(); i.hasNext();) {
-                String rt = (String) i.next();
-                String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
-                File proxyFile = new File(proxyFileName);
-                if (proxyFile.exists()) {
-                    boolean deleted = proxyFile.delete();
-                    if (!deleted) {
-                        RequestSummaryCatalog.log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file "
-                                + proxyFileName + " failed!");
-                    } else {
-                        RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
-                    }
-                }
-            }
-            r_tokens = dao.purgeExpiredRequests();
-        }
+        
+        return expiredRequests;
     }
+    
+    
+	private void removeOrphanProxies(ArrayList<String> expiredRequests) {
+		if (expiredRequests.isEmpty()) {
+
+		} else {
+			for (String rt : expiredRequests) {
+				String proxyFileName = Configuration.getInstance().getProxyHome() + File.separator + rt;
+				File proxyFile = new File(proxyFileName);
+				if (proxyFile.exists()) {
+					boolean deleted = proxyFile.delete();
+					if (!deleted) {
+						RequestSummaryCatalog.log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file " + proxyFileName + " failed!");
+					} else {
+						RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG: removed proxy file " + proxyFileName);
+					}
+				}
+			}
+		}
+	}
 
 }

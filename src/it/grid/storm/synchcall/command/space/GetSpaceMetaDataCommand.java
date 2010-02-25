@@ -1,38 +1,38 @@
 package it.grid.storm.synchcall.command.space;
 
-import java.util.ArrayList;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
-import it.grid.storm.srm.types.ArrayOfTSpaceToken;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TSpaceType;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TMetaDataSpace;
 import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.namespace.model.QuotaType;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
+import it.grid.storm.srm.types.ArrayOfTSpaceToken;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TMetaDataSpace;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TSpaceType;
+import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.SpaceCommand;
 import it.grid.storm.synchcall.command.space.quota.GPFSQuotaCommand;
 import it.grid.storm.synchcall.command.space.quota.GPFSQuotaParameters;
 import it.grid.storm.synchcall.command.space.quota.QuotaException;
 import it.grid.storm.synchcall.command.space.quota.QuotaInfoInterface;
-
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.synchcall.data.space.InvalidGetSpaceMetaDataOutputAttributeException;
-import it.grid.storm.namespace.model.QuotaType;
-import it.grid.storm.srm.types.*;
-import it.grid.storm.common.types.SizeUnit;
+
+import java.util.ArrayList;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -47,9 +47,6 @@ import it.grid.storm.common.types.SizeUnit;
  * 
  */
 
-
-
-
 public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
     private ReservedSpaceCatalog catalog = null;
@@ -62,7 +59,6 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
     /**
      * Constructor. Bind the Executor with ReservedSpaceCatalog
      */
-
 
     public GetSpaceMetaDataCommand() {
         catalog = new ReservedSpaceCatalog();
@@ -102,14 +98,12 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 metadata.setSpaceToken(token);
                 TReturnStatus status = null;
                 try {
-                    status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                    "Space token not valid");
+                    status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Space token not valid");
                 } catch (InvalidTReturnStatusAttributeException e) {
-                    log.debug("dataTransferManger: Error creating returnStatus "+ e);
+                    log.debug("dataTransferManger: Error creating returnStatus " + e);
                 }
                 metadata.setStatus(status);
-                log.error(formatLogMessage(SUCCESS, LOCALSTATUS,
-                        data.getUser(), token, null, status));
+                log.error(formatLogMessage(SUCCESS, LOCALSTATUS, data.getUser(), token, null, status));
             } else { // Retrieved with success MetaData from the catalog
 
                 // Check if it is a VOSpaceToken, that is STATIC SPACE
@@ -117,10 +111,8 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 if (metadata.getSpaceType().equals(TSpaceType.VOSPACE)) {
                     TSpaceToken tk = metadata.getSpaceToken();
                     log.debug("srmGetSpaceMetaData: Space Token '" + tk
-                              + "' is pointing to a STATIC space reservation.");
-                    log
-                    .debug("srmGetSpaceMetaData: going to execute Quota Command for SA with token '"
-                           + tk + "'");
+                            + "' is pointing to a STATIC space reservation.");
+                    log.debug("srmGetSpaceMetaData: going to execute Quota Command for SA with token '" + tk + "'");
                     QuotaInfoInterface quotaInfo = null;
                     try {
                         // Retrieve MetaData Info from the execution of Quota
@@ -129,68 +121,46 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                         // Update METADATA result with QuotaInfo
 
                         // Setting UNUSED SIZE
-                        long freeSpace = quotaInfo.getBlockSoftLimit()
-                                - quotaInfo.getBlockUsage();
+                        long freeSpace = quotaInfo.getBlockSoftLimit() - quotaInfo.getBlockUsage();
                         try {
-                            TSizeInBytes unused = (TSizeInBytes.make(freeSpace,
-                                    quotaInfo.getSizeUnit()));
-                            long unusedD = new Double(unused
-                                    .getSizeIn(SizeUnit.BYTES)).longValue();
-                            metadata.setUnSize(TSizeInBytes.make(unusedD,
-                                    SizeUnit.BYTES));
+                            TSizeInBytes unused = (TSizeInBytes.make(freeSpace, quotaInfo.getSizeUnit()));
+                            long unusedD = new Double(unused.getSizeIn(SizeUnit.BYTES)).longValue();
+                            metadata.setUnSize(TSizeInBytes.make(unusedD, SizeUnit.BYTES));
                         } catch (InvalidTSizeAttributesException ex2) {
-                            log.error("srmGetSpaceMetaData: freeSpace ("
-                                    + freeSpace
+                            log.error("srmGetSpaceMetaData: freeSpace (" + freeSpace
                                     + " KBytes) returned by Quota is wrong.");
-                            log
-                                    .error("srmGetSpaceMetaData: QuotaInfo returned was: "
-                                            + quotaInfo);
+                            log.error("srmGetSpaceMetaData: QuotaInfo returned was: " + quotaInfo);
                         }
 
                         // Setting TOTAL SIZE
                         try {
-                            TSizeInBytes totalSize = (TSizeInBytes.make(
-                                    quotaInfo.getBlockSoftLimit(), quotaInfo
-                                            .getSizeUnit()));
-                            long totalSizeL = new Double(totalSize
-                                    .getSizeIn(SizeUnit.BYTES)).longValue();
-                            metadata.setTotalSize(TSizeInBytes.make(totalSizeL,
-                                    SizeUnit.BYTES));
+                            TSizeInBytes totalSize =
+                                    (TSizeInBytes.make(quotaInfo.getBlockSoftLimit(), quotaInfo.getSizeUnit()));
+                            long totalSizeL = new Double(totalSize.getSizeIn(SizeUnit.BYTES)).longValue();
+                            metadata.setTotalSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
                         } catch (InvalidTSizeAttributesException ex3) {
-                            log.error("srmGetSpaceMetaData: TotalSize ("
-                                    + quotaInfo.getBlockSoftLimit()
+                            log.error("srmGetSpaceMetaData: TotalSize (" + quotaInfo.getBlockSoftLimit()
                                     + " KBytes) returned by Quota is wrong.");
-                            log
-                                    .error("srmGetSpaceMetaData: QuotaInfo returned was: "
-                                            + quotaInfo);
+                            log.error("srmGetSpaceMetaData: QuotaInfo returned was: " + quotaInfo);
                         }
 
                         // Setting GUARANTEED SIZE
                         try {
-                            TSizeInBytes totalSize = (TSizeInBytes.make(
-                                    quotaInfo.getBlockSoftLimit(), quotaInfo
-                                            .getSizeUnit()));
-                            long totalSizeL = new Double(totalSize
-                                    .getSizeIn(SizeUnit.BYTES)).longValue();
-                            metadata.setGuarSize(TSizeInBytes.make(totalSizeL,
-                                    SizeUnit.BYTES));
+                            TSizeInBytes totalSize =
+                                    (TSizeInBytes.make(quotaInfo.getBlockSoftLimit(), quotaInfo.getSizeUnit()));
+                            long totalSizeL = new Double(totalSize.getSizeIn(SizeUnit.BYTES)).longValue();
+                            metadata.setGuarSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
                         } catch (InvalidTSizeAttributesException ex3) {
-                            log.error("srmGetSpaceMetaData: GuaranteedSize ("
-                                    + quotaInfo.getBlockSoftLimit()
+                            log.error("srmGetSpaceMetaData: GuaranteedSize (" + quotaInfo.getBlockSoftLimit()
                                     + " KBytes) returned by Quota is wrong.");
-                            log
-                                    .error("srmGetSpaceMetaData: QuotaInfo returned was: "
-                                            + quotaInfo);
+                            log.error("srmGetSpaceMetaData: QuotaInfo returned was: " + quotaInfo);
                         }
 
                     } catch (QuotaException qe) {
-                        log
-                                .error("srmGetSpaceMetaData: Unable to complete Quota Command."
-                                        + qe.getMessage());
+                        log.error("srmGetSpaceMetaData: Unable to complete Quota Command." + qe.getMessage());
                     }
                 } else {
-                    log.debug("srmGetSpaceMetaData: Space Token '"
-                            + metadata.getSpaceToken()
+                    log.debug("srmGetSpaceMetaData: Space Token '" + metadata.getSpaceToken()
                             + "' is pointing to a dynamic space reservation.");
 
                     // Into the TMetaDataSpace constructor (from the SpaceData
@@ -215,22 +185,29 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
         try {
             if (requestSuccess) {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
-                log.info(formatLogMessage(SUCCESS, GLOBALSTATUS,
-                        data.getUser(), null, data.getSpaceTokenArray(),
-                        globalStatus));
+                log.info(formatLogMessage(SUCCESS,
+                                          GLOBALSTATUS,
+                                          data.getUser(),
+                                          null,
+                                          data.getSpaceTokenArray(),
+                                          globalStatus));
             } else if (requestFailure) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                        "No valid space tokens");
-                log.error(formatLogMessage(FAILURE, GLOBALSTATUS, data
-                        .getUser(), null, data.getSpaceTokenArray(),
-                        globalStatus));
+                globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No valid space tokens");
+                log.error(formatLogMessage(FAILURE,
+                                           GLOBALSTATUS,
+                                           data.getUser(),
+                                           null,
+                                           data.getSpaceTokenArray(),
+                                           globalStatus));
             } else {
-                globalStatus = new TReturnStatus(
-                        TStatusCode.SRM_PARTIAL_SUCCESS,
-                        "Check space tokens statuses for details");
-                log.error(formatLogMessage(SUCCESS, GLOBALSTATUS, data
-                        .getUser(), null, data.getSpaceTokenArray(),
-                        globalStatus));
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, "Check space tokens statuses for details");
+                log.error(formatLogMessage(SUCCESS,
+                                           GLOBALSTATUS,
+                                           data.getUser(),
+                                           null,
+                                           data.getSpaceTokenArray(),
+                                           globalStatus));
             }
         } catch (InvalidTReturnStatusAttributeException ex) {
             log.error("srmGetSpaceMetaData: Impossible is happen!!", ex);
@@ -253,8 +230,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
      * @return QuotaInfoInterface
      * @throws QuotaException
      */
-    private QuotaInfoInterface retrieveInfoFromQuota(TSpaceToken token)
-            throws QuotaException {
+    private QuotaInfoInterface retrieveInfoFromQuota(TSpaceToken token) throws QuotaException {
         QuotaInfoInterface result = null;
         // Retrieve the VFS from Root stored in metadata
         StorageSpaceData space = catalog.getStorageSpace(token);
@@ -267,30 +243,22 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
             vfsName = vfs.getAliasName();
             fsType = vfs.getFSType();
         } catch (NamespaceException ex1) {
-            log.error(
-                    "srmGetSpaceMetaData: Unable to retrieve the Storage Area (VFS) with Root :"
-                            + rootPFN, ex1);
-            throw new QuotaException("VFS with root '" + rootPFN
-                    + "' does not exists in Namespace");
+            log.error("srmGetSpaceMetaData: Unable to retrieve the Storage Area (VFS) with Root :" + rootPFN, ex1);
+            throw new QuotaException("VFS with root '" + rootPFN + "' does not exists in Namespace");
         }
 
         // Retrieve the Quota Information bound with the VFS retrieved
         Quota quota;
         try {
             quota = vfs.getCapabilities().getQuota();
-            log.debug("srmGetSpaceMetaData: Retrieved Quota from VFS ('"
-                    + vfsName + "'):" + quota);
+            log.debug("srmGetSpaceMetaData: Retrieved Quota from VFS ('" + vfsName + "'):" + quota);
             // Check if Quota is defined
-            if (quota == null)
-                throw new QuotaException(
-                        "Quota Element is not defined for the VFS :" + vfsName);
+            if (quota == null) {
+                throw new QuotaException("Quota Element is not defined for the VFS :" + vfsName);
+            }
         } catch (NamespaceException ex2) {
-            log.error(
-                    "srmGetSpaceMetaData: Unable to retrieve the Quota Info from the VFS :"
-                            + vfsName, ex2);
-            throw new QuotaException(
-                    "Unable to retrieve the Quota Info from the VFS :"
-                            + vfsName);
+            log.error("srmGetSpaceMetaData: Unable to retrieve the Quota Info from the VFS :" + vfsName, ex2);
+            throw new QuotaException("Unable to retrieve the Quota Info from the VFS :" + vfsName);
         }
 
         /**
@@ -300,33 +268,33 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
         // Create the Quota Command
         if (!(fsType.toLowerCase().equals("gpfs"))) {
             // File System is not GPFS
-            log
-                    .warn("srmGetSpaceMetaData: Quota command is enabled only on GPFS filesystem."
-                            + " VFS (" + vfsName + ") is " + fsType + " type");
-            throw new QuotaException(
-                    "Unable to execute a quota command for FS Type = '"
-                            + fsType + "'.");
+            log.warn("srmGetSpaceMetaData: Quota command is enabled only on GPFS filesystem." + " VFS (" + vfsName
+                    + ") is " + fsType + " type");
+            throw new QuotaException("Unable to execute a quota command for FS Type = '" + fsType + "'.");
         } else {
             // Check if the quota is enabled
             boolean quotaEnabled = quota.getEnabled();
             if (!(quotaEnabled)) {
                 log.debug("QUOTA:" + quota);
-                throw new QuotaException(
-                        "Unable to execute a quota command because Quota is DISABLED");
+                throw new QuotaException("Unable to execute a quota command because Quota is DISABLED");
             }
 
             // Check if QuotaID is fileset and retrieve Fileset Value (param1)
             String param1 = null;
-            int quotaT = quota.getQuotaID().getOrdinalNumber();
+            int quotaT = quota.getQuotaType().getOrdinalNumber();
             switch (quotaT) {
-            case 0:
-                param1 = "-j " + quota.getQuotaID().getValue();
-                break;
-            default:
-                throw new QuotaException(
-                        "Unable to execute a quota command because Quota Type '"
-                                + QuotaType.string(quotaT)
-                                + "' is not supported");
+                case 0: //FileSet
+                    param1 = "-j " + quota.getQuotaType().getValue();
+                    break;
+                case 1: // User
+                    param1 = "-u " + quota.getQuotaType().getValue();
+                    break;
+                case 2: // Group
+                    param1 = "-g " + quota.getQuotaType().getValue();
+                    break;
+                default:
+                    throw new QuotaException("Unable to execute a quota command because Quota Type '"
+                            + QuotaType.string(quotaT) + "' is not supported");
             }
 
             // Retrieve Device
@@ -338,8 +306,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
             params.add(0, param1);
             params.add(1, param2);
-            GPFSQuotaParameters quotaParameters = new GPFSQuotaParameters(
-                    params);
+            GPFSQuotaParameters quotaParameters = new GPFSQuotaParameters(params);
 
             result = quotaCommand.executeGetQuotaInfo(quotaParameters);
 
@@ -363,8 +330,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
      *            TReturnStatus
      * @return String
      */
-    private String formatLogMessage(boolean success, boolean globalStatus,
-            GridUserInterface user, TSpaceToken token,
+    private String formatLogMessage(boolean success, boolean globalStatus, GridUserInterface user, TSpaceToken token,
             ArrayOfTSpaceToken arrayOfToken, TReturnStatus status) {
         StringBuffer buf = new StringBuffer("srmGetSpaceMetaData: ");
         buf.append("<" + user + "> ");

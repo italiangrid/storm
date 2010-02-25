@@ -98,6 +98,8 @@ public class Property  implements PropertyInterface {
      */
     public static class SizeUnitType {
 
+        private Logger log = NamespaceDirector.getLogger();
+        
         /**
        <xs:simpleType>
        <xs:restriction base="xs:string">
@@ -164,6 +166,7 @@ public class Property  implements PropertyInterface {
                 result = TSizeInBytes.make(this.size, SizeUnit.BYTES);
             }
             catch (InvalidTSizeAttributesException ex) {
+                log.error("Size '"+this.size+"'are invalid. Use empty size: '"+result+"'."+ex);
             }
             return result;
         }

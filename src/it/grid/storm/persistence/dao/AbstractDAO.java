@@ -26,13 +26,24 @@ public abstract class AbstractDAO {
         connFactory = PersistenceDirector.getConnectionFactory();
     }
 
+    protected void commit(Connection conn) {
+        try {
+            
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+        } catch (SQLException e) {
+            log.error("Cannot commit transaction", e);
+        }
+    }
+
     /**
      * Retrieve a connection Accessor method.
      * 
      * @return Connection
      * @throws DataAccessException
      */
-    public Connection getConnection() throws DataAccessException {
+    protected Connection getConnection() throws DataAccessException {
         // Retrieve a Connection
         Connection conn = null;
         try {
@@ -44,6 +55,28 @@ public abstract class AbstractDAO {
     }
 
     /**
+     * Retrieve a Statement from connection Accessor method.
+     * 
+     * @param conn Connection
+     * @return Statement
+     * @throws DataAccessException
+     */
+    protected Statement getStatement(Connection conn) throws DataAccessException {
+        Statement stat = null;
+        if (conn == null) {
+            throw new DataAccessException("No Connection available to create a Statement");
+        } else {
+            try {
+                stat = conn.createStatement();
+            } catch (SQLException ex1) {
+                log.error("Error while creating the statement");
+                throw new DataAccessException(ex1);
+            }
+        }
+        return stat;
+    }
+
+    /**
      * Release a connection Accessor method.
      * 
      * @param resultSet ResultSet
@@ -51,7 +84,7 @@ public abstract class AbstractDAO {
      * @param connection Connection
      * @throws DataAccessException
      */
-    public void releaseConnection(ResultSet resultSet, Statement statement, Connection connection)
+    protected void releaseConnection(ResultSet resultSet, Statement statement, Connection connection)
             throws DataAccessException {
 
         // Release the ResultSet
@@ -86,26 +119,15 @@ public abstract class AbstractDAO {
 
     }
 
-    /**
-     * Retrieve a Statement from connetion Accessor method.
-     * 
-     * @param conn Connection
-     * @return Statement
-     * @throws DataAccessException
-     */
-    public Statement getStatement(Connection conn) throws DataAccessException {
-        Statement stat = null;
-        if (conn == null) {
-            throw new DataAccessException("No Connection available to create a Statement");
-        } else {
-            try {
-                stat = conn.createStatement();
-            } catch (SQLException ex1) {
-                log.error("Error while creating the statement");
-                throw new DataAccessException(ex1);
-            }
+    protected void rollback(Connection conn) {
+        try {
+            
+            conn.rollback();
+            conn.setAutoCommit(true);
+            
+        } catch (SQLException e) {
+            log.error("Cannot rollback transaction", e);
         }
-        return stat;
     }
 
 }

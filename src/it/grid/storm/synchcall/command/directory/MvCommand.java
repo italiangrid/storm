@@ -1,9 +1,9 @@
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
@@ -28,25 +28,19 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
 
-
 /**
- * This class is part of the StoRM project.
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project This
+ * class implements the SrmMv Command.
  * 
- * Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- *
- * This class implements the SrmMv Command.
  * @author lucamag
  * @date May 28, 2008
- *
  */
 
-public class MvCommand extends DirectoryCommand implements Command
-{
+public class MvCommand extends DirectoryCommand implements Command {
 
-    private NamespaceInterface namespace;
-    private PtPChunkCatalog    putCatalog;
-    private PtGChunkCatalog    getCatalog;
+    private final NamespaceInterface namespace;
+    private final PtPChunkCatalog putCatalog;
+    private final PtGChunkCatalog getCatalog;
 
     public MvCommand() {
         namespace = NamespaceDirector.getNamespace();
@@ -57,11 +51,11 @@ public class MvCommand extends DirectoryCommand implements Command
 
     /**
      * Method that provide SrmMv functionality.
+     * 
      * @param inputData Contains information about input data for Mv request.
      * @return outputData Contains output data
      */
-    public OutputData execute(InputData data)
-    {
+    public OutputData execute(InputData data) {
 
         log.debug("srmMv: Start execution.");
         MvOutputData outputData = new MvOutputData();
@@ -77,15 +71,16 @@ public class MvCommand extends DirectoryCommand implements Command
         }
 
         /**
-         * Validate MvInputData. The check is done at this level to separate
-         * internal StoRM logic from xmlrpc specific operation.
+         * Validate MvInputData. The check is done at this level to separate internal StoRM logic from xmlrpc specific
+         * operation.
          */
 
         if ((inputData == null)
                 || ((inputData != null) && (inputData.getFromSurl() == null) && (inputData.getToSurl() != null))) {
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified.");
-                log.error("srmMv: <>  Request for [fromSURL=; toSURL=] failed with [status: "+ returnStatus.toString()+"]");
+                log.error("srmMv: <>  Request for [fromSURL=; toSURL=] failed with [status: " + returnStatus.toString()
+                        + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmMv: <> Request for [fromSURL=; toSURL=] failed. Error creating returnStatus " + ex1);
             }
@@ -94,18 +89,19 @@ public class MvCommand extends DirectoryCommand implements Command
         }
 
         /**
-         * Check if GridUser in MvInputData is not null, otherwise return
-         * with an error message.
+         * Check if GridUser in MvInputData is not null, otherwise return with an error message.
          */
         GridUserInterface guser = inputData.getUser();
         if (guser == null) {
             log.info("SrmMv: Unable to get user credential.");
             try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                "Unable to get user credential!");
-                log.error("srmMv: <"+guser+"> Request for [fromSURL=; toSURL=] failed with [status: "+ returnStatus.toString()+"]");
+                returnStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=; toSURL=] failed with [status: "
+                        + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMv: <> Request for [fromSURL=; toSURL=] Request failed. Error creating returnStatus " + ex1);
+                log.error("srmMv: <> Request for [fromSURL=; toSURL=] Request failed. Error creating returnStatus "
+                        + ex1);
             }
             outputData.setStatus(returnStatus);
             return outputData;
@@ -123,20 +119,22 @@ public class MvCommand extends DirectoryCommand implements Command
             try {
                 fromStori = namespace.resolveStoRIbySURL(fromSURL, guser);
             } catch (NamespaceException ex) {
-                log.debug("srmMv: Unable to build StoRI by SURL:["+fromSURL+"]"+ex);
+                log.debug("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + ex);
                 returnStatus_INVALID_PATH.setExplanation("Invalid fromSURL specified!");
                 outputData.setStatus(returnStatus_INVALID_PATH);
-                log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
                 return outputData;
             }
         } else {
             returnStatus_INVALID_PATH.setExplanation("Invalid fromSURL specified!");
             outputData.setStatus(returnStatus_INVALID_PATH);
-            log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+            log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                    + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
             return outputData;
         }
 
-        //Create StoRI from toSURL
+        // Create StoRI from toSURL
         StoRI toStori = null;
 
         if (!toSURL.isEmpty()) {
@@ -144,47 +142,47 @@ public class MvCommand extends DirectoryCommand implements Command
             try {
                 toStori = namespace.resolveStoRIbySURL(toSURL, guser);
             } catch (NamespaceException ex) {
-                log.debug("srmMv: Unable to build StoRI by SURL:["+toSURL+"]"+ex);
+                log.debug("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]" + ex);
                 returnStatus_INVALID_PATH.setExplanation("Invalid toSURL specified!");
                 outputData.setStatus(returnStatus_INVALID_PATH);
-                log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
                 return outputData;
             }
         } else {
             returnStatus_INVALID_PATH.setExplanation("Invalid toSURL specified!");
             outputData.setStatus(returnStatus_INVALID_PATH);
-            log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+            log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                    + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
             return outputData;
         }
 
-
         /**
-         * From version 1.4
-         * Add the control for Storage Area
-         * using the new authz for space component.
+         * From version 1.4 Add the control for Storage Area using the new authz for space component.
          */
 
         SpaceHelper sp = new SpaceHelper();
         TSpaceToken token = sp.getTokenFromStoRI(log, fromStori);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-        if( ! (spaceAuth.authorize(guser, SRMSpaceRequest.MV)) ) {
-            //User not authorized to perform RM request on the storage area
-            log.debug("srmMv: User not authorized to perform srmMv request on the storage area: "+token);
+        if (!(spaceAuth.authorize(guser, SRMSpaceRequest.MV))) {
+            // User not authorized to perform RM request on the storage area
+            log.debug("srmMv: User not authorized to perform srmMv request on the storage area: " + token);
             try {
-                returnStatus = new TReturnStatus(
-                        TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                        ": User not authorized to perform srmMv request on the storage area: " +token);
-                log.error("srmMv: <> Request for [fromSURL:"+fromSURL+"] failed with [status: "
+                returnStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                          ": User not authorized to perform srmMv request on the storage area: "
+                                                  + token);
+                log.error("srmMv: <> Request for [fromSURL:" + fromSURL + "] failed with [status: "
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMv: <> Request for [fromSURL:"+fromSURL+"] failed. Error creating returnStatus " + ex1);
+                log.error("srmMv: <> Request for [fromSURL:" + fromSURL + "] failed. Error creating returnStatus "
+                        + ex1);
             }
 
             outputData.setStatus(returnStatus);
             return outputData;
         }
-
 
         // Get ACL mode from StoRI (AoT or JiT)
         boolean hasJiTACL = fromStori.hasJustInTimeACLs();
@@ -195,11 +193,13 @@ public class MvCommand extends DirectoryCommand implements Command
         // If fromFile and toFile are the same, then return SRM_SUCCESS
         if (fromFile.getPath().compareTo(toFile.getPath()) == 0) {
             try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                "Source SURL and target SURL are the same file.");
-                log.info("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] successfully done with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+                returnStatus =
+                        new TReturnStatus(TStatusCode.SRM_SUCCESS, "Source SURL and target SURL are the same file.");
+                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] successfully done with [status: " + returnStatus_INVALID_PATH.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.info("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] successfully done. Error creating returnStatus." + ex1);
+                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] successfully done. Error creating returnStatus." + ex1);
             }
             outputData.setStatus(returnStatus);
             return outputData;
@@ -218,19 +218,21 @@ public class MvCommand extends DirectoryCommand implements Command
                 log.debug("srmMv: New toSURL: " + toSURLString);
                 StoRI toStoriFile = null;
                 try {
-                    TSURL toSURLFile = TSURL.makeFromString(toSURLString);
+                    TSURL toSURLFile = TSURL.makeFromStringValidate(toSURLString);
                     toStoriFile = namespace.resolveStoRIbySURL(toSURLFile, guser);
                 } catch (NamespaceException ex1) {
                     log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'", ex1);
                     returnStatus_INVALID_PATH.setExplanation("Invalid toSURL specified!");
                     outputData.setStatus(returnStatus_INVALID_PATH);
-                    log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus.toString()+"]");
+                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                            + "] failed with [status: " + returnStatus.toString() + "]");
                     return outputData;
                 } catch (InvalidTSURLAttributesException ex2) {
                     log.error("Unable to create toSURL");
                     returnStatus_INVALID_PATH.setExplanation("Invalid toSURL specified!");
                     outputData.setStatus(returnStatus_INVALID_PATH);
-                    log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus_INVALID_PATH.toString()+"]");
+                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                            + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
                     return outputData;
                 }
                 toFile = toStoriFile.getLocalFile();
@@ -241,25 +243,49 @@ public class MvCommand extends DirectoryCommand implements Command
          * Construction of AuthZ request
          */
         VomsGridUser user = (VomsGridUser) guser;
-        AuthorizationDecision mvFromAuth = AuthorizationCollector.getInstance().canDelete(user, fromStori);
-        AuthorizationDecision mvToAuth = AuthorizationCollector.getInstance().canCreateNewFile(user, toStori);
-        if ((mvFromAuth != null) && (mvToAuth != null) && (mvFromAuth.isPermit()) && (mvToAuth.isPermit())) {
+        // AuthorizationDecision mvFromAuth = AuthorizationCollector.getInstance().canDelete(user, fromStori);
+        // AuthorizationDecision mvToAuth = AuthorizationCollector.getInstance().canCreateNewFile(user, toStori);
+        /**
+         * 1.5.0 Path Authorization
+         */
+        AuthzDecision mvAuthz_source =
+                AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.MV_source, fromStori, toStori);
+        AuthzDecision mvAuthz_dest =
+                AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.MV_dest, fromStori, toStori);
+        if ((mvAuthz_source.equals(AuthzDecision.PERMIT)) && (mvAuthz_dest.equals(AuthzDecision.PERMIT))) {
             log.debug("SrmMv: Mv authorized for " + user + " for Source file = " + fromStori.getPFN()
                     + " to Target file =" + toStori.getPFN());
             returnStatus = manageAuthorizedMV(user, fromStori, toFile, hasJiTACL);
-            if(returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                log.info("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] successfully done with [status: "+ returnStatus.toString()+"]");
+            if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] successfully done with [status: " + returnStatus.toString() + "]");
             } else {
-                log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus.toString()+"]");
+                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] failed with [status: " + returnStatus.toString() + "]");
             }
 
         } else {
+            String errMess = "Authz failure for unknown reasons";
+            boolean srcFailure = false;
+            if (!(mvAuthz_source.equals(AuthzDecision.PERMIT))) {
+                srcFailure = true;
+                errMess = "User is not authorized to read and/or delete (needed for Mv) the source file.";
+            }
+            if (!(mvAuthz_dest.equals(AuthzDecision.PERMIT))) {
+                if (srcFailure) {
+                    errMess +=
+                            "and User is not authorized to create and/or write (needed for Mv) the destination file.";
+                } else {
+                    errMess = "User is not authorized to create and/or write (needed for Mv) the destination file.";
+                }
+            }
             try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                "User is not authorized to make a new directory");
-                log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed with [status: "+ returnStatus.toString()+"]");
+                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, errMess);
+                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMv: <"+guser+"> Request for [fromSURL="+fromSURL+"; toSURL="+toSURL+"] failed. Error creating returnStatus " + ex1);
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                        + "] failed. Error creating returnStatus " + ex1);
             }
         }
         outputData.setStatus(returnStatus);
@@ -267,16 +293,14 @@ public class MvCommand extends DirectoryCommand implements Command
     }
 
     /**
-     * Split PFN , recursive creation is not supported, as reported at page 16
-     * of Srm v2.1 spec.
+     * Split PFN , recursive creation is not supported, as reported at page 16 of Srm v2.1 spec.
+     * 
      * @param user VomsGridUser
      * @param LocalFile fromFile
      * @param LocalFile toFile
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedMV(VomsGridUser user, StoRI fromStori, LocalFile toFile,
-            boolean hasJiTACL)
-    {
+    private TReturnStatus manageAuthorizedMV(VomsGridUser user, StoRI fromStori, LocalFile toFile, boolean hasJiTACL) {
         TReturnStatus returnStatus = null;
         boolean creationDone;
 
@@ -289,11 +313,8 @@ public class MvCommand extends DirectoryCommand implements Command
         LocalFile toParent = toFile.getParentFile();
 
         /*
-         * Controllare che
-         * File sorgente esiste
-         * Esiste directory destinazione(che esista e sia directory)
-         * Non esiste file deestinazione
-         * 
+         * Controllare che File sorgente esiste Esiste directory destinazione(che esista e sia directory) Non esiste
+         * file deestinazione
          */
 
         boolean sourceExists = false;
@@ -313,20 +334,19 @@ public class MvCommand extends DirectoryCommand implements Command
         }
 
         if (sourceExists && targetDirExists && !targetFileExists) {
-            //Request on valid from and to file.
+            // Request on valid from and to file.
             log.debug("srmMv : All Check passed.");
 
             /**
-             * CHECK HERE
-             * IN CASO DI EGRID SI VUOLE LA CREAZIONE DINAMICA DI DIRECTORY?
+             * CHECK HERE IN CASO DI EGRID SI VUOLE LA CREAZIONE DINAMICA DI DIRECTORY?
              */
 
             /**
-             * Check if there is an active SrmPrepareToPut on the source SURL.
-             * In that case SrmMv() fails with  SRM_FILE_BUSY.
+             * Check if there is an active SrmPrepareToPut on the source SURL. In that case SrmMv() fails with
+             * SRM_FILE_BUSY.
              */
             if (putCatalog.isSRM_SPACE_AVAILABLE(fromStori.getSURL())) {
-                //There is an active PrepareToPut!
+                // There is an active PrepareToPut!
                 log.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
                 failure = true;
                 explanation = "There is an active SrmPrepareToPut on from SURL.";
@@ -337,11 +357,11 @@ public class MvCommand extends DirectoryCommand implements Command
             }
 
             /**
-             * Check if there is an active SrmPrepareToGet on the source SURL.
-             * In that case SrmMv() fails with  SRM_FILE_BUSY.
+             * Check if there is an active SrmPrepareToGet on the source SURL. In that case SrmMv() fails with
+             * SRM_FILE_BUSY.
              */
             if (getCatalog.isSRM_FILE_PINNED(fromStori.getSURL())) {
-                //There is an active PrepareToPut!
+                // There is an active PrepareToPut!
                 log.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
                 failure = true;
                 explanation = "There is an active SrmPrepareToGet on from SURL";
@@ -406,38 +426,16 @@ public class MvCommand extends DirectoryCommand implements Command
 
         // Check if failure occour before try to set up ACL.
         /*
-         if (!failure) {
-         // Add Acces Control List (ACL) in directory created.
-         // ACL allow user to read-write-list the new directory
-         // Call wrapper to set ACL on file created.
-         log.debug("Mv : Adding ACL for directory created : '" + file + "'  " + "group:g_name:rwx");
-         FilesystemPermission fpRW = FilesystemPermission.ReadWrite;
-         FilesystemPermission fpLIST = FilesystemPermission.ListTraverse;
-
-         // Check if Jit or AoT
-         if (hasJiTACL) {
-         // Jit Case
-         // With JiT Model the ACL for directory is not needed.
-         } else {
-         // AoT Case
-         try {
-         file.grantGroupPermission(user.getLocalUser(), fpRW);
-         file.grantGroupPermission(user.getLocalUser(), fpLIST);
-         } catch (CannotMapUserException ex5) {
-         log.error("Unable to setting up the ACL ", ex5);
-         failure = true;
-         explanation = explanation + " [ADDED : Unable to setting up the ACL ]";
-         }
-         }
-
-         if (failure) {
-         // Rollback ...
-         /**
-         * @todo: Rollback of failure.
-         }
-
-         } // failure
-
+         * if (!failure) { // Add Acces Control List (ACL) in directory created. // ACL allow user to read-write-list
+         * the new directory // Call wrapper to set ACL on file created.
+         * log.debug("Mv : Adding ACL for directory created : '" + file + "'  " + "group:g_name:rwx");
+         * FilesystemPermission fpRW = FilesystemPermission.ReadWrite; FilesystemPermission fpLIST =
+         * FilesystemPermission.ListTraverse; // Check if Jit or AoT if (hasJiTACL) { // Jit Case // With JiT Model the
+         * ACL for directory is not needed. } else { // AoT Case try { file.grantGroupPermission(user.getLocalUser(),
+         * fpRW); file.grantGroupPermission(user.getLocalUser(), fpLIST); } catch (CannotMapUserException ex5) {
+         * log.error("Unable to setting up the ACL ", ex5); failure = true; explanation = explanation +
+         * " [ADDED : Unable to setting up the ACL ]"; } } if (failure) { // Rollback ... /**
+         * @todo: Rollback of failure. } } // failure
          */
 
         // Setting of Return Status

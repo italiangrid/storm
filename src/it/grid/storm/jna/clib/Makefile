@@ -1,29 +1,26 @@
+DESTDIR?=.
+BUILDDIR?=.
+GPFS_HOME?=/usr/lpp/mmfs
 
-ifndef DESTDIR
-DESTDIR=.
-endif
-
-ifndef BUILDDIR
-BUILDDIR=.
-endif
+GPFS_CFLAGS=-I$(GPFS_HOME)/include
+GPFS_LDFLAGS=-L$(GPFS_HOME)/lib
+GPFS_LDADD=-l gpfs
 
 CC = gcc
-CFLAGS = -O
+
+CFLAGS=-O -D_FILE_OFFSET_BITS=64 -c -fPIC
+CFLAGS += $(GPFS_CFLAGS)
+
+.PHONY: all clean lib
 
 all: lib
 
 clean:
 	rm -f *.o lib*
 
-#storm_dmutil: storm_dmutil.c
-#	$(CC) -o $(BUILDDIR)/storm_dmutil.o $(CFLAGS) -c -fPIC  -ldmapi storm_dmutil.c
-
 storm_libcutil: storm_libcutil.c
-	$(CC) -D_FILE_OFFSET_BITS=64 -o $(BUILDDIR)/storm_libcutil.o $(CFLAGS) -c -fPIC storm_libcutil.c
-
-#lib: storm_dmutil storm_libcutil
-#	gcc -shared -Wall -o $(DESTDIR)/libstorm_cutil.so -ldmapi $(BUILDDIR)/storm_dmutil.o $(BUILDDIR)/storm_libcutil.o
+	$(CC) -o $(BUILDDIR)/storm_libcutil.o $(CFLAGS) storm_libcutil.c
 
 lib: storm_libcutil
-	gcc -shared -Wall -o $(DESTDIR)/libstorm_cutil.so $(BUILDDIR)/storm_libcutil.o
+	$(CC) -shared -Wall -o $(DESTDIR)/libstorm_cutil.so $(BUILDDIR)/storm_libcutil.o $(GPFS_LDFLAGS) $(GPFS_LDADD)
 

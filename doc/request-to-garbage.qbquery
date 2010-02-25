@@ -1,0 +1,2 @@
+﻿use storm_db;
+SELECT ID, r_token FROM request_queue WHERE UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > 86400 AND status <> 17 AND status <> 18;

@@ -1,9 +1,9 @@
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
@@ -35,15 +35,11 @@ import it.grid.storm.synchcall.data.directory.RmOutputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- *
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project
+ * 
  * @author lucamag
  * @date May 27, 2008
- *
  */
 
 public class RmCommand implements Command {
@@ -63,8 +59,7 @@ public class RmCommand implements Command {
     /**
      * Method that provide SrmRm functionality.
      * 
-     * @param inputData
-     *            Contains information about input data for rm request.
+     * @param inputData Contains information about input data for rm request.
      * @return RmOutputData Contains output data
      */
     public OutputData execute(InputData inputDataGeneric) {
@@ -77,23 +72,16 @@ public class RmCommand implements Command {
         RmInputData inputData = (RmInputData) inputDataGeneric;
 
         /**
-         * Validate RmInputData. The check is done at this level to separate
-         * internal StoRM logic from xmlrpc specific operation.
+         * Validate RmInputData. The check is done at this level to separate internal StoRM logic from xmlrpc specific
+         * operation.
          */
-        if ((inputData == null)
-                || ((inputData != null) && (inputData.getSurlArray() == null))) {
+        if ((inputData == null) || ((inputData != null) && (inputData.getSurlArray() == null))) {
             log.debug("srmRm : Invalid input parameter specified");
             try {
-                globalStatus = new TReturnStatus(
-                        TStatusCode.SRM_INVALID_REQUEST,
-                "arrayOfSURLs is empty");
-                log
-                .error("srmRm: <>  Request for [SURL=] failed with [status: "
-                        + globalStatus.toString() + "]");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "arrayOfSURLs is empty");
+                log.error("srmRm: <>  Request for [SURL=] failed with [status: " + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log
-                .error("srmRm: <>  Request for [SURL=] failed. Error creating returnStatus "
-                        + ex1);
+                log.error("srmRm: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
 
             }
             outputData.setStatus(globalStatus);
@@ -103,24 +91,18 @@ public class RmCommand implements Command {
         }
 
         /**
-         * Check if GridUser in RMInputData is not null, otherwise return with
-         * an error message.
+         * Check if GridUser in RMInputData is not null, otherwise return with an error message.
          */
         GridUserInterface user = inputData.getUser();
         if (user == null) {
             log.debug("srmRm: Unable to get user credential. ");
             try {
-                globalStatus = new TReturnStatus(
-                        TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                "Unable to get user credential");
-                log.error("srmRm: <> Request for [SURL:] failed with [status: "
-                        + globalStatus.toString() + "]");
+                globalStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential");
+                log.error("srmRm: <> Request for [SURL:] failed with [status: " + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log
-                .error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus "
-                        + ex1);
+                log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
             }
-
             outputData.setStatus(globalStatus);
             outputData.setSurlStatus(null);
 
@@ -142,23 +124,19 @@ public class RmCommand implements Command {
         try {
             log.debug("srmRm: Trying to get user Mapping.");
             lUser = user.getLocalUser();
+            log.debug("srmRm: User Mapping done (LocalUser gid:'" + lUser.getPrimaryGid() + "')");
         } catch (CannotMapUserException ex) {
             // Anybody requests will be processed!
-            log.debug("srmRm: Unable to map the user '" + user
-                    + "' in a local user.", ex);
+            log.debug("srmRm: Unable to map the user '" + user + "' in a local user.", ex);
             globalFailure = true;
-            explanation = "Unable to map the user '" + user
-            + "' in a local user.";
+            explanation = "Unable to map the user '" + user + "' in a local user.";
             statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
         }
-
-        log.debug("srmRm: User Mapping.");
 
         int numberOfFiles = surlArray.size();
 
         if (!(globalFailure)) {
-            log.debug("srmRm: DirManager: Rm: SURLVectorSize: "
-                    + surlArray.size());
+            log.debug("srmRm: DirManager: Rm: SURLVectorSize: " + surlArray.size());
             StoRI stori = null;
             TReturnStatus returnStatus = null;
 
@@ -177,22 +155,12 @@ public class RmCommand implements Command {
                 if (surl.isEmpty()) {
                     log.debug("srmRm: Malformed SURL passed from converter ");
                     try {
-                        returnStatus = new TReturnStatus(
-                                TStatusCode.SRM_INVALID_PATH, "Invalid SURL");
-                        log.error("srmRm: <" + user + "> Removing SURL " + i
-                                + " of " + numberOfFiles
-                                + " [SURL:] failed with [status: "
-                                + returnStatus.toString() + "]");
+                        returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL");
+                        log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                + " [SURL:] failed with [status: " + returnStatus.toString() + "]");
                     } catch (InvalidTReturnStatusAttributeException ex1) {
-                        log
-                        .error("srmRm: <"
-                                + user
-                                + "> Removing SURL "
-                                + i
-                                + " of "
-                                + numberOfFiles
-                                + " [SURL:] failed. Error creating returnStatus "
-                                + ex1);
+                        log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                + " [SURL:] failed. Error creating returnStatus " + ex1);
                     }
                     failure = true;
                 } else {
@@ -202,50 +170,37 @@ public class RmCommand implements Command {
                     } catch (NamespaceException ex) {
                         log.debug("SrmRm: Unable to build StoRI by PFN " + ex);
                         try {
-                            returnStatus = new TReturnStatus(
-                                    TStatusCode.SRM_INVALID_PATH,
-                            "Invalid SURL specified!");
-                            log.error("srmRm: <" + user + "> Removing SURL "
-                                    + i + " of " + numberOfFiles
-                                    + " [SURL:] failed with [status: "
-                                    + returnStatus.toString() + "]");
+                            returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
+                            log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                    + " [SURL:] failed with [status: " + returnStatus.toString() + "]");
                         } catch (InvalidTReturnStatusAttributeException ex1) {
-                            log
-                            .error("srmRm: <"
-                                    + user
-                                    + "> Removing SURL "
-                                    + i
-                                    + " of "
-                                    + numberOfFiles
-                                    + " [SURL:] failed. Error creating returnStatus "
-                                    + ex1);
+                            log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                    + " [SURL:] failed. Error creating returnStatus " + ex1);
                         }
                         failure = true;
                     }
                 }
 
-
-                if(!failure) {
+                if (!failure) { // Means SURL is well formed and SURL is valid
 
                     /**
-                     * From version 1.4
-                     * Add the control for Storage Area
-                     * using the new authz for space component.
+                     * From version 1.4 Add the control for Storage Area using the new authz for space component.
                      */
 
                     SpaceHelper sp = new SpaceHelper();
                     TSpaceToken token = sp.getTokenFromStoRI(log, stori);
                     SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-                    if( ! (spaceAuth.authorize(user, SRMSpaceRequest.RM)) ) {
-                        //User not authorized to perform RM request on the storage area
-                        log.debug("srmRm: User not authorized to perform srmRm request on the storage area: "+token);
+                    if (!(spaceAuth.authorize(user, SRMSpaceRequest.RM))) {
+                        // User not authorized to perform RM request on the storage area
+                        log.debug("srmRm: User not authorized to perform srmRm request on the storage area: " + token);
                         try {
-                            globalStatus = new TReturnStatus(
-                                    TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                                    ": User not authorized to perform srmRm request on the storage area: " +token);
-                            log.error("srmRm: <> Request for [SURL:+] failed with [status: "
-                                    + globalStatus.toString() + "]");
+                            globalStatus =
+                                    new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                                      ": User not authorized to perform srmRm request on the storage area: "
+                                                              + token);
+                            log.error("srmRm: <> Request for [SURL:+] failed with [status: " + globalStatus.toString()
+                                    + "]");
                         } catch (InvalidTReturnStatusAttributeException ex1) {
                             log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
                         }
@@ -257,84 +212,77 @@ public class RmCommand implements Command {
                     }
                 }
 
-
                 if (!failure) {
-                    AuthorizationDecision deleteAuth = AuthorizationCollector
-                    .getInstance().canDelete(user, stori);
+                    // AuthorizationDecision deleteAuth = AuthorizationCollector.getInstance().canDelete(user, stori);
 
-                    if ((deleteAuth != null) && (deleteAuth.isPermit())) {
+                    /**
+                     * 1.5.0 Path Authorization
+                     */
+                    AuthzDecision deleteAuthz = AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.RM, stori);
+                    if (deleteAuthz.equals(AuthzDecision.PERMIT)) {
 
-                        log.debug("srmRm: authorized for " + user
-                                + " for file = " + stori.getPFN());
+                        log.debug("srmRm: authorized for " + user + " for file = " + stori.getPFN());
 
-                        //Prior to delete the file get the actual file size to update properly the DB
+                        // Prior to delete the file get the actual file size to update properly the DB
 
                         LocalFile localElement = stori.getLocalFile();
                         long fileSize = 0;
-                        if(localElement.exists()) {
+                        if (localElement.exists()) {
                             fileSize = localElement.getExactSize();
                         }
 
                         returnStatus = manageAuthorizedRM(lUser, surl, stori);
                         if (returnStatus.getStatusCode() == TStatusCode.SRM_SUCCESS) {
                             globalFailure = false;
-                            log.info("srmRm: <"
-                                    + user
-                                    + "> Removing SURL "
-                                    + i
-                                    + " of "
-                                    + numberOfFiles
-                                    + " [SURL:] successfully done with [status: "
-                                    + returnStatus.toString() + "]");
+                            log.info("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                    + " [SURL:] successfully done with [status: " + returnStatus.toString() + "]");
 
                             /**
                              * If Storage Area hard limit is enabled, update space on DB
                              */
                             try {
                                 VirtualFSInterface fs = stori.getVirtualFileSystem();
-                                if ( (fs!=null) && ( fs.getProperties().isOnlineSpaceLimited()) ){
+                                if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
                                     SpaceHelper sh = new SpaceHelper();
-                                    //Update the used space into Database
+                                    // Update the used space into Database
                                     sh.increaseFreeSpaceForSA(log, funcName, user, surl, fileSize);
                                 }
                             } catch (NamespaceException e) {
-                                log.warn(funcName+"Not able to build the virtual fs properties for checking Storage Area size enforcement!");
+                                log.warn(funcName
+                                        + "Not able to build the virtual fs properties for checking Storage Area size enforcement!");
                             }
 
-
-
-
                         } else {
+
                             partialSuccess = true;
                         }
 
                         fileStatus.setStatus(returnStatus);
 
-                        log.debug("srmRm:  of (" + stori.getPFN()
-                                + ") authorized was done. File Status is : "
+                        log.debug("srmRm:  of (" + stori.getPFN() + ") authorized was done. File Status is : "
                                 + returnStatus);
                         failure = false;
                     } else {
 
                         failure = true;
-                        explanation = "User is not authorized to delete the file";
+                        explanation =
+                                "User is not authorized to delete the file (AuthzDecision is :'" + deleteAuthz + "')";
                         try {
-                            returnStatus = new TReturnStatus(statusCode, explanation);
-                            log.error("srmRm: <"+user+"> Removing SURL "+i+" of "+numberOfFiles+" [SURL:] failed with [status: "+ returnStatus.toString()+"]");
+                            returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, explanation);
+                            log.warn("srmRm: <" + user + "> Removing SURL " + (i + 1) + " of " + numberOfFiles
+                                    + " [SURL:] failed with [status: " + returnStatus.toString() + "]");
                         } catch (InvalidTReturnStatusAttributeException ex1) {
-                            log.error("srmRm: <"+user+"> Removing SURL "+i+" of "+numberOfFiles+" [SURL:] Error creating returnStatus " + ex1);
+                            log.error("srmRm: <" + user + "> Removing SURL " + (i + 1) + " of " + numberOfFiles
+                                    + " [SURL:] Error creating returnStatus " + ex1);
                         }
-
 
                     }
 
                     if (failure) {
                         try {
-                            returnStatus = new TReturnStatus(statusCode,
-                                    explanation);
+                            returnStatus = new TReturnStatus(statusCode, explanation);
                         } catch (InvalidTReturnStatusAttributeException ex1) {
-                            log.debug("RmDir : Error creating returnStatus "
-                                    + ex1);
+                            log.debug("RmDir : Error creating returnStatus " + ex1);
                         }
                     }
                 } else {
@@ -365,20 +313,17 @@ public class RmCommand implements Command {
         // Set Global Status
         try {
             globalStatus = new TReturnStatus(statusCode, explanation);
-            log.debug("srmRm: RM of N=" + numberOfFiles
-                    + " files is now complete.");
+            log.debug("srmRm: RM of N=" + numberOfFiles + " files is now complete.");
             if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                log.info("srmRm: <" + user + "> Request for SURLs [SURL:"
-                        + surlArray + "] successfully done with [status: "
-                        + globalStatus.toString() + "]");
+                log.info("srmRm: <" + user + "> Request for SURLs [SURL:" + surlArray
+                        + "] successfully done with [status: " + globalStatus.toString() + "]");
             } else {
-                log.error("srmRm: <" + user + "> Request for SURLs [SURL:"
-                        + surlArray + "] failed with [status: "
+                log.warn("srmRm: <" + user + "> Request for SURLs [SURL:" + surlArray + "] failed with [status: "
                         + globalStatus.toString() + "]");
             }
         } catch (InvalidTReturnStatusAttributeException e) {
-            log.error("srmRm: <" + user + "> Request for SURLs [SURL:"
-                    + surlArray + "] failed. Error creating returnStatus " + e);
+            log.error("srmRm: <" + user + "> Request for SURLs [SURL:" + surlArray
+                    + "] failed. Error creating returnStatus " + e);
         }
 
         outputData.setStatus(globalStatus);
@@ -388,15 +333,11 @@ public class RmCommand implements Command {
     }
 
     /**
-     * 
-     * @param user
-     *            VomsGridUser
-     * @param stori
-     *            StoRI
+     * @param user VomsGridUser
+     * @param stori StoRI
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedRM(LocalUser lUser, TSURL surl,
-            StoRI stori) {
+    private TReturnStatus manageAuthorizedRM(LocalUser lUser, TSURL surl, StoRI stori) {
         TReturnStatus returnStatus = null;
         boolean fileRemoved;
         boolean failure = false;
@@ -418,15 +359,14 @@ public class RmCommand implements Command {
         } else {
 
             /**
-             * If there are SrmPrepareToPut active on the SURL specified change
-             * the SRM_STATUS from SRM_SPACE_AVAILABLE to SRM_ABORTED
+             * If there are SrmPrepareToPut active on the SURL specified change the SRM_STATUS from SRM_SPACE_AVAILABLE
+             * to SRM_ABORTED
              */
-            putcatalog.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl,
-            "File Removed by a SrmRm()");
+            putcatalog.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl, "File Removed by a SrmRm()");
 
             /**
-             * If there are SrmPrepareToGet active on the SURL specified change
-             * the SRM_STATUS from SRM_FILE_PINNED to SRM_ABORTED
+             * If there are SrmPrepareToGet active on the SURL specified change the SRM_STATUS from SRM_FILE_PINNED to
+             * SRM_ABORTED
              */
             // getcatalog.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl,"File Removed
             // by a SrmRm()");
@@ -442,9 +382,8 @@ public class RmCommand implements Command {
                 // Remove file entry from Persistence
 
                 /**
-                 * @todo: Remove file entry from Persistence Check if the
-                 *        specified SURL is associated to a certain space Token,
-                 *        in that case remove it and update the used space.
+                 * @todo: Remove file entry from Persistence Check if the specified SURL is associated to a certain
+                 *        space Token, in that case remove it and update the used space.
                  */
 
                 statusCode = TStatusCode.SRM_SUCCESS;
@@ -486,9 +425,8 @@ public class RmCommand implements Command {
         }
 
         /**
-         * Same situation in Rmdir This check is really needed here? The check
-         * can not be done at this level. In Jit no ACE on file are setted!!! In
-         * any case add check for null permission.
+         * Same situation in Rmdir This check is really needed here? The check can not be done at this level. In Jit no
+         * ACE on file are setted!!! In any case add check for null permission.
          */
 
         // Check if user or group permission are null to prevent Null Pointer
@@ -496,19 +434,15 @@ public class RmCommand implements Command {
 
         /*
          * if(userPermission!=null) { canDelete = userPermission.canDelete();
-         * log.debug("removeTarget:userP:"+userPermission.canDelete()); }
-         * 
-         * if ((groupPermission!=null)&&(!canDelete)) {
-         * log.debug("removeTarget:groupP:"+groupPermission.canDelete());
-         * canDelete = groupPermission.canDelete(); }
+         * log.debug("removeTarget:userP:"+userPermission.canDelete()); } if ((groupPermission!=null)&&(!canDelete)) {
+         * log.debug("removeTarget:groupP:"+groupPermission.canDelete()); canDelete = groupPermission.canDelete(); }
          */
 
         // if ( (userPermission.canDelete()) || (groupPermission.canDelete())) {
         if (canDelete) {
             result = file.delete();
         } else {
-            log.debug("srmRm : Unable to delete the file '" + file
-                    + "'. Permission denied.");
+            log.debug("srmRm : Unable to delete the file '" + file + "'. Permission denied.");
         }
         return result;
     }

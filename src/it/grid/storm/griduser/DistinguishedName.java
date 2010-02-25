@@ -14,8 +14,13 @@
 package it.grid.storm.griduser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -31,6 +36,7 @@ import javax.security.auth.x500.X500Principal;
  */
 public class DistinguishedName implements SubjectAttribute {
 
+    private static final Logger log = LoggerFactory.getLogger(DistinguishedName.class);
     /**
         C       Country Name
         ST      State Or ProvinceName
@@ -64,21 +70,44 @@ public class DistinguishedName implements SubjectAttribute {
 
     public DistinguishedName(String stringDN) {
         if (stringDN!=null) {
-            this.distinguishedName = stringDN;
+            distinguishedName = stringDN;
             //Check the format of DN
             int slashIndex = distinguishedName.indexOf('/');
             int commaIndex = distinguishedName.indexOf(',');
             if (slashIndex>-1) {
                 parseDNslahed();
+                buildX500DN();
             }
             if (commaIndex>-1) {
                 parseDNcommed();
+                // Java 1.6 - use the new constructor
+                builderWithMap(stringDN);
             }
-            buildX500DN();
+            
 
         } else {
-            this.distinguishedName = "empty";
+            distinguishedName = "empty";
         }
+    }
+
+    /**
+     * @param stringDN
+     */
+    private void builderWithMap(String stringDN) {
+        String[] couples = stringDN.split(",");
+        Map<String, String> pairs = new HashMap<String, String>();
+        for (String couple : couples) {
+            if (couple.contains("=")) {
+                String key = couple.split("=")[0];
+                String value = couple.split("=")[1];
+                pairs.put(key, value);
+            }
+        }
+        if (pairs.size() > 0) {
+            log.error("To use this functionality (DN rfc 2253) you have to recompile with Java 1.6");
+            // x500DN = new X500Principal(stringDN, pairs);
+        }
+
     }
 
     private void assignAttributes(String[] dnChunk){
@@ -145,7 +174,7 @@ public class DistinguishedName implements SubjectAttribute {
          */
 
         ArrayList<String> list = new ArrayList<String>();
-        String DN = this.distinguishedName;
+        String DN = distinguishedName;
         boolean stop = false;
 
         while(!stop) {
@@ -209,7 +238,7 @@ public class DistinguishedName implements SubjectAttribute {
     }
 
     public X500Principal getX500DN() {
-        return this.x500DN;
+        return x500DN;
     }
 
 
@@ -227,42 +256,42 @@ public class DistinguishedName implements SubjectAttribute {
 
 
     public String getCountryName() {
-        return this.countryName;
+        return countryName;
     }
 
     public String getProvinceName() {
-        return this.provinceName;
+        return provinceName;
     }
 
     public String getOrganizationName() {
-        return this.organizationName;
+        return organizationName;
     }
 
     public ArrayList<String> getOrganizationalUnitNames() {
-        return this.organizationalUnitNames;
+        return organizationalUnitNames;
     }
 
     public ArrayList<String> getDomainComponents() {
-        return this.domainComponents;
+        return domainComponents;
     }
 
     public String getLocalityName() {
-        return this.localityName;
+        return localityName;
     }
 
     public ArrayList<String> getCommonNames() {
-        return this.commonNames;
+        return commonNames;
     }
 
     public String getEMail() {
-        return this.eMailAddress;
+        return eMailAddress;
     }
 
 
 
 
     public String getDN() {
-        return this.distinguishedName;
+        return distinguishedName;
     }
 
 

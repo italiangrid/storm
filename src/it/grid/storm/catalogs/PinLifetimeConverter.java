@@ -43,7 +43,12 @@ public class PinLifetimeConverter {
      * Configuration class method.
      */
     public long toStoRM(int s) {
-        if (s<=0) return Configuration.getInstance().getPinLifetimeMinimum();
+        if (s==0) {
+            return Configuration.getInstance().getPinLifetimeDefault();
+        } else if (s<0) {
+            //The default is used also as a Minimum
+            return Configuration.getInstance().getPinLifetimeDefault();
+        }
         return new Integer(s).longValue();
     }
 }

@@ -64,7 +64,6 @@ public class Namespace implements NamespaceInterface {
         return parser.getNamespaceVersion();
     }
 
-
     /* (non-Javadoc)
      * @see it.grid.storm.namespace.NamespaceInterface#getAllDefinedVFS()
      */
@@ -78,7 +77,7 @@ public class Namespace implements NamespaceInterface {
 
     public VirtualFSInterface getDefaultVFS(GridUserInterface user) throws NamespaceException {
         TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(getApproachableRules(user));
-        log.debug("Compatible Approachable rules : "+ appRules);
+        log.debug("Compatible Approachable rules : " + appRules);
         ApproachableRule firstAppRule = appRules.first();
         log.debug("Default APP_RULE is the first (in respsect of name): " + firstAppRule);
 
@@ -142,7 +141,6 @@ public class Namespace implements NamespaceInterface {
         return stori;
     }
 
-
     /**
      *
      * The resolution is based on the retrieving of the Winner Rule
@@ -185,7 +183,6 @@ public class Namespace implements NamespaceInterface {
         return stori;
     }
 
-
     public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws NamespaceException {
 
         HashSet vfsNamesApproachable = (HashSet) getListOfVFSName(user);
@@ -218,8 +215,8 @@ public class Namespace implements NamespaceInterface {
         return stori;
     }
 
-    public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user) throws
-    NamespaceException {
+    public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
+            throws NamespaceException {
         /**
          * @todo Check the approachable rules
          */
@@ -236,7 +233,6 @@ public class Namespace implements NamespaceInterface {
     public VirtualFSInterface resolveVFSbyRoot(String absolutePath) throws NamespaceException {
         return getWinnerVFS(absolutePath);
     }
-
 
     public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException {
         return getWinnerVFS(absolutePath);
@@ -341,7 +337,6 @@ public class Namespace implements NamespaceInterface {
      *              UTILITY METHODS
      **********************************************/
 
-
     /**
      * The winner rule is selected from the rule with the minimum distance
      * between the StFN-Path and the StFN-Root within the rule specification.
@@ -374,7 +369,6 @@ public class Namespace implements NamespaceInterface {
         return winnerRule;
     }
 
-
     /**
      * The winner rule is selected from the rule with the minimum distance
      * between the StFN-Path and the StFN-Root within the rule specification.
@@ -395,9 +389,9 @@ public class Namespace implements NamespaceInterface {
             //Check if the selected Rule holds a VFS belonging to the set of VFS
             //approachable by the requestor
             String mappedVFS = rule.getMappedFS();
-            log.debug("### Rules : '"+mappedVFS + "'  Lenght:"+mappedVFS.length());
-            log.debug("VFS Approachable set : "+vfsNameApproachable);
-            log.debug("Contained? = "+vfsNameApproachable.contains(mappedVFS));
+            log.debug("### Rules : '" + mappedVFS + "'  Lenght:" + mappedVFS.length());
+            log.debug("VFS Approachable set : " + vfsNameApproachable);
+            log.debug("Contained? = " + vfsNameApproachable.contains(mappedVFS));
             if (vfsNameApproachable.contains(mappedVFS)) {
                 //VFS compatibile
                 stfnRule = rule.getStFNRoot();
@@ -419,7 +413,6 @@ public class Namespace implements NamespaceInterface {
         return winnerRule;
     }
 
-
     @SuppressWarnings("unchecked")
     public VirtualFSInterface getWinnerVFS(String absolutePath) throws NamespaceException {
         VirtualFSInterface vfsWinner = null;
@@ -428,33 +421,34 @@ public class Namespace implements NamespaceInterface {
         int distance = Integer.MAX_VALUE;
         Enumeration scan = table.keys();
         String vfs_root = null;
+        String vfs_root_winner = null;
         boolean found = false;
         String vfsNameWinner = null;
         while (scan.hasMoreElements()) {
             vfs_root = (String) scan.nextElement();
             int d = NamespaceUtil.computeDistanceFromPath(vfs_root, path);
-            log.debug("Pondering VFS Root :'"+vfs_root+"' against '"+path+"' DISTANCE = "+d );
-            if (d<distance) {
+            log.debug("Pondering VFS Root :'" + vfs_root + "' against '" + path + "' DISTANCE = " + d);
+            if (d < distance) {
                 boolean enclosed = NamespaceUtil.isEnclosed(vfs_root, absolutePath);
                 if (enclosed) { //Found a compatible Mapping rule
                     distance = d;
                     vfsWinner = table.get(vfs_root);
                     try {
                         vfsNameWinner = vfsWinner.getAliasName();
-                    }
-                    catch (NamespaceException ex) {
+                        vfs_root_winner = vfs_root;
+                    } catch (NamespaceException ex) {
                         log.error("Unable to retrieve VFS name.");
                     }
-                    log.debug("Partial winner is " + vfs_root + " (VFS :'" + vfsNameWinner + "'");
+                    log.debug("Partial winner is " + vfs_root_winner + " (VFS :'" + vfsNameWinner + "'");
                     found = true;
                 }
             }
         }
         if (found) {
-            log.debug("VFS winner is " + vfs_root + " (VFS :'" + vfsNameWinner + "'");
+            log.debug("VFS winner is " + vfs_root_winner + " (VFS :'" + vfsNameWinner + "'");
         } else {
-            log.error("Unable to found a VFS compatible with path :'"+absolutePath+"'");
-            throw new NamespaceException("Unable to found a VFS compatible with path :'"+absolutePath+"'");
+            log.error("Unable to found a VFS compatible with path :'" + absolutePath + "'");
+            throw new NamespaceException("Unable to found a VFS compatible with path :'" + absolutePath + "'");
         }
         return vfsWinner;
     }
@@ -466,7 +460,7 @@ public class Namespace implements NamespaceInterface {
     public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException {
         String result = null;
         TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(getApproachableRules(user));
-        log.debug("Compatible Approachable rules : "+ appRules);
+        log.debug("Compatible Approachable rules : " + appRules);
         ApproachableRule firstAppRule = appRules.first();
         log.debug("Default APP_RULE is the first (in respsect of name): " + firstAppRule);
         //Retrieve the Relative Path for Space Files
@@ -483,7 +477,6 @@ public class Namespace implements NamespaceInterface {
         return result;
     }
 
-
     public String getRelativePathForSpaceFile(ApproachableRule rule) {
         String result = rule.getSpaceRelativePath();
         if (result == null) {
@@ -492,7 +485,6 @@ public class Namespace implements NamespaceInterface {
         return result;
     }
 
-
     public String makeSpaceFileNameForUser(GridUserInterface user) {
         /**
          * @todo Instead of Local User name, extract from DN the NAME_SURNAME
@@ -500,8 +492,7 @@ public class Namespace implements NamespaceInterface {
         String userName = null;
         try {
             userName = user.getLocalUser().getLocalUserName();
-        }
-        catch (CannotMapUserException ex) {
+        } catch (CannotMapUserException ex) {
             log.error("Cannot map user.");
         }
         if (userName == null) {
@@ -520,8 +511,8 @@ public class Namespace implements NamespaceInterface {
         TreeSet<ApproachableRule> appRules = null;
         Map rules = parser.getApproachableRules();
         Hashtable appRulesUnorderd = null;
-        if (rules!=null) {
-            appRulesUnorderd = new Hashtable( parser.getApproachableRules() );
+        if (rules != null) {
+            appRulesUnorderd = new Hashtable(parser.getApproachableRules());
         }
         appRules = new TreeSet();
 
@@ -529,9 +520,9 @@ public class Namespace implements NamespaceInterface {
         if (appRulesUnorderd != null) {
             ApproachableRule appRule = null;
             // List the entries
-            for ( Iterator it = appRulesUnorderd.keySet().iterator(); it.hasNext(); ) {
-                String key = (String)it.next();
-                appRule = (ApproachableRule)appRulesUnorderd.get( key );
+            for (Iterator it = appRulesUnorderd.keySet().iterator(); it.hasNext();) {
+                String key = (String) it.next();
+                appRule = (ApproachableRule) appRulesUnorderd.get(key);
                 if (matchSubject(appRule, user)) {
                     //Insert into the result (that is an ordered set)
                     appRules.add(appRule);
@@ -540,7 +531,6 @@ public class Namespace implements NamespaceInterface {
         }
         return appRules;
     }
-
 
     /**
      *
@@ -553,18 +543,18 @@ public class Namespace implements NamespaceInterface {
 
         //Retrieve VFS names list
         List listVFSnames = appRule.getApproachableVFS();
-        if (listVFSnames!=null) {
-            Vector<String> vfsNames = new Vector<String> ( listVFSnames );
-            log.debug( " VFS NAMES = " + vfsNames );
+        if (listVFSnames != null) {
+            Vector<String> vfsNames = new Vector<String>(listVFSnames);
+            log.debug(" VFS NAMES = " + vfsNames);
             //Looking for the default element, signed with a '*' char at the end
             String vfsName = null;
-            if (vfsNames.size()>0) { //Various VFS names exists. The default is '*' tagged or the first.
+            if (vfsNames.size() > 0) { //Various VFS names exists. The default is '*' tagged or the first.
                 boolean found = false;
                 for (Object element : vfsNames) {
-                    vfsName = ( String ) element;
-                    if ( vfsName.endsWith( "*" ) ) {
+                    vfsName = (String) element;
+                    if (vfsName.endsWith("*")) {
                         found = true;
-                        vfsName = vfsName.substring(0,vfsName.length()-1);
+                        vfsName = vfsName.substring(0, vfsName.length() - 1);
                         break;
                     }
                 }
@@ -575,20 +565,17 @@ public class Namespace implements NamespaceInterface {
                 }
             }
         }
-        log.debug(" Default VFS detected : '" + defaultVFSName+"'");
+        log.debug(" Default VFS detected : '" + defaultVFSName + "'");
         defaultVFS = parser.getVFS(defaultVFSName);
         log.debug(" VFS Description " + defaultVFS);
         return defaultVFS;
     }
-
-
 
     private static boolean matchSubject(ApproachableRule approachableRule, GridUserInterface user) {
         boolean result = true;
         result = approachableRule.match(user);
         return result;
     }
-
 
     /**
      * Retrieve the list of VFS name approachable by the Grid User gUser.
@@ -602,7 +589,7 @@ public class Namespace implements NamespaceInterface {
         ApproachableRule appRule;
 
         HashSet approachVFSNames = new HashSet();
-        for (; enumer.hasMoreElements(); ) {
+        for (; enumer.hasMoreElements();) {
             appRule = (ApproachableRule) enumer.nextElement();
             if (appRule.match(gUser)) {
                 approachVFSNames.addAll(appRule.getApproachableVFS());
@@ -630,7 +617,6 @@ public class Namespace implements NamespaceInterface {
      */
     @SuppressWarnings("unchecked")
     //@Override
-
     public boolean isStfnFittingSomewhere(String surlString, GridUserInterface user) throws NamespaceException {
         boolean result = false;
 
@@ -650,7 +636,7 @@ public class Namespace implements NamespaceInterface {
                 stfnRoots.add(stfnRoot);
             }
         }
-        log.debug("FITTING: List of StFNRoots approachables = "+stfnRoots);
+        log.debug("FITTING: List of StFNRoots approachables = " + stfnRoots);
 
         //Build SURL and retrieve the StFN part.
         String stfn = SURL.makeSURLfromString(surlString).getStFN();
@@ -660,7 +646,7 @@ public class Namespace implements NamespaceInterface {
 
         for (Object element : stfnRoots) {
             stfnRoot = (String) element;
-            log.debug("FITTING: considering StFNRoot = " + stfnRoot + " against StFN = "+stfn);
+            log.debug("FITTING: considering StFNRoot = " + stfnRoot + " against StFN = " + stfn);
             ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfnRoot);
             stfnRootArray.retainAll(stfnArray);
             if (!(stfnRootArray.isEmpty())) {
@@ -671,7 +657,5 @@ public class Namespace implements NamespaceInterface {
         }
         return result;
     }
-
-
 
 }

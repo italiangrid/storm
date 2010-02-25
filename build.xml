@@ -310,8 +310,6 @@ test.junit.dir
 	<include name="axis.jar"/>
 	<include name="axis-schema.jar"/>
 	<include name="backport-util-concurrent.jar"/>
-	<include name="c3p0-0.8.4.5.jar"/>
-	<!-- <include name="cglib-full-2.0.1.jar"/> -->
     <include name="srm22client.jar"/>
     <include name="cog-axis.jar"/>
 	<include name="cog-jglobus.jar"/>
@@ -322,28 +320,22 @@ test.junit.dir
 	<include name="commons-codec-1.3.jar"/>
 	<include name="commons-collections-3.1.jar"/>
 	<include name="commons-configuration-1.4.jar"/>
-	<include name="commons-dbcp-1.2.1.jar"/>
+	<include name="commons-dbcp-1.2.1.jar"/> <!-- used by Persistence Component -->
 	<include name="commons-digester-1.7.jar"/>
 	<include name="commons-discovery-0.2.jar"/>
 	<include name="commons-lang-2.3.jar"/>
-	<include name="commons-pool-1.2.jar"/>
+	<include name="commons-pool-1.2.jar"/> <!-- used by Persistence Component -->
 	<include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
 	<include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
  	<include name="cryptix32.jar"/>
 	<include name="cryptix-asn1.jar"/>
-	<include name="cryptix.jar"/>
-	<include name="dom4j-1.4.jar"/>
+	<!--<include name="cryptix.jar"/>  Old jar, out-of-date by cryptix32.jar -->
 	<include name="dom.jar"/>
-	<!-- <include name="ehcache-0.9.jar"/> -->
-	<!-- <include name="hibernate-2.1.6.jar"/> -->
-	<!-- <include name="hsqldb.jar"/> -->
     <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
 	<include name="jaxrpc.jar"/>
     <include name="jce-jdk13-131.jar"/>
 	<include name="jgss.jar"/>
   	<include name="mail.jar"/>
-	<!-- <include name="middlegen-2.1.jar"/> -->
-	<!-- <include name="middlegen-hibernate-plugin-2.1.jar"/> -->
 	<include name="odmg-3.0.jar"/>
 	<include name="puretls.jar"/>
 	<include name="saaj.jar"/>
@@ -354,14 +346,7 @@ test.junit.dir
 	<include name="xmlrpc-server-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
 	<include name="xmlrpc-common-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
     <include name="ws-commons-util-1.0.1.jar"/> <!-- PART of XML-RPC 3.0 -->
-	<include name="xsdlib.jar"/>
-    <include name="ECARClient.jar"/>
-
-    <!-- <include name="jline-0.9.9.jar"/> --> <!-- Used for Console feature (NS-Admin) -->
-    <!-- <include name="QuickServer.jar"/> --> <!-- Administration Server -->
-    <!-- <include name="QSAdminGUI.jar"/> --> <!-- Administration Server GUI -->
-
-  	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
+ 	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
   	<include name="dim-18.r2.jar"/>
   	
   	<include name="logback-classic-0.9.15.jar"/> <!-- New LOGGING system -->
@@ -375,7 +360,8 @@ test.junit.dir
     <include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
     <include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
     <include name="rest-recalltable/jsr311-api-1.1.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
-  	
+
+    <include name="json-20080701.jar"/>  	
   </fileset>
 
   <fileset id="src.jars.build"
@@ -391,13 +377,13 @@ test.junit.dir
 
   <!-- config files; needed at runtime -->
   <fileset id="src.config"
-     dir="${src.config.dir}">
-    <include name="*.properties"/>
+     dir="${src.config.dir}">   
     <include name="namespace.xml"/>
-    <include name="namespace.xsd"/>
+    <include name="namespace-1.5.0.xsd"/>
     <include name="lcmaps.db"/>
     <include name="logging.xml"/>
-    <include name="*.template"/>
+    <include name="storm.properties.template"/>
+  	<include name="path-authz.db"/>
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
     <include name="logrotate.d/storm-backend.logrotate"/>
@@ -414,6 +400,7 @@ test.junit.dir
 	<include name="README"/>
 	<include name="storm_mysql_update_from_1.0.0_to_1.3.2000.sql"/>
 	<include name="storm_mysql_update_from_1.3.2000_to_1.4.0.sql"/>
+    <include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql"/>
   </fileset>	
 	
   <!-- start/stop scripts -->
@@ -433,8 +420,7 @@ test.junit.dir
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
 	dir="${src.doc.dir}">
-  	<exclude name="VomsGridUser.txt"/>
-  	<exclude name="EGEE-FQAN_wildcard.pdf"/>	
+    <include name="INSTALL.txt"/>	
   </fileset>	
   <fileset id="src.docs.license"
 	dir="${src.dir}"
@@ -473,28 +459,13 @@ test.junit.dir
   </target>
 
 
-  <!-- preprocess source files -->
-  <target name="preprocess">
-	<!--
-	  it's faster to rebuild this file each time than checking for
-	  up-to-date-ness...
-	-->
-    <exec executable="cpp"
-        input="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.jappo"
-        output="${src.java.dir}/it/grid/storm/authorization/sources/CompositeAuthorizationSource.java"
-        logError="true">
-      <arg line="-P -C"/>
-    </exec>
-  </target>
-
   <!-- make c libs used by JNA -->
-  <target name="clibs-jna" depends="init,libs.dmutil"/>
-
-  <target name="libs.dmutil" depends="init">
+  <target name="clibs-jna" depends="init">
     <exec executable="make" logError="true">
-      <arg line="-C ${src.java.dir}/it/grid/storm/jna/clib"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/jna"/>
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="BUILDDIR=${build.obj.dir}"/>
+      <arg value="ARCH=${arch}"/>
     </exec>
   </target>
 
@@ -572,7 +543,8 @@ test.junit.dir
 	  failonerror="true"
 	  logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
-	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+      <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+      <arg value="ARCH=${arch}"/>
     </exec>
   </target>
 
@@ -582,7 +554,7 @@ test.junit.dir
 	depends="libs.lcmaps,libs.filesystem, clibs-jna"/>
 
   <target name="precompile"
-	depends="init,preprocess,swig"/>
+	depends="init,swig"/>
 
   <!-- compile the .java source files -->
   <target name="javac"
@@ -625,9 +597,9 @@ test.junit.dir
   <!-- =============================================================== -->
 
   <!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
-  <target name="clean.clibs.dmutil">
+  <target name="clean.clibs-jna">
     <exec executable="make"
-        dir="${src.java.dir}/it/grid/storm/jna/clib"
+        dir="${src.java.dir}/it/grid/storm/jna"
         logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="clean"/>
@@ -666,7 +638,7 @@ test.junit.dir
 
   <target name="clean"
 	description="Remove build tree and all of the intermediate build files"
-	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs.dmutil">
+	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs-jna">
     <!-- Delete the ${build.dir} directory tree -->
     <delete dir="${build.dir}"/>
   </target>
@@ -919,7 +891,7 @@ test.junit.dir
       destdir="${test.junit.dir}"
       debug="true"
       deprecation="true"
-      source="1.4"
+      source="1.6"
       target="1.5"
       sourcepath="${src.java.dir}">
 	  <!-- Javac needs a *directory* as argument... -->

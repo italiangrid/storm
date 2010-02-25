@@ -20,20 +20,10 @@ CREATE TABLE IF NOT EXISTS db_version (
   minor    int,
   revision int,
   description VARCHAR(100));
-REPLACE INTO db_version (major,minor,revision,description) VALUES (1,4,0000,'1 Dec 2008');
 
-CREATE TABLE IF NOT EXISTS tape_recall (
-  taskId VARCHAR(255) BINARY NOT NULL,
-  requestToken VARCHAR(255) BINARY,
-  requestType char(3),
-  fileName text not null,
-  status int,
-  voName VARCHAR(255) BINARY,
-  userID VARCHAR(255) BINARY,
-  retryAttempt int,
-  timeStamp datetime not null,
-  primary key (taskId)) type=InnoDB;
-
+REPLACE INTO db_version (major,minor,revision,description) VALUES (1,5,00,'1 Feb 2010');
+  
+  
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
   config_FileStorageTypeID CHAR(1),
@@ -100,7 +90,7 @@ CREATE TABLE IF NOT EXISTS status_Get (
   transferURL text,
   request_GetID int not null,
   primary key (ID)) type=InnoDB;
-CREATE TABLE IF NOT EXISTS request_DirOption (ID int not null auto_increment, isSourceADirectory tinyint(1) default 'false' not null, allLevelRecursive tinyint(1) default 'false', numOfLevels int default 1, primary key (ID)) type=InnoDB;
+CREATE TABLE IF NOT EXISTS request_DirOption (ID int not null auto_increment, isSourceADirectory tinyint(1) default 0 not null, allLevelRecursive tinyint(1) default 0, numOfLevels int default 1, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS request_Put (ID int not null auto_increment, request_queueID int not null, targetSURL text not null, expectedFileSize bigint, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS status_Put (ID int not null auto_increment, statusCode int not null, explanation VARCHAR(255), fileSize bigint, estimatedWaitTime int, remainingPinTime int, remainingFileTime int, transferURL text, request_PutID int not null, primary key (ID)) type=InnoDB;
 CREATE TABLE IF NOT EXISTS request_Copy (ID int not null auto_increment, request_queueID int, request_DirOptionID int, sourceSURL text not null, targetSURL text not null, primary key (ID)) type=InnoDB;
@@ -223,8 +213,8 @@ CREATE TABLE IF NOT EXISTS `storage_space` (
   `SS_ID` bigint(20) NOT NULL auto_increment,
   `USERDN` VARCHAR(150) NOT NULL default '',
   `VOGROUP` VARCHAR(20) NOT NULL default '',
-  `ALIAS` VARCHAR(100) default NULL BINARY,
-  `SPACE_TOKEN` VARCHAR(100) NOT NULL default '' BINARY,
+  `ALIAS` VARCHAR(100) default NULL,
+  `SPACE_TOKEN` VARCHAR(100) BINARY NOT NULL default '',
   `CREATED` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `TOTAL_SIZE` bigint(20) NOT NULL default '0',
   `GUAR_SIZE` bigint(20) NOT NULL default '0',
@@ -237,4 +227,21 @@ CREATE TABLE IF NOT EXISTS `storage_space` (
   KEY `SPACE_NAME` (`SPACE_TOKEN`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
+
+USE storm_be_ISAM;
+CREATE TABLE IF NOT EXISTS tape_recall (
+  taskId MEDIUMINT NOT NULL AUTO_INCREMENT,
+  requestToken VARCHAR(255) BINARY,
+  requestType char(3),
+  fileName text not null,
+  pinLifetime int,
+  status int,
+  voName VARCHAR(255) BINARY,
+  userID VARCHAR(255) BINARY,
+  retryAttempt int,
+  timeStamp datetime not null,
+  deferredStartTime datetime not null,
+  primary key (taskId)) type=InnoDB;
+
+ALTER TABLE tape_recall ADD INDEX deferredStartTime (deferredStartTime);
 

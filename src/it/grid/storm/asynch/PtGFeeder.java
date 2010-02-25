@@ -5,8 +5,6 @@ import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
@@ -23,7 +21,6 @@ import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,40 +91,36 @@ public final class PtGFeeder implements Delegable {
      * InvalidPtGFeederAttributesException is thrown.
      */
     public PtGFeeder(RequestSummaryData rsd) throws InvalidPtGFeederAttributesException {
-        if (rsd==null) {
-            throw new InvalidPtGFeederAttributesException(null,null,null);
+        if (rsd == null) {
+            throw new InvalidPtGFeederAttributesException(null, null, null);
         }
-        if (rsd.gridUser()==null) {
-            throw new InvalidPtGFeederAttributesException(rsd,null,null);
+        if (rsd.gridUser() == null) {
+            throw new InvalidPtGFeederAttributesException(rsd, null, null);
         }
         try {
-            this.gu = rsd.gridUser();
+            gu = rsd.gridUser();
             this.rsd = rsd;
-            this.gsm = new GlobalStatusManager(rsd.requestToken());
+            gsm = new GlobalStatusManager(rsd.requestToken());
         } catch (InvalidOverallRequestAttributeException e) {
-            log.error("ATTENTION in PtGFeeder! Programming bug when creating GlobalStatusManager! "+e);
-            throw new InvalidPtGFeederAttributesException(rsd,gu,null);
+            log.error("ATTENTION in PtGFeeder! Programming bug when creating GlobalStatusManager! " + e);
+            throw new InvalidPtGFeederAttributesException(rsd, gu, null);
         }
     }
-
-
-
-
 
     /**
      * This method splits a multifile request as well as exapanding recursive ones; it
      * then creates the necessary tasks and loads them into the PtG chunk scheduler.
      */
     public void doIt() {
-        log.debug("PtGFeeder: pre-processing "+rsd.requestToken()); //info
+        log.debug("PtGFeeder: pre-processing " + rsd.requestToken()); //info
         //Get all parts in request
         Collection chunks = PtGChunkCatalog.getInstance().lookup(rsd.requestToken());
         if (chunks.isEmpty()) {
             log.warn("ATTENTION in PtGFeeder! This SRM PtG request contained nothing to process! " + rsd.requestToken());
-            RequestSummaryCatalog.getInstance().failRequest(rsd,"This SRM Get request contained nothing to process!");
+            RequestSummaryCatalog.getInstance().failRequest(rsd, "This SRM Get request contained nothing to process!");
         } else {
             manageChunks(chunks);
-            log.debug("PtGFeeder: finished pre-processing "+rsd.requestToken()); //info
+            log.debug("PtGFeeder: finished pre-processing " + rsd.requestToken()); //info
         }
     }
 
@@ -136,12 +129,12 @@ public final class PtGFeeder implements Delegable {
      * the srm command!
      */
     private void manageChunks(Collection chunks) {
-        log.debug("PtGFeeder - number of chunks in request: "+chunks.size()); //info
+        log.debug("PtGFeeder - number of chunks in request: " + chunks.size()); //info
         PtGChunkData auxChunkData; //chunk currently being processed
-        for (Iterator i = chunks.iterator(); i.hasNext(); ) {
+        for (Iterator i = chunks.iterator(); i.hasNext();) {
             auxChunkData = (PtGChunkData) i.next();
             gsm.addChunk(auxChunkData); //add chunk for global status consideration
-            if (correct(auxChunkData.fromSURL())) {
+            if (TSURL.isValid(auxChunkData.fromSURL())) {
                 //fromSURL corresponds to This installation of StoRM: go on with processing!
                 if (auxChunkData.dirOption().isDirectory()) {
                     manageIsDirectory(auxChunkData); //expand the directory and manage the children!
@@ -162,31 +155,6 @@ public final class PtGFeeder implements Delegable {
     }
 
     /**
-     * Auxiliary method that returns true if the supplied TSURL corresponds to the host
-     * where StoRM is installed.
-     */
-    private boolean correct(TSURL surl) {
-        String machine = surl.sfn().machine().toString().toLowerCase();
-        EndPoint ep = surl.sfn().endPoint();
-        int port = surl.sfn().port().toInt();
-        List stormNames = Configuration.getInstance().getListOfMachineNames();
-        String stormEndpoint = Configuration.getInstance().getServiceEndpoint().toLowerCase();
-        int stormPort = Configuration.getInstance().getFEPort();
-        log.debug("PtG FEEDER: machine="+machine+"; port="+port+"; endPoint="+ep.toString());
-        log.debug("PtG FEEDER: storm-machines="+stormNames+"; storm-port="+stormPort+"; endPoint="+stormEndpoint);
-        if (!stormNames.contains(machine)) {
-            return false;
-        }
-        if (stormPort!=port) {
-            return false;
-        }
-        if ((!ep.isEmpty()) && (!ep.toString().toLowerCase().equals(stormEndpoint))) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Private method that handles the case of dirOption NOT set!
      */
     private void manageNotDirectory(PtGChunkData auxChunkData) {
@@ -194,11 +162,11 @@ public final class PtGFeeder implements Delegable {
         auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToGet chunk is being processed!"); //change status of this chunk to being processed!
         PtGChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
         try {
-            SchedulerFacade.getInstance().chunkScheduler().schedule(new PtGChunk(gu,rsd,auxChunkData,gsm)); //hand it to scheduler!
+            SchedulerFacade.getInstance().chunkScheduler().schedule(new PtGChunk(gu, rsd, auxChunkData, gsm)); //hand it to scheduler!
             log.debug("PtGFeeder - chunk scheduled."); //info
         } catch (InvalidPtGChunkAttributesException e) {
             //for some reason gu, rsd or auxChunkData may be null! This should not be so!
-            log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n" +e);
+            log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not allow this chunk to be processed!");
@@ -206,7 +174,7 @@ public final class PtGFeeder implements Delegable {
             gsm.failedChunk(auxChunkData);
         } catch (SchedulerException e) {
             //Internal error of scheduler!
-            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" +e);
+            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler error prevented this chunk from being processed!");
@@ -224,34 +192,34 @@ public final class PtGFeeder implements Delegable {
         auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToGet chunk is being processed!"); //change status of this chunk to being processed!
         PtGChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
         try {
-            StoRI auxStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(auxChunkData.fromSURL(),gu); //StoRI for current chunk
-            Collection auxCol = auxStoRI.getChildren(gu,auxChunkData.dirOption()); //Collection of children!
-            log.debug("PtGFeeder - Number of children in parent: "+auxCol.size()); //info
+            StoRI auxStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(auxChunkData.fromSURL(), gu); //StoRI for current chunk
+            Collection auxCol = auxStoRI.getChildren(gu, auxChunkData.dirOption()); //Collection of children!
+            log.debug("PtGFeeder - Number of children in parent: " + auxCol.size()); //info
             StoRI childStoRI;
             PtGChunkData childData;
-            TDirOption notDir = new TDirOption(false,false,0);
-            for (Iterator i=auxCol.iterator(); i.hasNext(); ) {
+            TDirOption notDir = new TDirOption(false, false, 0);
+            for (Iterator i = auxCol.iterator(); i.hasNext();) {
                 childStoRI = (StoRI) i.next();
                 try {
-                    childData = new PtGChunkData(
-                            auxChunkData.requestToken(),
-                            childStoRI.getSURL(),
-                            auxChunkData.lifeTime(),
-                            notDir,
-                            auxChunkData.desiredProtocols(),
-                            auxChunkData.fileSize(),
-                            auxChunkData.status(),
-                            auxChunkData.transferURL()
-                    );
+                    childData =
+                            new PtGChunkData(auxChunkData.requestToken(),
+                                             childStoRI.getSURL(),
+                                             auxChunkData.getPinLifeTime(),
+                                             notDir,
+                                             auxChunkData.desiredProtocols(),
+                                             auxChunkData.fileSize(),
+                                             auxChunkData.status(),
+                                             auxChunkData.transferURL());
                     PtGChunkCatalog.getInstance().addChild(childData); //fill in new db row and set the PrimaryKey of ChildData!
-                    log.debug("PtGFeeder - added child data: "+childData);
+                    log.debug("PtGFeeder - added child data: " + childData);
                     gsm.addChunk(childData); //add chunk for global status consideration
                     manageNotDirectory(childData); //manage chunk
                 } catch (InvalidPtGChunkDataAttributesException e) {
                     //For some reason it was not possible to create a PtGChunkData: it is a programme bug!!! It should not
                     //occur!!!
                     //Log it and skip to the next one!
-                    log.error("ERROR in PtGFeeder! While expanding recursive request, it was not possible to create a new PtGChunkData! "+e);
+                    log.error("ERROR in PtGFeeder! While expanding recursive request, it was not possible to create a new PtGChunkData! "
+                            + e);
                 }
             }
             log.debug("PtGFeeder - expansion completed."); //info
@@ -270,7 +238,7 @@ public final class PtGFeeder implements Delegable {
             //Could not create TDirOption that specifies no-expansion!
             auxChunkData.changeStatusSRM_FAILURE("srmPrepareToGet with dirOption set: expansion failure due to internal error!");
             PtGChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            log.error("UNEXPECTED ERROR in PtGFeeder! Could not create TDirOption specifying non-expansion!\n" +e);
+            log.error("UNEXPECTED ERROR in PtGFeeder! Could not create TDirOption specifying non-expansion!\n" + e);
             log.error("Request: " + rsd.requestToken());
             log.error("Chunk: " + auxChunkData);
             gsm.failedChunk(auxChunkData);
@@ -301,15 +269,11 @@ public final class PtGFeeder implements Delegable {
         }
     }
 
-
-
-
-
     /**
      * Method used by chunk scheduler for internal logging; it returns the request
      * id of This PtGFeeder!
      */
     public String getName() {
-        return "PtGFeeder of request: "+rsd.requestToken();
+        return "PtGFeeder of request: " + rsd.requestToken();
     }
 }

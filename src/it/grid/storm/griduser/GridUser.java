@@ -16,20 +16,19 @@ package it.grid.storm.griduser;
 import it.grid.storm.common.types.*;
 
 /**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: INFN-CNAF</p>
- *
+ * Title:
+ * <p>
+ * Description:
+ * <p>
+ * Copyright: Copyright (c) 2006
+ * <p>
+ * Company: INFN-CNAF
+ * </p>
+ * 
  * @author R.Zappi
  * @version 1.0
  */
-public class GridUser extends AbstractGridUser implements GridUserInterface{
-
-    private MapperInterface mapper = null;
+public class GridUser extends AbstractGridUser implements GridUserInterface {
 
     GridUser(MapperInterface mapper) {
         super(mapper);
@@ -40,12 +39,10 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
         this.setDistinguishedName(distinguishedName);
     }
 
-
-
     /**
-     * Return the main Virtual Organization of the User.
-     * Since User is presenting without VOMS Proxy, then default VO is named NO_VO.
-     *
+     * Return the main Virtual Organization of the User. Since User is presenting without VOMS Proxy, then default VO is
+     * named NO_VO.
+     * 
      * @return VO
      */
     public VO getVO() {
@@ -54,21 +51,20 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
     }
 
     /**
-     * Return the local user on wich the GridUser is mapped.
-     * Note that the mapping is done at Mapper construction time.
-     *
+     * Return the local user on which the GridUser is mapped. Note that the mapping is done at Mapper construction time.
+     * 
      * @throws CannotMapUserException
      * @return LocalUser
      */
     public LocalUser getLocalUser() throws CannotMapUserException {
-        if ( localUser == null ) {
+        if (localUser == null) {
             try {
 
                 localUser = userMapperClass.map(getDn(), null);
-           }
-            catch (CannotMapUserException ex) {
+            } catch (CannotMapUserException ex) {
                 // log the operation that failed
-                log.error("Error in mapping '"+subjectDN.getX500DN_rfc1779()+"' to a local user: "+ex.getMessage());
+                log.error("Error in mapping '" + subjectDN.getX500DN_rfc1779() + "' to a local user: "
+                        + ex.getMessage());
                 // re-thorw same exception
                 throw ex;
             }
@@ -76,9 +72,8 @@ public class GridUser extends AbstractGridUser implements GridUserInterface{
         return localUser;
     }
 
-
     public String toString() {
-        return "Grid User (no VOMS): '"+getDistinguishedName().getX500DN_rfc1779()+"'";
+        return "Grid User (no VOMS): '" + getDistinguishedName().getX500DN_rfc1779() + "'";
     }
 
 }

@@ -129,7 +129,7 @@ public class ApproachRuleTest {
 
         TSURL tsurl = null;
         try {
-            tsurl = TSURL.makeFromString(surl.toString());
+            tsurl = TSURL.makeFromStringValidate(surl.toString());
         }
         catch (InvalidTSURLAttributesException ex) {
             ex.printStackTrace();

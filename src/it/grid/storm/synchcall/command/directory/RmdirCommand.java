@@ -1,9 +1,9 @@
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.authorization.AuthorizationCollector;
-import it.grid.storm.authorization.AuthorizationDecision;
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
+import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -30,51 +30,46 @@ import it.grid.storm.synchcall.data.directory.RmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirOutputData;
 
 /**
- * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
- * Company: INFN-CNAF and ICTP/EGRID project
- *
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project
+ * 
  * @author lucamag
  * @date May 27, 2008
- *
  */
 
-public class RmdirCommand extends DirectoryCommand implements Command 
-{
-    private NamespaceInterface namespace;
+public class RmdirCommand extends DirectoryCommand implements Command {
+    private final NamespaceInterface namespace;
 
-    public RmdirCommand()
-    {
+    public RmdirCommand() {
         namespace = NamespaceDirector.getNamespace();
     }
 
     /**
      * Method that provide SrmRmdir functionality.
-     *@param inputData 	Contains information about input data for Rmdir request.
+     * 
+     * @param inputData Contains information about input data for Rmdir request.
      *@return TReturnStatus Contains output data
      */
-    public OutputData execute(InputData data)
-    {
+    public OutputData execute(InputData data) {
         log.debug("srmRm: Start execution.");
         TReturnStatus returnStatus = null;
-        
+
         RmdirInputData inputData = (RmdirInputData) data;
         RmdirOutputData outData = null;
 
         /**
-         * Validate RmdirInputData. The check is done at this level to separate
-         * internal StoRM logic from xmlrpc specific operation.
+         * Validate RmdirInputData. The check is done at this level to separate internal StoRM logic from xmlrpc
+         * specific operation.
          */
 
         if ((inputData == null) || ((inputData != null) && (inputData.getSurl() == null))) {
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid paramter specified.");
-                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: "+ returnStatus.toString()+"]");
+                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-            	log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
+                log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
             }
             try {
-                outData  = new RmdirOutputData(returnStatus);
+                outData = new RmdirOutputData(returnStatus);
             } catch (InvalidRmOutputAttributeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -82,24 +77,22 @@ public class RmdirCommand extends DirectoryCommand implements Command
             return outData;
         }
 
-       
-        
         /**
-         * Check if GridUser in RmdirInputData is not null, otherwise return
-         * with an error message.
+         * Check if GridUser in RmdirInputData is not null, otherwise return with an error message.
          */
         GridUserInterface guser = inputData.getUser();
         // Create Input Structure
         if (guser == null) {
             log.debug("srmRm: Unable to get user credential. ");
             try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: "+ returnStatus.toString()+"]");
+                returnStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
+                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-            	log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
+                log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
             }
             try {
-                outData  = new RmdirOutputData(returnStatus);
+                outData = new RmdirOutputData(returnStatus);
             } catch (InvalidRmOutputAttributeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -115,16 +108,18 @@ public class RmdirCommand extends DirectoryCommand implements Command
             try {
                 stori = namespace.resolveStoRIbySURL(surl, guser);
             } catch (NamespaceException ex) {
-                log.debug("srmRm: Unable to build StoRI by SURL : '" + surl + "'"+ex);
+                log.debug("srmRm: Unable to build StoRI by SURL : '" + surl + "'" + ex);
                 try {
                     returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified");
-                    log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed with [status: "+ returnStatus.toString()+"]");
+                    log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                            + returnStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
-                    log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed. Error creating returnStatus " + ex1);
+                    log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
+                            + "] failed. Error creating returnStatus " + ex1);
                 }
-                
+
                 try {
-                    outData  = new RmdirOutputData(returnStatus);
+                    outData = new RmdirOutputData(returnStatus);
                 } catch (InvalidRmOutputAttributeException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -136,12 +131,14 @@ public class RmdirCommand extends DirectoryCommand implements Command
             // Empty SURL. Error in surl creation.
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified");
-                log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed with [status: "+ returnStatus.toString()+"]");
+                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                        + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-            	log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed. Error creating returnStatus " + ex1);
+                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
+                        + "] failed. Error creating returnStatus " + ex1);
             }
             try {
-                outData  = new RmdirOutputData(returnStatus);
+                outData = new RmdirOutputData(returnStatus);
             } catch (InvalidRmOutputAttributeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -152,46 +149,44 @@ public class RmdirCommand extends DirectoryCommand implements Command
         // Check here if recursive flag is not specifed
         // in input parameter.Use default value
         Boolean recursive = inputData.getRecursiveFlag();
-        if (recursive == null) recursive = new Boolean(SRMConstants.recursiveFlag);
+        if (recursive == null) {
+            recursive = new Boolean(SRMConstants.recursiveFlag);
+        }
 
         // Grid User Identity
-        GridUserInterface user =  guser;
-        
-        
+        GridUserInterface user = guser;
+
         /**
-         * From version 1.4
-         * Add the control for Storage Area 
-         * using the new authz for space component.
+         * From version 1.4 Add the control for Storage Area using the new authz for space component.
          */
-        
+
         SpaceHelper sp = new SpaceHelper();
         TSpaceToken token = sp.getTokenFromStoRI(log, stori);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-        
-        if( ! (spaceAuth.authorize(user, SRMSpaceRequest.RMD)) ) { 
-            //User not authorized to perform RM request on the storage area
-            log.debug("srmRmdir: User not authorized to perform srmRmdir request on the storage area: "+token);
+
+        if (!(spaceAuth.authorize(user, SRMSpaceRequest.RMD))) {
+            // User not authorized to perform RM request on the storage area
+            log.debug("srmRmdir: User not authorized to perform srmRmdir request on the storage area: " + token);
             try {
-                returnStatus = new TReturnStatus(
-                        TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                        ": User not authorized to perform srmRmdir request on the storage area: " +token);
-                log.error("srmRmdir: <> Request for [SURL:"+surl+"] failed with [status: "
+                returnStatus =
+                        new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                          ": User not authorized to perform srmRmdir request on the storage area: "
+                                                  + token);
+                log.error("srmRmdir: <> Request for [SURL:" + surl + "] failed with [status: "
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmRmdir: <> Request for [SURL="+surl+"] failed. Error creating returnStatus " + ex1);
+                log.error("srmRmdir: <> Request for [SURL=" + surl + "] failed. Error creating returnStatus " + ex1);
             }
             try {
-                outData  = new RmdirOutputData(returnStatus);
+                outData = new RmdirOutputData(returnStatus);
             } catch (InvalidRmOutputAttributeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return outData;
-           
+
         }
-        
-        
-     
+
         boolean failure = false;
         String explanation = "";
         TStatusCode statusCode = TStatusCode.EMPTY;
@@ -208,34 +203,44 @@ public class RmdirCommand extends DirectoryCommand implements Command
         }
 
         if (!(failure)) { // There is a local user for VOMS user
-            AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canDelete(user, stori);
+            // AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canDelete(user, stori);
 
-            if ((mkdirAuth != null) && (mkdirAuth.isPermit())) {
-                log.debug("RMDIR is authorized for " + user + " and the directory = " + stori.getPFN() + " with recursove opt = " + recursive);
+            /**
+             * 1.5.0 Path Authorization
+             */
+            AuthzDecision rmDirAuthz = AuthzDirector.getPathAuthz().authorize(user, SRMFileRequest.RMD, stori);
+            if (rmDirAuthz.equals(AuthzDecision.PERMIT)) {
+                log.debug("RMDIR is authorized for " + user + " and the directory = " + stori.getPFN()
+                        + " with recursove opt = " + recursive);
                 returnStatus = manageAuthorizedRMDIR(lUser, stori, recursive.booleanValue());
-                if(returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
-                	log.info("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] successfully done with [status: "+ returnStatus.toString()+"]");
-                else
-                   	log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed with [status: "+ returnStatus.toString()+"]");
+                if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                    log.info("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
+                            + "] successfully done with [status: " + returnStatus.toString() + "]");
+                } else {
+                    log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                            + returnStatus.toString() + "]");
+                }
             } else {
                 failure = true;
                 explanation = "User is not authorized to delete the directory";
                 statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
-            
+
             }
         }
 
         if (failure) { // Unauthorized access!
             try {
                 returnStatus = new TReturnStatus(statusCode, explanation);
-            	log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed with [status: "+ returnStatus.toString()+"]");
+                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                        + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
-            	log.error("srmRmdir: <"+guser+">  Request for [SURL="+surl+"] failed .Error creating return status."+ex1);
+                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
+                        + "] failed .Error creating return status." + ex1);
             }
         }
         // Return status
         try {
-            outData  = new RmdirOutputData(returnStatus);
+            outData = new RmdirOutputData(returnStatus);
         } catch (InvalidRmOutputAttributeException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -244,17 +249,14 @@ public class RmdirCommand extends DirectoryCommand implements Command
     }
 
     /**
-     *
-     * This method of FileSystem remove file and dir both from file system and
-     * from DataBase
-     *
+     * This method of FileSystem remove file and dir both from file system and from DataBase
+     * 
      * @param user VomsGridUser
      * @param stori StoRI
      * @param recursive boolean
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedRMDIR(LocalUser lUser, StoRI stori, boolean recursive)
-    {
+    private TReturnStatus manageAuthorizedRMDIR(LocalUser lUser, StoRI stori, boolean recursive) {
         TReturnStatus returnStatus = null;
         boolean dirRemoved;
 
@@ -306,7 +308,7 @@ public class RmdirCommand extends DirectoryCommand implements Command
                 }
             }
         }
-        //Build the ReturnStatus
+        // Build the ReturnStatus
         try {
             returnStatus = new TReturnStatus(statusCode, explanation);
         } catch (InvalidTReturnStatusAttributeException ex1) {
@@ -316,8 +318,7 @@ public class RmdirCommand extends DirectoryCommand implements Command
         return returnStatus;
     }
 
-    private boolean removeFile(LocalFile file, LocalUser lUser)
-    {
+    private boolean removeFile(LocalFile file, LocalUser lUser) {
         boolean result = false;
         LocalFile[] list;
         if (file.exists()) { // existent file
@@ -342,8 +343,7 @@ public class RmdirCommand extends DirectoryCommand implements Command
         return result;
     }
 
-    private boolean removeTarget(LocalFile file, LocalUser lUser)
-    {
+    private boolean removeTarget(LocalFile file, LocalUser lUser) {
         boolean result = false;
         // Check Permission
         FilesystemPermission groupPermission = null;
@@ -367,25 +367,24 @@ public class RmdirCommand extends DirectoryCommand implements Command
         }
 
         /**
-         * @todo this check is not needed here. If Auth source say that user
-         *       have the right permission. At this level could happen that a
-         *       user create a Directory in JiT model, so without ACL, and then
-         *       want to delete it. The permission on directory at filesystem level
-         *       is not setted but the user must have the delete permission.
+         * @todo this check is not needed here. If Auth source say that user have the right permission. At this level
+         *       could happen that a user create a Directory in JiT model, so without ACL, and then want to delete it.
+         *       The permission on directory at filesystem level is not setted but the user must have the delete
+         *       permission.
          */
 
         // Check if user or group permission are null to prevent Null Pointer
         boolean canDelete = true;
         /**
-         * if(userPermission!=null) canDelete = userPermission.canDelete(); if
-         * ((groupPermission!=null)&&(!canDelete)) canDelete =
-         * groupPermission.canDelete();
+         * if(userPermission!=null) canDelete = userPermission.canDelete(); if ((groupPermission!=null)&&(!canDelete))
+         * canDelete = groupPermission.canDelete();
          */
         // if ( (userPermission.canDelete()) || (groupPermission.canDelete())) {
-        if (canDelete)
+        if (canDelete) {
             result = file.delete();
-        else
+        } else {
             log.debug("RMDIR : Unable to delete the file '" + file + "'. Permission denied.");
+        }
 
         return result;
     }
@@ -393,8 +392,7 @@ public class RmdirCommand extends DirectoryCommand implements Command
     /**
      * Recursive function for deleteAll
      */
-    private boolean deleteDirectoryContent(LocalFile directory, LocalUser lUser)
-    {
+    private boolean deleteDirectoryContent(LocalFile directory, LocalUser lUser) {
         boolean result = true;
         LocalFile[] list;
         if (directory.exists()) { // existent file
@@ -402,20 +400,22 @@ public class RmdirCommand extends DirectoryCommand implements Command
                 // Scanning of directory
                 list = directory.listFiles();
                 if (list.length > 0) { // The directory is not empty
-                    for (int i = 0; i < list.length; i++) {
+                    for (LocalFile element : list) {
                         // Delete each element within the directory
-                        result = result && deleteDirectoryContent(list[i], lUser);
-                        if (list[i].exists()) result = result && removeFile(list[i], lUser);
+                        result = result && deleteDirectoryContent(element, lUser);
+                        if (element.exists()) {
+                            result = result && removeFile(element, lUser);
+                        }
                     }
                 } else {
                     // The directory is empty and it is deleted by the if in the
                     // for loop above
                 }
-            } else { //The target is a file
+            } else { // The target is a file
                 result = removeFile(directory, lUser);
             }
         }
         return result;
     }
 
-} //End of class
+} // End of class

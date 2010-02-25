@@ -9,6 +9,8 @@ import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -36,6 +38,7 @@ import it.grid.storm.srm.types.TTURL;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -316,44 +319,44 @@ implements StoRI {
 
 
 
-    public ArrayList getChildren(TDirOption dirOption) throws
-    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws InvalidDescendantsEmptyRequestException,
+            InvalidDescendantsAuthRequestException, InvalidDescendantsPathRequestException,
+            InvalidDescendantsFileRequestException {
 
-        ArrayList pathList = new ArrayList();
-        ArrayList stoRIList = new ArrayList();
+        ArrayList<StoRI> stoRIList = new ArrayList<StoRI>();
         File fileHandle = new File(getAbsolutePath());
 
         if (!fileHandle.isDirectory()) {
             if (fileHandle.isFile()) {
                 log.error("SURL represents a File, not a Directory!");
                 throw new InvalidDescendantsFileRequestException(fileHandle);
-            }
-            else {
+            } else {
                 log.warn("SURL does not exists!");
                 throw new InvalidDescendantsPathRequestException(fileHandle);
             }
-        }
-        else { //SURL point to an existent directory.
-            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
-            PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), dirOption.getNumLevel());
-            pathList = (ArrayList) pCreator.generateChild(pathList);
+        } else { // SURL point to an existent directory.
+            // Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+            PathCreator pCreator = new PathCreator(fileHandle,
+                                                   dirOption.isAllLevelRecursive(),
+                                                   dirOption.getNumLevel());
+            Collection<String> pathList = pCreator.generateChild(new ArrayList<String>());
+            
             if (pathList.size() == 0) {
+                
                 log.debug("SURL point to an EMPTY DIRECTORY");
                 throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
-            }
-            else { //Creation of StoRI LIST
+                
+            } else { // Creation of StoRI LIST
+                
                 NamespaceInterface namespace = NamespaceDirector.getNamespace();
                 StoRI createdStoRI = null;
-                String childPath;
-                for (int i = 0; i < pathList.size(); i++) {
-                    childPath = (String) pathList.get(i);
+                
+                for (String childPath : pathList) {
                     log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
                     try {
                         createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
                         stoRIList.add(createdStoRI);
-                    }
-                    catch (NamespaceException ex) {
+                    } catch (NamespaceException ex) {
                         log.error("Error occurred while resolving StoRI by absolute path", ex);
                     }
                 }
@@ -398,15 +401,14 @@ implements StoRI {
         return startTime;
     }
 
-    public ArrayList getFirstLevelChildren(TDirOption dirOption)
+    public ArrayList<StoRI> getFirstLevelChildren(TDirOption dirOption)
     throws InvalidDescendantsEmptyRequestException,
     InvalidDescendantsAuthRequestException,
     InvalidDescendantsPathRequestException,
     InvalidDescendantsFileRequestException {
 
 
-        ArrayList pathList = new ArrayList();
-        ArrayList stoRIList = new ArrayList();
+        ArrayList<StoRI> stoRIList = new ArrayList<StoRI>();
         File fileHandle = new File(getAbsolutePath());
 
         if (!fileHandle.isDirectory()) {
@@ -422,7 +424,7 @@ implements StoRI {
         else { //SURL point to an existent directory.
             //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
             PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
-            pathList = (ArrayList) pCreator.generateFirstLevelChild(pathList);
+            Collection<String> pathList = pCreator.generateFirstLevelChild(new ArrayList<String>());
             if (pathList.size() == 0) {
                 log.debug("SURL point to an EMPTY DIRECTORY");
                 throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
@@ -430,9 +432,7 @@ implements StoRI {
             else { //Creation of StoRI LIST
                 NamespaceInterface namespace = NamespaceDirector.getNamespace();
                 StoRI createdStoRI = null;
-                String childPath;
-                for (int i = 0; i < pathList.size(); i++) {
-                    childPath = (String) pathList.get(i);
+                for (String childPath : pathList) {
                     log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
                     try {
                         createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
@@ -464,10 +464,10 @@ implements StoRI {
         return this.winnerRule;
     }
 
-    public List getParents() {
+    public List<StoRI> getParents() {
 
         StoRI createdStoRI = null;
-        ArrayList parentList = new ArrayList();
+        ArrayList<StoRI> parentList = new ArrayList<StoRI>();
         String consumeElements = this.relativePath;
         String consumed;
         boolean lastElements = false;
@@ -548,7 +548,7 @@ implements StoRI {
          */
         if (this.surl == null) {
             try {
-                this.surl = TSURL.makeFromString(buildSURLString());
+                this.surl = TSURL.makeFromStringValidate(buildSURLString());
             }
             catch (InvalidTSURLAttributesException ex) {
                 log.error("Unable to build the SURL with relative path : '" + relativePath + "'", ex);
@@ -662,21 +662,26 @@ implements StoRI {
 
     public void setGroupTapeRead() {
         
-        String groupName = "storm-SA-read";
-        
+        String groupName = Configuration.getInstance().getGroupTapeReadBuffer(); 
         LocalFile localFile = getLocalFile();
-        
-        localFile.setGroupOwnership(groupName);
+        try {
+            localFile.setGroupOwnership(groupName);
+        } catch (FSException e) {
+            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        }
     }
     
     public void setGroupTapeWrite() {
         
-        String groupName = "storm-SA-write";
-        
-        LocalFile localFile = getLocalFile();
-        
-        localFile.setGroupOwnership(groupName);
+        String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
+        LocalFile localFile = getLocalFile();       
+        try {
+            localFile.setGroupOwnership(groupName);
+        } catch (FSException e) {
+            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        }
     }
+    
     
     public void setMappingRule(MappingRule winnerRule) {
         this.winnerRule = winnerRule;

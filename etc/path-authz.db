@@ -1,0 +1,49 @@
+#################################
+#  Path Authorization DataBase  #
+#################################
+
+# Evaluation algorithm
+#  - possible values are:
+#    1) it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
+#       - To determine if a request succeeds, the algorithm process 
+#         the ACE entries in a computed order. Only ACEs which have 
+#         a "local group" that matches the subject requester are considered.
+#         The order of ACE is defined on the base of distance from StFN 
+#         targetted and the Path specified within the ACE. Each ACE is 
+#         processed until all of the bits of the requester's access have 
+#         been checked. The result will be:
+#         - NOT_APPLICABLE if there are no ACE matching with the requester.
+#         - INDETERMINATE if there is at least one bit not checked.
+#         - DENY if there is at least one bit DENIED for the requestor
+#         - PERMIT if all the bits are PERMIT     
+
+algorithm=it.grid.storm.authz.path.model.PathAuthzAlgBestMatch
+
+# ==================
+# SRM Operations 
+# ==================
+# PTP    -->   WRITE_FILE + CREATE_FILE
+# RM     -->   DELETE_FILE
+# MKDIR  -->   CREATE_DIRECTORY
+# RMDIR  -->   DELETE
+# LS     -->   LIST_DIRECTORY
+# PTG    -->   READ_FILE
+
+# ==================
+# Operations on Path
+# ==================
+#   'W' : 	WRITE_FILE              "Write data on existing files"
+#   'R' : 	READ_FILE               "Read data"
+#   'F' : 	MOVE/RENAME             "Move a file"
+#   'D' : 	DELETE                  "Delete a file or a directory"
+#   'L' : 	LIST_DIRECTORY          "Listing a directory"
+#   'M' : 	CREATE_DIRECTORY        "Create a directory"
+#   'N' : 	CREATE_FILE             "Create a new file"
+#
+
+#--------+----------------------+---------------+----------
+# user	 | 	      Path          |   Permission  |   ACE
+# class	 |                      |   mask        |   Type
+#--------+----------------------+---------------+----------
+  @ALL@     /                        WRFDLMN          permit
+

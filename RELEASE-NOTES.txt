@@ -1,0 +1,24 @@
+                        
+              StoRM Backend 1.5 RELEASE NOTES
+
+This release includes new features as well as bug fixes and enhancements.  
+
+Changes since StoRM-Backend 1.4.x include:
+
+New features:
+o  <name> :  <description>  
+o  <name> :  <description>  
+
+Fixed Bugs:
+o  <name> :  <description>  
+o  <name> :  <description>  
+
+Changes:
+o  <name> :  <description>  
+o  <name> :  <description>  
+ 
+For complete information on StoRM-Backend, see the StoRM website:
+
+http://storm.forge.cnaf.infn.it
+
+
