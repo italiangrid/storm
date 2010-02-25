@@ -460,13 +460,12 @@ test.junit.dir
 
 
   <!-- make c libs used by JNA -->
-  <target name="clibs-jna" depends="init,libs.dmutil"/>
-
-  <target name="libs.dmutil" depends="init">
+  <target name="clibs-jna" depends="init">
     <exec executable="make" logError="true">
-      <arg line="-C ${src.java.dir}/it/grid/storm/jna/clib"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/jna"/>
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="BUILDDIR=${build.obj.dir}"/>
+      <arg value="ARCH=${arch}"/>
     </exec>
   </target>
 
@@ -598,9 +597,9 @@ test.junit.dir
   <!-- =============================================================== -->
 
   <!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
-  <target name="clean.clibs.dmutil">
+  <target name="clean.clibs-jna">
     <exec executable="make"
-        dir="${src.java.dir}/it/grid/storm/jna/clib"
+        dir="${src.java.dir}/it/grid/storm/jna"
         logError="true">
       <arg value="DESTDIR=${build.libs.dir}"/>
       <arg value="clean"/>
@@ -639,7 +638,7 @@ test.junit.dir
 
   <target name="clean"
 	description="Remove build tree and all of the intermediate build files"
-	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs.dmutil">
+	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs-jna">
     <!-- Delete the ${build.dir} directory tree -->
     <delete dir="${build.dir}"/>
   </target>
