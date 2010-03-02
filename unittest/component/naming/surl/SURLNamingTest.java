@@ -61,6 +61,10 @@ public class SURLNamingTest {
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            surlTest = "srm://storm-fe.cr.cnaf.infn.it//atlas/atlasdatatape/data10_cos/NTUP_MUONCALIB/f212_m370/data10_cos.00149310.physics_RNDM.merge.NTUP_MUONCALIB.f212_m370";
+            tsurl = TSURL.makeFromStringValidate(surlTest);
+            System.out.println("TSURL : "+tsurl);
+            
             surlTest = "srm://stormx.cnaf.infn.it:8444/atlas/test/ciccio:pluto.text";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);

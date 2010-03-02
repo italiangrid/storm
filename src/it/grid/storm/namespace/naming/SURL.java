@@ -5,6 +5,8 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.Protocol;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import org.apache.commons.validator.UrlValidator;
 import org.slf4j.Logger;
@@ -21,14 +23,15 @@ import org.slf4j.Logger;
  * @author Riccardo Zappi
  * @version 1.0
  */
-public class SURL
-extends SRMURL {
+public class SURL extends SRMURL {
 
     private static Logger log = NamespaceDirector.getLogger();
-    private static String[] schemes = {
-    "srm"};
-    private static UrlValidator surlValidator = new UrlValidator(schemes, UrlValidator.NO_FRAGMENTS);
+    private static ArrayList<String> schemes = new ArrayList<String>();
 
+    static {
+        schemes.add("srm");
+    }
+    
     public final boolean directory;
 
     public SURL(final String hostName,
@@ -60,44 +63,64 @@ extends SRMURL {
      */
     public static SURL makeSURLfromString(String surlString) throws NamespaceException {
         SURL result = null;
-        boolean valid = surlValidator.isValid(surlString);
-        URI uri;
-        if (valid) {
+        // boolean valid = surlValidator.isValid(surlString);
+        // Create a URI try { uri = new URI("file://D:/almanac1.4/Ex1.java"); } catch (URISyntaxException e) { }
+        boolean valid = true;
+        String explanation = "";
+        URI uri = null;
+        try {
             uri = URI.create(surlString);
+        } catch (IllegalArgumentException uriEx) {
+            valid = false;
+            explanation = "URI Except: " + uriEx.getMessage();
+        } catch (NullPointerException npe) {
+            valid = false;
+            explanation = "URI Except (null SURL): " + npe.getMessage();
+        }
+        
+
+        //Check the scheme
+        if (valid) {
+            // uri should be not null
             uri = uri.normalize();
+            String scheme = uri.getScheme();
+            if (!(schemes.contains(scheme))) {
+              valid = false;
+              explanation = "unknown scheme '"+scheme+"'";
+            }     
+        }  
+        
+        //Check the query
+        if (valid) {            
             String host = uri.getHost();
             int port = uri.getPort();
             String query = uri.getQuery();
             if (query == null) {
                 String stfn = uri.getPath();
                 result = new SURL(host, port, stfn);
-            }
-            else {
+            } else {
                 if (query.equals("")) {
                     String stfn = uri.getPath();
                     result = new SURL(host, port, stfn);
-                }
-                else { //The SURL_Str is in a Query FORM.
+                } else { // The SURL_Str is in a Query FORM.
                     log.debug(" !! SURL ('" + surlString + "') in a query form (query:'" + query + "') !!");
                     String service = uri.getPath();
                     log.debug(" Service endpoint : " + service);
                     boolean queryValidForm = checkQuery(query);
                     if (queryValidForm) {
                         log.debug(" Query is in a valid form.");
-                        //Extract the StFN from query:
+                        // Extract the StFN from query:
                         String stfn = extractStFNfromQuery(query);
                         result = new SURL(host, port, service, stfn);
-                    }
-                    else {
+                    } else {
                         log.warn("SURL_String :'" + surlString + "' is not VALID! (query is in invalid form)");
-                        throw new NamespaceException("SURL_String :'" + surlString + "' is not VALID within the Query!");
+                        throw new NamespaceException("SURL_String :'" + surlString
+                                + "' is not VALID within the Query!");
                     }
                 }
             }
-        }
-        else {
-            log.warn("SURL_String :'" + surlString + "' is not VALID! (generic error)");
-            throw new NamespaceException("SURL_String :'" + surlString + "' is not VALID!");
+        } else {
+            throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: "+explanation);
         }
         return result;
     }
