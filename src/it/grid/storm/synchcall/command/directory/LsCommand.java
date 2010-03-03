@@ -681,7 +681,7 @@ public class LsCommand extends DirectoryCommand implements Command {
      */
     private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail) {
         LocalFile localElement = element.getLocalFile();
-
+        
         /** Retrieve permissions information (used in both file or directory cases) */
         TUserPermission userPermission = null;
         TGroupPermission groupPermission = null;
@@ -781,9 +781,10 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
             elementDetail.setTRetentionPolicyInfo(retentionPolicyInfo);
 
-            // fileLocality
-            boolean isFileOnDisk = localElement.isOnDisk();
+
             if (isTapeEnabled) {
+                // fileLocality
+                boolean isFileOnDisk = localElement.isOnDisk();
                 boolean isFileOnTape = localElement.isOnTape();
 
                 if (isFileOnTape && isFileOnDisk) {
@@ -810,7 +811,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
 
             // checksum
-            if (checksumHasToBeRetrieved(localElement)) {
+            if (checksumHasToBeRetrieved(localElement, isTapeEnabled)) {
 
                 String checksum = localElement.getChecksum();
 
@@ -830,7 +831,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         }
     }
 
-    private boolean checksumHasToBeRetrieved(LocalFile localFile) {
+    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled) {
 
         boolean retrieveChecksum;
 
@@ -844,29 +845,36 @@ public class LsCommand extends DirectoryCommand implements Command {
 
             if (Configuration.getInstance().getChecksumEnabled()) {
 
-                if (localFile.isOnDisk()) {
+                if (tapeEnabled) {
+                    if (localFile.isOnDisk()) {
+                        // Only one checksum computation is admitted
+                        if (doNotComputeMoreChecksums) {
+                            retrieveChecksum = false;
+                        } else {
+                            retrieveChecksum = true;
+                            doNotComputeMoreChecksums = true;
+                            log.debug("Checksum Computation is needed for file :'"
+                                    + localFile.getAbsolutePath() + "'");
+                        }
+                    } else {
+                        retrieveChecksum = false;
+                    }
+                } else {
+                    // Tape not enabled
                     // Only one checksum computation is admitted
                     if (doNotComputeMoreChecksums) {
-
                         retrieveChecksum = false;
-
                     } else {
                         retrieveChecksum = true;
                         doNotComputeMoreChecksums = true;
-                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
+                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
+                                + "'");
                     }
-                } else {
-
-                    retrieveChecksum = false;
-
                 }
-
             } else {
-
                 // Computation is needed but it is disabled
                 retrieveChecksum = false;
                 log.debug("Checksum computation is disabled.");
-
             }
         }
         return retrieveChecksum;

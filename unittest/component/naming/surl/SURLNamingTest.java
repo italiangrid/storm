@@ -49,22 +49,27 @@ public class SURLNamingTest {
         
         try {
             
+            System.out.println(" ----- ");
             surlTest = "srm://storm.cnaf.infn.it:8444/atlas/test/ciccio.text";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            System.out.println(" ----- ");
             surlTest = "srm://storm.cnaf.infn.it:8444/atlas/test/ciccio:pluto.text";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            System.out.println(" ----- ");
             surlTest = "srm://storm.cnaf.infn.it:8444/srmv2/manager?SFN=atlas/test/ciccio:pluto.text";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            System.out.println(" ----- ");
             surlTest = "srm://storm-fe.cr.cnaf.infn.it//atlas/atlasdatatape/data10_cos/NTUP_MUONCALIB/f212_m370/data10_cos.00149310.physics_RNDM.merge.NTUP_MUONCALIB.f212_m370";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);
             
+            System.out.println(" ----- ");
             surlTest = "srm://stormx.cnaf.infn.it:8444/atlas/test/ciccio:pluto.text";
             tsurl = TSURL.makeFromStringValidate(surlTest);
             System.out.println("TSURL : "+tsurl);

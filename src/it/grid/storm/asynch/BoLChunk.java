@@ -297,7 +297,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                     fileStoRI.setGroupTapeRead();
                     chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
-                    if (localFile.isOnDisk()) {
+                    if (isStoriOndisk(fileStoRI)) {
 
                         chunkData.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
 
@@ -334,5 +334,28 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
             failure = true;
             log.error("ERROR in BoLChunk! StoRM process got an unexpected error! " + e);
         }
+    }
+    
+    
+    private boolean isStoriOndisk(StoRI storiFile) {
+        boolean result = true;
+       
+        //Check if Tape is Enabled
+        boolean isTapeEnabled = false;
+        try {
+            isTapeEnabled = storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
+        } catch (NamespaceException e) {
+            log.error("Cannot retrieve storage class type information", e);
+            result = true;
+        }
+        
+        if (!(isTapeEnabled)) {
+            result = true;
+        } else {
+            LocalFile localFile = storiFile.getLocalFile();
+           result =  localFile.isOnDisk();  
+        }
+        
+        return result;
     }
 }

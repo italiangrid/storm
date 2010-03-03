@@ -11,7 +11,6 @@
 long long stat_get_blocks_size(const char* filename) {
     struct stat64 stat_data;
 
-
 //    int ret = stat(filename, &stat_data);
     int ret = gpfs_stat((char*) filename, &stat_data); 
     
