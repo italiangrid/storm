@@ -151,14 +151,16 @@ public class ChecksumManager {
         String url;
 
         ChecksumServerStatus status;
-        int index = getNextIndex();
+        int index = -1;
+        int nextIndex = getNextIndex();
         do {
 
+            index = nextIndex;
             url = statusUrlList.get(index);
             
-            index++;
-            if (index >= urlListSize) {
-                index = 0;
+            nextIndex++;
+            if (nextIndex >= urlListSize) {
+                nextIndex = 0;
             }
 
             try {
