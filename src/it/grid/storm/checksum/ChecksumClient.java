@@ -22,10 +22,11 @@ public interface ChecksumClient {
     /**
      * Returns the status of the server.
      * 
+     * @param filePath temporary workaround, checking existence of the file.
      * @return the status of the server.
      * @throws IOException
      */
-    public ChecksumServerStatus getStatus() throws IOException;
+    public ChecksumServerStatus getStatus(String filePath) throws IOException;
 
     /**
      * Contacts the checksum service and returns the computed checksum for the given file.

@@ -140,9 +140,10 @@ public class ChecksumManager {
     /**
      * Round-robin load balancer of checksum services.
      * 
+     * @param Temporary workaround that allows separation of checksum servers given a file path.
      * @return the checksum service URL. Return <code>null</code> if all the servers do not respond.
      */
-    private String getTargetURL() {
+    private String getTargetURL(String filePath) {
 
         ChecksumClient client = ChecksumClientFactory.getChecksumClient();
         boolean isAlive = false;
@@ -150,16 +151,20 @@ public class ChecksumManager {
         String url;
 
         ChecksumServerStatus status;
-        int index;
+        int index = getNextIndex();
         do {
-            index = getNextIndex();
 
             url = statusUrlList.get(index);
+            
+            index++;
+            if (index >= urlListSize) {
+                index = 0;
+            }
 
             try {
 
                 client.setEndpoint(url);
-                status = client.getStatus();
+                status = client.getStatus(filePath);
                 isAlive = status.isRunning();
 
             } catch (MalformedURLException e) {
@@ -172,7 +177,7 @@ public class ChecksumManager {
             }
 
             if (!isAlive) {
-                log.warn("Skipping checksum service because it doesn't respond: " + url.toString());
+                log.warn("Skipping checksum service because it doesn't respond or cannot access the requested file: " + url.toString());
             }
 
             iter++;
@@ -261,7 +266,7 @@ public class ChecksumManager {
             return null;
         }
 
-        String targetURL = getTargetURL();
+        String targetURL = getTargetURL(fileName);
         if (targetURL == null) {
             log.warn("Checksum computation ('" + fileName
                     + "') request failed: none of the servers has responded");
