@@ -182,7 +182,8 @@ setenv_if_not_set LCMAPS_DB_FILE "$STORM_BE_CONFIGDIR/lcmaps.db"
 setenv_if_not_set LCMAPS_POLICY_NAME standard
 
 # LCMAPS log file
-setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
+#setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
+setenv_if_not_set LCMAPS_LOG_FILE "/dev/null"
 
 # LCMAPS log verbosity: 0 minimum (default), 5 maximum
 setenv_if_not_set LCMAPS_DEBUG_LEVEL 0
@@ -374,7 +375,7 @@ stop () {
 
 status(){
 
-   pslist=$( ps -af | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
+   pslist=$( ps -ef | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
     if [ -n "$pslist" ]; then
         log_success_msg "StoRM-BE (pid $pslist) is running"
         return 0
