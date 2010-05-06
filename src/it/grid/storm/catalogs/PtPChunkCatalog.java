@@ -201,7 +201,9 @@ public class PtPChunkCatalog {
         if (fileStorageType == TFileStorageType.EMPTY) {
             sb.append("\nTFileStorageType could not be translated from its String representation! String: "
                     + auxTO.fileStorageType());
-            fileStorageType = null; // fail creation of PtPChunk!
+            //Use the default value defined in Configuration.
+            fileStorageType = TFileStorageType.getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
+            sb.append("\nUsed the default TFileStorageType as defined in StoRM config.: "+fileStorageType);
         }
         // fileLifetime
         TLifeTimeInSeconds fileLifetime = null;
@@ -287,7 +289,9 @@ public class PtPChunkCatalog {
         if (fileStorageType == TFileStorageType.EMPTY) {
             sb.append("\nTFileStorageType could not be translated from its String representation! String: "
                     + auxTO.fileStorageType());
-            fileStorageType = null; // fail creation of PtPChunk!
+            //Use the default value defined in Configuration.
+            fileStorageType = TFileStorageType.getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
+            sb.append("\nUsed the default TFileStorageType as defined in StoRM config.: "+fileStorageType);
         }
         // expectedFileSize
         //

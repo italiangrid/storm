@@ -1455,7 +1455,7 @@ public class Configuration {
     public String getDefaultFileStorageType() {
         String key = "default.storagetype";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
+            // return default as specified in SRMv2.2 specification
             return "V";
         } else {
             // load from external source
