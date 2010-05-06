@@ -9,7 +9,7 @@ import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,12 +70,12 @@ public class NamespaceCheck {
                     if (vfs.getStorageClassType().isTapeEnabled()) {
                        //Checking the existence of groups for the buffers
                        String groupRead = Configuration.getInstance().getGroupTapeReadBuffer(); 
-                       if (!EtcGroupReader.isGroupDefined(groupRead)) {
+                       if (!LocalGroups.isGroupDefined(groupRead)) {
                            log.warn("!!!!! Local Group for READ BUFFER ('"+groupRead+"') is not defined!");
                            result = false;
                        }
                        String groupWrite = Configuration.getInstance().getGroupTapeWriteBuffer();
-                       if (!EtcGroupReader.isGroupDefined(groupWrite)) {
+                       if (!LocalGroups.isGroupDefined(groupWrite)) {
                            log.warn("!!!!! Local Group for WRITE BUFFER ('"+groupWrite+"') is not defined!");
                        }
                     }
@@ -87,7 +87,7 @@ public class NamespaceCheck {
                             ArrayList<ACLEntry> acl = new ArrayList<ACLEntry>(defACL.getACL());
                             if (!acl.isEmpty()) {
                                 for (ACLEntry aclEntry : acl) {
-                                    if (!EtcGroupReader.isGroupDefined(aclEntry.getGroupName())) {
+                                    if (!LocalGroups.isGroupDefined(aclEntry.getGroupName())) {
                                         log.warn("!!!!! Local Group for ACL ('"+aclEntry+"') is not defined!");
                                         result = false;
                                     }

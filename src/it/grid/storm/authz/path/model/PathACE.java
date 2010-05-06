@@ -7,7 +7,7 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
-import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -121,7 +121,7 @@ public class PathACE {
             localGroupName = PathACE.ALL_GROUPS;
         }
         // Check if the GroupName exists in the configuration
-        else if (EtcGroupReader.isGroupDefined(localGroup)) {
+        else if (LocalGroups.isGroupDefined(localGroup)) {
             localGroupName = localGroup;
         } else {
             throw new AuthzException("The local group :'" + localGroup + "' is not defined");

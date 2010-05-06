@@ -13,6 +13,7 @@ public class UserInfoExecutor {
         super();
     }
 
+    
     public static int retrieveGroupID(String groupName) throws UserInfoException {
         int groupId = 0;
 
@@ -35,6 +36,7 @@ public class UserInfoExecutor {
         return groupId;
     }
 
+    
     public static int retrieveGroupID_ENT(String groupName) throws UserInfoException {
         // getent group storm  | awk -F"," '{print $1}'| awk -F":" '{print $3}'
 
@@ -54,6 +56,8 @@ public class UserInfoExecutor {
 
         groupId = userInfoCommand.retrieveGroupID(userInfoParameters);
 
+        //Error management
+        
         return groupId;
     }
 

@@ -18,31 +18,30 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class EtcGroupReader {
+public class LocalGroups {
 
-    private static final String etcGroupLinuxFN = "/etc/group";
-    private static final String etcGroupTest = "etc-group";
+    private static final String etcGroupLinuxCommand = "getent";
 
-    private static final Logger log = LoggerFactory.getLogger(EtcGroupReader.class);
+    private static final Logger log = LoggerFactory.getLogger(LocalGroups.class);
     private HashSet<String> groups = null;
     private HashMap<String, Integer> groupId = null;
     private HashMap<Integer, String> groupName = null;
-    private static final EtcGroupReader instanceLinux = new EtcGroupReader();
+    private static final LocalGroups instanceLinux = new LocalGroups();
     private long parsingInstant = 0;
     private final long minimumLifetime = 1000 * 60; //1 minute;
 
-    private EtcGroupReader() {
-        init(etcGroupLinuxFN);
+    private LocalGroups() {
+        init(etcGroupLinuxCommand);
     }
 
-    private EtcGroupReader(String filename) {
+    private LocalGroups(String filename) {
         init(filename);
     }
 
     public static void refresh() {
-        EtcGroupReader thiS = getInstance(false);
+        LocalGroups thiS = getInstance();
         if (thiS.parsedAge() > thiS.minimumLifetime) {
-            thiS.init(etcGroupLinuxFN); // Re-parse the /etc/group file
+            thiS.init(etcGroupLinuxCommand); // Re-parse the /etc/group file
             thiS.parsingInstant = System.currentTimeMillis();
         }
     }
@@ -79,13 +78,7 @@ public class EtcGroupReader {
         }
     }
 
-    private static EtcGroupReader getInstance(boolean test) {
-        if (test) {
-            String configurationDir = Configuration.getInstance().configurationDir();
-            String etcGroupFN = configurationDir + File.pathSeparator + etcGroupTest;
-            log.debug("TEST etc-group filename = " + etcGroupFN);
-            return new EtcGroupReader(etcGroupFN);
-        }
+    private static LocalGroups getInstance() {
         return instanceLinux;
     }
 
@@ -93,21 +86,10 @@ public class EtcGroupReader {
         return System.currentTimeMillis() - parsingInstant;
     }
 
+    
     public static boolean isGroupDefined(String groupName) {
         boolean result = false;
-        EtcGroupReader gr = getInstance(false);
-        result = gr.groups.contains(groupName);
-        if (!result) {
-            // Try a refresh
-            gr.init(etcGroupLinuxFN);
-            result = gr.groups.contains(groupName);
-        }
-        return result;
-    }
-
-    public static boolean isGroupDefined(String groupName, boolean test) {
-        boolean result = false;
-        EtcGroupReader gr = getInstance(test);
+        LocalGroups gr = getInstance();
         result = gr.groups.contains(groupName);
         if (!result) {
             // Try a refresh
@@ -120,7 +102,7 @@ public class EtcGroupReader {
     public static int getGroupId(String groupName) {
         int result = 33333;
         if (isGroupDefined(groupName)) {
-            EtcGroupReader gr = getInstance(false);
+            LocalGroups gr = getInstance();
             result = gr.groupId.get(groupName);
         } else {
             log.error("Unable to retrieve groupId of groupName '" + groupName + "'");
@@ -128,30 +110,10 @@ public class EtcGroupReader {
         return result;
     }
 
-    public static int getGroupId(String groupName, boolean test) {
-        int result = 33333;
-        if (isGroupDefined(groupName)) {
-            EtcGroupReader gr = getInstance(test);
-            result = gr.groupId.get(groupName);
-        } else {
-            log.error("Unable to retrieve groupId of groupName '" + groupName + "'");
-        }
-        return result;
-    }
-
+ 
     public static String getGroupName(int groupId) {
         String result = "unknown";
-        EtcGroupReader gr = getInstance(false);
-        Integer gID = Integer.valueOf(groupId);
-        if (gr.groupId.containsValue(gID)) {
-            result = gr.groupName.get(gID);
-        }
-        return result;
-    }
-
-    public static String getGroupName(int groupId, boolean test) {
-        String result = "unknown";
-        EtcGroupReader gr = getInstance(test);
+        LocalGroups gr = getInstance();
         Integer gID = Integer.valueOf(groupId);
         if (gr.groupId.containsValue(gID)) {
             result = gr.groupName.get(gID);

@@ -50,8 +50,8 @@ public class UserInfoCommand {
         List<String> param = parameters.getParameters();
         if (param != null) {
             command = new String[1 + param.size()];
-            //command[0] = parameters.getCommandGetENT();
-            command[0] = parameters.getCommandId();
+            command[0] = parameters.getCommandGetENT();
+            //command[0] = parameters.getCommandId();
             int cont = 0;
             // Adding parameters to the command
             for (Object element : param) {
@@ -62,8 +62,8 @@ public class UserInfoCommand {
         }
         else {
             command = new String[] {
-                    parameters.getCommandId()};
-            //parameters.getCommandGetENT()};
+                    //parameters.getCommandId()};
+            parameters.getCommandGetENT()};
         }
         return command;
     }

@@ -16,8 +16,6 @@ public class UserInfoParameters {
   /**
    *
    * @return String
-   * @todo Implement this
-   *   it.grid.storm.synchcall.space.quota.QuotaParametersInterface method
    */
   public String getCommandId() {
     return COMMAND_ID;
@@ -35,10 +33,8 @@ public class UserInfoParameters {
   /**
    *
    * @return List
-   * @todo Implement this
-   *   it.grid.storm.synchcall.space.quota.QuotaParametersInterface method
-   */
-  public List getParameters() {
+  */
+  public List<String> getParameters() {
     return this.parameters;
   }
 

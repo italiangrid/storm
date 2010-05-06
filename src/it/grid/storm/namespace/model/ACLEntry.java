@@ -1,7 +1,7 @@
 package it.grid.storm.namespace.model;
 
 import it.grid.storm.filesystem.FilesystemPermission;
-import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 import it.grid.storm.namespace.util.userinfo.UserInfoException;
 
 import org.slf4j.Logger;
@@ -27,13 +27,13 @@ public class ACLEntry {
         // Digest the GroupName and Retrieve the GroupId
         this.groupName = groupName;
         try {
-            boolean isDefined = EtcGroupReader.isGroupDefined(groupName);
+            boolean isDefined = LocalGroups.isGroupDefined(groupName);
             if (!isDefined) {
                 LOG.error("The groupName '" + groupName + "' does not exist!");
             } else {
                 LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
             }
-            groupId = EtcGroupReader.getGroupId(groupName);
+            groupId = LocalGroups.getGroupId(groupName);
             LOG.debug("GroupID of '" + groupName + "' = " + groupId);
             // this.groupId = UserInfoExecutor.retrieveGroupID(groupName);
             // this.groupId = UserInfoExecutor.retrieveGroupID_ENT(groupName);
