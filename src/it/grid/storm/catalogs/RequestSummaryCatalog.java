@@ -412,11 +412,9 @@ public class RequestSummaryCatalog {
 
 
     /**
-     * Method used to abort a request that HAS been fetched for processing; if
-     * the status of the request associated to the supplied request token tok is
-     * different from SRM_REQUEST_INPROGRESS, then nothing takes place; likewise
-     * if the supplied token does not correspond to any request, or if it is
-     * null.
+     * Method used to abort a request that HAS been fetched for processing; if the status of the request associated to
+     * the supplied request token tok is different from SRM_REQUEST_INPROGRESS, then nothing takes place; likewise if
+     * the supplied token does not correspond to any request, or if it is null.
      */
     synchronized public void abortInProgressRequest(TRequestToken rt) {
         if (rt != null) {
