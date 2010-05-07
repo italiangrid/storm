@@ -198,7 +198,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * .String)
      */
     @Override
-    public String getRequestToken(int taskId) throws DataAccessException {
+    public String getRequestToken(long taskId) throws DataAccessException {
         String result = null;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -218,7 +218,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * )
      */
     @Override
-    public int getRetryValue(int taskId) throws DataAccessException {
+    public int getRetryValue(long taskId) throws DataAccessException {
         int result = 0;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -237,7 +237,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * it.grid.storm.persistence.dao.TapeRecallDAO#getTask(java.lang.String)
      */
     @Override
-    public RecallTaskTO getTask(int taskId) throws DataAccessException {
+    public RecallTaskTO getTask(long taskId) throws DataAccessException {
         RecallTaskTO result = null;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -259,7 +259,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public int getTaskStatus(int taskId) throws DataAccessException {
+    public int getTaskStatus(long taskId) throws DataAccessException {
         int result = RecallTaskStatus.UNDEFINED.ordinal();
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -274,7 +274,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public int insertTask(RecallTaskTO task) throws DataAccessException {
+    public long insertTask(RecallTaskTO task) throws DataAccessException {
         PropertiesDB tasksDB = getTasksDB();
         // Retrieve an unique task-id.
         int taskId = (int) Math.round(Math.random() * 10000);
@@ -335,7 +335,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public void setRetryValue(int taskId, int value) throws DataAccessException {
+    public void setRetryValue(long taskId, int value) throws DataAccessException {
         RecallTaskTO task = getTask(taskId);
         task.setRetryAttempt(value);
         PropertiesDB tasksDB = getTasksDB();
@@ -487,7 +487,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
+    protected boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException {
         boolean result = false;
         RecallTaskTO task = getTask(taskId);
         if (task != null) {

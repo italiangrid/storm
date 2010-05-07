@@ -39,7 +39,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
         rtTO.setVoName("infngrid");
 
-        int taskId = trDAO.insertTask(rtTO);
+        long taskId = trDAO.insertTask(rtTO);
 
         int status = trDAO.getTaskStatus(taskId);
 
@@ -271,7 +271,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public String getRequestToken(int taskId) throws DataAccessException {
+    public String getRequestToken(long taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRequestToken(taskId);
 
@@ -308,7 +308,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getRetryValue(int taskId) throws DataAccessException {
+    public int getRetryValue(long taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRetryValue(taskId);
 
@@ -345,7 +345,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public RecallTaskTO getTask(int taskId) throws DataAccessException {
+    public RecallTaskTO getTask(long taskId) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         Statement statment = getStatement(dbConnection);
@@ -422,7 +422,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getTaskStatus(int taskId) throws DataAccessException {
+    public int getTaskStatus(long taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryRetrieveTaskStatus(taskId);
 
@@ -459,13 +459,15 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int insertTask(RecallTaskTO task) throws DataAccessException {
+    public long insertTask(RecallTaskTO task) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
         log.debug("Query(insert-task)=" + prepStat.toString());
 
-        int taskId = -1;
+        //Use of currentTime as primary key. In case of unicity violation there is a mechanism 
+        // in mysql INSERT INTO ... ON DUPLICATE KEY taskId=taskId+1
+        long taskId = System.currentTimeMillis();
         try {
 
             prepStat.executeUpdate();
@@ -529,7 +531,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public void setRetryValue(int taskId, int value) throws DataAccessException {
+    public void setRetryValue(long taskId, int value) throws DataAccessException {
 
         String query = sqlHelper.getQuerySetRetryValue(taskId, value);
 
@@ -662,7 +664,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    protected boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException {
+    protected boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException {
 
         String query = sqlHelper.getQueryUpdateTaskStatus(taskId, status);
 

@@ -54,21 +54,21 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              formatString(voName));
     }
 
-    public String getQueryGetRequestToken(int taskId) {
+    public String getQueryGetRequestToken(long taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQueryGetRetryValue(int taskId) {
+    public String getQueryGetRetryValue(long taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQueryGetTask(int taskId) {
+    public String getQueryGetTask(long taskId) {
 
         String queryFormat = "SELECT * FROM %s WHERE %s=%d";
 
@@ -81,10 +81,12 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             return null;
         }
 
-        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                             "ON DUPLICATE KEY taskId=taskId+1";
 
         String query = String.format(queryFormat,
                                      TABLE_NAME,
+                                     COL_TASK_ID,
                                      COL_REQUEST_TOKEN,
                                      COL_REQUEST_TYPE,
                                      COL_FILE_NAME,
@@ -95,12 +97,12 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                                      COL_RETRY_ATTEMPT,
                                      COL_DEFERRED_STARTTIME,
                                      COL_DATE);
-
+        
         try {
             PreparedStatement prepStat = conn.prepareStatement(query);
             
             int idx = 1;
-            
+            prepStat.setInt(idx++, recallTask.getTaskId());
             prepStat.setString(idx++, recallTask.getRequestToken());
             prepStat.setString(idx++, recallTask.getRequestType());
             prepStat.setString(idx++, recallTask.getFileName());
@@ -210,14 +212,14 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return String.format(queryFormat, COL_TASK_ID, TABLE_NAME, COL_REQUEST_TOKEN, requestToken, COL_FILE_NAME, pfn);
     }
     
-    public String getQueryRetrieveTaskStatus(int taskId) {
+    public String getQueryRetrieveTaskStatus(long taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
         return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQuerySetRetryValue(int taskId, int value) {
+    public String getQuerySetRetryValue(long taskId, int value) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
 
@@ -280,7 +282,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         return sb.toString();
     }
 
-    public String getQueryTakeoverTaskUpdate(int taskId) {
+    public String getQueryTakeoverTaskUpdate(long taskId) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
 
@@ -292,7 +294,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              taskId);
     }
 
-    public String getQueryUpdateTaskStatus(int taskId, int status) {
+    public String getQueryUpdateTaskStatus(long taskId, int status) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d AND %s!=%d";
 

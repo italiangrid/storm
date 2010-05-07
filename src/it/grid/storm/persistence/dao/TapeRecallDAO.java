@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<Integer, SuspendedChunk> chunkMap = new ConcurrentHashMap<Integer, SuspendedChunk>();
+    private static ConcurrentHashMap<Long, SuspendedChunk> chunkMap = new ConcurrentHashMap<Long, SuspendedChunk>();
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
@@ -56,26 +56,26 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
 
-    public abstract String getRequestToken(int taskId) throws DataAccessException;
+    public abstract String getRequestToken(long taskId) throws DataAccessException;
 
-    public abstract int getRetryValue(int taskId) throws DataAccessException;
+    public abstract int getRetryValue(long taskId) throws DataAccessException;
 
-    public abstract RecallTaskTO getTask(int taskId) throws DataAccessException;
+    public abstract RecallTaskTO getTask(long taskId) throws DataAccessException;
 
     public abstract int getTaskId(String requestToken, String pfn) throws DataAccessException;
 
-    public abstract int getTaskStatus(int taskId) throws DataAccessException;
+    public abstract int getTaskStatus(long taskId) throws DataAccessException;
 
-    public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
+    public abstract long insertTask(RecallTaskTO task) throws DataAccessException;
 
-    public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
+    public long insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
             throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
-        int taskId = insertTask(task);
+        long taskId = insertTask(task);
 
         if (chunkMap.containsKey(taskId)) {
 
@@ -96,9 +96,9 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
 
-    public abstract void setRetryValue(int taskId, int value) throws DataAccessException;
+    public abstract void setRetryValue(long taskId, int value) throws DataAccessException;
 
-    public boolean setTaskStatus(int taskId, int status) throws DataAccessException {
+    public boolean setTaskStatus(long taskId, int status) throws DataAccessException {
 
         RecallTaskStatus recallTaskStatus = RecallTaskStatus.getRecallTaskStatus(status);
 
@@ -193,5 +193,5 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         return task;
     }
 
-    protected abstract boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException;
+    protected abstract boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException;
 }
