@@ -985,7 +985,7 @@ public class RequestSummaryDAO {
      */
     public int getNumberExpired() {
     	
-    	int result = 0;
+    	int rowCount = 0;
     	
         checkConnection();
 
@@ -1008,6 +1008,12 @@ public class RequestSummaryDAO {
             log.trace("REQUEST SUMMARY DAO - Number of expired requests: " + ps);
             rs = ps.executeQuery();
             logWarnings(ps.getWarnings());
+            
+            // Get the number of rows from the result set 
+            rs.next(); 
+            rowCount = rs.getInt(1); 
+            log.debug("Nr of expired requests is: "+rowCount);
+            
             close(rs);
             close(ps);
         } catch (SQLException e) {
@@ -1017,8 +1023,8 @@ public class RequestSummaryDAO {
             close(rs);
             close(ps);
         }
-        
-        return result;
+               
+        return rowCount;
         
     }
     
