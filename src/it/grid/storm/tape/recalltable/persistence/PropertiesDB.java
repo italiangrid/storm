@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,15 +83,15 @@ public class PropertiesDB {
         properties.load(new FileInputStream(propertiesDBName));
 
         // Retrieve the Task-id (unique-key)
-        int taskid = task.getTaskId();
-        if (taskid == -1) {
+        UUID taskid = task.getTaskId();
+        if (taskid == null) {
             log.error("You are trying to store a Task without a task-id.");
             throw new DataAccessException("You are trying to store a Task without a task-id.");
         }
         // Build the String related to Task-id
         String taskStr = task.toString();
         // Insert the new property entry
-        properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
+        properties.setProperty(taskid.toString(), taskStr);
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
@@ -101,20 +102,20 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        int taskid = -1;
+        UUID taskid = null;
         String taskStr = null;
         for (RecallTaskTO recallTaskTO : listTasks) {
             // Retrieve the Task-id (unique-key)
             taskid = recallTaskTO.getTaskId();
-            if (taskid == -1) {
+            if (taskid == null) {
                 log.error("You are trying to store a Task without a task-id.");
                 throw new DataAccessException("You are trying to store a Task without a task-id.");
             }
             // Build the String related to Task-id
             taskStr = recallTaskTO.toString();
             // Insert the new property entry
-            properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
-            taskid = -1;
+            properties.setProperty(taskid.toString(), taskStr);
+            taskid = null;
         }
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
@@ -142,7 +143,7 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        int taskId = task.getTaskId();
+        UUID taskId = task.getTaskId();
 
         // Check if the Task exists within the Properties DB
         boolean taskExist = properties.containsKey(taskId);
@@ -153,7 +154,7 @@ public class PropertiesDB {
             // Build the String related to Task-id
             String taskStr = task.toString();
             // Insert the new property entry
-            properties.setProperty(Integer.valueOf(taskId).toString(), taskStr);
+            properties.setProperty(taskId.toString(), taskStr);
             log.debug("Removed tasks '" + taskId + "'");
         }
 
@@ -162,12 +163,12 @@ public class PropertiesDB {
     }
 
 
-    public void deleteRecallTask(int taskId) throws FileNotFoundException, IOException, DataAccessException {
+    public void deleteRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
         // Retrieve the Task from taskid
-        String task = properties.getProperty(Integer.valueOf(taskId).toString());
+        String task = properties.getProperty(taskId.toString());
         if (task == null) {
             log.error("Unable to find the task with ID = " + taskId);
             throw new DataAccessException("Unable to find the task with ID = " + taskId);
@@ -199,7 +200,7 @@ public class PropertiesDB {
         Arrays.sort(tasksArray);
         // Create the ordered LinkedHashMap
         for (RecallTaskTO element : tasksArray) {
-            tasksDB.put(Integer.valueOf(element.getTaskId()).toString(), element);
+            tasksDB.put(element.getTaskId().toString(), element);
         }
         
         

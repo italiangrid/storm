@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
@@ -23,7 +24,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
 
     
-    private int taskId = -1;
+    private UUID taskId = null;
     private String requestToken = null;
     private String requestType = null;
     private String fileName = null;
@@ -41,6 +42,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     public static RecallTaskTO createRandom(Date date, String voName) {
 
         RecallTaskTO result = new RecallTaskTO();
+        result.taskId = UUID.randomUUID();
         result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
         result.setRequestToken(voName + Math.round(Math.random() * 1000));
         result.setRetryAttempt(0);
@@ -96,7 +98,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return status.getStatusId();
     }
 
-    public int getTaskId() {
+    public UUID getTaskId() {
         return taskId;
     }
 
@@ -144,7 +146,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         status = RecallTaskStatus.getRecallTaskStatus(statusId);
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(UUID taskId) {
         this.taskId = taskId;
     }
 

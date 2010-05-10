@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,7 +272,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public String getRequestToken(long taskId) throws DataAccessException {
+    public String getRequestToken(UUID taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRequestToken(taskId);
 
@@ -308,7 +309,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getRetryValue(long taskId) throws DataAccessException {
+    public int getRetryValue(UUID taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryGetRetryValue(taskId);
 
@@ -345,7 +346,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public RecallTaskTO getTask(long taskId) throws DataAccessException {
+    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         Statement statment = getStatement(dbConnection);
@@ -384,14 +385,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getTaskId(String requestToken, String pfn) throws DataAccessException {
+    public UUID getTaskId(String requestToken, String pfn) throws DataAccessException {
 
         String query = sqlHelper.getQueryRetrieveTaskId(requestToken, pfn);
 
         Connection dbConnection = getConnection();
         Statement statment = getStatement(dbConnection);
 
-        int taskId;
+        UUID taskId = null;
         ResultSet res = null;
 
         try {
@@ -404,10 +405,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             }
 
             if (res.first() == false) {
-                return -1;
+                return null;
             }
 
-            taskId = res.getInt(TapeRecallMySQLHelper.COL_TASK_ID);
+            taskId = UUID.fromString(res.getString(TapeRecallMySQLHelper.COL_TASK_ID));
+            
+        } catch (IllegalArgumentException e) {
+
+            throw new DataAccessException("Error executing query: " + query, e);
 
         } catch (SQLException e) {
 
@@ -422,7 +427,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public int getTaskStatus(long taskId) throws DataAccessException {
+    public int getTaskStatus(UUID taskId) throws DataAccessException {
 
         String query = sqlHelper.getQueryRetrieveTaskStatus(taskId);
 
@@ -459,7 +464,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public long insertTask(RecallTaskTO task) throws DataAccessException {
+    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
@@ -467,7 +472,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         //Use of currentTime as primary key. In case of unicity violation there is a mechanism 
         // in mysql INSERT INTO ... ON DUPLICATE KEY taskId=taskId+1
-        long taskId = System.currentTimeMillis();
+        UUID taskId = RecallTaskTO.buildTaskId();
         try {
 
             prepStat.executeUpdate();
@@ -531,7 +536,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public void setRetryValue(long taskId, int value) throws DataAccessException {
+    public void setRetryValue(UUID taskId, int value) throws DataAccessException {
 
         String query = sqlHelper.getQuerySetRetryValue(taskId, value);
 
@@ -602,12 +607,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
                 return taskList;
             }
 
-            List<Integer> taskIdList = new LinkedList<Integer>();
+            List<UUID> taskIdList = new LinkedList<UUID>();
 
             while (res.next()) {
                 task = new RecallTaskTO();
 
-                int taskId = setTaskInfo(task, res);
+                UUID taskId = setTaskInfo(task, res);
 
                 taskList.add(task);
                 taskIdList.add(taskId);
@@ -646,9 +651,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
     }
 
-    private int setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
+    private UUID setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
 
-        int taskId = res.getInt(TapeRecallMySQLHelper.COL_TASK_ID);
+        UUID taskId = UUID.fromString(res.getString(TapeRecallMySQLHelper.COL_TASK_ID));
 
         task.setTaskId(taskId);
         task.setRequestToken(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TOKEN));
@@ -664,7 +669,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    protected boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException {
+    protected boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException {
 
         String query = sqlHelper.getQueryUpdateTaskStatus(taskId, status);
 

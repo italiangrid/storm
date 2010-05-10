@@ -1,5 +1,7 @@
 package it.grid.storm.tape.recalltable.model;
 
+import java.util.UUID;
+
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -34,7 +36,7 @@ public class PutTaskStatusLogic {
                 throw new RecallTableException("Unable to use RecallTable DB");
             }
 
-            int taskId = -1;
+            UUID taskId = null;
 
             try {
 
@@ -48,7 +50,7 @@ public class PutTaskStatusLogic {
                 }
 
             } catch (DataAccessException e) {
-                if (taskId == -1) {
+                if (taskId == null) {
                     throw new RecallTableException("Unable to retrieve taskId");
                 } else {
                     throw new RecallTableException("Unable to change status for taskId=" + taskId);

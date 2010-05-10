@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,10 +63,10 @@ public class RecallTaskBuilder {
                 if (fields.length == 10) {
                     // ####### Manage the fields #######
                     // FIELD-0 = TaskId (int)
-                    int taskId = -1;
+                    UUID taskId = null;
                     try {
-                        taskId = Integer.parseInt(fields[0]);
-                    } catch (NumberFormatException e) {
+                        taskId = UUID.fromString(fields[0]);
+                    } catch (IllegalArgumentException e) {
                         log.error("Unable to parse the taskId '" + fields[0] + "'.");
                     }
                     recallTask.setTaskId(taskId);

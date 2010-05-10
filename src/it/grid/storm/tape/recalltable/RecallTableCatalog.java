@@ -12,6 +12,7 @@ import it.grid.storm.tape.recalltable.persistence.TapeRecallDAOProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class RecallTableCatalog {
         }
     }
 
-    public void changeRetryValue(int taskId, int newValue) {
+    public void changeRetryValue(UUID taskId, int newValue) {
         try {
             tapeRecallDAO.setRetryValue(taskId, newValue);
         } catch (DataAccessException e) {
@@ -47,7 +48,7 @@ public class RecallTableCatalog {
         }
     }
 
-    public boolean changeStatus(int taskId, RecallTaskStatus newStatus) {
+    public boolean changeStatus(UUID taskId, RecallTaskStatus newStatus) {
         try {
             return tapeRecallDAO.setTaskStatus(taskId, newStatus.getStatusId());
         } catch (DataAccessException e) {
@@ -122,13 +123,13 @@ public class RecallTableCatalog {
         return result;
     }
 
-    public RecallTaskTO getTask(int taskId) throws DataAccessException {
+    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
         RecallTaskTO task = null;
         task = tapeRecallDAO.getTask(taskId);
         return task;
     }
 
-    public int getTaskId(String requestToken, String pfn) throws DataAccessException {
+    public UUID getTaskId(String requestToken, String pfn) throws DataAccessException {
         return tapeRecallDAO.getTaskId(requestToken, pfn);
     }
 

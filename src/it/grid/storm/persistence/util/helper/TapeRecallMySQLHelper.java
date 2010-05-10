@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,25 +55,25 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              formatString(voName));
     }
 
-    public String getQueryGetRequestToken(long taskId) {
+    public String getQueryGetRequestToken(UUID taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId);
+        return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId.toString());
     }
 
-    public String getQueryGetRetryValue(long taskId) {
+    public String getQueryGetRetryValue(UUID taskId) {
 
         String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId);
+        return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId.toString());
     }
 
-    public String getQueryGetTask(long taskId) {
+    public String getQueryGetTask(UUID taskId) {
 
         String queryFormat = "SELECT * FROM %s WHERE %s=%d";
 
-        return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, taskId);
+        return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, taskId.toString());
     }
 
     public PreparedStatement getQueryInsertTask(Connection conn, RecallTaskTO recallTask) {
@@ -81,8 +82,8 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             return null;
         }
 
-        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                             "ON DUPLICATE KEY taskId=taskId+1";
+        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ;
+                             
 
         String query = String.format(queryFormat,
                                      TABLE_NAME,
@@ -102,7 +103,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             PreparedStatement prepStat = conn.prepareStatement(query);
             
             int idx = 1;
-            prepStat.setInt(idx++, recallTask.getTaskId());
+            prepStat.setString(idx++, recallTask.getTaskId().toString());
             prepStat.setString(idx++, recallTask.getRequestToken());
             prepStat.setString(idx++, recallTask.getRequestType());
             prepStat.setString(idx++, recallTask.getFileName());
@@ -294,7 +295,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
                              taskId);
     }
 
-    public String getQueryUpdateTaskStatus(long taskId, int status) {
+    public String getQueryUpdateTaskStatus(UUID taskId, int status) {
 
         String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d AND %s!=%d";
 

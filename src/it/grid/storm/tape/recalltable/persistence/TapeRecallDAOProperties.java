@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +199,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * .String)
      */
     @Override
-    public String getRequestToken(long taskId) throws DataAccessException {
+    public String getRequestToken(UUID taskId) throws DataAccessException {
         String result = null;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -218,7 +219,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * )
      */
     @Override
-    public int getRetryValue(long taskId) throws DataAccessException {
+    public int getRetryValue(UUID taskId) throws DataAccessException {
         int result = 0;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -237,7 +238,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * it.grid.storm.persistence.dao.TapeRecallDAO#getTask(java.lang.String)
      */
     @Override
-    public RecallTaskTO getTask(long taskId) throws DataAccessException {
+    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
         RecallTaskTO result = null;
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -250,16 +251,16 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
 
 
     @Override
-    public int getTaskId(String requestToken, String pfn) throws DataAccessException {
+    public UUID getTaskId(String requestToken, String pfn) throws DataAccessException {
         // TODO Auto-generated method stub
-        return 0;
+        return UUID.randomUUID();
     }
 
 
     /*
      */
     @Override
-    public int getTaskStatus(long taskId) throws DataAccessException {
+    public int getTaskStatus(UUID taskId) throws DataAccessException {
         int result = RecallTaskStatus.UNDEFINED.ordinal();
         tasks = getTasks();
         if (tasks.containsKey(taskId)) {
@@ -274,11 +275,11 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public long insertTask(RecallTaskTO task) throws DataAccessException {
+    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
         PropertiesDB tasksDB = getTasksDB();
         // Retrieve an unique task-id.
-        int taskId = (int) Math.round(Math.random() * 10000);
-        task.setTaskId(Integer.valueOf(taskId));
+        UUID taskId = UUID.randomUUID();
+        task.setTaskId(taskId);
         try {
             tasksDB.addRecallTask(task);
         } catch (FileNotFoundException e) {
@@ -335,7 +336,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public void setRetryValue(long taskId, int value) throws DataAccessException {
+    public void setRetryValue(UUID taskId, int value) throws DataAccessException {
         RecallTaskTO task = getTask(taskId);
         task.setRetryAttempt(value);
         PropertiesDB tasksDB = getTasksDB();
@@ -487,7 +488,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    protected boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException {
+    protected boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException {
         boolean result = false;
         RecallTaskTO task = getTask(taskId);
         if (task != null) {

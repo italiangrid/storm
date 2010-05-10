@@ -10,6 +10,7 @@ import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<Long, SuspendedChunk> chunkMap = new ConcurrentHashMap<Long, SuspendedChunk>();
+    private static ConcurrentHashMap<UUID, SuspendedChunk> chunkMap = new ConcurrentHashMap<UUID, SuspendedChunk>();
 
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
@@ -56,31 +57,31 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
 
-    public abstract String getRequestToken(long taskId) throws DataAccessException;
+    public abstract String getRequestToken(UUID taskId) throws DataAccessException;
 
-    public abstract int getRetryValue(long taskId) throws DataAccessException;
+    public abstract int getRetryValue(UUID taskId) throws DataAccessException;
 
-    public abstract RecallTaskTO getTask(long taskId) throws DataAccessException;
+    public abstract RecallTaskTO getTask(UUID taskId) throws DataAccessException;
 
-    public abstract int getTaskId(String requestToken, String pfn) throws DataAccessException;
+    public abstract UUID getTaskId(String requestToken, String pfn) throws DataAccessException;
 
-    public abstract int getTaskStatus(long taskId) throws DataAccessException;
+    public abstract int getTaskStatus(UUID taskId) throws DataAccessException;
 
-    public abstract long insertTask(RecallTaskTO task) throws DataAccessException;
+    public abstract UUID insertTask(RecallTaskTO task) throws DataAccessException;
 
-    public long insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
+    public UUID insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
             throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
-        long taskId = insertTask(task);
+        UUID taskId = insertTask(task);
 
         if (chunkMap.containsKey(taskId)) {
 
-            log.error("BUG: duplicated key taskId: " + taskId);
-            return -1;
+            log.error("File 'absoluteFileName' already exists in RecallTable " + taskId);
+            return taskId;
 
         }
 
@@ -96,9 +97,9 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
 
-    public abstract void setRetryValue(long taskId, int value) throws DataAccessException;
+    public abstract void setRetryValue(UUID taskId, int value) throws DataAccessException;
 
-    public boolean setTaskStatus(long taskId, int status) throws DataAccessException {
+    public boolean setTaskStatus(UUID taskId, int status) throws DataAccessException {
 
         RecallTaskStatus recallTaskStatus = RecallTaskStatus.getRecallTaskStatus(status);
 
@@ -193,5 +194,5 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         return task;
     }
 
-    protected abstract boolean setTaskStatusDBImpl(long taskId, int status) throws DataAccessException;
+    protected abstract boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException;
 }

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -85,13 +86,11 @@ public class TaskResource {
     @PUT
     @Path("/{taskId}")
     @Consumes("text/plain")
-    public void putNewTaskStatusOrRetryValue(@PathParam("taskId") int taskId, InputStream input)
+    public void putNewTaskStatusOrRetryValue(@PathParam("taskId") UUID taskId, InputStream input)
             throws RecallTableException {
 
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
-        // @todo : REMOVE THIS
-        // test = true;
 
         // Retrieve the Input String
         String inputStr = buildInputString(input);
