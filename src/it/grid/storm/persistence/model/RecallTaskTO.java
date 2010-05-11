@@ -268,4 +268,9 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         // sb.append(endChar);
         return sb.toString();
     }
+
+    public static UUID buildTaskId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
