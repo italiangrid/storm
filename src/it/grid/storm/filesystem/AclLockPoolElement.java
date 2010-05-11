@@ -15,8 +15,8 @@
 package it.grid.storm.filesystem;
 
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
-import edu.emory.mathcs.backport.java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Semaphore;
 
 
 /** Usage-counted semaphore object.
