@@ -309,7 +309,7 @@ test.junit.dir
 	<!-- <include name="axis-ant.jar"/> -->
 	<include name="axis.jar"/>
 	<include name="axis-schema.jar"/>
-	<include name="backport-util-concurrent.jar"/>
+	<!--<include name="backport-util-concurrent.jar"/>  ## Removed in 1.5.2 -->   
     <include name="srm22client.jar"/>
     <include name="cog-axis.jar"/>
 	<include name="cog-jglobus.jar"/>
@@ -401,6 +401,7 @@ test.junit.dir
 	<include name="storm_mysql_update_from_1.0.0_to_1.3.2000.sql"/>
 	<include name="storm_mysql_update_from_1.3.2000_to_1.4.0.sql"/>
     <include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql"/>
+  	<include name="storm_mysql_update_from_1.5.x_to_1.5.2.sql"/>
   </fileset>	
 	
   <!-- start/stop scripts -->
