@@ -80,6 +80,7 @@ separately in the ``storm-backend-jars`` package.
 %{prefix}/doc/LICENSE.txt
 %{prefix}/doc/INSTALL.txt
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
+%config(noreplace) /etc/cron.d/storm-backend.cron
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.0.0_to_1.3.2000.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
@@ -100,7 +101,7 @@ separately in the ``storm-backend-jars`` package.
 %{prefix}/lib/storm-backend/libposixapi_interface.so
 %{prefix}/lib/storm-backend/libjdim.so
 %{prefix}/lib/storm-backend/libstorm_cutil.so
-%config(noreplace) /etc/cron.d/storm-backend.cron
+
 
 %defattr(755,root,root)
 
@@ -130,8 +131,8 @@ fi
 
 %postun server
 rm -f /etc/cron.d/storm-backend.cron
-# glite-info-dynamic-storm is a file created by YAIM
 rm -f /etc/cron.d/glite-info-dynamic-storm
+rm -f /etc/init.d/storm-backend
 
 %package jars
 
