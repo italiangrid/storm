@@ -86,6 +86,7 @@ separately in the ``storm-backend-jars`` package.
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.3.2000_to_1.4.0.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.x_to_1.5.2.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
@@ -156,7 +157,6 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/activation.jar
 %{prefix}/lib/storm-backend/jar/wsdl4j-1.5.1.jar
 %{prefix}/lib/storm-backend/jar/cog-jglobus.jar
-%{prefix}/lib/storm-backend/jar/backport-util-concurrent.jar
 %{prefix}/lib/storm-backend/jar/commons-collections-3.1.jar
 %{prefix}/lib/storm-backend/jar/commons-configuration-1.4.jar
 %{prefix}/lib/storm-backend/jar/commons-logging-1.1.jar
