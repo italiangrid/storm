@@ -3,14 +3,10 @@
  */
 package it.grid.storm.namespace.util.userinfo;
 
-import it.grid.storm.config.Configuration;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,73 +16,63 @@ import org.slf4j.LoggerFactory;
  */
 public class LocalGroups {
 
-    private static final String etcGroupLinuxCommand = "getent";
-
     private static final Logger log = LoggerFactory.getLogger(LocalGroups.class);
     private HashSet<String> groups = null;
     private HashMap<String, Integer> groupId = null;
     private HashMap<Integer, String> groupName = null;
     private static final LocalGroups instanceLinux = new LocalGroups();
     private long parsingInstant = 0;
-    private final long minimumLifetime = 1000 * 60; //1 minute;
+    private static final long minimumLifetime = 1000 * 60; //1 minute;
 
     private LocalGroups() {
-        init(etcGroupLinuxCommand);
-    }
-
-    private LocalGroups(String filename) {
-        init(filename);
+        init();
     }
 
     public static void refresh() {
         LocalGroups thiS = getInstance();
-        if (thiS.parsedAge() > thiS.minimumLifetime) {
-            thiS.init(etcGroupLinuxCommand); // Re-parse the /etc/group file
-            thiS.parsingInstant = System.currentTimeMillis();
-        }
+        thiS.init();  
     }
 
-    private void init(String filename) {
+    private void init() {
         groups = new HashSet<String>();
         groupId = new HashMap<String, Integer>();
         groupName = new HashMap<Integer, String>();
+        
         try {
-            BufferedReader in = new BufferedReader(new FileReader("/etc/group"));
-            String str;
-            while ((str = in.readLine()) != null) {
-                // Parsing the line
-                String patternStr = ":";
-                String[] fields = str.split(patternStr);
-                String groupNameStr = fields[0];
-                groups.add(groupNameStr);
-                int gid = 33333; //Default group name
-                try {
-                    gid = Integer.parseInt(fields[2]);
-                } catch (NumberFormatException nfe) {
-                    log.error("Unable to parse the GID '" + fields[2]
-                            + "' and convert it to an Integer. Use the default group 33333");
-                    gid = 33333;
-                }
-                Integer gId = Integer.valueOf(gid);
-                groupId.put(groupNameStr, gId);
-                groupName.put(gId, groupNameStr);
+            //Parsing all the database and cache it
+            groupId = UserInfoExecutor.digestGroupDatabase();
+            groups.addAll(groupId.keySet());  
+            for (String gName : groups) {
+                groupName.put(groupId.get(gName), gName);
             }
-            in.close();
+            
             parsingInstant = System.currentTimeMillis();
-        } catch (IOException e) {
-            log.error("Unable to read the '" + filename + "' file." + e);
+        } catch (UserInfoException e) {
+            log.error("Unable to digest the local group database: " + e);
         }
     }
 
     private static LocalGroups getInstance() {
+        if (instanceLinux.parsedAge() > LocalGroups.minimumLifetime) {
+            instanceLinux.init(); // Re-digest the local group database
+            instanceLinux.parsingInstant = System.currentTimeMillis();
+        }
         return instanceLinux;
     }
 
-    public long parsedAge() {
+    private long parsedAge() {
         return System.currentTimeMillis() - parsingInstant;
     }
 
     
+    /******************
+     * PUBLIC METHODS *
+    *******************/
+    
+    
+    /**
+     * 
+     */
     public static boolean isGroupDefined(String groupName) {
         boolean result = false;
         LocalGroups gr = getInstance();
@@ -100,13 +86,11 @@ public class LocalGroups {
     }
 
     public static int getGroupId(String groupName) {
-        int result = 33333;
+        int result = -1;
         if (isGroupDefined(groupName)) {
             LocalGroups gr = getInstance();
-            result = gr.groupId.get(groupName);
-        } else {
-            log.error("Unable to retrieve groupId of groupName '" + groupName + "'");
-        }
+            result = gr.groupId.get(groupName).intValue();
+        } 
         return result;
     }
 
@@ -114,11 +98,22 @@ public class LocalGroups {
     public static String getGroupName(int groupId) {
         String result = "unknown";
         LocalGroups gr = getInstance();
-        Integer gID = Integer.valueOf(groupId);
-        if (gr.groupId.containsValue(gID)) {
-            result = gr.groupName.get(gID);
+        if (gr.groupName.containsKey(Integer.valueOf(groupId))) {
+            result = gr.groupName.get(Integer.valueOf(groupId));
+        } else {
+            // Try a refresh
+            refresh();
+            result = gr.groupName.get(Integer.valueOf(groupId));
+            if (result==null) {
+                log.warn("Unable to find a group with GID='"+groupId+"'");
+            }
         }
         return result;
     }
 
+    public static Map<String,Integer> getGroupDB() {
+        LocalGroups gr = getInstance();
+        return gr.groupId;
+    }
+    
 }

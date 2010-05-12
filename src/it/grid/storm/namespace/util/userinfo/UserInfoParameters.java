@@ -5,30 +5,12 @@ import java.util.Iterator;
 
 public class UserInfoParameters {
 
-  private static final String COMMAND_ID = "id";
-  private static final String COMMAND_GETENT = "getent group";
+
   private List<String> parameters = null;
 
   public UserInfoParameters(List<String> parameters) {
     this.parameters = parameters;
   }
-
-  /**
-   *
-   * @return String
-   */
-  public String getCommandId() {
-    return COMMAND_ID;
-  }
-
-  /**
-   *
-   * @return String
-   */
-  public String getCommandGetENT() {
-    return COMMAND_GETENT;
-  }
-
 
   /**
    *
