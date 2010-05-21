@@ -68,7 +68,7 @@ if [ -f /lib/lsb/init-functions ]; then
 else
     alias log_success_msg="echo SUCCESS! '$@'"
     alias log_failure_msg="echo FAILURE! '$@'"
-	alias log_warning_msg="echo WARNING! '$@'"
+    alias log_warning_msg="echo WARNING! '$@'"
 fi
 
 function die () {
@@ -182,8 +182,7 @@ setenv_if_not_set LCMAPS_DB_FILE "$STORM_BE_CONFIGDIR/lcmaps.db"
 setenv_if_not_set LCMAPS_POLICY_NAME standard
 
 # LCMAPS log file
-#setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
-setenv_if_not_set LCMAPS_LOG_FILE "/dev/null"
+setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
 
 # LCMAPS log verbosity: 0 minimum (default), 5 maximum
 setenv_if_not_set LCMAPS_DEBUG_LEVEL 0
@@ -292,6 +291,16 @@ resume () {
 ## start
 
 start () {
+    if test -e "$LCMAPS_DB_FILE"; then
+       echo 1>&2 "LCMAPS DB file '$LCMAPS_DB_FILE'"
+    fi
+    if test -n "$LCMAPS_LOG_FILE"; then
+       echo 1>&2 "LCMAPS LOG file '$LCMAPS_LOG_FILE'"
+    fi
+    if test -n "$LCMAPS_DEBUG_LEVEL"; then
+       echo 1>&2 "LCMAPS DEBUG level '$LCMAPS_DEBUG_LEVEL'"
+    fi
+
     local pid
 
         run () { "$@" & : ; }
