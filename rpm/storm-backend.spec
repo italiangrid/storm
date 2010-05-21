@@ -45,7 +45,6 @@ server depends upon.
 %package server
 Summary: The StoRM BackEnd server.
 Group: Application/Generic
-###### Package Dependency
 Requires: storm-backend-jars >= 1.5.0
 # this causes a conflict error between postfix and torque-client packages. 
 # Requires: redhat-lsb
@@ -70,8 +69,6 @@ separately in the ``storm-backend-jars`` package.
 Summary: The StoRM BackEnd server (3rd party libraries).
 Group: Application/Generic
 Prefix: /opt/storm/backend
-#Requires: storm-backend-server >= 1.4.0
-#Obsoletes: storm-backend-jars
 
 %description jars
 This package contains the 3rd party .jar libraries needed to run the
@@ -90,6 +87,8 @@ ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
 %post server
 #!/bin/sh
 #during an install, the value of the argument passed in is 1
+#during an unupgrade, the value of the argument passed in is 2
+# 1 install
 if [ "$1" = "1" ]
 then
 echo "The StoRM BackEnd server is installed but NOT configured yet.
@@ -101,7 +100,7 @@ ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
 ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi
-#during an unupgrade, the value of the argument passed in is 2
+# 2 upgrade
 if [ "$1" = "2" ]
 then
 echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
@@ -113,10 +112,15 @@ then
 echo 'stop service storm-backend'
 /etc/init.d/storm-backend stop &> /dev/null
 fi
+if [ -s "/etc/cron.d/storm-backend.cron" ]
+then
+:
+fi
 fi;
 
 %preun server
 #!/bin/sh
+#during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
 if [ "$1" = "0" ]
 then
@@ -132,7 +136,6 @@ echo 'remove ln /etc/cron.d/storm-backend.cron'
 rm -f /etc/cron.d/storm-backend.cron
 fi
 fi;
-#during an upgrade, the value of the argument passed in is 1
 if [ "$1" = "1" ]
 then
 if [ -s "/etc/init.d/storm-backend" ]
@@ -140,11 +143,16 @@ then
 echo 'stop service storm-backend'
 /etc/init.d/storm-backend stop &> /dev/null
 fi
+if [ -s "/etc/cron.d/storm-backend.cron" ]
+then
+:
+fi
 fi;
 
 %postun server
 #!/bin/sh
 #during an upgrade, the value of the argument passed in is 1
+#during an uninstall, the value of the argument passed in is 0
 if [ "$1" = "1" ]
 then
 if [ -s "/etc/init.d/storm-backend" ]
@@ -164,7 +172,6 @@ ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
 ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi;
-#during an uninstall, the value of the argument passed in is 0
 if [ "$1" = "0" ]
 then
 if [ -s "/etc/init.d/storm-backend" ]
@@ -184,11 +191,12 @@ fi;
 %{prefix}/doc/LICENSE.txt
 %{prefix}/doc/INSTALL.txt
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
+#%config(noreplace) /etc/cron.d/storm-backend.cron
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.x_to_1.5.2.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.2.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
@@ -281,7 +289,12 @@ rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 ### Package ChangeLog
 
 %changelog
-* Wed May 21 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+* Fri May 21 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version %{version}-%{release}
+  - changed the handling of init script and cron file
+  - introduced lynks
+
+* Wed May 19 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
 - version %{version}-%{release}
   - changed the handling of init script and cron file
   - introduced lynks
