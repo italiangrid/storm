@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.2
-Release: 0.sl4
+Release: 1.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -43,12 +43,9 @@ server depends upon.
 ###### SubPackage server
 
 %package server
-
 Summary: The StoRM BackEnd server.
 Group: Application/Generic
-
 ###### Package Dependency
-
 Requires: storm-backend-jars >= 1.5.0
 # this causes a conflict error between postfix and torque-client packages. 
 # Requires: redhat-lsb
@@ -58,9 +55,7 @@ Requires: glite-security-lcmaps-plugins-basic
 Requires: glite-security-lcmaps-plugins-voms
 Requires: vdt_globus_sdk
 
-
 %description server
-
 This package contains the StoRM BackEnd server.
 
 StoRM provides an SRM interface to any POSIX
@@ -71,21 +66,127 @@ GPFS from IBM and Lustre from SUN.
 This server depends upon some 3rd party .jar files, which are packed
 separately in the ``storm-backend-jars`` package.
 
+%package jars
+Summary: The StoRM BackEnd server (3rd party libraries).
+Group: Application/Generic
+Prefix: /opt/storm/backend
+#Requires: storm-backend-server >= 1.4.0
+#Obsoletes: storm-backend-jars
 
+%description jars
+This package contains the 3rd party .jar libraries needed to run the
+StoRM BackEnd server.
 
+%prep
+%setup -q
+
+%build
+ant -Dversion="%{version}" -Darch="%{?arch_bit}" clean build
+
+%install
+rm -rf $RPM_BUILD_ROOT
+ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
+
+%post server
+#!/bin/sh
+#during an install, the value of the argument passed in is 1
+if [ "$1" = "1" ]
+then
+echo "The StoRM BackEnd server is installed but NOT configured yet.
+You need to launch the storm-backend-configure script, or to use
+yaim to configure the server.
+"
+echo 'create ln for /etc/init.d/storm-backend'
+ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
+echo 'create ln for /etc/cron.d/storm-backend.cron'
+ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
+fi
+#during an unupgrade, the value of the argument passed in is 2
+if [ "$1" = "2" ]
+then
+echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
+You need to launch the storm-backend-configure script, or to use
+yaim to configure the server.
+"
+if [ -s "/etc/init.d/storm-backend" ]
+then
+echo 'stop service storm-backend'
+/etc/init.d/storm-backend stop &> /dev/null
+fi
+fi;
+
+%preun server
+#!/bin/sh
+#during an uninstall, the value of the argument passed in is 0
+if [ "$1" = "0" ]
+then
+if [ -s "/etc/init.d/storm-backend" ]
+then
+echo 'stop service storm-backend and remove ln /etc/init.d/storm-backend'
+/etc/init.d/storm-backend stop &> /dev/null
+rm -f /etc/init.d/storm-backend
+fi
+if [ -s "/etc/cron.d/storm-backend.cron" ]
+then
+echo 'remove ln /etc/cron.d/storm-backend.cron'
+rm -f /etc/cron.d/storm-backend.cron
+fi
+fi;
+#during an upgrade, the value of the argument passed in is 1
+if [ "$1" = "1" ]
+then
+if [ -s "/etc/init.d/storm-backend" ]
+then
+echo 'stop service storm-backend'
+/etc/init.d/storm-backend stop &> /dev/null
+fi
+fi;
+
+%postun server
+#!/bin/sh
+#during an upgrade, the value of the argument passed in is 1
+if [ "$1" = "1" ]
+then
+if [ -s "/etc/init.d/storm-backend" ]
+then
+echo 'remove old file'
+rm -f /etc/init.d/storm-backend
+rm -f /etc/init.d/storm-backend.*
+fi
+if [ -s "/etc/cron.d/storm-backend.cron" ]
+then
+echo 'remove old file'
+rm -f /etc/cron.d/storm-backend.cron
+rm -f /etc/cron.d/storm-backend.cron.*
+fi
+echo 'create ln for /etc/init.d/storm-backend'
+ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
+echo 'create ln for /etc/cron.d/storm-backend.cron'
+ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
+fi;
+#during an uninstall, the value of the argument passed in is 0
+if [ "$1" = "0" ]
+then
+if [ -s "/etc/init.d/storm-backend" ]
+then
+echo 'remove old file'
+rm -f /etc/init.d/storm-backend
+fi
+if [ -s "/etc/cron.d/storm-backend.cron" ]
+then
+echo 'remove old file'
+rm -f /etc/cron.d/storm-backend.cron
+fi
+fi;
 
 %files server
 %defattr(-,root,root)
-
 %{prefix}/doc/LICENSE.txt
 %{prefix}/doc/INSTALL.txt
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
-%config(noreplace) /etc/cron.d/storm-backend.cron
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.0.0_to_1.3.2000.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.3.2000_to_1.4.0.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.x_to_1.5.2.sql
 %config(noreplace) %{prefix}/etc/logging.xml
@@ -101,56 +202,19 @@ separately in the ``storm-backend-jars`` package.
 %{prefix}/lib/storm-backend/libposixapi_interface.so
 %{prefix}/lib/storm-backend/libjdim.so
 %{prefix}/lib/storm-backend/libstorm_cutil.so
-
-
 %defattr(755,root,root)
-
 %config(noreplace) %{prefix}/sbin/storm-backend-configure
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
-%config /etc/init.d/storm-backend
-
+%attr(755,root,root) %{prefix}/etc/logrotate.d/storm-backend.cron
+%attr(755,root,root) %{prefix}/etc/init.d/storm-backend
 # empty directories; nonetheless include in RPM
 %defattr(-,root,root)
 %dir %{prefix}/var/log
 %dir %{prefix}/var/tmp
 %dir %{prefix}/lib/storm-backend/jar
 
-%post server
-echo "The StoRM BackEnd server is installed but NOT configured yet.
-You need to launch the storm-backend-configure script, or to use 
-yaim to configure the server.
-"
-
-%preun server
-if /etc/init.d/storm-backend status &> /dev/null ; then
-  echo "storm-backend is running"
-  /etc/init.d/storm-backend stop &> /dev/null
-else
-  echo "storm-backend is not running"
-fi
-
-%postun server
-rm -f /etc/cron.d/storm-backend.cron
-rm -f /etc/cron.d/glite-info-dynamic-storm
-rm -f /etc/init.d/storm-backend
-
-%package jars
-
-Summary: The StoRM BackEnd server (3rd party libraries).
-Group: Application/Generic
-Prefix: /opt/storm/backend
-Requires: storm-backend-server >= 1.4.0
-Obsoletes: storm-backend-jars
-
-
-%description jars
-This package contains the 3rd party .jar libraries needed to run the
-StoRM BackEnd server.
-
-
 %files jars
 %defattr(-,root,root)
-
 %{prefix}/lib/storm-backend/jar/commons-codec-1.3.jar
 %{prefix}/lib/storm-backend/jar/saaj.jar
 %{prefix}/lib/storm-backend/jar/xmlrpc-server-3.0.jar
@@ -200,7 +264,6 @@ StoRM BackEnd server.
 %{prefix}/lib/storm-backend/jar/jna.jar
 %{prefix}/lib/storm-backend/jar/jsr311-api-1.1.jar
 %{prefix}/lib/storm-backend/jar/json-20080701.jar
-
 %{prefix}/doc/apache2.LICENSE
 %{prefix}/doc/puretls.LICENSE
 %{prefix}/doc/junit.LICENSE
@@ -209,45 +272,20 @@ StoRM BackEnd server.
 %{prefix}/doc/cog.LICENSE
 %{prefix}/doc/cryptix.LICENSE
 %{prefix}/doc/ACKNOWLEDGEMENTS.txt
-#%{prefix}/doc/RESTful-RecallTable.txt
-#%{prefix}/doc/RecallTable-RESTful-URIDesign.pdf
-#%{prefix}/doc/codetemplates-1.0..xml
-#%{prefix}/doc/request-to-garbage.qbquery
-#%{prefix}/doc/space-token-acls-03062008.pdf
-#%{prefix}/doc/storm-code-formatter-2.0.xml
-
-#%files jars -f ../filelist.jars.%{name}
-#%defattr(-,root,root)
-
-%prep
-%setup -q
-
-
-%build
-ant -Dversion="%{version}" -Darch="%{?arch_bit}" clean build
-
-%install
-rm -rf $RPM_BUILD_ROOT
-ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
-
-mkdir -p $RPM_BUILD_ROOT/etc/cron.d
-mv -f $RPM_BUILD_ROOT/opt/storm/backend/etc/logrotate.d/storm-backend.cron $RPM_BUILD_ROOT/etc/cron.d/
-mkdir -p $RPM_BUILD_ROOT/etc/init.d
-mv -f $RPM_BUILD_ROOT/opt/storm/backend/etc/init.d/storm-backend $RPM_BUILD_ROOT/etc/init.d/
-
-if [ -h /etc/init.d/storm-backend ]; then
-    rm -f /etc/init.d/storm-backend
-fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 rm -f "$RPM_BUILD_DIR/filelist.server.%{name}"
 rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 
-
 ### Package ChangeLog
 
 %changelog
+* Wed May 21 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version %{version}-%{release}
+  - changed the handling of init script and cron file
+  - introduced lynks
+
 * Tue Dec 22 2009 <Riccardo Zappi> <riccardo.zappi@cnaf.infn.it>
 - version 1.5.0-rc4
   - changed 'path-authz.db' from 'path-authz.db.template'
