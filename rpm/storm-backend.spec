@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.2
-Release: 1.sl4
+Release: 2.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -85,12 +85,9 @@ rm -rf $RPM_BUILD_ROOT
 ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
 
 %post server
-#!/bin/sh
 #during an install, the value of the argument passed in is 1
 #during an unupgrade, the value of the argument passed in is 2
-# 1 install
-if [ "$1" = "1" ]
-then
+if [ "$1" = "1" ] ; then
 echo "The StoRM BackEnd server is installed but NOT configured yet.
 You need to launch the storm-backend-configure script, or to use
 yaim to configure the server.
@@ -100,69 +97,48 @@ ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
 ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi
-# 2 upgrade
-if [ "$1" = "2" ]
-then
+if [ "$1" = "2" ] ; then
 echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to launch the storm-backend-configure script, or to use
 yaim to configure the server.
 "
-if [ -s "/etc/init.d/storm-backend" ]
-then
+if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'stop service storm-backend'
-/etc/init.d/storm-backend stop &> /dev/null
-fi
-if [ -s "/etc/cron.d/storm-backend.cron" ]
-then
-:
+/etc/init.d/storm-backend stop &> /dev/null || :
 fi
 fi;
 
 %preun server
-#!/bin/sh
 #during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
-if [ "$1" = "0" ]
-then
-if [ -s "/etc/init.d/storm-backend" ]
-then
+if [ "$1" = "0" ] ; then
+if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'stop service storm-backend and remove ln /etc/init.d/storm-backend'
-/etc/init.d/storm-backend stop &> /dev/null
+/etc/init.d/storm-backend stop &> /dev/null || :
 rm -f /etc/init.d/storm-backend
 fi
-if [ -s "/etc/cron.d/storm-backend.cron" ]
-then
+if [ -s "/etc/cron.d/storm-backend.cron" ] ; then
 echo 'remove ln /etc/cron.d/storm-backend.cron'
 rm -f /etc/cron.d/storm-backend.cron
 fi
 fi;
-if [ "$1" = "1" ]
-then
-if [ -s "/etc/init.d/storm-backend" ]
-then
+if [ "$1" = "1" ] ; then
+if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'stop service storm-backend'
-/etc/init.d/storm-backend stop &> /dev/null
-fi
-if [ -s "/etc/cron.d/storm-backend.cron" ]
-then
-:
+/etc/init.d/storm-backend stop &> /dev/null || :
 fi
 fi;
 
 %postun server
-#!/bin/sh
 #during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
-if [ "$1" = "1" ]
-then
-if [ -s "/etc/init.d/storm-backend" ]
-then
+if [ "$1" = "1" ] ; then
+if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'remove old file'
 rm -f /etc/init.d/storm-backend
 rm -f /etc/init.d/storm-backend.*
 fi
-if [ -s "/etc/cron.d/storm-backend.cron" ]
-then
+if [ -s "/etc/cron.d/storm-backend.cron" ] ; then
 echo 'remove old file'
 rm -f /etc/cron.d/storm-backend.cron
 rm -f /etc/cron.d/storm-backend.cron.*
@@ -172,15 +148,12 @@ ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
 ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi;
-if [ "$1" = "0" ]
-then
-if [ -s "/etc/init.d/storm-backend" ]
-then
+if [ "$1" = "0" ] ; then
+if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'remove old file'
 rm -f /etc/init.d/storm-backend
 fi
-if [ -s "/etc/cron.d/storm-backend.cron" ]
-then
+if [ -s "/etc/cron.d/storm-backend.cron" ] ; then
 echo 'remove old file'
 rm -f /etc/cron.d/storm-backend.cron
 fi
