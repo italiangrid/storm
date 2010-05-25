@@ -39,18 +39,18 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     public RecallTaskTO() {
     }
 
-    public static RecallTaskTO createRandom(Date date, String voName) {
-
-        RecallTaskTO result = new RecallTaskTO();
-        result.taskId = UUID.randomUUID();
-        result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
-        result.setRequestToken(voName + Math.round(Math.random() * 1000));
-        result.setRetryAttempt(0);
-        result.setPinLifetime((int) Math.round(Math.random() * 1000));
-        result.setVoName(voName);
-        result.setInsertionInstant(date);
-        return result;
-    }
+//    public static RecallTaskTO createRandom(Date date, String voName) {
+//
+//        RecallTaskTO result = new RecallTaskTO();
+//        result.taskId = UUID.randomUUID();
+//        result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
+//        result.setRequestToken(voName + Math.round(Math.random() * 1000));
+//        result.setRetryAttempt(0);
+//        result.setPinLifetime((int) Math.round(Math.random() * 1000));
+//        result.setVoName(voName);
+//        result.setInsertionInstant(date);
+//        return result;
+//    }
 
     /*
      * Implementing the natural order (by age)
@@ -273,4 +273,8 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         // TODO Auto-generated method stub
         return null;
     }
+
+	public static UUID buildRandomTaskId() {
+		return UUID.randomUUID();
+	}
 }

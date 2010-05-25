@@ -67,7 +67,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 
     public abstract int getTaskStatus(UUID taskId) throws DataAccessException;
 
-    public abstract UUID insertTask(RecallTaskTO task) throws DataAccessException;
+//    public abstract UUID insertTask(RecallTaskTO task) throws DataAccessException;
+    public abstract void insertTask(RecallTaskTO task) throws DataAccessException;
 
     public UUID insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
             throws DataAccessException {
@@ -75,9 +76,14 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
-
-        UUID taskId = insertTask(task);
-
+		// TODO MICHELE maybe in later development here we will use a more
+		// significant generated UUID
+		if(task.getTaskId() == null)
+		{
+			task.setTaskId(RecallTaskTO.buildRandomTaskId());
+		}
+        insertTask(task);
+        UUID taskId = task.getTaskId();
         if (chunkMap.containsKey(taskId)) {
 
             log.error("File 'absoluteFileName' already exists in RecallTable " + taskId);
