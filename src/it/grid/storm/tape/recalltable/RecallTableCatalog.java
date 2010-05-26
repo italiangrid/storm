@@ -135,17 +135,6 @@ public class RecallTableCatalog {
 
     public void insertNewTask(RecallTaskTO task) {
         try {
-        	if(task == null)
-        	{
-        		log.error("Received an insert request for a null task");
-        		return;
-        	}
-			// TODO MICHELE maybe in later development here we will use a more
-			// significant generated UUID
-        	if(task.getTaskId() == null)
-        	{
-        		task.setTaskId(RecallTaskTO.buildRandomTaskId());
-        	}
             tapeRecallDAO.insertTask(task);
         } catch (DataAccessException e) {
             log.error("Unable to store the task : " + task.toString());
