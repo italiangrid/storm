@@ -29,23 +29,23 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         sqlHelper = new TapeRecallMySQLHelper(PersistenceDirector.getDataBase().getDbmsVendor());
     }
 
-//    public static void main(String[] args) throws DataAccessException {
-//
-//        TapeRecallDAO trDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
-//
-//        RecallTaskTO rtTO = new RecallTaskTO();
-//
-//        rtTO.setFileName("pippo_00");
-//        rtTO.setRequestToken("toke_00");
-//        rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
-//        rtTO.setVoName("infngrid");
-//
-//        UUID taskId = trDAO.insertTask(rtTO);
-//
-//        int status = trDAO.getTaskStatus(taskId);
-//
-//        System.out.println("GOT STATUS " + status + " for taskId=" + taskId);
-//    }
+    public static void main(String[] args) throws DataAccessException {
+
+        TapeRecallDAO trDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
+
+        RecallTaskTO rtTO = new RecallTaskTO();
+
+        rtTO.setFileName("pippo_00");
+        rtTO.setRequestToken("toke_00");
+        rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
+        rtTO.setVoName("infngrid");
+
+        UUID taskId = trDAO.insertTask(rtTO);
+
+        int status = trDAO.getTaskStatus(taskId);
+
+        System.out.println("GOT STATUS " + status + " for taskId=" + taskId);
+    }
 
     @Override
     public List<RecallTaskTO> getInProgressTask() throws DataAccessException {
@@ -464,7 +464,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public void insertTask(RecallTaskTO task) throws DataAccessException {
+    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
@@ -472,19 +472,19 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         //Use of currentTime as primary key. In case of unicity violation there is a mechanism 
         // in mysql INSERT INTO ... ON DUPLICATE KEY taskId=taskId+1
-        
+        UUID taskId = RecallTaskTO.buildTaskId();
         try {
 
             prepStat.executeUpdate();
 
-//            ResultSet rs = prepStat.getGeneratedKeys();
-//
-//            if (rs.next()) {
-//                taskId = UUID.fromString(rs.getString(1));
-//            } else {
-//                throw new DataAccessException("Cannot retrieve the last inserted index. Query: "
-//                        + prepStat.toString());
-//            }
+            ResultSet rs = prepStat.getGeneratedKeys();
+
+            if (rs.next()) {
+                taskId = UUID.fromString(rs.getString(1));
+            } else {
+                throw new DataAccessException("Cannot retrieve the last inserted index. Query: "
+                        + prepStat.toString());
+            }
 
         } catch (SQLException e) {
 
@@ -493,7 +493,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
 
         releaseConnection(null, prepStat, dbConnection);
-//        return taskId;
+        return taskId;
     }
 
     /*

@@ -275,20 +275,11 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public void insertTask(RecallTaskTO task) throws DataAccessException {
+    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
         PropertiesDB tasksDB = getTasksDB();
         // Retrieve an unique task-id.
-        if(task == null)
-    	{
-    		log.error("Received an insert request for a null task");
-    		return;
-    	}
-		// TODO MICHELE maybe in later development here we will use a more
-		// significant generated UUID
-    	if(task.getTaskId() == null)
-    	{
-    		task.setTaskId(RecallTaskTO.buildRandomTaskId());
-    	}
+        UUID taskId = UUID.randomUUID();
+        task.setTaskId(taskId);
         try {
             tasksDB.addRecallTask(task);
         } catch (FileNotFoundException e) {
@@ -298,7 +289,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
             log.error("IO Error while reading RecallTaskDB.");
             e.printStackTrace();
         }
-//        return taskId;
+        return taskId;
     }
 
 
