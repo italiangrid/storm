@@ -26,23 +26,32 @@ public class ACLEntry {
 
         // Digest the GroupName and Retrieve the GroupId
         this.groupName = groupName;
-        try {
-            boolean isDefined = LocalGroups.isGroupDefined(groupName);
-            if (!isDefined) {
-                LOG.error("The groupName '" + groupName + "' does not exist!");
-            } else {
-                LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
-            }
+
+        boolean isDefined = LocalGroups.isGroupDefined(groupName);
+        if (!isDefined) {
+            throw new PermissionException("The groupName '" + groupName + "' does not exist!");
+        } else {
+            LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
             groupId = LocalGroups.getGroupId(groupName);
             LOG.debug("GroupID of '" + groupName + "' = " + groupId);
-            // this.groupId = UserInfoExecutor.retrieveGroupID(groupName);
-            // this.groupId = UserInfoExecutor.retrieveGroupID_ENT(groupName);
-        } catch (UserInfoException ex) {
-            LOG.error("ACL Entry: ('" + groupName + "') --> " + ex);
-            throw new PermissionException(ex.getMessage());
         }
     }
 
+    public boolean isValid() {
+        boolean result = false;
+        boolean isDefined = LocalGroups.isGroupDefined(groupName);
+        if (!isDefined) {
+            LOG.error("The groupName '" + groupName + "' does not exist!");
+            result = false;
+        } else {
+            LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
+            groupId = LocalGroups.getGroupId(groupName);
+            LOG.debug("GroupID of '" + groupName + "' = " + groupId);
+            result = true;
+        }
+        return result;
+    }
+    
     public int getGroupID() {
         return groupId;
     }

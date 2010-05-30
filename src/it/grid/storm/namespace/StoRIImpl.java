@@ -27,6 +27,7 @@ import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -663,22 +664,33 @@ implements StoRI {
     public void setGroupTapeRead() {
         
         String groupName = Configuration.getInstance().getGroupTapeReadBuffer(); 
-        LocalFile localFile = getLocalFile();
-        try {
-            localFile.setGroupOwnership(groupName);
-        } catch (FSException e) {
-            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        boolean isGroupDefined = LocalGroups.isGroupDefined(groupName);
+        if (isGroupDefined) {
+            LocalFile localFile = getLocalFile();
+            try {
+                localFile.setGroupOwnership(groupName);
+            } catch (FSException e) {
+                log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+            }    
+        } else {
+            log.warn("The group for Read buffer in Tape support '"+groupName+"' is not defined.");
         }
+         
     }
     
     public void setGroupTapeWrite() {
         
         String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
-        LocalFile localFile = getLocalFile();       
-        try {
-            localFile.setGroupOwnership(groupName);
-        } catch (FSException e) {
-            log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+        boolean isGroupDefined = LocalGroups.isGroupDefined(groupName);
+        if (isGroupDefined) {
+            LocalFile localFile = getLocalFile();       
+            try {
+                localFile.setGroupOwnership(groupName);
+            } catch (FSException e) {
+                log.warn("Unable to change in the new group owner ('"+groupName+"') of the file: "+localFile.getAbsolutePath());             
+            }   
+        } else {
+            log.warn("The group for Write buffer in Tape support '"+groupName+"' is not defined.");
         }
     }
     

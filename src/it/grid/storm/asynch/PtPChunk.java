@@ -724,10 +724,13 @@ public class PtPChunk implements Delegable, Chooser {
                 // There are ACLs to set n file
                 List<ACLEntry> dacl_list = dacl.getACL();
                 for (ACLEntry ace : dacl_list) {
-                    PtPChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
-                            + ace.getFilePermissionString());
-                    LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                    localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                    //Re-Check if the ACE is yet valid
+                    if (ace.isValid()) {
+                        PtPChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
+                                + " with permission: " + ace.getFilePermissionString());
+                        LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                        localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                    }
                 }
 
             }
