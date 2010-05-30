@@ -1,5 +1,6 @@
 package it.grid.storm.persistence.model;
 
+import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.Serializable;
@@ -10,7 +11,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
+
+    private static final Logger log = LoggerFactory.getLogger(RecallTaskTO.class);
 
     private static final long serialVersionUID = -2907739786996767167L;
     
@@ -99,6 +105,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     }
 
     public UUID getTaskId() {
+        buildTaskId();   
         return taskId;
     }
 
@@ -116,6 +123,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+        buildTaskId();
     }
 
     public void setInsertionInstant(Date date) {
@@ -269,8 +277,20 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return sb.toString();
     }
 
-    public static UUID buildTaskId() {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * This method generate a TaskId from fileName
+     * @return
+     */
+    private void buildTaskId() {
+        
+        if (this.taskId==null) {
+            if (this.fileName!=null) {
+                this.taskId = UUID.nameUUIDFromBytes(this.fileName.getBytes());   
+            } else {
+                log.error("Unable to create taskId because filename is NULL");
+            }    
+        }
     }
+
+
 }

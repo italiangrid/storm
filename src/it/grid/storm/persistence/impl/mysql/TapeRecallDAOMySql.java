@@ -466,13 +466,23 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     @Override
     public UUID insertTask(RecallTaskTO task) throws DataAccessException {
 
+        UUID taskId = task.getTaskId();
+               
+        if (taskId==null) {
+            throw new DataAccessException("Unable to create taskId with UUID-namebased algorithm.");
+        }
+        
         Connection dbConnection = getConnection();
+        
         PreparedStatement prepStat = sqlHelper.getQueryInsertTask(dbConnection, task);
+        
+        if (prepStat==null) {
+            // this case is possible if and only if the task is null or empty
+            throw new DataAccessException("Cannot create the query because the task is null or empty.");
+        }
+        
         log.debug("Query(insert-task)=" + prepStat.toString());
 
-        //Use of currentTime as primary key. In case of unicity violation there is a mechanism 
-        // in mysql INSERT INTO ... ON DUPLICATE KEY taskId=taskId+1
-        UUID taskId = RecallTaskTO.buildTaskId();
         try {
 
             prepStat.executeUpdate();

@@ -28,7 +28,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOProperties.class);
     public static String UNSPECIFIED = "unspecified-VO";
-    private static LinkedHashMap<String, RecallTaskTO> tasks;
+    private static LinkedHashMap<UUID, RecallTaskTO> tasks;
     private PropertiesDB tasksDB = null;
     private boolean test = false;
 
@@ -463,9 +463,9 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    private LinkedHashMap<String, RecallTaskTO> getTasks() throws DataAccessException {
+    private LinkedHashMap<UUID, RecallTaskTO> getTasks() throws DataAccessException {
         getTasksDB();
-        LinkedHashMap<String, RecallTaskTO> result = null;
+        LinkedHashMap<UUID, RecallTaskTO> result = null;
         try {
             result = tasksDB.getAll();
         } catch (FileNotFoundException e) {

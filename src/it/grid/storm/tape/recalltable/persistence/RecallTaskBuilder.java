@@ -118,7 +118,7 @@ public class RecallTaskBuilder {
 
         task.setRequestType(RecallTaskTO.BACK_REQUEST);
         task.setRequestToken("local-request");
-        task.setFileName(rtd.getFileName());
+
         task.setPinLifetime(-1);
         task.setDeferredRecallInstant(currentDate);
         
@@ -126,6 +126,7 @@ public class RecallTaskBuilder {
         task.setVoName(rtd.getVoName());
         
         // Setting values into RecallTaskTO
+        // - note: the setting of filename triggers the building of taskId 
         task.setFileName(rtd.getFileName());
 
         return task;
