@@ -1,0 +1,27 @@
+StoRM Backend Server
+
+
+This is the backend part of StoRM, a Storage Resource Manager 
+ (SRM) v2.2 implementation, resulting from a 
+collaboration between the Istituto Nazionale di Fisica Nucleare INFN-CNAF centre 
+ and the Abdus Salam International Centre for Theoretical 
+Physics ICTP - EGRID Project
+
+For support for installations of StoRM in Physics communities, please contact:
+Istituto Nazionale di Fisica Nucleare - CNAF
+Viale Berti Pichat, 6/2
+40127 Bologna
+Italy
+http://www.cnaf.infn.it/
+For support for installations of StoRM in Economics/Finance communities, please contact:
+The Abdus Salam International Centre for Theoretical Physics
+Scientific Computing Section - EGRID Project
+Strada Costiera, 11
+34016 Trieste
+Italy
+http://www.ictp.it/
+staff@egrid.it
+http://www.egrid.it/
+
+StoRM web site: http://storm.forge.cnaf.infn.it
+StoRM Mailing List: storm-users@cnaf.infn.it

@@ -384,6 +384,7 @@ test.junit.dir
     <include name="logging.xml"/>
     <include name="storm.properties.template"/>
   	<include name="path-authz.db"/>
+  	<include name="welcome.txt"/>
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
     <include name="logrotate.d/storm-backend.logrotate"/>

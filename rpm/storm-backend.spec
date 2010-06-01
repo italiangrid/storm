@@ -13,8 +13,8 @@
 ### Package Naming 
 
 Name: storm-backend
-Version: 1.5.2
-Release: 2.sl4
+Version: 1.5.3
+Release: 0.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -175,6 +175,7 @@ fi;
 %config(noreplace) %{prefix}/etc/lcmaps.db
 %config(noreplace) %{prefix}/etc/storm.properties.template
 %config(noreplace) %{prefix}/etc/path-authz.db
+%config(noreplace) %{prefix}/etc/welcome.txt
 %config(noreplace) %{prefix}/etc/namespace.xml
 %{prefix}/lib/storm-backend/libgpfsapi_interface.so
 %{prefix}/lib/storm-backend/storm-backend.jar
