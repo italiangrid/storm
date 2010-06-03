@@ -312,6 +312,7 @@ start () {
         java \
         $STORM_BE_JVM_OPTS $ASSERTOPTION \
         -cp '$classpath' \
+        $STORM_DEBUG_OPTION \
         -Djava.library.path='$STORM_BE_LIBDIR' \
         -Daxis.client.connect.timeout=30000 \
         -Djava.protocol.handler.pkgs=org.globus.net.protocol \
@@ -407,7 +408,16 @@ status(){
 set -e
 
 case "$1" in
-    start) start ;;
+    start)  
+    		if [ $# -gt 1 ]; then
+                if [ $2 = "debug" ]; then
+                        STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+                else
+                        start;
+                fi
+            else
+                start;
+            fi ;;
     stop) stop ;;
   #reload
     #
@@ -427,8 +437,17 @@ case "$1" in
     #   option to the "reload" entry above. If not, "force-reload" is
     #   just the same as "restart".
     #
-    stop; sleep 1; start
-    ;;
+	    stop; 
+	    sleep 1;  
+	    if [ $# -gt 1 ]; then
+	    	if [ $2 = "debug" ]; then
+				STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+	        else
+	        	start;
+	        fi
+		else
+	    	start;
+		fi ;;
     # stop Picker
     suspend) suspend ;;
 	
