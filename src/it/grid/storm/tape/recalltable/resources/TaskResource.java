@@ -126,7 +126,7 @@ public class TaskResource {
         if (eqIndex > 0) {
             String value = inputStr.substring(eqIndex);
             String key = inputStr.substring(0, eqIndex);
-            if (key.equals(keyRetryValue)) {
+            if (key.equals(keyRetryValue)) { // **** Set the Retry value 
                 try {
                     // trim out the '\n' end.
                     int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
@@ -138,7 +138,7 @@ public class TaskResource {
                     throw new RecallTableException(errorStr);
                 }
             } else {
-                if (key.equals(keyStatus)) {
+                if (key.equals(keyStatus)) { // **** Set the Status
                     try {
                         // trim out the '\n' end.
                         int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));

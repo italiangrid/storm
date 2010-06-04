@@ -117,7 +117,9 @@ public class RecallTaskBuilder {
         task.setInsertionInstant(currentDate);
 
         task.setRequestType(RecallTaskTO.BACK_REQUEST);
-        task.setRequestToken("local-request");
+        
+        String localRequestToken = "local-"+UUID.randomUUID();
+        task.setRequestToken(localRequestToken);
 
         task.setPinLifetime(-1);
         task.setDeferredRecallInstant(currentDate);

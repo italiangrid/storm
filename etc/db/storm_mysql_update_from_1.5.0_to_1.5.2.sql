@@ -4,4 +4,8 @@
 
 REPLACE INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,2,'15 May 2010');
 
-ALTER TABLE storm_be_ISAM.tape_recall modify taskId CHAR(36) NOT NULL; 
+ALTER TABLE storm_be_ISAM.tape_recall 
+  MODIFY taskId CHAR(36) NOT NULL,
+  MODIFY requestToken VARCHAR(255) BINARY NOT NULL, 
+  DROP PRIMARY KEY, 
+  ADD PRIMARY KEY (requestToken);
