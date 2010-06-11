@@ -195,7 +195,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQuerySetRetryValue(UUID taskId, int value) {
 
-        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_RETRY_ATTEMPT+"="+value+" WHERE "+COL_TASK_ID+"="+taskId.toString();
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_RETRY_ATTEMPT+"="+value+" WHERE "+COL_TASK_ID+"='"+taskId.toString()+"'";
 
         return queryFormat;
     }
