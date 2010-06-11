@@ -123,10 +123,10 @@ public class RecallTableCatalog {
         return result;
     }
 
-    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
-        RecallTaskTO task = null;
-        task = tapeRecallDAO.getTask(taskId);
-        return task;
+    public List<RecallTaskTO> getTask(UUID taskId) throws DataAccessException {
+        ArrayList<RecallTaskTO> tasks = new ArrayList<RecallTaskTO>();
+        tasks = new  ArrayList<RecallTaskTO>(tapeRecallDAO.getTask(taskId));
+        return tasks;
     }
 
     public UUID getTaskId(String requestToken, String pfn) throws DataAccessException {
@@ -170,16 +170,6 @@ public class RecallTableCatalog {
         try {
             task = tapeRecallDAO.takeoverTask();
         } catch (DataAccessException e) {
-            log.error("Unable to takeover a task", e);
-        }
-        return task;
-    }
-
-    public RecallTaskTO taskOverTask() {
-        RecallTaskTO task = null;
-        try {
-            task = tapeRecallDAO.takeoverTask();
-        } catch (DataAccessException e) {
             if (task == null) {
                 log.error("Unable to update the task. It is NULL!", e);
             } else {
@@ -188,6 +178,7 @@ public class RecallTableCatalog {
         }
         return task;
     }
+
 
     public void updateTask(RecallTaskTO task) {
         try {

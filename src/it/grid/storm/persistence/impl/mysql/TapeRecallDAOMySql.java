@@ -5,6 +5,8 @@ import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.sql.Connection;
@@ -12,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +39,11 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         RecallTaskTO rtTO = new RecallTaskTO();
 
         rtTO.setFileName("pippo_00");
-        rtTO.setRequestToken("toke_00");
+        try {
+            rtTO.setRequestToken(TRequestToken.getRandom());
+        } catch (InvalidTRequestTokenAttributesException e) {
+            throw new DataAccessException(e);
+        }
         rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
         rtTO.setVoName("infngrid");
 
@@ -346,44 +353,37 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
+    public List<RecallTaskTO> getTask(UUID taskId) throws DataAccessException {
 
         Connection dbConnection = getConnection();
         Statement statment = getStatement(dbConnection);
 
         String query = sqlHelper.getQueryGetTask(taskId);
 
+        ArrayList<RecallTaskTO> taskList = new ArrayList<RecallTaskTO>();
+        
         RecallTaskTO task = null;
         ResultSet res = null;
-
+        
         try {
-
             res = statment.executeQuery(query);
-
-            if (res == null) {
-                return null;
+            if (res != null) {
+                while (res.next()) { 
+                    task = new RecallTaskTO();
+                    setTaskInfo(task, res);
+                }
+            } else {
+                log.info("No tasks with TaskId='"+taskId+"'");
             }
-
-            if (res.first() == false) {
-                return null;
-            }
-
-            task = new RecallTaskTO();
-
-            setTaskInfo(task, res);
-
         } catch (SQLException e) {
-
             throw new DataAccessException("Error executing query: " + query, e);
-
         } finally {
-
             releaseConnection(res, statment, dbConnection);
         }
-
-        return task;
+        return taskList;
     }
 
+    
     @Override
     public UUID getTaskId(String requestToken, String pfn) throws DataAccessException {
 
@@ -580,7 +580,6 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         if (taskList.isEmpty()) {
             return null;
         }
-
         return taskList.get(0);
     }
 
@@ -621,11 +620,13 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
             while (res.next()) {
                 task = new RecallTaskTO();
-
                 UUID taskId = setTaskInfo(task, res);
-
                 taskList.add(task);
-                taskIdList.add(taskId);
+                if (taskIdList.contains(taskId)) {
+                    log.info("Found multiple recall requests on the same file. These will be managed as a unique recall request.");
+                } else {
+                    taskIdList.add(taskId);    
+                }
             }
 
             if (!taskIdList.isEmpty()) {
@@ -661,23 +662,49 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
     }
 
-    private UUID setTaskInfo(RecallTaskTO task, ResultSet res) throws SQLException {
+    private UUID setTaskInfo(RecallTaskTO task, ResultSet res) throws DataAccessException {
 
-        UUID taskId = UUID.fromString(res.getString(TapeRecallMySQLHelper.COL_TASK_ID));
-
-        task.setTaskId(taskId);
-        task.setRequestToken(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TOKEN));
-        task.setRequestType(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE));
-        task.setFileName(res.getString(TapeRecallMySQLHelper.COL_FILE_NAME));
-        task.setPinLifetime(res.getInt(TapeRecallMySQLHelper.COL_PIN_LIFETIME));
-        task.setStatusId(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
-        task.setVoName(res.getString(TapeRecallMySQLHelper.COL_VO_NAME));
-        task.setUserID(res.getString(TapeRecallMySQLHelper.COL_USER_ID));
-        task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));
-
+        if (res==null) {
+            throw new DataAccessException("Unable to build Task from NULL ResultSet");
+        }
+        
+        UUID taskId = null;
+        String taskIdStr = null;
+        try {
+            taskIdStr = res.getString(TapeRecallMySQLHelper.COL_TASK_ID);
+            taskId = UUID.fromString(taskIdStr);
+            task.setTaskId(taskId);
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to retrieve TaskId String from ResultSet. "+e);
+        } catch (IllegalArgumentException iae) {
+            throw new DataAccessException("Unable to build UUID from TaskId='"+taskIdStr+"'. "+iae);
+        } 
+         
+        String requestTokenStr = null;             
+        try {
+            requestTokenStr = res.getString(TapeRecallMySQLHelper.COL_REQUEST_TOKEN);
+            task.setRequestTokenStr(requestTokenStr);
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to retrieve RequestToken String from ResultSet. "+e);
+        } catch (InvalidTRequestTokenAttributesException e) {
+            throw new DataAccessException("Unable to build TRequestToken from token='"+requestTokenStr+"'. "+e);
+        }
+        
+        try {
+            task.setRequestType(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE));
+            task.setFileName(res.getString(TapeRecallMySQLHelper.COL_FILE_NAME));
+            task.setPinLifetime(res.getInt(TapeRecallMySQLHelper.COL_PIN_LIFETIME));
+            task.setStatusId(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
+            task.setVoName(res.getString(TapeRecallMySQLHelper.COL_VO_NAME));
+            task.setUserID(res.getString(TapeRecallMySQLHelper.COL_USER_ID));
+            task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to getting info from ResultSet. "+e);
+        }
         return taskId;
     }
 
+    
     @Override
     protected boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException {
 

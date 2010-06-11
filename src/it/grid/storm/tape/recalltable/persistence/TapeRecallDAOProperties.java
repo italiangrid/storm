@@ -6,6 +6,7 @@ package it.grid.storm.tape.recalltable.persistence;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.FileNotFoundException;
@@ -27,8 +28,8 @@ import org.slf4j.LoggerFactory;
 public class TapeRecallDAOProperties extends TapeRecallDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAOProperties.class);
-    public static String UNSPECIFIED = "unspecified-VO";
-    private static LinkedHashMap<UUID, RecallTaskTO> tasks;
+    public static final String UNSPECIFIED = "unspecified-VO";
+    private static LinkedHashMap<TRequestToken, RecallTaskTO> tasks;
     private PropertiesDB tasksDB = null;
     private boolean test = false;
 
@@ -191,24 +192,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * it.grid.storm.persistence.dao.TapeRecallDAO#getRequestToken(java.lang
-     * .String)
-     */
-    @Override
-    public String getRequestToken(UUID taskId) throws DataAccessException {
-        String result = null;
-        tasks = getTasks();
-        if (tasks.containsKey(taskId)) {
-            result = tasks.get(taskId).getRequestToken();
-        } else {
-            throw new DataAccessException("Recall Task with taskId = " + taskId + " does not exists!");
-        }
-        return result;
-    }
+
 
 
     /*
@@ -222,10 +206,12 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     public int getRetryValue(UUID taskId) throws DataAccessException {
         int result = 0;
         tasks = getTasks();
-        if (tasks.containsKey(taskId)) {
-            result = tasks.get(taskId).getRetryAttempt();
-        } else {
-            throw new DataAccessException("Recall Task with taskId = " + taskId + " does not exists!");
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks.values()) {
+                if (recallTaskTO.getTaskId().equals(taskId)) {
+                    result = recallTaskTO.getRetryAttempt();
+                }
+            }
         }
         return result;
     }
@@ -238,13 +224,15 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * it.grid.storm.persistence.dao.TapeRecallDAO#getTask(java.lang.String)
      */
     @Override
-    public RecallTaskTO getTask(UUID taskId) throws DataAccessException {
-        RecallTaskTO result = null;
+    public List<RecallTaskTO> getTask(UUID taskId) throws DataAccessException {
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
         tasks = getTasks();
-        if (tasks.containsKey(taskId)) {
-            result = tasks.get(taskId);
-        } else {
-            throw new DataAccessException("Recall Task with taskId = " + taskId + " does not exists!");
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks.values()) {
+                if (recallTaskTO.getTaskId().equals(taskId)) {
+                    result.add(recallTaskTO);
+                }
+            }
         }
         return result;
     }
@@ -337,17 +325,21 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      */
     @Override
     public void setRetryValue(UUID taskId, int value) throws DataAccessException {
-        RecallTaskTO task = getTask(taskId);
-        task.setRetryAttempt(value);
-        PropertiesDB tasksDB = getTasksDB();
-        try {
-            tasksDB.addRecallTask(task);
-        } catch (FileNotFoundException e) {
-            log.error("RecallTask DB does not exists!");
-            e.printStackTrace();
-        } catch (IOException e) {
-            log.error("IO Error while reading RecallTaskDB.");
-            e.printStackTrace();
+        ArrayList<RecallTaskTO> tasks = new ArrayList<RecallTaskTO>(getTask(taskId));
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks) {
+                recallTaskTO.setRetryAttempt(value);
+                PropertiesDB tasksDB = getTasksDB();
+                try {
+                    tasksDB.addRecallTask(recallTaskTO);
+                } catch (FileNotFoundException e) {
+                    log.error("RecallTask DB does not exists!");
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    log.error("IO Error while reading RecallTaskDB.");
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -463,9 +455,9 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     }
 
 
-    private LinkedHashMap<UUID, RecallTaskTO> getTasks() throws DataAccessException {
+    private LinkedHashMap<TRequestToken, RecallTaskTO> getTasks() throws DataAccessException {
         getTasksDB();
-        LinkedHashMap<UUID, RecallTaskTO> result = null;
+        LinkedHashMap<TRequestToken, RecallTaskTO> result = null;
         try {
             result = tasksDB.getAll();
         } catch (FileNotFoundException e) {
@@ -490,22 +482,31 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     @Override
     protected boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException {
         boolean result = false;
-        RecallTaskTO task = getTask(taskId);
-        if (task != null) {
-            task.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
-            PropertiesDB tasksDB = getTasksDB();
-            try {
-                tasksDB.addRecallTask(task);
-                result = true;
-            } catch (FileNotFoundException e) {
-                log.error("RecallTask DB does not exists!");
-                e.printStackTrace();
-            } catch (IOException e) {
-                log.error("IO Error while reading RecallTaskDB.");
-                e.printStackTrace();
-            }
+        ArrayList<RecallTaskTO> tasks = new ArrayList<RecallTaskTO>(getTask(taskId));
+        if (!(tasks.isEmpty())) {
+            for (RecallTaskTO recallTaskTO : tasks) {
+                recallTaskTO.setStatus(RecallTaskStatus.getRecallTaskStatus(status));
+                PropertiesDB tasksDB = getTasksDB();
+                try {
+                    tasksDB.addRecallTask(recallTaskTO);
+                    result = true;
+                } catch (FileNotFoundException e) {
+                    log.error("RecallTask DB does not exists!");
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    log.error("IO Error while reading RecallTaskDB.");
+                    e.printStackTrace();
+                }
+            }          
         }
         return result;
+    }
+
+
+    @Override
+    public String getRequestToken(UUID taskId) throws DataAccessException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -1,5 +1,7 @@
 package it.grid.storm.persistence.model;
 
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
@@ -31,7 +33,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
     
     private UUID taskId = null;
-    private String requestToken = null;
+    private TRequestToken requestToken = null;
     private String requestType = null;
     private String fileName = null;
     private String userID = null;
@@ -50,7 +52,11 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         RecallTaskTO result = new RecallTaskTO();
         result.taskId = UUID.randomUUID();
         result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
-        result.setRequestToken(voName + Math.round(Math.random() * 1000));
+        try {
+            result.setRequestToken(TRequestToken.getRandom());
+        } catch (InvalidTRequestTokenAttributesException e) {
+            log.warn("unable to create a random Request Token");
+        }
         result.setRetryAttempt(0);
         result.setPinLifetime((int) Math.round(Math.random() * 1000));
         result.setVoName(voName);
@@ -88,8 +94,16 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return status;
     }
 
-    public String getRequestToken() {
+    /**
+     * RequestToken is the primary key of the table
+     * @return
+     */
+    public TRequestToken getRequestToken() {
         return requestToken;
+    }
+    
+    public String getRequestTokenStr() {
+        return requestToken.getValue();
     }
 
     public String getRequestType() {
@@ -134,10 +148,19 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         this.pinLifetime = pinLifetime;
     }
 
-    public void setRequestToken(String requestToken) {
+    /**
+     * 
+     * @param requestToken
+     */
+    public void setRequestToken(TRequestToken requestToken) {
         this.requestToken = requestToken;
     }
 
+    public void setRequestTokenStr(String requestToken) throws InvalidTRequestTokenAttributesException {
+        TRequestToken rToken = new TRequestToken(requestToken);
+        setRequestToken(rToken);
+    }
+    
     public void setRequestType(String requestType) {
         this.requestType = requestType;
     }

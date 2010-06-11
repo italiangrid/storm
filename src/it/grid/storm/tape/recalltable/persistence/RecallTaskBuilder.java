@@ -4,6 +4,8 @@
 package it.grid.storm.tape.recalltable.persistence;
 
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
@@ -87,7 +89,11 @@ public class RecallTaskBuilder {
                     // FIELD-8 = pinLifetime (int)
                     recallTask.setPinLifetime(parseInt(fields[8]));
                     // FIELD-9 = requestToken (String)
-                    recallTask.setRequestToken(fields[9]);
+                    try {
+                        recallTask.setRequestTokenStr(fields[9]);
+                    } catch (InvalidTRequestTokenAttributesException e) {
+                        log.error("Unable to parse the RequestToken '" + fields[9] + "'.");
+                    }
                 } else {
                     log.debug("RecallTable Row contains # fields not equal to 10.");
                 }
@@ -119,7 +125,8 @@ public class RecallTaskBuilder {
         task.setRequestType(RecallTaskTO.BACK_REQUEST);
         
         String localRequestToken = "local-"+UUID.randomUUID();
-        task.setRequestToken(localRequestToken);
+        TRequestToken localRT = TRequestToken.buildLocalRT(localRequestToken);
+        task.setRequestToken(localRT);
 
         task.setPinLifetime(-1);
         task.setDeferredRecallInstant(currentDate);

@@ -11,6 +11,7 @@ import it.grid.storm.tape.recalltable.RecallTableException;
 import it.grid.storm.tape.recalltable.model.PutTaskStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTaskStatusValidator;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
+import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import javax.ws.rs.Consumes;
@@ -96,8 +98,9 @@ public class TaskResource {
         String inputStr = buildInputString(input);
         TaskResource.log.debug("@PUT (input string) = '" + inputStr + "'");
 
-        // Retrieve Task corresponding to taskId
-        RecallTaskTO task = null;
+        // Retrieve Tasks corresponding to taskId 
+        //  - the relationship between taskId and entries within the DB is one-to-many
+        ArrayList<RecallTaskTO> tasks = new ArrayList<RecallTaskTO>();
 
         // Recall Table Catalog
         RecallTableCatalog rtCat = null;
@@ -112,7 +115,7 @@ public class TaskResource {
         }
 
         try {
-            task = rtCat.getTask(taskId);
+            tasks = new ArrayList<RecallTaskTO>(rtCat.getTask(taskId));
         } catch (DataAccessException e1) {
             log.error("Unable to retrieve Recall Task with ID = '" + taskId + "'");
             throw new RecallTableException("Unable to retrieve Recall Task with ID = '" + taskId + "'");
@@ -130,8 +133,7 @@ public class TaskResource {
                 try {
                     // trim out the '\n' end.
                     int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
-                    task.setRetryAttempt(retryValue);
-                    rtCat.changeRetryValue(taskId, task.getRetryAttempt());
+                    rtCat.changeRetryValue(taskId, retryValue);
 
                 } catch (NumberFormatException e) {
                     errorStr = "Unable to understand the number value = '" + value + "'";
@@ -142,8 +144,7 @@ public class TaskResource {
                     try {
                         // trim out the '\n' end.
                         int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));
-                        task.setStatusId(statusValue);
-                        rtCat.changeStatus(task.getTaskId(), task.getRecallStatus());
+                        rtCat.changeStatus(taskId, RecallTaskStatus.getRecallTaskStatus(statusValue));
                     } catch (NumberFormatException e) {
                         errorStr = "Unable to understand the number value = '" + value + "'";
                         throw new RecallTableException(errorStr);
