@@ -55,21 +55,21 @@ public class TapeRecallMySQLHelper extends SQLHelper {
     
     public String getQueryGetRequestToken(UUID taskId) {
 
-        String queryFormat = "SELECT "+COL_REQUEST_TOKEN+" FROM "+ TABLE_NAME+" WHERE "+COL_TASK_ID+"="+taskId.toString();
+        String queryFormat = "SELECT "+COL_REQUEST_TOKEN+" FROM "+ TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return queryFormat;
     }
 
     public String getQueryGetRetryValue(UUID taskId) {
 
-        String queryFormat = "SELECT "+COL_RETRY_ATTEMPT+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+taskId.toString();
+        String queryFormat = "SELECT "+COL_RETRY_ATTEMPT+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return queryFormat;
     }
 
     public String getQueryGetTask(UUID taskId) {
 
-        String queryFormat = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+taskId.toString();
+        String queryFormat = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return queryFormat;
     }
@@ -181,21 +181,21 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryRetrieveTaskId(String requestToken, String pfn) {
 
-        String queryFormat = "SELECT "+COL_TASK_ID+" FROM "+TABLE_NAME+" WHERE "+COL_REQUEST_TOKEN+"='"+requestToken+"' AND "+COL_FILE_NAME+"='"+pfn+"'";
+        String queryFormat = "SELECT "+COL_TASK_ID+" FROM "+TABLE_NAME+" WHERE "+COL_REQUEST_TOKEN+"='"+formatString(requestToken)+"' AND "+COL_FILE_NAME+"='"+pfn+"'";
 
         return queryFormat;
     }
     
     public String getQueryRetrieveTaskStatus(UUID taskId) {
 
-        String queryFormat = "SELECT "+COL_STATUS+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+taskId;
+        String queryFormat = "SELECT "+COL_STATUS+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
     public String getQuerySetRetryValue(UUID taskId, int value) {
 
-        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_RETRY_ATTEMPT+"="+value+" WHERE "+COL_TASK_ID+"='"+taskId.toString()+"'";
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_RETRY_ATTEMPT+"="+value+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return queryFormat;
     }
@@ -226,10 +226,10 @@ public class TapeRecallMySQLHelper extends SQLHelper {
         }
 
         String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+RecallTaskStatus.IN_PROGRESS.getStatusId()+
-                             " WHERE "+COL_TASK_ID+"="+taskIdArray.get(0).toString();
-               
+                             " WHERE "+COL_TASK_ID+"="+ formatString(taskIdArray.get(0).toString());     
+        
         for (int i = 1; i < taskIdArray.size(); i++) {
-            queryFormat += " OR " + COL_TASK_ID + "="+taskIdArray.get(i).toString();
+            queryFormat += " OR " + COL_TASK_ID + "="+formatString(taskIdArray.get(i).toString());
         }
 
         return queryFormat;
@@ -238,7 +238,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
     public String getQueryTakeoverTaskUpdate(UUID taskId) {
 
         String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+ RecallTaskStatus.IN_PROGRESS.getStatusId()+
-                             " WHERE "+COL_TASK_ID+"="+taskId.toString();
+                             " WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return queryFormat;
     }
@@ -246,7 +246,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
     public String getQueryUpdateTaskStatus(UUID taskId, int status) {
 
         String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+status+
-                             " WHERE "+COL_TASK_ID+"="+taskId.toString() + " AND "+COL_STATUS+"!="+status;
+                             " WHERE "+COL_TASK_ID+"="+formatString(taskId.toString()) + " AND "+COL_STATUS+"!="+status;
 
         return queryFormat;
     }

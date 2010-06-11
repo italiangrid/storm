@@ -79,6 +79,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -135,6 +136,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -206,6 +208,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -254,6 +257,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -291,6 +295,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -328,6 +333,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -366,6 +372,8 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         ResultSet res = null;
         
         try {
+            
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
             if (res != null) {
                 while (res.next()) { 
@@ -396,7 +404,8 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         ResultSet res = null;
 
         try {
-
+            
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -439,6 +448,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
         try {
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
@@ -610,6 +620,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             // start transaction
             dbConnection.setAutoCommit(false);
 
+            log.debug("QUERY: "+query);
             res = statment.executeQuery(query);
 
             if (res == null) {
