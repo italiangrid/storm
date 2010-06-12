@@ -1,27 +1,10 @@
-StoRM Backend Server
+StoRM (STOrage Resource Manager) is a light, scalable and file system independent storage manager service (SRM) for generic disk based storage system, compliant with the standard SRM interface version 2.2.
+The SToRM-BE component is the core of StoRM. 
+
+StoRM is born in 2004 and its development have helped many people, and also ICTP Institute with the project EGRID (see the file AUTHORS).
+
+StoRM is under Apache License v2.0.
 
 
-This is the backend part of StoRM, a Storage Resource Manager 
- (SRM) v2.2 implementation, resulting from a 
-collaboration between the Istituto Nazionale di Fisica Nucleare INFN-CNAF centre 
- and the Abdus Salam International Centre for Theoretical 
-Physics ICTP - EGRID Project
 
-For support for installations of StoRM in Physics communities, please contact:
-Istituto Nazionale di Fisica Nucleare - CNAF
-Viale Berti Pichat, 6/2
-40127 Bologna
-Italy
-http://www.cnaf.infn.it/
-For support for installations of StoRM in Economics/Finance communities, please contact:
-The Abdus Salam International Centre for Theoretical Physics
-Scientific Computing Section - EGRID Project
-Strada Costiera, 11
-34016 Trieste
-Italy
-http://www.ictp.it/
-staff@egrid.it
-http://www.egrid.it/
 
-StoRM web site: http://storm.forge.cnaf.infn.it
-StoRM Mailing List: storm-users@cnaf.infn.it
