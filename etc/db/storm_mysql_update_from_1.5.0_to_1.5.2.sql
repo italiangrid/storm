@@ -6,6 +6,7 @@ REPLACE INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,
 
 ALTER TABLE storm_be_ISAM.tape_recall 
   MODIFY taskId CHAR(36) NOT NULL,
-  MODIFY requestToken VARCHAR(255) BINARY NOT NULL, 
+  MODIFY requestToken VARCHAR(255) BINARY NOT NULL,
+  MODIFY requestType CHAR(4),
   DROP PRIMARY KEY, 
   ADD PRIMARY KEY (requestToken);

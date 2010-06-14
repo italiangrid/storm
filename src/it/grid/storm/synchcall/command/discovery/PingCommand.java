@@ -15,13 +15,21 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
+import it.grid.storm.tape.recalltable.RecallTableCatalog;
+import it.grid.storm.tape.recalltable.RecallTableException;
+import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
+
+import javax.ws.rs.core.Response;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
@@ -63,52 +71,14 @@ public class PingCommand extends DiscoveryCommand implements Command {
                 otherInfo = new TExtraInfo();
             }
             extraInfoArray.addTExtraInfo(otherInfo);
-        } else {
-            // Catch the special case KEY=ALL
-            if (key.equals("ALL")) {
-                log.debug("srmPing: Found a request to retrieve ALL kye values. (NR:" + pingValues.size()
-                        + ")");
-                // Insert all keys/values in to the results
-                for (Enumeration e = pingValues.propertyNames(); e.hasMoreElements();) {
-                    key = (String) e.nextElement();
-                    String value = pingValues.getProperty(key);
-                    try {
-                        otherInfo = new TExtraInfo(key, value);
-                    } catch (InvalidTExtraInfoAttributeException ex) {
-                        log.error("Invalid KEY (key='" + key + "') requested in Ping.");
-                        otherInfo = new TExtraInfo();
-                    }
-                    extraInfoArray.addTExtraInfo(otherInfo);
-                } // end for
-            } else if (key.equals("test-takeover")) {
-                try {
-
-                    TapeRecallDAO tapeDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
-
-                    RecallTaskTO task = tapeDAO.takeoverTask();
-
-                    if (task != null) {
-                        tapeDAO.setTaskStatus(task.getTaskId(), RecallTaskStatus.SUCCESS.getStatusId());
-
-                        log.info("Task \"" + task.getTaskId() + "\" set to success: " + task.getFileName());
-                    }
-
-                } catch (DataAccessException e) {
-                    log.error("DB error", e);
-                }
-
-            } else {
-                // Key unknown..
-                log.warn("Unable to retrieve KEY (key='" + key + "') value requested in srmPing.");
-                otherInfo = new TExtraInfo();
-            }
+        } else { // Catch the special cases
+            extraInfoArray = manageSpecialKey(key);
         }
-
-        
+       
         // Build the Output Data
         outputData.setExtraInfoArray(extraInfoArray);
 
-        // Buildin INFO Log
+        // Building INFO Log
         String infoLogs = "srmPing: " + "<" + inputData.getRequestor().toString() + ">" + "[AuthID:'"
                 + inputData.getAuthorizationID() + "']" + "return values: [" + extraInfoArray + "]";
         log.info(infoLogs);
@@ -116,6 +86,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
         return outputData;
     }
 
+    
     /**
      * 
      * @param authorizationID String
@@ -164,4 +135,242 @@ public class PingCommand extends DiscoveryCommand implements Command {
         log.debug("srmPing: Loaded NR" + properties.size() + " PING key/value couple.");
         return properties;
     }
+
+
+
+
+    
+    /****************************
+     *  SPECIAL KEY MANAGEMENT 
+     ****************************/
+
+
+    
+    /**
+     * Dispatcher for manage the special keys on Ping
+     * 
+     * @param param
+     * @return
+     */
+    private ArrayOfTExtraInfo manageSpecialKey(String key) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        SpecialKey specialKey = SpecialKey.fromString(key);
+        switch (specialKey) {
+            case ALL: arrayResult = allKeys(extractParam(key)); break;
+            case TEST_POST_NEW_TASK: arrayResult = test_post_new_task(extractParam(key)); break;
+            case TEST_PUT_NEW_STATUS: arrayResult = test_put_new_status(extractParam(key)); break;
+            case TEST_PUT_RETRY_VALUE: arrayResult = test_put_retry_value(extractParam(key)); break;
+            case TEST_TAKEOVER: arrayResult = test_takeover(extractParam(key)); break;
+            default: { 
+                TExtraInfo extraInfo = new TExtraInfo();
+                try {
+                    extraInfo = new  TExtraInfo(SpecialKey.UNKNOWN.toString(), SpecialKey.UNKNOWN.getDescription()+":'"+key+"'");
+                } catch (InvalidTExtraInfoAttributeException e) {
+                    log.warn("Really strange!");
+                }
+                arrayResult.addTExtraInfo(extraInfo);
+                break;
+            }
+        }
+        return arrayResult;
+    }
+
+    /**
+     * 
+     * @param param
+     * @return
+     */
+    private ArrayOfTExtraInfo allKeys(String param) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        Properties pingValues = loadProperties();
+        TExtraInfo otherInfo = new TExtraInfo();
+        log.debug("srmPing: Found a request to retrieve ALL key values. (NR:" + pingValues.size()+ ")");
+          // Insert all keys/values in to the results
+          for (Enumeration<?> e = pingValues.propertyNames(); e.hasMoreElements();) {
+              String key = (String) e.nextElement();
+              String value = pingValues.getProperty(key);
+              try {
+                  otherInfo = new TExtraInfo(key, value);
+              } catch (InvalidTExtraInfoAttributeException ex) {
+                  log.error("Invalid KEY (key='" + key + "') requested in Ping.");
+                  otherInfo = new TExtraInfo();
+              }
+              arrayResult.addTExtraInfo(otherInfo);
+          }
+        return arrayResult;
+    }
+    
+    /**
+     * 
+     * @param param
+     * @return
+     */
+    private ArrayOfTExtraInfo test_post_new_task(String param) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        // Recall Table Catalog
+        String errorStr;
+        RecallTableCatalog rtCat = null;
+        try {
+            rtCat = new RecallTableCatalog(false);
+        } catch (DataAccessException e) {
+            errorStr = "Unable to use RecallTable DB.";
+            log.error(errorStr);
+        }
+
+        // Parsing of the inputString to extract the fields of RecallTask
+        RecallTaskData rtd;
+        try {
+            rtd = RecallTaskData.buildFromString(param);
+            log.debug("RTD=" + rtd.toString());
+            // Store the new Recall Task if it is all OK.
+            RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
+            if (rtCat != null) {
+                rtCat.insertNewTask(task);
+                URI newResource = URI.create("/" + task.getTaskId());
+                log.debug("New task resource created: " + newResource);
+            }       
+           
+        } catch (RecallTableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+      
+        return arrayResult;
+    }
+    
+ 
+    private ArrayOfTExtraInfo test_put_new_status(String param) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        // TODO  to implement this special key
+        return arrayResult;
+    }
+    
+    private ArrayOfTExtraInfo test_put_retry_value(String param) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        // TODO  to implement this special key       
+        return arrayResult;
+    }
+    
+    private ArrayOfTExtraInfo test_takeover(String param) {
+        ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
+        TExtraInfo otherInfo = new TExtraInfo();
+
+        // take over only one task per time
+        int numbOfTask = 1;
+
+        // Recall Table Catalog
+        RecallTableCatalog rtCat = null;
+
+        try {
+            rtCat = new RecallTableCatalog(false);
+            // Retrieve the Task
+            ArrayList<RecallTaskTO> tasks = rtCat.takeoverNTasks(numbOfTask);
+
+            if (tasks != null) {
+                // Build the response
+
+                for (RecallTaskTO recallTaskTO : tasks) {
+                    otherInfo = new TExtraInfo(recallTaskTO.getTaskId().toString(), recallTaskTO.toString());
+                    arrayResult.addTExtraInfo(otherInfo);
+                }
+            }
+        } catch (DataAccessException e) {
+            log.error("Unable to use RecallTable DB.");
+        } catch (InvalidTExtraInfoAttributeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return arrayResult;
+    }
+    
+    
+    
+    /**********************************
+     * UTILITY METHODS
+     **********************************/
+    
+    /**
+     * 
+     * @param key
+     * @return
+     */
+    private static String extractCmd(String key) {
+        String normalizedKey = key.trim().toLowerCase();
+        String cmd = normalizedKey;
+        int indexOfEqual = normalizedKey.indexOf("=");
+        if (indexOfEqual<0) {
+            indexOfEqual = normalizedKey.length();
+        }
+        cmd = normalizedKey.substring(0,indexOfEqual);       
+        return cmd;
+    }
+
+    private static String extractParam(String key) {
+        String normalizedKey = key.trim().toLowerCase();
+        String param = "";
+        int equalIndex = key.indexOf("=");
+        if (equalIndex>0) {
+            param = normalizedKey.substring(equalIndex+1);
+        } 
+        return param;
+    }
+
+    
+
+    
+    
+    /**********************************
+     * MAIN for TEST PURPOUSE
+     **********************************/
+      
+    public static void main(String arg[]){
+        PingCommand pc = new PingCommand();
+        pc.test_takeover("cmd=cicciopasticcio");
+
+    }
+
+    /**
+     * 
+     *
+     */
+   private enum SpecialKey {
+       ALL("all","return all the pair <key,value> defined in properties"),
+       TEST_TAKEOVER("take-over","testing the take-over method"), 
+       TEST_POST_NEW_TASK("new-task","testing the take-over method"), 
+       TEST_PUT_NEW_STATUS("new-status","testing the take-over method"), 
+       TEST_PUT_RETRY_VALUE("retry-value","testing the take-over method"),
+       UNKNOWN("unknown","Unable to manage the key");
+
+       
+       private final String operationName;
+       private final String operationDescription;      
+       
+       private SpecialKey(String opName, String opDescr) {
+           this.operationName = opName;
+           this.operationDescription = opDescr;
+       }
+       
+       public String getDescription() {
+           return operationDescription;
+       }
+       
+       public static SpecialKey fromString(String keyStr) {
+           SpecialKey result = SpecialKey.UNKNOWN;
+           String cmd = extractCmd(keyStr);
+           for (SpecialKey keyValue : SpecialKey.values()) {
+               if (keyValue.toString().equals(cmd)) {
+                   result = keyValue;
+               }
+           }
+           return result;
+       }
+       
+       @Override 
+       public String toString() {
+           return operationName;
+       }
+       
+   }
+
 }

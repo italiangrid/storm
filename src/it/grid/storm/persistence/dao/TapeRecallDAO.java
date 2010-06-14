@@ -7,6 +7,7 @@ import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Date;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<UUID, SuspendedChunk> chunkMap = new ConcurrentHashMap<UUID, SuspendedChunk>();
+    private static ConcurrentHashMap<TRequestToken, SuspendedChunk> chunkMap = new ConcurrentHashMap<TRequestToken, SuspendedChunk>();
 
     /**
      * 
@@ -149,7 +150,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      * @return
      * @throws DataAccessException
      */
-    public abstract UUID insertTask(RecallTaskTO task) throws DataAccessException;
+    public abstract void insertTask(RecallTaskTO task) throws DataAccessException;
 
     /**
      * Method used by PtGChunk and BoLChunk
@@ -160,22 +161,22 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      * @return
      * @throws DataAccessException
      */
-    public UUID insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
+    public TRequestToken insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
-        UUID taskId = insertTask(task);
+        TRequestToken taskToken = task.getRequestToken();
 
-        if (chunkMap.containsKey(taskId)) {
+        if (chunkMap.containsKey(taskToken)) {
 
-            log.error("File 'absoluteFileName' already exists in RecallTable " + taskId);
-            return taskId;
+            log.error("File 'absoluteFileName' already recalled by another Recall: " + taskToken);
+            return taskToken;
 
         }
-        chunkMap.put(taskId, chunk);
-        return taskId;
+        chunkMap.put(taskToken, chunk);
+        return taskToken;
     }
 
     /**

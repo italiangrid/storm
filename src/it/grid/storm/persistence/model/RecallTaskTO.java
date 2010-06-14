@@ -261,7 +261,9 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         StringBuffer sb = new StringBuffer();
 
         sb.append(startChar);
-        sb.append(taskId);
+        sb.append("r.token:'"+requestToken+"'");
+        sb.append(sepChar);
+        sb.append("taskId:'"+taskId+"'");
         sb.append(sepChar);
 
         Format formatter = new SimpleDateFormat(dateFormat);
@@ -294,8 +296,6 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         
         sb.append(sepChar);
         sb.append(pinLifetime);
-        sb.append(sepChar);
-        sb.append(requestToken);
         // sb.append(endChar);
         return sb.toString();
     }

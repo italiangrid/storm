@@ -263,7 +263,7 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     /*
      */
     @Override
-    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
+    public void insertTask(RecallTaskTO task) throws DataAccessException {
         PropertiesDB tasksDB = getTasksDB();
         // Retrieve an unique task-id.
         UUID taskId = UUID.randomUUID();
@@ -277,7 +277,6 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
             log.error("IO Error while reading RecallTaskDB.");
             e.printStackTrace();
         }
-        return taskId;
     }
 
 

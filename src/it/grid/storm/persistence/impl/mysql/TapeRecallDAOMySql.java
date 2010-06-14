@@ -47,8 +47,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         rtTO.setStatus(RecallTaskStatus.IN_PROGRESS);
         rtTO.setVoName("infngrid");
 
-        UUID taskId = trDAO.insertTask(rtTO);
-
+        trDAO.insertTask(rtTO);
+        UUID taskId = rtTO.getTaskId();
+        
         int status = trDAO.getTaskStatus(taskId);
 
         System.out.println("GOT STATUS " + status + " for taskId=" + taskId);
@@ -474,7 +475,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
     }
 
     @Override
-    public UUID insertTask(RecallTaskTO task) throws DataAccessException {
+    public void insertTask(RecallTaskTO task) throws DataAccessException {
 
         UUID taskId = task.getTaskId();
                
@@ -497,6 +498,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
             prepStat.executeUpdate();
 
+            /**
             ResultSet rs = prepStat.getGeneratedKeys();
 
             if (rs.next()) {
@@ -504,7 +506,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             } else {
                 throw new DataAccessException("Cannot retrieve the last inserted index. Query: "
                         + prepStat.toString());
-            }
+            } **/
 
         } catch (SQLException e) {
 
@@ -513,7 +515,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
 
         releaseConnection(null, prepStat, dbConnection);
-        return taskId;
+        //return taskId;
     }
 
     /*
