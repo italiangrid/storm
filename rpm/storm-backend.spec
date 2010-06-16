@@ -14,7 +14,7 @@
 
 Name: storm-backend
 Version: 1.5.3
-Release: 2.sl4
+Release: 3.sl4
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
@@ -169,7 +169,7 @@ fi;
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.2.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.3.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db

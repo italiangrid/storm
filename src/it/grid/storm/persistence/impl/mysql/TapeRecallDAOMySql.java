@@ -476,12 +476,15 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
     @Override
     public void insertTask(RecallTaskTO task) throws DataAccessException {
-
-        UUID taskId = task.getTaskId();
                
-        if (taskId==null) {
-            throw new DataAccessException("Unable to create taskId with UUID-namebased algorithm.");
-        }
+		if(task.getTaskId() == null || task.getRequestToken() == null || task.getRequestToken().getValue().trim().equals(""))
+		{
+			log.error("received Task insert request with empty primary key field TaskId or RequestToken. TaskId = " + task.getTaskId()
+				+ " , request token = " + task.getRequestToken());
+			throw new DataAccessException("Unable to create insert the task wth the provided UUID and "
+				+ "request token using UUID-namebased algorithm. TaskId = " + task.getTaskId() + " , request token = "
+				+ task.getRequestToken());
+		}
         
         Connection dbConnection = getConnection();
         

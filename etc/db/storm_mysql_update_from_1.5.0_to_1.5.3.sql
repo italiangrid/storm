@@ -9,4 +9,4 @@ ALTER TABLE storm_be_ISAM.tape_recall
   MODIFY requestToken VARCHAR(255) BINARY NOT NULL,
   MODIFY requestType CHAR(4),
   DROP PRIMARY KEY, 
-  ADD PRIMARY KEY (requestToken);
+  ADD CONSTRAINT pk_RecallTask PRIMARY KEY (taskId , requestToken);
