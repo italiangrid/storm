@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +131,7 @@ public class UserInfoCommand {
         String result = "";
         try {
             Process child = Runtime.getRuntime().exec(command);
-            log.debug("Command executed: "+command);
+            log.debug("Command executed: "+ArrayUtils.toString(command));
             BufferedReader stdInput = null;
             BufferedReader stdError = null;
             // Get the input stream and read from it
@@ -145,9 +146,9 @@ public class UserInfoCommand {
                 //process the Command Output (Input for StoRM ;) )
                 String line;
                 int row = 0;
-                log.debug("UserInfo Command Output :");
+                log.trace("UserInfo Command Output :");
                 while ( (line = stdInput.readLine()) != null) {
-                    log.debug(row + ": "+line);
+                    log.trace(row + ": "+line);
                     boolean lineOk = processOutput(row,line);
                     if (lineOk) {
                         result = result + line + "\n";
@@ -184,8 +185,8 @@ public class UserInfoCommand {
     private String getGroupName(String line) {
         String groupName = null;
         String[] fields = getElements(line);      
-        if ((fields!=null) && (fields.length>1) && (fields[0]!=null) ){  
-            log.debug("field[0], GroupName ='"+fields[0]+"'");
+        if ((fields!=null) && (fields.length>1) && (fields[0]!=null) ){
+            log.trace("field[0], GroupName ='"+fields[0]+"'");
             groupName = fields[0];
          }
         return groupName;       
@@ -197,7 +198,7 @@ public class UserInfoCommand {
         int gidInt = -1;
         String[] fields = getElements(line);      
         if ((fields!=null) && (fields.length>2) && (fields[2]!=null) ){  
-            log.debug("field[2], GID ='"+fields[2]+"'");
+            log.trace("field[2], GID ='"+fields[2]+"'");
             try {
                 gidInt = Integer.parseInt(fields[2]);
               } catch (NumberFormatException nfe) {
@@ -219,7 +220,7 @@ public class UserInfoCommand {
         String patternStr = ":"; 
         String[] fields = null;
         if (line!=null) {
-            log.info("LINE = "+line);
+            log.trace("LINE = "+line);
             fields = line.split(patternStr); 
         }
         return fields;
