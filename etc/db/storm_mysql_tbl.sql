@@ -21,9 +21,9 @@ CREATE TABLE IF NOT EXISTS db_version (
   revision int,
   description VARCHAR(100));
 
-REPLACE INTO db_version (major,minor,revision,description) VALUES (1,5,00,'1 Feb 2010');
-  
-  
+DELETE FROM TABLE storm_db.db_version;
+INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,3,'15 June 2010');
+   
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
   config_FileStorageTypeID CHAR(1),
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS request_queue (
   status int not null,
   errstring VARCHAR(255),
   r_token VARCHAR(255) BINARY,
-  remainingTotalTime int,
+  remainingTotalTime int NOT NULL DEFAULT -1;,
   fileLifetime int,
   nbreqfiles int,
   numOfCompleted int,
@@ -245,3 +245,9 @@ CREATE TABLE IF NOT EXISTS tape_recall (
 
 ALTER TABLE tape_recall ADD INDEX deferredStartTime (deferredStartTime);
 
+ALTER TABLE storm_be_ISAM.tape_recall 
+  MODIFY taskId CHAR(36) NOT NULL,
+  MODIFY requestToken VARCHAR(255) BINARY NOT NULL,
+  MODIFY requestType CHAR(4),
+  DROP PRIMARY KEY, 
+  ADD CONSTRAINT pk_RecallTask PRIMARY KEY (taskId , requestToken);
