@@ -420,8 +420,14 @@ test.junit.dir
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
 	dir="${src.doc.dir}">
-    <include name="INSTALL.txt"/>	
-  </fileset>	
+    <include name="INSTALL.txt"/>
+  </fileset> 
+  <fileset id="src.docs.authors"
+        dir="${src.dir}"
+        includes="AUTHORS"/>
+  <fileset id="src.docs.credits"
+        dir="${src.dir}"
+        includes="CREDITS"/>
   <fileset id="src.docs.license"
 	dir="${src.dir}"
 	includes="LICENSE.txt"/>
@@ -702,6 +708,8 @@ test.junit.dir
 	<copy
 	  todir="${docdir}"
 	  overwrite="true">
+          <fileset refid="src.docs.authors"/>
+          <fileset refid="src.docs.credits"/>
 	  <fileset refid="src.docs.proper"/>
 	  <fileset refid="src.docs.license"/>
 	</copy>
@@ -790,6 +798,8 @@ test.junit.dir
       	<exclude name="etc/adminserver-config.xml"/>
         <exclude name="etc/adminserver-log.properties"/>
 		<include name="LICENSE.txt"/>
+                <include name="AUTHORS"/>
+                <include name="CREDITS"/>
 		<include name="ACKNOWLEDGEMENTS.txt"/>
 		<include name="build.xml"/>
 		<include name="config/"/>

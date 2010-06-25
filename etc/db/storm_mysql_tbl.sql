@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS db_version (
   revision int,
   description VARCHAR(100));
 
-DELETE FROM TABLE storm_db.db_version;
-INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,3,'15 June 2010');
+DELETE FROM storm_db.db_version;
+INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,3,'25 June 2010');
    
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS request_queue (
   status int not null,
   errstring VARCHAR(255),
   r_token VARCHAR(255) BINARY,
-  remainingTotalTime int NOT NULL DEFAULT -1;,
+  remainingTotalTime int NOT NULL DEFAULT -1,
   fileLifetime int,
   nbreqfiles int,
   numOfCompleted int,

@@ -161,8 +161,10 @@ fi;
 
 %files server
 %defattr(-,root,root)
-%{prefix}/doc/LICENSE.txt
+%{prefix}/doc/AUTHORS
+%{prefix}/doc/CREDITS
 %{prefix}/doc/INSTALL.txt
+%{prefix}/doc/LICENSE.txt
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
 #%config(noreplace) /etc/cron.d/storm-backend.cron
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
