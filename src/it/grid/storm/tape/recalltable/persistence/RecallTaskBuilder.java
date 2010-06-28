@@ -4,6 +4,8 @@
 package it.grid.storm.tape.recalltable.persistence;
 
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
@@ -11,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,10 +65,10 @@ public class RecallTaskBuilder {
                 if (fields.length == 10) {
                     // ####### Manage the fields #######
                     // FIELD-0 = TaskId (int)
-                    int taskId = -1;
+                    UUID taskId = null;
                     try {
-                        taskId = Integer.parseInt(fields[0]);
-                    } catch (NumberFormatException e) {
+                        taskId = UUID.fromString(fields[0]);
+                    } catch (IllegalArgumentException e) {
                         log.error("Unable to parse the taskId '" + fields[0] + "'.");
                     }
                     recallTask.setTaskId(taskId);
@@ -86,7 +89,11 @@ public class RecallTaskBuilder {
                     // FIELD-8 = pinLifetime (int)
                     recallTask.setPinLifetime(parseInt(fields[8]));
                     // FIELD-9 = requestToken (String)
-                    recallTask.setRequestToken(fields[9]);
+                    try {
+                        recallTask.setRequestTokenStr(fields[9]);
+                    } catch (InvalidTRequestTokenAttributesException e) {
+                        log.error("Unable to parse the RequestToken '" + fields[9] + "'.");
+                    }
                 } else {
                     log.debug("RecallTable Row contains # fields not equal to 10.");
                 }
@@ -116,8 +123,11 @@ public class RecallTaskBuilder {
         task.setInsertionInstant(currentDate);
 
         task.setRequestType(RecallTaskTO.BACK_REQUEST);
-        task.setRequestToken("local-request");
-        task.setFileName(rtd.getFileName());
+        
+        String localRequestToken = "local-"+UUID.randomUUID();
+        TRequestToken localRT = TRequestToken.buildLocalRT(localRequestToken);
+        task.setRequestToken(localRT);
+
         task.setPinLifetime(-1);
         task.setDeferredRecallInstant(currentDate);
         
@@ -125,6 +135,7 @@ public class RecallTaskBuilder {
         task.setVoName(rtd.getVoName());
         
         // Setting values into RecallTaskTO
+        // - note: the setting of filename triggers the building of taskId 
         task.setFileName(rtd.getFileName());
 
         return task;

@@ -1,0 +1,2 @@
+int gid = it.grid.storm.namespace.util.userinfo.UserInfoExecutor.retrieveGroupID_ENT("ritz");
+System.out.print("GID = "+gid);

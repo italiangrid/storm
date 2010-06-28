@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ public class Configuration {
     private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
     // as default
     static Configuration instance = new Configuration(); // only
-
     // instance of
     // this
     // configuration
@@ -1455,7 +1455,7 @@ public class Configuration {
     public String getDefaultFileStorageType() {
         String key = "default.storagetype";
         if (!cr.getConfiguration().containsKey(key)) {
-            // return default
+            // return default as specified in SRMv2.2 specification
             return "V";
         } else {
             // load from external source
@@ -1785,15 +1785,14 @@ public class Configuration {
     }
 
     public String[] getChecksumHosts() {
-        String hostsKey = "checksum.server.hostnames";
-
-        String[] hostArray = cr.getConfiguration().getStringArray(hostsKey);
-
-        if (hostArray == null) {
-            return new String[0];
+        String key = "checksum.server.hostnames";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+        	return new String[0];
+        } else {
+            // load from external source
+            return cr.getConfiguration().getStringArray(key);
         }
-
-        return hostArray;
     }
 
     public int[] getChecksumServicePorts() {
@@ -1807,12 +1806,14 @@ public class Configuration {
     
     private int[] getChecksumPorts(String key) {
 
-        String[] portStringArray = cr.getConfiguration().getStringArray(key);
-
-        if (portStringArray == null) {
+        String[] portStringArray = null;
+        if (!cr.getConfiguration().containsKey(key)) {
             return new int[0];
         }
-
+        else
+        {
+        	portStringArray = cr.getConfiguration().getStringArray(key);
+        }
         int size = portStringArray.length;
         if (size == 0) {
             return new int[0];
@@ -1968,26 +1969,40 @@ public class Configuration {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+    	StringBuilder configurationStringBuilder = new StringBuilder();
         try {
             // This class methods!!!
-            Method m[] = Configuration.instance.getClass().getDeclaredMethods();
+            Method methods[] = Configuration.instance.getClass().getDeclaredMethods();
 
-            Object aux = null;
-            for (int i = 0; i < m.length; i++) {
-                if ((m[i].getName().substring(0, 3).equals("get")) && (!m[i].getName().equals("getInstance"))) {
-                    sb.append(m[i].getName());
-                    sb.append(" == ");
-                    aux = m[i].invoke(Configuration.instance, new Object[0]);
-                    sb.append(aux);
-                    sb.append("\n");
+            Object field = null;
+            Object[] dummyArray = new Object[0];            
+            for (Method method : methods)
+            {
+            	/* with method.getModifiers() == 1 we check that the method is public (otherwise he can request real parameters)*/
+				if(method.getName().substring(0, 3).equals("get") && (!method.getName().equals("getInstance"))
+					&& method.getModifiers() == 1)
+				{
+                	field = method.invoke(Configuration.instance, dummyArray);
+                	if(field.getClass().isArray())
+                	{
+                		field = ArrayUtils.toString(field);
+                	}
+                	configurationStringBuilder.append(method.getName() + " == " + field.toString()+ "\n");
                 }
             }
-            return sb.toString();
-        } catch (Exception e2) {
-            String partialOutput = "!!! Cannot do toString! Got an Exception: " + e2 + "\n" + sb.toString();
-            return partialOutput;
+        	return configurationStringBuilder.toString();
+        } catch (Exception e) {
+        	if(e.getClass().isAssignableFrom(java.lang.reflect.InvocationTargetException.class))
+        	{
+        		configurationStringBuilder.insert(0, "!!! Cannot do toString! Got an Exception: " + e.getCause() +"\n");
+        	}
+        	else
+        	{
+        		configurationStringBuilder.insert(0, "!!! Cannot do toString! Got an Exception: " + e +"\n");
+        	}
+        	return configurationStringBuilder.toString();
         }
+        
     }
 
 }

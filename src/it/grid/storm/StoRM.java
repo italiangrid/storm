@@ -4,6 +4,7 @@ import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.config.WelcomeMessage;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.startup.Bootstrap;
@@ -32,8 +33,8 @@ public class StoRM {
 
     private XMLRPCHttpServer xmlrpcServer = null;
 
-    private final StringBuffer welcome = welcomeText(); // Text that displays general info about StoRM project
-    private final StringBuffer defaultConfig = defaultText(); // Text that displays StoRM built in values
+    private final String welcome = WelcomeMessage.getWelcomeMessage(); // Text that displays general info about StoRM project
+    private final String defaultConfig = defaultText(); // Text that displays StoRM built in values
 
     private static Logger log;
 
@@ -60,17 +61,16 @@ public class StoRM {
             System.out.print("Looking for configuration file ");
             System.out.println(configurationPathname);
         }
+
         // load properties from configuration...
         Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname, refresh));
-        // set and print current configuration string...
-        StringBuffer currentConfig = new StringBuffer();
-        currentConfig.append(Configuration.getInstance().toString());
-        System.out.println("\nCurrent configuration:");
-        System.out.println(currentConfig.toString());
-        // print welcome
-        System.out.println();
-        System.out.println(welcome.toString());
 
+        // set and print current configuration string...
+        String currentConfig = "\nCurrent configuration:\n" + Configuration.getInstance().toString();
+        System.out.println(currentConfig);
+        // print welcome
+        System.out.println("\n" + welcome);
+        
         /**
          * INIT LOGGING COMPONENT
          */
@@ -81,9 +81,9 @@ public class StoRM {
         StoRM.log = LoggerFactory.getLogger(StoRM.class);
 
         //
-        log.warn(welcome.toString()); // log welcome string!
-        log.debug(defaultConfig.toString()); // log default values!
-        log.info("CurrentConfiguration:\n" + currentConfig.toString()); // log actually used values!
+        log.warn(welcome); // log welcome string!
+        log.debug(defaultConfig); // log default values!
+        log.info(currentConfig); // log actually used values!
 
         // Force the loadind and the parsing of Namespace configuration
         boolean verboseMode = false; // true generates verbose logging
@@ -114,53 +114,13 @@ public class StoRM {
     }
 
     /**
-     * Auxiliary method that returns a StringBuffer with a welcome text.
-     */
-    private StringBuffer welcomeText() {
-        StringBuffer welcome = new StringBuffer();
-        welcome.append("StoRM Backend Server\n\n");
-        //
-        welcome.append("This is the backend part of StoRM, a Storage Resource Manager ");
-        welcome.append(" (SRM) v2.2 implementation, resulting from a ");
-        welcome.append("collaboration between the Istituto Nazionale di Fisica Nucleare INFN-CNAF centre ");
-        welcome.append(" and the Abdus Salam International Centre for Theoretical ");
-        welcome.append("Physics ICTP - EGRID Project\n\n");
-        //
-        welcome.append("For support for installations of StoRM in Physics communities, ");
-        welcome.append("please contact:\n");
-        welcome.append("Istituto Nazionale di Fisica Nucleare - CNAF\n");
-        welcome.append("Viale Berti Pichat, 6/2\n");
-        welcome.append("40127 Bologna\n");
-        welcome.append("Italy\n");
-        welcome.append("http://www.cnaf.infn.it/\n");
-        //
-        welcome.append("For support for installations of StoRM in Economics/Finance communities, ");
-        welcome.append("please contact:\n");
-        welcome.append("The Abdus Salam International Centre for Theoretical Physics\n");
-        welcome.append("Scientific Computing Section - EGRID Project\n");
-        welcome.append("Strada Costiera, 11\n");
-        welcome.append("34016 Trieste\n");
-        welcome.append("Italy\n");
-        welcome.append("http://www.ictp.it/\n");
-        welcome.append("staff@egrid.it\n");
-        welcome.append("http://www.egrid.it/\n\n");
-        //
-        welcome.append("StoRM web site: http://storm.forge.cnaf.infn.it \n");
-        //
-        welcome.append("StoRM Mailing List: storm-users@cnaf.infn.it \n");
-
-        return welcome;
-    }
-
-    /**
      * Auxiliary method that returns a StringBuffer containing a text with StoRM s built in default values.
      */
-    private StringBuffer defaultText() {
-        StringBuffer defaultValuesText = new StringBuffer();
-        defaultValuesText.append("StoRM Backend internal list of default values used if no configuration ");
-        defaultValuesText.append("medium is supplied, or if properties in such medium do not override ");
-        defaultValuesText.append("internally set ones:\n");
-        defaultValuesText.append(Configuration.getInstance().toString());
+    private String defaultText() {
+		String defaultValuesText =
+								   "StoRM Backend internal list of default values used if no configuration "
+									   + "medium is supplied, or if properties in such medium do not override " + "internally set ones:\n"
+									   + Configuration.getInstance().toString();
         return defaultValuesText;
     }
 

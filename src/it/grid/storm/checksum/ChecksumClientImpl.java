@@ -91,9 +91,14 @@ public class ChecksumClientImpl implements ChecksumClient {
         return responseBody.toString();
     }
 
-    public ChecksumServerStatus getStatus() throws IOException {
+    public ChecksumServerStatus getStatus(String filePath) throws IOException {
         
-        URL url = new URL(endpoint + STATUS_SERVICE);
+        String input = "";
+        
+        if (filePath != null) {
+            input = "?filePath=" + filePath;
+        }
+        URL url = new URL(endpoint + STATUS_SERVICE + input);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");

@@ -6,10 +6,13 @@ import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -22,14 +25,36 @@ import org.slf4j.LoggerFactory;
 public abstract class TapeRecallDAO extends AbstractDAO {
 
     private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<Integer, SuspendedChunk> chunkMap = new ConcurrentHashMap<Integer, SuspendedChunk>();
+    private static ConcurrentHashMap<TRequestToken, SuspendedChunk> chunkMap = new ConcurrentHashMap<TRequestToken, SuspendedChunk>();
 
+    /**
+     * 
+     * @return
+     * @throws DataAccessException
+     */
     public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
 
+    /**
+     * 
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract List<RecallTaskTO> getInProgressTask(String voName) throws DataAccessException;
 
+    /**
+     * 
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getNumberInProgress() throws DataAccessException;
 
+    /**
+     * 
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getNumberInProgress(String voName) throws DataAccessException;
 
     /**
@@ -48,45 +73,110 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract int getNumberOfToDoTasks() throws DataAccessException;
 
+    /**
+     * 
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getNumberQueued() throws DataAccessException;
 
+    /**
+     * 
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getNumberQueued(String voName) throws DataAccessException;
 
+    /**
+     * 
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getReadyForTakeOver() throws DataAccessException;
 
+    /**
+     * 
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
 
-    public abstract String getRequestToken(int taskId) throws DataAccessException;
+    /**
+     * 
+     * @param taskId
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract String getRequestToken(UUID taskId) throws DataAccessException;
 
-    public abstract int getRetryValue(int taskId) throws DataAccessException;
+    /**
+     * 
+     * @param taskId
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract int getRetryValue(UUID taskId) throws DataAccessException;
 
-    public abstract RecallTaskTO getTask(int taskId) throws DataAccessException;
+    /**
+     * 
+     * @param taskId
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract List<RecallTaskTO> getTask(UUID taskId) throws DataAccessException;
 
-    public abstract int getTaskId(String requestToken, String pfn) throws DataAccessException;
+    /**
+     * 
+     * @param requestToken
+     * @param pfn
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract UUID getTaskId(String requestToken, String pfn) throws DataAccessException;
 
-    public abstract int getTaskStatus(int taskId) throws DataAccessException;
+    /**
+     * 
+     * @param taskId
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract int getTaskStatus(UUID taskId) throws DataAccessException;
 
-    public abstract int insertTask(RecallTaskTO task) throws DataAccessException;
+    /**
+     * 
+     * @param task
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract void insertTask(RecallTaskTO task) throws DataAccessException;
 
-    public int insertTask(SuspendedChunk chunk, String voName, String absoluteFileName)
-            throws DataAccessException {
+    /**
+     * Method used by PtGChunk and BoLChunk
+     * 
+     * @param chunk
+     * @param voName
+     * @param absoluteFileName
+     * @return
+     * @throws DataAccessException
+     */
+    public TRequestToken insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
 
         RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
-        int taskId = insertTask(task);
+        TRequestToken taskToken = task.getRequestToken();
 
-        if (chunkMap.containsKey(taskId)) {
+        if (chunkMap.containsKey(taskToken)) {
 
-            log.error("BUG: duplicated key taskId: " + taskId);
-            return -1;
+            log.error("File 'absoluteFileName' already recalled by another Recall: " + taskToken);
+            return taskToken;
 
         }
-
-        chunkMap.put(taskId, chunk);
-
-        return taskId;
+        chunkMap.put(taskToken, chunk);
+        return taskToken;
     }
 
     /**
@@ -96,9 +186,22 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
 
-    public abstract void setRetryValue(int taskId, int value) throws DataAccessException;
+    /**
+     * 
+     * @param taskId
+     * @param value
+     * @throws DataAccessException
+     */
+    public abstract void setRetryValue(UUID taskId, int value) throws DataAccessException;
 
-    public boolean setTaskStatus(int taskId, int status) throws DataAccessException {
+    /**
+     * 
+     * @param taskId
+     * @param status
+     * @return
+     * @throws DataAccessException
+     */
+    public boolean setTaskStatus(UUID taskId, int status) throws DataAccessException {
 
         RecallTaskStatus recallTaskStatus = RecallTaskStatus.getRecallTaskStatus(status);
 
@@ -141,12 +244,36 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         return true;
     }
 
+    /**
+     * 
+     * @return
+     * @throws DataAccessException
+     */
     public abstract RecallTaskTO takeoverTask() throws DataAccessException;
 
+    /**
+     * 
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract RecallTaskTO takeoverTask(String voName) throws DataAccessException;
 
+    /**
+     * 
+     * @param numberOfTaks
+     * @return
+     * @throws DataAccessException
+     */
     public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException;
 
+    /**
+     * 
+     * @param numberOfTaks
+     * @param voName
+     * @return
+     * @throws DataAccessException
+     */
     public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName)
             throws DataAccessException;
 
@@ -158,7 +285,13 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      */
     public abstract void updateTask(RecallTaskTO task) throws DataAccessException;
 
-    private RecallTaskTO getTaskFromChunk(ChunkData chunkData) {
+    /**
+     * 
+     * @param chunkData
+     * @return
+     * @throws DataAccessException 
+     */
+    private RecallTaskTO getTaskFromChunk(ChunkData chunkData) throws DataAccessException {
 
         RecallTaskTO task = new RecallTaskTO();
 
@@ -170,7 +303,8 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             PtGChunkData ptgChunk = (PtGChunkData) chunkData;
 
             task.setRequestType(RecallTaskTO.PTG_REQUEST);
-            task.setRequestToken(ptgChunk.requestToken().getValue());
+            task.setRequestToken(ptgChunk.requestToken());
+            
             task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
             task.setDeferredRecallInstant(currentDate);
 
@@ -179,7 +313,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             BoLChunkData bolChunk = (BoLChunkData) chunkData;
 
             task.setRequestType(RecallTaskTO.BOL_REQUEST);
-            task.setRequestToken(bolChunk.getRequestToken().getValue());
+            task.setRequestToken(bolChunk.getRequestToken());
             task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
             Date deferredStartDate = new Date(currentDate.getTime()
@@ -187,11 +321,17 @@ public abstract class TapeRecallDAO extends AbstractDAO {
             task.setDeferredRecallInstant(deferredStartDate);
 
         } else {
-            return null;
+            throw new DataAccessException("Unable to build a RecallTaskTO because unknown chunk type.");
         }
-
         return task;
     }
 
-    protected abstract boolean setTaskStatusDBImpl(int taskId, int status) throws DataAccessException;
+    /**
+     *     
+     * @param taskId
+     * @param status
+     * @return
+     * @throws DataAccessException
+     */
+    protected abstract boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException;
 }

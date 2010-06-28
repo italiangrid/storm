@@ -6,6 +6,7 @@ package it.grid.storm.tape.recalltable.persistence;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.srm.types.TRequestToken;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,9 +16,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +37,7 @@ public class PropertiesDB {
     private static final Logger log = LoggerFactory.getLogger(PropertiesDB.class);
     private static Configuration config = Configuration.getInstance();
     private final String dataFileName = "recall-table.txt";
-    private final String propertiesDBName;
-    private LinkedHashMap<String, RecallTaskTO> tasksDB;
+    private final String propertiesDBName; 
 
 
     public PropertiesDB() {
@@ -54,10 +58,10 @@ public class PropertiesDB {
         char sep = File.separatorChar;
         propertiesDBName = configurationDir + sep + "etc" + sep + "db" + sep + dataFileName;
         // log.debug("Properties RecallTable-DB = " + propertiesDBName);
-        File tasksDB = new File(propertiesDBName);
+        File tasksDBfile = new File(propertiesDBName);
         boolean success = false;
         try {
-            success = tasksDB.createNewFile();
+            success = tasksDBfile.createNewFile();
         } catch (IOException e) {
             log.error("Error while trying to check : " + propertiesDBName);
             e.printStackTrace();
@@ -81,16 +85,16 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        // Retrieve the Task-id (unique-key)
-        int taskid = task.getTaskId();
-        if (taskid == -1) {
+        // Retrieve the Request-Token (unique-key)
+        TRequestToken taskToken = task.getRequestToken();
+        if (taskToken == null) {
             log.error("You are trying to store a Task without a task-id.");
             throw new DataAccessException("You are trying to store a Task without a task-id.");
         }
         // Build the String related to Task-id
         String taskStr = task.toString();
         // Insert the new property entry
-        properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
+        properties.setProperty(taskToken.getValue(), taskStr);
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
@@ -101,51 +105,55 @@ public class PropertiesDB {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        int taskid = -1;
+        TRequestToken taskToken = null;
         String taskStr = null;
         for (RecallTaskTO recallTaskTO : listTasks) {
             // Retrieve the Task-id (unique-key)
-            taskid = recallTaskTO.getTaskId();
-            if (taskid == -1) {
-                log.error("You are trying to store a Task without a task-id.");
-                throw new DataAccessException("You are trying to store a Task without a task-id.");
+            taskToken = recallTaskTO.getRequestToken();
+            if (taskToken == null) {
+                log.error("You are trying to store a Task without a RequestToken.");
+                throw new DataAccessException("You are trying to store a Task without a Request-Token.");
             }
             // Build the String related to Task-id
             taskStr = recallTaskTO.toString();
             // Insert the new property entry
-            properties.setProperty(Integer.valueOf(taskid).toString(), taskStr);
-            taskid = -1;
+            properties.setProperty(taskToken.getValue(), taskStr);
+            taskToken = null;
         }
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
 
 
-    public RecallTaskTO getRecallTask(int taskId) throws FileNotFoundException, IOException, DataAccessException {
-        RecallTaskTO result = null;
+    public List<RecallTaskTO> getRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
+        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
-
-        // Retrieve the Task from taskid
-        String task = properties.getProperty(Integer.valueOf(taskId).toString());
-        if (task == null) {
+  
+        for (Object values : properties.values()) {
+            String v = (String)values;
+            RecallTaskTO task = RecallTaskBuilder.build(v);
+            if (task.getTaskId().equals(taskId)) {
+                result.add(task);
+            }
+        }
+        if (result.isEmpty()) {
             log.error("Unable to retrieve the task with ID = " + taskId);
-            throw new DataAccessException("Unable to find the task with ID = " + taskId);
-        } else {
-            result = RecallTaskBuilder.build(task);
+            throw new DataAccessException("Unable to find the task with ID = " + taskId);     
         }
         return result;
     }
 
 
+    
     public void updateRecallTask(RecallTaskTO task) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        int taskId = task.getTaskId();
+        UUID taskId = task.getTaskId();
 
         // Check if the Task exists within the Properties DB
-        boolean taskExist = properties.containsKey(taskId);
+        boolean taskExist = properties.containsKey(taskId.toString());
         if (!(taskExist)) {
             log.error("Unable to find the task with ID = " + taskId);
             throw new DataAccessException("Unable to find the task with ID = " + taskId);
@@ -153,7 +161,7 @@ public class PropertiesDB {
             // Build the String related to Task-id
             String taskStr = task.toString();
             // Insert the new property entry
-            properties.setProperty(Integer.valueOf(taskId).toString(), taskStr);
+            properties.setProperty(taskId.toString(), taskStr);
             log.debug("Removed tasks '" + taskId + "'");
         }
 
@@ -162,12 +170,12 @@ public class PropertiesDB {
     }
 
 
-    public void deleteRecallTask(int taskId) throws FileNotFoundException, IOException, DataAccessException {
+    public void deleteRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
-        // Retrieve the Task from taskid
-        String task = properties.getProperty(Integer.valueOf(taskId).toString());
+        // Retrieve the Task from taskId
+        String task = properties.getProperty(taskId.toString());
         if (task == null) {
             log.error("Unable to find the task with ID = " + taskId);
             throw new DataAccessException("Unable to find the task with ID = " + taskId);
@@ -179,13 +187,11 @@ public class PropertiesDB {
         // Store the properties into disk
         properties.store(new FileOutputStream(propertiesDBName), null);
     }
-
-
-    public LinkedHashMap<String, RecallTaskTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
-        if (tasksDB != null) {
-            return tasksDB;
-        }
-        tasksDB = new LinkedHashMap<String, RecallTaskTO>();
+  
+    
+    public LinkedHashMap<TRequestToken, RecallTaskTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
+         
+        LinkedHashMap<TRequestToken, RecallTaskTO> tasksDBmem = new LinkedHashMap<TRequestToken, RecallTaskTO>();
         ArrayList<RecallTaskTO> tasksList = new ArrayList<RecallTaskTO>();
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
@@ -199,11 +205,9 @@ public class PropertiesDB {
         Arrays.sort(tasksArray);
         // Create the ordered LinkedHashMap
         for (RecallTaskTO element : tasksArray) {
-            tasksDB.put(Integer.valueOf(element.getTaskId()).toString(), element);
+            tasksDBmem.put(element.getRequestToken(), element);
         }
-        
-        
-        return tasksDB;
+        return tasksDBmem;
     }
 
 }

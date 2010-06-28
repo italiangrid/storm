@@ -1,5 +1,8 @@
 package it.grid.storm.persistence.model;
 
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.Serializable;
@@ -8,8 +11,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
+
+    private static final Logger log = LoggerFactory.getLogger(RecallTaskTO.class);
 
     private static final long serialVersionUID = -2907739786996767167L;
     
@@ -23,8 +32,8 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
 
     
-    private int taskId = -1;
-    private String requestToken = null;
+    private UUID taskId = null;
+    private TRequestToken requestToken = null;
     private String requestType = null;
     private String fileName = null;
     private String userID = null;
@@ -41,8 +50,13 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
     public static RecallTaskTO createRandom(Date date, String voName) {
 
         RecallTaskTO result = new RecallTaskTO();
+        result.taskId = UUID.randomUUID();
         result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
-        result.setRequestToken(voName + Math.round(Math.random() * 1000));
+        try {
+            result.setRequestToken(TRequestToken.getRandom());
+        } catch (InvalidTRequestTokenAttributesException e) {
+            log.warn("unable to create a random Request Token");
+        }
         result.setRetryAttempt(0);
         result.setPinLifetime((int) Math.round(Math.random() * 1000));
         result.setVoName(voName);
@@ -80,8 +94,16 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return status;
     }
 
-    public String getRequestToken() {
+    /**
+     * RequestToken is the primary key of the table
+     * @return
+     */
+    public TRequestToken getRequestToken() {
         return requestToken;
+    }
+    
+    public String getRequestTokenStr() {
+        return requestToken.getValue();
     }
 
     public String getRequestType() {
@@ -96,7 +118,8 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         return status.getStatusId();
     }
 
-    public int getTaskId() {
+    public UUID getTaskId() {
+        buildTaskId();   
         return taskId;
     }
 
@@ -114,6 +137,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+        buildTaskId();
     }
 
     public void setInsertionInstant(Date date) {
@@ -124,10 +148,19 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         this.pinLifetime = pinLifetime;
     }
 
-    public void setRequestToken(String requestToken) {
+    /**
+     * 
+     * @param requestToken
+     */
+    public void setRequestToken(TRequestToken requestToken) {
         this.requestToken = requestToken;
     }
 
+    public void setRequestTokenStr(String requestToken) throws InvalidTRequestTokenAttributesException {
+        TRequestToken rToken = new TRequestToken(requestToken);
+        setRequestToken(rToken);
+    }
+    
     public void setRequestType(String requestType) {
         this.requestType = requestType;
     }
@@ -144,7 +177,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         status = RecallTaskStatus.getRecallTaskStatus(statusId);
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(UUID taskId) {
         this.taskId = taskId;
     }
 
@@ -228,7 +261,9 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         StringBuffer sb = new StringBuffer();
 
         sb.append(startChar);
-        sb.append(taskId);
+        sb.append("r.token:'"+requestToken+"'");
+        sb.append(sepChar);
+        sb.append("taskId:'"+taskId+"'");
         sb.append(sepChar);
 
         Format formatter = new SimpleDateFormat(dateFormat);
@@ -261,9 +296,24 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         
         sb.append(sepChar);
         sb.append(pinLifetime);
-        sb.append(sepChar);
-        sb.append(requestToken);
         // sb.append(endChar);
         return sb.toString();
     }
+
+    /**
+     * This method generate a TaskId from fileName
+     * @return
+     */
+    private void buildTaskId() {
+        
+        if (this.taskId==null) {
+            if (this.fileName!=null) {
+                this.taskId = UUID.nameUUIDFromBytes(this.fileName.getBytes());   
+            } else {
+                log.error("Unable to create taskId because filename is NULL");
+            }    
+        }
+    }
+
+
 }

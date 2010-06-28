@@ -1,0 +1,9 @@
+INSTALL
+-------
+
+- The instruction to build StoRM BE from the source
+
+set JAVA_HOME
+set GPFS_HOME
+
+- The instruction to install StoRM BE directly from the source

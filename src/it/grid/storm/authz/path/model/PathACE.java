@@ -7,7 +7,7 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
-import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -20,7 +20,7 @@ import org.slf4j.Logger;
  */
 public class PathACE {
 
-    private final Logger log = AuthzDirector.getLogger();
+    private static final Logger log = AuthzDirector.getLogger();
 
     public static final String ALL_GROUPS_PATTERN = "@ALL@?|\\*";
     public static final String ALL_GROUPS = "@ALL@";
@@ -85,7 +85,11 @@ public class PathACE {
             throw new AuthzException("Error while parsing the Path ACE '" + pathACEString + "'");
         } else {
             // Setting the Local Group Name
-            result.setLocalGroupName(fields.get(0));
+            String localGroup = fields.get(0);
+            if ((!LocalGroups.isGroupDefined(localGroup))) {
+                log.warn("Be careful! The group '"+localGroup+"' used to define path ACE doesn't exists, so this ACE will be not never used.");
+            }
+            result.setLocalGroupName(localGroup);
 
             // Setting the StFN
             try {
@@ -121,7 +125,7 @@ public class PathACE {
             localGroupName = PathACE.ALL_GROUPS;
         }
         // Check if the GroupName exists in the configuration
-        else if (EtcGroupReader.isGroupDefined(localGroup)) {
+        else if (LocalGroups.isGroupDefined(localGroup)) {
             localGroupName = localGroup;
         } else {
             throw new AuthzException("The local group :'" + localGroup + "' is not defined");

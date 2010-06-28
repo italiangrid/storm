@@ -309,7 +309,7 @@ test.junit.dir
 	<!-- <include name="axis-ant.jar"/> -->
 	<include name="axis.jar"/>
 	<include name="axis-schema.jar"/>
-	<include name="backport-util-concurrent.jar"/>
+	<!--<include name="backport-util-concurrent.jar"/>  ## Removed in 1.5.2 -->   
     <include name="srm22client.jar"/>
     <include name="cog-axis.jar"/>
 	<include name="cog-jglobus.jar"/>
@@ -384,6 +384,7 @@ test.junit.dir
     <include name="logging.xml"/>
     <include name="storm.properties.template"/>
   	<include name="path-authz.db"/>
+  	<include name="welcome.txt"/>
     <include name="sysconfig/storm-backend"/>
     <include name="logrotate.d/storm-backend.cron"/>
     <include name="logrotate.d/storm-backend.logrotate"/>
@@ -398,9 +399,8 @@ test.junit.dir
 	<include name="storm_mysql_tbl.sql"/>
 	<include name="storm_mysql_grant.sql"/>
 	<include name="README"/>
-	<include name="storm_mysql_update_from_1.0.0_to_1.3.2000.sql"/>
-	<include name="storm_mysql_update_from_1.3.2000_to_1.4.0.sql"/>
-    <include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql"/>
+        <include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql"/>
+  	<include name="storm_mysql_update_from_1.5.0_to_1.5.3.sql"/>
   </fileset>	
 	
   <!-- start/stop scripts -->
@@ -420,8 +420,14 @@ test.junit.dir
   <!-- documentation and licenses -->
   <fileset id="src.docs.proper"
 	dir="${src.doc.dir}">
-    <include name="INSTALL.txt"/>	
-  </fileset>	
+    <include name="INSTALL.txt"/>
+  </fileset> 
+  <fileset id="src.docs.authors"
+        dir="${src.dir}"
+        includes="AUTHORS"/>
+  <fileset id="src.docs.credits"
+        dir="${src.dir}"
+        includes="CREDITS"/>
   <fileset id="src.docs.license"
 	dir="${src.dir}"
 	includes="LICENSE.txt"/>
@@ -702,6 +708,8 @@ test.junit.dir
 	<copy
 	  todir="${docdir}"
 	  overwrite="true">
+          <fileset refid="src.docs.authors"/>
+          <fileset refid="src.docs.credits"/>
 	  <fileset refid="src.docs.proper"/>
 	  <fileset refid="src.docs.license"/>
 	</copy>
@@ -790,6 +798,8 @@ test.junit.dir
       	<exclude name="etc/adminserver-config.xml"/>
         <exclude name="etc/adminserver-log.properties"/>
 		<include name="LICENSE.txt"/>
+                <include name="AUTHORS"/>
+                <include name="CREDITS"/>
 		<include name="ACKNOWLEDGEMENTS.txt"/>
 		<include name="build.xml"/>
 		<include name="config/"/>

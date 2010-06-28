@@ -20,8 +20,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,19 +40,12 @@ public class TasksResource {
     @Produces("text/plain")
     public String putTakeoverTasks(InputStream input) throws RecallTableException {
 
-        Response response = Response.noContent().build();
-
-        // Retrieve if running in TEST setup
+         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
-        // @todo : REMOVE THIS
-        // test = true;
 
         // Retrieve the Input String
         String inputStr = buildInputString(input);
         log.debug("@PUT (input string) = '" + inputStr + "'");
-
-        // Retrieve Task corresponding to taskId
-        RecallTaskTO task = null;
 
         // Recall Table Catalog
         RecallTableCatalog rtCat = null;
@@ -87,9 +78,6 @@ public class TasksResource {
 
         // Retrieve the Task
         ArrayList<RecallTaskTO> tasks = rtCat.takeoverNTasks(numbOfTask);
-
-        // Build the body of response
-        ResponseBuilder responseBuilder = Response.ok();
 
         // Build the response
         String result = buildTakeoverTasksResponse(tasks);

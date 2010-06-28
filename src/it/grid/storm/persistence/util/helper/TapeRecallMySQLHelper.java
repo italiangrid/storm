@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,35 +45,33 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryGetInprograssTask(String voName) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s=%s";
+        String queryFormat = "SELECT * FROM "+TABLE_NAME+
+                             " WHERE "+COL_STATUS+"="+RecallTaskStatus.IN_PROGRESS.getStatusId()+
+                             " AND "+COL_VO_NAME+"="+formatString(voName);
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
-                             COL_VO_NAME,
-                             formatString(voName));
+        return queryFormat;
     }
 
-    public String getQueryGetRequestToken(int taskId) {
+    
+    public String getQueryGetRequestToken(UUID taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT "+COL_REQUEST_TOKEN+" FROM "+ TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
-        return String.format(queryFormat, COL_REQUEST_TOKEN, TABLE_NAME, COL_TASK_ID, taskId);
+        return queryFormat;
     }
 
-    public String getQueryGetRetryValue(int taskId) {
+    public String getQueryGetRetryValue(UUID taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT "+COL_RETRY_ATTEMPT+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
-        return String.format(queryFormat, COL_RETRY_ATTEMPT, TABLE_NAME, COL_TASK_ID, taskId);
+        return queryFormat;
     }
 
-    public String getQueryGetTask(int taskId) {
+    public String getQueryGetTask(UUID taskId) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
-        return String.format(queryFormat, TABLE_NAME, COL_TASK_ID, taskId);
+        return queryFormat;
     }
 
     public PreparedStatement getQueryInsertTask(Connection conn, RecallTaskTO recallTask) {
@@ -81,27 +80,26 @@ public class TapeRecallMySQLHelper extends SQLHelper {
             return null;
         }
 
-        String queryFormat = "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        String query = String.format(queryFormat,
-                                     TABLE_NAME,
-                                     COL_REQUEST_TOKEN,
-                                     COL_REQUEST_TYPE,
-                                     COL_FILE_NAME,
-                                     COL_PIN_LIFETIME,
-                                     COL_STATUS,
-                                     COL_VO_NAME,
-                                     COL_USER_ID,
-                                     COL_RETRY_ATTEMPT,
-                                     COL_DEFERRED_STARTTIME,
-                                     COL_DATE);
-
+        String query = "INSERT INTO "+TABLE_NAME+
+                             " ("+COL_TASK_ID+", "+
+                             COL_REQUEST_TOKEN+", "+
+                             COL_REQUEST_TYPE+", "+
+                             COL_FILE_NAME+", "+
+                             COL_PIN_LIFETIME+", "+
+                             COL_STATUS+", "+
+                             COL_VO_NAME+", "+
+                             COL_USER_ID+", "+
+                             COL_RETRY_ATTEMPT+", "+
+                             COL_DEFERRED_STARTTIME+", "+
+                             COL_DATE+") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ;
+                             
+       
         try {
             PreparedStatement prepStat = conn.prepareStatement(query);
             
             int idx = 1;
-            
-            prepStat.setString(idx++, recallTask.getRequestToken());
+            prepStat.setString(idx++, recallTask.getTaskId().toString());
+            prepStat.setString(idx++, recallTask.getRequestToken().getValue());
             prepStat.setString(idx++, recallTask.getRequestType());
             prepStat.setString(idx++, recallTask.getFileName());
             prepStat.setInt(idx++, recallTask.getPinLifetime());
@@ -122,181 +120,135 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryNumberInProgress() {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.IN_PROGRESS.getStatusId();
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.IN_PROGRESS.getStatusId());
+        return queryFormat;
     }
 
     public String getQueryNumberInProgress(String voName) {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+ COL_STATUS+"="+
+                             RecallTaskStatus.IN_PROGRESS.getStatusId()+" AND "+COL_VO_NAME+"="+formatString(voName);
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
-                             COL_VO_NAME,
-                             formatString(voName));
+        return queryFormat;
     }
 
     public String getQueryNumberQueued() {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId();
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId());
+        return queryFormat;
     }
     
     public String getQueryNumberQueued(String voName) {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId()+
+                             " AND "+COL_VO_NAME+"="+formatString(voName);
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_VO_NAME,
-                             formatString(voName));
+        return queryFormat;
     }
 
     public String getQueryPurgeCompletedTasks() {
 
-        String queryFormat = "DELETE FROM %s WHERE %s<>%d AND %s<>%d";
+        String queryFormat = "DELETE FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"<>"+RecallTaskStatus.QUEUED.getStatusId()+
+                              " AND "+COL_STATUS+"<>"+ RecallTaskStatus.IN_PROGRESS.getStatusId();
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS.getStatusId());
+        return queryFormat;
     }
     
     public String getQueryPurgeCompletedTasks(int maxNumTasks) {
 
-        String queryFormat = "DELETE FROM %s WHERE %s != %d AND %s != %d LIMIT %d";
+        String queryFormat = "DELETE FROM "+TABLE_NAME+" WHERE "+COL_STATUS+" != "+RecallTaskStatus.QUEUED.getStatusId()+
+                              " AND "+COL_STATUS+" != "+RecallTaskStatus.IN_PROGRESS.getStatusId()+" LIMIT "+maxNumTasks;
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
-                             maxNumTasks);
+        return queryFormat;
     }
 
     public String getQueryReadyForTakeOver() {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s<=NOW()";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId()+" AND "+ COL_DEFERRED_STARTTIME+"<=NOW()";
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, RecallTaskStatus.QUEUED.getStatusId(), COL_DEFERRED_STARTTIME);
+        return queryFormat;
     }
 
     public String getQueryReadyForTakeOver(String voName) {
 
-        String queryFormat = "SELECT COUNT(*) FROM %s WHERE %s=%d AND %s=%s AND %s<=NOW()";
+        String queryFormat = "SELECT COUNT(*) FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId()+ 
+                             " AND "+COL_VO_NAME+"="+ formatString(voName)+" AND "+COL_DEFERRED_STARTTIME+"<=NOW()";
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_VO_NAME,
-                             formatString(voName),
-                             COL_DEFERRED_STARTTIME);
+        return queryFormat;
     }
 
     public String getQueryRetrieveTaskId(String requestToken, String pfn) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s='%s' AND %s='%s'";
+        String queryFormat = "SELECT "+COL_TASK_ID+" FROM "+TABLE_NAME+" WHERE "+COL_REQUEST_TOKEN+"='"+formatString(requestToken)+"' AND "+COL_FILE_NAME+"='"+pfn+"'";
 
-        return String.format(queryFormat, COL_TASK_ID, TABLE_NAME, COL_REQUEST_TOKEN, requestToken, COL_FILE_NAME, pfn);
+        return queryFormat;
     }
     
-    public String getQueryRetrieveTaskStatus(int taskId) {
+    public String getQueryRetrieveTaskStatus(UUID taskId) {
 
-        String queryFormat = "SELECT %s FROM %s WHERE %s=%d";
+        String queryFormat = "SELECT "+COL_STATUS+" FROM "+TABLE_NAME+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
         return String.format(queryFormat, COL_STATUS, TABLE_NAME, COL_TASK_ID, taskId);
     }
 
-    public String getQuerySetRetryValue(int taskId, int value) {
+    public String getQuerySetRetryValue(UUID taskId, int value) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_RETRY_ATTEMPT+"="+value+" WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_RETRY_ATTEMPT,
-                             value,
-                             COL_TASK_ID,
-                             taskId);
+        return queryFormat;
     }
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s<=NOW() ORDER BY %s LIMIT %d";
+        String queryFormat = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId() +
+                             " AND "+COL_DEFERRED_STARTTIME+"<=NOW() ORDER BY "+ COL_DEFERRED_STARTTIME +
+                             " LIMIT "+numberOfTasks;
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_DEFERRED_STARTTIME,
-                             COL_DEFERRED_STARTTIME,
-                             numberOfTasks);
+        return queryFormat;
     }
 
     public String getQueryTakeoverTasksSelect(int numberOfTasks, String voName) {
 
-        String queryFormat = "SELECT * FROM %s WHERE %s=%d AND %s=%s AND %s<=NOW() ORDER BY %s LIMIT %d";
+        String queryFormat = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL_STATUS+"="+RecallTaskStatus.QUEUED.getStatusId() + 
+                             " AND "+COL_VO_NAME+"="+formatString(voName)+
+                             " AND "+COL_DEFERRED_STARTTIME+"<=NOW() ORDER BY "+COL_DEFERRED_STARTTIME+
+                             " LIMIT"+numberOfTasks;
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.QUEUED.getStatusId(),
-                             COL_VO_NAME,
-                             formatString(voName),
-                             COL_DEFERRED_STARTTIME,
-                             COL_DEFERRED_STARTTIME,
-                             numberOfTasks);
+        return queryFormat;
     }
 
-    public String getQueryTakeoverTasksUpdate(List<Integer> taskIdArray) {
+    public String getQueryTakeoverTasksUpdate(List<UUID> taskIdArray) {
 
         if (taskIdArray.size() == 0) {
             return null;
         }
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%s";
-        String whereClauseFormat = " OR " + COL_TASK_ID + "=%d";
-
-        StringBuffer sb = new StringBuffer(String.format(queryFormat,
-                                                         TABLE_NAME,
-                                                         COL_STATUS,
-                                                         RecallTaskStatus.IN_PROGRESS.getStatusId(),
-                                                         COL_TASK_ID,
-                                                         taskIdArray.get(0)));
-
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+RecallTaskStatus.IN_PROGRESS.getStatusId()+
+                             " WHERE "+COL_TASK_ID+"="+ formatString(taskIdArray.get(0).toString());     
+        
         for (int i = 1; i < taskIdArray.size(); i++) {
-            sb.append(String.format(whereClauseFormat, taskIdArray.get(i)));
+            queryFormat += " OR " + COL_TASK_ID + "="+formatString(taskIdArray.get(i).toString());
         }
 
-        return sb.toString();
+        return queryFormat;
     }
 
-    public String getQueryTakeoverTaskUpdate(int taskId) {
+    public String getQueryTakeoverTaskUpdate(UUID taskId) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d";
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+ RecallTaskStatus.IN_PROGRESS.getStatusId()+
+                             " WHERE "+COL_TASK_ID+"="+formatString(taskId.toString());
 
-        return String.format(queryFormat,
-                             TABLE_NAME,
-                             COL_STATUS,
-                             RecallTaskStatus.IN_PROGRESS.getStatusId(),
-                             COL_TASK_ID,
-                             taskId);
+        return queryFormat;
     }
 
-    public String getQueryUpdateTaskStatus(int taskId, int status) {
+    public String getQueryUpdateTaskStatus(UUID taskId, int status) {
 
-        String queryFormat = "UPDATE %s SET %s=%d WHERE %s=%d AND %s!=%d";
+        String queryFormat = "UPDATE "+TABLE_NAME+" SET "+COL_STATUS+"="+status+
+                             " WHERE "+COL_TASK_ID+"="+formatString(taskId.toString()) + " AND "+COL_STATUS+"!="+status;
 
-        return String.format(queryFormat, TABLE_NAME, COL_STATUS, status, COL_TASK_ID, taskId, COL_STATUS, status);
+        return queryFormat;
     }
 
     private String formatString(String s) {

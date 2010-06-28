@@ -326,16 +326,14 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
      */
     private void manageIsPermit(StoRI fileStoRI) {
 
-        /**
-         * From version 1.4 Add the control for Storage Area using the new authz for space component.
-         */
-
         SpaceHelper sp = new SpaceHelper();
         TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
         if (spaceAuth.authorize(gu, SRMSpaceRequest.PTG)) {
 
+
+            
             LocalFile localFile = fileStoRI.getLocalFile();
             try {
                 LocalUser localUser = gu.getLocalUser();
@@ -359,12 +357,12 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                             fileStoRI.setGroupTapeRead();
                             chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
-                            if (localFile.isOnDisk()) {
-                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
-                                if (!canRead) {
-                                    // roll back Read, and Traverse
-                                    // URGENT!
-                                }
+                            if (isStoriOndisk(fileStoRI)) {
+                                  boolean canRead = managePermitReadFileStep(fileStoRI, localFile, localUser, turl);
+                                  if (!canRead) {
+                                      // roll back Read, and Traverse
+                                      // URGENT!
+                                  }
                             } else {
                                 chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
 
@@ -497,10 +495,13 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
                 // There are ACLs to set n file
                 List<ACLEntry> dacl_list = dacl.getACL();
                 for (ACLEntry ace : dacl_list) {
-                    PtGChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
-                            + ace.getFilePermissionString());
-                    LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                    localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                  //Re-Check if the ACE is yet valid
+                    if (ace.isValid()) {
+                        PtGChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
+                                + " with permission: " + ace.getFilePermissionString());
+                        LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                        localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                    }
                 }
             }
 
@@ -690,4 +691,27 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
         return !anomaly;
     }
 
+    
+    private boolean isStoriOndisk(StoRI storiFile) {
+        boolean result = true;
+       
+        //Check if Tape is Enabled
+        boolean isTapeEnabled = false;
+        try {
+            isTapeEnabled = storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
+        } catch (NamespaceException e) {
+            log.error("Cannot retrieve storage class type information", e);
+            result = true;
+        }
+        
+        if (!(isTapeEnabled)) {
+            result = true;
+        } else {
+            LocalFile localFile = storiFile.getLocalFile();
+           result =  localFile.isOnDisk();  
+        }
+        
+        return result;
+    }
+    
 }

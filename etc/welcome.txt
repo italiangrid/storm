@@ -1,0 +1,10 @@
+StoRM (STOrage Resource Manager) is a light, scalable and file system independent storage manager service (SRM) for generic disk based storage system, compliant with the standard SRM interface version 2.2.
+The SToRM-BE component is the core of StoRM. 
+
+StoRM is born in 2004 and its development have helped many people, and also ICTP Institute with the project EGRID (see the file AUTHORS).
+
+StoRM is under Apache License v2.0.
+
+
+
+

@@ -1,6 +1,9 @@
 package it.grid.storm.synchcall.data.discovery;
 
+import java.util.Iterator;
+
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
+import it.grid.storm.srm.types.TExtraInfo;
 import it.grid.storm.synchcall.data.OutputData;
 
 /**
@@ -66,5 +69,12 @@ public class PingOutputData implements OutputData
     public boolean isSuccess() {
         // TODO Auto-generated method stub
         return  true;
+    }
+    
+    public String toString() {
+        String result = versionInfo;
+        result += this.extraInfoArray.toString();
+        return result;
+        
     }
 }

@@ -16,8 +16,8 @@ import it.grid.storm.config.Configuration;
  */
 class FileStorageTypeConverter {
 
-    private Map DBtoSTORM = new HashMap();
-    private Map STORMtoDB = new HashMap();
+    private Map<String, TFileStorageType> DBtoSTORM = new HashMap<String, TFileStorageType>();
+    private Map<TFileStorageType, String> STORMtoDB = new HashMap<TFileStorageType, String>();
 
     private static FileStorageTypeConverter c = new FileStorageTypeConverter();
 
@@ -32,8 +32,8 @@ class FileStorageTypeConverter {
         DBtoSTORM.put("V",TFileStorageType.VOLATILE);
         DBtoSTORM.put("P",TFileStorageType.PERMANENT);
         DBtoSTORM.put("D",TFileStorageType.DURABLE);
-        Object aux;
-        for (Iterator i = DBtoSTORM.keySet().iterator(); i.hasNext(); ) {
+        String aux;
+        for (Iterator<String> i = DBtoSTORM.keySet().iterator(); i.hasNext(); ) {
             aux = i.next();
             STORMtoDB.put(DBtoSTORM.get(aux),aux);
         }
@@ -58,17 +58,23 @@ class FileStorageTypeConverter {
     }
 
     /**
-     * Method that returns the TFileStorageType used by StoRM to represent
-     * the supplied String representation in the DB. A configured default
-     * TFileStorageType is returned in case no corresponding StoRM type is found.
+     * Method that returns the TFileStorageType used by StoRM to represent the supplied String representation in the DB.
+     * A configured default TFileStorageType is returned in case no corresponding StoRM type is found.
      * TFileStorageType.EMPTY is returned if there are configuration errors.
      */
     public TFileStorageType toSTORM(String s) {
-        TFileStorageType aux = (TFileStorageType) DBtoSTORM.get(s);
-        if (aux==null) aux = (TFileStorageType) DBtoSTORM.get( Configuration.getInstance().getDefaultFileStorageType() );
-        if (aux==null) return TFileStorageType.EMPTY; else return aux;
+        TFileStorageType aux = DBtoSTORM.get(s);
+        if (aux == null) 
+            //This case is that the String s is different from V,P or D.
+            aux = DBtoSTORM.get(Configuration.getInstance().getDefaultFileStorageType());
+        if (aux == null)
+            //This case should never happen, but in case we prefer ponder PERMANENT.
+            return TFileStorageType.EMPTY;
+        else
+            return aux;
     }
 
+    
     public String toString() {
         return "FileStorageTypeConverter.\nDBtoSTORM map:"+DBtoSTORM+"\nSTORMtoDB map:"+STORMtoDB;
     }

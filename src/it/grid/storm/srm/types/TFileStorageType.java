@@ -1,6 +1,5 @@
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 
@@ -15,7 +14,7 @@ import java.util.Map;
 public class TFileStorageType {
 
   private String fileType = null;
-  public static String PNAME_FILESTORAGETYPE = "fileStorageType";
+  public final static String PNAME_FILESTORAGETYPE = "fileStorageType";
   
   public static final TFileStorageType VOLATILE = new TFileStorageType("Volatile");
   public static final TFileStorageType DURABLE = new TFileStorageType("Durable");
@@ -43,13 +42,13 @@ public class TFileStorageType {
    * EMPTY TFileStorageType is returned.
    */
   public static TFileStorageType getTFileStorageType(String type) {
-    if (type.toLowerCase().replaceAll(" ", "").equals(VOLATILE.getValue().toLowerCase())) {
+    if (type.toLowerCase().trim().equals(VOLATILE.getValue().toLowerCase())) {
       return VOLATILE;
     }
-    if (type.toLowerCase().replaceAll(" ", "").equals(PERMANENT.getValue().toLowerCase())) {
+    if (type.toLowerCase().trim().equals(PERMANENT.getValue().toLowerCase())) {
       return PERMANENT;
     }
-    if (type.toLowerCase().replaceAll(" ", "").equals(DURABLE.getValue().toLowerCase())) {
+    if (type.toLowerCase().trim().equals(DURABLE.getValue().toLowerCase())) {
       return DURABLE;
     }
     else {
@@ -72,7 +71,7 @@ public class TFileStorageType {
   }
   /**
    * Decode method use to create a TFileStorageType object from
-   * the inforation containde into structured paramter receivec from FE. 
+   * the information contain into structured parameter receive from FE. 
    * @param inputParam
    * @param name
    * @return

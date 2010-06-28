@@ -1,6 +1,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -49,7 +50,7 @@ public class PtPChunkDataTO {
      *      status           SRM_REQUEST_QUEUED
      */
     public  PtPChunkDataTO() {
-        this.fileStorageType = FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE);
+        this.fileStorageType = FileStorageTypeConverter.getInstance().toDB(TFileStorageType.getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType()));
         TURLPrefix protocolPreferences = new TURLPrefix();
         protocolPreferences.addProtocol(Protocol.GSIFTP);
         this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);

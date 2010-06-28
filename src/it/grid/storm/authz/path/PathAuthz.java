@@ -13,7 +13,7 @@ import it.grid.storm.common.types.StFN;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.util.userinfo.EtcGroupReader;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import org.slf4j.Logger;
 
@@ -53,7 +53,7 @@ public class PathAuthz implements PathAuthzInterface {
         String groupName = null;
         try {
             int localGroup = guser.getLocalUser().getPrimaryGid();
-            groupName = EtcGroupReader.getGroupName(localGroup);
+            groupName = LocalGroups.getGroupName(localGroup);
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
             groupName = "unknown";
@@ -100,7 +100,7 @@ public class PathAuthz implements PathAuthzInterface {
         String groupName = null;
         try {
             int localGroup = guser.getLocalUser().getPrimaryGid();
-            groupName = EtcGroupReader.getGroupName(localGroup);
+            groupName = LocalGroups.getGroupName(localGroup);
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
             groupName = "unknown";

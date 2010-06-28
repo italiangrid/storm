@@ -17,7 +17,7 @@ package it.grid.storm.filesystem;
 
 import it.grid.storm.filesystem.AclLockPoolElement;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /** Maps path names to lock objects.  Expect each map value to

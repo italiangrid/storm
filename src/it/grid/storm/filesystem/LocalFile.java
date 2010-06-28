@@ -378,7 +378,7 @@ public class LocalFile {
      * @return <code>true</code> is the file is present on the disk, <code>false</code> otherwise.
      */
     public boolean isOnDisk() {
-
+        
         long blocksSize = CUtil.getFileBlocksSize(localFile.getAbsolutePath());
 
         if (blocksSize >= localFile.length()) {
