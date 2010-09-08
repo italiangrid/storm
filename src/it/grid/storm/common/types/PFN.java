@@ -44,7 +44,7 @@ public class PFN {
      */
     public static PFN make(String name) throws InvalidPFNAttributeException {
         //if ((name==null) || (name=="") || (name.charAt(0)!='/')) throw new InvalidPFNAttributeException(name);
-        if ((name==null) || (name=="")) throw new InvalidPFNAttributeException(name);
+        if ((name==null) || (name.equals(""))) throw new InvalidPFNAttributeException(name);
         return new PFN(name, false);
     }
 

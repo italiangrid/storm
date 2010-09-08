@@ -28,9 +28,9 @@ public class PersistenceDirector {
 
     private static DataBaseStrategy initializeDataBase()
     {
-        dbVendor = config.getBE_PersistenceDBVendor();
+        dbVendor = config.getBEPersistenceDBVendor();
         log.debug("DBMS Vendor =  "+dbVendor);
-        log.debug("DBMS URL    =  "+config.getBE_PersistenceDBMSUrl());
+        log.debug("DBMS URL    =  "+config.getBEPersistenceDBMSUrl());
         return DataBaseStrategy.getInstance(dbVendor);
     }
 
@@ -62,9 +62,9 @@ public class PersistenceDirector {
         sf.append("Connecting to Data Source..."+"\n");
         sf.append("  Connection String = "+dbMan.getConnectionString()+"\n");
 
-        boolean poolMode = config.getBE_PersistencePoolDB();
-        int maxActive = config.getBE_PersistencePoolDB_MaxActive();
-        int maxWait = config.getBE_PersistencePoolDB_MaxWait();
+        boolean poolMode = config.getBEPersistencePoolDB();
+        int maxActive = config.getBEPersistencePoolDBMaxActive();
+        int maxWait = config.getBEPersistencePoolDBMaxWait();
         sf.append("  Pool Mode = "+poolMode+"\n");
         if (poolMode)
         {

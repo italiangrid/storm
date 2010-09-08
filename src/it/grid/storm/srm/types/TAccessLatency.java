@@ -8,7 +8,6 @@
  */
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 public class TAccessLatency {
@@ -34,7 +33,7 @@ public class TAccessLatency {
     }
     
     /**
-     * decode() method creates a TAccessLatency object from the inforation
+     * decode() method creates a TAccessLatency object from the information
      * contained into the structured parameter received from the FE. 
      * @param inputParam map structure
      * @param fieldName  field name
@@ -55,7 +54,7 @@ public class TAccessLatency {
      * @param outputParam hashtable structure
      * @param fieldName  field name
      */
-    public void encode(Map outputParam, String fieldName) {
+    public void encode(Map<String, Integer> outputParam, String fieldName) {
         Integer value = null;
         
         if (this.equals(TAccessLatency.ONLINE)) value = new Integer(0);

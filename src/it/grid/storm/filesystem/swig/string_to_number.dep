@@ -1,2 +1,0 @@
-string_to_number.o string_to_number.dep : string_to_number.cpp string_to_number.hpp \
-  fs_errors.hpp

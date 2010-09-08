@@ -1,2 +1,0 @@
-genericfs.o genericfs.dep : genericfs.cpp fs_errors.hpp genericfs.hpp posixfs_acl.hpp \
-  fs_acl.hpp util.hpp

@@ -15,20 +15,18 @@ import org.slf4j.LoggerFactory;
 public class ChecksumManager {
 
     private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
-    private static final String URL_FORMAT = "http://%s:%d/";
+    private final String URL_FORMAT = "http://%s:%d/";
 
     private static ChecksumManager instance = null;
-    private static List<String> serviceUrlList;
-    private static List<String> statusUrlList;
-    private static int urlListSize;
-    private static volatile int currentUrlIndex = -1;
-    private static String algorithm;
+    private List<String> serviceUrlList = null;
+    private List<String> statusUrlList = null;
+    private int urlListSize;
+    private volatile int currentUrlIndex = -1;
+    private String algorithm;
 
     private ChecksumManager() {
 
         algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
-        initUrlArrays();
-
     }
 
     public static ChecksumManager getInstance() {
@@ -38,7 +36,7 @@ public class ChecksumManager {
         return instance;
     }
 
-    private static synchronized int getNextIndex() {
+    private synchronized int getNextIndex() {
         currentUrlIndex++;
         if (currentUrlIndex >= urlListSize) {
             currentUrlIndex = 0;
@@ -125,6 +123,11 @@ public class ChecksumManager {
      */
     public boolean setChecksum(String fileName) {
 
+    	if(this.serviceUrlList == null && this.statusUrlList == null)
+    	{
+    		log.debug("Loading checksum remote hosts URLs");
+    		initUrlArrays();
+    	}
         String checksum = retrieveChecksumFromExternalService(fileName);
 
         if (checksum == null) {

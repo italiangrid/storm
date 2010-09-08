@@ -6,89 +6,90 @@ public abstract class SRMURL {
 
     protected TransportProtocol transfProtocol;
     protected SRMURLType surlType = null;
-    protected String queryString;
+    /**
+     * If this is a normal form SRMURL path contains the file path,
+     * it instead is a query form SRMURL path contains the service endpoint 
+     */
     protected String path;
+    protected String queryString = null;
 
     protected int local = -1; //undef
     protected boolean localSURL = false;
 
-    protected String hostName;
+	public SRMURL(Protocol protocol, String hostname, int port, String servicePath, String queryString) {
 
-    public SRMURL(final TransportProtocol protocol,
-                  final String path,
-                  final String queryString) {
-        if (protocol.getAuthority() == null) {
-            protocol.setLocalAuthority();
-        }
-        this.hostName = protocol.getAuthority().getServiceHostname();
-        //The path and the query string must to be expressed in absolute form!
-        if (path != null) {
-            this.path = makeInAbsoluteForm(path);
-        }
-        else {
-            this.path = "";
-        }
-        if (queryString != null) {
-            this.queryString = makeInAbsoluteForm(queryString);
-        }
+		Authority authority = new Authority(hostname, port);
+		this.transfProtocol = new TransportProtocol(protocol, authority);
+		// The path and the query string must to be expressed in absolute form!
+		this.path = makeInAbsoluteForm(servicePath);
+		if(queryString != null)
+		{
+			this.queryString = makeInAbsoluteForm(queryString);
+		}
 
-    }
-
-    public SRMURL(Protocol protocol, String hostname, int port, String servicePath, String queryString) {
-        this.hostName = hostname;
-        Authority service = new Authority(hostname, port);
-        this.transfProtocol = new TransportProtocol(protocol, service);
-        //The path and the query string must to be expressed in absolute form!
-        if (servicePath != null) {
-            this.path = makeInAbsoluteForm(servicePath);
-        }
-        else {
-            this.path = "";
-        }
-        if (queryString != null) {
-            this.queryString = makeInAbsoluteForm(queryString);
-        }
-
-    }
+	}
 
     public SRMURL(Protocol protocol, String hostname, int port, String stfn) {
-        this.hostName = hostname;
-        Authority service = new Authority(hostname, port);
-        this.transfProtocol = new TransportProtocol(protocol, service);
-        //The path and the query string must to be expressed in absolute form!
-        if (stfn != null) {
-            this.path = makeInAbsoluteForm(stfn);
-        }
-        else {
-            this.path = "";
-        }
-        this.queryString = null;
-    }
 
+		Authority autority = new Authority(hostname, port);
+		this.transfProtocol = new TransportProtocol(protocol, autority);
+
+		// The path and the query string must to be expressed in absolute form!
+		this.path = makeInAbsoluteForm(stfn);
+	}
+
+    /**
+     * Provides from the received path string a string that starts with NamingConst.ROOT_PATH ("/")
+     * @param path
+     * @return
+     */
     private String makeInAbsoluteForm(String path) {
         StringBuffer absolutePath = new StringBuffer();
    
-        if ((path==null)||(path.length()==0)) {
-            absolutePath.append(NamingConst.ROOT_PATH);
-        } else {
-            absolutePath.append(path);
-            if (absolutePath.charAt(0) != NamingConst.SEPARATOR_CHAR) {
-                absolutePath.insert(0, NamingConst.ROOT_PATH);
-            }    
-        }
+		if((path == null) || (path.length() == 0))
+		{
+			absolutePath.append(NamingConst.ROOT_PATH);
+		}
+		else
+		{
+			if(path.charAt(0) != NamingConst.SEPARATOR_CHAR)
+			{
+				absolutePath.insert(0, NamingConst.ROOT_PATH);
+			}
+			absolutePath.append(path);
+		}
         return absolutePath.toString();
     }
 
+    /**
+     * @param hostname
+     */
     public void setServiceHostName(String hostname) {
         this.transfProtocol.setAuthority(new Authority(hostname));
     }
 
+    public String getServiceHostname() {
+        return this.transfProtocol.getAuthority().getServiceHostname();
+    }
+    
     public void setServiceHostPort(int port) {
         this.transfProtocol.getAuthority().setServicePort(port);
     }
 
     public int getServiceHostPort() {
         return this.transfProtocol.getAuthority().getServicePort();
+    }
+    
+    public String getPath() {
+        return path;
+    }
+    
+    public String getQueryString() {
+        return queryString;
+    }
+    
+    public String getTransportPrefix() {
+        return transfProtocol.toString();
     }
 
     public String getSURLType() {
@@ -97,25 +98,17 @@ public abstract class SRMURL {
         }
         return surlType.toString();
     }
-
+    
+    /**
+     * Returns true if the hostname of this srmurl is the one specified in configuration file field "storm.service.FE-public.hostname"
+     * @return
+     */
     public boolean isLocal() {
         if (local == -1) {
-            localSURL = getServiceHost().equals(NamingConst.getServiceDefaultHost());
+            localSURL = getServiceHostname().equals(NamingConst.getServiceDefaultHost());
             local = 1;
         }
         return localSURL;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getServiceHost() {
-        return hostName;
-    }
-
-    public String getTransportPrefix() {
-        return transfProtocol.toString();
     }
 
     public boolean isQueriedFormSURL() {
@@ -125,13 +118,10 @@ public abstract class SRMURL {
         return (surlType.equals(SRMURLType.QUERIED));
     }
 
-    public boolean isNormalFormSURL() {
-        return (! (isQueriedFormSURL()));
-    }
+	public boolean isNormalFormSURL() {
 
-    public String getQueryString() {
-        return queryString;
-    }
+		return (!(isQueriedFormSURL()));
+	}
 
     private SRMURLType computeType() {
         if (this.getQueryString() != null) {
@@ -142,28 +132,33 @@ public abstract class SRMURL {
         }
     }
 
-    public String getServiceEndPoint() {
-        if (isQueriedFormSURL()) {
-            return getPath();
-        }
-        else {
-            return "";
-        }
-    }
+    /**
+     * If this is a queri form SRMURL returns the service endpoint, an empty string otherwise
+     * @return
+     */
+	public String getServiceEndPoint() {
 
-    public String getStFN() {
-        StringBuffer stFN = new StringBuffer();
-        if (isQueriedFormSURL()) {
-            stFN.append(getQueryString());
-            if (stFN.charAt(0) != NamingConst.SEPARATOR_CHAR) {
-                stFN.insert(0, NamingConst.ROOT_PATH);
-            }
-            return stFN.toString();
-        }
-        else { //In this case the path represents the StFN
-            return getPath();
-        }
-    }
+		if(isQueriedFormSURL())
+		{
+			return getPath();
+		}
+		else
+		{
+			return "";
+		}
+	}
+
+	public String getStFN() {
+
+		if(isQueriedFormSURL())
+		{
+			return this.getQueryString();
+		}
+		else
+		{ // In this case the path represents the StFN
+			return this.getPath();
+		}
+	}
 
     /**
      *
@@ -191,6 +186,111 @@ public abstract class SRMURL {
             return type;
         }
 
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+
+			if(this == obj)
+			{
+				return true;
+			}
+			if(obj == null)
+			{
+				return false;
+			}
+			if(!(obj instanceof SRMURLType))
+			{
+				return false;
+			}
+			SRMURLType other = (SRMURLType) obj;
+			if(type == null)
+			{
+				if(other.type != null)
+				{
+					return false;
+				}
+			}
+			else
+				if(!type.equals(other.type))
+				{
+					return false;
+				}
+			return true;
+		}
+
     }
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + local;
+		result = prime * result + (localSURL ? 1231 : 1237);
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((queryString == null) ? 0 : queryString.hashCode());
+		result = prime * result + ((surlType == null) ? 0 : surlType.hashCode());
+		result = prime * result + ((transfProtocol == null) ? 0 : transfProtocol.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(!(obj instanceof SRMURL))
+			return false;
+		SRMURL other = (SRMURL) obj;
+		if(local != other.local)
+			return false;
+		if(localSURL != other.localSURL)
+			return false;
+		if(path == null)
+		{
+			if(other.path != null)
+				return false;
+		}
+		else
+			if(!path.equals(other.path))
+				return false;
+		if(queryString == null)
+		{
+			if(other.queryString != null)
+				return false;
+		}
+		else
+			if(!queryString.equals(other.queryString))
+				return false;
+		if(surlType == null)
+		{
+			if(other.surlType != null)
+				return false;
+		}
+		else
+			if(!surlType.equals(other.surlType))
+				return false;
+		if(transfProtocol == null)
+		{
+			if(other.transfProtocol != null)
+				return false;
+		}
+		else
+			if(!transfProtocol.equals(other.transfProtocol))
+				return false;
+		return true;
+	}
+
+	
 
 }

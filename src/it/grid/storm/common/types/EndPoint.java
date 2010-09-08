@@ -1,9 +1,7 @@
 package it.grid.storm.common.types;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class represents an EndPoint of a SURL: it must begin with a /.
@@ -36,22 +34,29 @@ public class EndPoint {
      * thrown. Likewise if it does not begin with a slash (/), or if it contains two
      * consecutive dots (..).
      */
-    public static EndPoint make(String name) throws InvalidEndPointAttributeException {
-        if (invalid(name)) throw new InvalidEndPointAttributeException(name);
-        return new EndPoint(normalize(name),false);
-    }
+	public static EndPoint make(String name)
+			throws InvalidEndPointAttributeException {
+
+		if(invalid(name))
+			throw new InvalidEndPointAttributeException(name);
+		return new EndPoint(normalize(name), false);
+	}
 
     /**
      * Private method that returns true if the supplied string is null, or is empty, or
      * does not begin with a slash (/), or contains two consecutive dots (..).
      */
-    static private boolean invalid(String name) {
-        boolean wrong = (name==null) ||
-            (name.equals("")) ||
-            (name.charAt(0)!='/') ||
-            (name.indexOf("..")!=-1);
-        return wrong;
-    }
+	static private boolean invalid(String name) {
+
+		boolean wrong =
+						(name == null) || 
+						(name.equals("")) || 
+						(name.charAt(0) != '/');
+		/*TODO MICHELE this thest is done by the URI class before to arrive here. Aniway is not forbidden to a non
+		 * normalized URI to have double dotts*/
+//							|| (name.indexOf("..") != -1);
+		return wrong;
+	}
 
     /**
      * Private method that accepts a valid String as defined by the private valid method,

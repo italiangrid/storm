@@ -1,7 +1,8 @@
 # 
 # RPM spec file for the StoRM BackEnd server.
 #
-# Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>.
+# Copyright (c) 2008 INFN 
+# AUTHORS: Magnoni Luca, Ronchieri Elisabetta
 # 
 # You may copy, modify and distribute this file under the same
 # terms as the StoRM BackEnd itself.
@@ -12,18 +13,27 @@
 
 ### Package Naming 
 
-Name: storm-backend
-Version: 1.5.3
-Release: 4.sl4
+Name: storm-backend-server
+Version: %{version}
+Release: %{age}.%{distribution}
 Summary: The StoRM BackEnd component.
 License:  Apache License, Version 2.0. See included file LICENSE.txt
 Url: http://storm.forge.cnaf.infn.it
 Vendor: INFN - CNAF (2009)
 Group: Application/Generic
-Packager: Luca Magnoni <luca.magnoni@cnaf.infn.it> 
+Packager: Luca Magnoni <storm-support@lists.infn.it> 
 Prefix: /opt/storm/backend
-BuildRoot: %{_tmppath}/%{name}-%{version}
-Source: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}
+Source: %{name}.tar.gz
+Summary: The StoRM BackEnd server.
+Obsoletes: storm-backend-jars
+# Requires: redhat-lsb
+Requires: nc
+Requires: glite-security-lcmaps = 1.4.7-1.%{distributionrpm}
+Requires: glite-security-lcmaps-plugins-basic = 1.3.10-2.%{distributionrpm}
+Requires: glite-security-lcmaps-plugins-voms = 1.3.7-%{lpvage}.%{distributionrpm}
+Requires: glite-security-lcmaps-without-gsi = %{lwgversion}-%{lwgage}.%{distributionrpm}
+Requires: vdt_globus_sdk
 
 ### Package Description
 
@@ -36,71 +46,32 @@ can take advantage of special features of high performance parallel and cluster 
 GPFS from IBM and Lustre from SUN.
 
 The StoRM BackEnd is split into two binary packages:
-'storm-backend-server', which contains the actual server binaries, and
-'storm-backend-jars' which contains the 3rd party .jar libraries the
-server depends upon.
-
-###### SubPackage server
-
-%package server
-Summary: The StoRM BackEnd server.
-Group: Application/Generic
-Requires: storm-backend-jars >= 1.5.0
-# this causes a conflict error between postfix and torque-client packages. 
-# Requires: redhat-lsb
-Requires: nc
-# Not really necessary...
-Requires: glite-security-lcmaps-plugins-basic
-Requires: glite-security-lcmaps-plugins-voms
-Requires: vdt_globus_sdk
-
-%description server
-This package contains the StoRM BackEnd server.
-
-StoRM provides an SRM interface to any POSIX
-filesystem with direct file access ("file:" transport protocol), but
-can take advantage of special features of high performance parallel and cluster file systems, as 
-GPFS from IBM and Lustre from SUN.
-
-This server depends upon some 3rd party .jar files, which are packed
-separately in the ``storm-backend-jars`` package.
-
-%package jars
-Summary: The StoRM BackEnd server (3rd party libraries).
-Group: Application/Generic
-Prefix: /opt/storm/backend
-
-%description jars
-This package contains the 3rd party .jar libraries needed to run the
-StoRM BackEnd server.
+'storm-backend-server', which contains the actual server binaries and libraries
 
 %prep
-%setup -q
+%setup -q -n %{name}
 
 %build
-ant -Dversion="%{version}" -Darch="%{?arch_bit}" clean build
-
+ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dxfsprogs-devel.location="%{xfsprogs_devel}" -Dversion="%{version}" -Dage="%{age}" build
 %install
 rm -rf $RPM_BUILD_ROOT
-ant -Dversion="%{version}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
+ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dxfsprogs-devel.location="%{xfsprogs_devel}" -Dversion="%{version}" -Dage="%{age}" -Dprefix="$RPM_BUILD_ROOT%{prefix}" install
 
-%post server
+%post
 #during an install, the value of the argument passed in is 1
 #during an unupgrade, the value of the argument passed in is 2
 if [ "$1" = "1" ] ; then
 echo "The StoRM BackEnd server is installed but NOT configured yet.
-You need to launch the storm-backend-configure script, or to use
-yaim to configure the server.
+You need to use yaim to configure the server.
 "
 echo 'create ln for /etc/init.d/storm-backend'
 ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
-ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
+ln -sf %{prefix}/etc/cron.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi
 if [ "$1" = "2" ] ; then
 echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
-You need to launch the storm-backend-configure script, or to use
-yaim to configure the server.
+You need to use yaim to configure the server.
 "
 if [ -s "/etc/init.d/storm-backend" ] ; then
 echo 'stop service storm-backend'
@@ -108,7 +79,7 @@ echo 'stop service storm-backend'
 fi
 fi;
 
-%preun server
+%preun
 #during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
 if [ "$1" = "0" ] ; then
@@ -129,7 +100,7 @@ echo 'stop service storm-backend'
 fi
 fi;
 
-%postun server
+%postun
 #during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
 if [ "$1" = "1" ] ; then
@@ -146,7 +117,7 @@ fi
 echo 'create ln for /etc/init.d/storm-backend'
 ln -sf %{prefix}/etc/init.d/storm-backend /etc/init.d/storm-backend
 echo 'create ln for /etc/cron.d/storm-backend.cron'
-ln -sf %{prefix}/etc/logrotate.d/storm-backend.cron /etc/cron.d/storm-backend.cron
+ln -sf %{prefix}/etc/cron.d/storm-backend.cron /etc/cron.d/storm-backend.cron
 fi;
 if [ "$1" = "0" ] ; then
 if [ -s "/etc/init.d/storm-backend" ] ; then
@@ -159,7 +130,7 @@ rm -f /etc/cron.d/storm-backend.cron
 fi
 fi;
 
-%files server
+%files
 %defattr(-,root,root)
 %{prefix}/doc/AUTHORS
 %{prefix}/doc/CREDITS
@@ -168,10 +139,12 @@ fi;
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
 #%config(noreplace) /etc/cron.d/storm-backend.cron
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
-%config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.3.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.4.sql
+%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.3_to_1.5.4.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
@@ -179,75 +152,70 @@ fi;
 %config(noreplace) %{prefix}/etc/path-authz.db
 %config(noreplace) %{prefix}/etc/welcome.txt
 %config(noreplace) %{prefix}/etc/namespace.xml
-%{prefix}/lib/storm-backend/libgpfsapi_interface.so
-%{prefix}/lib/storm-backend/storm-backend.jar
-%{prefix}/lib/storm-backend/liblcmaps_interface.so
-%{prefix}/lib/storm-backend/libxfsapi_interface.so
-%{prefix}/lib/storm-backend/libposixapi_interface.so
-%{prefix}/lib/storm-backend/libjdim.so
-%{prefix}/lib/storm-backend/libstorm_cutil.so
+%{prefix}/lib/native/%{platform}/libgpfsapi_interface.so
+%{prefix}/lib/native/%{platform}/liblcmaps_interface.so
+%{prefix}/lib/native/%{platform}/libposixapi_interface.so
+%{prefix}/lib/native/%{platform}/libxfsapi_interface.so
+%{prefix}/lib/native/%{platform}/libstorm_cutil.so
+%{prefix}/lib/native/%{platform}/libstorm_lcmaps.so
+%{prefix}/storm-backend.jar
 %defattr(755,root,root)
-%config(noreplace) %{prefix}/sbin/storm-backend-configure
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
-%attr(755,root,root) %{prefix}/etc/logrotate.d/storm-backend.cron
+%attr(755,root,root) %{prefix}/etc/cron.d/storm-backend.cron
 %attr(755,root,root) %{prefix}/etc/init.d/storm-backend
 # empty directories; nonetheless include in RPM
 %defattr(-,root,root)
 %dir %{prefix}/var/log
 %dir %{prefix}/var/tmp
-%dir %{prefix}/lib/storm-backend/jar
-
-%files jars
 %defattr(-,root,root)
-%{prefix}/lib/storm-backend/jar/commons-codec-1.3.jar
-%{prefix}/lib/storm-backend/jar/saaj.jar
-%{prefix}/lib/storm-backend/jar/xmlrpc-server-3.0.jar
-%{prefix}/lib/storm-backend/jar/dom.jar
-%{prefix}/lib/storm-backend/jar/activation.jar
-%{prefix}/lib/storm-backend/jar/wsdl4j-1.5.1.jar
-%{prefix}/lib/storm-backend/jar/cog-jglobus.jar
-%{prefix}/lib/storm-backend/jar/commons-collections-3.1.jar
-%{prefix}/lib/storm-backend/jar/commons-configuration-1.4.jar
-%{prefix}/lib/storm-backend/jar/commons-logging-1.1.jar
-%{prefix}/lib/storm-backend/jar/commons-dbcp-1.2.1.jar
-%{prefix}/lib/storm-backend/jar/commons-cli-1.0.jar
-%{prefix}/lib/storm-backend/jar/FMC.jar
-%{prefix}/lib/storm-backend/jar/dim-18.r2.jar
-%{prefix}/lib/storm-backend/jar/xml-apis.jar
-%{prefix}/lib/storm-backend/jar/xmlrpc-common-3.0.jar
-%{prefix}/lib/storm-backend/jar/mail.jar
-%{prefix}/lib/storm-backend/jar/cryptix-asn1.jar
-%{prefix}/lib/storm-backend/jar/axis.jar
-%{prefix}/lib/storm-backend/jar/axis-schema.jar
-%{prefix}/lib/storm-backend/jar/cryptix32.jar
-%{prefix}/lib/storm-backend/jar/ws-commons-util-1.0.1.jar
-%{prefix}/lib/storm-backend/jar/cog-url.jar
-%{prefix}/lib/storm-backend/jar/xalan.jar
-%{prefix}/lib/storm-backend/jar/commons-validator-1.3.0.jar
-%{prefix}/lib/storm-backend/jar/cog-axis.jar
-%{prefix}/lib/storm-backend/jar/commons-beanutils.jar
-%{prefix}/lib/storm-backend/jar/jce-jdk13-131.jar
-%{prefix}/lib/storm-backend/jar/xercesImpl.jar
-%{prefix}/lib/storm-backend/jar/srm22client.jar
-%{prefix}/lib/storm-backend/jar/commons-lang-2.3.jar
-%{prefix}/lib/storm-backend/jar/puretls.jar
-%{prefix}/lib/storm-backend/jar/commons-digester-1.7.jar
-%{prefix}/lib/storm-backend/jar/logback-classic-0.9.15.jar
-%{prefix}/lib/storm-backend/jar/logback-core-0.9.15.jar
-%{prefix}/lib/storm-backend/jar/slf4j-api-1.5.6.jar
-%{prefix}/lib/storm-backend/jar/jgss.jar
-%{prefix}/lib/storm-backend/jar/commons-pool-1.2.jar
-%{prefix}/lib/storm-backend/jar/jaxrpc.jar
-%{prefix}/lib/storm-backend/jar/commons-discovery-0.2.jar
-%{prefix}/lib/storm-backend/jar/cog-jobmanager.jar
-%{prefix}/lib/storm-backend/jar/jakarta-oro-2.0.8.jar
-%{prefix}/lib/storm-backend/jar/asm-3.1.jar
-%{prefix}/lib/storm-backend/jar/grizzly-webserver-1.9.15b.jar
-%{prefix}/lib/storm-backend/jar/jersey-core-1.1.0-ea.jar
-%{prefix}/lib/storm-backend/jar/jersey-server-1.1.0-ea.jar
-%{prefix}/lib/storm-backend/jar/jna.jar
-%{prefix}/lib/storm-backend/jar/jsr311-api-1.1.jar
-%{prefix}/lib/storm-backend/jar/json-20080701.jar
+%{prefix}/lib/activation.jar
+%{prefix}/lib/asm-3.1.jar
+%{prefix}/lib/axis.jar
+%{prefix}/lib/axis-schema.jar
+%{prefix}/lib/cog-axis.jar
+%{prefix}/lib/cog-jglobus.jar
+%{prefix}/lib/cog-jobmanager.jar
+%{prefix}/lib/cog-url.jar
+%{prefix}/lib/commons-collections-3.1.jar
+%{prefix}/lib/commons-configuration-1.4.jar
+%{prefix}/lib/commons-logging-1.1.jar
+%{prefix}/lib/commons-dbcp-1.2.1.jar
+%{prefix}/lib/commons-cli-1.0.jar
+%{prefix}/lib/commons-codec-1.3.jar
+%{prefix}/lib/commons-validator-1.3.0.jar
+%{prefix}/lib/commons-beanutils.jar
+%{prefix}/lib/commons-lang-2.3.jar
+%{prefix}/lib/commons-digester-1.7.jar
+%{prefix}/lib/commons-pool-1.2.jar
+%{prefix}/lib/commons-discovery-0.2.jar
+%{prefix}/lib/cryptix-asn1.jar
+%{prefix}/lib/cryptix32.jar
+%{prefix}/lib/dom.jar
+%{prefix}/lib/grizzly-webserver-1.9.15b.jar
+%{prefix}/lib/jce-jdk13-131.jar
+%{prefix}/lib/jgss.jar
+%{prefix}/lib/jaxrpc.jar
+%{prefix}/lib/jakarta-oro-2.0.8.jar
+%{prefix}/lib/jersey-core-1.1.0-ea.jar
+%{prefix}/lib/jersey-server-1.1.0-ea.jar
+%{prefix}/lib/jna.jar
+%{prefix}/lib/jsr311-api-1.1.jar
+%{prefix}/lib/json-20080701.jar
+%{prefix}/lib/log4j-1.2.13.jar
+%{prefix}/lib/logback-classic-0.9.15.jar
+%{prefix}/lib/logback-core-0.9.15.jar
+%{prefix}/lib/mail.jar
+%{prefix}/lib/puretls.jar
+%{prefix}/lib/saaj.jar
+%{prefix}/lib/srm22client.jar
+%{prefix}/lib/slf4j-api-1.5.6.jar
+%{prefix}/lib/ws-commons-util-1.0.1.jar
+%{prefix}/lib/wsdl4j-1.5.1.jar
+%{prefix}/lib/xmlrpc-server-3.0.jar
+%{prefix}/lib/xml-apis.jar
+%{prefix}/lib/xmlrpc-common-3.0.jar
+%{prefix}/lib/xalan.jar
+%{prefix}/lib/xercesImpl.jar
 %{prefix}/doc/apache2.LICENSE
 %{prefix}/doc/puretls.LICENSE
 %{prefix}/doc/junit.LICENSE
@@ -259,12 +227,28 @@ fi;
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-rm -f "$RPM_BUILD_DIR/filelist.server.%{name}"
-rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 
 ### Package ChangeLog
 
 %changelog
+* Tue Aug 24 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version %{version}-%{release}
+- joined jar and server packages in one package
+- removed storm-backend-configure
+- removed sbin directory
+- changed lib (jar and native) structure
+- moved main jar (storm-backend.jar) into %{prefix}
+
+* Fri May 21 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version %{version}-%{release}
+- changed the handling of init script and cron file
+- introduced lynks
+
+* Wed May 19 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version %{version}-%{release}
+- changed the handling of init script and cron file
+- introduced lynks
+
 * Fri May 21 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
 - version %{version}-%{release}
   - changed the handling of init script and cron file
@@ -277,12 +261,12 @@ rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 
 * Tue Dec 22 2009 <Riccardo Zappi> <riccardo.zappi@cnaf.infn.it>
 - version 1.5.0-rc4
-  - changed 'path-authz.db' from 'path-authz.db.template'
-  - changed 'namespace-1.5.0.xsd' from 'namespace.xsd'
+- changed 'path-authz.db' from 'path-authz.db.template'
+- changed 'namespace-1.5.0.xsd' from 'namespace.xsd'
 
 * Tue Dec 22 2009 <Alberto Forti> <alberto.forti@cnaf.infn.it>
 - version 1.5.0-rc1/rc2/rc3
-  - ...  
+ - ...  
   
 * Thu May 14 2009 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
 - final 1.4.0 release
@@ -302,7 +286,6 @@ rm -f "$RPM_BUILD_DIR/filelist.jars.%{name}"
 - Bug fixes on Storage Area creation and FQANs representation
 
 * Mon Dec 15 2008 <Magnoni Luca> <luca.magnoni@cnaf.infn.it>
-
 - version 1.4.0-rc1
 - http://storm.forge.cnaf.infn.it/documentation/changelog
 

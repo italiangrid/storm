@@ -49,23 +49,24 @@ public class PingConverter implements Converter
         return inputData;
     }
 
-    public Map convertFromOutputData(OutputData data)
-    {
-        log.debug("Ping: output converter started.");
-        Hashtable outputParam = new Hashtable();
-        PingOutputData outputData = (PingOutputData) data;
-        String versionInfo = outputData.getVersionInfo();
-        if (versionInfo != null) {
-            outputParam.put("varsionInfo", versionInfo);
-        }
+    public Map convertFromOutputData(OutputData data) {
 
-        ArrayOfTExtraInfo extraInfoArray = outputData.getExtraInfoArray();
-        if (extraInfoArray != null) {
-            extraInfoArray.encode(outputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        }
+		log.debug("Ping: output converter started.");
+		Hashtable<String, String> outputParam = new Hashtable<String, String>();
+		PingOutputData outputData = (PingOutputData) data;
+		String versionInfo = outputData.getVersionInfo();
+		if(versionInfo != null)
+		{
+			outputParam.put("versionInfo", versionInfo);
+		}
 
-        log.debug("Ping: output converter has finished.");
+		ArrayOfTExtraInfo extraInfoArray = outputData.getExtraInfoArray();
+		if(extraInfoArray != null)
+		{
+			extraInfoArray.encode(outputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
+		}
 
-        return outputParam;
-    }
+		log.debug("Ping: output converter has finished.");
+		return outputParam;
+	}
 }

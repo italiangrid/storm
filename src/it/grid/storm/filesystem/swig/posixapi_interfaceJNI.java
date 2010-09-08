@@ -16,9 +16,9 @@ class posixapi_interfaceJNI {
     } catch (UnsatisfiedLinkError e) {
 	  final String libfile 
 			= "'" + System.mapLibraryName("posixapi_interface") + "'";
-	  final org.apache.log4j.Logger log 
-			= org.apache.log4j.Logger.getLogger(posixapi_interfaceJNI.class);
-      log.fatal("Native code library " + libfile
+	  final org.slf4j.Logger log 
+			= org.slf4j.LoggerFactory.getLogger(posixapi_interfaceJNI.class);
+      log.error("Native code library " + libfile
 				 + " failed to load: " + e.getMessage());
 	  // give some informational details, may be useful when debugging
 	  final String ldpath = System.getProperty("java.library.path");

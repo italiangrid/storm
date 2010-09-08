@@ -2,8 +2,6 @@ package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.persistence.PersistenceDirector;
-import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
@@ -18,7 +16,7 @@ import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.RecallTableException;
 import it.grid.storm.tape.recalltable.model.RecallTaskData;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
 
 import java.io.File;
@@ -28,6 +26,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import javax.ws.rs.core.Response;
 
@@ -62,18 +61,28 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
         // Search key value
         boolean foundKey = pingValues.containsKey(key);
-        if (foundKey) {
-            try {
-                otherInfo = new TExtraInfo(key, pingValues.getProperty(key));
-                log.debug("srmPing: Found the value for key='" + key + "' = '" + otherInfo + "'");
-            } catch (InvalidTExtraInfoAttributeException ex) {
-                log.error("Invalid KEY requested in Ping.");
-                otherInfo = new TExtraInfo();
-            }
-            extraInfoArray.addTExtraInfo(otherInfo);
-        } else { // Catch the special cases
-            extraInfoArray = manageSpecialKey(key);
-        }
+        if(foundKey)
+		{
+        	for(Entry<Object, Object> entry : pingValues.entrySet())
+			{
+
+				try
+				{
+					otherInfo = new TExtraInfo(entry.getKey().toString() , entry.getValue().toString());
+					log.debug("srmPing: Found the value for key='" + key + "' = '"
+						+ otherInfo + "'");
+				} catch(InvalidTExtraInfoAttributeException ex)
+				{
+					log.error("Invalid KEY requested in Ping.");
+					otherInfo = new TExtraInfo();
+				}
+				extraInfoArray.addTExtraInfo(otherInfo);
+			}
+		}
+		else
+		{ // Catch the special cases
+			extraInfoArray = manageSpecialKey(key);
+		}
        
         // Build the Output Data
         outputData.setExtraInfoArray(extraInfoArray);
@@ -85,22 +94,26 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
         return outputData;
     }
-
+    
     
     /**
      * 
      * @param authorizationID String
-     * @return String
+     * @return String  normalizedAuthID
      */
     private String getKey(String authorizationID) {
-        String result = authorizationID.trim();
-        String prefix = authorizationID.substring(0, 4).toLowerCase();
-        if (prefix.equals("key=")) {
-            result = authorizationID.substring(4);
-        }
-        log.debug("Retrieved KEY:'" + result + "' from AuthorizationID : '" + authorizationID + "'");
-        return result;
-    }
+
+		String result = authorizationID.trim();
+//		String prefix = authorizationID.substring(0, 4).toLowerCase();
+//		if(prefix.equals("key="))
+    	if(result.substring(0, 4).equalsIgnoreCase("key="))
+		{
+			result = result.substring(4);
+		}
+		log.debug("Retrieved KEY:'" + result + "' from AuthorizationID : '"
+			+ authorizationID + "'");
+		return result;
+	}
 
     /**
      * 
@@ -117,9 +130,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
         String propertiesFile = configurationPATH + File.separator + pingPropertiesFileName;
 
         // Check if the file Exists
-        boolean exists = (new File(propertiesFile).exists());
-
-        if (exists) {
+        if (new File(propertiesFile).exists()) {
             // Read properties file.
             try {
                 properties.load(new FileInputStream(propertiesFile));
@@ -132,19 +143,14 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
         // Add in properties the Mandatory Properties Values
         properties.put(Constants.BE_VERSION.getKey(), Constants.BE_VERSION.getValue());
-        log.debug("srmPing: Loaded NR" + properties.size() + " PING key/value couple.");
+        properties.put(Constants.BE_OS_DISTRIBUTION.getKey(), Constants.BE_OS_DISTRIBUTION.getValue());
+        log.debug("srmPing: Loaded NR " + properties.size() + " PING key/value couple.");
         return properties;
     }
 
-
-
-
-    
     /****************************
      *  SPECIAL KEY MANAGEMENT 
      ****************************/
-
-
     
     /**
      * Dispatcher for manage the special keys on Ping
@@ -156,11 +162,41 @@ public class PingCommand extends DiscoveryCommand implements Command {
         ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
         SpecialKey specialKey = SpecialKey.fromString(key);
         switch (specialKey) {
-            case ALL: arrayResult = allKeys(extractParam(key)); break;
-            case TEST_POST_NEW_TASK: arrayResult = test_post_new_task(extractParam(key)); break;
-            case TEST_PUT_NEW_STATUS: arrayResult = test_put_new_status(extractParam(key)); break;
-            case TEST_PUT_RETRY_VALUE: arrayResult = test_put_retry_value(extractParam(key)); break;
-            case TEST_TAKEOVER: arrayResult = test_takeover(extractParam(key)); break;
+            case ALL:
+				arrayResult = allKeys(extractParam(key));
+				break;
+			case BE_OS_PLATFORM:
+				 try
+				{
+					arrayResult.addTExtraInfo(new TExtraInfo(key,
+						Constants.BE_OS_PLATFORM.getValue()));
+				} catch(InvalidTExtraInfoAttributeException e)
+				{
+					log.warn("Really strange!");
+				}
+				break;
+			case BE_OS_KERNEL_RELEASE:
+				try
+				{
+					arrayResult.addTExtraInfo(new TExtraInfo(key,
+						Constants.BE_OS_KERNEL_RELEASE.getValue()));
+				} catch(InvalidTExtraInfoAttributeException e)
+				{
+					log.warn("Really strange!");
+				}
+				break;
+			case TEST_POST_NEW_TASK:
+				arrayResult = test_post_new_task(extractParam(key));
+				break;
+			case TEST_PUT_NEW_STATUS:
+				arrayResult = test_put_new_status(extractParam(key));
+				break;
+			case TEST_PUT_RETRY_VALUE:
+				arrayResult = test_put_retry_value(extractParam(key));
+				break;
+			case TEST_TAKEOVER:
+				arrayResult = test_takeover(extractParam(key));
+				break;
             default: { 
                 TExtraInfo extraInfo = new TExtraInfo();
                 try {
@@ -237,7 +273,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
       
         return arrayResult;
     }
-    
  
     private ArrayOfTExtraInfo test_put_new_status(String param) {
         ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
@@ -284,8 +319,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
         return arrayResult;
     }
     
-    
-    
     /**********************************
      * UTILITY METHODS
      **********************************/
@@ -296,37 +329,37 @@ public class PingCommand extends DiscoveryCommand implements Command {
      * @return
      */
     private static String extractCmd(String key) {
-        String normalizedKey = key.trim().toLowerCase();
-        String cmd = normalizedKey;
-        int indexOfEqual = normalizedKey.indexOf("=");
-        if (indexOfEqual<0) {
-            indexOfEqual = normalizedKey.length();
-        }
-        cmd = normalizedKey.substring(0,indexOfEqual);       
-        return cmd;
-    }
 
+    	String cmd = key.trim().toLowerCase();
+		int indexOfEqual = cmd.indexOf("=");
+		if(indexOfEqual < 0)
+		{
+			indexOfEqual = cmd.length();
+		}
+		return cmd.substring(0, indexOfEqual);
+	}
+
+    /**
+     * @param key
+     * @return
+     */
     private static String extractParam(String key) {
-        String normalizedKey = key.trim().toLowerCase();
-        String param = "";
-        int equalIndex = key.indexOf("=");
-        if (equalIndex>0) {
-            param = normalizedKey.substring(equalIndex+1);
-        } 
-        return param;
-    }
 
-    
-
-    
+		String normalizedKey = key.trim().toLowerCase();
+		String param = "";
+		int equalIndex = normalizedKey.indexOf("=");
+		if(equalIndex > 0)
+		{
+			param = normalizedKey.substring(equalIndex + 1);
+		}
+		return param;
+	}
     
     /**********************************
      * MAIN for TEST PURPOUSE
      **********************************/
       
     public static void main(String arg[]){
-        PingCommand pc = new PingCommand();
-        pc.test_takeover("cmd=cicciopasticcio");
 
     }
 
@@ -335,7 +368,10 @@ public class PingCommand extends DiscoveryCommand implements Command {
      *
      */
    private enum SpecialKey {
+	   
        ALL("all","return all the pair <key,value> defined in properties"),
+       BE_OS_PLATFORM(Constants.BE_OS_PLATFORM.getKey(),"returns the operating system platform"),
+       BE_OS_KERNEL_RELEASE(Constants.BE_OS_KERNEL_RELEASE.getKey(),"returns the operating system kernel release"),
        TEST_TAKEOVER("take-over","testing the take-over method"), 
        TEST_POST_NEW_TASK("new-task","testing the take-over method"), 
        TEST_PUT_NEW_STATUS("new-status","testing the take-over method"), 
@@ -347,30 +383,33 @@ public class PingCommand extends DiscoveryCommand implements Command {
        private final String operationDescription;      
        
        private SpecialKey(String opName, String opDescr) {
-           this.operationName = opName;
-           this.operationDescription = opDescr;
-       }
-       
-       public String getDescription() {
-           return operationDescription;
-       }
+
+			this.operationName = opName;
+			this.operationDescription = opDescr;
+		}
+
+		public String getDescription() {
+
+			return operationDescription;
+		}
        
        public static SpecialKey fromString(String keyStr) {
-           SpecialKey result = SpecialKey.UNKNOWN;
-           String cmd = extractCmd(keyStr);
-           for (SpecialKey keyValue : SpecialKey.values()) {
-               if (keyValue.toString().equals(cmd)) {
-                   result = keyValue;
-               }
-           }
-           return result;
-       }
-       
-       @Override 
-       public String toString() {
-           return operationName;
-       }
-       
-   }
 
+			String cmd = extractCmd(keyStr);
+			for(SpecialKey keyValue : SpecialKey.values())
+			{
+				if(keyValue.toString().equalsIgnoreCase(cmd))
+				{
+					return keyValue;
+				}
+			}
+			return SpecialKey.UNKNOWN;
+		}
+       
+       @Override
+		public String toString() {
+
+			return operationName;
+		}
+	}
 }

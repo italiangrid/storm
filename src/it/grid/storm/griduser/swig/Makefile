@@ -11,44 +11,63 @@
 # StoRM itself; see file LICENSE.txt
 #
 # $Id: Makefile,v 1.3 2007/05/16 09:50:04 lmagnoni Exp $
-# 
-NAME := lcmaps_interface
+#
 
+top_srcdir=.
+stagedir=.
+distdir=.
+globalprefix=storm
+backendprefix=backend
+package=storm-backend
+version=1.5.4
+PREFIX=/opt/storm/backend
+
+lcmaps_prefix=${lcmaps_location}
+lcmaps_without_gsi_prefix=${lcmaps_without_gsi_location}
+lcmaps_plugins_basic_prefix=${lcmaps_plugins_basic_location}
+lcmaps_plugins_voms_prefix=${lcmaps_plugins_voms_location}
+
+jdk_prefix=${jdk_location}
+swig_prefix=${swig_location}
+architecture=${arch}
+
+-include Makefile.inc
+
+NAME := lcmaps_interface
 
 # where to put binary output files
 DESTDIR ?= .
-
 
 JAVA_PACKAGE ?= it.grid.storm.griduser.swig
 JAVA_INCLUDES ?= \
 	-I$(JAVA_HOME)/include \
 	-I$(JAVA_HOME)/include/linux
 
+LCMAPS_INCLUDES ?= -I$(lcmaps_without_gsi_prefix)/include/glite/security/lcmaps_without_gsi
+LCMAPS_LIBS ?= \
+ $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_return_poolindex_without_gsi.so \
+ $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_without_gsi.so \
+ $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_dummy_bad.so \
+ $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_dummy_good.so \
+ $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_localaccount.so \
+ $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_poolaccount.so \
+ $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_posix_enf.so \
+ $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_localaccount.so \
+ $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_localgroup.so \
+ $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_poolaccount.so \
+ $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_poolgroup.so \
+ $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms.so
 
-LCMAPS_INCLUDES ?= -I /opt/glite/include/glite/security/lcmaps_without_gsi
-
-# Variable ARCH is set by ant (ant -Darch=64 to compile 64 bit)
-LCMAPS_LIBS ?= /opt/glite/lib$(ARCH)/liblcmaps_return_poolindex_without_gsi.so \
-               /opt/glite/lib$(ARCH)/liblcmaps_without_gsi.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_dummy_bad.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_dummy_good.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_localaccount.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_poolaccount.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_posix_enf.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_voms_localaccount.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_voms_localgroup.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_voms_poolaccount.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_voms_poolgroup.so \
-               /opt/glite/lib$(ARCH)/modules/liblcmaps_voms.so
+LIB_INCLUDES ?= -I$(libacl_devel_prefix)/usr/include -I$(libattr_devel_prefix)/usr/include -I$(libacl_devel_prefix)/include -I$(libattr_devel_prefix)/include
 
 # the swig binary
-SWIG ?= swig
+SWIG_BIN ?= $(swig_prefix)/bin/swig
 
 
 ### NO CUSTOMIZATION BELOW THIS LINE!!
 
 override CXXFLAGS += -DDEBUG -D__USE_BSD -Wall -O2
-override INCLUDES += $(JAVA_INCLUDES) $(LCMAPS_INCLUDES)
+override INCLUDES += $(JAVA_INCLUDES) $(LIB_INCLUDES) $(LCMAPS_INCLUDES)
 override LIBS     += $(LCMAPS_LIBS)
 
 swig_interface := lcmaps_interface.i
@@ -62,16 +81,17 @@ swig_output := lcmaps_interface_wrap.cxx \
 
 
 
-all: swig $(DESTDIR)/liblcmaps_interface.so
+all: swig libso
+#$(DESTDIR)/liblcmaps_interface.so
 
-$(DESTDIR)/liblcmaps_interface.so: $(srcs) $(h)
+libso: $(srcs) $(h)
 	$(CXX) -shared -fPIC -o $(DESTDIR)/liblcmaps_interface.so \
 		$(CXXFLAGS) $(INCLUDES) $(srcs) $(LIBS)
 
 .PHONY: swig
 swig: $(swig_output)
 $(swig_output): $(swig_interface)
-	$(SWIG) -c++ -java -package $(JAVA_PACKAGE) $(swig_interface)
+	$(SWIG_BIN) -c++ -java -package $(JAVA_PACKAGE) $(swig_interface)
 
 
 # FIXME: tests need a more complex incantation...

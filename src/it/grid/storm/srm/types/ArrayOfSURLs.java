@@ -57,30 +57,39 @@ public class ArrayOfSURLs implements Serializable {
         return surlList.size();
     }
 
-    public static ArrayOfSURLs decode(Map inputParam, String name)
-            throws InvalidArrayOfSURLsAttributeException {
-        
-        List list = null;
-        ArrayOfSURLs surlArray = new ArrayOfSURLs();
-        try {
-            list = Arrays.asList((Object[]) inputParam.get(name));
-        } catch (NullPointerException e) {
-            // log.warn("Empty SURL array found!");
-        }
+	public static ArrayOfSURLs decode(Map inputParam, String name)
+			throws InvalidArrayOfSURLsAttributeException {
 
-        if (list == null)
-            throw new InvalidArrayOfSURLsAttributeException(list);
-        for (int i = 0; i < list.size(); i++) {
-            TSURL surl = null;
-            try {
-                surl = TSURL.makeFromStringValidate((String) list.get(i));
-            } catch (InvalidTSURLAttributesException e) {
-                throw new InvalidArrayOfSURLsAttributeException(null);
-            }
-            surlArray.addTSURL(surl);
-        }
-        return surlArray;
-    }
+		List<Object> list = null;
+		ArrayOfSURLs surlArray = new ArrayOfSURLs();
+		try
+		{
+			/* here we can have a cast exception if the array contained in 
+			 * the hashmap has been created as an object array! */
+			list = Arrays.asList((Object[]) inputParam.get(name));
+		} catch(NullPointerException e)
+		{
+			// log.warn("Empty SURL array found!");
+		}
+
+		if(list == null)
+		{
+			throw new InvalidArrayOfSURLsAttributeException(list);			
+		}
+		for(Object surlString : list)
+		{
+			TSURL surl = null;
+			try
+			{
+				surl = TSURL.makeFromStringValidate((String)surlString);
+			} catch(InvalidTSURLAttributesException e)
+			{
+				throw new InvalidArrayOfSURLsAttributeException(null);
+			}
+			surlArray.addTSURL(surl);
+		}
+		return surlArray;
+	}
 
     public String toString() {
         StringBuffer buf = new StringBuffer("");

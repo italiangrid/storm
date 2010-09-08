@@ -32,62 +32,111 @@ die () {
 
 ## process cmd line args
 
-spec="$1"; shift
-if [ -z "$spec" ]; then
-	echo 1>&2 "No SPECFILE given on command line."
-	usage
-	exit 1
-fi
+spec="$1";
+echo SPEC_FILE=$spec
 
 # rest  of args is SOURCE files...'
-if [ 0 -eq $# ]; then
-	echo 1>&2 "No SOURCE(s) given on command line."
-	usage 
-	exit 1
+source="$2";
+echo SOURCES=$source
+
+topdir="$3";
+echo BUILDING_DIR=$topdir
+
+utiljar="$4";
+echo UTIL_JAR=$utiljar
+
+swig="$5";
+echo SWIG=$swig
+
+jdk="$6"
+echo JDK=$jdk
+
+lcmaps="$7"
+echo LCMAPS=$lcmaps
+
+lcmaps_without_gsi="$8"
+echo LCMAPS_WITHOUT_GSI=$lcmaps_without_gsi 
+
+lcmaps_plugins_basic="$9"
+echo LCMAPS_PLUGINS_BASIC=$lcmaps_plugins_basic
+
+lcmaps_plugins_voms=${10}
+echo LCMAPS_PLUGINS_VOMS=$lcmaps_plugins_voms
+
+libacl_devel=${11}
+echo LIBACL_DEVEL=$libacl_devel
+
+libattr_devel=${12}
+echo LIBATTR_DEVEL=$libattr_devel
+
+xfsprogs_devel=${13}
+echo XFSPROGS_DEVEL=$xfsprogs_devel
+
+version=${14}
+echo VERSION=$version
+
+age=${15}
+echo AGE=$age
+
+# some Java parameters
+if [ "$JAVA_HOME" != "" ]; then
+  #echo "run java in $JAVA_HOME"
+  JAVA_HOME=$JAVA_HOME
 fi
 
-
-## main
-
-topdir="`grep '%_topdir' ~/.rpmmacros | (read a b c; echo $b)`"
-if [ -z "$topdir" ]; then
-	echo 1>&2 "$PROG: No RPM build tree top dir set in ~/.rpmmacros with '%_topdir': aborting."
-	exit 1
+if [ "$JAVA_HOME" = "" ]; then
+  echo "Error: JAVA_HOME is not set."
+  exit 1
 fi
 
-PACKAGE="`grep -i 'Name:' "$spec" | head -n 1 | sed -e 's/.*://' | tr -d ' '`"
-if [ -z "$PACKAGE" ]; then
-	die 1 "Cannot determine package name from spec file '$spec' (looked for 'Name:' lines. Aborting."
-fi
+JAVA=$JAVA_HOME/bin/java
+echo JAVA=$JAVA
 
+PLATFORM=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform platform | sed -e "s/ /_/g"`
+echo NATIVE_PLATFORM=$PLATFORM
+
+OS_DIST=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform os_dist | sed -e "s/ /_/g"`
+echo OS_DIST=$OS_DIST
+
+PACKAGE="storm-backend"
 
 # make rpm directory structure
+echo "make rpm directory structure ", $topdir
 if [ ! -d "$topdir" ]; then
-	mkdir -v "$topdir"
+        echo 'oo ', $topdir
+	mkdir -v $topdir
 fi
 
-mkdir -v "$topdir"/SOURCES
-mkdir -v "$topdir"/SRPMS
-mkdir -v "$topdir"/SPECS
-mkdir -v "$topdir"/BUILD
-mkdir -v "$topdir"/RPMS
+echo "create rpm directory structure ", $topdir
+mkdir -p -v $topdir/SOURCES
+mkdir -p -v $topdir/SRPMS
+mkdir -p -v $topdir/SPECS
+mkdir -p -v $topdir/BUILD
+mkdir -p -v $topdir/RPMS
 
-# copy the source(s)
-rm -rf "$topdir/SOURCES/${PACKAGE}"
-for src in "$@"; do
-	rm -rf "$topdir/SOURCES/`basename "$src"`"
-	if [ -d "$src" ]; then
-		# create a .tar.gz of the directory
-		tar -c -v \
-			-zf "$topdir/SOURCES/`basename "$src"`".tar.gz \
-			-C "$src"/.. \
-			"`basename "$src"`"
-	else
-		cp -v "$src" "$topdir/SOURCES"/
-	fi
-done
+echo "rm the source(s)"
+rm -rf $topdir/SOURCES/$source
 
-# now build the binaries and the rpms.
-cp -v "$spec" "$topdir/SPECS/"
-cd "$topdir"
-rpmbuild -ba "$topdir/SPECS/`basename $spec`"
+echo "copy the source(s) ", $source
+cp -v $source $topdir/SOURCES/
+
+echo "now build the binaries and the rpms. ", $spec
+cp -v $spec $topdir/SPECS/
+
+cd $topdir
+
+distributionrpm="sl5"
+lpvage="5.1"
+lwgage="4"
+lwgversion="1.4.3"
+if [ "$OS_DIST" != "sl5" ]; then
+  distributionrpm="slc4"
+  lpvage="5"
+  lwgage="1"
+  lwgversion="1.4.2"
+fi
+
+echo "create rpm"
+# Generate RPMs
+rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}" --define "swig ${swig}" --define "jdk ${jdk}" --define "lcmaps ${lcmaps}" --define "lcmaps_without_gsi ${lcmaps_without_gsi}" --define "lcmaps_plugins_basic ${lcmaps_plugins_basic}" --define "lcmaps_plugins_voms ${lcmaps_plugins_voms}" --define "libacl_devel ${libacl_devel}" --define "libattr_devel ${libattr_devel}" --define "xfsprogs_devel ${xfsprogs_devel}" --define "version ${version}" --define "age ${age}" --define "distribution ${OS_DIST}" --define "distributionrpm ${distributionrpm}" --define "lpvage ${lpvage}" --define "lwgage ${lwgage}" --define "lwgversion ${lwgversion}" -ba SPECS/storm-backend.spec
+

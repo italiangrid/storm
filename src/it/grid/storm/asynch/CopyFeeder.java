@@ -10,11 +10,9 @@ import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.srm.types.TSURL;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /**
  * This class represents a Copy Feeder: the Feeder that will handle the
  * srmCopy statements. It chops a multifile request into its constituent
@@ -43,149 +41,224 @@ import org.slf4j.LoggerFactory;
 public final class CopyFeeder implements Delegable {
 
     private static Logger log = LoggerFactory.getLogger(CopyFeeder.class);
-    private RequestSummaryData rsd = null; //RequestSummaryData this PtPFeeder refers to.
-    private GridUserInterface gu = null; //GridUser for this PtPFeeder.
-    private GlobalStatusManager gsm = null; //Overall request status.
+    /* RequestSummaryData this CopyFeeder refers to. */
+    private RequestSummaryData rsd = null; 
+    /* GridUser for this PtPFeeder. */
+    private GridUserInterface gu = null; 
+    /* Overall request status. */
+    private GlobalStatusManager gsm = null; 
 
     /**
      * Public constructor requiring the RequestSummaryData to which this CopyFeeder
      * refers to, as well as the GridUser. In case of null objects, an
      * InvalidCopyFeederAttributesException is thrown.
      */
-    public CopyFeeder(RequestSummaryData rsd) throws InvalidCopyFeederAttributesException {
-        if (rsd == null) {
-            throw new InvalidCopyFeederAttributesException(null, null, null);
-        }
-        if (rsd.gridUser() == null) {
-            throw new InvalidCopyFeederAttributesException(rsd, null, null);
-        }
-        try {
-            gu = rsd.gridUser();
-            this.rsd = rsd;
-            gsm = new GlobalStatusManager(rsd.requestToken());
-        } catch (InvalidOverallRequestAttributeException e) {
-            log.error("ATTENTION in CopyFeeder! Programming bug when creating GlobalStatusManager! " + e);
-            throw new InvalidCopyFeederAttributesException(rsd, gu, gsm);
-        }
-    }
+	public CopyFeeder(RequestSummaryData rsd) throws InvalidCopyFeederAttributesException {
+
+		if(rsd == null)
+		{
+			throw new InvalidCopyFeederAttributesException(null, null, null);
+		}
+		if(rsd.gridUser() == null)
+		{
+			throw new InvalidCopyFeederAttributesException(rsd, null, null);
+		}
+		try
+		{
+			gu = rsd.gridUser();
+			this.rsd = rsd;
+			gsm = new GlobalStatusManager(rsd.requestToken());
+		} catch(InvalidOverallRequestAttributeException e)
+		{
+			log.error("ATTENTION in CopyFeeder! "
+				+ "Programming bug when creating GlobalStatusManager! " + e);
+			throw new InvalidCopyFeederAttributesException(rsd, gu, gsm);
+		}
+	}
 
     /**
      * This method splits a multifile request; it then creates the necessary tasks and
      * loads them into the Copy chunk scheduler.
      */
-    public void doIt() {
-        log.debug("CopyFeeder: pre-processing " + rsd.requestToken()); //info
-        //Get all parts in request
-        Collection chunks = CopyChunkCatalog.getInstance().lookup(rsd.requestToken());
-        if (chunks.isEmpty()) {
-            log.warn("ATTENTION in CopyFeeder! This SRM Copy request contained nothing to process! "
-                    + rsd.requestToken());
-            RequestSummaryCatalog.getInstance().failRequest(rsd, "This SRM Copy request contained nothing to process!");
-        } else {
-            manageChunks(chunks);
-            log.debug("CopyFeeder: finished pre-processing " + rsd.requestToken()); //info
-        }
-    }
+	public void doIt() {
+
+		log.debug("CopyFeeder: pre-processing " + rsd.requestToken());
+		/* Get all parts in request */
+		Collection<CopyChunkData> chunks =
+										   CopyChunkCatalog.getInstance()
+											   .lookup(rsd.requestToken());
+		if(chunks.isEmpty())
+		{
+			log.warn("ATTENTION in CopyFeeder! "
+				+ "This SRM Copy request contained nothing to process! " + rsd.requestToken());
+			RequestSummaryCatalog.getInstance().failRequest(rsd,
+				"This SRM Copy request contained nothing to process!");
+		}
+		else
+		{
+			manageChunks(chunks);
+			log.debug("CopyFeeder: finished pre-processing " + rsd.requestToken());
+		}
+	}
 
     /**
      * Private method that handles the Collection of chunks associated with
      * the srm command!
      */
-    private void manageChunks(Collection chunks) {
-        log.debug("CopyFeeder: number of chunks in request " + chunks.size()); //info
-        CopyChunkData auxChunkData; //chunk currently being processed
-        int counter = 0; //counter of the number of chunk retrieved
-        for (Iterator i = chunks.iterator(); i.hasNext();) {
-            auxChunkData = (CopyChunkData) i.next();
-            gsm.addChunk(auxChunkData); //add chunk for global status consideration
-            manage(auxChunkData, counter++); //manage the request
-        }
-        gsm.finishedAdding(); //no more chunks need to be cosidered for the overall status computation
-    }
+    private void manageChunks(Collection<CopyChunkData> chunksData) {
+
+		log.debug("CopyFeeder: number of chunks in request " + chunksData.size());
+		int counter = 0; // counter of the number of chunk retrieved
+		for(CopyChunkData chunkData : chunksData)
+		{
+			/* Add chunk for global status consideration */
+			gsm.addChunk(chunkData);
+			manage(chunkData, counter++);
+		}
+		/*
+		 * no more chunks need to be cosidered for the overall status
+		 * computation
+		 */
+		gsm.finishedAdding();
+	}
 
     /**
      * Private method that handles the chunk!
      */
-    private void manage(CopyChunkData auxChunkData, int counter) {
-        log.debug("CopyFeeder: scheduling chunk... "); //info
-        try {
-            auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmCopy chunk is being processed!"); //change status of this chunk to being processed!
-            CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            boolean okfrom = TSURL.isValid(auxChunkData.fromSURL());
-            boolean okto = TSURL.isValid(auxChunkData.toSURL());
-            if (okfrom && okto) {
-                //source and destination are the same physical machine!
-                //make a local copy!
-                //
-                //For now it is being handled as a special case of push copy!
-                //MUST BE CHANGED SOON!!! ONLY FOR DEBUG PURPOSES!!!
-                log.info("CopyFeeder: chunk is localCopy.");
-                log.debug("Request: " + rsd.requestToken());
-                log.debug("Chunk: " + auxChunkData);
-                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,
-                                                                                          rsd,
-                                                                                          auxChunkData,
-                                                                                          counter,
-                                                                                          gsm));
-                log.info("CopyFeeder: chunk scheduled.");
-            } else if (okfrom && (!okto)) {
-                //source is this machine, but destination is elsewhere!
-                //make a push copy to destination!
-                log.info("CopyFeeder: chunk is pushCopy.");
-                log.debug("Request: " + rsd.requestToken());
-                log.debug("Chunk: " + auxChunkData);
-                SchedulerFacade.getInstance().chunkScheduler().schedule(new PushCopyChunk(gu,
-                                                                                          rsd,
-                                                                                          auxChunkData,
-                                                                                          counter,
-                                                                                          gsm));
-                log.info("CopyFeeder: chunk scheduled.");
-            } else if ((!okfrom) && okto) {
-                //destiantion is this machine, but _source_ is elsewhere!
-                //make a pull copy from the source!
-                //
-                //WARNING!!! OPERATION NOT SUPPORTED!!! MUST BE CHANGED SOON!!!
-                log.warn("CopyFeeder: srmCopy in pull mode NOT supported yet!");
-                log.debug("Request: " + rsd.requestToken());
-                log.debug("Chunk: " + auxChunkData);
-                auxChunkData.changeStatusSRM_NOT_SUPPORTED("srmCopy in pull mode NOT supported yet!");
-                CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-                gsm.failedChunk(auxChunkData); //inform global status computation of the chunk s failure
-            } else {
-                //boolean condition is (!names.contains(from) && !names.contains(to))
-                //operation between two foreign machines!
-                //it is forbidden!
-                log.warn("CopyFeeder: srmCopy contract violation! Neither fromSURL nor toSURL are this machine! Cannot do a third party SRM transfer as per protocol!");
-                log.warn("Request: " + rsd.requestToken());
-                log.warn("Chunk: " + auxChunkData);
-                auxChunkData.changeStatusSRM_FAILURE("SRM protocol violation! Cannot do an srmCopy between third parties!");
-                CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-                gsm.failedChunk(auxChunkData); //inform global status computation of the chunk s failure
-            }
-        } catch (InvalidCopyChunkAttributesException e) {
-            //for some reason gu, rsd or auxChunkData may be null! This should not be so!
-            log.error("UNEXPECTED ERROR in CopyFeeder! Chunk could not be created!\n" + e);
-            log.error("Request: " + rsd.requestToken());
-            log.error("Chunk: " + auxChunkData);
-            auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not allow this chunk to be processed!");
-            CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            gsm.failedChunk(auxChunkData); //inform global status computation of the chunk s failure
-        } catch (SchedulerException e) {
-            //Internal error of scheduler!
-            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
-            log.error("Request: " + rsd.requestToken());
-            log.error("Chunk: " + auxChunkData);
-            auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler error prevented this chunk from being processed!");
-            CopyChunkCatalog.getInstance().update(auxChunkData); //update persistence!!!
-            gsm.failedChunk(auxChunkData); //inform global status computation of the chunk s failure
-        }
-    }
+	private void manage(CopyChunkData chunkData, int counter) {
+
+		log.debug("CopyFeeder: scheduling chunk... ");
+		try
+		{
+			/* change status of this chunk to being processed! */
+			chunkData.changeStatusSRM_REQUEST_INPROGRESS("srmCopy chunk is being processed!");
+			CopyChunkCatalog.getInstance().update(chunkData);
+			boolean validFromSurl = TSURL.isValid(chunkData.fromSURL());
+			boolean validToSurl = TSURL.isValid(chunkData.toSURL());
+			if(validFromSurl)
+			{
+				if(validToSurl)
+				{
+					/*
+					 * source and destination are the same physical machine!
+					 * make a local copy!
+					 */
+					/*
+					 * For now it is being handled as a special case of ush
+					 * copy! MUST BE CHANGED SOON!!! ONLY FOR DEBUG PURPOSES!!!
+					 */
+					log.info("CopyFeeder: chunk is localCopy.");
+					log.debug("Request: " + rsd.requestToken());
+					log.debug("Chunk: " + chunkData);
+
+					SchedulerFacade.getInstance().chunkScheduler().schedule(
+						new PushCopyChunk(gu, rsd, chunkData, counter, gsm));
+
+					log.info("CopyFeeder: chunk scheduled.");
+				}
+				else
+				{
+
+					/*
+					 * source is this machine, but destination is elsewhere!
+					 * make a push copy to destination!
+					 */
+					log.info("CopyFeeder: chunk is pushCopy.");
+					log.debug("Request: " + rsd.requestToken());
+					log.debug("Chunk: " + chunkData);
+
+					SchedulerFacade.getInstance().chunkScheduler().schedule(
+						new PushCopyChunk(gu, rsd, chunkData, counter, gsm));
+
+					log.info("CopyFeeder: chunk scheduled.");
+				}
+			}
+			else
+			{
+				if(validToSurl)
+				{
+					/*
+					 * destination is this machine, but _source_ is elsewhere!
+					 * make a pull copy from the source!
+					 */
+					/*
+					 * WARNING!!! OPERATION NOT SUPPORTED!!! MUST BE CHANGED
+					 * SOON!!!
+					 */
+					log.warn("CopyFeeder: srmCopy in pull mode NOT supported yet!");
+					log.debug("Request: " + rsd.requestToken());
+					log.debug("Chunk: " + chunkData);
+
+					chunkData.changeStatusSRM_NOT_SUPPORTED("srmCopy in pull "
+						+ "mode NOT supported yet!");
+
+					CopyChunkCatalog.getInstance().update(chunkData);
+					/*
+					 * inform global status computation of the chunk s failure
+					 */
+					gsm.failedChunk(chunkData);
+				}
+				else
+				{
+					/*
+					 * boolean condition is (!names.contains(from) &&
+					 * !names.contains(to)) operation between two foreign
+					 * machines! it is forbidden!
+					 */
+					log.warn("CopyFeeder: srmCopy contract violation! Neither fromSURL"
+						+ " nor toSURL are this machine! Cannot do a third party SRM"
+						+ " transfer as per protocol!");
+					log.warn("Request: " + rsd.requestToken());
+					log.warn("Chunk: " + chunkData);
+					
+					chunkData.changeStatusSRM_FAILURE("SRM protocol violation"
+						+ "! Cannot do an srmCopy between third parties!");
+					
+					CopyChunkCatalog.getInstance().update(chunkData);
+					/*
+					 * inform global status computation of the chunk s failure
+					 */
+					gsm.failedChunk(chunkData);
+				}
+			}
+		} catch(InvalidCopyChunkAttributesException e)
+		{
+			/*
+			 * for some reason gu, rsd or auxChunkData may be null! This should
+			 * not be so!
+			 */
+			log.error("UNEXPECTED ERROR in CopyFeeder! Chunk could not be created!\n" + e);
+			log.error("Request: " + rsd.requestToken());
+			log.error("Chunk: " + chunkData);
+			
+			chunkData.changeStatusSRM_FAILURE("StoRM internal error does not"
+				+ " allow this chunk to be processed!");
+			
+			CopyChunkCatalog.getInstance().update(chunkData);
+			/* inform global status computation of the chunk s failure */
+			gsm.failedChunk(chunkData);
+		} catch(SchedulerException e)
+		{
+			/* Internal error of scheduler! */
+			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
+			log.error("Request: " + rsd.requestToken());
+			log.error("Chunk: " + chunkData);
+			
+			chunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
+				+ "error prevented this chunk from being processed!");
+			
+			CopyChunkCatalog.getInstance().update(chunkData);
+			/* inform global status computation of the chunk s failure */
+			gsm.failedChunk(chunkData);
+		}
+	}
 
     /**
      * Method used by chunk scheduler for internal logging; it returns the request
      * token!
      */
-    public String getName() {
-        return "CopyFeeder of request: " + rsd.requestToken();
-    }
+	public String getName() {
+
+		return "CopyFeeder of request: " + rsd.requestToken();
+	}
 }

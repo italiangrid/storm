@@ -11,11 +11,11 @@ package it.grid.storm.srm.types;
 import java.io.*;
 import java.util.*;
 
-public class ArrayOfTExtraInfo
-    implements Serializable {
-  public static String PNAME_STORAGESYSTEMINFO = "storageSystemInfo";
+public class ArrayOfTExtraInfo implements Serializable
+{
+	public static String PNAME_STORAGESYSTEMINFO = "storageSystemInfo";
 
-  private ArrayList extraInfoList;
+  private ArrayList<TExtraInfo> extraInfoList;
 
   /**
    * Constructor that requires a String. If it is null, then an
@@ -29,7 +29,7 @@ public class ArrayOfTExtraInfo
   }
 
   public ArrayOfTExtraInfo() {
-    extraInfoList = new ArrayList();
+    extraInfoList = new ArrayList<TExtraInfo>();
   }
 
   public Object[] getArray() {
@@ -37,7 +37,7 @@ public class ArrayOfTExtraInfo
   }
 
   public TExtraInfo getTSpaceToken(int i) {
-    return (TExtraInfo) extraInfoList.get(i);
+    return extraInfoList.get(i);
   }
 
   public void setTExtraInfo(int index, TExtraInfo info) {
@@ -91,15 +91,17 @@ public class ArrayOfTExtraInfo
   }
 
   public void encode(Map outputParam, String name) {
-    Hashtable extraInfoStruct = new Hashtable();
-    Vector vector = new Vector();
 
-    for (int i = 0; i < extraInfoList.size(); i++) {
-      ( (TExtraInfo) extraInfoList.get(i)).encode(extraInfoStruct);
-      vector.add(extraInfoStruct);
-    }
-    outputParam.put(name, vector);
-  }
+		Vector<Hashtable<String, String>> vector = new Vector<Hashtable<String, String>>();
+
+		for(TExtraInfo extraInfo : extraInfoList)
+		{
+			Hashtable<String, String> extraInfoMap = new Hashtable<String, String>();
+			extraInfo.encode(extraInfoMap);
+			vector.add(extraInfoMap);
+		}
+		outputParam.put(name, vector);
+	}
 
   public String toString() {
     StringBuffer sb = new StringBuffer();

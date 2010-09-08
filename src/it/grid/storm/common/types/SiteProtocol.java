@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class SiteProtocol {
 	
 	private String protocol = null;
-    private static Map m = new HashMap();
+    private static Map<String, SiteProtocol> m = new HashMap<String, SiteProtocol>();
 
 	public static final SiteProtocol SRM = new SiteProtocol("srm") {
         public int hashCode() {
@@ -30,7 +30,7 @@ public class SiteProtocol {
 	
    	private SiteProtocol(String protocol) {
 		this.protocol = protocol;
-        this.m.put(protocol,this);
+        m.put(protocol,this);
 	}
 
 
@@ -57,31 +57,4 @@ public class SiteProtocol {
 		 return protocol;
 	 }
 
-
-/*
-    public static SiteProtocol makeEmpty() {
-	   return EMPTY;
-	}
-
-	 //INUTILE
-	 public boolean isEmpty() {
-		 if( protocol == EMPTY.getValue())
-			 return true;
-		 return false;
-	 }
-*/
-
-/*
-    public static void main(String[] args) {
-        //Testing types...
-        System.out.println("Testing types...");
-        System.out.println("The empty protocol: "+SiteProtocol.EMPTY+"; hashCode:"+SiteProtocol.EMPTY.hashCode());
-        System.out.println("The srm protocol: "+SiteProtocol.SRM+"; hashCode:"+SiteProtocol.SRM.hashCode());
-        //
-        //Testing facility method
-        System.out.println("\nTesting facility method...");
-        System.out.println("Should see the empty protocol: "+SiteProtocol.fromString(SiteProtocol.EMPTY.toString()));
-        System.out.println("Should see the srm protocol: "+SiteProtocol.fromString(SiteProtocol.SRM.toString()));
-    }
-*/
 }

@@ -3,7 +3,6 @@ package it.grid.storm.namespace;
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.ftp.FTPNode;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
@@ -310,19 +309,18 @@ implements StoRI {
      *  BUSINESS METHODs
      ****************************************************************************/
 
-    public ArrayList getChildren(GridUserInterface gUser, TDirOption dirOption) throws
+    @Deprecated
+    public ArrayList<StoRI> getChildren(GridUserInterface gUser, TDirOption dirOption) throws
     InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException {
+    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException {
 
         log.error("METHOD DEPRECATED! : getChildren (GridUser, DirOption); use without GridUser");
-        return getChildren(dirOption);
+        return generateChildrenNoFolders(dirOption);
     }
 
-
-
-    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws InvalidDescendantsEmptyRequestException,
+    public ArrayList<StoRI> generateChildrenNoFolders(TDirOption dirOption) throws InvalidDescendantsEmptyRequestException,
             InvalidDescendantsAuthRequestException, InvalidDescendantsPathRequestException,
-            InvalidDescendantsFileRequestException {
+            InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException {
 
         ArrayList<StoRI> stoRIList = new ArrayList<StoRI>();
         File fileHandle = new File(getAbsolutePath());
@@ -337,10 +335,17 @@ implements StoRI {
             }
         } else { // SURL point to an existent directory.
             // Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+        	if(!dirOption.isAllLevelRecursive() && !(dirOption.getNumLevel() > 0))
+        	{
+        		log.debug("Requested to list the content of a folder without the folder " +
+        				"itself specifying to not descend recursively in the directory (all" +
+        				"Recursive is false and levelRecursive is 0)...nonsense!");
+                throw new InvalidDescendantsTDirOptionRequestException(fileHandle, dirOption);
+        	}
             PathCreator pCreator = new PathCreator(fileHandle,
                                                    dirOption.isAllLevelRecursive(),
                                                    dirOption.getNumLevel());
-            Collection<String> pathList = pCreator.generateChild(new ArrayList<String>());
+            Collection<String> pathList = pCreator.generateChildrenNoFolders();
             
             if (pathList.size() == 0) {
                 
@@ -402,7 +407,7 @@ implements StoRI {
         return startTime;
     }
 
-    public ArrayList<StoRI> getFirstLevelChildren(TDirOption dirOption)
+    public ArrayList<StoRI> getChildren(TDirOption dirOption)
     throws InvalidDescendantsEmptyRequestException,
     InvalidDescendantsAuthRequestException,
     InvalidDescendantsPathRequestException,
@@ -425,7 +430,7 @@ implements StoRI {
         else { //SURL point to an existent directory.
             //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
             PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
-            Collection<String> pathList = pCreator.generateFirstLevelChild(new ArrayList<String>());
+            Collection<String> pathList = pCreator.generateChildren();
             if (pathList.size() == 0) {
                 log.debug("SURL point to an EMPTY DIRECTORY");
                 throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
@@ -648,17 +653,6 @@ implements StoRI {
         }
 
         return result;
-    }
-
-    /**
-     * Returns true if the status of the SURL is SRM_SPACE_AVAILABLE, false otherwise.
-     * This method queries the DB, therefore pay attention to possible performance issues.
-     * @return boolean
-     */
-    public boolean isSURLBusy() {
-        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(getSURL());
-        return busyStatus;
     }
 
     public void setGroupTapeRead() {

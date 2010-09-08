@@ -173,7 +173,7 @@ if test -z "$STORM_HOME"; then
         /home/storm \
         ;
       do
-      if test -d "$dir"/lib/storm-backend; then
+      if test -d "$dir"/lib64/storm-backend; then
           STORM_HOME="$dir"
           break
       fi
@@ -185,7 +185,7 @@ fi
 export STORM_HOME="`normalize_dirpath "$STORM_HOME"`"
 
 setenv_if_not_set STORM_BE_CONFIGDIR "$STORM_HOME/etc"
-setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/storm-backend"
+setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib64/storm-backend"
 setenv_if_not_set STORM_BE_JARDIR "$STORM_BE_LIBDIR/jar"
 
 # sanity checks

@@ -40,7 +40,7 @@ public class WSTurlConverter {
             if (auxURI==null) {
                 return it.grid.storm.srm.types.TTURL.makeEmpty();
             }
-            String auxString = auxURI.toString(); if ((auxString==null) || (auxString=="")) {
+            String auxString = auxURI.toString(); if ((auxString==null) || (auxString.equals(""))) {
                 return it.grid.storm.srm.types.TTURL.makeEmpty();
             }
             return it.grid.storm.srm.types.TTURL.makeFromString(auxString);

@@ -1,2 +1,0 @@
-xfs.o xfs.dep : xfs.cpp xfs.hpp posixfs.hpp genericfs.hpp fs_errors.hpp \
-  posixfs_acl.hpp fs_acl.hpp

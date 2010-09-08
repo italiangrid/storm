@@ -11,7 +11,7 @@ public class PFNRoot {
 	private String pfnroot;
 
 	public PFNRoot(String pfnroot) throws InvalidPFNRootAttributeException{
-	        if ((pfnroot==null) || (pfnroot=="") || (pfnroot.charAt(0)!='/')) throw new InvalidPFNRootAttributeException(pfnroot);
+	        if ((pfnroot==null) || (pfnroot.equals("")) || (pfnroot.charAt(0)!='/')) throw new InvalidPFNRootAttributeException(pfnroot);
        		 this.pfnroot=pfnroot.replaceAll(" ","");
  	
 	}

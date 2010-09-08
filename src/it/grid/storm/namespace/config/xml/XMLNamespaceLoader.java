@@ -61,7 +61,6 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
         //Build the namespaceFileName
         namespaceFN = getNamespaceFileName();
         namespaceSchemaURL = getNamespaceSchemaFileName();
-        log.debug("Namespace XSD : " + namespaceSchemaURL);
         init(namespaceFN, refresh);
     }
 

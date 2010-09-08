@@ -20,18 +20,23 @@ import java.util.List;
  * @date Aug 2009
  */
 public class BoLChunkDataTO {
+	/* Database table request_Bol fields BEGIN*/
     private long primaryKey = -1; // ID primary key of record in DB
-    private String requestToken = " ";
-    private String fromSURL = " ";
-    private int lifetime = 0;
+    private String fromSURL = " "; 
     private boolean dirOption; // initialised in constructor
+//  TODO MICHELE USER_SURL added new fields
+    private String normalizedStFN = null;
+    private Integer surlUniqueID = null;
+    /* Database table request_Get fields END*/    
+    
+    private String requestToken = " ";
+    private int lifetime = 0;
     private boolean allLevelRecursive; // initialised in constructor
     private int numLevel; // initialised in constructor
     private List<String> protocolList = null; // initialised in constructor
     private long filesize = 0;
     private int status; // initialised in constructor
     private String errString = " ";
-    private boolean empty = true;
     private int deferredStartTime = -1;
 
     public BoLChunkDataTO() {
@@ -93,7 +98,6 @@ public class BoLChunkDataTO {
     }
 
     public void setAllLevelRecursive(boolean b) {
-        empty = false;
         allLevelRecursive = b;
     }
 
@@ -102,57 +106,79 @@ public class BoLChunkDataTO {
     }
 
     public void setDirOption(boolean b) {
-        empty = false;
         dirOption = b;
     }
 
     public void setErrString(String s) {
-        empty = false;
         errString = s;
     }
 
     public void setFileSize(long n) {
-        empty = false;
         filesize = n;
     }
 
     public void setFromSURL(String s) {
-        empty = false;
         fromSURL = s;
     }
 
     public void setLifeTime(int n) {
-        empty = false;
         lifetime = n;
     }
 
     public void setNumLevel(int n) {
-        empty = false;
         numLevel = n;
     }
 
     public void setPrimaryKey(long n) {
-        empty = false;
         primaryKey = n;
     }
 
     public void setProtocolList(List<String> l) {
-        empty = false;
         if ((l != null) && (!l.isEmpty())) {
             protocolList = l;
         }
     }
 
     public void setRequestToken(String s) {
-        empty = false;
         requestToken = s;
     }
 
     public void setStatus(int n) {
-        empty = false;
         status = n;
     }
 
+    /**
+	 * @param normalizedStFN the normalizedStFN to set
+	 */
+	public void setNormalizedStFN(String normalizedStFN) {
+
+		this.normalizedStFN = normalizedStFN;
+	}
+
+	/**
+	 * @return the normalizedStFN
+	 */
+	public String normalizedStFN() {
+
+		return normalizedStFN;
+	}
+	
+	/**
+	 * @param surlUniqueID the sURLUniqueID to set
+	 */
+	public void setSurlUniqueID(Integer surlUniqueID) {
+		
+		this.surlUniqueID = surlUniqueID;
+	}
+
+	/**
+	 * @return the sURLUniqueID
+	 */
+	public Integer sulrUniqueID() {
+
+		return surlUniqueID;
+	}
+    
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(primaryKey);
@@ -161,6 +187,10 @@ public class BoLChunkDataTO {
         sb.append(" ");
         sb.append(fromSURL);
         sb.append(" ");
+		sb.append(normalizedStFN);
+		sb.append(" ");
+		sb.append(surlUniqueID);
+		sb.append(" ");
         sb.append(lifetime);
         sb.append(" ");
         sb.append(dirOption);

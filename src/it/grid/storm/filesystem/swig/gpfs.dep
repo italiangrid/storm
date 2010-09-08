@@ -1,2 +1,0 @@
-gpfs.o gpfs.dep : gpfs.cpp gpfs.hpp genericfs.hpp fs_errors.hpp posixfs_acl.hpp \
-  fs_acl.hpp gpfs31_acl.hpp

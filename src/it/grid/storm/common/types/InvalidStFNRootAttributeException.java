@@ -16,7 +16,7 @@ public class InvalidStFNRootAttributeException extends Exception {
      */
     public InvalidStFNRootAttributeException(String name) {
         this.nullName = (name==null);
-        this.emptyName = (name=="");
+        this.emptyName = (name.equals(""));
         if (!nullName) wrong = (name.charAt(0)=='/');
     }
 

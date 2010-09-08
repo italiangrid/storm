@@ -2,7 +2,6 @@ package it.grid.storm.persistence.model;
 
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.tape.recalltable.RecallTableCatalog;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.io.Serializable;
@@ -287,6 +286,7 @@ public class RecallTaskTO implements Serializable, Comparable<RecallTaskTO> {
         sb.append(retryAttempt);
         sb.append(sepChar);
         sb.append(status);
+        sb.append(sepChar);
         
         if (deferredRecallInstant!=null) {
             sb.append(formatter.format(deferredRecallInstant));
