@@ -6,19 +6,6 @@
 #
 # $Id: Makefile,v 1.12 2005/12/05 09:47:42 lmagnoni Exp $
 
-top_srcdir=.
-stagedir=.
-distdir=.
-globalprefix=storm
-backendprefix=backend
-package=storm-backend
-version=1.5.4
-PREFIX=/opt/storm/backend
-
-gpfs_prefix=${gpfs_base_location}
-jdk_prefix=${jdk_location}
-
--include Makefile.inc
 
 # Comma-separated list of filesystems to compile support code into
 # the StoRM backend.
@@ -40,18 +27,24 @@ FILESYSTEMS:=posix
 #
 DEBUG:=1
 
+
 # where are the JNI include files on your system?
-JNI_INCLUDES := -I${jdk_prefix}/include -I${jdk_predix}/include/linux
+JNI_INCLUDES := -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/linux
+
 
 # where is GPFS API lib on this system?
 # (ignore if not compiling GPFS support)
-LIBGPFS:=${gpfs_prefix}/lib$(ARCH)/libgpfs.so
+LIBGPFS:=/usr/lib/libgpfs.so
+
 
 # where to put produced .o and .so files
-BUILDDIR:=./lib$(ARCH)
+BUILDDIR:=./lib
 
-# where tnstall the libraries (currently ignored)
-#DESTDIR:=/opt/storm/backend/lib$(ARCH)/storm-be
+
+# where to install the libraries (currently ignored)
+DESTDIR:=/opt/storm/lib/storm-be
+
+
 
 ### NO CUSTOMIZATION NEEDED BELOW THIS LINE!
 

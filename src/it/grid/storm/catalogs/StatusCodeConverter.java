@@ -15,8 +15,8 @@ import it.grid.storm.srm.types.TStatusCode;
  */
 public class StatusCodeConverter {
 
-    private Map<Integer, TStatusCode> DBtoSTORM = new HashMap<Integer, TStatusCode>();
-    private Map<TStatusCode, Object> STORMtoDB = new HashMap<TStatusCode, Object>();
+    private Map DBtoSTORM = new HashMap();
+    private Map STORMtoDB = new HashMap();
 
     private static StatusCodeConverter c = new StatusCodeConverter();
 
@@ -57,7 +57,7 @@ public class StatusCodeConverter {
         DBtoSTORM.put(new Integer(33),TStatusCode.SRM_CUSTOM_STATUS);
         
         Object aux;
-        for (Iterator<Integer> i = DBtoSTORM.keySet().iterator(); i.hasNext(); ) {
+        for (Iterator i = DBtoSTORM.keySet().iterator(); i.hasNext(); ) {
             aux = i.next();
             STORMtoDB.put(DBtoSTORM.get(aux),aux);
         }
@@ -86,7 +86,7 @@ public class StatusCodeConverter {
      * returned if no StoRM type is found.
      */
     public TStatusCode toSTORM(int n) {
-        TStatusCode aux = DBtoSTORM.get(new Integer(n));
+        TStatusCode aux = (TStatusCode) DBtoSTORM.get(new Integer(n));
         if (aux==null) return TStatusCode.EMPTY;
         return aux;
     }

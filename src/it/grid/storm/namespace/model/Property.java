@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 public class Property  implements PropertyInterface {
 
     private Logger log = NamespaceDirector.getLogger();
-    private TSizeInBytes totalOnlineSize = TSizeInBytes.makeEmpty();
-    private TSizeInBytes totalNearlineSize = TSizeInBytes.makeEmpty();
+    private TSizeInBytes totalOnlineSize = SizeUnitType.UNKNOWN.getInBytes();
+    private TSizeInBytes totalNearlineSize = SizeUnitType.UNKNOWN.getInBytes();
     private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
     private ExpirationMode expirationMode = ExpirationMode.UNKNOWN;
     private AccessLatency accessLatency = AccessLatency.UNKNOWN;

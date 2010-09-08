@@ -13,6 +13,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,48 +35,31 @@ import org.slf4j.LoggerFactory;
 public class CopyChunkDAO {
 
     private static final Logger log = LoggerFactory.getLogger(CopyChunkDAO.class);
-    
-    /* String with the name of the class for the DB driver*/
-    private final String driver=Configuration.getInstance().getDBDriver();
-    /* String referring to the URL of the DB */
-    private final String url=Configuration.getInstance().getDBURL(); 
-    /* String with the password for the DB */
-    private final String password=Configuration.getInstance().getDBPassword(); 
-    /* String with the name for the DB */
-    private final String name=Configuration.getInstance().getDBUserName();
-    
-    /* Connection to DB - WARNING!!! It is kept open all the time! */
-    private Connection con=null;
-    /* boolean that tells whether reconnection is needed because of MySQL bug! */
-    private boolean reconnect = false;
-    
-    /* Singleton instance */
-    private final static CopyChunkDAO dao = new CopyChunkDAO();
+    private final String driver=Configuration.getInstance().getDBDriver(); //String with the name of the class for the DB driver
+    private final String url=Configuration.getInstance().getDBURL(); //String referring to the URL of the DB
+    private final String password=Configuration.getInstance().getDBPassword(); //String with the password for the DB
+    private final String name=Configuration.getInstance().getDBUserName();     //String with the name for the DB
+    private Connection con=null; //Connection to DB - WARNING!!! It is kept open all the time!
 
-    /* timer thread that will run a task to alert when reconnecting is necessary! */
-    private Timer clock = null;
-    /* timer task that will update the boolean signaling that a reconnection is needed! */
-    private TimerTask clockTask = null; 
-    /* milliseconds that must pass before reconnecting to DB */
-    private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
-    /* initial delay in milliseconds before starting timer */
-    private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000; 
-    
+    private final static CopyChunkDAO dao = new CopyChunkDAO(); //DAO!
 
-	private CopyChunkDAO() {
+    private Timer clock = null; //timer thread that will run a task to alert when reconnecting is necessary!
+    private TimerTask clockTask = null; //timer task that will update the boolean signalling that a reconnection is neede!
+    private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;//milliseconds that must pass before reconnecting to DB
+    private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;//initial delay in millseconds before starting timer
+    private boolean reconnect = false; //boolean that tells whether reconnection is needed because of MySQL bug!
 
-		setUpConnection();
-		clock = new Timer();
-		clockTask = new TimerTask()
-		{
-			@Override
-			public void run() {
-
-				reconnect = true;
-			}
-		}; // clock task
-		clock.scheduleAtFixedRate(clockTask, delay, period);
-	}
+    private CopyChunkDAO() {
+        setUpConnection();
+        clock = new Timer();
+        clockTask = new TimerTask() {
+            @Override
+            public void run() {
+                reconnect = true;
+            }
+        }; //clock task
+        clock.scheduleAtFixedRate(clockTask,delay,period);
+    }
 
     /**
      * Method that returns the only instance of the CopyChunkDAO.
@@ -85,118 +69,51 @@ public class CopyChunkDAO {
     }
 
     /**
-     * Method used to save the changes made to a retrieved CopyChunkDataTO,
-     * back into the MySQL DB.
-     *
-     * Only statusCode and explanation, of status_Copy table get written to the
-     * DB. Likewise for fileLifetime of request_queue table.
-     *
-     * In case of any error, an error messagge gets logged but no exception is
-     * thrown.
+     * Auxiliary method that sets up the conenction to the DB.
      */
-	public void update(CopyChunkDataTO to) {
+    private void setUpConnection() {
+        try {
+            Class.forName(driver);
+            con = DriverManager.getConnection(url,name,password);
+            if (con==null) {
+                log.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
+            } else {
+                logWarnings(con.getWarnings());
+            }
+        } catch (ClassNotFoundException e) {
+            log.error("COPY CHUNK DAO! Exception in setUpConnection! "+e);
+        } catch (SQLException e) {
+            log.error("COPY CHUNK DAO! Exception in setUpConnection! "+e);
+        }
+    }
 
-		checkConnection();
-		PreparedStatement updateFileReq = null;
-		try
-		{
-			// TODO MICHELE USER_SURL set new fields
-			// ready updateFileReq...
-			updateFileReq = con.prepareStatement("UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) " +
-										"ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) " +
-										"SET sc.statusCode=?, sc.explanation=?, rq.fileLifetime=?, rq.config_FileStorageTypeID=?, rq.config_OverwriteID=?, " +
-										"rc.normalized_sourceSURL_StFN=?, rc.sourceSURL_uniqueID=?, rc.normalized_targetSURL_StFN=?, rc.targetSURL_uniqueID=? " +
-										"WHERE rc.ID=?");
-			logWarnings(con.getWarnings());
-			
-			updateFileReq.setInt(1, to.status());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setString(2, to.errString());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setInt(3, to.lifeTime());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setString(4, to.fileStorageType());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setString(5, to.overwriteOption());
-			logWarnings(updateFileReq.getWarnings());
-			
-			// TODO MICHELE USER_SURL fill new fields
-			updateFileReq.setString(6, to.normalizedSourceStFN());
-			logWarnings(updateFileReq.getWarnings());
+    /**
+     * Auxiliary method that takes down a conenctin to the DB.
+     */
+    private void takeDownConnection() {
+        try {
+            con.close();
+        } catch (SQLException e) {
+            log.error("COPY CHUNK DAO! Exception in takeDownConnection method: "+e);
+        }
+    }
 
-			updateFileReq.setInt(7, to.sourceSurlUniqueID());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setString(8, to.normalizedTargetStFN());
-			logWarnings(updateFileReq.getWarnings());
+    /**
+     * Auxiliary method that checks if time for resetting the connection has
+     * come, and eventually takes it down and up back again.
+     */
+    private void checkConnection() {
+        if (reconnect) {
+            log.debug("COPY CHUNK DAO! Reconnecting to DB! ");
+            takeDownConnection();
+            setUpConnection();
+            reconnect = false;
+        }
+    }
 
-			updateFileReq.setInt(9, to.targetSurlUniqueID());
-			logWarnings(updateFileReq.getWarnings());
-			
-			updateFileReq.setLong(10, to.primaryKey());
-			logWarnings(updateFileReq.getWarnings());
-			
-			// run updateFileReq
-			updateFileReq.executeUpdate();
-			logWarnings(updateFileReq.getWarnings());
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO: Unable to complete update! " + e);
-		} finally
-		{
-			close(updateFileReq);
-		}
-	}
-    
-	/**
-	 * Updates the request_Get represented by the received ReducedPtGChunkDataTO by
-	 * setting its normalized_sourceSURL_StFN and sourceSURL_uniqueID
-	 * 
-	 * @param chunkTO
-	 */
-	//TODO MICHELE USER_SURL new method
-	public void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
 
-		checkConnection();
-		String str = "UPDATE request_Copy SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=?, normalized_targetSURL_StFN=?, targetSURL_uniqueID=? "
-						 + "WHERE ID=?";
-		PreparedStatement stmt = null;
-		try
-		{
-			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
-			
-			stmt.setString(1, chunkTO.normalizedSourceStFN());
-			logWarnings(stmt.getWarnings());
-			
-			stmt.setInt(2, chunkTO.sourceSurlUniqueID());
-			logWarnings(stmt.getWarnings());
-			
-			stmt.setString(3, chunkTO.normalizedTargetStFN());
-			logWarnings(stmt.getWarnings());
-			
-			stmt.setInt(4, chunkTO.targetSurlUniqueID());
-			logWarnings(stmt.getWarnings());
 
-			stmt.setLong(5, chunkTO.primaryKey());
-			logWarnings(stmt.getWarnings());
-			
-			log.trace("COPY CHUNK DAO - update incomplete: " + stmt.toString());
-			stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO: Unable to complete update incomplete! " + e);
-		} finally
-		{
-			close(stmt);
-		}
-	}
-	
+
     /**
      * Method that queries the MySQL DB to find all entries matching the supplied
      * TRequestToken. The Collection contains the corresponding CopyChunkDataTO
@@ -219,83 +136,96 @@ public class CopyChunkDAO {
      *
      * NOTE! Chunks in SRM_ABORTED status are NOT returned!
      */
-	public Collection<CopyChunkDataTO> find(TRequestToken requestToken) {
+    public Collection find(TRequestToken requestToken) {
+        checkConnection();
+        String strToken = requestToken.toString();
+        String str = null;
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try {
+            //get chunks of the request
+            str = "SELECT s.ID, r.s_token, r.config_FileStorageTypeID, r.config_OverwriteID, r.fileLifetime, c.sourceSURL, c.targetSURL, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "+
+            "FROM request_queue r JOIN (request_Copy c, status_Copy s) "+
+            "ON (c.request_queueID=r.ID AND s.request_CopyID=c.ID) "+
+            "LEFT JOIN request_DirOption d ON c.request_DirOptionID=d.ID "+
+            "WHERE r.r_token=? AND s.statusCode<>?";
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            List list = new ArrayList();
+            find.setString(1,strToken);
+            logWarnings(find.getWarnings());
+            find.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED) );
+            logWarnings(find.getWarnings());
+            log.debug("COPY CHUNK DAO: find method; "+find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            CopyChunkDataTO aux = null;
+            while (rs.next()) {
+                aux = new CopyChunkDataTO();
+                aux.setPrimaryKey(rs.getLong("s.ID"));
+                aux.setRequestToken(strToken);
+                aux.setSpaceToken(rs.getString("r.s_token"));
+                aux.setFileStorageType(rs.getString("r.config_FileStorageTypeID"));
+                aux.setOverwriteOption(rs.getString("r.config_OverwriteID"));
+                aux.setLifeTime(rs.getInt("r.fileLifetime"));
+                aux.setFromSURL(rs.getString("c.sourceSURL"));
+                aux.setToSURL(rs.getString("c.targetSURL"));
+                list.add(aux);
+            }
+            close(rs);
+            close(find);
+            return list;
+        } catch (SQLException e) {
+            log.error("COPY CHUNK DAO: "+e);
+            close(rs);
+            close(find);
+            return new ArrayList(); //return empty Collection!
+        }
+    }
 
-		checkConnection();
-		String strToken = requestToken.toString();
-		String str = null;
-		PreparedStatement find = null;
-		ResultSet rs = null;
-		try
-		{
-			//TODO MICHELE USER_SURL get new fields
-			/* get chunks of the request */
-			str =
-				  "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels " 
-					  + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
-					  + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
-					  + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-					  + "WHERE rq.r_token=? AND sc.statusCode<>?";
-			
-			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
-			
-			ArrayList<CopyChunkDataTO> list = new ArrayList<CopyChunkDataTO>();
-			find.setString(1, strToken);
-			logWarnings(find.getWarnings());
-			
-			find.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
-			logWarnings(find.getWarnings());
-			
-			log.debug("COPY CHUNK DAO: find method; " + find.toString());
-			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
-			
-			CopyChunkDataTO chunkDataTO;
-			while(rs.next())
-			{
-				chunkDataTO = new CopyChunkDataTO();
-				chunkDataTO.setRequestToken(strToken);
-				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
-				chunkDataTO.setFileStorageType(rs.getString("rq.config_FileStorageTypeID"));
-				chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
-				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
-				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
-				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
-				chunkDataTO.setNormalizedSourceStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
-				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
-				if(!rs.wasNull())
-				{
-					chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
-				}
-				
-				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
-				chunkDataTO.setNormalizedTargetStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
-				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
-				if(!rs.wasNull())
-				{
-					chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
-				}
 
-				list.add(chunkDataTO);
-			}
-			return list;
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO: " + e);
-			/* return empty Collection! */
-			return new ArrayList<CopyChunkDataTO>();
-		} finally
-		{
-			close(rs);
-			close(find);
-		}
-		
-	}
 
-	/**
+    /**
+     * Method used to save the changes made to a retrieved CopyChunkDataTO,
+     * back into the MySQL DB.
+     *
+     * Only statusCode and explanation, of status_Copy table get written to the
+     * DB. Likewise for fileLifetime of request_queue table.
+     *
+     * In case of any error, an error messagge gets logged but no exception is
+     * thrown.
+     */
+    public void update(CopyChunkDataTO to) {
+        checkConnection();
+        PreparedStatement updateFileReq = null;
+        PreparedStatement updateReq = null;
+        try {
+            //ready updateFileReq...
+            updateFileReq = con.prepareStatement("UPDATE request_queue r JOIN (status_Copy s, request_Copy c) ON (r.ID=c.request_queueID AND s.request_CopyID=c.ID) SET s.statusCode=?, s.explanation=?, r.fileLifetime=?, r.config_FileStorageTypeID=?, r.config_OverwriteID=? WHERE s.ID=?");
+            logWarnings(con.getWarnings());
+            updateFileReq.setInt(1,to.status());
+            logWarnings(updateFileReq.getWarnings());
+            updateFileReq.setString(2,to.errString());
+            logWarnings(updateFileReq.getWarnings());
+            updateFileReq.setInt(3,to.lifeTime());
+            logWarnings(updateFileReq.getWarnings());
+            updateFileReq.setString(4,to.fileStorageType());
+            logWarnings(updateFileReq.getWarnings());
+            updateFileReq.setString(5,to.overwriteOption());
+            logWarnings(updateFileReq.getWarnings());
+            updateFileReq.setLong(6,to.primaryKey());
+            logWarnings(updateFileReq.getWarnings());
+            //run updateFileReq
+            updateFileReq.executeUpdate();
+            logWarnings(updateFileReq.getWarnings());
+        } catch (SQLException e) {
+            log.error("COPY CHUNK DAO: Unable to complete update! "+e);
+        } finally {
+            close(updateFileReq);
+        }
+    }
+
+    /**
      * Method used in extraordinary situations to signal that data retrieved from
      * the DB was malformed and could not be translated into the StoRM object model.
      *
@@ -311,37 +241,42 @@ public class CopyChunkDAO {
      * its request as being in the SRM_IN_PROGRESS state for ever. Hence the pressing
      * need to inform it of the encountered problems.
      */
-	public void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
+    public void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
+        checkConnection();
+        String signalSQL = "UPDATE status_Copy s "+
+        "SET s.statusCode="+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE) +", s.explanation=? "+
+        "WHERE s.ID="+auxTO.primaryKey();
+        PreparedStatement signal = null;
+        try {
+            //update storm_put_filereq;
+            signal = con.prepareStatement(signalSQL);
+            logWarnings(con.getWarnings());
+            signal.setString(1,"Request is malformed!"); //Prepared statement spares DB-specific String notation!
+            logWarnings(signal.getWarnings());
+            signal.executeUpdate();
+            logWarnings(signal.getWarnings());
+        } catch (SQLException e) {
+            log.error("PtPChunkDAO! Unable to signal in DB that the request was malformed! Request: "+auxTO.toString()+"; Exception: "+e.toString());
+        } finally {
+            close(signal);
+        }
+    }
 
-		checkConnection();
-		String signalSQL =
-						   "UPDATE status_Copy SET statusCode="
-							   + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
-							   + ", explanation=? WHERE request_CopyID=" + auxTO.primaryKey();
-		
-		PreparedStatement signal = null;
-		try
-		{
-			/* update storm_put_filereq */
-			signal = con.prepareStatement(signalSQL);
-			logWarnings(con.getWarnings());
-			
-			/* Prepared statement spares DB-specific String notation! */
-			signal.setString(1, "Request is malformed!");
-			logWarnings(signal.getWarnings());
-			
-			signal.executeUpdate();
-			logWarnings(signal.getWarnings());
-		} catch(SQLException e)
-		{
-			log.error("CopyChunkDAO! Unable to signal in DB that the"
-				+ "request was malformed! Request: " + auxTO.toString() + "; Exception: "
-				+ e.toString());
-		} finally
-		{
-			close(signal);
-		}
-	}
+
+
+    /**
+     * Auxiliary method used to roll back a failed transaction
+     */
+    private void rollback(Connection con) {
+        if (con!=null) {
+            try {
+                con.rollback();
+                log.error("COPY CHUNK DAO: roll back successful!");
+            } catch (SQLException e2) {
+                log.error("COPY CHUNK DAO: roll back failed! "+e2);
+            }
+        }
+    }
 
     /**
      * Auxiliary method used to close a Statement
@@ -380,59 +315,4 @@ public class CopyChunkDAO {
             }
         }
     }
-    
-    /**
-     * Auxiliary method that sets up the conenction to the DB.
-     */
-	private void setUpConnection() {
-
-		try
-		{
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, name, password);
-			if(con == null)
-			{
-				log.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
-			}
-			else
-			{
-				logWarnings(con.getWarnings());
-			}
-		} catch(ClassNotFoundException e)
-		{
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! " + e);
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! " + e);
-		}
-	}
-
-	 /**
-     * Auxiliary method that checks if time for resetting the connection has
-     * come, and eventually takes it down and up back again.
-     */
-	private void checkConnection() {
-
-		if(reconnect)
-		{
-			log.debug("COPY CHUNK DAO! Reconnecting to DB! ");
-			takeDownConnection();
-			setUpConnection();
-			reconnect = false;
-		}
-	}
-	
-    /**
-     * Auxiliary method that takes down a conenctin to the DB.
-     */
-	private void takeDownConnection() {
-
-		try
-		{
-			con.close();
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO! Exception in takeDownConnection method: " + e);
-		}
-	}
 }

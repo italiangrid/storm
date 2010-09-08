@@ -7,7 +7,7 @@
 #export STORM_HOME=/opt/storm/backend
 
 # user that will own the StoRM BE process
-#export STORM_BE_USER=root
+export STORM_BE_USER=root
 
 # library path, if you don't set this in /etc/ld.so.conf
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/globus/lib:/opt/glite/lib:/opt/glite/lib/modules

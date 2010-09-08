@@ -28,11 +28,8 @@ public class Machine {
      * String, otherwise an InvalidMachineAttributeException is thrown. Beware that
      * any empty space is removed.
 	 */
-	public static Machine make(String s)
-			throws InvalidMachineAttributeException {
-
-		if((s == null) || (s == ""))
-			throw new InvalidMachineAttributeException(s);
+	public static Machine make(String s)  throws InvalidMachineAttributeException {
+		if ((s == null) || (s=="")) throw new InvalidMachineAttributeException(s);
 		return new Machine(s, false);
 	}
 

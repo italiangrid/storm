@@ -16,8 +16,8 @@ public class InvalidDescendantsEmptyRequestException
 
     private boolean isEmptyDir = false;
 
-    public InvalidDescendantsEmptyRequestException(File fh, Collection<String> pathlist) {
-        isEmptyDir = ( pathlist != null && ( pathlist.size() == 0));
+    public InvalidDescendantsEmptyRequestException(File fh, Collection pathlist) {
+        isEmptyDir = ( ( (ArrayList) pathlist).size() == 0);
     }
 
     public String toString() {

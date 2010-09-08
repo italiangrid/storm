@@ -228,7 +228,6 @@ public class RequestSummaryDAO {
      * as well as for each individual chunk. The supplied index is the primary key of the global request. In case of any
      * error, nothing gets done and no exception is thrown, but proper error messagges get logged.
      */
-    //TODO MICHELE USER_SURL debug
     public void failPtGRequest(long index, String explanation) {
         checkConnection();
         String requestSQL = "UPDATE request_queue r " + "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
@@ -479,7 +478,6 @@ public class RequestSummaryDAO {
      * associated with the request will also get their status changed to SRM_ABORTED. If the supplied token is null, or
      * not found, or not in the SRM_REQUEST_QUEUED state, then nothing happens.
      */
-    //TODO MICHELE USER_SURL debug
     public void abortRequest(String rt) {
         checkConnection();
         PreparedStatement update = null;
@@ -568,7 +566,6 @@ public class RequestSummaryDAO {
      * associated with the request will also get their status changed to SRM_ABORTED. If the supplied token is null, or
      * not found, or not in the SRM_REQUEST_INPROGRESS state, then nothing happens.
      */
-    //TODO MICHELE USER_SURL debug
     public void abortInProgressRequest(String rt) {
         checkConnection();
         PreparedStatement update = null;
@@ -656,7 +653,6 @@ public class RequestSummaryDAO {
      * Method used to transit the status of chunks of a request that is in SRM_REQUEST_QUEUED state, to SRM_ABORTED. If
      * the supplied token is null, or not found, or not in the SRM_REQUEST_QUEUED state, then nothing happens.
      */
-    //TODO MICHELE USER_SURL debug
     public void abortChunksOfRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
@@ -737,7 +733,6 @@ public class RequestSummaryDAO {
      * Method used to transit the status of chunks of a request that is in SRM_REQUEST_INPROGRESS state, to SRM_ABORTED.
      * If the supplied token is null, or not found, or not in the SRM_REQUEST_INPROGRESS state, then nothing happens.
      */
-    //TODO MICHELE USER_SURL debug
     public void abortChunksOfInProgressRequest(String rt, Collection<String> surls) {
         checkConnection();
         PreparedStatement update = null;
@@ -866,7 +861,6 @@ public class RequestSummaryDAO {
      * requests which are likely to result in out-of-memory problems. Notice that in case of errors only error messages
      * get logged. An empty List is also returned.
      */
-    //TODO MICHELE USER_SURL debug
     public List<String> purgeExpiredRequests() {
 
         checkConnection();

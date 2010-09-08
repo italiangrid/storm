@@ -20,7 +20,7 @@ public class InvalidStFNAttributeException extends Exception {
      */
     public InvalidStFNAttributeException(String name) {
         this.nullName = (name==null);
-        this.emptyName = (name.equals(""));
+        this.emptyName = (name=="");
         if (!nullName && !emptyName) {
             noBeginningSlash = (name.charAt(0)!='/');
             hasDot = (name.indexOf("..")!=-1);

@@ -1,0 +1,2 @@
+users_and_groups.o users_and_groups.dep : users_and_groups.cpp users_and_groups.hpp \
+  fs_errors.hpp string_to_number.hpp

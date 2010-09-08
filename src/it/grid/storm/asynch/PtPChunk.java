@@ -474,7 +474,7 @@ public class PtPChunk implements Delegable, Chooser {
             chunkData.changeStatusSRM_INVALID_PATH("Directory structure as specified in SURL does not exist!");
             failure = true; // gsm.failedChunk(chunkData);
             log.debug("ATTENTION in PtPChunk! Directory structure as specified in " + f
-                    + " does not exist, and automatic directory creation is disbaled! Failing this chunk of request!"); // info
+                    + " does not exist, and automatic directory ceration is disbaled! Failing this chunk of request!"); // info
             anomaly = true;
         } else if (!exists) {
             // directory does not exist but automatic directory creation is on!

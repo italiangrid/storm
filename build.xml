@@ -3,12 +3,13 @@
 <!--
 This is the Ant buildfile for the StoRM BackEnd component.
 
-Copyright (c) 2008 
-  Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
+Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
   Riccardo Zappi <riccardo.zappi@cnaf.infn.it> 
 
 You may copy, modify and distribute this file according to the same
 terms as the rest of the StoRM sources.
+
+
 
 Buildfile targets
 =================
@@ -24,13 +25,16 @@ and need not be visible to the end-user.
 <project basedir="." default="help" name="StoRM">
 	<description>
      Ant buildfile for the StoRM BackEnd server.
+
   </description>
+
 
 
 	<!-- =================================================================== -->
 	<!-- PRINT USAGE INFORMATION                                             -->
 	<!-- =================================================================== -->
-	<target name="help"  description="short help text">
+  <target name="help"
+	description="short help text">
 		<echo>
 This is StoRM-BE version ${version}.
 
@@ -52,6 +56,8 @@ to get a list of the available targets for this buildfile.
 	</echo>
 	</target>
 
+
+
 	<!-- =============================================================== -->
 	<!-- SET ANT PROPERTIES                                              -->
 	<!-- =============================================================== -->
@@ -64,7 +70,6 @@ to get a list of the available targets for this buildfile.
 	<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties -->
 	<tstamp/>
 
-
 	<!-- load all properties from ``build.properties`` file -->
 	<property file="build.properties"/>
 
@@ -73,30 +78,13 @@ to get a list of the available targets for this buildfile.
 
 	<!-- set default global properties for this build -->
 	<property name="basedir" location="."/>
+  <property name="cvs.checkout.dir" location="${basedir}"/>
 
-	<!-- where to put class and native library files -->
-	<exec executable="sed" inputstring="${os.name}" outputproperty="nonspace.os">
-		<arg value="s/ /_/g"/>
-	</exec>
-	<property name="build.platform" value="${nonspace.os}-${os.arch}-${sun.arch.data.model}"/>
-	<property name="jvm.arch" value="${sun.arch.data.model}"/>
-
-	<!-- variable used by make -->
-	<property name="swig.location" value="/usr/local" />
-	<property name="glite.location" value="/opt/glite" />
-	<property name="lcmaps.location" value="${glite.location}" />
-	<property name="lcmaps-without-gsi.location" value="${glite.location}" />
-	<property name="lcmaps-plugins-basic.location" value="${glite.location}" />
-	<property name="lcmaps-plugins-voms.location" value="${glite.location}" />
-	<property name="jdk.location" value="${env.JAVA_HOME}" />
-	<property name="arch_bit" value="${jvm.arch}"/>
-	<property name="libacl-devel.location" value="/usr" />
-	<property name="libattr-devel.location" value="/usr" />
-	<property name="xfsprogs-devel.location" value="/usr" />
-	<property name="gpfs-base.location" value="/usr/lpp/mmfs" />
+  <!-- if not set, then assume we're doing a snapshot from CVS -->
+  <property name="version" value="cvs.${DSTAMP}"/>
 
 	<!-- sources used to build and make the distribution archives -->
-	<property name="src.dir" location="${basedir}"/>
+  <property name="src.dir" location="${cvs.checkout.dir}"/>
 	<property name="src.doc.dir" location="${src.dir}/doc"/>
 	<property name="src.java.dir" location="${src.dir}/src"/>
 	<property name="src.jars.dir" location="${src.dir}/lib"/>
@@ -104,65 +92,43 @@ to get a list of the available targets for this buildfile.
 	<property name="src.config.dir.db" location="${src.dir}/etc/db"/>
 	<property name="src.sbin.dir" location="${src.dir}/sbin"/>
 	<property name="src.sysvinit.dir" location="${src.dir}/etc/init.d"/>
-	<property name="src.logrotate.dir" location="${src.dir}/etc/logrotate.d"/>
-	<property name="src.cron.dir" location="${src.dir}/etc/cron.d"/>
 	<property name="info.dir" location="${src.dir}/info-provider"/>
 
-	<property name="build.encoding" value="ISO-8859-1"/>
-
-	<property name="javac.debug" value="on"/>
-	<property name="javac.optimize" value="on"/>
-	<property name="javac.deprecation" value="off"/>
-	<property name="javac.version" value="1.6"/>
-	<property name="javac.args" value=""/>
-	<property name="javac.args.warnings" value="-Xlint:none"/>
-
+  <!-- where to put class and native library files -->
 	<property name="build.dir" location="${basedir}/build"/>
 	<property name="build.classes.dir" location="${build.dir}/classes"/>
-	<property name="build.libs.dir" location="${build.dir}/lib/native/${build.platform}"/>
+  <property name="build.libs.dir" location="${build.dir}/lib"/>
 	<property name="build.obj.dir" location="${build.dir}/obj"/>
 	<property name="build.debug" value="false"/>
 	<property name="build.gpfs" value="true"/>
 	<property name="build.lustre" value="false"/>
-	<antversion property="ant.version_1.8" atleast="1.8"/>
-	<property name="build.scripts.dir" value="${basedir}/bin"/>
-	<property name="version.info.dir" value="${src.java.dir}/it/grid/storm"/>
-	<property name="version.info.file" value="VERSION"/>
-	<available file="${version.info.dir}/${version.info.file}" property="version.file.exists"/>
 	
 	<!-- these names are chosen to match configure/Makefile common usage -->
-	<property name="prefix" location="${basedir}/install"/>
-	<property name="install.dir" location="${basedir}/install"/>
+  <property name="prefix" location="/opt/storm"/>
 
+  <property name="bindir" location="${prefix}/bin"/>
 	<property name="datadir" location="${prefix}/share"/>
 	<property name="docdir" location="${prefix}/doc"/>
-	<property name="nativedir" location="${prefix}/lib/native/${build.platform}"/>
-	<property name="jardir" location="${prefix}/lib"/>
+  <property name="libdir" location="${prefix}/lib/storm-backend"/>
+  <property name="jardir" location="${libdir}/jar"/>
 	<property name="localstatedir" location="${prefix}/var"/>
 	<property name="logdir" location="${localstatedir}/log"/>
 	<property name="sbindir" location="${prefix}/sbin"/>
 	<property name="sysconfdir" location="${prefix}/etc"/>
 	<property name="confdb" location="${prefix}/etc/db"/>
 	<property name="sysvinitdir" location="${sysconfdir}/init.d"/>
-	<property name="logrotatedir" location="${sysconfdir}/logrotate.d"/>
-	<property name="crondir" location="${sysconfdir}/cron.d"/>
 	<property name="tmpdir" location="${localstatedir}/tmp"/>
+
+  	
 
 	<!-- the output file names -->
 	<property name="dist.jar" value="storm-backend.jar"/>
-	<property name="dist.tarfile" value="storm-backend-server.tar"/>
-	<property name="info.tarfile" value="glite-info-dynamic-storm.tar"/>
-
-	<!-- rpm building properties -->
-	<property name="rpm.scripts.dir" location="${basedir}/rpm"/>
-	<property name="rpm.scripts.rpm-builder" location="${rpm.scripts.dir}/build-be-rpm"/>
-	<property name="rpm.spec.file" location="${rpm.scripts.dir}/storm-backend.spec"/>
-	<property name="rpm.source.tar.file" location="${basedir}/${dist.tarfile}/"/>
-	<property name="rpm.dest.dir" location="${basedir}/rpm-build"/>
-	<property name="rpm.util.jar" location="${build.dir}/${dist.jar}"/>
+  <property name="dist.tarfile" value="storm-backend-${version}.tar"/>
+  <property name="info.tarfile" value="glite-info-dynamic-storm-${version}.tar"/>
 
 	<!-- where unit test files are located -->
 	<property name="test.junit.dir" value="${src.dir}/test"/>
+
 
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 	<!-- Print properties                                                -->
@@ -183,6 +149,9 @@ switch, as usual.
 basedir=${basedir}
   The mother of all paths
 
+
+cvs.checkout.dir=${cvs.checkout.dir}
+  Where the CVS sources have been checked out
 
 src.dir=${src.dir}
   Root of the source tree; the properties below name
@@ -256,7 +225,7 @@ docdir=${docdir}
 jardir=${jardir}
   Location of 3rd party .jar files needed at runtime.
 
-nativedir=${nativedir}
+libdir=${libdir}
   Location of architecture-dependent non-executable program
   files.
 
@@ -328,7 +297,7 @@ test.junit.dir
 	<!-- classpath used when building the sources -->
 	<path id="build.classpath">
 		<pathelement path="${classpath}"/>
-		<!--<pathelement path="${env.CLASSPATH}"/>-->
+	<pathelement path="${env.CLASSPATH}"/>
 		<fileset refid="src.jars.dist"/>
 		<fileset refid="src.jars.build"/>
 		<pathelement path="${src.java.dir}"/>
@@ -337,95 +306,67 @@ test.junit.dir
 	<fileset id="src.jars.dist"
      dir="${src.jars.dir}">
 		<include name="activation.jar"/>
-
 		<!-- <include name="axis-ant.jar"/> -->
 		<include name="axis.jar"/>
 		<include name="axis-schema.jar"/>
-
 		<!--<include name="backport-util-concurrent.jar"/>  ## Removed in 1.5.2 -->
-
 		<include name="srm22client.jar"/>
-
 		<include name="cog-axis.jar"/>
 		<include name="cog-jglobus.jar"/>
 		<include name="cog-jobmanager.jar"/>
 		<include name="cog-url.jar"/>
-
-		<include name="log4j-1.2.13.jar"/>
-
 		<include name="commons-beanutils.jar"/>
 		<include name="commons-cli-1.0.jar"/>
 		<include name="commons-codec-1.3.jar"/>
 		<include name="commons-collections-3.1.jar"/>
 		<include name="commons-configuration-1.4.jar"/>
-		<include name="commons-dbcp-1.2.1.jar"/>
-		<!-- used by Persistence Component -->
+	<include name="commons-dbcp-1.2.1.jar"/> <!-- used by Persistence Component -->
 		<include name="commons-digester-1.7.jar"/>
 		<include name="commons-discovery-0.2.jar"/>
 		<include name="commons-lang-2.3.jar"/>
-		<include name="commons-pool-1.2.jar"/>
-		<!-- used by Persistence Component -->
-		<include name="commons-validator-1.3.0.jar"/>
-		<!-- needed for SURL validation -->
-		<include name="commons-logging-1.1.jar"/>
-
-		<!-- needed for Apache ConfigurationReader -->
+	<include name="commons-pool-1.2.jar"/> <!-- used by Persistence Component -->
+	<include name="commons-validator-1.3.0.jar"/> <!-- needed for SURL validation -->
+	<include name="commons-logging-1.1.jar"/> <!-- needed for Apache ConfigurationReader -->
 		<include name="cryptix32.jar"/>
 		<include name="cryptix-asn1.jar"/>
 		<!--<include name="cryptix.jar"/>  Old jar, out-of-date by cryptix32.jar -->
-
 		<include name="dom.jar"/>
-
-		<include name="jakarta-oro-2.0.8.jar"/>
-		<!-- needed for SURL validation -->
+    <include name="jakarta-oro-2.0.8.jar"/> <!-- needed for SURL validation -->
 		<include name="jaxrpc.jar"/>
 		<include name="jce-jdk13-131.jar"/>
 		<include name="jgss.jar"/>
-
 		<include name="mail.jar"/>
-
 		<include name="odmg-3.0.jar"/>
 		<include name="puretls.jar"/>
 		<include name="saaj.jar"/>
 		<include name="wsdl4j-1.5.1.jar"/>
 		<include name="xalan.jar"/>
-		<include name="xercesImpl.jar"/>
-		<!-- PART of xerces 2.8.0 -->
-		<include name="xml-apis.jar"/>
-		<!-- PART of xerces 2.8.0 -->
-		<include name="xmlrpc-server-3.0.jar"/>
-		<!-- PART of XML-RPC 3.0 -->
-		<include name="xmlrpc-common-3.0.jar"/>
-		<!-- PART of XML-RPC 3.0 -->
-		<include name="ws-commons-util-1.0.1.jar"/>
+	<include name="xercesImpl.jar"/>  <!-- PART of xerces 2.8.0 -->
+    <include name="xml-apis.jar"/> <!-- PART of xerces 2.8.0 -->
+	<include name="xmlrpc-server-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
+	<include name="xmlrpc-common-3.0.jar"/> <!-- PART of XML-RPC 3.0 -->
+    <include name="ws-commons-util-1.0.1.jar"/> <!-- PART of XML-RPC 3.0 -->
+ 	<include name="FMC.jar"/> <!-- FMC GridFTP sensor -->
+  	<include name="dim-18.r2.jar"/>
 
-		<include name="logback-classic-0.9.15.jar"/>
-		<!-- New LOGGING system -->
-		<include name="logback-core-0.9.15.jar"/>
-		<!-- New LOGGING system -->
-		<include name="slf4j-api-1.5.6.jar"/>
-		<!-- New LOGGING system -->
+  	<include name="logback-classic-0.9.15.jar"/> <!-- New LOGGING system -->
+  	<include name="logback-core-0.9.15.jar"/> <!-- New LOGGING system -->
+  	<include name="slf4j-api-1.5.6.jar"/> <!-- New LOGGING system -->
 
-		<include name="jna.jar"/>
-		<!-- DMAPI -->
+  	<include name="jna.jar"/> <!-- DMAPI -->
 
-		<include name="rest-recalltable/asm-3.1.jar"/>
-		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/grizzly-webserver-1.9.15b.jar"/>
-		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/>
-		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/>
-		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jsr311-api-1.1.jar"/>
-		<!-- JERSEY and GRIZZLY for REST Service -->
+  	<include name="rest-recalltable/asm-3.1.jar"/>  <!-- JERSEY and GRIZZLY for REST Service --> 
+  	<include name="rest-recalltable/grizzly-webserver-1.9.15b.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
+    <include name="rest-recalltable/jsr311-api-1.1.jar"/> <!-- JERSEY and GRIZZLY for REST Service --> 
 
 		<include name="json-20080701.jar"/>
 	</fileset>
 
 	<fileset id="src.jars.build"
      dir="${src.jars.dir}">
-		<include name="mysql-connector-java-5.1.13-bin.jar"/>
+	<include name="mysql-connector-java-3.1.8-bin.jar"/>
 	</fileset>
 
 	<!-- native code libs; needed at runtime -->
@@ -445,8 +386,9 @@ test.junit.dir
 		<include name="path-authz.db"/>
 		<include name="welcome.txt"/>
 		<include name="sysconfig/storm-backend"/>
-		<include name="cron.d/storm-backend.cron"/>
+    <include name="logrotate.d/storm-backend.cron"/>
 		<include name="logrotate.d/storm-backend.logrotate"/>
+
 	</fileset>
 
 	<!-- configuration script for DB -->
@@ -459,23 +401,12 @@ test.junit.dir
 		<include name="README" />
 		<include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql" />
 		<include name="storm_mysql_update_from_1.5.0_to_1.5.3.sql" />
-		<include name="storm_mysql_update_from_1.5.3_to_1.5.4.sql" />
-		<include name="storm_mysql_update_from_1.5.0_to_1.5.4.sql" />
 	</fileset>
 
 	<!-- start/stop scripts -->
-	<fileset id="src.sysvinit" dir="${src.sysvinit.dir}">
+  <fileset id="src.sysvinit"
+     dir="${src.sysvinit.dir}">
 		<include name="storm-backend" />
-	</fileset>
-
-	<!-- logrotate scripts -->
-	<fileset id="src.logrotate" dir="${src.logrotate.dir}">
-		<include name="storm-backend.logrotate" />
-	</fileset>
-
-	<!-- cron scripts -->
-	<fileset id="src.cron" dir="${src.cron.dir}">
-		<include name="storm-backend.cron" />
 	</fileset>
 
 	<!-- configuration script -->
@@ -513,6 +444,12 @@ test.junit.dir
 		<path refid="build.classpath"/>
 	</path>
 
+  <!-- DIM library -->
+  <fileset id="dimlib"
+  	dir="${src.jars.dir}"
+	includes="libjdim.so"/>
+
+
 
 	<!-- =============================================================== -->
 	<!-- BUILD/COMPILE TARGETS                                           -->
@@ -530,108 +467,64 @@ test.junit.dir
 
 	<!-- make c libs used by JNA -->
 	<target name="clibs-jna" depends="init">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make"
-			failonerror="true"
-			logError="true">
+    <exec executable="make" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/jna"/>
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="BUILDDIR=${build.obj.dir}"/>
-			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
-			<arg value="arch=${arch}"/>
+      <arg value="ARCH=${arch}"/>
 		</exec>
 	</target>
 
 
 	<!-- make SWIG Java interfaces -->
 	<target name="swig"
-	depends="swig.griduser,swig.filesystem"/>
+	depends="swig.lcmaps,swig.filesystem"/>
 
-	<target name="swig.griduser" depends="init">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig swig"/>
+  <target name="swig.lcmaps" depends="init">
+    <exec executable="make" logError="true">
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}"/>
+      <arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig"/>
+      <arg line="swig"/>
 		</exec>
-
 	</target>
 
-
-	<!--
-	  ###  Make FILESYSTEN Wrapping with SWIG ### 
-	-->
 	<target name="swig.filesystem" depends="init">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig swig"/>
-			<arg line="fs_acl.java genericfs.java"/>
+    <exec executable="make" logError="true">
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}" />
-			<arg value="jdk_location=${env.JAVA_HOME}" />
-			<arg value="libacl_devel_location=${libacl-devel.location}" />
-			<arg value="libattr_devel_location=${libattr-devel.location}" />
-			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="xfsprogs_devel_location=${xfsprogs-devel.location}" />
+      <arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig"/>
+	  <arg line="fs_acl.java genericfs.java"/>
 		</exec>
 	</target>
-
 
 	<!-- Filestem classes -->
 	<target name="libs.filesystem" 
 		depends="init,swig.filesystem">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig libso"/>
+    <exec executable="make"
+	  dir="${src.java.dir}/it/grid/storm/filesystem/swig"
+	  failonerror="true"
+	  logError="true">
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}" />
-			<arg value="jdk_location=${env.JAVA_HOME}" />
-			<arg value="libacl_devel_location=${libacl-devel.location}" />
-			<arg value="libattr_devel_location=${libattr-devel.location}" />
-			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="xfsprogs_devel_location=${xfsprogs-devel.location}" />
+<!--	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/> -->
 		</exec>
 	</target>
 
 
 	<!-- make wrapper component native libs -->
-	<target name="libs.wrapper" depends="init">
-		<condition property="libs.wrapper.debug" value="1">
+  <target name="libs.wrapper"
+	depends="init">
+	<condition
+	  property="libs.wrapper.debug"
+	  value="1">
 			<istrue value="${build.debug}"/>
 		</condition>
-		<condition property="libs.wrapper.gpfs" value="1">
+	<condition
+	  property="libs.wrapper.gpfs"
+	  value="1">
 			<istrue value="${build.gpfs}"/>
 		</condition>
-		<condition property="libs.wrapper.lustre" value="lustre">
+	<condition
+	  property="libs.wrapper.lustre"
+	  value="lustre">
 			<istrue value="${build.lustre}"/>
 		</condition>
 		<exec executable="make" 
@@ -641,65 +534,50 @@ test.junit.dir
 			<arg value="BUILDDIR=${build.libs.dir}"/>
 			<arg value="DEBUG=${libs.wrapper.debug}"/>
 			<arg value="destdir=${build.libs.dir}"/>
-			<arg value="FILESYSTEMS=posix gpfs xfs"/>
+      <arg
+		value="FILESYSTEMS=posix gpfs xfs"/>
 			<!-- ${libs.wrapper.gpfs} ${libs.wrapper.lustre}" -->
 			<arg value="all"/>
 			<arg value="alllib"/>
 		</exec>
 	</target>
 
-
-
-	<!--
-	  ###  Make LCMAPS Wrapping with SWIG ### 
-	-->
-	<target name="libs.griduser" 	depends="init,swig.griduser">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig libso"/>
+  <target name="libs.lcmaps"
+	depends="init,swig.lcmaps">
+    <exec executable="make"
+	  dir="${src.java.dir}/it/grid/storm/griduser/swig"
+	  failonerror="true"
+	  logError="true">
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}"/>
+      <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
+      <arg value="ARCH=${arch}"/>
 		</exec>
 	</target>
 
-	<!--
-	  <arg value="DESTDIR=${build.libs.dir}"/>
-	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
-    -->
 
 	<target name="libs"
 	description="compile native code libs"
-	depends="libs.griduser,libs.filesystem, clibs-jna"/>
+	depends="libs.lcmaps,libs.filesystem, clibs-jna"/>
 
-	<target name="precompile"  depends="init,swig"/>
+  <target name="precompile"
+	depends="init,swig"/>
 
 	<!-- compile the .java source files -->
-	<target name="javac"  description="Compile the .java source files"  depends="precompile">
+  <target name="javac"
+	description="Compile the .java source files"
+	depends="precompile">
 		<javac 
-			encoding="${build.encoding}" 
 			srcdir="${src.java.dir}"
-			includes="it/grid/storm/**/*.java"
 			destdir="${build.classes.dir}"
-		        debug="${javac.debug}"
-			optimize="${javac.optimize}"
-			target="${javac.version}"
-			source="${javac.version}"
-			deprecation="${javac.deprecation}"
-                        includeantruntime="false">
-			<compilerarg line="${javac.args} ${javac.args.warnings}" />
-			<classpath>
-				<path refid="build.classpath"/>
-			</classpath>
+      debug="true"
+      deprecation="true"
+      source="1.5"
+      target="1.5">
+	  <!-- Javac needs a *directory* as argument... -->
+	  <!-- <src path="${src.java.dir}/it/grid/storm/"/> -->
+	  <classpath refid="build.classpath"/>
+		<include name="it/grid/storm/**"/>
+ 		<exclude name="it/grid/storm/namespace/admin/**"/>
 		</javac>
 	</target>
 
@@ -710,70 +588,15 @@ test.junit.dir
 		description="Compile *all* StoRM BE code"
 		depends="libs,javac,storm-backend.jar"/>
 
-	<target name="version-info-automatic" if="ant.version_1.8">
-		<echo message="NOTE: File VERSION doesn't exist. A VERSION file will be created using ANT 1.8 features"/>
-		<echo message="## ANT version is :'${ant.version}'"/>
-		<chmod file="${build.scripts.dir}/svnRevision.sh" perm="ugo+rx"/>
-		<exec dir="${basedir}" executable="${build.scripts.dir}/svnRevision.sh" failonerror="false" logerror="true" outputproperty="svn.revision.number" />
-		<echo message="## SVN Revision Number ${svn.revision.number}" />
-		<propertyfile file="${version.info.dir}/${version.info.file}" 
-			comment=" Build Information File - It contains information about the version number defined at building time !!! DO NOT CHANGE !!!.">
-			<entry key="VERSION" type="string" operation="=" value="${version}"/>
-			<entry key="RELEASE" type="string" operation="=" value="${age}"/>
-			<entry key="svn.revision.number" type="int" operation="=" value="${svn.revision.number}" />
-			<entry key="build.date" type="date" value="now" pattern="dd.MM.yyyy HH:mm:ss" />
-			<entry key="build.num" type="int" default="0000" operation="+" pattern="0000" />
-		</propertyfile>
-	</target>
-
-	<target name="create-default-Version-Info" unless="version.file.exists" 
-		description="Create the default Version Info, if needed.">
-		<echo message="NOTE: File VERSION doesn't exist. A default-one will be created."/>
-		<echo message="## ANT version is :'${ant.version}'"/>
-		<tstamp>
-			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-		</tstamp>
-		<chmod file="${build.scripts.dir}/svnRevision.sh" perm="ugo+rx"/>
-		<exec dir="${basedir}" executable="${build.scripts.dir}/svnRevision.sh" failonerror="false" logerror="true" outputproperty="svn.revision.number" />
-		<echo message="## SVN Revision Number ${svn.revision.number}" />
-		<echo file="${version.info.dir}/${version.info.file}" append="false">#Build Information File - It contains information about the version number defined at building time !!!${line.separator}#DO NOT CHANGE !!!.${line.separator}</echo>
-		<echo file="${version.info.dir}/${version.info.file}" append="true">VERSION=${version}${line.separator}</echo> 
-		<echo file="${version.info.dir}/${version.info.file}" append="true">RELEASE=${age}${line.separator}</echo>
-		<echo file="${version.info.dir}/${version.info.file}" append="true">svn.revision.number=${svn.revision.number}${line.separator}</echo>
-		<echo file="${version.info.dir}/${version.info.file}" append="true">build.date=${TODAY}${line.separator}</echo>
-		<echo file="${version.info.dir}/${version.info.file}" append="true">build.num=N/A [ ant.version = ${ant.version} ]${line.separator}</echo>
-    </target>
-	
-	<target name="make-version-info" unless="version.file.exists">
-		<input message="Insert VERSION (major.minor.update): " addproperty="version" />
-		<input message="Insert AGE : " addproperty="age" />
-		<echo message="version.file.exists = ${version.file.exists}"/>
-		<antcall target="version-info-automatic"/>
-		<antcall target="create-default-Version-Info"/>
-	</target>
-	
 	<target name="storm-backend.jar" 
 		description="Make the ${dist.jar} file out of compiled Java classes" 
-		depends="javac, make-version-info">
-		<tstamp>
-			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-		</tstamp>
-        <antcall target="make-version-info"/>
-		<jar destfile="${build.dir}/${dist.jar}">
-			<manifest>
-				<attribute name="Implementation-Title" value="StoRM-Backend-Server"/>
-				<attribute name="Built-Date" value="${TODAY}"/>
-				<attribute name="Implementation-Version" value="${version}-${age}"/>
-				<attribute name="Implementation-Vendor" value="INFN"/>
-			</manifest>
-			<fileset dir="${build.classes.dir}">
-				<include name="it/grid/storm/**" />
-			</fileset>
-			<fileset dir="${src.java.dir}">
-				<filename name="it/grid/storm/VERSION" />
-			</fileset>
-		</jar>
+	depends="javac">
+    <jar destfile="${build.dir}/${dist.jar}"
+	  basedir="${build.classes.dir}"
+	  includes="it/grid/storm/**"
+	  index="true"/>
 	</target>
+
 
 	<!-- =============================================================== -->
 	<!-- CLEAN                                                           -->
@@ -781,7 +604,9 @@ test.junit.dir
 
 	<!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
 	<target name="clean.clibs-jna">
-		<exec executable="make" dir="${src.java.dir}/it/grid/storm/jna" logError="true">
+    <exec executable="make"
+        dir="${src.java.dir}/it/grid/storm/jna"
+        logError="true">
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="clean"/>
 		</exec>
@@ -798,7 +623,7 @@ test.junit.dir
 	</target>
 
 	<!-- Invoke 'clean' target on it/grid/storm/grid/swig/Makefile -->
-	<target name="clean.swig.griduser">
+  <target name="clean.swig.lcmaps">
 		<exec executable="make"
     	dir="${src.java.dir}/it/grid/storm/griduser/swig"
         logError="true">
@@ -819,15 +644,9 @@ test.junit.dir
 
 	<target name="clean"
 	description="Remove build tree and all of the intermediate build files"
-	depends="clean.libs.wrapper,clean.swig.griduser,clean.swig.filesystem,clean.clibs-jna">
+	depends="clean.libs.wrapper,clean.swig.lcmaps,clean.swig.filesystem,clean.clibs-jna">
 		<!-- Delete the ${build.dir} directory tree -->
-		<delete dir="${build.dir}" verbose="false"/>
-		<delete dir="${install.dir}" verbose="false"/>
-		<delete file="${src.config.dir}/lcmaps.db" verbose="true" />
-		<delete file="${rpm.source.tar.file}" verbose="true"/>
-		<delete file="${rpm.source.tar.file}.gz" verbose="true"/>
-		<delete dir="${rpm.dest.dir}" verbose="false"/>
-		<delete file="${version.info.dir}/${version.info.file}" verbose="true"/>
+    <delete dir="${build.dir}"/>
 	</target>
 
 
@@ -841,26 +660,12 @@ test.junit.dir
 	depends="install.nojars,install.jarsonly"/>
 
 
-	<target name="replace-lcmaps.db"
-	    description="create lcmaps.db with the version dependent by architecturt" >
-
-		<condition property="lcmaps-substitute-file" 
-			value="${src.config.dir}/lcmaps-x86_64.db" 
-			else="${src.config.dir}/lcmaps-i386.db">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<copy 
-			file="${lcmaps-substitute-file}" 
-			tofile="${src.config.dir}/lcmaps.db"
-			overwrite="true" />
-	</target>
-
 	<target name="install.nojars" 
 		description="Copy built files (except 3rd-party .jar's) to a deployable tree structure under ${prefix}" 
-		depends="replace-lcmaps.db, build">
+	depends="storm-backend.jar">
 
 		<!-- Create the distribution directory hierarchy -->
+	<mkdir dir="${bindir}"/>
 		<mkdir dir="${datadir}" />
 		<mkdir dir="${docdir}" />
 		<mkdir dir="${logdir}" />
@@ -869,14 +674,12 @@ test.junit.dir
 		<mkdir dir="${confdb}" />
 		<mkdir dir="${sysconfdir}" />
 		<mkdir dir="${sysvinitdir}" />
-		<mkdir dir="${logrotatedir}" />
-		<mkdir dir="${crondir}" />
 		<mkdir dir="${tmpdir}" />
 
 		<!-- copy files -->
 		<copy
 		  file="${build.dir}/${dist.jar}"
-		  tofile="${prefix}/storm-backend.jar"
+	  tofile="${libdir}/storm-backend.jar"
 		  overwrite="true"/>
 		<copy
 		  todir="${sysconfdir}"
@@ -891,21 +694,15 @@ test.junit.dir
 			<fileset refid="src.sysvinit" />
 		</copy>
 		<copy
-			  todir="${logrotatedir}"
-			  flatten="true"
+	  todir="${sbindir}"
+	  flatten="false"
 			  overwrite="true">
-			<fileset refid="src.logrotate" />
+	  <fileset refid="src.sbin"/>
 		</copy>
 		<copy
-			  todir="${crondir}"
+	  todir="${libdir}"
 			  flatten="true"
 			  overwrite="true">
-			<fileset refid="src.cron" />
-		</copy>
-		<copy
-		  todir="${nativedir}"
-		  flatten="true"
-		  overwrite="true">
 			<fileset refid="src.lib" />
 		</copy>
 		<copy
@@ -916,9 +713,17 @@ test.junit.dir
 			<fileset refid="src.docs.proper" />
 			<fileset refid="src.docs.license" />
 		</copy>
-		<copy todir="${confdb}" overwrite="true">
+  	<copy
+  	  todir="${confdb}"
+  	  overwrite="true">
 			<fileset refid="src.config.db" />
 		</copy>
+  	<copy
+  	  todir="${libdir}"
+  	  overwrite="true">
+  	  <fileset refid="dimlib"/>
+    </copy>
+
 
 		<!-- fix permissions -->
 		<chmod perm="0755" type="dir">
@@ -930,18 +735,21 @@ test.junit.dir
 			<fileset id="dist.files" dir="${prefix}/" />
 		</chmod>
 		<chmod perm="0755" type="file">
-			<fileset id="dist.bin" dir="${prefix}">
+      <fileset id="dist.bin"
+         dir="${prefix}">
 				<!-- set executable bit for binaries and scripts -->
 				<include name="bin/*" />
 				<include name="sbin/*" />
 				<include name="etc/init.d/*" />
 			</fileset>
 		</chmod>
-		<chmod perm="1755" type="dir" dir="${tmpdir}" />
+    <chmod perm="1755" type="dir"
+	  dir="${tmpdir}"/>
 	</target>
 
 
-	<target name="install.jarsonly" description="Copy 3rd-party jar files to directory ${jardir}">
+  <target name="install.jarsonly"
+	description="Copy 3rd-party jar files to directory ${jardir}">
 
 		<!-- Create the distribution directory hierarchy -->
 		<mkdir dir="${docdir}" />
@@ -968,12 +776,22 @@ test.junit.dir
 	<!-- TARBALL                                                         -->
 	<!-- =============================================================== -->
 
-	<target name="tar.src" description="Roll a tarball of the checked-out sources" depends="build" >
+  <target name="tar.src"
+	description="Roll a tarball of the checked-out sources">
 		<delete file="${dist.tarfile}"/>
 		<delete file="${dist.tarfile}.gz" />
-		<tar destfile="${dist.tarfile}" compression="none" longfile="gnu">
+    <delete file="${dist.tarfile}.bz2"/>
+    <tar
+	  destfile="${dist.tarfile}"
+	  compression="none"
+	  longfile="gnu">
 			<!-- main source tree -->
-			<tarfileset dir="${src.dir}" username="storm" group="storm" mode="0644" prefix="storm-backend-server/">
+      <tarfileset
+		dir="${src.dir}"
+		username="storm"
+		group="storm"
+		mode="0644"
+		prefix="storm-backend-${version}/">
 				<!-- all relevant directories -->
 				<exclude name="build/**" />
 				<exclude name="etc/storm_test.properties" />
@@ -989,7 +807,7 @@ test.junit.dir
 				<include name="etc/" />
 				<include name="lib/" />
 				<include name="rpm/" />
-				<!-- <include name="sbin/"/> -->
+		<include name="sbin/"/>
 				<!-- program sources -->
 				<include name="src/" />
 				<exclude name="src/**/*.o" />
@@ -998,53 +816,65 @@ test.junit.dir
 			</tarfileset>
 		</tar>
 		<!-- FIXME: should check if filename ends in .gz and compress -->
-		<gzip src="${dist.tarfile}" destfile="${dist.tarfile}.gz" />
-	</target>
+    <gzip
+	  src="${dist.tarfile}"
+	  destfile="${dist.tarfile}.gz"/>
+    <!-- hangs forever on testbed006 :-/
+	<bzip2
+	  src="${dist.tarfile}"
+	  destfile="${dist.tarfile}.bz2"/>
+	-->
+
+
+  </target>
 
 
 
-	<!-- =============================================================== -->
-	<!-- RPM BUILDING                                                    -->
-	<!-- =============================================================== -->
-
-	<target name="build-rpm" depends="build">
-
-		<antcall target="make-version-info"/>
 		
-		<echo message="RPM script dir : '${rpm.scripts.dir}'" />
-		<echo message="RPM script builder : '${rpm.scripts.rpm-builder}'" />
-		<echo message="RPM spec file : '${rpm.spec.file}'" />
-		<echo message="RPM source tar.gz : '${rpm.source.tar.file}'" />
-		<echo message="RPM dest dir : '${rpm.dest.dir}'" />
-		<echo message="RPM util jar : '${rpm.util.jar}'" />
-		<echo message="RPM version : '${version}'" />
-		<echo message="RPM age : '${age}'" />
+  <target name="info.src"
+	    description="Roll a tarball of the glite info provider">
+	    <delete file="${info.tarfile}"/>
+	    <delete file="${info.tarfile}.gz"/>
+	    <delete file="${info.tarfile}.bz2"/>
+  	 <tar
+  	      destfile="${info.tarfile}"
+  	      compression="none"
+  	      longfile="gnu">
+  	  <tarfileset
+  	 	dir="${info.dir}"
+  	 	        username="storm"
+  	 	        group="storm"
+  	 	        mode="0644"
+  	 	        prefix="glite-info-dynamic-storm-${version}/">
+  	        	<include name="opt/"/>
+  	  </tarfileset>	
+  	  </tar>
+  	    <!-- FIXME: should check if filename ends in .gz and compress -->
+  	    <gzip
+  	      src="${info.tarfile}"
+  	      destfile="${info.tarfile}.gz"/>
+  	</target>
 		
-		<delete file="${rpm.source.tar.file}"/>
-		<delete file="${rpm.source.tar.file}.gz"/>
-		<antcall target="tar.src"/>
-		<delete dir="${rpm.dest.dir}"/>
-		<mkdir dir="${rpm.dest.dir}"/>
 
-		<exec executable="sh" failonerror="true" logerror="true">
-			<arg value="${rpm.scripts.rpm-builder}"/>
-			<arg value="${rpm.spec.file}"/>
-			<arg value="${rpm.source.tar.file}.gz"/>
-			<arg value="${rpm.dest.dir}"/>
-			<arg value="${rpm.util.jar}"/>
-			<arg value="${swig.location}"/>
-			<arg value="${jdk.location}"/>
-			<arg value="${lcmaps.location}"/>
-			<arg value="${lcmaps-without-gsi.location}"/>
-			<arg value="${lcmaps-plugins-basic.location}"/>
-			<arg value="${lcmaps-plugins-voms.location}"/>
-			<arg value="${libacl-devel.location}"/>
-			<arg value="${libattr-devel.location}"/>
-			<arg value="${xfsprogs-devel.location}"/>
-			<arg value="${version}"/>
-			<arg value="${age}"/>
-		</exec>
-	</target>
+        <!--	
+	 <javadoc 
+	 	       packagenames="*"
+	           sourcepath="src"
+	           excludepackagenames=""
+	           defaultexcludes="yes"
+	           destdir="doc/api"
+	           author="true"
+	           version="true"
+	           use="true"
+	           windowtitle="Test API">
+	    <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2009 StoRM  All Rights Reserved.</i>]]></bottom>
+	    <tag name="todo" scope="all" description="To do:"/>
+	    <group title="Group 1 Packages" packages="com.dummy.test.a*"/>
+	    <link offline="true" href="http://java.sun.com/j2se/1.5.0/docs/api/" packagelistLoc="C:\tmp"/>
+	    <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+	  </javadoc>
+	-->
 
 
 

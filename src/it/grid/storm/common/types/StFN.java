@@ -16,13 +16,14 @@ import java.util.Map;
  */
 public class StFN {
 
-    private ArrayList<String> name = new ArrayList<String>();
+    private ArrayList name = new ArrayList();
+    private final boolean startingSlash = false;
+    private boolean empty = true;
     private boolean directory = false;
 
-    private boolean empty = true;
     public static String PNAME_PATH = "path";
 
-    private StFN(ArrayList<String> name, /* boolean startingSlash, */boolean empty, boolean dir) {
+    private StFN(ArrayList name, /* boolean startingSlash, */boolean empty, boolean dir) {
         this.name = name; // WARNING!!! A defensive copy of the ArrayList is _NOT_ made!
         this.empty = empty;
         /* this.startingSlash = startingSlash; */
@@ -33,7 +34,7 @@ public class StFN {
      * Public static method that returns an empty StFN.
      */
     public static StFN makeEmpty() {
-        return new StFN(new ArrayList<String>(),/* false, */true, false);
+        return new StFN(new ArrayList(),/* false, */true, false);
     }
 
     /**
@@ -65,7 +66,8 @@ public class StFN {
      * (..), or does not begin with a slash (/).
      */
     static private boolean invalid(String name) {
-        boolean wrong = (name == null) || (name.equals("")) || (name.charAt(0) != '/');
+        boolean wrong = (name == null) || (name.equals("")) || (name.charAt(0) != '/')
+                || (name.indexOf("..") != -1);
         return wrong;
     }
 
@@ -75,11 +77,11 @@ public class StFN {
      * slashes are treated as a single slash. Example1: /a/ b /c/d Result: a b c d Example2: /////a///b////////////
      * c/d///////// Result: a b c d Example3: / Result: empty ArrayList!
      */
-    static private ArrayList<String> normalize(String s) {
+    static private ArrayList normalize(String s) {
         // split around slash!
         String[] pieces = s.split("/");
         // remove all empty Strings which may have been produced because of consecutive slashes!
-        ArrayList<String> auxList = new ArrayList<String>();
+        ArrayList auxList = new ArrayList();
         int pos = 0;
         String aux = null;
         for (String piece : pieces) {
@@ -99,8 +101,8 @@ public class StFN {
      * Parent StFNs: Empty collection! Third example: /EGRID/ Parent StFNs: Empty collection! An empty collection is
      * returned if any error occurs during creation of parent StFNs. Likewise if This is an EmptyStFN.
      */
-    public Collection<StFN> getParents() {
-        Collection<StFN> aux = new ArrayList<StFN>();
+    public Collection getParents() {
+        Collection aux = new ArrayList();
         if (empty) {
             return aux; // empty StFN!
         }
@@ -109,7 +111,7 @@ public class StFN {
             return aux; // StFN directly on root, or with only _one_ element!
         }
         for (int i = 1; i < size; i++) {
-            aux.add(new StFN(new ArrayList<String>(name.subList(0, i))/* ,this.startingSlash */, false, true)); // recall
+            aux.add(new StFN(new ArrayList(name.subList(0, i))/* ,this.startingSlash */, false, true)); // recall
                                                                                                         // sublist goes
                                                                                                         // from 0
                                                                                                         // inclusive, to
@@ -134,7 +136,7 @@ public class StFN {
         if ((size == 0) || (size == 1)) {
             return makeEmpty(); // either directly on root, or only one element!
         }
-        return new StFN(new ArrayList<String>(name.subList(0, size - 1))/* ,this.startingSlash */, false, true);
+        return new StFN(new ArrayList(name.subList(0, size - 1))/* ,this.startingSlash */, false, true);
     }
 
     /**
@@ -160,7 +162,7 @@ public class StFN {
         }
         StringBuffer sb = new StringBuffer();
         /* if (this.startingSlash) */sb.append("/");
-        for (Iterator<String> i = name.iterator(); i.hasNext();) {
+        for (Iterator i = name.iterator(); i.hasNext();) {
             sb.append(i.next());
             if (i.hasNext()) {
                 sb.append("/");
@@ -201,13 +203,14 @@ public class StFN {
             hash = 31 * hash + name.hashCode();
         }
         hash = 31 * hash + (directory ? 1 : 0);
+        /* hash = 37*hash + (startingSlash?1:0); */
         return hash;
     }
 
     /**
      * Encode StFN for FE communication.
      */
-    public void encode(Map<String,String> param, String name) {
+    public void encode(Map param, String name) {
         param.put(name, toString());
     }
     /*

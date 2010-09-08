@@ -3,7 +3,6 @@ package it.grid.storm.synchcall.command.directory;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.SRMFileRequest;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
@@ -176,7 +175,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         boolean allLevelRecursive;
         if (inputData.getAllLevelRecursive() == null) {
             // Set to the default value.
-            allLevelRecursive = DirectoryCommand.config.getLSallLevelRecursive();
+            allLevelRecursive = DirectoryCommand.config.get_LS_allLevelRecursive();
         } else {
             allLevelRecursive = inputData.getAllLevelRecursive().booleanValue();
         }
@@ -184,7 +183,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         int numOfLevels;
         if (inputData.getNumOfLevels() == null) {
             // Set to the default value.
-            numOfLevels = DirectoryCommand.config.getLSnumOfLevels();
+            numOfLevels = DirectoryCommand.config.get_LS_numOfLevels();
         } else {
             numOfLevels = inputData.getNumOfLevels().intValue();
             if (numOfLevels < 0) {
@@ -208,7 +207,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         int count;
         if (inputData.getCount() == null) {
             // Set to max entries value. Plus one in order to be able to return TOO_MANY_RESULTS.
-            count = DirectoryCommand.config.getLSMaxNumberOfEntry() + 1;
+            count = DirectoryCommand.config.get_LS_MaxNumberOfEntry() + 1;
         } else {
             count = inputData.getCount().intValue();
             if (count < 0) {
@@ -226,7 +225,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 return outputData;
             }
             if (count == 0) {
-                count = DirectoryCommand.config.getLSMaxNumberOfEntry() + 1;
+                count = DirectoryCommand.config.get_LS_MaxNumberOfEntry() + 1;
             }
             coutOrOffsetAreSpecified = true;
         }
@@ -234,7 +233,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         int offset;
         if (inputData.getOffset() == null) {
             // Set to the default value.
-            offset = DirectoryCommand.config.getLSoffset();
+            offset = DirectoryCommand.config.get_LS_offset();
         } else {
             offset = inputData.getOffset().intValue();
             if (offset < 0) {
@@ -263,7 +262,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         String fileLevelExplanation = "";
         int errorCount = 0;
 
-        int maxEntries = DirectoryCommand.config.getLSMaxNumberOfEntry();
+        int maxEntries = DirectoryCommand.config.get_LS_MaxNumberOfEntry();
         if (count < maxEntries) {
             maxEntries = count;
         }
@@ -381,7 +380,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 try {
                     globalStatus =
                             new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS, "Max returned entries is: "
-                                    + DirectoryCommand.config.getLSMaxNumberOfEntry());
+                                    + DirectoryCommand.config.get_LS_MaxNumberOfEntry());
                 } catch (InvalidTReturnStatusAttributeException e) {
                     log.error("Strange. Never Thrown"+e);
                 }
@@ -591,7 +590,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         try {
 
-            result = element.getChildren(dirOption);
+            result = element.getFirstLevelChildren(dirOption);
 
         } catch (InvalidDescendantsFileRequestException ex1) {
             log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
@@ -644,7 +643,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             // Set Status
             if (!failure) {
                 explanation = "Successful request completion";
-                if (isStoRISURLBusy(element)) {
+                if (element.isSURLBusy()) {
                     statusCode = TStatusCode.SRM_FILE_BUSY;
                 } else {
                     statusCode = TStatusCode.SRM_SUCCESS;
@@ -670,20 +669,6 @@ public class LsCommand extends DirectoryCommand implements Command {
         // Set Status into elementDetail.
         elementDetail.setStatus(returnStatus);
     }
-
-	/**
-	 * Returns true if the status of the SURL of the received StoRI is
-	 * SRM_SPACE_AVAILABLE, false otherwise. This method queries the DB,
-	 * therefore pay attention to possible performance issues.
-	 * 
-	 * @return boolean
-	 */
-    private boolean isStoRISURLBusy(StoRI element) {
-
-        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(element.getSURL());
-        return busyStatus;
-	}
 
 	/**
      * Set full details into "elementDetail". Information details set by the function populateDetailFromFS() are not

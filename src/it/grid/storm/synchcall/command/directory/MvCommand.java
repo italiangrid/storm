@@ -361,7 +361,7 @@ public class MvCommand extends DirectoryCommand implements Command {
              * SRM_FILE_BUSY.
              */
             if (getCatalog.isSRM_FILE_PINNED(fromStori.getSURL())) {
-                // There is an active PrepareToGet!
+                // There is an active PrepareToPut!
                 log.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
                 failure = true;
                 explanation = "There is an active SrmPrepareToGet on from SURL";

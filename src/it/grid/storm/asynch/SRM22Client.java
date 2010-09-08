@@ -1,7 +1,6 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.common.types.Port;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.AbstractGridUser;
@@ -123,7 +122,6 @@ public class SRM22Client implements SRMClient {
             //set file size
             long efs = filesize.value();
             log.debug("NAIVE SRM CLIENT; setting expected file size to: "+efs);
-            //FIXME here we can have -1, that means the absence of information about filesize. manage this case considering the following method!
             org.apache.axis.types.UnsignedLong ulFileSize = new org.apache.axis.types.UnsignedLong(efs);
             stubpfr.setExpectedFileSize(ulFileSize);
             //set target SURL
@@ -449,12 +447,7 @@ public class SRM22Client implements SRMClient {
         } else {
             epString = ep.toString();
         }
-        Port port = toSURL.sfn().port();
-        String portString = "";
-        if (!port.isEmpty()) {
-        	portString=":" + port.toString();
-        } 
-        String sea = "httpg://" + toSURL.sfn().machine() + portString + epString;
+        String sea = "httpg://" + toSURL.sfn().machine() + ":" + toSURL.sfn().port() + epString;
         ((Stub) _srm)._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY,sea);
 
         //return the interface

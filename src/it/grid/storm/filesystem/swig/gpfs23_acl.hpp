@@ -20,6 +20,7 @@
 #ifndef __GPFS23_ACL_H
 #define __GPFS23_ACL_H
 
+
 #include "fs_errors.hpp"
 #include "helper_command.hpp"
 #include "path.hpp"
@@ -29,6 +30,7 @@
 #include <stdexcept>
 #include <sys/acl.h>
 #include <vector>
+
 
 
 /** Get and set ACLs on GPFS filesystem entries.  This is useful only
@@ -95,6 +97,7 @@ class gpfs23_acl : public posixfs_acl {
     bad_input() : fs::error() { }
   };
 
+
 #ifndef SWIG  // SWIG interface generator ought ignore this
 
   /** Convert a permission string in GPFS format ("rwxc") to an @c
@@ -105,6 +108,7 @@ class gpfs23_acl : public posixfs_acl {
   /** Convert an @c permission_t object to the textual representation. */
   static const std::string& permission_to_text (const permission_t perm, 
                                                 std::string& output);
+
 
  protected:
 
@@ -151,4 +155,6 @@ class gpfs23_acl : public posixfs_acl {
   mutable std::vector<std::string> default_acl;
 #endif // #ifndef SWIG
 };
+
+
 #endif // #ifndef __GPFS_ACL_H

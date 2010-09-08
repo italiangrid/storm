@@ -181,7 +181,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
     public String getQueryRetrieveTaskId(String requestToken, String pfn) {
 
-        String queryFormat = "SELECT "+COL_TASK_ID+" FROM "+TABLE_NAME+" WHERE "+COL_REQUEST_TOKEN+"="+formatString(requestToken)+" AND "+COL_FILE_NAME+"='"+pfn+"'";
+        String queryFormat = "SELECT "+COL_TASK_ID+" FROM "+TABLE_NAME+" WHERE "+COL_REQUEST_TOKEN+"='"+formatString(requestToken)+"' AND "+COL_FILE_NAME+"='"+pfn+"'";
 
         return queryFormat;
     }

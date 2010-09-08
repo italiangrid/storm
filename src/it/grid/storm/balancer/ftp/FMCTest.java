@@ -13,8 +13,8 @@ package it.grid.storm.balancer.ftp;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-//import dim.DimCurrentInfo;
-//import dim.DimInfo;
+import dim.DimCurrentInfo;
+import dim.DimInfo;
 
  // ############################################################################
 /**
@@ -54,22 +54,19 @@ public class FMCTest {
         
         String svcName="/FMC/"+baseName.toUpperCase()+"/ps/ntasks";
         //String svcName=baseName.toUpperCase();
-
-        /* Removed linjdim.so and jdim.jar from build path because useless. If needed u can found them in revisions previous the 06/08/2010.*/
-//        return new DimCurrentInfo(svcName,-1).getInt();
-        return -1;
+        return new DimCurrentInfo(svcName,-1).getInt();
 
         //DimInfo srv = new DimInfo("TEST_IT_INT", -1);
         //return srv.getQuality();
 
     }
     
-//    public static void main(String[] args) {
-//        
-//        FMCTest t = new FMCTest();
-//        System.out.println(System.getProperty("java.library.path"));
-//        System.out.println("process: "+t.getN("localhost"));
-//    }
+    public static void main(String[] args) {
+
+        FMCTest t = new FMCTest();
+        System.out.println(System.getProperty("java.library.path"));
+        System.out.println("process: "+t.getN("localhost"));
+ }
 
  }
 

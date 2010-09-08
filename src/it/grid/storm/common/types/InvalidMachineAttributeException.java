@@ -19,7 +19,7 @@ public class InvalidMachineAttributeException extends Exception {
      */
     public InvalidMachineAttributeException(String name) {
         nullName = name==null;
-        emptyName = (name.equals(""));
+        emptyName = name=="";
     }
 
     public String toString() {

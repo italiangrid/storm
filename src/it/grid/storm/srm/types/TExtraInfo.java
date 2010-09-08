@@ -11,6 +11,7 @@ package it.grid.storm.srm.types;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class TExtraInfo {
 
     public static String PNAME_EXTRAINFO = "extraInfo";
@@ -26,63 +27,42 @@ public class TExtraInfo {
       this.value = "N/A";
     }
 
-    public TExtraInfo(String key, String value)
-			throws InvalidTExtraInfoAttributeException {
-
-		if(key == null)
-		{
-			throw new InvalidTExtraInfoAttributeException(key);
-		}
+    public TExtraInfo(String key,String value) throws InvalidTExtraInfoAttributeException {
+        boolean ok = ( !(key ==null));
+        if (!ok) throw new InvalidTExtraInfoAttributeException(key);
 		this.key = key;
 		this.value = value;
+       // System.out.println("TExtraInfo created: key: "+key+", value: "+value);
 	}
 
-    /**
-     * @param inputParam
-     * @param name
-     * @return
-     * @throws InvalidTExtraInfoAttributeException
-     */
-    public static TExtraInfo decode(Map inputParam, String name)
-			throws InvalidTExtraInfoAttributeException {
-
+    public static TExtraInfo decode(Map inputParam, String name) throws InvalidTExtraInfoAttributeException {
 		String k, val;
-		Map param = (Map) inputParam.get(name);
+        Map param;
+        param = (Map)inputParam.get(name);
 		k = (String) param.get(TExtraInfo.PNAME_KEY);
 		val = (String) param.get(TExtraInfo.PNAME_VALUE);
+
 		return new TExtraInfo(k, val);
+
 	}
 
-    /**
-     * @param param
-     * @return
-     * @throws InvalidTExtraInfoAttributeException
-     */
-    public static TExtraInfo decode(Map param)
-			throws InvalidTExtraInfoAttributeException {
-
+    public static TExtraInfo decode(Map param) throws InvalidTExtraInfoAttributeException {
 		String k, val;
 		k = (String) param.get(TExtraInfo.PNAME_KEY);
 		val = (String) param.get(TExtraInfo.PNAME_VALUE);
+
 		return new TExtraInfo(k, val);
+
 	}
 
-    /**
-     * @param outputParam
-     * @param fieldName
-     */
     public void encode(Map outputParam, String fieldName) {
+        Map param = new HashMap();
 
-		HashMap<String, String> param = new HashMap<String, String>();
 		this.encode(param);
-		outputParam.put(fieldName, param);
+        outputParam.put(fieldName, (HashMap) param);
 	}
 
-    /**
-     * @param outputParam
-     */
     public void encode(Map outputParam) {
-
 		outputParam.put(TExtraInfo.PNAME_KEY, (String) key);
 		outputParam.put(TExtraInfo.PNAME_VALUE, (String) value);
 	}

@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <sys/types.h>
 
+
 namespace fs {
 
   /** Interface to GPFS-specific functions. */
@@ -59,7 +60,10 @@ namespace fs {
 
   }; // class gpfs23
  
+  
 }; // namespace fs
+
+
 
 // --- inlined implementation --- //
 

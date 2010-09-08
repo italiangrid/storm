@@ -114,14 +114,9 @@ function normalize_dirpath () {
     cd "$1" && pwd -P && cd - > /dev/null
 }
 
+
+
 ## execution environment setup
-
-if test -e "/etc/profile.d/grid-env.sh"; then
-    source /etc/profile.d/grid-env.sh
-else
-    echo "Warning! No grid-env.sh script found in /etc/profile.d!"
-fi
-
 
 # read config values override (INSTALL_ROOT is from LCG-2's site.def)
 for file in \
@@ -136,24 +131,6 @@ do
   fi
 done
 
-# retrieve architecture BITs
-platform=`uname -m`
-case $platform in
-"i686")
-	ARCH=""
-	echo "32-bit OS"
-	;;
-"x86_64")
-	ARCH="64"
-	echo "64-bit OS"
-	;;
-*)
-	echo "Unknown platform"
-	# Don't install any packages
-	;;
-esac
-
-
 # try to find the installation directory
 if test -z "$STORM_HOME"; then
     for dir in \
@@ -163,7 +140,7 @@ if test -z "$STORM_HOME"; then
         /home/storm \
         ;
       do
-      if test -e "$dir"/${NAME}.jar; then
+      if test -e "$dir"/lib/${NAME}/${NAME}.jar; then
           STORM_HOME="$dir"
           break
       fi
@@ -174,51 +151,26 @@ if test -z "$STORM_HOME"; then
 fi
 export STORM_HOME="`normalize_dirpath "$STORM_HOME"`"
 
-# some Java parameters
-if [ -z $JAVA_HOME ]; then
-    if [ ! -z $JAVA_LOCATION ]; then
-         JAVA_HOME=$JAVA_LOCATION
-    else
-         die 5  "Error! No JAVA_HOME neither JAVA_LOCATION available! Unable to set JAVA_HOME"
-    fi
-fi
-
-  
-JAVA=$JAVA_HOME/bin/java
-
-
 # LCMAPS modules library
 setenv_if_not_set STORM_BE_CONFIG_FILE "$STORM_HOME/etc/storm.properties"
 setenv_if_not_set STORM_BE_CONFIG_REFRESH 0
 setenv_if_not_set STORM_BE_CONFIGDIR "`dirname $STORM_BE_CONFIG_FILE`"
+setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/$NAME"
 setenv_if_not_set STORM_BE_LOGDIR "$STORM_HOME/var/log"
 setenv_if_not_set STORM_BE_TMPDIR "$STORM_HOME/var/tmp"
 setenv_if_not_set STORM_BE_USER "`id -u -n`"
+export LD_LIBRARY_PATH="/opt/glite/lib/modules:$STORM_BE_LIBDIR:$LD_LIBRARY_PATH"
 
+# these depend on STORM_BE_LIBDIR being set
+setenv_if_not_set STORM_BE_JAR "$STORM_BE_LIBDIR/${NAME}.jar"
+setenv_if_not_set STORM_BE_JARDIR "$STORM_BE_LIBDIR/jar"
 
+# make STORM_BE_JAR an absolute path
+if ! expr match "$STORM_BE_JAR" / >&/dev/null; then
+    # relative path, prepend STORM_BE_LIBDIR
+    STORM_BE_JAR="$STORM_BE_LIBDIR/$STORM_BE_JAR"
+fi
 
-setenv_if_not_set STORM_BE_JAR "$STORM_HOME/${NAME}.jar"
-setenv_if_not_set STORM_BE_JARDIR "$STORM_HOME/lib"
-
-#######################
-## make Java classpath without Native Lib
-#######################
-
-classpath="$STORM_BE_JAR"
-for jar in "$STORM_BE_JARDIR"/*.jar; do
-    classpath="$classpath:$jar"
-done
-
-# log4j looks for its config file in the classpath...
-classpath="$classpath:$STORM_BE_CONFIGDIR"
-
-######################
-## Retrieve NATIVE_PATH by PLATFORM
-######################
-PLATFORM=`${JAVA} -cp $STORM_BE_JAR -Xmx32m it.grid.storm.Platform | sed -e "s/ /_/g"`
-
-setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/native/$PLATFORM/"
-export LD_LIBRARY_PATH="/opt/glite/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
 # port for the command server (FIXME: should read from conf. file)
 setenv_if_not_set STORM_COMMAND_PORT 4444
@@ -297,7 +249,15 @@ if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
 fi
 
 
+## make classpath
 
+classpath="$STORM_BE_JAR"
+for jar in "$STORM_BE_JARDIR"/*.jar; do
+    classpath="$classpath:$jar"
+done
+
+# log4j looks for its config file in the classpath...
+classpath="$classpath:$STORM_BE_CONFIGDIR"
 
 
 ASSERTOPTION=-ea

@@ -7,7 +7,7 @@ public class StFNRoot {
 	private String stfnroot;
 
 	public StFNRoot(String stfnroot)throws InvalidStFNRootAttributeException {
-        	if ((stfnroot==null) || (stfnroot.equals("")) || (stfnroot.charAt(0)!='/')) throw new InvalidStFNRootAttributeException(stfnroot);
+        	if ((stfnroot==null) || (stfnroot=="") || (stfnroot.charAt(0)!='/')) throw new InvalidStFNRootAttributeException(stfnroot);
        		 this.stfnroot=stfnroot.replaceAll(" ","");
  	}
 

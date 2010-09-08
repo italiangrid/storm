@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
  * @version 2.0
  */
 public class ReducedPtPChunkData {
-	
-	@SuppressWarnings("unused")
     private static final Logger log = LoggerFactory.getLogger(ReducedPtPChunkData.class);
 
     private long primaryKey = -1; //long representing the primary key for the persistence layer!
@@ -35,71 +33,60 @@ public class ReducedPtPChunkData {
     private TFileStorageType fileStorageType; //fileStorageType of this shunk of the request
     private TLifeTimeInSeconds fileLifetime;  //requested lifetime for SURL in case of Volatile entry.
 
-	public ReducedPtPChunkData(TSURL toSURL, TReturnStatus status,
-			TFileStorageType fileStorageType, TLifeTimeInSeconds fileLifetime)
-			throws InvalidReducedPtPChunkDataAttributesException {
+    public ReducedPtPChunkData(TSURL toSURL, TReturnStatus status, TFileStorageType fileStorageType, TLifeTimeInSeconds fileLifetime)
+    throws InvalidReducedPtPChunkDataAttributesException {
+        boolean ok = status!=null &&
+        toSURL!=null &&
+        fileStorageType!=null &&
+        fileLifetime!=null;
+        if (!ok) {
+            throw new InvalidReducedPtPChunkDataAttributesException(toSURL,status,fileStorageType,fileLifetime);
+        }
+        this.toSURL = toSURL;
+        this.status = status;
+        this.fileStorageType = fileStorageType;
+        this.fileLifetime = fileLifetime;
+    }
 
-		if(status == null || toSURL == null || fileStorageType == null || fileLifetime == null)
-		{
-			throw new InvalidReducedPtPChunkDataAttributesException(toSURL, status,
-				fileStorageType, fileLifetime);
-		}
-		this.toSURL = toSURL;
-		this.status = status;
-		this.fileStorageType = fileStorageType;
-		this.fileLifetime = fileLifetime;
-	}
+    /**
+     * Method used to get the primary key used in the persistence layer!
+     */
+    public long primaryKey() {
+        return primaryKey;
+    }
 
-	/**
-	 * Method used to get the primary key used in the persistence layer!
-	 */
-	public long primaryKey() {
+    /**
+     * Method used to set the primary key to be used in the persistence layer!
+     */
+    public void setPrimaryKey(long l) {
+        primaryKey = l;
+    }
 
-		return primaryKey;
-	}
+    /**
+     * Method that returns the toSURL of the srm request to which this chunk belongs.
+     */
+    public TSURL toSURL() {return toSURL;}
 
-	/**
-	 * Method used to set the primary key to be used in the persistence layer!
-	 */
-	public void setPrimaryKey(long l) {
+    /**
+     * Method that returns the status for this chunk of the srm request.
+     */
+    public TReturnStatus status() {return status;}
 
-		primaryKey = l;
-	}
+    /**
+     * Method that returns the TFileStorageType of the srm request to which this chunk belongs.
+     */
+    public TFileStorageType fileStorageType() {return fileStorageType;}
 
-	/**
-	 * Method that returns the toSURL of the srm request to which this chunk
-	 * belongs.
-	 */
-	public TSURL toSURL() {
+    /**
+     * Method that returns the fileLifetime of the srm request to which this chunk belongs.
+     */
+    public TLifeTimeInSeconds fileLifetime() {return fileLifetime;}
 
-		return toSURL;
-	}
 
-	/**
-	 * Method that returns the status for this chunk of the srm request.
-	 */
-	public TReturnStatus status() {
 
-		return status;
-	}
 
-	/**
-	 * Method that returns the TFileStorageType of the srm request to which this
-	 * chunk belongs.
-	 */
-	public TFileStorageType fileStorageType() {
 
-		return fileStorageType;
-	}
 
-	/**
-	 * Method that returns the fileLifetime of the srm request to which this
-	 * chunk belongs.
-	 */
-	public TLifeTimeInSeconds fileLifetime() {
-
-		return fileLifetime;
-	}
 
     @Override
     public String toString() {

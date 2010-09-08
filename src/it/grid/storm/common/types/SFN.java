@@ -1,5 +1,7 @@
 package it.grid.storm.common.types;
 
+import it.grid.storm.config.Configuration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,7 +46,7 @@ public class SFN {
      * Static method that requires a Machine m, the Port p on that Machine, and the StFN stfn.
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
-    public static SFN makeInSimpleForm(Machine m, Port p, StFN stfn) throws InvalidSFNAttributesException {
+    public static SFN make(Machine m, Port p, StFN stfn) throws InvalidSFNAttributesException {
         if ((m == null) || (p == null) || (stfn == null) || m.isEmpty() || p.isEmpty() || stfn.isEmpty()) {
             throw new InvalidSFNAttributesException(m, p, stfn);
         }
@@ -55,13 +57,10 @@ public class SFN {
      * Static method that requires a Machine m, the Port p on that Machine, and the StFN stfn.
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
-	public static SFN makeInQueryForm(Machine m, Port p, EndPoint ep, StFN stfn)
-			throws InvalidSFNAttributesException {
-
-		if((m == null) || (p == null) || (ep == null) || (stfn == null) || m.isEmpty()
-			|| p.isEmpty() || (ep.isEmpty()) || stfn.isEmpty())
-		{
-			throw new InvalidSFNAttributesException(m, p, ep, stfn);
+    public static SFN makeInQueryForm(Machine m, Port p, EndPoint ep, StFN stfn) throws InvalidSFNAttributesException {
+        if ((m == null) || (p == null) || (ep == null) || (stfn == null) || m.isEmpty() || p.isEmpty()
+                || (ep.isEmpty()) || stfn.isEmpty()) {
+            throw new InvalidSFNAttributesException(m, p, stfn);
 		}
 		return new SFN(m, p, ep, stfn, false);
 	}
@@ -70,15 +69,20 @@ public class SFN {
      * Static method that requires a Machine m, and the StFN stfn.
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
-    public static SFN makeInSimpleForm(Machine m, StFN stfn) throws InvalidSFNAttributesException {
+    public static SFN make(Machine m, StFN stfn) throws InvalidSFNAttributesException {
         if ((m == null) || (stfn == null) || m.isEmpty() || stfn.isEmpty()) {
             throw new InvalidSFNAttributesException(m, null, stfn);
         }
+        try {
             return new SFN(m,
-            			   Port.makeEmpty(),
+                           Port.make(Configuration.getInstance().getServicePort()),
                            EndPoint.makeEmpty(),
                            stfn,
                            false);
+        } catch (InvalidPortAttributeException e) {
+            log.error("ERROR! When creating SFN using Port from Configuration, Port Object creation failed! " + e);
+            throw new InvalidSFNAttributesException(m, null, stfn);
+    }
     }
 
     /**
@@ -86,307 +90,169 @@ public class SFN {
      * An InvalidSFNAttributesException is thrown if any is null or empty.
      */
     public static SFN makeInQueryForm(Machine m, EndPoint ep, StFN stfn) throws InvalidSFNAttributesException {
-
-		if((m == null) || (stfn == null) || (ep == null) || m.isEmpty() || stfn.isEmpty()
-			|| (ep.isEmpty()))
-		{
+        if ((m == null) || (stfn == null) || (ep == null) || m.isEmpty() || stfn.isEmpty() || (ep.isEmpty())) {
 			throw new InvalidSFNAttributesException(m, null, stfn);
 		}
-			return new SFN(m, Port.makeEmpty(), ep, stfn,
-				false);
+        try {
+            return new SFN(m, Port.make(Configuration.getInstance().getServicePort()), ep, stfn, false);
+        } catch (InvalidPortAttributeException e) {
+            log.error("ERROR! When creating SFN using Port from Configuration, Port Object creation failed! " + e);
+            throw new InvalidSFNAttributesException(m, null, stfn);
+    }
     }
 
     /**
-     * Static method that returns an SFN from a String representation. If the supplied String is
+     * Static method that rturns an SFN from a String representation. If the supplied String is
      * null or malformed, an InvalidSFNAttributesException is thrown.
-     * 
-	 * @param surlString a surl string without the protocol schema part
-	 * @return
-	 * @throws ParsingSFNAttributesException
-	 * @throws InvalidSFNAttributesException
 	 */
-	public static SFN makeFromString(String surlString)
-			throws ParsingSFNAttributesException, InvalidSFNAttributesException {
-
-		if(surlString == null)
-		{
-			throw new ParsingSFNAttributesException(surlString, "Supplied SFN String was null!");
+    public static SFN makeFromString(String s) throws InvalidSFNAttributesException {
+        if (s == null) {
+            throw new ParsingSFNAttributesException(s, "Supplied SFN String was null!");
 		}
-		int colon = surlString.indexOf(":"); // first occurence of :
-		int slash = surlString.indexOf("/"); // first occurence of /
-		/* First occurence of ?SFN= */
-		int question = surlString.toUpperCase().indexOf("?SFN="); 
-		// TODO MICHELE USER_SURL refactored
-		if(colon > 0)
-		{
-			if(question < 0)
-			{
-				/*
-				 * Supplied string does not contain a colon, and does not
-				 * contain question mark! Treat it as optional port
-				 * specification, _in_ simple form!
-				 */
-				if((slash == -1) || (slash == 0))
-				{
-					/* Slash not found or right at the beginning! */
-					throw new ParsingSFNAttributesException(
-						surlString,
-						"String interpreted as omitting the optional port specification, and as referring to query form;"
-							+ " but the first slash was either not found or right at the beginning!");
+        int colon = s.indexOf(":"); //first occurence of :
+        int slash = s.indexOf("/"); //first occurence of /
+        int question = s.toUpperCase().indexOf("?SFN="); //first occurence of ?SFN=
+        if ((colon == -1) && (question == -1)) {
+            //supplied string does not contain a colon, and does not contain question mark! Treat it as optional port specification and optional query form!
+            if ((slash == -1) || (slash == 0)) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found or right at the beginning!"); //slash not found or right at the beginning!
 				}
-				return makeFromSimpleFormNoPort(surlString, slash);
+            String mString = s.substring(0, slash);
+            Machine m = null;
+            try {
+                m = Machine.make(mString);
+            } catch (InvalidMachineAttributeException e) {
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
 			}
-			else
-			{
-				/*
-				 * Supplied string does not contain a colon! Treat it as
-				 * optional port specification, _in_ query form!
-				 */
-				if((slash == -1) || (slash == 0) || (slash > question))
-				{
-					/*
-					 * Slash not found or right at the beginning! Or, slash
-					 * follows question!
-					 */
-					throw new ParsingSFNAttributesException(
-						surlString,
-						"String interpreted as omitting the optional port specification,"
-							+ " and as referring to query form; but the first slash was either not found, "
-							+ "or right at the beginning, or only followed the question mark!");
+            //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
+            String stfnString = s.substring(slash, s.length());
+            StFN stfn = null;
+            try {
+                stfn = StFN.make(stfnString);
+            } catch (InvalidStFNAttributeException e) {
+                log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
 				}
-				return makeFromQueryFormNoPort(surlString, question, slash);
+            return SFN.make(m, stfn);
+        } else if ((colon == -1) && (question != -1)) {
+            //supplied string does not contain a colon! Treat it as optional port specification, _in_ query form!
+            if ((slash == -1) || (slash == 0) || (slash > question)) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as omitting the optional port specification, and as referring to query form; but the first slash was either not found, or right at the beginning, or only followed the question mark!"); //slash not found or right at the beginning! Or, slash follows question!
 			}
-		}
-		else
-		{
-			if(question < 0)
-			{
-				/*
-				 * Supplied string contains a colon! Treat it as if port _is_
-				 * specified, and _not_ in query form!
-				 */
-
-				if((colon == 0) || (colon > slash))
-				{
-					/*
-					 * Solon or slash not found or right at the beginning! or,
-					 * colon follows slash!
-					 */
-					throw new ParsingSFNAttributesException(surlString,
-						"String interpreted as specifying port, and as not referring to query form; "
-							+ "but either the colon is missing, or it follows the first slash!");
-				}
-				return makeFromSimpleForm(surlString, colon, slash);
-			}
-			else
-			{
-				/*
-				 * Supplied string contains a port and it also is in query form!
-				 */
-				if((colon == 0) || (colon > slash) || (slash > question))
-				{
-					/*
-					 * Colon or slash not found or right at the beginning! Or,
-					 * colon follows slash! Or slash follows question!
-					 */
-					throw new ParsingSFNAttributesException(surlString,
-						"String interpreted as having the optional port specification, "
-							+ "and as referring to query form; but either colon is missing, "
-							+ "colon follows first slash, or first slash follows question mark!");
-				}
-				return makeFromQueryForm(surlString, colon, slash, question);
-			}
-		}
-    }
-
-	/**
-	 * Returns an SFN from the received string that is supposed to contain the port and to be in simple form
-	 * 
-	 * @param surlString
-	 * @param colon
-	 * @param slash
-	 * @param question
-	 * @return
-	 * @throws ParsingSFNAttributesException
-	 * @throws InvalidSFNAttributesException
-	 */
-	// TODO MICHELE USER_SURL created
-	private static SFN makeFromQueryForm(String surlString, int colon, int slash, int question)  throws ParsingSFNAttributesException, InvalidSFNAttributesException {
-
-		String machineString = surlString.substring(0, colon);
-        Machine machine = null;
+            String mString = s.substring(0, slash);
+            Machine m = null;
         try {
-            machine = Machine.make(machineString);
+                m = Machine.make(mString);
         } catch (InvalidMachineAttributeException e) {
-            log.warn("SFN: Unable to build -machine- attribute with the String '"+machineString+"'."+e);
-        }
-        if ((colon + 1) == slash) {
-            throw new ParsingSFNAttributesException(surlString,
-                                                    "String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!"); //slash found right after colon! There is no port!
-        }
-        String portString = surlString.substring(colon + 1, slash);
-        Port port = null;
-        try {
-            port = Port.make(Integer.parseInt(portString));
-        } catch (InvalidPortAttributeException e) {
-            log.warn("SFN: Unable to build -port- attribute with the String '"+portString+"'."+e);
-        } catch (NumberFormatException e) {
-            log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+portString+"'."+e);
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
         }
         //EndPoint
-        String endpointString = surlString.substring(slash, question);
-        EndPoint endpoint = null;
+            String epString = s.substring(slash, question);
+            EndPoint ep = null;
         try {
-            endpoint = EndPoint.make(endpointString);
+                ep = EndPoint.make(epString);
         } catch (InvalidEndPointAttributeException e) {
-            log.warn("SFN: Unable to build -endpoint- attribute with the String '"+endpointString+"'."+e);
+                log.warn("SFN: Unable to build -endpoint- attribute with the String '"+epString+"'."+e);
         }
         //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
-        if (question + 5 >= surlString.length()) {
-            throw new ParsingSFNAttributesException(surlString,
-                                                    "String interpreted as omitting the optional port specification, and as referring to query form; but theere is nothing left after the question mark!"); //nothing left after question!!!
+            if (question + 5 >= s.length()) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as omitting the optional port specification, and as referring to query form; but nothing left after the question mark!"); //nothing left after question!!!
         }
-        String stfnString = surlString.substring(question + 5, surlString.length());
+            String stfnString = s.substring(question + 5, s.length());
         StFN stfn = null;
         try {
             stfn = StFN.make(stfnString);
         } catch (InvalidStFNAttributeException e) {
             log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
         }
-        return SFN.makeInQueryForm(machine, port, endpoint, stfn);
+            return SFN.makeInQueryForm(m, ep, stfn);
+        } else if ((colon != -1) && (question == -1)) {
+            //supplied string contains a colon! Treat it as if port _is_ specified, and _not_ in query form!
+            if ((colon == 0) || (colon > slash)) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as specifying port, and as not referring to query form; but either the colon is missing, or it follows the first slash!"); //colon or slash not found or right at the beginning! Or, colon follows slash!
 	}
-
-	/**
-	 * 
-	 * Returns an SFN from the received string that is supposed to contain the port and to be in simple form
-	 * 
-	 * @param surlString
-	 * @param colon
-	 * @param slash
-	 * @return
-	 * @throws ParsingSFNAttributesException
-	 * @throws InvalidSFNAttributesException
-	 */
-	// TODO MICHELE USER_SURL created
-	private static SFN makeFromSimpleForm(String surlString, int colon, int slash) throws ParsingSFNAttributesException, InvalidSFNAttributesException {
-
-		String machineString = surlString.substring(0, colon);
-        Machine machine = null;
+            String mString = s.substring(0, colon);
+            Machine m = null;
         try {
-            machine = Machine.make(machineString);
+                m = Machine.make(mString);
         } catch (InvalidMachineAttributeException e) {
-            log.warn("SFN: Unable to build -machine- attribute with the String '"+machineString+"'."+e);
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
         }
         if ((colon + 1) == slash) {
-        	/* Slash found right after colon! There is no port!*/
-            throw new ParsingSFNAttributesException(surlString,
-                                                    "String interpreted as specifying port, and as not referring to query form;" +
-                                                    " but the actual port number is missing since the first slash is " +
-                                                    "found right after the colon"); 
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as specifying port, and as not referring to query form; but the actual port number is missing since the first slash is found right after the colon"); //slash found right after colon! There is no port!
         }
-        String portString = surlString.substring(colon + 1, slash);
-        Port port = null;
+            String pString = s.substring(colon + 1, slash);
+            Port p = null;
         try {
-            port = Port.make(Integer.parseInt(portString));
+                p = Port.make(Integer.parseInt(pString));
         } catch (InvalidPortAttributeException e) {
-            log.warn("SFN: Unable to build -port- attribute with the String '"+portString+"'."+e);
+                log.warn("SFN: Unable to build -port- attribute with the String '"+pString+"'."+e);
         } catch (NumberFormatException e) {
-            log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+portString+"'."+e);
+                log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+pString+"'."+e);
         }
         //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
-        String stfnString = surlString.substring(slash, surlString.length());
+            String stfnString = s.substring(slash, s.length());
         StFN stfn = null;
         try {
             stfn = StFN.make(stfnString);
         } catch (InvalidStFNAttributeException e) {
             log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
         }
-        return SFN.makeInSimpleForm(machine, port, stfn);
+            return SFN.make(m, p, stfn);
+        } else {
+            //colon!=-1 && question!=-1
+            //supplied string contains a port and it also is in query form!
+            if ((colon == 0) || (colon > slash) || (slash > question)) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as having the optional port specification, and as referring to query form; but either colon is missing, colon follows first slash, or first slash follows question mark!"); //colon or slash not found or right at the beginning! Or, colon follows slash! Or slash follows question!
 	}
-
-	/**
-	 * Returns an SFN from the received string that is supposed to not contain the port and to be in query form
-	 * 
-	 * @param surlString
-	 * @param slash 
-	 * @param question 
-	 * @return
-	 * @throws ParsingSFNAttributesException
-	 * @throws InvalidSFNAttributesException
-	 */
-	// TODO MICHELE USER_SURL created
-	private static SFN makeFromQueryFormNoPort(String surlString, int question, int slash) throws ParsingSFNAttributesException, InvalidSFNAttributesException {
-		
-        String machine = surlString.substring(0, slash);
-        Machine machineType = null;
+            String mString = s.substring(0, colon);
+            Machine m = null;
         try {
-            machineType = Machine.make(machine);
+                m = Machine.make(mString);
         } catch (InvalidMachineAttributeException e) {
-            log.warn("SFN: Unable to build -machine- attribute with the String '"+machine+"'."+e);
+                log.warn("SFN: Unable to build -machine- attribute with the String '"+mString+"'."+e);
         }
+            if ((colon + 1) == slash) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!"); //slash found right after colon! There is no port!
+            }
+            String pString = s.substring(colon + 1, slash);
+            Port p = null;
+            try {
+                p = Port.make(Integer.parseInt(pString));
+            } catch (InvalidPortAttributeException e) {
+                log.warn("SFN: Unable to build -port- attribute with the String '"+pString+"'."+e);
+            } catch (NumberFormatException e) {
+                log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"+pString+"'."+e);
+            }
         //EndPoint
-        String endpoint = surlString.substring(slash, question);
-        EndPoint endpointType = null;
+            String epString = s.substring(slash, question);
+            EndPoint ep = null;
         try {
-            endpointType = EndPoint.make(endpoint);
+                ep = EndPoint.make(epString);
         } catch (InvalidEndPointAttributeException e) {
-            log.warn("SFN: Unable to build -endpoint- attribute with the String '"+endpoint+"'."+e);
+                log.warn("SFN: Unable to build -endpoint- attribute with the String '"+epString+"'."+e);
         }
         //StFN checks only for a starting / while the rest can be empty! So it is sufficient to choose whatever String starts at the /... even just the slash itself if that is what is left!!! Should the StFN definition be changed???
-        if (question + 5 >= surlString.length()) {
-            throw new ParsingSFNAttributesException(surlString,
-                                                    "String interpreted as omitting the optional port specification, and as referring to query form; but nothing left after the question mark!"); //nothing left after question!!!
+            if (question + 5 >= s.length()) {
+                throw new ParsingSFNAttributesException(s,
+                                                        "String interpreted as omitting the optional port specification, and as referring to query form; but theere is nothing left after the question mark!"); //nothing left after question!!!
         }
-        String stfnString = surlString.substring(question + 5, surlString.length());
+            String stfnString = s.substring(question + 5, s.length());
         StFN stfn = null;
         try {
             stfn = StFN.make(stfnString);
         } catch (InvalidStFNAttributeException e) {
             log.warn("SFN: Unable to build -stfn- attribute with the String '"+stfnString+"'."+e);
         }
-        return SFN.makeInQueryForm(machineType, endpointType, stfn);
+            return SFN.makeInQueryForm(m, p, ep, stfn);
 	}
-
-	/**
-	 * 
-	 * Returns an SFN from the received string that is supposed to not contain the port and to be in simple form
-	 * @param surlString
-	 * @param slash 
-	 * @return
-	 * @throws ParsingSFNAttributesException
-	 * @throws InvalidSFNAttributesException
-	 */
-	// TODO MICHELE USER_SURL created
-	private static SFN makeFromSimpleFormNoPort(String surlString, int slash)
-			throws ParsingSFNAttributesException, InvalidSFNAttributesException {
-
-		String machine = surlString.substring(0, slash);
-		Machine machineType = null;
-		try
-		{
-			machineType = Machine.make(machine);
-		} catch(InvalidMachineAttributeException e)
-		{
-			log.warn("SFN: Unable to build -machine- attribute with the String '" + machine + "'."
-				+ e);
 		}
-		// StFN checks only for a starting / while the rest can be empty! So it
-		// is sufficient to choose whatever String starts at the /... even just
-		// the slash itself if that is what is left!!! Should the StFN
-		// definition be changed???
-		String stfnString = surlString.substring(slash, surlString.length());
-		StFN stfn = null;
-		try
-		{
-			stfn = StFN.make(stfnString);
-		} catch(InvalidStFNAttributeException e)
-		{
-			log.warn("SFN: Unable to build -stfn- attribute with the String '" + stfnString + "'."
-				+ e);
-		}
-		return SFN.makeInSimpleForm(machineType, stfn);
-
-	}
 
 	/**
      * Method that returns a Collection of all parent SFNs. The following example clarifies
@@ -404,23 +270,23 @@ public class SFN {
      * An empty collection is returned if any error occurs during creation of parent SFNs.
      * Likewise if This is an EmptySFN.
      */
-    public Collection<SFN> getParents() {
+    public Collection getParents() {
         if (empty) {
-            return new ArrayList<SFN>();
+            return new ArrayList();
         }
         try {
-            Collection<SFN> aux = new ArrayList<SFN>();
-            Collection<StFN> auxStFN = pn.getParents();
-            for (Iterator<StFN> i = auxStFN.iterator(); i.hasNext();) {
+            Collection aux = new ArrayList();
+            Collection auxStFN = pn.getParents();
+            for (Iterator i = auxStFN.iterator(); i.hasNext();) {
                 if (ep.isEmpty()) {
-                    aux.add(SFN.makeInSimpleForm(m, p, (StFN) i.next()));
+                    aux.add(SFN.make(m, p, (StFN) i.next()));
                 } else {
                     aux.add(SFN.makeInQueryForm(m, p, ep, (StFN) i.next()));
                 }
             }
             return aux;
         } catch (InvalidSFNAttributesException e) {
-            return new ArrayList<SFN>();
+            return new ArrayList();
         }
     }
 
@@ -443,7 +309,7 @@ public class SFN {
         }
         try {
             if (ep.isEmpty()) {
-                return SFN.makeInSimpleForm(m, p, pn.getParent());
+                return SFN.make(m, p, pn.getParent());
             } else {
                 return SFN.makeInQueryForm(m, p, ep, pn.getParent());
             }
@@ -506,34 +372,14 @@ public class SFN {
 
     @Override
 	public String toString() {
-
-		if(empty)
-		{
+        if (empty) {
 			return "Empty SFN";
 		}
-		if(ep.isEmpty())
-		{
-			if(p.isEmpty())
-			{
-				return m.toString() + pn;
-			}
-			else
-			{
+        if (ep.isEmpty()) {
 				return m + ":" + p + pn;
 			}
-		}
-		else
-		{
-    		if(p.isEmpty())
-    		{
-    			return m.toString() + ep.toString() + "?SFN=" + pn;
-    		}
-    		else
-    		{
 				return m + ":" + p + ep + "?SFN=" + pn;
     		}
-		}
-	}
 
     @Override
     public boolean equals(Object o) {

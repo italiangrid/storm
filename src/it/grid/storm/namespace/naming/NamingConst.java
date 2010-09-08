@@ -2,6 +2,8 @@ package it.grid.storm.namespace.naming;
 
 import it.grid.storm.config.Configuration;
 
+import java.util.Properties;
+
 public class NamingConst {
 
     /**
@@ -20,11 +22,16 @@ public class NamingConst {
     public static final String ROOT_PATH = "/";
 
     private static NamingConst instance = new NamingConst();
+    private final Properties prop = new Properties();
 
     private final Configuration config;
 
     private NamingConst() {
         config = Configuration.getInstance();
+    }
+
+    private Properties getProperties() {
+        return prop;
     }
 
     public static String getServiceDefaultHost() {
@@ -37,6 +44,7 @@ public class NamingConst {
 
     public static String getServiceSFNQueryPrefix() {
         return "SFN";
+        // return instance.config.getSFNQueryStringPrefix();
     }
 
     // public static boolean isWithQueryStringForm() {

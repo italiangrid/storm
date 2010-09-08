@@ -1,6 +1,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.common.types.TURLPrefix;
 import java.util.List;
 import it.grid.storm.namespace.model.Protocol;
@@ -21,34 +22,26 @@ import it.grid.storm.namespace.model.Protocol;
  * @date    June 2005
  */
 public class PtGChunkDataTO {
-	
-	/* Database table request_Get fields BEGIN*/
     private long primaryKey = -1; //ID primary key of record in DB
-    private boolean dirOption; //initialised in constructor
-    private String fromSURL = " ";
-//  TODO MICHELE USER_SURL added new fields
-    private String normalizedStFN = null;
-    private Integer surlUniqueID = null;
-    /* Database table request_Get fields END*/
-    
     private String requestToken = " ";
+    private String fromSURL = " ";
     private int lifetime = 0;
+    private boolean dirOption; //initialised in constructor
     private boolean allLevelRecursive; //initialised in constructor
     private int numLevel; //initialised in constructor
-    private List<String> protocolList = null; //initialised in constructor
+    private List protocolList = null; //initialised in constructor
     private long filesize = 0;
     private int status; //initialised in constructor
     private String errString = " ";
     private String turl = " ";
+    private boolean empty = true;
 
     public PtGChunkDataTO() {
         TURLPrefix protocolPreferences = new TURLPrefix();
         protocolPreferences.addProtocol(Protocol.GSIFTP);
         this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
         this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
-        //TODO MICHELE why? this field is from the DB like the fromSURL...
         this.dirOption = false;
-        //
         this.allLevelRecursive = false;
         this.numLevel = 0;
     }
@@ -58,6 +51,7 @@ public class PtGChunkDataTO {
     }
 
     public void setPrimaryKey(long n) {
+        empty = false;
         primaryKey = n;
     }
 
@@ -66,6 +60,7 @@ public class PtGChunkDataTO {
     }
 
     public void setRequestToken(String s) {
+        empty = false;
         requestToken = s;
     }
 
@@ -74,46 +69,16 @@ public class PtGChunkDataTO {
     }
 
     public void setFromSURL(String s) {
+        empty=false;
         fromSURL=s;
     }
 
-    /**
-	 * @param normalizedStFN the normalizedStFN to set
-	 */
-	public void setNormalizedStFN(String normalizedStFN) {
-
-		this.normalizedStFN = normalizedStFN;
-	}
-
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedStFN() {
-
-		return normalizedStFN;
-	}
-	
-	/**
-	 * @param sURLUniqueID the sURLUniqueID to set
-	 */
-	public void setSurlUniqueID(Integer sURLUniqueID) {
-		
-		this.surlUniqueID = sURLUniqueID;
-	}
-
-	/**
-	 * @return the sURLUniqueID
-	 */
-	public Integer surlUniqueID() {
-
-		return surlUniqueID;
-	}
-
-	public int lifeTime() {
+    public int lifeTime() {
         return lifetime;
     }
 
     public void setLifeTime(int n) {
+        empty=false;
         lifetime=n;
     }
 
@@ -122,6 +87,7 @@ public class PtGChunkDataTO {
     }
 
     public void setDirOption(boolean b) {
+        empty = false;
         dirOption = b;
     }
 
@@ -130,6 +96,7 @@ public class PtGChunkDataTO {
     }
 
     public void setAllLevelRecursive(boolean b) {
+        empty = false;
         allLevelRecursive = b;
     }
 
@@ -138,14 +105,16 @@ public class PtGChunkDataTO {
     }
 
     public void setNumLevel(int n) {
+        empty = false;
         numLevel = n;
     }
 
-    public List<String> protocolList() {
+    public List protocolList() {
         return protocolList;
     }
 
-    public void setProtocolList(List<String> l) {
+    public void setProtocolList(List l) {
+        empty = false;
         if ((l!=null) && (!l.isEmpty())) protocolList = l;
     }
 
@@ -154,6 +123,7 @@ public class PtGChunkDataTO {
     }
 
     public void setFileSize(long n) {
+        empty = false;
         filesize = n;
     }
 
@@ -162,6 +132,7 @@ public class PtGChunkDataTO {
     }
 
     public void setStatus(int n) {
+        empty = false;
         status = n;
     }
 
@@ -170,6 +141,7 @@ public class PtGChunkDataTO {
     }
 
     public void setErrString(String s) {
+        empty = false;
         errString = s;
     }
 
@@ -178,39 +150,24 @@ public class PtGChunkDataTO {
     }
 
     public void setTurl(String s) {
+        empty = false;
         turl = s;
     }
 
-	public String toString() {
-
-		StringBuffer sb = new StringBuffer();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(requestToken);
-		sb.append(" ");
-		sb.append(fromSURL);
-		sb.append(" ");
-		sb.append(normalizedStFN);
-		sb.append(" ");
-		sb.append(surlUniqueID);
-		sb.append(" ");
-		sb.append(lifetime);
-		sb.append(" ");
-		sb.append(dirOption);
-		sb.append(" ");
-		sb.append(allLevelRecursive);
-		sb.append(" ");
-		sb.append(numLevel);
-		sb.append(" ");
-		sb.append(protocolList);
-		sb.append(" ");
-		sb.append(filesize);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		sb.append(turl);
-		return sb.toString();
-	}
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(primaryKey); sb.append(" ");
+        sb.append(requestToken); sb.append(" ");
+        sb.append(fromSURL); sb.append(" ");
+        sb.append(lifetime); sb.append(" ");
+        sb.append(dirOption); sb.append(" ");
+        sb.append(allLevelRecursive); sb.append(" ");
+        sb.append(numLevel); sb.append(" ");
+        sb.append(protocolList); sb.append(" ");
+        sb.append(filesize); sb.append(" ");
+        sb.append(status); sb.append(" ");
+        sb.append(errString); sb.append(" ");
+        sb.append(turl);
+        return sb.toString();
+    }
 }

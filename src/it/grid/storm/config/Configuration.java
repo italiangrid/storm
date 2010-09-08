@@ -10,14 +10,14 @@
 package it.grid.storm.config;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from configuration files,
@@ -30,6 +30,8 @@ import org.apache.commons.lang.ArrayUtils;
 
 public class Configuration {
 
+    private static Logger log = LoggerFactory.getLogger(Configuration.class);
+
     private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
     // as default
     static Configuration instance = new Configuration(); // only
@@ -38,118 +40,6 @@ public class Configuration {
     // configuration
     // class
 
-    private final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
-    private final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
-    private final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
-    private final String SERVICE_PORT_KEY = "storm.service.port";
-    private final String LIST_OF_MACHINE_NAMES_KEY = "storm.service.FE-list.hostnames";
-    private final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-    private final String DB_DRIVER_KEY = "storm.service.request-db.dbms-vendor";
-    private final String DB_URL_1KEY = "storm.service.request-db.protocol";
-    private final String DB_URL_2KEY = "storm.service.request-db.host";
-    private final String DB_URL_3KEY = "storm.service.request-db.db-name";
-    private final String DB_USER_NAME_KEY = "storm.service.request-db.username";
-    private final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
-    private final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
-    private final String DB_RECONNECT_DELAY_KEY = "asynch.db.DelayPeriod";
-    private final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
-    private final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
-    private final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
-    private final String FILE_LIFETIME_DEFAULT_KEY = "fileLifetime.default";
-    private final String PIN_LIFETIME_DEFAULT_KEY = "pinLifetime.default";
-    private final String PIN_LIFETIME_MAXIMUM_KEY = "pinLifetime.maximum";
-    private final String TRANSIT_INITIAL_DELAY_KEY = "transit.delay";
-    private final String TRANSIT_TIME_INTERVAL_KEY = "transit.interval";
-    private final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
-    private final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
-    private final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
-    private final String SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY = "asynch.srmclient.retrytime";
-    private final String SRMCLIENT_PUT_TIME_OUT_KEY = "asynch.srmclient.timeout";
-    private final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
-    private final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
-    private final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
-    private final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
-    private final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
-    private final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
-    private final String SRMCLIENT_KEY = "asynch.srmclient";
-    private final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-    private final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
-    private final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
-    private final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
-    private final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
-    private final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
-    private final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
-    private final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
-    private final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
-    private final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
-    private final String BE_PERSISTENCE_POOL_DB_KEY = "persistence.internal-db.connection-pool";
-	private final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY = "persistence.internal-db.connection-pool.maxActive";
-    private final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY = "persistence.internal-db.connection-pool.maxWait";
-    private final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
-    private final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
-    private final String LS_ALL_LEVEL_RECURSIVE_KEY = "synchcall.directoryManager.default.AllLevelRecursive";
-    private final String LS_NUM_OF_LEVELS_KEY = "synchcall.directoryManager.default.Levels";
-    private final String LS_OFFSET_KEY = "synchcall.directoryManager.default.Offset";
-    private final String PTP_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerCorePoolSize";
-    private final String PTP_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerMaxPoolSize";
-    private final String PTP_QUEUE_SIZE_KEY = "scheduler.chunksched.ptp.queueSize";
-    private final String PTG_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerCorePoolSize";
-    private final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
-    private final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
-    private final String COPY_CORE_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerCorePoolSize";
-    private final String COPY_MAX_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerMaxPoolSize";
-    private final String COPY_QUEUE_SIZE_KEY = "scheduler.chunksched.copy.queueSize";
-    private final String BOL_CORE_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerCorePoolSize";
-    private final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
-    private final String BOL_QUEUE_SIZE_KEY = "scheduler.chunksched.bol.queueSize";
-    private final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
-    private final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
-    private final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
-    private final String NAMESPACE_CONFIG_FILENAME_KEY = "namespace.filename";
-    private final String NAMESPACE_SCHEMA_FILENAME_KEY = "namespace.schema.filename";
-    private final String NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY = "namespace.refreshrate";
-    private final String NAMESPACE_AUTOMATIC_RELOADING_KEY = "namespace.automatic-config-reload";
-    private final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
-    private final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
-    private final String PROXY_HOME_KEY = "proxy.home";
-    private final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
-    private final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
-    private final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
-    private final String PURGE_BATCH_SIZE_KEY = "purge.size";
-    private final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
-    private final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
-    private final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
-    private final String EXPIRED_REQUEST_PURGING_KEY = "purging";
-    private final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes.file";
-    private final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes.rfio";
-    private final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes.gsiftp";
-    private final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes.root";
-    private final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping-properties.filename";
-    private final String HEARTHBEAT_PERIOD_KEY = "health.electrocardiogram.period";
-    private final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY = "health.performance.glance.timeInterval";
-    private final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY = "health.performance.logbook.timeInterval";
-    private final String PERFORMANCE_MEASURING_KEY = "health.performance.mesauring.enabled";
-    private final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
-    private final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
-    private final String MAX_LOOP_KEY = "abort.maxloop";
-    private final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
-    private final String AUTHZ_DB_PATH_KEY = "authzdb.path";
-    private final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-    private final String CHECKSUM_HOSTS_KEY = "checksum.server.hostnames";
-    private final String CHECKSUM_SERVICE_PORTS_KEY = "checksum.server.service_ports";
-    private final String CHECKSUM_STATUS_PORTS_KEY = "checksum.server.status_ports";
-    private final String CHECKSUM_ALGORITHM_KEY = "checksum.algorithm";
-    private final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
-    private final String RECALL_TABLE_SERVICE_PORT_KEY = "tape.recalltable.service.port";
-    private final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-    private final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
-    private final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-    private final String CHECKSUM_ENABLED_KEY = "checksum.enabled";
-    private final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
-    private final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
-    private final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
-
-    
     private Configuration() {
     }
 
@@ -166,6 +56,584 @@ public class Configuration {
     public void setConfigReader(ConfigReader cr) {
         if (cr != null) {
             this.cr = cr;
+        }
+    }
+
+    /*
+     * ############################################################ ## ## MANDATORY PROPERTIES ##
+     * ############################################################
+     * 
+     * NEW KEY | OLD KEY
+     * ---------------------------------------+--------------------------------------------------------
+     * storm.service.SURL.hostname | storm.service.hostname storm.service.SURL.port | storm.service.port fe.port
+     * storm.service.SURL.service-path | storm.service.endpoint | storm.service.FE-list.hostnames | storm.machinenames
+     * storm.service.FE-list.IPs | storm.machineIPs | storm.service.request-db.dbms-vendor | asynch.picker.db.driver
+     * asynch.picker.db.protocol storm.service.request-db.host | asynch.picker.db.host storm.service.request-db.db-name
+     * | asynch.picker.db.name storm.service.request-db.username | asynch.picker.db.username
+     * storm.service.request-db.passwd | asynch.picker.db.passwd |
+     * --------------------------------------+----------------------------------------------------------
+     */
+    /**
+     * MANDATORY CONFIGURATION PARAMETER! Define the SURL endpoints.
+     * 
+     * @return String[]
+     */
+    public String[] getManagedSURLs() {
+        String key = "storm.service.SURL.endpoint";
+        String[] defaultValue = { "UNDEFINED_SERVICE_ENDPOINT" };
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getStringArray(key);
+        }
+    }
+
+	/**
+     * @return String
+     */
+    public String getServiceHostname() {
+        String key = "storm.service.FE-public.hostname";
+        String defaultValue = "UNDEFINED_STORM_HOSTNAME";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /**
+     * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
+     * default one is used instead. key="storm.service.port"; default value="8444"
+     */
+    public int getServicePort() {
+        String key = "storm.service.port";
+        int defaultValue = 8444;
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return defaultValue;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    /**
+     * Method used to get a List of Strings of the names of the machine hosting the FE for _this_ StoRM instance! Used
+     * in srmCopy to understand if the fromSURL/toSURL refer to the server itself or to some other foreign server! The
+     * List contains Strings in _lower_case_!!! If no value is found in the configuration medium, then the default value
+     * is returned instead. key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
+     */
+    public List<String> getListOfMachineNames() {
+        String key = "storm.service.FE-list.hostnames";
+        if (cr.getConfiguration().containsKey(key)) {
+            String[] names = cr.getConfiguration().getStringArray(key);
+
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim().toLowerCase();
+            }
+            return Arrays.asList(names);
+        } else {
+            return Arrays.asList(new String[] { "localhost" });
+        }
+    }
+
+    /**
+     * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM instance! Used in
+     * the xmlrcp server configuration, to allow request coming from the specified IP. (Into the xmlrpc server the
+     * filter is done by IP, not hostname.) This paramter is mandatory when a distribuited FE-BE installation of StoRM
+     * is used togheter with a dynamic DNS on the FE hostname. In that case the properties storm.machinenames is not
+     * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
+     * key="storm.machineIPs"; default value={"127.0.0.1"};
+     */
+    public List<String> getListOfMachineIPs() {
+        String key = "storm.service.FE-list.IPs";
+
+        if (cr.getConfiguration().containsKey(key)) {
+
+            String[] names = cr.getConfiguration().getString(key).split(";"); // split
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim().toLowerCase(); // for each bit remove
+            }
+            return Arrays.asList(names);
+
+        } else {
+            return Arrays.asList(new String[] { "127.0.0.1" });
+        }
+    }
+
+    /**
+     * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the configuration medium, then
+     * the default value is returned instead. key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
+     */
+    public String getDBDriver() {
+        String key = "storm.service.request-db.dbms-vendor";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "com.mysql.jdbc.Driver";
+        } else {
+            // load from external source
+            String vendor = cr.getConfiguration().getString(key);
+            String driver = "";
+            if (vendor.toLowerCase().equals("mysql")) {
+                driver = "com.mysql.jdbc.Driver";
+            } else {
+                log.error("CONFIG ERROR 'RDBMS Vendor ('" + vendor + "')unknown.' ");
+            }
+            return driver;
+        }
+    }
+
+    /**
+     * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium, then the default
+     * value is returned instead. key1="asynch.picker.db.protocol"; default value="jdbc:mysql://";
+     * key2="asynch.picker.db.host"; default value="localhost"; key3="asynch.picker.db.name"; default value="storm_db";
+     * The returned value is made up of the above default values and whatever is read from the configuration medium,
+     * combined in the following way: protocol + host + "/" + name
+     */
+    public String getDBURL() {
+        String prefix = "";
+        String key1 = "storm.service.request-db.protocol";
+        String host = "";
+        String key2 = "storm.service.request-db.host";
+        String name = "";
+        String key3 = "storm.service.request-db.db-name";
+        // get prefix...
+        if (!cr.getConfiguration().containsKey(key1)) {
+            // use default
+            prefix = "jdbc:mysql://";
+        } else {
+            // load from external source
+            prefix = cr.getConfiguration().getString(key1);
+        }
+        // get host...
+        if (!cr.getConfiguration().containsKey(key2)) {
+            // use default
+            host = "localhost";
+        } else {
+            // load from external source
+            host = cr.getConfiguration().getString(key2);
+        }
+        // get db name...
+        if (!cr.getConfiguration().containsKey(key3)) {
+            // use default
+            name = "storm_db";
+        } else {
+            // load from external source
+            name = cr.getConfiguration().getString(key3);
+        }
+        // return value...
+        return prefix + host + "/" + name;
+    }
+
+    /**
+     * Method used by all DAO Objects to get the DB username. If no value is found in the configuration medium, then the
+     * default value is returned instead. Default value = "storm"; key searched in medium = "asynch.picker.db.username".
+     */
+    public String getDBUserName() {
+        String key = "storm.service.request-db.username";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "storm";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /**
+     * Method used by all DAO Objects to get the DB password. If no value is found in the configuration medium, then the
+     * default value is returned instead. Deafult value = "storm"; key searched in medium = "asynch.picker.db.passwd".
+     */
+    public String getDBPassword() {
+        String key = "storm.service.request-db.passwd";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "storm";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /*
+     * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ## ## END definition of MANDATORY PROPERTIESs ##
+     * ############################################################
+     */
+
+    /**
+     * Method used by all DAOs to establish the reconnection period in _seconds_: after such period the DB connection
+     * will be closed and re-opened. Beware that after such time expires, the connection is _not_ automatically closed
+     * and reopened; rather, it acts as a flag that is considered by the main code and when the most appropriate time
+     * comes, the connection is closed and reopened. This is because of MySQL bug that does not allow a connection to
+     * remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the JDBC driver! If
+     * no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.db.ReconnectPeriod"; default value=18000; Keep in mind that 18000 seconds = 5 hours.
+     */
+    public long getDBReconnectPeriod() {
+        String key = "asynch.db.ReconnectPeriod";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 18000; // 18000 sec = 5 hours
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by all DAOs to establish the reconnection delay in _seconds_: when StoRM is first launched it will
+     * wait for this amount of time before starting the timer. This is because of MySQL bug that does not allow a
+     * connection to remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the
+     * JDBC driver! If no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.db.ReconnectDelay"; default value=30;
+     */
+    public long getDBReconnectDelay() {
+        String key = "asynch.db.DelayPeriod";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 30;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the cleaning thread. If
+     * no value is found in the configuration medium, then the default value is returned instead.
+     * key="pinnedfiles.cleaning.delay"; default value=10;
+     */
+    public long getCleaningInitialDelay() {
+        String key = "gc.pinnedfiles.cleaning.delay";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 10;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="pinnedfiles.cleaning.interval"; default
+     * value=300; Keep in mind that 300 seconds = 5 minutes.
+     */
+    public long getCleaningTimeInterval() {
+        String key = "gc.pinnedfiles.cleaning.interval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 300;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Get the default file size
+     * 
+     * @return
+     */
+    public long getFileDefaultSize() {
+        String key = "fileSize.default";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return (1024 * 1024); // 1 MB
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by VolatileAndJiTCatalog to get the default fileLifetime to use when a volatile entry is being
+     * added/updated, but the user specified a non positive value. Measured in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="fileLifetime.default"; default value=3600;
+     */
+    public long getFileLifetimeDefault() {
+        String key = "fileLifetime.default";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 3600;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by VolatileAndJiTCatalog to get the minimum pinLifetime allowed, when a jit is being added/updated,
+     * but the user specified a lower one. This method is also used by the PinLifetimeConverter to translate a
+     * NULL/0/negative value to a default one. Measured in _seconds_. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="pinLifetime.minimum"; default value=30;
+     */
+    public long getPinLifetimeDefault() {
+        String key = "pinLifetime.default";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 259200;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by VolatileAndJiTCatalog to get the maximum pinLifetime allowed, when a jit is being added/updated,
+     * but the user specified a higher one. Measured in _seconds_. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="pinLifetime.maximum"; default value=144000 (40 hours);
+     */
+    public long getPinLifetimeMaximum() {
+        String key = "pinLifetime.maximum";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 1814400;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by PtPChunkCatalog to get the initial delay in _seconds_ before starting the transiting thread. If no
+     * value is found in the configuration medium, then the default value is returned instead. key="transit.delay";
+     * default value=10;
+     */
+    public long getTransitInitialDelay() {
+        String key = "transit.delay";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 10;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_. If no value is found in the
+     * configuration medium, then the default value is returned instead. key="transit.interval"; default value=300; Keep
+     * in mind that 300 seconds = 5 minutes.
+     */
+    public long getTransitTimeInterval() {
+        String key = "transit.interval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 300;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by AdvancedPicker to get the initial delay before starting to pick data from the DB, in _seconds_. If
+     * no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.PickingInitialDelay"; default value=5;
+     */
+    public long getPickingInitialDelay() {
+        String key = "asynch.PickingInitialDelay";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 1;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_. If no value is found
+     * in the configuration medium, then the default value is returned instead. key="asynch.PickingTimeInterval";
+     * default value=15;
+     */
+    public long getPickingTimeInterval() {
+        String key = "asynch.PickingTimeInterval";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 2;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by RequestSummaryDAO to establish the maximum number of requests to retrieve with each polling. If no
+     * value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.PickingMaxBatchSize"; default value=30;
+     */
+    public int getPickingMaxBatchSize() {
+        String key = "asynch.PickingMaxBatchSize";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 100;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    /**
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). It needs it to estalish the
+     * totalRetryTime in seconds to supply to the internal SRMClient. The parameter is passed to the prepareToPut
+     * functionality. If no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.srmclient.retrytime"; default value=60;
+     */
+    public long getSRMClientPutTotalRetryTime() {
+        String key = "asynch.srmclient.retrytime";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 60;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will periodically invoke
+     * the statusOfPutRequest functionality of the internal SRMClient, for at most the time out interval in seconds
+     * returned by this method. If no value is found in the configuration medium, then the default value is returned
+     * instead. key="asynch.srmclient.timeout"; default value=180;
+     */
+    public long getSRMClientPutTimeOut() {
+        String key = "asynch.srmclient.timeout";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 180;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will wait the amount of
+     * time in seconds returned by this method, before invoking again the statusOfPutRequest functionality of the
+     * internal SRMClient. That is, it tells the polling interval. If no value is found in the configuration medium,
+     * then the default value is returned instead. key="asynch.srmclient.sleeptime"; default value=5;
+     */
+    public long getSRMClientPutSleepTime() {
+        String key = "asynch.srmclient.sleeptime";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 5;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk
+     * will wait the amount of time in seconds returned by this method, before invoking again the srmPutDone
+     * functionality of the internal SRMClient. That is, it tells the time interval between successive invocations: they
+     * are necessary when the returned status is SRM_INTERNAL_ERROR which denotes a transient error situation. If no
+     * value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.srmclient.putdone.sleeptime"; default value=2;
+     */
+    public long getSRMClientPutDoneSleepTime() {
+        String key = "asynch.srmclient.putdone.sleeptime";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 1;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk may
+     * have to periodically invoke srmPutDone functionality of the internal SRMClient if the web service returns
+     * SRM_INTERNAL_ERROR; in that case invocations will be attempted for at most the time out interval in seconds
+     * returned by this method. If no value is found in the configuration medium, then the default value is returned
+     * instead. key="asynch.srmclient.putdone.timeout"; default value=60;
+     */
+    public long getSRMClientPutDoneTimeOut() {
+        String key = "asynch.srmclient.putdone.timeout";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 60;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getLong(key);
+        }
+    }
+
+    /**
+     * Get max number of xmlrpc threads into for the XMLRPC server.
+     */
+    public int getMaxXMLRPCThread() {
+        String key = "synchcall.xmlrpc.maxthread";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return 100;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(key);
+        }
+    }
+
+    /**
+     * Get Default Space Tokens
+     * 
+     * @return
+     */
+    public List<String> getListOfDefaultSpaceToken() {
+        String key = "storm.service.defaultSpaceTokens";
+
+        if (cr.getConfiguration().containsKey(key)) {
+
+            String[] namesArray = cr.getConfiguration().getStringArray(key);
+            if (namesArray == null) {
+                return new ArrayList<String>();
+            }
+            return Arrays.asList(namesArray);
+
+        } else {
+            return new ArrayList<String>();
+        }
+    }
+
+    /**
+     * Method used by Factory invoked in CopyChunk subclasses, to instantiate a GridFTPTransferClient. The String
+     * returned specifies the name of the class to instantiate; for now, there are two classes:
+     * NaiveGridFTPTransferClient and StubGridFTPTransferClient. If no value is found in the configuration medium, then
+     * the default value is returned instead. key="asynch.gridftpclient"; default
+     * value="it.grid.storm.asynch.NaiveGridFTPTransferClient";
+     */
+    public String getGridFTPTransferClient() {
+        String key = "asynch.gridftpclient";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "it.grid.storm.asynch.NaiveGridFTPTransferClient";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
+        }
+    }
+
+    /**
+     * Method used by Factory invoked in CopyChunk subclasses, to instantiate an SRMClient. The String returned
+     * specifies the name of the class to instantiate; for now, there are two classes: NaiveSRMClient and StubSRMClient.
+     * If no value is found in the configuration medium, then the default value is returned instead.
+     * key="asynch.srmclient"; default value="it.grid.storm.asynch.SRM22Client";
+     */
+    public String getSRMClient() {
+        String key = "asynch.srmclient";
+        if (!cr.getConfiguration().containsKey(key)) {
+            // return default
+            return "it.grid.storm.asynch.SRM22Client";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -188,577 +656,31 @@ public class Configuration {
         String configDir = storm_home + File.separator + "etc";
         return configDir;
     }
-    
+
+    /**
+     * Method used by Space Reservation component to get the complete pathname for the "namespace.xml" configuration
+     * File. This configuration file contains information about the mapping between user, vo, storage area, default
+     * lifetime and filetype. This method searches the configuration medium for the configuration directory, and if it
+     * does not find it then a default value for such directory is used. The returned String is of the form:
+     * storm.configuration.dir + "/" + "namespace.xml" key=storm.configuration.dir; default value="/home/storm/config";
+     */
     /*
-     * ############################################################ ## ## MANDATORY PROPERTIES ##
-     * ############################################################
-     * 
-     * NEW KEY | OLD KEY
-     * ---------------------------------------+--------------------------------------------------------
-     * storm.service.SURL.hostname | storm.service.hostname storm.service.SURL.port | storm.service.port fe.port
-     * storm.service.SURL.service-path | storm.service.endpoint | storm.service.FE-list.hostnames | storm.machinenames
-     * storm.service.FE-list.IPs | storm.machineIPs | storm.service.request-db.dbms-vendor | asynch.picker.db.driver
-     * asynch.picker.db.protocol storm.service.request-db.host | asynch.picker.db.host storm.service.request-db.db-name
-     * | asynch.picker.db.name storm.service.request-db.username | asynch.picker.db.username
-     * storm.service.request-db.passwd | asynch.picker.db.passwd |
-     * --------------------------------------+----------------------------------------------------------
+     * public String getNamespaceConfigurationFile() { String dirValue = ""; dirValue = cr.configurationDirectory();
+     * String config_file = dirValue; if (!config_file.endsWith(java.io.File.separator)) { config_file = config_file +
+     * java.io.File.separator; } config_file = config_file + "namespace.xml"; return config_file; }
      */
-    /**
-     * MANDATORY CONFIGURATION PARAMETER! Define the SURL endpoints.
-     * 
-     * @return String[]
-     */
-    public String[] getManagedSURLs() {
-//        String key = "storm.service.SURL.endpoint";
-        String[] defaultValue = { "UNDEFINED_SERVICE_ENDPOINT" };
-        if (!cr.getConfiguration().containsKey(MANAGED_SURLS_KEY)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getStringArray(MANAGED_SURLS_KEY);
-        }
-    }
-
-	/**
-	 * @return
-	 */
-	public Integer[] getManagedSurlDefaultPorts() {
-
-		Integer[] portsArray;
-		if(!cr.getConfiguration().containsKey(MANAGED_SURL_DEFAULT_PORTS_KEY))
-		{
-			// return default
-			portsArray = new Integer[] { 8444 };
-		}
-		else
-		{
-			// load from external source
-			String[] portString = cr.getConfiguration().getStringArray(MANAGED_SURL_DEFAULT_PORTS_KEY);
-			ArrayList<Integer> ports = new ArrayList<Integer>();
-			for(String port : portString)
-			{
-				ports.add(Integer.parseInt(port.trim()));
-			}
-			portsArray = ports.toArray(new Integer[0]);
-		}
-		return portsArray;
-	}
-    
-    /**
-     * @return String
-     */
-    public String getServiceHostname() {
-        String defaultValue = "UNDEFINED_STORM_HOSTNAME";
-        if (!cr.getConfiguration().containsKey(SERVICE_HOSTNAME_KEY)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY);
-        }
-    }
 
     /**
-     * Method used by SFN to establish the FE binding port. If no value is found in the configuration medium, then the
-     * default one is used instead. key="storm.service.port"; default value="8444"
+     * Method used in filesystem wrapper to get the directory path for temporary file creation: StoRM crates a temporary
+     * file to manage GPFS ACL, and these files are created in the temporary directory specified here. If no value is
+     * found in the configuration medium, then the default value is returned instead.
+     * key="wrapper.filesystem.acl.tmpdir"; default value="/tmp";
      */
-    public int getServicePort() {
-        int defaultValue = 8444;
-        if (!cr.getConfiguration().containsKey(SERVICE_PORT_KEY)) {
-            // return default
-            return defaultValue;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(SERVICE_PORT_KEY);
-        }
-    }
-
-    /**
-     * Method used to get a List of Strings of the names of the machine hosting the FE for _this_ StoRM instance! Used
-     * in srmCopy to understand if the fromSURL/toSURL refer to the server itself or to some other foreign server! The
-     * List contains Strings in _lower_case_!!! If no value is found in the configuration medium, then the default value
-     * is returned instead. key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
-     */
-    public List<String> getListOfMachineNames() {
-        if (cr.getConfiguration().containsKey(LIST_OF_MACHINE_NAMES_KEY)) {
-            String[] names = cr.getConfiguration().getStringArray(LIST_OF_MACHINE_NAMES_KEY);
-
-            for (int i = 0; i < names.length; i++) {
-                names[i] = names[i].trim().toLowerCase();
-            }
-            return Arrays.asList(names);
-        } else {
-            return Arrays.asList(new String[] { "localhost" });
-        }
-    }
-
-    /**
-     * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM instance! Used in
-     * the xmlrcp server configuration, to allow request coming from the specified IP. (Into the xmlrpc server the
-     * filter is done by IP, not hostname.) This paramter is mandatory when a distribuited FE-BE installation of StoRM
-     * is used togheter with a dynamic DNS on the FE hostname. In that case the properties storm.machinenames is not
-     * enough meaningfull. If no value is found in the configuration medium, then the default value is returned instead.
-     * key="storm.machineIPs"; default value={"127.0.0.1"};
-     */
-    public List<String> getListOfMachineIPs() {
-
-        if (cr.getConfiguration().containsKey(LIST_OF_MACHINE_IPS_KEY)) {
-
-            String[] names = cr.getConfiguration().getString(LIST_OF_MACHINE_IPS_KEY).split(";"); // split
-            for (int i = 0; i < names.length; i++) {
-                names[i] = names[i].trim().toLowerCase(); // for each bit remove
-            }
-            return Arrays.asList(names);
-
-        } else {
-            return Arrays.asList(new String[] { "127.0.0.1" });
-        }
-    }
-
-    /**
-     * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the configuration medium, then
-     * the default value is returned instead. key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
-     */
-    public String getDBDriver() {
-        if (!cr.getConfiguration().containsKey(DB_DRIVER_KEY)) {
-            // return default
-            return "com.mysql.jdbc.Driver";
-        } else {
-            // load from external source
-            String vendor = cr.getConfiguration().getString(DB_DRIVER_KEY);
-            String driver = "";
-            if (vendor.toLowerCase().equals("mysql")) {
-                driver = "com.mysql.jdbc.Driver";
-            } else {
-                System.err.println("CONFIG ERROR 'RDBMS Vendor ('" + vendor + "')unknown.' ");
-            }
-            return driver;
-        }
-    }
-
-    /**
-     * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium, then the default
-     * value is returned instead. key1="asynch.picker.db.protocol"; default value="jdbc:mysql://";
-     * key2="asynch.picker.db.host"; default value="localhost"; key3="asynch.picker.db.name"; default value="storm_db";
-     * The returned value is made up of the above default values and whatever is read from the configuration medium,
-     * combined in the following way: protocol + host + "/" + name
-     */
-    public String getDBURL() {
-        String prefix = "";
-        String host = "";
-        String name = "";
-        // get prefix...
-        if (!cr.getConfiguration().containsKey(DB_URL_1KEY)) {
-            // use default
-            prefix = "jdbc:mysql://";
-        } else {
-            // load from external source
-            prefix = cr.getConfiguration().getString(DB_URL_1KEY);
-        }
-        // get host...
-        if (!cr.getConfiguration().containsKey(DB_URL_2KEY)) {
-            // use default
-            host = "localhost";
-        } else {
-            // load from external source
-            host = cr.getConfiguration().getString(DB_URL_2KEY);
-        }
-        // get db name...
-        if (!cr.getConfiguration().containsKey(DB_URL_3KEY)) {
-            // use default
-            name = "storm_db";
-        } else {
-            // load from external source
-            name = cr.getConfiguration().getString(DB_URL_3KEY);
-        }
-        // return value...
-        return prefix + host + "/" + name;
-    }
-
-    /**
-     * Method used by all DAO Objects to get the DB username. If no value is found in the configuration medium, then the
-     * default value is returned instead. Default value = "storm"; key searched in medium = "asynch.picker.db.username".
-     */
-    public String getDBUserName() {
-        if (!cr.getConfiguration().containsKey(DB_USER_NAME_KEY)) {
-            // return default
-            return "storm";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(DB_USER_NAME_KEY);
-        }
-    }
-
-    /**
-     * Method used by all DAO Objects to get the DB password. If no value is found in the configuration medium, then the
-     * default value is returned instead. Deafult value = "storm"; key searched in medium = "asynch.picker.db.passwd".
-     */
-    public String getDBPassword() {
-        if (!cr.getConfiguration().containsKey(DB_PASSWORD_KEY)) {
-            // return default
-            return "storm";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(DB_PASSWORD_KEY);
-        }
-    }
-
     /*
-     * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ## ## END definition of MANDATORY PROPERTIESs ##
-     * ############################################################
+     * public String getTempDir() { String key = "wrapper.filesystem.acl.tmpdir"; if
+     * (!cr.getConfiguration().containsKey(key)) { // return default return "/tmp"; } else { // load from external
+     * source return cr.getConfiguration().getString(key); } }
      */
-
-    /**
-     * Method used by all DAOs to establish the reconnection period in _seconds_: after such period the DB connection
-     * will be closed and re-opened. Beware that after such time expires, the connection is _not_ automatically closed
-     * and reopened; rather, it acts as a flag that is considered by the main code and when the most appropriate time
-     * comes, the connection is closed and reopened. This is because of MySQL bug that does not allow a connection to
-     * remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the JDBC driver! If
-     * no value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.db.ReconnectPeriod"; default value=18000; Keep in mind that 18000 seconds = 5 hours.
-     */
-    public long getDBReconnectPeriod() {
-        if (!cr.getConfiguration().containsKey(DB_RECONNECT_PERIOD_KEY)) {
-            // return default
-            return 18000; // 18000 sec = 5 hours
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(DB_RECONNECT_PERIOD_KEY);
-        }
-    }
-
-    /**
-     * Method used by all DAOs to establish the reconnection delay in _seconds_: when StoRM is first launched it will
-     * wait for this amount of time before starting the timer. This is because of MySQL bug that does not allow a
-     * connection to remain open for an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the
-     * JDBC driver! If no value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.db.ReconnectDelay"; default value=30;
-     */
-    public long getDBReconnectDelay() {
-        if (!cr.getConfiguration().containsKey(DB_RECONNECT_DELAY_KEY)) {
-            // return default
-            return 30;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(DB_RECONNECT_DELAY_KEY);
-        }
-    }
-
-    /**
-     * Method used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the cleaning thread. If
-     * no value is found in the configuration medium, then the default value is returned instead.
-     * key="pinnedfiles.cleaning.delay"; default value=10;
-     */
-    public long getCleaningInitialDelay() {
-        if (!cr.getConfiguration().containsKey(CLEANING_INITIAL_DELAY_KEY)) {
-            // return default
-            return 10;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(CLEANING_INITIAL_DELAY_KEY);
-        }
-    }
-
-    /**
-     * Method used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_. If no value is found in the
-     * configuration medium, then the default value is returned instead. key="pinnedfiles.cleaning.interval"; default
-     * value=300; Keep in mind that 300 seconds = 5 minutes.
-     */
-    public long getCleaningTimeInterval() {
-        if (!cr.getConfiguration().containsKey(CLEANING_TIME_INTERVAL_KEY)) {
-            // return default
-            return 300;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(CLEANING_TIME_INTERVAL_KEY);
-        }
-    }
-
-    /**
-     * Get the default file size
-     * 
-     * @return
-     */
-    public long getFileDefaultSize() {
-        if (!cr.getConfiguration().containsKey(FILE_DEFAULT_SIZE_KEY)) {
-            // return default
-            return (1024 * 1024); // 1 MB
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY);
-        }
-    }
-
-    /**
-     * Method used by VolatileAndJiTCatalog to get the default fileLifetime to use when a volatile entry is being
-     * added/updated, but the user specified a non positive value. Measured in _seconds_. If no value is found in the
-     * configuration medium, then the default value is returned instead. key="fileLifetime.default"; default value=3600;
-     */
-    public long getFileLifetimeDefault() {
-        if (!cr.getConfiguration().containsKey(FILE_LIFETIME_DEFAULT_KEY)) {
-            // return default
-            return 3600;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(FILE_LIFETIME_DEFAULT_KEY);
-        }
-    }
-
-    /**
-     * Method used by VolatileAndJiTCatalog to get the minimum pinLifetime allowed, when a jit is being added/updated,
-     * but the user specified a lower one. This method is also used by the PinLifetimeConverter to translate a
-     * NULL/0/negative value to a default one. Measured in _seconds_. If no value is found in the configuration medium,
-     * then the default value is returned instead. key="pinLifetime.minimum"; default value=30;
-     */
-    public long getPinLifetimeDefault() {
-        if (!cr.getConfiguration().containsKey(PIN_LIFETIME_DEFAULT_KEY)) {
-            // return default
-            return 259200;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(PIN_LIFETIME_DEFAULT_KEY);
-        }
-    }
-
-    /**
-     * Method used by VolatileAndJiTCatalog to get the maximum pinLifetime allowed, when a jit is being added/updated,
-     * but the user specified a higher one. Measured in _seconds_. If no value is found in the configuration medium,
-     * then the default value is returned instead. key="pinLifetime.maximum"; default value=144000 (40 hours);
-     */
-    public long getPinLifetimeMaximum() {
-        if (!cr.getConfiguration().containsKey(PIN_LIFETIME_MAXIMUM_KEY)) {
-            // return default
-            return 1814400;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(PIN_LIFETIME_MAXIMUM_KEY);
-        }
-    }
-
-    /**
-     * Method used by PtPChunkCatalog to get the initial delay in _seconds_ before starting the transiting thread. If no
-     * value is found in the configuration medium, then the default value is returned instead. key="transit.delay";
-     * default value=10;
-     */
-    public long getTransitInitialDelay() {
-        if (!cr.getConfiguration().containsKey(TRANSIT_INITIAL_DELAY_KEY)) {
-            // return default
-            return 10;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(TRANSIT_INITIAL_DELAY_KEY);
-        }
-    }
-
-    /**
-     * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_. If no value is found in the
-     * configuration medium, then the default value is returned instead. key="transit.interval"; default value=300; Keep
-     * in mind that 300 seconds = 5 minutes.
-     */
-    public long getTransitTimeInterval() {
-        if (!cr.getConfiguration().containsKey(TRANSIT_TIME_INTERVAL_KEY)) {
-            // return default
-            return 300;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(TRANSIT_TIME_INTERVAL_KEY);
-        }
-    }
-
-    /**
-     * Method used by AdvancedPicker to get the initial delay before starting to pick data from the DB, in _seconds_. If
-     * no value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.PickingInitialDelay"; default value=5;
-     */
-    public long getPickingInitialDelay() {
-        if (!cr.getConfiguration().containsKey(PICKING_INITIAL_DELAY_KEY)) {
-            // return default
-            return 1;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(PICKING_INITIAL_DELAY_KEY);
-        }
-    }
-
-    /**
-     * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_. If no value is found
-     * in the configuration medium, then the default value is returned instead. key="asynch.PickingTimeInterval";
-     * default value=15;
-     */
-    public long getPickingTimeInterval() {
-        if (!cr.getConfiguration().containsKey(PICKING_TIME_INTERVAL_KEY)) {
-            // return default
-            return 2;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(PICKING_TIME_INTERVAL_KEY);
-        }
-    }
-
-    /**
-     * Method used by RequestSummaryDAO to establish the maximum number of requests to retrieve with each polling. If no
-     * value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.PickingMaxBatchSize"; default value=30;
-     */
-    public int getPickingMaxBatchSize() {
-        if (!cr.getConfiguration().containsKey(PICKING_MAX_BATCH_SIZE_KEY)) {
-            // return default
-            return 100;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY);
-        }
-    }
-
-    /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). It needs it to estalish the
-     * totalRetryTime in seconds to supply to the internal SRMClient. The parameter is passed to the prepareToPut
-     * functionality. If no value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.srmclient.retrytime"; default value=60;
-     */
-    public long getSRMClientPutTotalRetryTime() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY)) {
-            // return default
-            return 60;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY);
-        }
-    }
-
-    /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will periodically invoke
-     * the statusOfPutRequest functionality of the internal SRMClient, for at most the time out interval in seconds
-     * returned by this method. If no value is found in the configuration medium, then the default value is returned
-     * instead. key="asynch.srmclient.timeout"; default value=180;
-     */
-    public long getSRMClientPutTimeOut() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TIME_OUT_KEY)) {
-            // return default
-            return 180;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(SRMCLIENT_PUT_TIME_OUT_KEY);
-        }
-    }
-
-    /**
-     * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode). The CopyChunk will wait the amount of
-     * time in seconds returned by this method, before invoking again the statusOfPutRequest functionality of the
-     * internal SRMClient. That is, it tells the polling interval. If no value is found in the configuration medium,
-     * then the default value is returned instead. key="asynch.srmclient.sleeptime"; default value=5;
-     */
-    public long getSRMClientPutSleepTime() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_SLEEP_TIME_KEY)) {
-            // return default
-            return 5;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(SRMCLIENT_PUT_SLEEP_TIME_KEY);
-        }
-    }
-
-    /**
-     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk
-     * will wait the amount of time in seconds returned by this method, before invoking again the srmPutDone
-     * functionality of the internal SRMClient. That is, it tells the time interval between successive invocations: they
-     * are necessary when the returned status is SRM_INTERNAL_ERROR which denotes a transient error situation. If no
-     * value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.srmclient.putdone.sleeptime"; default value=2;
-     */
-    public long getSRMClientPutDoneSleepTime() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY)) {
-            // return default
-            return 1;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY);
-        }
-    }
-
-    /**
-     * Method used by CopyChunk when making the FileTransfer and finally invoking a remote srmPutDone. The CopyChunk may
-     * have to periodically invoke srmPutDone functionality of the internal SRMClient if the web service returns
-     * SRM_INTERNAL_ERROR; in that case invocations will be attempted for at most the time out interval in seconds
-     * returned by this method. If no value is found in the configuration medium, then the default value is returned
-     * instead. key="asynch.srmclient.putdone.timeout"; default value=60;
-     */
-    public long getSRMClientPutDoneTimeOut() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_TIME_OUT_KEY)) {
-            // return default
-            return 60;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_TIME_OUT_KEY);
-        }
-    }
-
-    /**
-     * Get max number of xmlrpc threads into for the XMLRPC server.
-     */
-    public int getMaxXMLRPCThread() {
-        if (!cr.getConfiguration().containsKey(MAX_XMLRPC_THREAD_KEY)) {
-            // return default
-            return 100;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(MAX_XMLRPC_THREAD_KEY);
-        }
-    }
-
-    /**
-     * Get Default Space Tokens
-     * 
-     * @return
-     */
-    public List<String> getListOfDefaultSpaceToken() {
-
-        if (cr.getConfiguration().containsKey(LIST_OF_DEFAULT_SPACE_TOKEN_KEY)) {
-
-            String[] namesArray = cr.getConfiguration().getStringArray(LIST_OF_DEFAULT_SPACE_TOKEN_KEY);
-            if (namesArray == null) {
-                return new ArrayList<String>();
-            }
-            return Arrays.asList(namesArray);
-
-        } else {
-            return new ArrayList<String>();
-        }
-    }
-
-    /**
-     * Method used by Factory invoked in CopyChunk subclasses, to instantiate a GridFTPTransferClient. The String
-     * returned specifies the name of the class to instantiate; for now, there are two classes:
-     * NaiveGridFTPTransferClient and StubGridFTPTransferClient. If no value is found in the configuration medium, then
-     * the default value is returned instead. key="asynch.gridftpclient"; default
-     * value="it.grid.storm.asynch.NaiveGridFTPTransferClient";
-     */
-    public String getGridFTPTransferClient() {
-        if (!cr.getConfiguration().containsKey(GRIDFTP_TRANSFER_CLIENT_KEY)) {
-            // return default
-            return "it.grid.storm.asynch.NaiveGridFTPTransferClient";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(GRIDFTP_TRANSFER_CLIENT_KEY);
-        }
-    }
-
-    /**
-     * Method used by Factory invoked in CopyChunk subclasses, to instantiate an SRMClient. The String returned
-     * specifies the name of the class to instantiate; for now, there are two classes: NaiveSRMClient and StubSRMClient.
-     * If no value is found in the configuration medium, then the default value is returned instead.
-     * key="asynch.srmclient"; default value="it.grid.storm.asynch.SRM22Client";
-     */
-    public String getSRMClient() {
-        if (!cr.getConfiguration().containsKey(SRMCLIENT_KEY)) {
-            // return default
-            return "it.grid.storm.asynch.SRM22Client";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(SRMCLIENT_KEY);
-        }
-    }
 
     /**
      * Method used by StoRMCommandServer to establish the listening port to which it should bind. If no value is found
@@ -766,12 +688,13 @@ public class Configuration {
      * value=4444;
      */
     public int getCommandServerBindingPort() {
-        if (!cr.getConfiguration().containsKey(COMMAND_SERVER_BINDING_PORT_KEY)) {
+        String key = "storm.commandserver.port";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 4444;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -781,12 +704,13 @@ public class Configuration {
      * value=false;
      */
     public boolean getSerialScheduler() {
-        if (!cr.getConfiguration().containsKey(SERIAL_SCHEDULER_KEY)) {
+        String key = "scheduler.serial";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(SERIAL_SCHEDULER_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -794,13 +718,14 @@ public class Configuration {
      * Method used in Persistence Component It returns the DB vendor name. If no value is found in the configuration
      * medium, then the default value is returned instead. key="persistence.db.vendor"; default value="mysql";
      */
-    public String getBEPersistenceDBVendor() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_VENDOR_KEY)) {
+    public String getBE_PersistenceDBVendor() {
+        String key = "persistence.internal-db.dbms-vendor";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "mysql";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(BE_PERSISTENCE_DB_VENDOR_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -809,18 +734,20 @@ public class Configuration {
      * configuration medium, then the default value is returned instead. key="persistence.db.host"; default
      * value="localhost";
      */
-    public String getBEPersistenceDBMSUrl() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DBMS_URL_1KEY)) {
+    public String getBE_PersistenceDBMSUrl() {
+        String key = "persistence.internal-db.host";
+        String alternativeKey = "storm.service.request-db.host";
+        if (!cr.getConfiguration().containsKey(key)) {
             // Try with the alternative key
-            if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DBMS_URL_2KEY)) {
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
                 // return default
                 return "localhost";
             } else {
-                return cr.getConfiguration().getString(BE_PERSISTENCE_DBMS_URL_2KEY);
+                return cr.getConfiguration().getString(alternativeKey);
             }
         } else {
             // load from external source
-            return cr.getConfiguration().getString(BE_PERSISTENCE_DBMS_URL_1KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -829,13 +756,14 @@ public class Configuration {
      * configuration medium, then the default value is returned instead. key="persistence.db.name"; default
      * value="storm_be_ISAM";
      */
-    public String getBEPersistenceDBName() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_NAME_KEY)) {
+    public String getBE_PersistenceDBName() {
+        String key = "persistence.internal-db.db-name";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm_be_ISAM";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(BE_PERSISTENCE_DB_NAME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -844,18 +772,20 @@ public class Configuration {
      * in the configuration medium, then the default value is returned instead. key="persistence.db.username"; default
      * value="storm";
      */
-    public String getBEPersistenceDBUserName() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCEDB_USER_NAME_1KEY)) {
+    public String getBE_PersistenceDBUserName() {
+        String key = "persistence.internal-db.username";
+        String alternativeKey = "storm.service.request-db.username";
+        if (!cr.getConfiguration().containsKey(key)) {
             // Try with the alternative key
-            if (!cr.getConfiguration().containsKey(BE_PERSISTENCEDB_USER_NAME_2KEY)) {
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
                 // return default
                 return "storm";
             } else {
-                return cr.getConfiguration().getString(BE_PERSISTENCEDB_USER_NAME_2KEY);
+                return cr.getConfiguration().getString(alternativeKey);
             }
         } else {
             // load from external source
-            return cr.getConfiguration().getString(BE_PERSISTENCEDB_USER_NAME_1KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -864,18 +794,20 @@ public class Configuration {
      * found in the configuration medium, then the default value is returned instead. key="persistence.db.passwd";
      * default value="storm";
      */
-    public String getBEPersistenceDBPassword() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_PASSWORD_1KEY)) {
+    public String getBE_PersistenceDBPassword() {
+        String key = "persistence.internal-db.passwd";
+        String alternativeKey = "storm.service.request-db.passwd";
+        if (!cr.getConfiguration().containsKey(key)) {
             // Try with the alternative key
-            if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_PASSWORD_2KEY)) {
+            if (!cr.getConfiguration().containsKey(alternativeKey)) {
                 // return default
                 return "storm";
             } else {
-                return cr.getConfiguration().getString(BE_PERSISTENCE_DB_PASSWORD_2KEY);
+                return cr.getConfiguration().getString(alternativeKey);
             }
         } else {
             // load from external source
-            return cr.getConfiguration().getString(BE_PERSISTENCE_DB_PASSWORD_1KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -884,13 +816,14 @@ public class Configuration {
      * no value is found in the configuration medium, then the default value is returned instead.
      * key="persistence.db.pool"; default value=false;
      */
-    public boolean getBEPersistencePoolDB() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_POOL_DB_KEY)) {
+    public boolean getBE_PersistencePoolDB() {
+        String key = "persistence.internal-db.connection-pool";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(BE_PERSISTENCE_POOL_DB_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -900,13 +833,14 @@ public class Configuration {
      * time... 0 (zero) for no limit. If no value is found in the configuration medium, then the default value is
      * returned instead. key="persistence.db.pool.maxActive"; default value=10;
      */
-    public int getBEPersistencePoolDBMaxActive() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY)) {
+    public int getBE_PersistencePoolDB_MaxActive() {
+        String key = "persistence.internal-db.connection-pool.maxActive";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -917,13 +851,14 @@ public class Configuration {
      * If no value is found in the configuration medium, then the default value is returned instead.
      * key="persistence.db.pool.maxWait"; default value=50;
      */
-    public int getBEPersistencePoolDBMaxWait() {
-        if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY)) {
+    public int getBE_PersistencePoolDB_MaxWait() {
+        String key = "persistence.internal-db.connection-pool.maxWait";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 50;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -933,12 +868,13 @@ public class Configuration {
      * key="synchcall.xmlrpc.unsecureServerPort"; default value=8080;
      */
     public int getXmlRpcServerPort() {
-        if (!cr.getConfiguration().containsKey(XMLRPC_SERVER_PORT_KEY)) {
+        String key = "synchcall.xmlrpc.unsecureServerPort";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 8080;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -949,13 +885,14 @@ public class Configuration {
      * 
      * @return int
      */
-    public int getLSMaxNumberOfEntry() {
-        if (!cr.getConfiguration().containsKey(LS_MAX_NUMBER_OF_ENTRY_KEY)) {
+    public int get_LS_MaxNumberOfEntry() {
+        String key = "synchcall.directoryManager.maxLsEntry";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 500;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(LS_MAX_NUMBER_OF_ENTRY_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -964,14 +901,15 @@ public class Configuration {
      * 
      * @return boolean
      */
-    public boolean getLSallLevelRecursive() {
+    public boolean get_LS_allLevelRecursive() {
 
-        if (!cr.getConfiguration().containsKey(LS_ALL_LEVEL_RECURSIVE_KEY)) {
+        String key = "synchcall.directoryManager.default.AllLevelRecursive";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(LS_ALL_LEVEL_RECURSIVE_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -980,13 +918,14 @@ public class Configuration {
      * 
      * @return int
      */
-    public int getLSnumOfLevels() {
-        if (!cr.getConfiguration().containsKey(LS_NUM_OF_LEVELS_KEY)) {
+    public int get_LS_numOfLevels() {
+        String key = "synchcall.directoryManager.default.Levels";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 1;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(LS_NUM_OF_LEVELS_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -995,13 +934,14 @@ public class Configuration {
      * 
      * @return int
      */
-    public int getLSoffset() {
-        if (!cr.getConfiguration().containsKey(LS_OFFSET_KEY)) {
+    public int get_LS_offset() {
+        String key = "synchcall.directoryManager.default.Offset";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 0;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(LS_OFFSET_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1017,12 +957,13 @@ public class Configuration {
      * key="scheduler.chunksched.ptp.workerCorePoolSize"; default value=10;
      */
     public int getPtPCorePoolSize() {
-        if (!cr.getConfiguration().containsKey(PTP_CORE_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptp.workerCorePoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1038,12 +979,13 @@ public class Configuration {
      * key="scheduler.chunksched.ptp.workerMaxPoolSize"; default value=100;
      */
     public int getPtPMaxPoolSize() {
-        if (!cr.getConfiguration().containsKey(PTP_MAX_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptp.workerMaxPoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1059,12 +1001,13 @@ public class Configuration {
      * key="scheduler.chunksched.ptp.queueSize"; default value=100;
      */
     public int getPtPQueueSize() {
-        if (!cr.getConfiguration().containsKey(PTP_QUEUE_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptp.queueSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1080,12 +1023,13 @@ public class Configuration {
      * key="scheduler.chunksched.ptg.workerCorePoolSize"; default value=10;
      */
     public int getPtGCorePoolSize() {
-        if (!cr.getConfiguration().containsKey(PTG_CORE_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptg.workerCorePoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1101,12 +1045,13 @@ public class Configuration {
      * value=100;
      */
     public int getPtGMaxPoolSize() {
-        if (!cr.getConfiguration().containsKey(PTG_MAX_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptg.workerMaxPoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1122,12 +1067,13 @@ public class Configuration {
      * key="scheduler.chunksched.ptg.queueSize"; default value=100;
      */
     public int getPtGQueueSize() {
-        if (!cr.getConfiguration().containsKey(PTG_QUEUE_SIZE_KEY)) {
+        String key = "scheduler.chunksched.ptg.queueSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1143,12 +1089,13 @@ public class Configuration {
      * key="scheduler.chunksched.copy.workerCorePoolSize"; default value=10;
      */
     public int getCopyCorePoolSize() {
-        if (!cr.getConfiguration().containsKey(COPY_CORE_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.copy.workerCorePoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(COPY_CORE_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1164,12 +1111,13 @@ public class Configuration {
      * value=100;
      */
     public int getCopyMaxPoolSize() {
-        if (!cr.getConfiguration().containsKey(COPY_MAX_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.copy.workerMaxPoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(COPY_MAX_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1185,12 +1133,13 @@ public class Configuration {
      * key="scheduler.chunksched.copy.queueSize"; default value=100;
      */
     public int getCopyQueueSize() {
-        if (!cr.getConfiguration().containsKey(COPY_QUEUE_SIZE_KEY)) {
+        String key = "scheduler.chunksched.copy.queueSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(COPY_QUEUE_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1203,15 +1152,16 @@ public class Configuration {
      * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
      * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize -
      * the number of threads to keep in the pool, even if they are idle.
-     * key="scheduler.chunksched.bol.workerCorePoolSize"; default value=10;
+     * key="scheduler.chunksched.copy.workerCorePoolSize"; default value=10;
      */
     public int getBoLCorePoolSize() {
-        if (!cr.getConfiguration().containsKey(BOL_CORE_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.bol.workerCorePoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1223,16 +1173,17 @@ public class Configuration {
      * a new thread is created to handle the request, even if other worker threads are idle. If there are more than
      * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is
      * full. By setting corePoolSize and maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize -
-     * the maximum number of threads to allow in the pool. key="scheduler.chunksched.bol.workerMaxPoolSize"; default
+     * the maximum number of threads to allow in the pool. key="scheduler.chunksched.copy.workerMaxPoolSize"; default
      * value=100;
      */
     public int getBoLMaxPoolSize() {
-        if (!cr.getConfiguration().containsKey(BOL_MAX_POOL_SIZE_KEY)) {
+        String key = "scheduler.chunksched.bol.workerMaxPoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1245,15 +1196,16 @@ public class Configuration {
      * thread. - If a request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in which
      * case, the task will be rejected. QueueSize - The initial capacity for this priority queue used for holding tasks
      * before they are executed. The queue will hold only the Runnable tasks submitted by the execute method.
-     * key="scheduler.chunksched.bol.queueSize"; default value=100;
+     * key="scheduler.chunksched.copy.queueSize"; default value=100;
      */
     public int getBoLQueueSize() {
-        if (!cr.getConfiguration().containsKey(BOL_QUEUE_SIZE_KEY)) {
+        String key = "scheduler.chunksched.bol.queueSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1269,12 +1221,13 @@ public class Configuration {
      * default value=10;
      */
     public int getCorePoolSize() {
-        if (!cr.getConfiguration().containsKey(CORE_POOL_SIZE_KEY)) {
+        String key = "scheduler.crusher.workerCorePoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(CORE_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1289,12 +1242,13 @@ public class Configuration {
      * the maximum number of threads to allow in the pool. key="scheduler.crusher.workerMaxPoolSize"; default value=100;
      */
     public int getMaxPoolSize() {
-        if (!cr.getConfiguration().containsKey(MAX_POOL_SIZE_KEY)) {
+        String key = "scheduler.crusher.workerMaxPoolSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1310,12 +1264,13 @@ public class Configuration {
      * key="scheduler.crusher.queueSize"; default value=100;
      */
     public int getQueueSize() {
-        if (!cr.getConfiguration().containsKey(QUEUE_SIZE_KEY)) {
+        String key = "scheduler.crusher.queueSize";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 100;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(QUEUE_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1325,12 +1280,13 @@ public class Configuration {
      * @return String
      */
     public String getNamespaceConfigFilename() {
-        if (!cr.getConfiguration().containsKey(NAMESPACE_CONFIG_FILENAME_KEY)) {
+        String key = "namespace.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "namespace.xml";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(NAMESPACE_CONFIG_FILENAME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1340,21 +1296,23 @@ public class Configuration {
      * @return String
      */
     public String getNamespaceSchemaFilename() {
-        if (!cr.getConfiguration().containsKey(NAMESPACE_SCHEMA_FILENAME_KEY)) {
+        String key = "namespace.schema.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
             return "Schema UNKNOWN!";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(NAMESPACE_SCHEMA_FILENAME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
     public int getNamespaceConfigRefreshRateInSeconds() {
-        if (!cr.getConfiguration().containsKey(NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY)) {
+        String key = "namespace.refreshrate";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 3;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY);
+            return cr.getConfiguration().getInt(key);
         }
 
     }
@@ -1368,12 +1326,13 @@ public class Configuration {
      *         key="namespace.automatic-config-reload"; default value=false
      */
     public boolean getNamespaceAutomaticReloading() {
-        if (!cr.getConfiguration().containsKey(NAMESPACE_AUTOMATIC_RELOADING_KEY)) {
+        String key = "namespace.automatic-config-reload";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(NAMESPACE_AUTOMATIC_RELOADING_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -1391,12 +1350,13 @@ public class Configuration {
      * key="NaiveGridFTP.TimeOut"; default value="15000"
      */
     public int getGridFTPTimeOut() {
-        if (!cr.getConfiguration().containsKey(GRIDFTP_TIME_OUT_KEY)) {
+        String key = "asynch.srmcopy.gridftp.timeout";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 15000;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(GRIDFTP_TIME_OUT_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1406,14 +1366,40 @@ public class Configuration {
      * value="300"
      */
     public int getSRM22ClientPinLifeTime() {
-        if (!cr.getConfiguration().containsKey(SRM22CLIENT_PIN_LIFE_TIME_KEY)) {
+        String key = "SRM22Client.PinLifeTime";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 259200;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(SRM22CLIENT_PIN_LIFE_TIME_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
+
+    // public boolean getSURLInQueryForm() {
+    // boolean result = false;
+    // String key = "storm.service.inQueryForm";
+    // if (!cr.getConfiguration().containsKey(key)) {
+    // // return default
+    // return result;
+    // } else {
+    // // load from external source
+    // result = cr.getConfiguration().getBoolean(key);
+    // }
+    // return result;
+    // }
+
+    // public String getSFNQueryStringPrefix() {
+    // String key = "storm.service.SFNQueryStringPrefix";
+    // String defaultValue = "SFN";
+    // if (!cr.getConfiguration().containsKey(key)) {
+    // // return default
+    // return defaultValue;
+    // } else {
+    // // load from external source
+    // return cr.getConfiguration().getString(key);
+    // }
+    // }
 
     /**
      * Method used by RequestCredentialsDAO to establish the directory that holds the proxy file. If no value is found
@@ -1421,12 +1407,13 @@ public class Configuration {
      * value="/opt/storm/var/proxies"
      */
     public String getProxyHome() {
-        if (!cr.getConfiguration().containsKey(PROXY_HOME_KEY)) {
+        String key = "proxy.home";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "/opt/storm/var/proxies";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(PROXY_HOME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1436,12 +1423,13 @@ public class Configuration {
      * is used instead. key="automatic.directory.creation"; default value=false
      */
     public boolean getAutomaticDirectoryCreation() {
-        if (!cr.getConfiguration().containsKey(AUTOMATIC_DIRECTORY_CREATION_KEY)) {
+        String key = "directory.automatic-creation";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(AUTOMATIC_DIRECTORY_CREATION_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -1450,12 +1438,13 @@ public class Configuration {
      * configuration medium, then the default one is used instead. key="default.overwrite"; default value="A"
      */
     public String getDefaultOverwriteMode() {
-        if (!cr.getConfiguration().containsKey(DEFAULT_OVERWRITE_MODE_KEY)) {
+        String key = "default.overwrite";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "A";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1464,12 +1453,13 @@ public class Configuration {
      * the configuration medium, then the default one is used instead. key="default.storagetype"; default value="V"
      */
     public String getDefaultFileStorageType() {
-        if (!cr.getConfiguration().containsKey(DEFAULT_FILE_STORAGE_TYPE_KEY)) {
+        String key = "default.storagetype";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default as specified in SRMv2.2 specification
             return "V";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(DEFAULT_FILE_STORAGE_TYPE_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1478,12 +1468,13 @@ public class Configuration {
      * in the configuration medium, then the default one is used instead. key="purge.size"; default value=800
      */
     public int getPurgeBatchSize() {
-        if (!cr.getConfiguration().containsKey(PURGE_BATCH_SIZE_KEY)) {
+        String key = "purge.size";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 800;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PURGE_BATCH_SIZE_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1494,12 +1485,13 @@ public class Configuration {
      * key="expired.request.time"; default value=7 (days - which correspond to 7 * 24 * 60 * 60 seconds)
      */
     public long getExpiredRequestTime() {
-        if (!cr.getConfiguration().containsKey(EXPIRED_REQUEST_TIME_KEY)) {
+        String key = "expired.request.time";
+        if (!cr.getConfiguration().containsKey(key)) {
             // 7 * 24 * 60 * 60
             return 604800;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(EXPIRED_REQUEST_TIME_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1509,12 +1501,13 @@ public class Configuration {
      * key="purge.delay"; default value=10
      */
     public int getRequestPurgerDelay() {
-        if (!cr.getConfiguration().containsKey(REQUEST_PURGER_DELAY_KEY)) {
+        String key = "purge.delay";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(REQUEST_PURGER_DELAY_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1524,12 +1517,13 @@ public class Configuration {
      * key="purge.interval"; default value=600 (1o minutes)
      */
     public int getRequestPurgerPeriod() {
-        if (!cr.getConfiguration().containsKey(REQUEST_PURGER_PERIOD_KEY)) {
+        String key = "purge.interval";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 600;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(REQUEST_PURGER_PERIOD_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1539,12 +1533,13 @@ public class Configuration {
      * value=true
      */
     public boolean getExpiredRequestPurging() {
-        if (!cr.getConfiguration().containsKey(EXPIRED_REQUEST_PURGING_KEY)) {
+        String key = "purging";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return true;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(EXPIRED_REQUEST_PURGING_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -1554,12 +1549,13 @@ public class Configuration {
      * value="" (that is 'file:///) value = "/" ==> file:////
      */
     public String getExtraSlashesForFileTURL() {
-        if (!cr.getConfiguration().containsKey(EXTRA_SLASHES_FOR_FILE_TURL_KEY)) {
+        String key = "extraslashes.file";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_FILE_TURL_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1569,12 +1565,13 @@ public class Configuration {
      * value="" (that is 'rfio://<hostname>:port<PhysicalFN>')) value = "/" ==> 'rfio://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForRFIOTURL() {
-        if (!cr.getConfiguration().containsKey(EXTRA_SLASHES_FOR_RFIO_TURL_KEY)) {
+        String key = "extraslashes.rfio";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_RFIO_TURL_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1585,12 +1582,13 @@ public class Configuration {
      * 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getExtraSlashesForGsiFTPTURL() {
-        if (!cr.getConfiguration().containsKey(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY)) {
+        String key = "extraslashes.gsiftp";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1600,28 +1598,30 @@ public class Configuration {
      * value="/" (that is 'root://<hostname>:port<PhysicalFN>')) value = "" ==> 'root://<hostname>:port<PhysicalFN>'
      */
     public String getExtraSlashesForROOTTURL() {
-        if (!cr.getConfiguration().containsKey(EXTRA_SLASHES_FOR_ROOT_TURL_KEY)) {
+        String key = "extraslashes.root";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "/";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_ROOT_TURL_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
     /**
      * Method used by Ping Executor to retrieve the Properties File Name where the properties <key,value> are stored. If
-     * no value is found in the configuration medium, then the default one is used instead. key="ping-properties.filename";
+     * no value is found in the configuration medium, then the default one is used instead. key="extraslashes.gsiftp";
      * default value="" (that is 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
      * 'gsiftp://<hostname>:port/<PhysicalFN>'
      */
     public String getPingValuesPropertiesFilename() {
-        if (!cr.getConfiguration().containsKey(PING_VALUES_PROPERTIES_FILENAME_KEY)) {
+        String key = "ping-properties.filename";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "ping-values.properties";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(PING_VALUES_PROPERTIES_FILENAME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1630,12 +1630,13 @@ public class Configuration {
      * key="health.electrocardiogram.period"; default value=60 (1 min)
      */
     public int getHearthbeatPeriod() {
-        if (!cr.getConfiguration().containsKey(HEARTHBEAT_PERIOD_KEY)) {
+        String key = "health.electrocardiogram.period";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 60;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(HEARTHBEAT_PERIOD_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1646,12 +1647,13 @@ public class Configuration {
      *         key="health.performance.glance.timeInterval"; default value=15 (15 sec)
      */
     public int getPerformanceGlanceTimeInterval() {
-        if (!cr.getConfiguration().containsKey(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY)) {
+        String key = "health.performance.glance.timeInterval";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 15;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1662,12 +1664,13 @@ public class Configuration {
      *         key="health.performance.logbook.timeInterval"; default value=20 (20 sec)
      */
     public int getPerformanceLogbookTimeInterval() {
-        if (!cr.getConfiguration().containsKey(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY)) {
+        String key = "health.performance.logbook.timeInterval";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 15;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1678,12 +1681,13 @@ public class Configuration {
      *         key="health.performance.mesauring.enabled"; default value=false
      */
     public boolean getPerformanceMeasuring() {
-        if (!cr.getConfiguration().containsKey(PERFORMANCE_MEASURING_KEY)) {
+        String key = "health.performance.mesauring.enabled";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -1696,12 +1700,13 @@ public class Configuration {
      *         default value=false
      */
     public boolean getBookKeepingEnabled() {
-        if (!cr.getConfiguration().containsKey(BOOK_KEEPING_ENABLED_KEY)) {
+        String key = "health.bookkeeping.enabled";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
@@ -1711,22 +1716,24 @@ public class Configuration {
      * @return false by default, otherwise what is specified in the properties
      */
     public boolean getEnableWritePermOnDirectory() {
-        if (!cr.getConfiguration().containsKey(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY)) {
+        String key = "directory.writeperm";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY, false);
+            return cr.getConfiguration().getBoolean(key, false);
         }
     }
 
     public int getMaxLoop() {
-        if (!cr.getConfiguration().containsKey(MAX_LOOP_KEY)) {
+        String key = "abort.maxloop";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 10;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(MAX_LOOP_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1736,12 +1743,13 @@ public class Configuration {
      * key="griduser.mapper.classname";
      */
     public String getGridUserMapperClassname() {
-        if (!cr.getConfiguration().containsKey(GRID_USER_MAPPER_CLASSNAME_KEY)) {
+        String key = "griduser.mapper.classname";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "it.grid.storm.griduser.LcmapsMapper";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(GRID_USER_MAPPER_CLASSNAME_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1751,12 +1759,13 @@ public class Configuration {
      * key="authzdb.path";
      */
     public String getAuthzDBPath() {
-        if (!cr.getConfiguration().containsKey(AUTHZ_DB_PATH_KEY)) {
+        String key = "authzdb.path";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return cr.configurationDirectory();
         } else {
             // load from external source
-            return cr.getConfiguration().getString(AUTHZ_DB_PATH_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1765,50 +1774,49 @@ public class Configuration {
      * medium, then the default one is used instead, that is the "5 sec" key="authzdb.refreshrate";
      */
     public int getRefreshRateAuthzDBfilesInSeconds() {
-        if (!cr.getConfiguration().containsKey(REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY)) {
+        String key = "authzdb.refreshrate";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 5;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
     public String[] getChecksumHosts() {
-        if (!cr.getConfiguration().containsKey(CHECKSUM_HOSTS_KEY)) {
+        String key = "checksum.server.hostnames";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
-        	return new String[] { "localhost" };
+        	return new String[0];
         } else {
             // load from external source
-            return cr.getConfiguration().getStringArray(CHECKSUM_HOSTS_KEY);
+            return cr.getConfiguration().getStringArray(key);
         }
     }
 
     public int[] getChecksumServicePorts() {
-    	int[] defaultValue = new int[] { 9995 };
-        return getChecksumPorts(CHECKSUM_SERVICE_PORTS_KEY, defaultValue);
+        return getChecksumPorts("checksum.server.service_ports");
     }
     
     public int[] getChecksumStatusPorts() {
-    	int[] defaultValue = new int[] { 9996 };
-        return getChecksumPorts(CHECKSUM_STATUS_PORTS_KEY, defaultValue);
+        return getChecksumPorts("checksum.server.status_ports");
     }
     
     
-    private int[] getChecksumPorts(String key, int[] defaultValue) {
+    private int[] getChecksumPorts(String key) {
 
         String[] portStringArray = null;
-		if(!cr.getConfiguration().containsKey(key))
-		{
-			return defaultValue;
+        if (!cr.getConfiguration().containsKey(key)) {
+            return new int[0];
 		}
         else
         {
        		portStringArray = cr.getConfiguration().getStringArray(key);
         }
         int size = portStringArray.length;
-        if (size == 0 || (size == 1 && portStringArray[0].trim().equals(""))) {
-        	return defaultValue;
+        if (size == 0) {
+            return new int[0];
         }
 
         int[] portArray = new int[size];
@@ -1818,7 +1826,7 @@ public class Configuration {
             try {
                 port = Integer.valueOf(portStringArray[i]);
             } catch (NumberFormatException e) {
-            	System.err.println("Unable to parse the Checksum port String '"+portStringArray[i]+"'."+e);
+                log.error("Unable to parse the Checksum port String '"+portStringArray[i]+"'."+e);
             }
             portArray[i] = port;
         }
@@ -1828,10 +1836,11 @@ public class Configuration {
 
     public String getChecksumAlgorithm() {
 
+        String key = "checksum.algorithm";
 
-        if (cr.getConfiguration().containsKey(CHECKSUM_ALGORITHM_KEY)) {
+        if (cr.getConfiguration().containsKey(key)) {
 
-            return cr.getConfiguration().getString(CHECKSUM_ALGORITHM_KEY);
+            return cr.getConfiguration().getString(key);
         }
 
         return "Adler32";
@@ -1839,9 +1848,10 @@ public class Configuration {
 
     public boolean getRecallTableTestingMode() {
 
+        String key = "tape.recalltable.service.test-mode";
 
-        if (cr.getConfiguration().containsKey(RECALL_TABLE_TESTING_MODE_KEY)) {
-            return cr.getConfiguration().getBoolean(RECALL_TABLE_TESTING_MODE_KEY);
+        if (cr.getConfiguration().containsKey(key)) {
+            return cr.getConfiguration().getBoolean(key);
         }
 
         return false;
@@ -1853,12 +1863,13 @@ public class Configuration {
      * key="tape.recalltable.service.port";
      */
     public int getRecallTableServicePort() {
-        if (!cr.getConfiguration().containsKey(RECALL_TABLE_SERVICE_PORT_KEY)) {
+        String key = "tape.recalltable.service.port";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return 9998;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(RECALL_TABLE_SERVICE_PORT_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
@@ -1867,12 +1878,13 @@ public class Configuration {
      * key="tape.recalltable.service.param.retry-value";
      */
     public String getRetryValueKey() {
-        if (!cr.getConfiguration().containsKey(RETRY_VALUE_KEY_KEY)) {
+        String key = "tape.recalltable.service.param.retry-value";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "retry-value";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(RETRY_VALUE_KEY_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1881,12 +1893,13 @@ public class Configuration {
      * key="tape.recalltable.service.param.status";
      */
     public String getStatusKey() {
-        if (!cr.getConfiguration().containsKey(STATUS_KEY_KEY)) {
+        String key = "tape.recalltable.service.param.status";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "status";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(STATUS_KEY_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1895,12 +1908,13 @@ public class Configuration {
      * key="tape.recalltable.service.param.takeover";
      */
     public String getTaskoverKey() {
-        if (!cr.getConfiguration().containsKey(TASKOVER_KEY_KEY)) {
+        String key = "tape.recalltable.service.param.takeover";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "first";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(TASKOVER_KEY_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1910,42 +1924,46 @@ public class Configuration {
      * can use both srmls and gridftp based checksum, the support has been made optional. Default is false.
      */
     public boolean getChecksumEnabled() {
-        if (!cr.getConfiguration().containsKey(CHECKSUM_ENABLED_KEY)) {
+        String key = "checksum.enabled";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(CHECKSUM_ENABLED_KEY);
+            return cr.getConfiguration().getBoolean(key);
         }
     }
 
-    public String getStoRMPropertiesVersion() {
-        if (!cr.getConfiguration().containsKey(STORM_PROPERTIES_VERSION_KEY)) {
+    public int getStoRMPropertiesVersion() {
+        String key = "storm.properties.version";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
-            return "No version specified";
+            return -1;
         } else {
             // load from external source
-            return cr.getConfiguration().getString(STORM_PROPERTIES_VERSION_KEY);
+            return cr.getConfiguration().getInt(key);
         }
     }
 
     public String getGroupTapeReadBuffer() {
-        if (!cr.getConfiguration().containsKey(GROUP_TAPE_READ_BUFFER_KEY)) {
+        String key = "tape.buffer.group.read";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm-SA-read";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(GROUP_TAPE_READ_BUFFER_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
     public String getGroupTapeWriteBuffer() {
-        if (!cr.getConfiguration().containsKey(GROUP_TAPE_WRITE_BUFFER_KEY)) {
+        String key = "tape.buffer.group.write";
+        if (!cr.getConfiguration().containsKey(key)) {
             // return default
             return "storm-SA-write";
         } else {
             // load from external source
-            return cr.getConfiguration().getString(GROUP_TAPE_WRITE_BUFFER_KEY);
+            return cr.getConfiguration().getString(key);
         }
     }
 
@@ -1953,32 +1971,9 @@ public class Configuration {
     public String toString() {
     	StringBuilder configurationStringBuilder = new StringBuilder();
         try {
-            // This class methods
+            // This class methods!!!
             Method methods[] = Configuration.instance.getClass().getDeclaredMethods();
 
-            // This class fields
-            Field[] fields = Configuration.instance.getClass().getDeclaredFields();
-            HashMap<String,String> methodKeyMap = new HashMap<String,String>();
-            for(Field field : fields)
-            {
-            	String fieldName = field.getName();
-            	if(fieldName.endsWith("KEY") && field.getType().equals(String.class))
-            	{
-            		//from a field like GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write" 
-            		//puts in the map the pair <getgrouptapewritebuffer,tape.buffer.group.write>
-            		String mapKey = "get" + fieldName.substring(0, fieldName.lastIndexOf("_")).replaceAll("_", "").toLowerCase();
-            		if(methodKeyMap.containsKey(mapKey))
-            		{
-            			String value = methodKeyMap.get(mapKey);
-            			methodKeyMap.put(mapKey , value + " , " +(String)field.get(Configuration.instance));
-            		}
-            		else
-            		{
-            			methodKeyMap.put(mapKey , (String)field.get(Configuration.instance));	
-            		}
-            	}
-            }
-            
             Object field = null;
             Object[] dummyArray = new Object[0];            
             for (Method method : methods)
@@ -1992,22 +1987,9 @@ public class Configuration {
                 	{
                 		field = ArrayUtils.toString(field);
                 	}
-                	String value = methodKeyMap.get(method.getName().toLowerCase());
-                	if(value == null)
-                	{
-                		configurationStringBuilder.insert(0, "!! Unable to find method " + method.getName() + " in methode key map!");
+                	configurationStringBuilder.append(method.getName() + " == " + field.toString()+ "\n");
                 	}
-                	else
-                	{
-                		configurationStringBuilder.append("Property " + value + " : ");                		
                 	}
-                	if(field.getClass().equals(String.class))
-                	{
-                		field = '\'' + ((String)field) + '\'';
-                	}
-                	configurationStringBuilder.append(method.getName() + "() == " + field.toString()+ "\n");
-                }
-            }
         	return configurationStringBuilder.toString();
         } catch (Exception e) {
         	if(e.getClass().isAssignableFrom(java.lang.reflect.InvocationTargetException.class))
@@ -2022,4 +2004,5 @@ public class Configuration {
         }
         
     }
+
 }

@@ -19,7 +19,7 @@ public class InvalidEndPointAttributeException extends Exception {
      */
     public InvalidEndPointAttributeException(String name) {
         this.nullName = (name==null);
-        this.emptyName = (name.equals(""));
+        this.emptyName = (name=="");
         if (!nullName) wrong = (name.charAt(0)=='/');
     }
 

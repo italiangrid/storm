@@ -1,7 +1,5 @@
 package it.grid.storm.srm.types;
 
-import it.grid.storm.common.types.EndPoint;
-import it.grid.storm.common.types.InvalidEndPointAttributeException;
 import it.grid.storm.common.types.InvalidMachineAttributeException;
 import it.grid.storm.common.types.InvalidPortAttributeException;
 import it.grid.storm.common.types.InvalidSFNAttributesException;
@@ -17,8 +15,8 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -34,73 +32,41 @@ import org.slf4j.Logger;
  */
 public class TSURL {
 
-	
-    private static Logger log = NamespaceDirector.getLogger();
-	/**
-	 * The surl as provided by User
-	 */
-	private final String rawSurl;
     private final SiteProtocol sp;
     private final SFN sfn;
-    private String normalizedStFN = null;
-    private int uniqueID = 0;
-    
     private boolean empty = true;
+    private static Logger log = NamespaceDirector.getLogger();
 
     public static String PNAME_SURL = "surl";
     public static String PNAME_FROMSURL = "fromSURL";
     public static String PNAME_TOSURL = "toSURL";
 
     private static ArrayList<TSURL> tsurlManaged = new ArrayList<TSURL>();
-    private static LinkedList<Port> defaultPorts = new LinkedList<Port>();
     
-	static
-	{
+    
+    static {
 		// Lazy initialization from Configuration
-		if(tsurlManaged.isEmpty())
-		{
+        if (tsurlManaged.isEmpty()) {
 			// This is the first call
 			TSURL checkTSURL;
 			String[] surlValid = Configuration.getInstance().getManagedSURLs();
-			for(String checkSurl : surlValid)
-			{
+            for (String checkSurl : surlValid) {
 				// Building TSURL
-				try
-				{//TODO MICHELE USER_SURL FIXME!!! here the generated SURL has the port added also if it is blank!!
+                try {
 					checkTSURL = TSURL.makeFromStringWellFormed(checkSurl);
 					tsurlManaged.add(checkTSURL);
 					log.debug("### SURL Managed : " + checkTSURL);
-				} catch(InvalidTSURLAttributesException e)
-				{
+                } catch (InvalidTSURLAttributesException e) {
 					log.error("Unable to build a TSURL : '" + checkSurl + "'");
 				}
 			}
 		}
-		if(defaultPorts.isEmpty())
-		{
-			// This is the first call
-			Integer[] ports = Configuration.getInstance().getManagedSurlDefaultPorts();
-			for(Integer portInteger : ports)
-			{
-				// Building Port
-				try
-				{
-
-					defaultPorts.add(Port.make(portInteger.intValue()));
-					log.debug("### Default SURL port : " + defaultPorts.getLast());
-				} catch(InvalidPortAttributeException e)
-				{
-					log.error("Unable to build a Port : '" + portInteger + "'" + e);
 				}
-			}
-		}
-	}
     
     
-    private TSURL(SiteProtocol sp, SFN sfn, String rawSurl, boolean empty) {
+    private TSURL(SiteProtocol sp, SFN sfn, boolean empty) {
         this.sp = sp;
         this.sfn = sfn;
-        this.rawSurl = rawSurl;
         this.empty = empty;
     }
 
@@ -108,33 +74,24 @@ public class TSURL {
      * Method that create a TSURL from structure received from FE.
      * @throws InvalidTSURLAttributesException
      */
-    public static TSURL decode(Map<String, String> inputParam, String name) throws InvalidTSURLAttributesException {
-        String surlstring = inputParam.get(name);
-        return TSURL.makeFromStringWellFormed(surlstring);
+    public static TSURL decode(Map inputParam, String name) throws InvalidTSURLAttributesException {
+        String surlstring = (String) inputParam.get(name);
+        //return TSURL.makeFromStringValidate(surlstring);
+        return TSURL.makeFromString(surlstring);
     }
 
 
     
-    /**
-     * Build a TSURL by extracting the content of the received SURL object and storing the received raw surl string 
-     * 
-     * @param surl
-     * @param rawSurl
-     * @return
-     * @throws InvalidTSURLAttributesException
-     */
-//  TODO MICHELE USER_SURL as it is now we don't need to pass throught the SURL object, maybe
-    //it will be useful for the equals method and storm normal form
-    public static TSURL getWellFormed(SURL surl, String rawSurl) throws InvalidTSURLAttributesException {
+    public static TSURL getWellFormed(SURL surl) throws InvalidTSURLAttributesException {
         TSURL result;
+
         SFN sfn;
-//        TODO MICHELE USER_SURL 
-        Machine machine = null;
+        Machine m = null;
         try {
-            machine = Machine.make(surl.getServiceHostname());
-            log.debug("Machine built : '" + machine + "'");
+            m = Machine.make(surl.getServiceHost());
+            log.debug("Machine built : '" + m + "'");
         } catch (InvalidMachineAttributeException ex1) {
-            log.error("MACHINE '" + surl.getServiceHostname() + "' is invalid! ");
+            log.error("MACHINE '" + surl.getServiceHost() + "' is invalid! ");
             throw new InvalidTSURLAttributesException(null, null);
         }
 
@@ -146,6 +103,18 @@ public class TSURL {
         } catch (InvalidStFNAttributeException ex2) {
             log.error("StFN '" + stfn + "' is invalid! ");
             throw new InvalidTSURLAttributesException(null, null);
+        }
+
+        int port = surl.getServiceHostPort();
+        if (port > -1) {
+            Port p = null;
+            try {
+                p = Port.make(port);
+                log.debug("PORT built : '" + p + "'");
+            } catch (InvalidPortAttributeException ex3) {
+                log.error("PORT '" + port + "' is invalid! ");
+                throw new InvalidTSURLAttributesException(null, null);
+            }
             try {
                 sfn = SFN.make(m, p, stfnClass);
                 log.debug("SFN built : '" + sfn + "'");
@@ -162,74 +131,7 @@ public class TSURL {
                 throw new InvalidTSURLAttributesException(null, null);
             }
         }
-        int portInt = surl.getServiceHostPort();
-        
-		EndPoint serviceEndpoint = null;
-		if(surl.isQueriedFormSURL())
-		{
-			String serviceEndPointString = surl.getServiceEndPoint();
-			try
-			{
-				serviceEndpoint = EndPoint.make(serviceEndPointString);
-				log.debug("EndPoint built : '" + serviceEndpoint + "'");
-			} catch(InvalidEndPointAttributeException e)
-			{
-				log.error("EndPoint '" + serviceEndpoint + "' is invalid! " + e);
-				throw new InvalidTSURLAttributesException(null, null);
-			}
-		}
-
-		if(portInt > -1)
-		{
-			Port port = null;
-			try
-			{
-				port = Port.make(portInt);
-				log.debug("PORT built : '" + port + "'");
-			} catch(InvalidPortAttributeException ex3)
-			{
-				log.error("PORT '" + portInt + "' is invalid! ");
-				throw new InvalidTSURLAttributesException(null, null);
-			}
-			try
-			{
-				if(serviceEndpoint == null)
-				{
-					sfn = SFN.makeInSimpleForm(machine, port, stfnClass);
-				}
-				else
-				{
-					sfn = SFN.makeInQueryForm(machine, port, serviceEndpoint, stfnClass);
-				}
-    
-    
-				log.debug("SFN built : '" + sfn + "'");
-			} catch(InvalidSFNAttributesException ex4)
-			{
-				log.error("SFN building problem");
-				throw new InvalidTSURLAttributesException(null, null);
-			}
-		}
-		else
-		{
-			try
-			{
-				if(serviceEndpoint == null)
-				{
-					sfn = SFN.makeInSimpleForm(machine, stfnClass);
-				}
-				else
-				{
-					sfn = SFN.makeInQueryForm(machine, serviceEndpoint, stfnClass);
-				}
-				log.debug("SFN built : '" + sfn + "'");
-			} catch(InvalidSFNAttributesException ex5)
-			{
-				log.error("SFN building problem");
-				throw new InvalidTSURLAttributesException(null, null);
-			}
-		}
-		result = TSURL.make(SiteProtocol.SRM, sfn, rawSurl);
+        result = TSURL.make(SiteProtocol.SRM, sfn);
 		return result;
 	}
     
@@ -240,11 +142,11 @@ public class TSURL {
      * is thrown.
      * Check for ".." in Storage File Name for security issues.
      */
-    private static TSURL make(SiteProtocol sp, SFN sfn, String userSurl) throws InvalidTSURLAttributesException {
+    private static TSURL make(SiteProtocol sp, SFN sfn) throws InvalidTSURLAttributesException {
         if ((sp == null) || (sfn == null) || (sp == SiteProtocol.EMPTY) || sfn.isEmpty()) {
             throw new InvalidTSURLAttributesException(sp, sfn);
         }
-        return new TSURL(sp, sfn, userSurl, false);
+        return new TSURL(sp, sfn, false);
     }
 
 
@@ -253,55 +155,43 @@ public class TSURL {
      * Static factory method that returns an empty TSURL.
      */
     public static TSURL makeEmpty() {
-        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), "", true);
+        return new TSURL(SiteProtocol.EMPTY, SFN.makeEmpty(), true);
     }
 
     /**
      * Static factory method that returns a TSURL from a String representation: if it is null
      * or malformed then an Invalid TSURLAttributesException is thrown.
      */
-    public static TSURL makeFromStringWellFormed(String surlString) throws InvalidTSURLAttributesException {
-
-        TSURL result = null;
-        if(surlString == null)
-		{
+    private static TSURL makeFromString(String s) throws InvalidTSURLAttributesException {
+        if (s == null) {
 			throw new InvalidTSURLAttributesException(null, null);
 		}
-		// first occurrences of ://
-		int separator = surlString.indexOf("://"); 
-		if((separator == -1) || (separator == 0))
-		{
-			// separator not found or right at the beginning!
-			throw new InvalidTSURLAttributesException(null, null); 
+        int separator = s.indexOf("://"); //first occurence of ://
+        if ((separator == -1) || (separator == 0)) {
+            throw new InvalidTSURLAttributesException(null, null); //separator not found or right at the beginning!
 		}
-		String spString = surlString.substring(0, separator);
+        String spString = s.substring(0, separator);
 		SiteProtocol sp = null;
-		try
-		{
+        try {
 			sp = SiteProtocol.fromString(spString);
-		} catch(IllegalArgumentException e)
-		{
+        } catch (IllegalArgumentException e) {
 			// do nothing - sp remains null and that is fine!
 			log.warn("TSURL: Site protocol by '" + spString + "' is empty, but that's fine.");
 		}
-		if((separator + 3) > (surlString.length()))
-		{
-			// separator found at the end!
-			throw new InvalidTSURLAttributesException(sp, null); 
+        if ((separator + 3) > (s.length())) {
+            throw new InvalidTSURLAttributesException(sp, null); //separator found at the end!
 		}
-        log.debug("MAKE SURL : '" + surlString + "'");
-        SURL surl;
+        String sfnString = s.substring(separator + 3, s.length());
+        SFN sfn = null;
         try {
-            surl = SURL.makeSURLfromString(surlString);
-        } catch (NamespaceException ex) {
-            log.error("SURL '" + surlString + "' is invalid! ");
-            throw new InvalidTSURLAttributesException(null, null);
+            sfn = SFN.makeFromString(sfnString);
+        } catch (InvalidSFNAttributesException e) {
+            //do nothing - sfn remains null and that is fine!
+            log.warn("TSURL: SFN by '"+sfnString+"' is empty, but that's fine.");
         }
-        result = getWellFormed(surl, surlString);
-        
-        return result;
+        return TSURL.make(sp, sfn);
     }
-    
+
     
     /**
      * Static factory method that returns a TSURL from a String representation: if it is null
@@ -312,8 +202,34 @@ public class TSURL {
         TSURL result = null;
 
         log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
-//      TODO MICHELE USER_SURL
-        TSURL tsurl = makeFromStringWellFormed(surlString);
+        SURL surl;
+        try {
+            surl = SURL.makeSURLfromString(surlString);
+        } catch (NamespaceException ex) {
+            log.error("SURL '" + surlString + "' is invalid! ");
+            throw new InvalidTSURLAttributesException(null, null);
+        }
+        result = getWellFormed(surl);
+        
+        return result;
+    }
+    
+    /**
+     * Static factory method that returns a TSURL from a String representation: if it is null
+     * or malformed then an Invalid TSURLAttributesException is thrown.
+     */
+    public static TSURL makeFromStringValidate(String surlString) throws InvalidTSURLAttributesException {
+
+        log.debug("MAKE SURL in Validating mode: '" + surlString + "'");
+        SURL surl;
+        try {
+            surl = SURL.makeSURLfromString(surlString);
+        } catch (NamespaceException ex) {
+            log.error("SURL '" + surlString + "' is invalid! ");
+            throw new InvalidTSURLAttributesException(null, null);
+        }
+
+        TSURL tsurl = getWellFormed(surl);
         if (!(isValid(tsurl))) {
             log.warn("The SURL '"+tsurl+"' is not managed by this instance of StoRM");
             throw new InvalidTSURLAttributesException(tsurl.sp, tsurl.sfn());            
@@ -329,14 +245,8 @@ public class TSURL {
      * 
      */
     public static boolean isValid(TSURL surl) {
-//      TODO MICHELE USER_SURL moved code from isValid to isManaged to support in future managedSurl separation by VO
-    	return isManaged(surl, TSURL.tsurlManaged);
-    }
-    
-    public static boolean isManaged(TSURL surl, List<TSURL> managedSurls)
-    {
     	boolean result = false;
-        for (TSURL tsurlReference : managedSurls) {
+        for (TSURL tsurlReference : tsurlManaged) {
             if (isSURLManaged(surl, tsurlReference)) {
                 result = true;
                 break;
@@ -346,9 +256,6 @@ public class TSURL {
     }
     
     /**
-     * A SURL is managed by a managed SURL if their hosts are the same and if the comingSURL specifies a port
-     * this port is the same as the one specified on the managed SURL or, if the managed SURL doesn't specifies
-     * a port this port is listed in the default ports  
      * 
      * @param comingSURL
      * @param managedSURL
@@ -356,57 +263,28 @@ public class TSURL {
      */
     private static boolean isSURLManaged(TSURL comingSURL, TSURL managedSURL) {
         boolean result = false;
-    //  TODO MICHELE USER_SURL 
-        String serviceHost = comingSURL.sfn().machine().toString();
-        String expectedServiceHost = managedSURL.sfn().machine().toString();
-        log.debug("SURL VALID [ coming-service-host = '" + serviceHost + "' expected : '" + expectedServiceHost + "'");
 
-        if(comingSURL.sfn().port().isEmpty())
-        {
-        	//no port, check the host
-        	if (serviceHost.equalsIgnoreCase(expectedServiceHost)) 
-        	{
-                result = true;
-            }
-        }
-        else
-        {
-        	// we got port
-        	if(!managedSURL.sfn().port().isEmpty())
-        	{
-        		//both got port, normal check
-        		 int expectedServicePort = managedSURL.sfn().port().toInt();
+        String serviceHost = comingSURL.sfn().machine().toString().toLowerCase();
         		 int port = comingSURL.sfn().port().toInt();
+
+        String expectedServiceHost = managedSURL.sfn().machine().toString().toLowerCase();
+        int expectedServicePort = managedSURL.sfn().port().toInt();
+
+        log.debug("SURL VALID [ coming-service-host = '" + serviceHost + "' expected : '" + expectedServiceHost + "'");
         		 log.debug("SURL VALID [ coming-service-port = '" + port + "' expected : '" + expectedServicePort + "'");
-                if ((serviceHost.equalsIgnoreCase(expectedServiceHost)) && (expectedServicePort == port)) {
+
+        if ((serviceHost.equals(expectedServiceHost)) && (expectedServicePort == port)) {
                     result = true;
                 }
-        	}
-        	else
-        	{
-        		//surl with port, managed surl without,  check the default ports and the host
-        		int port = comingSURL.sfn().port().toInt();
-				try
-				{
-					Port comingPort = Port.make(port);
-					if ((serviceHost.equalsIgnoreCase(expectedServiceHost)) && (defaultPorts.contains(comingPort))) {
-	                    result = true;
-	                }
-				} catch(InvalidPortAttributeException e)
-				{
-					  log.warn("The SURL '"+comingSURL+"' has ha not valid port. Unable to create the Port : " + e);
-					  
-				} 
-        	}
-        }
         return result;
     }
 
 
+    
 	/**
      * Encode TSURL for FE communication.
      */
-    public void encode(Map<String,String> param, String name) {
+    public void encode(Map param, String name) {
         param.put(name, toString());
     }
 
@@ -422,10 +300,63 @@ public class TSURL {
         if (empty && surlo.empty) {
             return true;
         }
-    //  TODO MICHELE USER_SURL moved equality on surlManaged verification and on stfn equality
-		return (!empty) && (!surlo.empty) && sp.equals(surlo.sp)
-			&& this.sfn.stfn().equals(surlo.sfn.stfn()) && isManaged(this, TSURL.tsurlManaged)
-			&& isManaged(surlo, TSURL.tsurlManaged);
+        return (!empty) && (!surlo.empty) && sp.equals(surlo.sp) && sfn.equals(surlo.sfn);
+    }
+
+    /**
+     * Method that return the parent TSURL. The following example clarifies
+     * what is meant by parent TSURL.
+     *
+     * Original TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
+     *
+     * Parent TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
+     *
+     * An empty TSURL is returned if any error occurs during creation of parent TSURL.
+     * Likewise if This is an EmptyTSURL.
+     */
+    public TSURL getParent() {
+        if (empty) {
+            return makeEmpty();
+        }
+        try {
+            return TSURL.make(sp, sfn.getParent());
+        } catch (InvalidTSURLAttributesException e) {
+            return makeEmpty();
+        }
+    }
+
+    /**
+     * Method that returns a Collection of all parent TSURLs. The following example clarifies
+     * what is meant by parent TSURLs.
+     *
+     * Original TSURL:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse/file.txt
+     *
+     * Parent TSURLs:
+     *       srm://storage.egrid.it:8444/EGRID/original/data/nyse
+     *       srm://storage.egrid.it:8444/EGRID/original/data
+     *       srm://storage.egrid.it:8444/EGRID/original
+     *       srm://storage.egrid.it:8444/EGRID
+     *
+     * An empty collection is returned if any error occurs during creation of parent SURLs.
+     * Likewise if This is an EmptySURL.
+     */
+    public Collection getParents() {
+        if (empty) {
+            return new ArrayList();
+        }
+        try {
+            Collection aux = new ArrayList();
+            Collection auxSFN = sfn.getParents();
+            for (Iterator i = auxSFN.iterator(); i.hasNext();) {
+                aux.add(TSURL.make(sp, (SFN) i.next()));
+            }
+            return aux;
+        } catch (InvalidTSURLAttributesException e) {
+            return new ArrayList();
+        }
     }
 
     /**
@@ -466,14 +397,6 @@ public class TSURL {
     }
     
 	/**
-	 * @return the rawSurl
-	 */
-	public String rawSurl() {
-
-		return rawSurl;
-	}
-
-    /**
      * Method that returns the SFN of this SURL. If this is empty, then
      * an empty SFN is returned.
      */
@@ -484,50 +407,6 @@ public class TSURL {
         return sfn;
     }
 
-//  TODO MICHELE USER_SURL
-    /**
-     * @return
-     */
-    public String normalizedStFN()
-    {
-    	if(this.normalizedStFN == null)
-    	{
-    		this.normalizedStFN = this.sfn.stfn().toString();
-    	}
-    	return this.normalizedStFN;
-    }
-    
-    /**
-     * @param normalizedStFN the normalizedStFN to set
-     */
-    public void setNormalizedStFN(String normalizedStFN)
-    {
-   		this.normalizedStFN = normalizedStFN;
-    }
-    
-    /**
-	 * @param uniqueID the uniqueID to set
-	 */
-//  TODO MICHELE USER_SURL
-	public void setUniqueID(int uniqueID) 
-	{
-		this.uniqueID = uniqueID;
-	}
-    
-//  TODO MICHELE USER_SURL
-    /**
-     * @return
-     */
-    public int uniqueId()
-    {
-    	if(this.uniqueID == 0)
-    	{
-    		this.uniqueID = this.sfn.stfn().hashCode();
-    	}
-    	return this.uniqueID;
-    }
-
-    
     @Override
     public String toString() {
         if (empty) {
@@ -535,8 +414,6 @@ public class TSURL {
         }
         return sp + "://" + sfn;
     }
-
-
 
     /*
     public static void main(String[] args) {

@@ -50,16 +50,6 @@ storm.service.FE-list.hostnames =
 #   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.SURL.endpoint =   
 
-# ============================
-# Managed SURL default ports
-# ============================
-#
-# comma-separated list of managed SURL's defauilt ports. 
-# These entries are used to check the SURL validity. 
-# storm.service.SURL.default-ports = <surl-port>
-# Example: 8444
-#   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.SURL.default-ports =   
 
 # ============================
 # FE/BE communication RDBMS

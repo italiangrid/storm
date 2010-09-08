@@ -30,57 +30,50 @@ import org.slf4j.LoggerFactory;
 public class PtGChunkData implements ChunkData {
     private static final Logger log = LoggerFactory.getLogger(PtGChunkData.class);
 
-    /* long representing the primary key for the persistence layer! */
-    private long primaryKey = -1; 
-    /* This is the requestToken of the multifile srm request to which this chunk belongs */
-    private TRequestToken requestToken;
-    /* SURL that the srm command wants to get */
-    private TSURL fromSURL;
-    /* requested lifetime of TURL: it is the pin time! */
-    private TLifeTimeInSeconds pinLifeTime;  
-    /* specifies if the request regards a directory and related info */
-    private TDirOption dirOption;       
-    /* list of desired transport protocols for fromSURL */
-    private TURLPrefix desiredProtocols;
-    /* size of file */
-    private TSizeInBytes fileSize;        
-    /* return status for this chunk of request */
-    private TReturnStatus status;
-    /* TURL for picking up the requested file */
-    private TTURL transferURL;
+    private long primaryKey = -1; //long representing the primary key for the persistence layer!
+    private TRequestToken requestToken;   //This is the requestToken of the multifile srm request to which this chunk belongs
+    private TSURL fromSURL;               //SURL that the srm command wants to get
+    private TLifeTimeInSeconds pinLifeTime;  //requested lifetime of TURL: it is the pin time!
+    private TDirOption dirOption;         //specifies if the request regards a directory and related info
+    private TURLPrefix desiredProtocols; //list of desired transport protocols for fromSURL
+    private TSizeInBytes fileSize;        //size of file
+    private TReturnStatus status;         //return status for this chunk of request
+    private TTURL transferURL;            //TURL for picking up the requested file
 
-	/**
-	 * @param requestToken
-	 * @param fromSURL
-	 * @param lifeTime
-	 * @param dirOption
-	 * @param desiredProtocols
-	 * @param fileSize
-	 * @param status
-	 * @param transferURL
-	 * @throws InvalidPtGChunkDataAttributesException
-	 */
-	public PtGChunkData(TRequestToken requestToken, TSURL fromSURL, TLifeTimeInSeconds lifeTime,
-			TDirOption dirOption, TURLPrefix desiredProtocols, TSizeInBytes fileSize,
-			TReturnStatus status, TTURL transferURL) throws InvalidPtGChunkDataAttributesException {
 
-		if(requestToken == null || fromSURL == null || lifeTime == null || dirOption == null
-			|| desiredProtocols == null || fileSize == null || status == null
-			|| transferURL == null)
-		{
-			throw new InvalidPtGChunkDataAttributesException(requestToken, fromSURL, lifeTime,
-				dirOption, desiredProtocols, fileSize, status, transferURL);
-		}
 
-		this.requestToken = requestToken;
-		this.fromSURL = fromSURL;
-		this.pinLifeTime = lifeTime;
-		this.dirOption = dirOption;
-		this.desiredProtocols = desiredProtocols;
-		this.fileSize = fileSize;
-		this.status = status;
-		this.transferURL = transferURL;
-	}
+    public PtGChunkData(TRequestToken requestToken, TSURL fromSURL,
+            TLifeTimeInSeconds lifeTime, TDirOption dirOption,
+            TURLPrefix desiredProtocols, TSizeInBytes fileSize,
+            TReturnStatus status,TTURL transferURL)
+    throws InvalidPtGChunkDataAttributesException {
+        boolean ok = requestToken!=null &&
+        fromSURL!=null &&
+        lifeTime!=null &&
+        dirOption!=null &&
+        desiredProtocols!=null &&
+        fileSize!=null &&
+        status!=null &&
+        transferURL!=null;
+
+        if (!ok) {
+            throw new InvalidPtGChunkDataAttributesException(requestToken,
+                    fromSURL,lifeTime,dirOption,desiredProtocols,fileSize,status,
+                    transferURL);
+        }
+
+        this.requestToken = requestToken;
+        this.fromSURL = fromSURL;
+        this.pinLifeTime = lifeTime;
+        this.dirOption=dirOption;
+        this.desiredProtocols=desiredProtocols;
+        this.fileSize=fileSize;
+        this.status=status;
+        this.transferURL=transferURL;
+    }
+
+
+
 
     /**
      * Method used to get the primary key used in the persistence layer!
@@ -153,6 +146,11 @@ public class PtGChunkData implements ChunkData {
         return transferURL;
     }
 
+
+
+
+
+
     /**
      * Method used to set the size of the file corresponding to the
      * requested SURL. If the supplied TSizeInByte is null, then nothing
@@ -183,6 +181,8 @@ public class PtGChunkData implements ChunkData {
             status = newstat;
         }
     }
+
+
 
     /**
      * Method that sets the status of this request to SRM_REQUEST_QUEUED;
@@ -343,6 +343,9 @@ public class PtGChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FILE_BUSY! "+e);
         }
     }
+
+
+
 
     @Override
     public String toString() {

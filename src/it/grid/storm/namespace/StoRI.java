@@ -52,6 +52,8 @@ public interface StoRI {
 
     public StoRIType getStoRIType();
 
+    public boolean isSURLBusy();
+
     public Space getSpace();
 
     public void setSpace(Space space);
@@ -80,16 +82,15 @@ public interface StoRI {
      *  BUSINESS METHODs
      ****************************************************************************/
 
-    @Deprecated
-    public ArrayList<StoRI> getChildren(GridUserInterface gUser, TDirOption dirOption) throws
+    public ArrayList getChildren(GridUserInterface gUser, TDirOption dirOption) throws
         InvalidDescendantsPathRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsFileRequestException, InvalidDescendantsEmptyRequestException, InvalidDescendantsTDirOptionRequestException;
-
-    public ArrayList<StoRI> generateChildrenNoFolders(TDirOption dirOption) throws
-        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException;
+        InvalidDescendantsFileRequestException, InvalidDescendantsEmptyRequestException;
 
     public ArrayList<StoRI> getChildren(TDirOption dirOption) throws
+        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
+        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
+
+    public ArrayList<StoRI> getFirstLevelChildren(TDirOption dirOption) throws
        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
 

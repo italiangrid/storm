@@ -1,8 +1,10 @@
 package it.grid.storm.namespace.util.userinfo;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ public class UserInfoCommand {
     public UserInfoCommand() {
         super();
     }
+    
     
     /**
     *
@@ -49,43 +52,23 @@ public class UserInfoCommand {
 		String[] command = buildCommandString(parameters);
 
 		StringBuffer commandOutput = new StringBuffer();
-		for(String element : command)
-		{
+        for (String element : command) {
 			commandOutput.append(element).append(" ");
+
 			log.debug("UserInfo Command INPUT String : " + commandOutput.toString());
 		}
+
 		String output = getOutput(command);
-		if((output != null) && (output.length() > 0))
-		{
-			try
-			{
-				Long groupLong = new Long(Long.parseLong(output));
-				if(groupLong.intValue() == groupLong.longValue())
-				{
-					//The number in the output string fits in an integer (is at most 16 bits)
-					groupId = groupLong.intValue();
+        if ((output!=null)&&(output.length()>0)){
+            try {
+                groupId = Integer.parseInt(output);
+            } catch (NumberFormatException nfe) {
+                log.error("Group named '"+parameters+"' return a result different from a integer");
+                throw new UserInfoException("Group named '"+parameters+"' return a result different from a integer");
 				}
-				else
-				{
-					//The number in the output string does not fits in an integer (is between 17 and 32 bits)
-					log.warn("Group named '" + parameters
-						+ "' has a 32 bit GID " + groupLong.longValue() + " . Long GID are not managed by LCMAPS. Ignoring the group");
+        } else {
+            throw new UserInfoException("Group named '"+parameters+"' return a result different from a integer");
 				}
-			} catch(NumberFormatException nfe)
-			{
-				log.error("Group named '" + parameters
-					+ "' return a result different from a long. NumberFormatException : "
-					+ nfe);
-				throw new UserInfoException("Group named '" + parameters
-					+ "' return a result different from a long. NumberFormatException : "
-					+ nfe);
-			}
-		}
-		else
-		{
-			throw new UserInfoException("Group named '" + parameters
-				+ "' return a result different from a integer");
-		}
 		return groupId;
 	}
     
@@ -112,41 +95,6 @@ public class UserInfoCommand {
         }
         return groupsDb;
     }
-    
-    /**
-     * Creates an has map of coupplse <group name,group ID> parsing the "getent group" 
-     * command output
-     * 
-     * @return
-     */
-    public HashMap<String, Integer> retrieveGroupDb() {
-        HashMap<String,Integer> groupsDb = new HashMap<String, Integer>();
-		UserInfoParameters param = new UserInfoParameters(Arrays.asList("group"));
-		String[] command = buildCommandString(param);
-		String output = getOutput(command);
-		if((output != null) && (output.length() > 0))
-		{
-			String lines[] = output.split("\\r?\\n");
-            for (int i = 0; i < lines.length; i++) {
-                int gid = getGroupId(lines[i]);
-				String groupName = getGroupName(lines[i]);
-				if(gid > -1)
-				{
-					groupsDb.put(groupName, gid);
-				}
-				else
-				{
-					log.warn("Error while parsing the line '" + lines[i]
-						+ "' in group DB");
-				}
-			}
-		}
-		else
-		{
-			throw new UserInfoException("Unable to digest group database.");
-		}
-		return groupsDb;
-	}
     
     /**
      * Command "getent group <groupname>" if parameters contain a string representing the groupname
@@ -225,6 +173,7 @@ public class UserInfoCommand {
         return result;
     }
 
+
     private boolean processOutput(int row, String line) {
         boolean result = false;
         if (row>=0) {
@@ -245,45 +194,20 @@ public class UserInfoCommand {
         
     }
     
-    /**
-     * Extracts from the received string (with at least 3 fields separated by ":" )
-     * the GID value as a long 
-     * @param line
-     * @return
-     */
-    private int getGroupId(String line) throws UserInfoException{
-
+    private int getGroupId(String line) {
 		int gidInt = -1;
 		String[] fields = getElements(line);
-		if((fields != null) && (fields.length > 2) && (fields[2] != null))
-		{
+        if ((fields!=null) && (fields.length>2) && (fields[2]!=null) ){  
 			log.trace("field[2], GID ='" + fields[2] + "'");
-			try
-			{
-				Long groupLong = new Long(Long.parseLong(fields[2]));
-				if(groupLong.intValue() == groupLong.longValue())
-				{
-					//The number in the output string fits in an integer (is at most 16 bits)
-					gidInt = groupLong.intValue();
+            try {
+                gidInt = Integer.parseInt(fields[2]);
+              } catch (NumberFormatException nfe) {
+                  log.error("Unable to retrieve the GID number of groupName '"+fields[0]+"'");
 				}
-				else
-				{
-					//The number in the output string does not fits in an integer (is between 17 and 32 bits)
-					log.warn("Group named '" + fields[2]
-						+ "' has a 32 bit GID " + groupLong.longValue() + " . Long GID are not managed by LCMAPS. Ignoring the group");
 				}
-			} catch(NumberFormatException nfe)
-			{
-				log.error("Group named '" + fields[2]
-					+ "' return a result different from a long. NumberFormatException : "
-					+ nfe);
-				throw new UserInfoException("Group named '" + fields[2]
-					+ "' return a result different from a long. NumberFormatException : "
-					+ nfe);
-			}
-		}
         return gidInt;       
 	}
+    
     
     /**
      * Split the line in atomic part
@@ -295,11 +219,12 @@ public class UserInfoCommand {
 
 		String patternStr = ":";
 		String[] fields = null;
-		if(line != null)
-		{
+        if (line!=null) {
 			log.trace("LINE = " + line);
 			fields = line.split(patternStr);
 		}
 		return fields;
 	}
+    
+
 }

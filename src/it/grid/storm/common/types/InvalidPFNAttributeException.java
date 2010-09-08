@@ -20,7 +20,7 @@ public class InvalidPFNAttributeException extends Exception {
      */
     public InvalidPFNAttributeException(String name) {
         this.nullName = (name==null);
-        this.emptyName = (name.equals(""));
+        this.emptyName = (name=="");
         if (!nullName && !emptyName) this.wrong = (name.charAt(0)!='/');
     }
 

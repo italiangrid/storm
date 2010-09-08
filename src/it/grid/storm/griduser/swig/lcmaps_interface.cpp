@@ -111,10 +111,8 @@ localuser_info::~localuser_info()
  */
 //localuser_info::localuser_info (const char *user_dn,  const char* fqan)
 localuser_info::localuser_info (const char *user_dn, const char **fqan_list)
-  : uid(0), ngids(0), gids(NULL)
+  : uid(-1), ngids(0), gids(NULL)
 {
-
-	// std::cout << "##### localuser_info DEBUG  ^^^^ START ^^^^ ####" << std::endl;
 
 // fprintf(stderr, "start0\n");
 //  char** fqan_list = (char**) malloc(sizeof(char**));
@@ -150,14 +148,7 @@ localuser_info::localuser_info (const char *user_dn, const char **fqan_list)
 //  		fprintf(stderr, "FQAN: %s\n", fqan_list[i]);
 //   }
 
-  // std::cout << "##### debug info ####" << std::endl;
-  // std::cout << " DN = " << user_dn << std::endl;
-  // std::cout << " FQAN size = " << nfqans << std::endl;
-  // for(int i = 0; i<nfqans; ++i) {
-	 //  std::cout << "   FQAN[" << i << "]" << fqan_list[i] << std::endl;
-  // }
-  // std::cout << "   uid  before " << uid << std::endl;
-  // std::cout << "   ngid before " << ngids << std::endl;
+
 
   rc = lcmaps_return_account_without_gsi (const_cast<char*>(user_dn), 
                                           const_cast<char**>(fqan_list), 
@@ -182,21 +173,13 @@ localuser_info::localuser_info (const char *user_dn, const char **fqan_list)
     throw std::runtime_error(msg.str().c_str());
   }
 
-
   uid = lcmaps_account.uid;
-  // std::cout << "   uid  after " << uid << std::endl;
-  // std::cout << "   ngid after " << ngids << std::endl;
   
   if (lcmaps_account.nsgid > 0) 
     ngids = lcmaps_account.npgid + lcmaps_account.nsgid;
   else
     ngids = lcmaps_account.npgid;
   
-  // std::cout << " lcmaps_account.uid = " << lcmaps_account.uid  << std::endl;
-  // std::cout << " lcmaps_account.npgid (primary)  = " << lcmaps_account.npgid << std::endl;
-  // std::cout << " lcmaps_account.nsgid (secondary)= " << lcmaps_account.nsgid  << std::endl;
-  // std::cout << " number of GIDs (sum) = " << ngids  << std::endl;
-
   /* copy GIDs, primary first */
   
   gids = new gid_t[ngids];
@@ -210,17 +193,7 @@ localuser_info::localuser_info (const char *user_dn, const char **fqan_list)
       q[i + lcmaps_account.npgid] = p[i];
   }
 
-  // std::cout << "##### RETURN VALUES ####" << std::endl;
-  // std::cout << "   uid  = " << uid << std::endl;
-  // std::cout << "   ngid = " << ngids << std::endl;
-  // for(int i = 0; i<ngids; ++i) {
-  //	  std::cout << "   gid[" << i << "]" << gids[i] << std::endl;
-  // }
-  // std::cout << "##### ^^^^^^^^^^^^^ ####" << std::endl;
-
   /* XXX: need to check return value? */
   lcmaps_account_info_clean (&lcmaps_account);
   
-  // std::cout << "##### localuser_info DEBUG  ---- END ---- ####" << std::endl;
-
 }
