@@ -10,10 +10,10 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,44 +32,21 @@ public class AdvancedPicker {
 
     private static final Logger log = LoggerFactory.getLogger(AdvancedPicker.class);
 
-    private final Scheduler s = SchedulerFacade.getInstance().crusherScheduler(); // link
-    // to
-    // scheduler
-    // that
-    // handles
-    // Feeder
-    // taks
-    // in
-    // StoRM!
-    private Timer retriever = null; // Timer object in charge of retrieving info
-    // from the DB!
+    /* link to scheduler that handles Feeder taks in StoRM! */
+    private final Scheduler s = SchedulerFacade.getInstance().crusherScheduler(); 
+    /* Timer object in charge of retrieving info from the DB! */
+    private Timer retriever = null; 
     private TimerTask retrievingTask = null;
-    private final long delay = Configuration.getInstance().getPickingInitialDelay() * 1000; // Delay
-    // time
-    // before
-    // starting
-    // retriever
-    // thread!
-    // Set
-    // to
-    // 5
-    // seconds
-    private final long period = Configuration.getInstance().getPickingTimeInterval() * 1000; // Period
-    // of
-    // execution
-    // of
-    // retrieving!
-    // Set
-    // to
-    // 1
-    // minute
-
-    private boolean abort = false; // boolean that indicates there is a token to
-    // abort!
-    private Collection abortSURLS = null; // Collection with chunks to abort!
-    private TRequestToken abortToken = null; // TRequestToken of request to
-
-    // abort!
+    /* Delay time before starting retriever thread! Set to 5 seconds */
+    private final long delay = Configuration.getInstance().getPickingInitialDelay() * 1000; 
+    /* Period of execution of retrieving! Set to 1 minute */
+    private final long period = Configuration.getInstance().getPickingTimeInterval() * 1000; 
+    /* boolean that indicates there is a token to abort! */
+    private boolean abort = false; 
+    /* Collection with chunks to abort! */
+    private Collection<TSURL> abortSURLS = null;
+    /* TRequestToken of request to abort! */
+    private TRequestToken abortToken = null; 
 
     /**
      * Method used to command This AdvancedPicker to stop periodic reading of
@@ -129,27 +106,21 @@ public class AdvancedPicker {
      * it means the code was not updated!
      */
     public void retrieve() {
-        int remainingCapacity_PtG = -1;
-        int remainingCapacity_PtP = -1;
-        int remainingCapacity_Copy = -1;
-        int remainingCapacity_BoL = -1;
 
         int crusherCapacity = -1;
         SchedulerStatus status = s.getStatus(0);
         // log.debug(status.toString());
         crusherCapacity = status.getRemainingSize();
 
-        Collection c = RequestSummaryCatalog.getInstance().fetchNewRequests(crusherCapacity);
-        if (c.isEmpty()) {
+        Collection<RequestSummaryData> requests = RequestSummaryCatalog.getInstance().fetchNewRequests(crusherCapacity);
+        if (requests.isEmpty()) {
             log.trace("ADVANCED PICKER: no request to dispatch.");
         } else {
-            log.info("ADVANCED PICKER: dispatching " + c.size() + " requests.");
+            log.info("ADVANCED PICKER: dispatching " + requests.size() + " requests.");
         }
-        RequestSummaryData rsd = null;
         TRequestType rtype = null;
         TRequestToken rt = null;
-        for (Iterator i = c.iterator(); i.hasNext();) {
-            rsd = (RequestSummaryData) i.next();
+        for(RequestSummaryData rsd : requests){
             rtype = rsd.requestType();
             rt = rsd.requestToken();
             if ((abort) && rt.equals(abortToken)) {
@@ -272,15 +243,15 @@ public class AdvancedPicker {
      * request has been issued, then FALSE is returned; otherwise TRUE is
      * returned.
      */
-    synchronized public boolean abortChunksOfRequest(TRequestToken rt, Collection c) {
+    synchronized public boolean abortChunksOfRequest(TRequestToken rt, Collection<TSURL> c) {
         if (abort) {
             return false;
         }
         if ((rt == null) || (c == null)) {
             return false;
         }
-        abortToken = rt; // BE CAREFUL!!! FIRST set the token and collection,
-        // and THEN the abort flag!
+        /* BE CAREFUL!!! FIRST set the token and collection, and THEN the abort flag! */
+        abortToken = rt; 
         abortSURLS = c;
         abort = true;
         return true;

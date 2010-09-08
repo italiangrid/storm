@@ -22,8 +22,6 @@ import it.grid.storm.srm.types.TTURL;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,11 +39,17 @@ import org.slf4j.LoggerFactory;
  */
 public class PtGChunkCatalog {
     private static final Logger log = LoggerFactory.getLogger(PtGChunkCatalog.class);
-    private static final PtGChunkCatalog cat = new PtGChunkCatalog(); //only instance of PtGChunkCatalog present in StoRM!
+    
+    /* Only instance of PtGChunkCatalog present in StoRM! */ 
+    private static final PtGChunkCatalog cat = new PtGChunkCatalog(); 
     private final PtGChunkDAO dao = PtGChunkDAO.getInstance();
-    private final Timer transiter = new Timer(); //Timer object in charge of transiting expired requests from SRM_FILE_PINNED to SRM_RELEASED!
-    private final long delay = Configuration.getInstance().getTransitInitialDelay()*1000;  //Delay time before starting cleaning thread!
-    private final long period = Configuration.getInstance().getTransitTimeInterval()*1000; //Period of execution of cleaning!
+    
+    /* Timer object in charge of transiting expired requests from SRM_FILE_PINNED to SRM_RELEASED! */
+    private final Timer transiter = new Timer(); 
+    /* Delay time before starting cleaning thread!*/
+    private final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000;  
+    /* Period of execution of cleaning! */
+    private final long period = Configuration.getInstance().getTransitTimeInterval() * 1000; 
 
     /**
      * Private constructor that starts the internal timer needed to periodically
@@ -69,8 +73,92 @@ public class PtGChunkCatalog {
         return cat;
     }
 
+    /**
+     * Method used to update into Persistence a retrieved PtGChunkData. In case
+     * any error occurs, the operation does not proceed but no Exception is
+     * thrown. Error messages get logged.
+     *
+     * Only fileSize, StatusCode, errString and transferURL are updated. Likewise
+     * for the request pinLifetime.
+     */
+	synchronized public void update(PtGChunkData cd) {
 
+		PtGChunkDataTO to = new PtGChunkDataTO();
+		/* Primary key needed by DAO Object */
+		to.setPrimaryKey(cd.primaryKey());
+		to.setFileSize(cd.fileSize().value());
+		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
+		to.setErrString(cd.status().getExplanation());
+		to.setTurl(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
+		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
+		// TODO MICHELE USER_SURL fill new fields
+		to.setNormalizedStFN(cd.fromSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(cd.fromSURL().uniqueId()));
 
+		// TODO MICHELE USER_SURL checked : OK
+		dao.update(to);
+	}
+
+    /**
+     * Refresh method.
+     * TODO
+     * THIS IS A WORK IN PROGRESS!!!!
+     * This method have to synch the ChunkData information with the
+     * database status intended as the status code and the TURL
+     * @param auxTO
+     * @param PtGChunkData inputChunk
+     * @return PtGChunkData outputChunk
+     */
+	synchronized public PtGChunkData refreshStatus(PtGChunkData inputChunk) {
+
+		//TODO MICHELE USER_SURL checked : OK
+		// Call the dao refresh method to synch with the db status
+		PtGChunkDataTO chunkDataTO = dao.refresh(inputChunk.primaryKey());
+
+		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTO);
+		if(chunkDataTO == null)
+		{
+			log.warn("PtG CHUNK CATALOG! Empty TO found in persistence for specified request: "
+				+ inputChunk.primaryKey());
+		}
+		else
+		{
+			/*
+			 * In this first version the only field updated is the Status. Once
+			 * updated, the new status is rewritten into the input ChunkData
+			 */
+
+			// status
+			TReturnStatus status = null;
+			TStatusCode code = StatusCodeConverter.getInstance().toSTORM(chunkDataTO.status());
+			if(code != TStatusCode.EMPTY)
+			{
+				try
+				{
+					status = new TReturnStatus(code, chunkDataTO.errString());
+				} catch(InvalidTReturnStatusAttributeException e)
+				{
+					log.error("PtGChunk : Unable to build the Return Status from the String '"
+						+ chunkDataTO.errString() + " and code '" + chunkDataTO.status() + "''." + e);
+				}
+			}
+			inputChunk.setStatus(status);
+
+			// TTURL
+			TTURL turl = null;
+			try
+			{
+				turl = TTURL.makeFromString(chunkDataTO.turl());
+			} catch(InvalidTTURLAttributesException e)
+			{
+				log.info("PtGChunkCatalog (FALSE-ERROR-in-abort-refresh-status?):"
+					+ " built a TURL with protocol NULL (retrieved from the DB..)");
+			}
+			inputChunk.setTransferURL(turl);
+		}
+		return inputChunk;
+	}
+    
     /**
      * Method that returns a Collection of PtGChunkData Objects matching the
      * supplied TRequestToken.
@@ -83,164 +171,255 @@ public class PtGChunkCatalog {
      * If there are no chunks to process then an empty Collection is returned,
      * and a messagge gets logged.
      */
-    synchronized public Collection lookup(TRequestToken rt) {
-        Collection c = dao.find(rt);
-        log.debug("PtG CHUNK CATALOG: retrieved data "+c);
-        List list = new ArrayList();
-        if (c.isEmpty()) {
-            log.warn("PtG CHUNK CATALOG! No chunks found in persistence for specified request: "+rt);
-        } else {
-            PtGChunkDataTO auxTO;
-            PtGChunkData aux;
-            for (Iterator i = c.iterator(); i.hasNext(); ) {
-                auxTO = (PtGChunkDataTO) i.next();
-                aux = makeOne(auxTO,rt);
-                if (aux!=null) {
-                    list.add(aux);
-                }
-            }
-        }
-        log.debug("PtG CHUNK CATALOG: returning "+ list);
-        return list;
-    }
+	synchronized public Collection<PtGChunkData> lookup(TRequestToken rt) {
 
-
-
-
+		//TODO MICHELE USER_SURL checked : OK
+		Collection<PtGChunkDataTO> chunkTOs = dao.find(rt);
+		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkTOs);
+		ArrayList<PtGChunkData> list = new ArrayList<PtGChunkData>();
+		if(chunkTOs.isEmpty())
+		{
+			log.warn("PtG CHUNK CATALOG! No chunks found in persistence for specified request: "
+				+ rt);
+		}
+		else
+		{
+			//TODO MICHELE USER_SURL here I can update all requests that has not the new fields set alltogether in a bunch, adding a method to the DAO for this purpose
+			PtGChunkData chunk;
+			for(PtGChunkDataTO chunkTO : chunkTOs)
+			{
+				chunk = makeOne(chunkTO, rt);
+				if(chunk != null)
+				{
+					list.add(chunk);
+					if(!this.isComplete(chunkTO))
+					{
+						try
+						{
+							dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+						} catch(InvalidReducedPtGChunkDataAttributesException e)
+						{
+							log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: " + e);
+						}
+					}
+				}
+			}
+		}
+		log.debug("PtG CHUNK CATALOG: returning " + list);
+		return list;
+	}
+	
     /**
-     * Refresh method.
-     * TODO
-     * THIS IS A WORK IN PROGRESS!!!!
-     * This method have to synch the ChunkData information with the
-     * database status.
-     * @param auxTO
-     * @param PtGChunkData inputChunk
-     * @return PtGChunkData outputChunk
+     * Generates a PtGChunkData from the received PtGChunkDataTO
+     * 
+     * @param chunkDataTO
+     * @param rt
+     * @return
      */
-
-    synchronized public PtGChunkData refreshStatus(PtGChunkData inputChunk) {
-        //Call the dao refresh method to synch with the db status
-        PtGChunkDataTO auxTO = dao.refresh(inputChunk.primaryKey());
-
-        log.debug("PtG CHUNK CATALOG: retrieved data "+auxTO);
-        if (auxTO == null) {
-            log.warn("PtG CHUNK CATALOG! Empty TO found in persistence for specified request: "+inputChunk.primaryKey());
-        } else {
-            /*
-             * In this first version the only field updated is the Status.
-             * Once updated, the new status is rewritten into the input ChunkData
-             */
-
-            //status
-            TReturnStatus status=null;
-            TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
-            if (code==TStatusCode.EMPTY) {
-                //sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-            } else {
-                try {
-                    status = new TReturnStatus(code,auxTO.errString());
-                } catch (InvalidTReturnStatusAttributeException e) {
-                    log.error("PtGChunk : Unable to build the Return Status Code.");
-                }
-            }
-            inputChunk.setStatus(status);
-
-            //TTURL
-            TTURL turl = null;
-            try {
-                turl = TTURL.makeFromString(auxTO.turl());
-            } catch (InvalidTTURLAttributesException e) {
-                // TODO Auto-generated catch block
-                //e.printStackTrace();
-                log.info("PtGChunkCatalog (FALSE-ERROR-in-abort-refresh-status?): built a TURL with protocol NULL (retrieved from the DB..)");
-            }
-            inputChunk.setTransferURL(turl);
-
-
-        }
-
-        return inputChunk;
-    }
-
-
-    private PtGChunkData makeOne(PtGChunkDataTO auxTO, TRequestToken rt) {
-        StringBuffer sb = new StringBuffer();
+    private PtGChunkData makeOne(PtGChunkDataTO chunkDataTO, TRequestToken rt) {
+    	
+        StringBuffer errorSb = new StringBuffer();
+        //TODO MICHELE USER_SURL here we go from the string representation of the surl on the db to the TSURL object
         //fromSURL
-        TSURL fromSURL=null;
-        try {
-            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
-        } catch (InvalidTSURLAttributesException e) {
-            sb.append(e);
-        }
-        //lifeTime
-        TLifeTimeInSeconds lifeTime=null;
-        try {
-            long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(auxTO.lifeTime());
-            // Check for max value allowed
-            long max = Configuration.getInstance().getPinLifetimeMaximum();
-            if (pinLifeTime>max) {
-               log.warn("PinLifeTime is greater than the max value allowed. Drop the value to the max = "+max+" seconds"); 
-               pinLifeTime = max;
-            }
-            lifeTime = TLifeTimeInSeconds.make((pinLifeTime), TimeUnit.SECONDS);
-        } catch (InvalidTLifeTimeAttributeException e) {
-            sb.append("\n");
-            sb.append(e);
-        }
+		TSURL fromSURL = null;
+		try
+		{
+			fromSURL = TSURL.makeFromStringValidate(chunkDataTO.fromSURL());
+		} catch(InvalidTSURLAttributesException e)
+		{
+			errorSb.append(e);
+		}
+		if(chunkDataTO.normalizedStFN() != null)
+		{
+			fromSURL.setNormalizedStFN(chunkDataTO.normalizedStFN());
+		}
+		if(chunkDataTO.surlUniqueID() != null)
+		{
+			fromSURL.setUniqueID(chunkDataTO.surlUniqueID().intValue());
+		}
+		// lifeTime
+		TLifeTimeInSeconds lifeTime = null;
+		try
+		{
+			long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(chunkDataTO.lifeTime());
+			// Check for max value allowed
+			long max = Configuration.getInstance().getPinLifetimeMaximum();
+			if(pinLifeTime > max)
+			{
+				log.warn("PinLifeTime is greater than the max value allowed."
+					+ " Drop the value to the max = " + max + " seconds");
+				pinLifeTime = max;
+			}
+			lifeTime = TLifeTimeInSeconds.make((pinLifeTime), TimeUnit.SECONDS);
+		} catch(InvalidTLifeTimeAttributeException e)
+		{
+			errorSb.append("\n");
+			errorSb.append(e);
+		}
         //dirOption
         TDirOption dirOption=null;
-        try {
-            dirOption = new TDirOption(auxTO.dirOption(),auxTO.allLevelRecursive(),auxTO.numLevel());
-        } catch (InvalidTDirOptionAttributesException e) {
-            sb.append("\n");
-            sb.append(e);
-        }
-        //transferProtocols
-        TURLPrefix transferProtocols = TransferProtocolListConverter.toSTORM(auxTO.protocolList());
-        if (transferProtocols.size()==0) {
-            sb.append("\nEmpty list of TransferProtocols or could not translate TransferProtocols!");
-            transferProtocols = null; //fail construction of PtGChunkData!
-        }
-        //fileSize
-        TSizeInBytes fileSize=null;
-        try {
-            fileSize = TSizeInBytes.make(auxTO.fileSize(),SizeUnit.BYTES);
-        } catch (InvalidTSizeAttributesException e) {
-            sb.append("\n");
-            sb.append(e);
-        }
-        //status
-        TReturnStatus status=null;
-        TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
-        if (code==TStatusCode.EMPTY) {
-            sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else {
-            try {
-                status = new TReturnStatus(code,auxTO.errString());
-            } catch (InvalidTReturnStatusAttributeException e) {
-                sb.append("\n");
-                sb.append(e);
-            }
-        }
-        //transferURL
-        TTURL transferURL = TTURL.makeEmpty(); //whatever is read is just meaningless because PtG will fill it in!!! So create an Empty TTURL by default! Vital to avoid problems with unknown DPM NULL/EMPTY logic policy!
-        //make PtGChunkData
-        PtGChunkData aux=null;
-        try {
-            aux = new PtGChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize, status, transferURL);
-            aux.setPrimaryKey(auxTO.primaryKey());
-        } catch (InvalidPtGChunkDataAttributesException e) {
-            dao.signalMalformedPtGChunk(auxTO);
-            log.warn("PtG CHUNK CATALOG! Retrieved malformed PtG chunk data from persistence. Dropping chunk from request "+rt);
-            log.warn(e.getMessage(), e);
-            log.warn(sb.toString());
-        }
-        //end...
-        return aux;
-    }
+		try
+		{
+			dirOption =new TDirOption(chunkDataTO.dirOption(), chunkDataTO.allLevelRecursive(), 
+							chunkDataTO.numLevel());
+		} catch(InvalidTDirOptionAttributesException e)
+		{
+			errorSb.append("\n");
+			errorSb.append(e);
+		}
+		// transferProtocols
+		TURLPrefix transferProtocols = TransferProtocolListConverter.toSTORM(chunkDataTO.protocolList());
+		if(transferProtocols.size() == 0)
+		{
+			errorSb.append("\nEmpty list of TransferProtocols or could "
+				+ "not translate TransferProtocols!");
+			/* fail construction of PtGChunkData! */
+			transferProtocols = null;
+		}
+		// fileSize
+		TSizeInBytes fileSize = null;
+		try
+		{
+			fileSize = TSizeInBytes.make(chunkDataTO.fileSize(), SizeUnit.BYTES);
+		} catch(InvalidTSizeAttributesException e)
+		{
+			errorSb.append("\n");
+			errorSb.append(e);
+		}
+		// status
+		TReturnStatus status = null;
+		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(chunkDataTO.status());
+		if(code == TStatusCode.EMPTY)
+		{
+			errorSb.append("\nRetrieved StatusCode was not recognised: " + chunkDataTO.status());
+		}
+		else
+		{
+			try
+			{
+				status = new TReturnStatus(code, chunkDataTO.errString());
+			} catch(InvalidTReturnStatusAttributeException e)
+			{
+				errorSb.append("\n");
+				errorSb.append(e);
+			}
+		}
+		// transferURL
+		/*
+		 * whatever is read is just meaningless because PtG will fill it in!!!
+		 * So create an Empty TTURL by default! Vital to avoid problems with
+		 * unknown DPM NULL/EMPTY logic policy!
+		 */
+		TTURL transferURL = TTURL.makeEmpty();
+		// make PtGChunkData
+		PtGChunkData aux = null;
+		try
+		{
+			aux = new PtGChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
+					  status, transferURL);
+			aux.setPrimaryKey(chunkDataTO.primaryKey());
+		} catch(InvalidPtGChunkDataAttributesException e)
+		{
+			dao.signalMalformedPtGChunk(chunkDataTO);
+			log.warn("PtG CHUNK CATALOG! Retrieved malformed"
+				+ " PtG chunk data from persistence. Dropping chunk from request " + rt);
+			log.warn(e.getMessage(), e);
+			log.warn(errorSb.toString());
+		}
+		// end...
+		return aux;
+	}
+	
+	/**
+	 * 
+	 * Adds to the received PtGChunkDataTO the normalized StFN and the SURL unique ID taken from the PtGChunkData
+	 *  
+	 * @param chunkTO
+	 * @param chunk
+	 */
+	//TODO MICHELE USER_SURL new method
+	private void completeTO(ReducedPtGChunkDataTO chunkTO, final ReducedPtGChunkData chunk) {
+		
+		chunkTO.setNormalizedStFN(chunk.fromSURL().normalizedStFN());
+		chunkTO.setSurlUniqueID(new Integer(chunk.fromSURL().uniqueId()));
+	}
 
+	/**
+	 * 
+	 * Creates a ReducedPtGChunkDataTO from the received PtGChunkDataTO and
+	 * completes it with the normalized StFN and the SURL unique ID taken from
+	 * the PtGChunkData
+	 * 
+	 * @param chunkTO
+	 * @param chunk
+	 * @return
+	 * @throws InvalidReducedPtGChunkDataAttributesException
+	 */
+	//TODO MICHELE USER_SURL new method
+	private ReducedPtGChunkDataTO completeTO(PtGChunkDataTO chunkTO, final PtGChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
+		ReducedPtGChunkDataTO reducedChunkTO = this.reduce(chunkTO);
+		this.completeTO(reducedChunkTO, this.reduce(chunk));
+		return reducedChunkTO;
+	}
+	
+	/**
+	 * Creates a ReducedPtGChunkData from the data contained in the received PtGChunkData
+	 * 
+	 * @param chunk
+	 * @return
+	 * @throws InvalidReducedPtGChunkDataAttributesException
+	 */
+	//TODO MICHELE USER_SURL new method
+	private ReducedPtGChunkData reduce(PtGChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
 
+		ReducedPtGChunkData reducedChunk = new ReducedPtGChunkData(chunk.fromSURL(),chunk.status());
+		reducedChunk.setPrimaryKey(chunk.primaryKey());
+		return reducedChunk;
+	}
 
+	/**
+	 * Creates a ReducedPtGChunkDataTO from the data contained in the received PtGChunkDataTO
+	 * 
+	 * @param chunkTO
+	 * @return
+	 */
+	//TODO MICHELE USER_SURL new method
+	private ReducedPtGChunkDataTO reduce(PtGChunkDataTO chunkTO) {
+
+		ReducedPtGChunkDataTO reducedChunkTO = new ReducedPtGChunkDataTO();
+		reducedChunkTO.setPrimaryKey(chunkTO.primaryKey());
+		reducedChunkTO.setFromSURL(chunkTO.fromSURL());
+		reducedChunkTO.setNormalizedStFN(chunkTO.normalizedStFN());
+		reducedChunkTO.setSurlUniqueID(chunkTO.surlUniqueID());
+		reducedChunkTO.setStatus(chunkTO.status());
+		reducedChunkTO.setErrString(chunkTO.errString());
+		return reducedChunkTO;
+	}
+
+	/**
+     * Checks if the received PtGChunkDataTO contains the fields not set by the front end
+     * but required
+     * 
+     * @param chunkTO
+     * @return
+     */
+	//TODO MICHELE USER_SURL new method
+    private boolean isComplete(PtGChunkDataTO chunkTO) {
+    	return (chunkTO.normalizedStFN() != null) && (chunkTO.surlUniqueID() != null); 
+	}
+    
+    /**
+     * Checks if the received ReducedPtGChunkDataTO contains the fields not set by the front end
+     * but required
+     * 
+     * @param reducedChunkTO
+     * @return
+     */
+  //TODO MICHELE USER_SURL new method
+    private boolean isComplete(ReducedPtGChunkDataTO reducedChunkTO) {
+
+    	return (reducedChunkTO.normalizedStFN() != null) && (reducedChunkTO.surlUniqueID() != null);
+	}
 
     /**
      * Method that returns a Collection of ReducedPtGChunkData Objects associated to the supplied
@@ -253,23 +432,36 @@ public class PtGChunkCatalog {
      * If there are no chunks associated to the given TRequestToken, then an empty Collection is returned and
      * a message gets logged.
      */
-    synchronized public Collection lookupReducedPtGChunkData(TRequestToken rt) {
-        Collection<ReducedPtGChunkDataTO> cl = dao.findReduced(rt.getValue());
-        log.debug("PtG CHUNK CATALOG: retrieved data " + cl);
-        List<ReducedPtGChunkData> list = new ArrayList<ReducedPtGChunkData>();
-        if (cl.isEmpty()) {
-            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + rt);
-        } else {
-            for (ReducedPtGChunkDataTO auxTO : cl) {
-                ReducedPtGChunkData aux = makeReducedPtGChunkData(auxTO);
-                if (aux != null) {
-                    list.add(aux);
-                }
-            }
-            log.debug("PtG CHUNK CATALOG: returning " + list);
-        }
-        return list;
-    }
+	synchronized public Collection<ReducedChunkData> lookupReducedPtGChunkData(TRequestToken rt) {
+
+		//TODO MICHELE USER_SURL checked : OK
+		Collection<ReducedPtGChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt.getValue());
+		log.debug("PtG CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
+		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
+		if(reducedChunkDataTOs.isEmpty())
+		{
+			log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + rt);
+		}
+		else
+		{
+			ReducedPtGChunkData reducedChunkData = null;
+			for(ReducedPtGChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
+			{
+				reducedChunkData = makeOneReduced(reducedChunkDataTO);
+				if(reducedChunkData != null)
+				{
+					list.add(reducedChunkData);
+					if(!this.isComplete(reducedChunkDataTO))
+					{
+						this.completeTO(reducedChunkDataTO, reducedChunkData);
+						dao.updateIncomplete(reducedChunkDataTO);
+					}
+				}
+			}
+			log.debug("PtG CHUNK CATALOG: returning " + list);
+		}
+		return list;
+	}
 
     /**
      * Method that returns a Collection of ReducedPtGChunkData Objects matching
@@ -283,97 +475,110 @@ public class PtGChunkCatalog {
      * If there are no chunks associated to the given GridUser and Collection of
      * TSURLs, then an empty Collection is returned and a message gets logged.
      */
-    synchronized public Collection lookupReducedPtGChunkData(GridUserInterface gu, Collection c) {
-        Object[] surlsobj = (new ArrayList(c)).toArray();
-        int n = surlsobj.length;
-        String[] surls = new String[n];
-        for (int i=0; i<n; i++) {
-            surls[i] = ((TSURL)surlsobj[i]).toString();
-        }
-        Collection cl = dao.findReduced(gu.getDn(),surls);
-        log.debug("PtG CHUNK CATALOG: retrieved data "+cl);
-        List list = new ArrayList();
-        if (cl.isEmpty()) {
-            log.debug("PtG CHUNK CATALOG! No chunks found in persistence for "+gu+" "+cl);
-        } else {
-            ReducedPtGChunkDataTO auxTO;
-            ReducedPtGChunkData aux;
-            for (Iterator i = cl.iterator(); i.hasNext(); ) {
-                auxTO = (ReducedPtGChunkDataTO) i.next();
-                aux = makeReducedPtGChunkData(auxTO);
-                if (aux!=null) {
-                    list.add(aux);
-                }
-            }
-            log.debug("PtG CHUNK CATALOG: returning "+ list);
-        }
-        return list;
-    }
+	synchronized public Collection<ReducedChunkData> lookupReducedPtGChunkData(
+			GridUserInterface gu, Collection<TSURL> tsurlCollection) {
 
-    private ReducedPtGChunkData makeReducedPtGChunkData(ReducedPtGChunkDataTO auxTO) {
-        StringBuffer sb = new StringBuffer();
-        //fromSURL
-        TSURL fromSURL=null;
-        try {
-            fromSURL = TSURL.makeFromStringValidate(auxTO.fromSURL());
-        } catch (InvalidTSURLAttributesException e) {
-            sb.append(e);
-        }
-        //status
-        TReturnStatus status=null;
-        TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.status());
-        if (code==TStatusCode.EMPTY) {
-            sb.append("\nRetrieved StatusCode was not recognised: "+auxTO.status());
-        } else {
-            try {
-                status = new TReturnStatus(code,auxTO.errString());
-            } catch (InvalidTReturnStatusAttributeException e) {
-                sb.append("\n");
-                sb.append(e);
-            }
-        }
-        //make ReducedPtGChunkData
-        ReducedPtGChunkData aux=null;
-        try {
-            aux = new ReducedPtGChunkData(fromSURL, status);
-            aux.setPrimaryKey(auxTO.primaryKey());
-        } catch (InvalidReducedPtGChunkDataAttributesException e) {
-            log.warn("PtG CHUNK CATALOG! Retrieved malformed Reduced PtG chunk data from persistence: dropping reduced chunk...");
-            log.warn(e.getMessage(), e);
-            log.warn(sb.toString());
-        }
-        //end...
-        return aux;
-    }
+		int[] surlsUniqueIDs = new int[tsurlCollection.size()];
+		String[] surls = new String[tsurlCollection.size()];
+		int index = 0;
+		for(TSURL tsurl : tsurlCollection)
+		{
+			surlsUniqueIDs[index] = tsurl.uniqueId();
+			surls[index] = tsurl.rawSurl();
+			index++;
+		}
+		//TODO MICHELE USER_SURL checked : OK
+		Collection<ReducedPtGChunkDataTO> chunkDataTOCollection =
+															  dao.findReduced(gu.getDn(),
+																  surlsUniqueIDs, surls);
+		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
+		if(chunkDataTOCollection.isEmpty())
+		{
+			log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + gu + " "
+				+ chunkDataTOCollection);
+		}
+		else
+		{
+			ReducedPtGChunkData reducedChunkData;
+			for(ReducedPtGChunkDataTO reducedChunkDataTO : chunkDataTOCollection)
+			{
+				reducedChunkData = makeOneReduced(reducedChunkDataTO);
+				if(reducedChunkData != null)
+				{
+					list.add(reducedChunkData);
+					if(!this.isComplete(reducedChunkDataTO))
+					{
+						this.completeTO(reducedChunkDataTO, reducedChunkData);
+						dao.updateIncomplete(reducedChunkDataTO);
+					}
+				}
+			}
+			log.debug("PtG CHUNK CATALOG: returning " + list);
+		}
+		return list;
+	}
 
-
-
-
-
-
-
-    /**
-     * Method used to update into Persistence a retrieved PtGChunkData. In case
-     * any error occurs, the operation does not proceed but no Exception is
-     * thrown. Error messagges get logged.
-     *
-     * Only fileSize, StatusCode, errString and transferURL are updated. Likewise
-     * for the request pinLifetime.
+	/**
+     * 
+     * 
+     * @param reducedChunkDataTO
+     * @return
      */
-    synchronized public void update(PtGChunkData cd) {
-        PtGChunkDataTO to = new PtGChunkDataTO();
-        to.setPrimaryKey(cd.primaryKey()); //primary key needed by DAO Object
-        to.setFileSize(cd.fileSize().value());
-        to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
-        to.setErrString(cd.status().getExplanation());
-        to.setTurl(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
-        to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
-        dao.update(to);
-    }
-
-
-
-
+    private ReducedPtGChunkData makeOneReduced(ReducedPtGChunkDataTO reducedChunkDataTO) {
+        StringBuffer errorSb = new StringBuffer();
+        //fromSURL
+		TSURL fromSURL = null;
+		try
+		{
+			fromSURL = TSURL.makeFromStringValidate(reducedChunkDataTO.fromSURL());
+		} catch(InvalidTSURLAttributesException e)
+		{
+			errorSb.append(e);
+		}
+		if(reducedChunkDataTO.normalizedStFN() != null)
+		{
+			fromSURL.setNormalizedStFN(reducedChunkDataTO.normalizedStFN());
+		}
+		if(reducedChunkDataTO.surlUniqueID() != null)
+		{
+			fromSURL.setUniqueID(reducedChunkDataTO.surlUniqueID().intValue());
+		}
+		// status
+		TReturnStatus status = null;
+		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(reducedChunkDataTO.status());
+		if(code == TStatusCode.EMPTY)
+		{
+			errorSb.append("\nRetrieved StatusCode was not recognised: "
+				+ reducedChunkDataTO.status());
+		}
+		else
+		{
+			try
+			{
+				status = new TReturnStatus(code, reducedChunkDataTO.errString());
+			} catch(InvalidTReturnStatusAttributeException e)
+			{
+				errorSb.append("\n");
+				errorSb.append(e);
+			}
+		}
+		// make ReducedPtGChunkData
+		ReducedPtGChunkData aux = null;
+		try
+		{
+			aux = new ReducedPtGChunkData(fromSURL, status);
+			aux.setPrimaryKey(reducedChunkDataTO.primaryKey());
+		} catch(InvalidReducedPtGChunkDataAttributesException e)
+		{
+			log.warn("PtG CHUNK CATALOG! Retrieved malformed Reduced PtG chunk "
+				+ "data from persistence: dropping reduced chunk...");
+			log.warn(e.getMessage(), e);
+			log.warn(errorSb.toString());
+		}
+		// end...
+		return aux;
+	}
 
     /**
      * Method used to add into Persistence a new entry. The supplied PtGChunkData
@@ -393,16 +598,26 @@ public class PtGChunkCatalog {
      * thrown! Proper messages get logged by underlaying DAO.
      */
     synchronized public void addChild(PtGChunkData chunkData) {
+    	
         PtGChunkDataTO to = new PtGChunkDataTO();
-        to.setRequestToken(chunkData.requestToken().toString()); //needed for now to find ID of request! Must be changed soon!
+        /* needed for now to find ID of request! Must be changed soon! */
+        to.setRequestToken(chunkData.requestToken().toString()); 
         to.setFromSURL(chunkData.fromSURL().toString());
+        //TODO MICHELE USER_SURL fill new fields
+        to.setNormalizedStFN(chunkData.fromSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.fromSURL().uniqueId()));
+        
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
         to.setNumLevel(chunkData.dirOption().getNumLevel());
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
         to.setErrString(chunkData.status().getExplanation());
-        dao.addChild(to); //add the entry and update the Primary Key field!
-        chunkData.setPrimaryKey(to.primaryKey()); //set the assigned PrimaryKey!
+        
+        //TODO MICHELE USER_SURL checked : OK
+        /* add the entry and update the Primary Key field! */
+        dao.addChild(to);
+        /* set the assigned PrimaryKey! */
+        chunkData.setPrimaryKey(to.primaryKey()); 
     }
 
     /**
@@ -421,9 +636,14 @@ public class PtGChunkCatalog {
      * thrown! The underlaying DAO logs proper error messagges.
      */
     synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
+    	
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.requestToken().toString());
         to.setFromSURL(chunkData.fromSURL().toString());
+        //TODO MICHELE USER_SURL fill new fields
+        to.setNormalizedStFN(chunkData.fromSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.fromSURL().uniqueId()));
+        
         to.setLifeTime(new Long(chunkData.getPinLifeTime().value()).intValue() );
         to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
         to.setDirOption(chunkData.dirOption().isDirectory());
@@ -431,6 +651,8 @@ public class PtGChunkCatalog {
         to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.desiredProtocols()));
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
         to.setErrString(chunkData.status().getExplanation());
+        
+        //TODO MICHELE USER_SURL checked : OK
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!
         chunkData.setPrimaryKey(to.primaryKey()); //set the assigned PrimaryKey!
     }
@@ -443,37 +665,40 @@ public class PtGChunkCatalog {
      * case true is returned. In case none are found or there is any problem,
      * false is returned. This method is intended to be used by srmMv.
      */
-    synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
-        int n = dao.numberInSRM_FILE_PINNED(surl.toString());
-        return (n>0);
-    }
+    //TODO MICHELE USER_SURL refactored
+	synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
+
+		//TODO MICHELE USER_SURL checked : OK
+		return (dao.numberInSRM_FILE_PINNED(surl.uniqueId()) > 0);
+	}
 
     /**
      * Method used to transit the specified Collection of ReducedPtGChunkData from SRM_FILE_PINNED to
      * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
      * done, but proper error messages get logged by the underlaying DAO.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(Collection<ReducedPtGChunkData> chunks,
-            TRequestToken token) {
-        
-        if (chunks.isEmpty()) {
-            return;
-        }
-        
-        List<Long> aux = new ArrayList<Long>();
-        
-        for (ReducedPtGChunkData auxData : chunks) {
-            aux.add(new Long(auxData.primaryKey()));
-        }
-        
-        int n = aux.size();
-        long[] auxlong = new long[n];
-        for (int i = 0; i < n; i++) {
-            auxlong[i] = ((Long) aux.get(i)).longValue();
-        }
-        
-        dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(auxlong, token);
-    }
+	  //TODO MICHELE USER_SURL refactored
+	synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(
+			Collection<ReducedPtGChunkData> chunks, TRequestToken token) {
+
+		if(chunks == null || chunks.isEmpty())
+		{
+			return;
+		}
+		long[] primaryKeys = new long[chunks.size()];
+		int index = 0;
+		for(ReducedPtGChunkData chunkData : chunks)
+		{
+			if(chunkData != null)
+			{
+				primaryKeys[index] = chunkData.primaryKey();
+				index++;	
+			}
+			
+		}
+		//TODO MICHELE USER_SURL checked : OK (not of interest)
+		dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(primaryKeys, token);
+	}
 
     /**
      * This method is intended to be used by srmRm to transit all PtG chunks on
@@ -489,15 +714,16 @@ public class PtGChunkCatalog {
      * still have not finished because other chunks are being processed.
      */
     synchronized public void transitSRM_FILE_PINNEDtoSRM_ABORTED(TSURL surl,String explanation) {
-        if (explanation==null) {
-            explanation="";
-        }
-        dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.toString(),explanation);
+    	/* Actually (BE 1.5.4-0) not used*/
+		if(explanation == null)
+		{
+			explanation = "";
+		}
+        //TODO MICHELE USER_SURL checked : OK
+        dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.uniqueId(), surl.rawSurl(), explanation);
         //PinnedFilesCatalog.getInstance().removeAllJit(surl);
         //PinnedfilesCatalog.getInstance().removeVolatile(surl);
     }
-
-
 
     /**
      * Method used to force transition to SRM_RELEASED from SRM_FILE_PINNED,
@@ -505,6 +731,7 @@ public class PtGChunkCatalog {
      * not been changed (a user forgot to run srmReleaseFiles)!
      */
     synchronized public void transitExpiredSRM_FILE_PINNED() {
+    	
         dao.transitExpiredSRM_FILE_PINNED();
     }
 }

@@ -10,9 +10,12 @@ import it.grid.storm.tape.recalltable.model.RecallTaskData;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
 import java.text.DateFormat;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -48,31 +51,38 @@ public class RecallTaskBuilder {
     
 
 	public static RecallTaskTO build(String recallTaskLine) {
+
 		RecallTaskTO recallTask = new RecallTaskTO();
 		String startChar = RecallTaskTO.startChar;
 		String sepChar = "" + RecallTaskTO.sepChar;
 
 		// Check if the line is empty
-        if (((recallTaskLine != null)) && ((recallTaskLine.length() > 0))) {
+		if(((recallTaskLine != null)) && ((recallTaskLine.length() > 0)))
+		{
 			// Check if start with the right starter string
-            if (recallTaskLine.startsWith(startChar)) {
+			if(recallTaskLine.startsWith(startChar))
+			{
 				// log.debug("RecallTable Row : '" + recallTaskLine + "'");
 				// recallTaskLine = recallTaskLine.substring(2);
 				// log.debug("RecallTable Row : '" + recallTaskLine + "'");
 				String[] fields = recallTaskLine.split(sepChar);
 				// log.debug("RecallTable Row # fields = " + fields.length);
 				// Check if number of Fields is 10.
-                if (fields.length == 10) {
+//				if(fields.length == 10)
+				if(fields.length == 11)
+				{
 					// ####### Manage the fields #######
 					// FIELD-0 = TaskId (int)
 					UUID taskId = null;
-                    try {
+					try
+					{
 						taskId = UUID.fromString(fields[0]);
-                    } catch (IllegalArgumentException e) {
+					} catch(IllegalArgumentException e)
+					{
 						log.error("Unable to parse the taskId '" + fields[0] + "'.");
 					}
 					recallTask.setTaskId(taskId);
-                    // FIELD-1 = Date (java.util.Date)
+					// FIELD-1 = insertionInstant (java.util.Date)
 					recallTask.setInsertionInstant(parseDate(fields[1]));
 					// FIELD-2 = requestType (String)
 					recallTask.setRequestType(fields[2]);
@@ -88,20 +98,31 @@ public class RecallTaskBuilder {
 					recallTask.setStatus(parseTaskStatus(fields[7]));
 					// FIELD-8 = pinLifetime (int)
 					recallTask.setPinLifetime(parseInt(fields[8]));
-                    // FIELD-9 = requestToken (String)
-                    try {
-                        recallTask.setRequestTokenStr(fields[9]);
-                    } catch (InvalidTRequestTokenAttributesException e) {
+					// FIELD-9 = deferredRecallInstant (java.util.Date)
+					recallTask.setDeferredRecallInstant(parseDate(fields[9]));
+					// FIELD-10 = requestToken (String)
+					try
+					{
+//						recallTask.setRequestTokenStr(fields[9]);
+						recallTask.setRequestTokenStr(fields[10]);
+					} catch(InvalidTRequestTokenAttributesException e)
+					{
 						log.error("Unable to parse the RequestToken '" + fields[9] + "'.");
 					}
-                } else {
+				}
+				else
+				{
 					log.debug("RecallTable Row contains # fields not equal to 10.");
 				}
-            } else {
+			}
+			else
+			{
 				// Invalid Row
 				log.debug("RecallTable Row does not starts with '" + startChar + "'");
 			}
-        } else {
+		}
+		else
+		{
 			// Empty row
 			log.debug("RecallTable Row is EMPTY");
 		}

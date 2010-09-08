@@ -232,7 +232,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                         // For lifetimes infinite means also unknown
                         newLifetime = TLifeTimeInSeconds.makeInfinite();
                         requestSuccess = false;
-                    } else if (stori.isSURLBusy()) {
+                    } else if (isStoRISURLBusy(stori)) {
                         fileStatusCode = TStatusCode.SRM_FILE_BUSY;
                         fileStatusExplanation = "File status is SRM_SPACE_AVAILABLE. SURL lifetime cannot be extend (try with PIN lifetime)";
                         // For lifetimes infinite means also unknown
@@ -302,6 +302,20 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
     }
 
 	/**
+	 * Returns true if the status of the SURL of the received StoRI is
+	 * SRM_SPACE_AVAILABLE, false otherwise. This method queries the DB,
+	 * therefore pay attention to possible performance issues.
+	 * 
+	 * @return boolean
+	 */
+    private boolean isStoRISURLBusy(StoRI element) {
+
+        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
+        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(element.getSURL());
+        return busyStatus;
+	}
+    
+    /**
      * Extend the PIN lifetime of a SURL. The parameter details is filled by this method and contains file level
      * information on the execution of the request.
      * 

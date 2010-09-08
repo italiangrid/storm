@@ -6,7 +6,6 @@ import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.RecallTaskTO;
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
 
@@ -168,6 +167,7 @@ public abstract class TapeRecallDAO extends AbstractDAO {
         task.setVoName(voName);
 
         TRequestToken taskToken = task.getRequestToken();
+        insertTask(task);
 
         if (chunkMap.containsKey(taskToken)) {
 

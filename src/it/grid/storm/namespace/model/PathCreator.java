@@ -1,5 +1,7 @@
 /**
  * Class for creating fo StoRI by file
+ * 
+ * Edited by Michele Dibenedetto
  */
 
 package it.grid.storm.namespace.model;
@@ -13,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 public class PathCreator {
 
-    String[] array;
     /**
      * Logger.
      */
@@ -31,49 +32,101 @@ public class PathCreator {
 
     }
 
-    public Collection<String> generateChild(ArrayList<String> list) {
+    public Collection<String> generateChildrenNoFolders() {
+    	return generateChildrenNoFolders(this.file , this.recursive , this.level);
+    }
     
-        //log.debug("--------DIRECTORY="+file.isDirectory()+"rec: "+recursive);
+    /**
+     * If file is a directory returns the list of files contained 
+     * in the directory, then on each subfolder if recursive is true or level is greater than zero 
+     * call itself recursively on it decreasing the level.
+     * If file is file returns the file itself
+     * 
+     * @param file
+     * @param recursive
+     * @param level
+     * @return
+     */
+	private Collection<String> generateChildrenNoFolders(File file, boolean recursive, int level) {
 
-        if (file.isDirectory() && (recursive || level > 0)) {
-            array = file.list();
-            if(array != null) {
-                for (int i = 0; i < array.length; i++) {
-                    log.debug("Analizzando dir = " + array[i]);
-                    if(!(array[i].startsWith("."))) {
-                        PathCreator path = new PathCreator(new File(file, array[i]), recursive, level - 1);
-                        path.generateChild(list);
+		ArrayList<String> children = new ArrayList<String>();
+		log.debug("Generating children of = " + file + " with recursive option = " + recursive
+			+ " and recursion level = " + level);
+		if(file.isDirectory())
+		{
+			log.debug("Is a directory");
+			if(recursive || (level > 0))
+			{
+				log.debug("Recursion permitted. Inspectiong the content");
+				String[] arrayOfNames = file.list();
+				if(arrayOfNames != null)
+				{
+					for(String filePath : arrayOfNames)
+					{
+						log.debug("Analizing child = " + filePath);
+						if(!(filePath.startsWith(".")))
+						{
+							File child = new File(file, filePath);
+							if(child.isDirectory())
+							{
+								log.debug("It's a directory, calling recursive procedure"
+									+ " with level " + (level - 1));
+								children.addAll(generateChildrenNoFolders(child, recursive,
+									level - 1));
 							}
+							else
+							{
+								log.debug("It is a file. Reached a leaf");
+								children.add(child.toString());
 							}
 						}
-
-        } else {
-            list.add(file.toString());
 					}
-        //Return List only when visit is finished!!
-        return list;
 				}
+			}
+		}
+		else
+		{
+			log.debug("It's a file, adding to the return collection");
+			children.add(file.toString());
+		}
+		return children;
+	}
 
 
-    public Collection<String> generateFirstLevelChild(ArrayList<String> list) {
+	/**
+	 * @param list
+	 * @return
+	 */
+	public Collection<String> generateChildren() {
 
-        if (file.isDirectory() && (recursive || level > 0)) {
-            array = file.list();
-            if(array != null) {
-                for (int i = 0; i < array.length; i++) {
-                    log.debug("Analizzando dir = " + array[i]);
-                    if(!(array[i].startsWith("."))) {
-                        PathCreator path = new PathCreator(new File(file, array[i]), recursive, level - 1);
-                        path.generateChild(list);
+		ArrayList<String> children = new ArrayList<String>();
+		String[] arrayOfNames = null;
+		log.debug("Generating children of = " + file + " with recursive option = " + recursive + " and recursion level = " + level);
+		if(file.isDirectory() && (recursive || level > 0))
+		{
+			log.debug("Is a directory with recursion permitted. Inspectiong the content");
+			arrayOfNames = file.list();
+			if(arrayOfNames != null)
+			{
+				for(String filePath : arrayOfNames)
+				{
+					log.debug("Analizing child = " + filePath);
+					if(!(filePath.startsWith(".")))
+					{
+						PathCreator path =
+										   new PathCreator(new File(file, filePath), recursive,
+											   level - 1);
+						children.addAll(path.generateChildren());
 					}
 				}
 			}
 
-        } else {
-            list.add(file.toString());
 		}
-        //Return List only when visit is finished!!
-        return list;
+		else
+		{
+			children.add(file.toString());
 		}
+		return children;
+	}
 
 }

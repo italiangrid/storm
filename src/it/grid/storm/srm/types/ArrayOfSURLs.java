@@ -60,21 +60,30 @@ public class ArrayOfSURLs implements Serializable {
 	public static ArrayOfSURLs decode(Map inputParam, String name)
 			throws InvalidArrayOfSURLsAttributeException {
 
-        List list = null;
+		List<Object> list = null;
 		ArrayOfSURLs surlArray = new ArrayOfSURLs();
-        try {
+		try
+		{
+			/* here we can have a cast exception if the array contained in 
+			 * the hashmap has been created as an object array! */
 			list = Arrays.asList((Object[]) inputParam.get(name));
-        } catch (NullPointerException e) {
+		} catch(NullPointerException e)
+		{
 			// log.warn("Empty SURL array found!");
 		}
 
 		if(list == null)
+		{
 			throw new InvalidArrayOfSURLsAttributeException(list);			
-        for (int i = 0; i < list.size(); i++) {
+		}
+		for(Object surlString : list)
+		{
 			TSURL surl = null;
-            try {
-                surl = TSURL.makeFromStringValidate((String) list.get(i));
-            } catch (InvalidTSURLAttributesException e) {
+			try
+			{
+				surl = TSURL.makeFromStringValidate((String)surlString);
+			} catch(InvalidTSURLAttributesException e)
+			{
 				throw new InvalidArrayOfSURLsAttributeException(null);
 			}
 			surlArray.addTSURL(surl);

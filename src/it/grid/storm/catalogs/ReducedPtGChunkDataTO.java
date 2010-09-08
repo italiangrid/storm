@@ -1,8 +1,6 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TStatusCode;
-import java.util.List;
-import java.util.Arrays;
 
 /**
  * Class that represents some of the fileds in a row in the Persistence Layer:
@@ -16,16 +14,18 @@ import java.util.Arrays;
 public class ReducedPtGChunkDataTO {
     private long primaryKey = -1; //ID primary key of record in DB
     private String fromSURL = " ";
+//  TODO MICHELE USER_SURL added new fields
+    private String normalizedStFN = null;
+    private Integer surlUniqueID = null;
+    
     private int status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
     private String errString = " ";
-    private boolean empty = true;
 
     public long primaryKey() {
         return primaryKey;
     }
 
     public void setPrimaryKey(long n) {
-        empty = false;
         primaryKey = n;
     }
 
@@ -34,17 +34,46 @@ public class ReducedPtGChunkDataTO {
     }
 
     public void setFromSURL(String s) {
-        empty=false;
         fromSURL=s;
     }
 
+    /**
+	 * @param normalizedStFN the normalizedStFN to set
+	 */
+	public void setNormalizedStFN(String normalizedStFN) {
 
-    public int status() {
+		this.normalizedStFN = normalizedStFN;
+	}
+
+	/**
+	 * @return the normalizedStFN
+	 */
+	public String normalizedStFN() {
+
+		return normalizedStFN;
+	}
+
+	/**
+	 * @param surlUniqueID the sURLUniqueID to set
+	 */
+	public void setSurlUniqueID(Integer surlUniqueID) {
+
+		this.surlUniqueID = surlUniqueID;
+	}
+
+	/**
+	 * @return the sURLUniqueID
+	 */
+	public Integer surlUniqueID() {
+
+		return surlUniqueID;
+	}
+
+	public int status() {
         return status;
     }
 
     public void setStatus(int n) {
-        empty = false;
         status = n;
     }
 
@@ -53,16 +82,24 @@ public class ReducedPtGChunkDataTO {
     }
 
     public void setErrString(String s) {
-        empty = false;
         errString = s;
     }
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(primaryKey); sb.append(" ");
-        sb.append(fromSURL); sb.append(" ");
-        sb.append(status); sb.append(" ");
-        sb.append(errString); sb.append(" ");
-        return sb.toString();
-    }
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(primaryKey);
+		sb.append(" ");
+		sb.append(fromSURL);
+		sb.append(" ");
+		sb.append(normalizedStFN);
+		sb.append(" ");
+		sb.append(surlUniqueID);
+		sb.append(" ");
+		sb.append(status);
+		sb.append(" ");
+		sb.append(errString);
+		sb.append(" ");
+		return sb.toString();
+	}
 }

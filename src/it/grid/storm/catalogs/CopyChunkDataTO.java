@@ -1,8 +1,5 @@
 package it.grid.storm.catalogs;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TStatusCode;
@@ -10,30 +7,36 @@ import it.grid.storm.srm.types.TStatusCode;
 /**
  * Class that represents a row in the Persistence Layer: this is all raw data
  * referring to the CopyChunkData proper, that is, String and primitive types.
- *
+ * 
  * Each field is initialized with default values as per SRM 2.2 specification:
- *      fileStorageType  VOLATILE
- *      overwriteMode    NEVER
- *      status           SRM_REQUEST_QUEUED
- *
+ * fileStorageType VOLATILE overwriteMode NEVER status SRM_REQUEST_QUEUED
+ * 
  * All other fields are 0 if int, or a white space if String.
- *
- * @author  EGRID ICTP
+ * 
+ * @author EGRID ICTP
  * @version 2.0
- * @date    Semptember 2005
+ * @date Semptember 2005
  */
-public class CopyChunkDataTO {
-    private long primaryKey = -1; //ID primary key of record in DB
-    private String requestToken = " ";
-    private String fromSURL = " ";
-    private String toSURL = " ";
+public class CopyChunkDataTO
+{
+	/* Database table request_Get fields BEGIN */
+	private long primaryKey = -1; // ID primary key of record in DB
+	private String fromSURL = " ";
+	private String toSURL = " ";
+	// TODO MICHELE USER_SURL added new fields
+	private String normalizedSourceStFN = null;
+	private Integer sourceSurlUniqueID = null;
+	private String normalizedTargetStFN = null;
+	private Integer targetSurlUniqueID = null;
+	/* Database table request_Get fields END */
+
+	private String requestToken = " ";
     private int lifetime = 0;
     private String fileStorageType = null; //initialised in constructor 
     private String spaceToken = " ";
     private String overwriteOption = null; //initialised in constructor 
     private int status; //initialised in constructor
     private String errString = " ";
-    private boolean empty = true;
 
     public CopyChunkDataTO() {
         fileStorageType = FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE);
@@ -41,16 +44,11 @@ public class CopyChunkDataTO {
         status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
     }
 
-    public boolean isEmpty() {
-        return empty;
-    }
-
     public long primaryKey() {
         return primaryKey;
     }
 
     public void setPrimaryKey(long n) {
-        empty = false;
         primaryKey = n;
     }
 
@@ -59,7 +57,6 @@ public class CopyChunkDataTO {
     }
 
     public void setRequestToken(String s) {
-        empty = false;
         requestToken = s;
     }
 
@@ -68,16 +65,78 @@ public class CopyChunkDataTO {
     }
 
     public void setFromSURL(String s) {
-        empty=false;
         fromSURL=s;
     }
+    
+    /**
+	 * @return the normalizedStFN
+	 */
+	public String normalizedSourceStFN() {
+	
+		return normalizedSourceStFN;
+	}
 
+	/**
+	 * @param normalizedStFN the normalizedStFN to set
+	 */
+	public void setNormalizedSourceStFN(String normalizedStFN) {
+	
+		this.normalizedSourceStFN = normalizedStFN;
+	}
+
+	/**
+	 * @return the surlUniqueID
+	 */
+	public Integer sourceSurlUniqueID() {
+	
+		return sourceSurlUniqueID;
+	}
+
+	/**
+	 * @param surlUniqueID the surlUniqueID to set
+	 */
+	public void setSourceSurlUniqueID(Integer surlUniqueID) {
+	
+		this.sourceSurlUniqueID = surlUniqueID;
+	}
+	
+    /**
+	 * @return the normalizedStFN
+	 */
+	public String normalizedTargetStFN() {
+	
+		return normalizedTargetStFN;
+	}
+
+	/**
+	 * @param normalizedStFN the normalizedStFN to set
+	 */
+	public void setNormalizedTargetStFN(String normalizedStFN) {
+	
+		this.normalizedTargetStFN = normalizedStFN;
+	}
+
+	/**
+	 * @return the surlUniqueID
+	 */
+	public Integer targetSurlUniqueID() {
+	
+		return targetSurlUniqueID;
+	}
+
+	/**
+	 * @param surlUniqueID the surlUniqueID to set
+	 */
+	public void setTargetSurlUniqueID(Integer surlUniqueID) {
+	
+		this.targetSurlUniqueID = surlUniqueID;
+	}
+	
     public String toSURL() {
         return toSURL;
     }
 
     public void setToSURL(String s) {
-        empty=false;
         toSURL=s;
     }
 
@@ -86,7 +145,6 @@ public class CopyChunkDataTO {
     }
 
     public void setLifeTime(int n) {
-        empty=false;
         lifetime=n;
     }
 
@@ -100,7 +158,6 @@ public class CopyChunkDataTO {
      * FileStorageType.
      */
     public void setFileStorageType(String s) {
-        empty=false;
         if (s!=null) fileStorageType = s;
     }
 
@@ -109,7 +166,6 @@ public class CopyChunkDataTO {
     }
 
     public void setSpaceToken(String s) {
-        empty = false;
         spaceToken = s;
     }
 
@@ -122,7 +178,6 @@ public class CopyChunkDataTO {
      * internal default String is the one relative to Never OverwriteMode.
      */
     public void setOverwriteOption(String s) {
-        empty = false;
         if (s!=null) overwriteOption = s;
     }
 
@@ -131,7 +186,6 @@ public class CopyChunkDataTO {
     }
 
     public void setStatus(int n) {
-        empty = false;
         status = n;
     }
 
@@ -140,22 +194,40 @@ public class CopyChunkDataTO {
     }
 
     public void setErrString(String s) {
-        empty = false;
         errString = s;
     }
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(primaryKey); sb.append(" ");
-        sb.append(requestToken); sb.append(" ");
-        sb.append(fromSURL); sb.append(" ");
-        sb.append(toSURL); sb.append(" ");
-        sb.append(lifetime); sb.append(" ");
-        sb.append(fileStorageType); sb.append(" ");
-        sb.append(spaceToken); sb.append(" ");
-        sb.append(overwriteOption); sb.append(" ");
-        sb.append(status); sb.append(" ");
-        sb.append(errString); sb.append(" ");
-        return sb.toString();
-    }
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(primaryKey);
+		sb.append(" ");
+		sb.append(requestToken);
+		sb.append(" ");
+		sb.append(fromSURL);
+		sb.append(" ");
+		sb.append(normalizedSourceStFN);
+		sb.append(" ");
+		sb.append(sourceSurlUniqueID);
+		sb.append(" ");
+		sb.append(toSURL);
+		sb.append(" ");
+		sb.append(normalizedTargetStFN);
+		sb.append(" ");
+		sb.append(targetSurlUniqueID);
+		sb.append(" ");
+		sb.append(lifetime);
+		sb.append(" ");
+		sb.append(fileStorageType);
+		sb.append(" ");
+		sb.append(spaceToken);
+		sb.append(" ");
+		sb.append(overwriteOption);
+		sb.append(" ");
+		sb.append(status);
+		sb.append(" ");
+		sb.append(errString);
+		sb.append(" ");
+		return sb.toString();
+	}
 }

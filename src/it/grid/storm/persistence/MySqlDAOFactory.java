@@ -48,15 +48,15 @@ public class MySqlDAOFactory implements DAOFactory {
 
     private static void initializeDataSource() {
         Configuration config = Configuration.getInstance();
-        MySqlDAOFactory.datasource.setDbUrl(config.getBE_PersistenceDBMSUrl());
-        MySqlDAOFactory.datasource.setDbName(config.getBE_PersistenceDBName());
-        MySqlDAOFactory.datasource.setDbUsr(config.getBE_PersistenceDBUserName());
-        MySqlDAOFactory.datasource.setDbPwd(config.getBE_PersistenceDBPassword());
+        MySqlDAOFactory.datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
+        MySqlDAOFactory.datasource.setDbName(config.getBEPersistenceDBName());
+        MySqlDAOFactory.datasource.setDbUsr(config.getBEPersistenceDBUserName());
+        MySqlDAOFactory.datasource.setDbPwd(config.getBEPersistenceDBPassword());
 
-        boolean pool = config.getBE_PersistencePoolDB();
+        boolean pool = config.getBEPersistencePoolDB();
         if (pool) {
-            int maxActive = config.getBE_PersistencePoolDB_MaxActive();
-            int maxWait = config.getBE_PersistencePoolDB_MaxWait();
+            int maxActive = config.getBEPersistencePoolDBMaxActive();
+            int maxWait = config.getBEPersistencePoolDBMaxWait();
             try {
                 DBConnectionPool.initPool(MySqlDAOFactory.datasource, maxActive, maxWait);
             } catch (PersistenceException ex) {

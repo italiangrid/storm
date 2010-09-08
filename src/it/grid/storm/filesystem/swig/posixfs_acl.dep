@@ -1,2 +1,0 @@
-posixfs_acl.o posixfs_acl.dep : posixfs_acl.cpp fs_errors.hpp posixfs_acl.hpp fs_acl.hpp \
-  util.hpp

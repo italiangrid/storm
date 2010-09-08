@@ -24,7 +24,6 @@ public class Authority {
      */
     public Authority(String serviceHostname) {
         this.hostname = serviceHostname;
-        this.port = -1;
     }
 
     public String getServiceHostname() {

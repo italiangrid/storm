@@ -1,20 +1,32 @@
+top_srcdir=.
+stagedir=.
+distdir=.
+globalprefix=storm
+backendprefix=backend
+package=storm-backend
+version=1.5.4
+PREFIX=/opt/storm/backend
+
+#lcmaps_location=${lcmaps_location}
+#lcmaps_without_gsi_location=${lcmaps_without_gsi_location}
+#lcmaps_plugins_basic_location=${lcmaps_plugins_basic_location}
+#lcmaps_plugins_voms_location=${lcmaps_plugins_voms_location}
+arch=${arch}
+
+-include Makefile.inc
+
 DESTDIR?=.
-BUILDDIR?=.
+BUILDDIR?=./lib$(arch)
 
-GLITE_HOME?=/opt/glite
-GLITE_SECURITY_INCLUDE?=$(GLITE_HOME)/include/glite/security
-# Variable ARCH is set by ant (ant -Darch=64 to compile 64 bit)
-GLITE_LIB?=$(GLITE_HOME)/lib$(ARCH)
-
-
-LCMAPS_CFLAGS=-I$(GLITE_SECURITY_INCLUDE)/lcmaps -I$(GLITE_SECURITY_INCLUDE)/lcmaps_without_gsi
-LCMAPS_LDFLAGS=-L$(GLITE_LIB)
-LCMAPS_LDADD=-llcmaps -llcmaps_return_poolindex_without_gsi
+LCMAPS_INCLUDES ?= -I${lcmaps_location}/include/glite/security/lcmaps -I${lcmaps_without_gsi_location}/include/glite/security/lcmaps_without_gsi
+LCMAPS_LIBS ?= \
+ ${lcmaps_without_gsi_location}/lib$(arch)/liblcmaps_return_poolindex_without_gsi.so \
+ ${lcmaps_location}/lib$(arch)/liblcmaps.so
 
 CXX=g++
 
-CXXFLAGS=-O -c -fPIC
-CXXFLAGS += $(LCMAPS_CFLAGS)
+CXXFLAGS=-O -fPIC
+CXXFLAGS += $(LCMAPS_INCLUDES)
 
 .PHONY: all clean lib
 
@@ -23,9 +35,9 @@ all: lib
 clean:
 	rm -f *.o lib*
 
-storm_lcmaps: storm_lcmaps.c
-	$(CXX) -o $(BUILDDIR)/storm_lcmaps.o $(CXXFLAGS) storm_lcmaps.h storm_lcmaps.c
+storm_lcmaps: storm_lcmaps.c storm_lcmaps.h
+	$(CXX) -c storm_lcmaps.c $(CXXFLAGS) -o $(BUILDDIR)/storm_lcmaps.o
 
 lib: storm_lcmaps
-	$(CXX) -shared -Wall -o $(DESTDIR)/libstorm_lcmaps.so $(BUILDDIR)/storm_lcmaps.o $(LCMAPS_LDFLAGS) $(LCMAPS_LDADD)
+	$(CXX) -shared -Wall -o $(DESTDIR)/libstorm_lcmaps.so $(BUILDDIR)/storm_lcmaps.o $(LCMAPS_LDFLAGS) $(LCMAPS_LIBS)
 

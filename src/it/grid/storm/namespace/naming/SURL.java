@@ -5,10 +5,8 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.Protocol;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import org.apache.commons.validator.UrlValidator;
 import org.slf4j.Logger;
 
 /**
@@ -34,7 +32,7 @@ public class SURL extends SRMURL {
     
     public final boolean directory;
 
-    public SURL(final String hostName,
+    private SURL(final String hostName,
             final int port,
             final String serviceEndpoint,
             final String queryString) {
@@ -42,13 +40,14 @@ public class SURL extends SRMURL {
         directory = checkDirectory(queryString);
     }
 
-    public SURL(final String hostName,
+    private SURL(final String hostName,
             final int port,
             final String stfn) {
         super(Protocol.SRM, hostName, port, stfn);
         directory = checkDirectory(stfn);
     }
 
+    //TODO MICHELE USER_SURL debug
     public SURL(final String stfn) {
         super(Protocol.SRM, NamingConst.getServiceDefaultHost(), NamingConst.getServicePort(), stfn);
         directory = checkDirectory(stfn);
@@ -57,71 +56,69 @@ public class SURL extends SRMURL {
     /**
      * Build SURL from the string format.
      * Many control will be executed in the string format
+     * No other way to create a SURL, if u got a SURL for sure it's a valid URI normalized 
      *
      * @param surlString String
      * @return SURL
      */
     public static SURL makeSURLfromString(String surlString) throws NamespaceException {
         SURL result = null;
-        // boolean valid = surlValidator.isValid(surlString);
-        // Create a URI try { uri = new URI("file://D:/almanac1.4/Ex1.java"); } catch (URISyntaxException e) { }
-        boolean valid = true;
-        String explanation = "";
+        
+        //checks if is a valid uri and normalize 
 		URI uri = null;
-        try {
+		try
+		{
 			uri = URI.create(surlString);
-        } catch (IllegalArgumentException uriEx) {
-            valid = false;
-            explanation = "URI Except: " + uriEx.getMessage();
-        } catch (NullPointerException npe) {
-            valid = false;
-            explanation = "URI Except (null SURL): " + npe.getMessage();
+			uri = uri.normalize();
+		} catch(IllegalArgumentException uriEx)
+		{
+			throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: URI Except: " + uriEx.getMessage());
+		} catch(NullPointerException npe)
+		{
+			throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: URI Except (null SURL): "
+				+ npe.getMessage());
 		}
-
 
 		// Check the scheme
-        if (valid) {
 		// uri should be not null
-            uri = uri.normalize();
 		String scheme = uri.getScheme();
-            if (!(schemes.contains(scheme))) {
-              valid = false;
-              explanation = "unknown scheme '"+scheme+"'";
+		if(!(schemes.contains(scheme)))
+		{
+			throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: unknown scheme '" + scheme + "'");
 		}
-        }  
 
 		// Check the query
-        if (valid) {            
 		String host = uri.getHost();
+		if(host == null)
+		{
+			throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: malformed host!");
+		}
 		int port = uri.getPort();
 		String query = uri.getQuery();
-            if (query == null) {
+		if(query == null || query.trim().equals(""))
+		{
 			String stfn = uri.getPath();
 			result = new SURL(host, port, stfn);
-            } else {
-                if (query.equals("")) {
-                    String stfn = uri.getPath();
-                    result = new SURL(host, port, stfn);
-                } else { // The SURL_Str is in a Query FORM.
+		}
+		else
+		{
+			// The SURL_Str is in a Query FORM.
 			log.debug(" !! SURL ('" + surlString + "') in a query form (query:'" + query + "') !!");
 			String service = uri.getPath();
 			log.debug(" Service endpoint : " + service);
-                    boolean queryValidForm = checkQuery(query);
-                    if (queryValidForm) {
+			if(checkQuery(query))
+			{
 				log.debug(" Query is in a valid form.");
 				// Extract the StFN from query:
 				String stfn = extractStFNfromQuery(query);
 				result = new SURL(host, port, service, stfn);
-                    } else {
+			}
+			else
+			{
 				log.warn("SURL_String :'" + surlString + "' is not VALID! (query is in invalid form)");
-                        throw new NamespaceException("SURL_String :'" + surlString
-                                + "' is not VALID within the Query!");
+				throw new NamespaceException("SURL_String :'" + surlString + "' is not VALID within the Query!");
 			}
 		}
-            }
-        } else {
-            throw new NamespaceException("SURL_String :'" + surlString + "' is INVALID. Reason: "+explanation);
-        }
 		return result;
     }
 
@@ -130,38 +127,48 @@ public class SURL extends SRMURL {
     }
 
     private boolean checkDirectory(String path) {
-        if (path != null) {
-            if (path.endsWith(NamingConst.SEPARATOR)) {
+
+		if(path != null && path.endsWith(NamingConst.SEPARATOR))
+		{
 			return true;
 		}
-            else {
+		else
+		{
 			return false;
 		}
     }
-        else {
-            return false;
-        }
-    }
 
+    /**
+     * 
+     * Checks if the quesry string begins with the correct prefix ("SFN=")
+     * @param query
+     * @return
+     */
     private static boolean checkQuery(String query) {
-        boolean valid = false;
-        if (query.startsWith(NamingConst.getServiceSFNQueryPrefix() + "=")) {
-            valid = true;
+    	if(query == null)
+    	{
+    		log.error("Received a null query to check!");
+    		return false;
     	}
-        return valid;
+        return query.startsWith(NamingConst.getServiceSFNQueryPrefix() + "=");
     }
 
 	private static String extractStFNfromQuery(String query) {
+
 		String stfn = "";
-        if (query == null) {
+		if(query == null)
+		{
 			return stfn;
 		}
-        else {
+		else
+		{
 			int len = query.length();
-            if (len < 4) {
+			if(len < 4)
+			{
 				return stfn;
 			}
-            else {
+			else
+			{
 				stfn = query.substring(4);
 			}
 		}
@@ -186,6 +193,26 @@ public class SURL extends SRMURL {
         return sb.toString();
     }
 
+	public String getSURLAsURIString() {
+
+		String uriString =
+						   transfProtocol.getProtocol().getSchema() + "://"
+							   + this.transfProtocol.getAuthority().getServiceHostname();
+		if(this.transfProtocol.getAuthority().getServicePort() >= 0)
+		{
+			uriString += ":" + this.transfProtocol.getAuthority().getServicePort();
+		}
+		if(this.isNormalFormSURL())
+		{
+			uriString += this.path;
+		}
+		else
+		{
+			uriString += this.path + this.getPathQuery() + this.queryString;
+		}
+		return uriString;
+	}
+
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
@@ -195,4 +222,21 @@ public class SURL extends SRMURL {
         return buffer.toString();
     }
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if(this == obj)
+			return true;
+		if(!super.equals(obj))
+			return false;
+		if(!(obj instanceof SURL))
+			return false;
+		SURL other = (SURL) obj;
+		if(directory != other.directory)
+			return false;
+		return true;
 	}
+}

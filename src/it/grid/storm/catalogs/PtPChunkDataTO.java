@@ -26,20 +26,25 @@ import java.util.List;
  * @date    June 2005
  */
 public class PtPChunkDataTO {
+	/* Database table request_Get fields BEGIN*/
     private long primaryKey = -1; //ID primary key of status_Put record in DB
-    private String requestToken = " ";
     private String toSURL = " ";
+    private long expectedFileSize = 0;
+//  TODO MICHELE USER_SURL added new fields
+    private String normalizedStFN = null;
+	private Integer surlUniqueID = null;
+    /* Database table request_Get fields END*/
+    
+    private String requestToken = " ";
     private int pinLifetime = -1;
     private int fileLifetime = -1;
     private String fileStorageType = null; //initialised in constructor
     private String spaceToken = " ";
-    private long expectedFileSize = 0;
     private List<String> protocolList = null; //initialised in constructor
     private String overwriteOption = null; //initialised in constructor
     private int status; //initialised in constructor
     private String errString = " ";
     private String turl = " ";
-    private boolean empty = true;
 
     /**
      * Constructr that initialises PtPChunkDataTO with correct SRM 2.2 default
@@ -58,16 +63,11 @@ public class PtPChunkDataTO {
         this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
     }
 
-    public boolean isEmpty() {
-        return empty;
-    }
-
     public long primaryKey() {
         return primaryKey;
     }
 
     public void setPrimaryKey(long n) {
-        empty = false;
         primaryKey = n;
     }
 
@@ -76,7 +76,6 @@ public class PtPChunkDataTO {
     }
 
     public void setRequestToken(String s) {
-        empty = false;
         requestToken = s;
     }
 
@@ -85,16 +84,46 @@ public class PtPChunkDataTO {
     }
 
     public void setToSURL(String s) {
-        empty=false;
         toSURL=s;
     }
 
+    /**
+	 * @return the normalizedStFN
+	 */
+	public String normalizedStFN() {
+	
+		return normalizedStFN;
+	}
+
+	/**
+	 * @param normalizedStFN the normalizedStFN to set
+	 */
+	public void setNormalizedStFN(String normalizedStFN) {
+	
+		this.normalizedStFN = normalizedStFN;
+	}
+
+	/**
+	 * @return the surlUniqueID
+	 */
+	public Integer surlUniqueID() {
+	
+		return surlUniqueID;
+	}
+
+	/**
+	 * @param surlUniqueID the surlUniqueID to set
+	 */
+	public void setSurlUniqueID(Integer surlUniqueID) {
+	
+		this.surlUniqueID = surlUniqueID;
+	}
+    
     public int pinLifetime() {
         return pinLifetime;
     }
 
     public void setPinLifetime(int n) {
-        empty=false;
         pinLifetime=n;
     }
 
@@ -103,7 +132,6 @@ public class PtPChunkDataTO {
     }
 
     public void setFileLifetime(int n) {
-        empty=false;
         fileLifetime=n;
     }
 
@@ -116,7 +144,6 @@ public class PtPChunkDataTO {
      * The deafult value is Permanent.
      */
     public void setFileStorageType(String s) {
-        empty=false;
         if (s!=null) fileStorageType = s;
     }
 
@@ -125,7 +152,6 @@ public class PtPChunkDataTO {
     }
 
     public void setSpaceToken(String s) {
-        empty = false;
         spaceToken = s;
     }
 
@@ -134,7 +160,6 @@ public class PtPChunkDataTO {
     }
 
     public void setExpectedFileSize(long l) {
-        empty = false;
         expectedFileSize = l;
     }
 
@@ -143,7 +168,6 @@ public class PtPChunkDataTO {
     }
 
     public void setProtocolList(List<String> l) {
-        empty = false;
         if ((l!=null) && (!l.isEmpty())) protocolList = l;
     }
 
@@ -156,7 +180,6 @@ public class PtPChunkDataTO {
      * The deafult value is Never.
      */
     public void setOverwriteOption(String s) {
-        empty = false;
         if (s!=null) overwriteOption = s;
     }
 
@@ -165,7 +188,6 @@ public class PtPChunkDataTO {
     }
 
     public void setStatus(int n) {
-        empty = false;
         status = n;
     }
 
@@ -174,7 +196,6 @@ public class PtPChunkDataTO {
     }
 
     public void setErrString(String s) {
-        empty = false;
         errString = s;
     }
 
@@ -183,25 +204,41 @@ public class PtPChunkDataTO {
     }
 
     public void setTransferURL(String s) {
-        empty = false;
         turl = s;
     }
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(primaryKey); sb.append(" ");
-        sb.append(requestToken); sb.append(" ");
-        sb.append(toSURL); sb.append(" ");
-        sb.append(pinLifetime); sb.append(" ");
-        sb.append(fileLifetime); sb.append(" ");
-        sb.append(fileStorageType); sb.append(" ");
-        sb.append(spaceToken); sb.append(" ");
-        sb.append(expectedFileSize); sb.append(" ");
-        sb.append(protocolList); sb.append(" ");
-        sb.append(overwriteOption); sb.append(" ");
-        sb.append(status); sb.append(" ");
-        sb.append(errString); sb.append(" ");
-        sb.append(turl);
-        return sb.toString();
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(primaryKey);
+		sb.append(" ");
+		sb.append(requestToken);
+		sb.append(" ");
+		sb.append(toSURL);
+		sb.append(" ");
+		sb.append(normalizedStFN);
+		sb.append(" ");
+		sb.append(surlUniqueID);
+		sb.append(" ");
+		sb.append(pinLifetime);
+		sb.append(" ");
+		sb.append(fileLifetime);
+		sb.append(" ");
+		sb.append(fileStorageType);
+		sb.append(" ");
+		sb.append(spaceToken);
+		sb.append(" ");
+		sb.append(expectedFileSize);
+		sb.append(" ");
+		sb.append(protocolList);
+		sb.append(" ");
+		sb.append(overwriteOption);
+		sb.append(" ");
+		sb.append(status);
+		sb.append(" ");
+		sb.append(errString);
+		sb.append(" ");
+		sb.append(turl);
+		return sb.toString();
     }
 }

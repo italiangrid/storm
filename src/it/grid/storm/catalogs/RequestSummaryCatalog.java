@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -357,12 +356,12 @@ public class RequestSummaryCatalog {
      * request, if it is null, if the Collection is null, or the Collection does
      * not contain TSURLs.
      */
-    synchronized public void abortChunksOfRequest(TRequestToken rt, Collection c) {
+    synchronized public void abortChunksOfRequest(TRequestToken rt, Collection<TSURL> c) {
         if ((rt != null) && (c != null) && (!c.isEmpty())) {
             try {
-                List aux = new ArrayList();
-                for (Iterator i = c.iterator(); i.hasNext();) {
-                    aux.add(((TSURL) i.next()).toString());
+            	ArrayList<String> aux = new ArrayList<String>();
+                for(TSURL tsurl : c){
+                	aux.add(tsurl.toString());
                 }
                 dao.abortChunksOfRequest(rt.toString(), aux);
             } catch (ClassCastException e) {
@@ -381,16 +380,19 @@ public class RequestSummaryCatalog {
      * request, if it is null, if the Collection is null, or the Collection does
      * not contain TSURLs.
      */
-    synchronized public void abortChunksOfInProgressRequest(TRequestToken rt, Collection c) {
-        if ((rt != null) && (c != null) && (!c.isEmpty())) {
+    synchronized public void abortChunksOfInProgressRequest(TRequestToken rt, Collection<TSURL> tsurls) {
+        if ((rt != null) && (tsurls != null) && (!tsurls.isEmpty())) {
             try {
-                List aux = new ArrayList();
-                for (Iterator i = c.iterator(); i.hasNext();) {
-                    aux.add(((TSURL) i.next()).toString());
+                List<String> aux = new ArrayList<String>();
+            	for (TSURL tsurl : tsurls) {
+                    aux.add(tsurl.toString());
                 }
                 dao.abortChunksOfInProgressRequest(rt.toString(), aux);
-            } catch (ClassCastException e) {
-                RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfInProgressRequest: the supplied Collection did not contain TSURLs! " + c + e);
+			} catch(ClassCastException e)
+			{
+				RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG! Unexpected error "
+					+ "in abortChunksOfInProgressRequest: the supplied "
+					+ "Collection did not contain TSURLs! " + tsurls + e);
 			}
         }
     }

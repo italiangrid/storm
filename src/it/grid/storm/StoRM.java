@@ -34,7 +34,6 @@ public class StoRM {
     private XMLRPCHttpServer xmlrpcServer = null;
 
     private final String welcome = WelcomeMessage.getWelcomeMessage(); // Text that displays general info about StoRM project
-    private final String defaultConfig = defaultText(); // Text that displays StoRM built in values
 
     private static Logger log;
 
@@ -82,7 +81,6 @@ public class StoRM {
 
         //
         log.warn(welcome); // log welcome string!
-        log.debug(defaultConfig); // log default values!
         log.info(currentConfig); // log actually used values!
 
         // Force the loadind and the parsing of Namespace configuration
@@ -111,17 +109,6 @@ public class StoRM {
         picker = new AdvancedPicker();
         // this.xmlrpcServer = new SynchCallServer();
         xmlrpcServer = new XMLRPCHttpServer();
-    }
-
-    /**
-     * Auxiliary method that returns a StringBuffer containing a text with StoRM s built in default values.
-     */
-    private String defaultText() {
-		String defaultValuesText =
-								   "StoRM Backend internal list of default values used if no configuration "
-									   + "medium is supplied, or if properties in such medium do not override " + "internally set ones:\n"
-									   + Configuration.getInstance().toString();
-        return defaultValuesText;
     }
 
     /**
