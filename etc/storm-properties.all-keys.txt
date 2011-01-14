@@ -122,7 +122,7 @@ purge.interval=600
 purging=true
 ping-properties.filename=ping-values.properties
 abort.maxloop=10
-griduser.mapper.classname=it.grid.storm.griduser.LcmapsMapper
+griduser.mapper.classname=it.grid.storm.griduser.LcmapsJNAMapper
 
 ############# REMOVED ###################
 T1D1Plugin=HiddenFile

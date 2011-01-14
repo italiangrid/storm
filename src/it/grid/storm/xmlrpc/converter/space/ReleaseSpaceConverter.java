@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.xmlrpc.converter.space;
 
 import it.grid.storm.griduser.GridUserInterface;
@@ -8,10 +25,11 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.space.InvalidReleaseSpaceAttributesException;
+import it.grid.storm.synchcall.data.exception.InvalidReleaseSpaceAttributesException;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
+import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +66,7 @@ public class ReleaseSpaceConverter implements Converter {
     public InputData convertToInputData(Map inputParam)
     {
         log.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
-        log.debug("ReleaseSpaceConverter: Input Structure toString: "+inputParam.toString());
+        log.debug("ReleaseSpaceConverter: Input Structure toString: "+ParameterDisplayHelper.display(inputParam));
 
         /* Creationd of SpaceResData, INPUT STRUCTURE for */
         /* SpaceReservationManager!			  */

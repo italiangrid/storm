@@ -1,4 +1,21 @@
 /*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*
  * You may copy, distribute and modify this file under the terms of
  * the INFN GRID licence.
  * For a copy of the licence please visit
@@ -28,15 +45,11 @@ import it.grid.storm.common.types.*;
  * @author R.Zappi
  * @version 1.0
  */
-public class GridUser extends AbstractGridUser implements GridUserInterface {
+public class GridUser extends AbstractGridUser {
 
-    GridUser(MapperInterface mapper) {
-        super(mapper);
-    }
-
-    GridUser(MapperInterface mapper, String distinguishedName) {
-        super(mapper);
-        this.setDistinguishedName(distinguishedName);
+    GridUser(MapperInterface mapper, String distinguishedName)
+    {
+        super(mapper, distinguishedName);
     }
 
     /**
@@ -45,7 +58,8 @@ public class GridUser extends AbstractGridUser implements GridUserInterface {
      * 
      * @return VO
      */
-    public VO getVO() {
+    public VO getVO()
+    {
         VO vo = VO.makeNoVo();
         return vo;
     }
@@ -56,24 +70,28 @@ public class GridUser extends AbstractGridUser implements GridUserInterface {
      * @throws CannotMapUserException
      * @return LocalUser
      */
-    public LocalUser getLocalUser() throws CannotMapUserException {
-        if (localUser == null) {
-            try {
-
+    public LocalUser getLocalUser() throws CannotMapUserException
+    {
+        if (localUser == null)
+        {
+            try
+            {
                 localUser = userMapperClass.map(getDn(), null);
-            } catch (CannotMapUserException ex) {
+            }
+            catch (CannotMapUserException ex)
+            {
                 // log the operation that failed
                 log.error("Error in mapping '" + subjectDN.getX500DN_rfc1779() + "' to a local user: "
                         + ex.getMessage());
-                // re-thorw same exception
+                // re-throw same exception
                 throw ex;
             }
         }
         return localUser;
     }
 
-    public String toString() {
+    public String toString()
+    {
         return "Grid User (no VOMS): '" + getDistinguishedName().getX500DN_rfc1779() + "'";
     }
-
 }

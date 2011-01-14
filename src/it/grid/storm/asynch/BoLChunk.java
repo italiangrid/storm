@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.asynch;
 
 import it.grid.storm.authz.AuthzDirector;
@@ -10,6 +27,7 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
@@ -117,52 +135,60 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         s.bolStreet(this);
     }
 
-    public void completeRequest(RecallTaskStatus recallStatus) {
+    /* (non-Javadoc)
+     * @see it.grid.storm.asynch.SuspendedChunk#completeRequest(it.grid.storm.tape.recalltable.model.RecallTaskStatus)
+     */
+    public void completeRequest(RecallTaskStatus recallStatus){
 
-        boolean success;
-
-        if (recallStatus == RecallTaskStatus.SUCCESS) {
-
-            if (bupLocalFile.isOnDisk()) {
-
-                chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
-                success = true;
-
-            } else {
-
-                log.error("File "
-                        + bupLocalFile.getAbsolutePath()
-                        + " not found on the disk, but it was reported to be successfully recalled from tape");
-                chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-                success = false;
+        boolean requestSuccessfull = false;
+        if (recallStatus == RecallTaskStatus.SUCCESS)
+        {
+            try
+            {
+                if (bupLocalFile.isOnDisk())
+                {
+                    chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
+                    requestSuccessfull = true;
+                }
+                else
+                {
+                    log.error("File "
+                            + bupLocalFile.getAbsolutePath()
+                            + " not found on the disk, but it was reported to be successfully recalled from tape");
+                    chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                }
             }
-
-        } else if (recallStatus == RecallTaskStatus.ABORTED) {
-
-            chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
-            success = false;
-
-        } else {
-
-            chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-            success = false;
-
+            catch (FSException e)
+            {
+                log.error("Unable to determine if file " + bupLocalFile.getAbsolutePath()
+                        + " is on disk . FSException : " + e.getMessage());
+                chunkData.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
+            }
         }
-
+        else
+        {
+            if (recallStatus == RecallTaskStatus.ABORTED)
+            {
+                chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+            }
+            else
+            {
+                chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+            }
+        }
         BoLChunkCatalog.getInstance().update(chunkData);
 
-        if (success) {
-
+        if (requestSuccessfull)
+        {
             gsm.successfulChunk(chunkData);
             log.info("Completed BoL request (" + rsd.requestToken()
                     + "), file successfully recalled from tape: " + chunkData.getFromSURL().toString());
-
-        } else {
-
+        }
+        else
+        {
             gsm.failedChunk(chunkData);
             log.error("BoL request (" + chunkData.getRequestToken() + "), file not recalled from tape: "
                     + chunkData.getFromSURL().toString());
-
         }
     }
 
@@ -337,7 +363,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
     }
     
     
-    private boolean isStoriOndisk(StoRI storiFile) {
+    private boolean isStoriOndisk(StoRI storiFile) throws FSException {
         boolean result = true;
        
         //Check if Tape is Enabled

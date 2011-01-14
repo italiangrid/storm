@@ -56,14 +56,14 @@ public class AdHocTestNaming {
     }
 
 
-    private void testNewSURL(){
+/*    private void testNewSURL(){
         SURL surl = new SURL("testbed006.cnaf.infn.it",1234,"/cnaf/test/pippo.txt", null);
         log.debug(surl.toString());
         surl = new SURL("testbed006.cnaf.infn.it",-1,"/cnaf/test/pippo.txt", "test");
         log.debug(surl.toString());
-    }
+    }*/
 
-    private void testOldTSURL(){
+ /*   private void testOldTSURL(){
         SURL surl = new SURL("testbed006.cnaf.infn.it",1234,"cnaf/test/pippo.txt", null);
         TSURL tsurl = null;
         try {
@@ -106,7 +106,7 @@ public class AdHocTestNaming {
         stfnPath = NamespaceUtil.consumeElement("/cnaf/");
         log.debug("StFN path = "+stfnPath);
     }
-
+*/
     private void testResolveRelative(){
         String root = "/cnaf";
         String abso = "/cnaf/test/A/";
@@ -150,25 +150,25 @@ public class AdHocTestNaming {
         //test.testResolveRelative();
         //test.testParentsFile();
         //test.testNamespaceUtil();
-        SURL surl = new SURL("testbed006.cnaf.infn.it",1234,"cnaf/cappio/pippo.txt", null);
+/*        SURL surl = new SURL("testbed006.cnaf.infn.it",1234,"cnaf/cappio/pippo.txt", null);
         log.debug("SURL = "+surl);
         String stfnStr = surl.getStFN();
         log.debug("StFN = "+stfnStr);
         String path = surl.getPath();
-        log.debug("Path = "+path);
+        log.debug("Path = "+path);*/
 
         NamespaceInterface ns = new Namespace(parser);
 
         GridUserInterface user = MockGridUser.buildMockGridUser(); //"C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Luca Magnoni,Email=luca.magnoni@cnaf.infn.it", "ciccio");
         log.debug("user = "+user);
         boolean result = false;
-        try {
+/*        try {
             result = ns.isStfnFittingSomewhere(stfnStr, user);
             log.debug("is fitting somewhere? : "+result);
         } catch (NamespaceException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
+        }*/
     }
 
 

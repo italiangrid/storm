@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 /**
  * 
  */
@@ -68,10 +85,8 @@ public class TaskResource {
     @Path("/")
     @Consumes("text/plain")
     public Response putTaskStatus(InputStream input) throws RecallTableException {
-
         String inputString = buildInputString(input);
-
-        log.trace("putTaskStatus() - Input:" + inputString);
+        log.debug("putTaskStatus() - Input:" + inputString);
         
         PutTaskStatusValidator validator = new PutTaskStatusValidator(inputString);
         
@@ -91,6 +106,7 @@ public class TaskResource {
     public void putNewTaskStatusOrRetryValue(@PathParam("taskId") UUID taskId, InputStream input)
             throws RecallTableException {
 
+        log.debug("Requested to change recall table value for taskId " + taskId);
         // Retrieve if running in TEST setup
         boolean test = config.getRecallTableTestingMode();
 
@@ -116,9 +132,9 @@ public class TaskResource {
 
         try {
             tasks = new ArrayList<RecallTaskTO>(rtCat.getTask(taskId));
-        } catch (DataAccessException e1) {
-            log.error("Unable to retrieve Recall Task with ID = '" + taskId + "'");
-            throw new RecallTableException("Unable to retrieve Recall Task with ID = '" + taskId + "'");
+        } catch (DataAccessException e) {
+            log.error("Unable to retrieve Recall Task with ID = '" + taskId + "' " + e.getMessage());
+            throw new RecallTableException("Unable to retrieve Recall Task with ID = '" + taskId + "' " +e.getMessage());
         }
 
         // Retrieve value from Body param
@@ -126,35 +142,51 @@ public class TaskResource {
         String keyStatus = config.getStatusKey();
         int eqIndex = inputStr.indexOf('=');
 
-        if (eqIndex > 0) {
+        if (eqIndex > 0)
+        {
             String value = inputStr.substring(eqIndex);
             String key = inputStr.substring(0, eqIndex);
-            if (key.equals(keyRetryValue)) { // **** Set the Retry value 
-                try {
+            if (key.equals(keyRetryValue))
+            { // **** Set the Retry value
+                try
+                {
                     // trim out the '\n' end.
                     int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
                     rtCat.changeRetryValue(taskId, retryValue);
 
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e)
+                {
                     errorStr = "Unable to understand the number value = '" + value + "'";
                     throw new RecallTableException(errorStr);
                 }
-            } else {
-                if (key.equals(keyStatus)) { // **** Set the Status
-                    try {
+            }
+            else
+            {
+                if (key.equals(keyStatus))
+                { // **** Set the Status
+                    try
+                    {
                         // trim out the '\n' end.
                         int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));
+                        log.debug("Changing status of task " + taskId + " to " + statusValue);
                         rtCat.changeStatus(taskId, RecallTaskStatus.getRecallTaskStatus(statusValue));
-                    } catch (NumberFormatException e) {
+                    }
+                    catch (NumberFormatException e)
+                    {
                         errorStr = "Unable to understand the number value = '" + value + "'";
                         throw new RecallTableException(errorStr);
                     }
-                } else {
+                }
+                else
+                {
                     errorStr = "Unable to understand the key = '" + key + "' in @PUT request.";
                     throw new RecallTableException(errorStr);
                 }
             }
-        } else {
+        }
+        else
+        {
             errorStr = "Body '" + inputStr + "'is wrong";
             throw new RecallTableException(errorStr);
         }

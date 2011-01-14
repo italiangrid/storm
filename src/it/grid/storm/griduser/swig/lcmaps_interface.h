@@ -1,27 +1,18 @@
-/**
- * lcmaps_interface.h
+/*
  *
- * Utility functions for interfacing with LCMAPS.
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  *
- * These bindings are tailored to provide only the subset of
- * functionalities needed by the StoRM ``GridUser`` object, namely,
- * extract LCMAPS FQANs from a certificate and map a GridUser to a local
- * UID/GID based on the DN and FQANs.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Copyright (c) 2005 Riccardo Murri <riccardo.murri@ictp.it>
- * for the EGRID/INFN joint project StoRM.
- *
- *
- * You may copy, modify and distribute this file under the terms of
- * the INFN Grid Licence; see the accompanying file LICENCE.
- * 
- *
- * This file use DOC++ (see http://docpp.sourceforge.net/ ) for inline
- * documentation; in short, DOC++ uses the same syntax as JavaDoc.
- *
- * $Id: lcmaps_interface.h,v 1.3 2006/03/28 08:22:32 rmurri Exp $
- *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef __LCMAPS_INTERFACE_H

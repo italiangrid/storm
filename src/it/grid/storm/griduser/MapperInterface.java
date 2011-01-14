@@ -1,14 +1,20 @@
 /*
- * LocalUser
  *
- * Copyright (c) 2005,2006 Riccardo Murri <riccardo.murri@ictp.it>
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  *
- * You may copy, distribute and modify this file under the terms
- * listed in the fikle LICENSE.txt
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * $Id: MapperInterface.java,v 1.2 2006/03/15 19:23:08 rmurri Exp $
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
+
 package it.grid.storm.griduser;
 
 

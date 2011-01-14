@@ -44,7 +44,7 @@
 	</xs:complexType>
 	<xs:complexType name="filesystemType">
 		<xs:sequence>
-			<xs:element name="space-token-description" minOccurs="0"/>
+			<xs:element name="space-token-description" type="xs:string" minOccurs="0"/>
 			<xs:element name="storage-class" nillable="true" minOccurs="0">
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -106,7 +106,12 @@
 	<xs:element name="namespace">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="filesystems" type="filesystemsType"/>
+				<xs:element name="filesystems" type="filesystemsType">
+				<xs:unique name="filesystemSpaceToken">
+						<xs:selector xpath="filesystem" />
+						<xs:field xpath="space-token-description" />
+					</xs:unique>
+				</xs:element>
 				<xs:element name="mapping-rules" type="mapping-rulesType"/>
 				<xs:element name="approachable-rules" type="approachable-rulesType"/>
 			</xs:sequence>

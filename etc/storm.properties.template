@@ -104,7 +104,7 @@ checksum.server.service_ports=
 
 # Possible checksum values (not case-sensitive): CRC32, Adler32, MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512 
 #   <!! managed by YAIM; please read the above NOTE !!>
-checksum.algorithm=CRC32 
+checksum.algorithm=Adler32 
 
 
 #############################################
@@ -269,7 +269,7 @@ purge.interval=600
 purge.size=800
 #
 #Time after that the GC consider a _terminated_ request as garbage
-expired.request.time=3600
+expired.request.time=86400
 
 
 #############################################

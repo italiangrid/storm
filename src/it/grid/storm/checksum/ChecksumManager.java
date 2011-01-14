@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.checksum;
 
 import it.grid.storm.config.Configuration;
@@ -8,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,19 +35,20 @@ public class ChecksumManager {
     private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
     private final String URL_FORMAT = "http://%s:%d/";
 
-    private static ChecksumManager instance = null;
+    private static volatile ChecksumManager instance = null;
     private List<String> serviceUrlList = null;
     private List<String> statusUrlList = null;
     private int urlListSize;
     private volatile int currentUrlIndex = -1;
-    private String algorithm;
-
+    private String defaultAlgorithm;
+    
+    
     private ChecksumManager() {
 
-        algorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
+        defaultAlgorithm = Configuration.getInstance().getChecksumAlgorithm().toLowerCase();
     }
 
-    public static ChecksumManager getInstance() {
+    public static synchronized ChecksumManager getInstance() {        
         if (instance == null) {
             instance = new ChecksumManager();
         }
@@ -49,8 +68,8 @@ public class ChecksumManager {
      * 
      * @return the algorithm used to compute checksums as well as retrieve the value from extended attributes.
      */
-    public String getAlgorithm() {
-        return algorithm;
+    public String getDefaultAlgorithm() {
+        return defaultAlgorithm;
     }
 
     /**
@@ -63,11 +82,11 @@ public class ChecksumManager {
      * @return the computed checksum for the given file or <code>null</code> if some error occurred. The error is
      *         logged.
      */
-    public String getChecksum(String fileName) {
+    public String getDefaultChecksum(String fileName) {
 
         log.debug("Requesting checksum for file: " + fileName);
 
-        String checksum = StormEA.getChecksum(fileName, algorithm);
+        String checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
 
         if (checksum == null) {
 
@@ -79,7 +98,7 @@ public class ChecksumManager {
 
                 log.debug("Checksum Computation: START.");
 
-                checksum = retrieveChecksumFromExternalService(fileName);
+                checksum = retrieveChecksumFromExternalService(fileName, defaultAlgorithm);
 
                 if (checksum == null) {
                     return null;
@@ -89,7 +108,7 @@ public class ChecksumManager {
                 long elapsedTimeMillis = System.currentTimeMillis() - start;
 
                 log.debug("Checksum Computation: END. Elapsed Time (ms) = " + elapsedTimeMillis);
-                StormEA.setChecksum(fileName, checksum, algorithm);
+                StormEA.setChecksum(fileName, checksum, defaultAlgorithm);
             } else {
                 log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
             }
@@ -98,6 +117,42 @@ public class ChecksumManager {
         return checksum;
     }
 
+    
+    public String getChecksumWithAlgorithm(String fileName, ChecksumAlgorithm algorithm) {
+
+        log.debug("Requesting checksum "+algorithm+" for file: " + fileName);
+        
+        String checksum = StormEA.getChecksum(fileName, algorithm.toString());
+
+        if (checksum == null) {
+
+            // check if Checksum computation is Enabled or not
+            if (Configuration.getInstance().getChecksumEnabled()) {
+
+                // Get current time
+                long start = System.currentTimeMillis();
+
+                log.debug("Checksum Computation: START.");
+
+                checksum = retrieveChecksumFromExternalService(fileName, algorithm.toString());
+
+                if (checksum == null) {
+                    return null;
+                }
+
+                // Get elapsed time in milliseconds
+                long elapsedTimeMillis = System.currentTimeMillis() - start;
+
+                log.debug("Checksum Computation: END. Elapsed Time (ms) = " + elapsedTimeMillis);
+                StormEA.setChecksum(fileName, checksum, algorithm.toString());
+            } else {
+                log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
+            }
+        }
+
+        return checksum;
+    }
+    
     /**
      * Checks whether the given file has a checksum stored in an extended attribute.
      * 
@@ -106,7 +161,7 @@ public class ChecksumManager {
      */
     public boolean hasChecksum(String fileName) {
 
-        String value = StormEA.getChecksum(fileName, algorithm);
+        String value = StormEA.getChecksum(fileName, defaultAlgorithm);
 
         if (value == null) {
 
@@ -116,6 +171,14 @@ public class ChecksumManager {
         return true;
     }
 
+    
+    public Map<String,String> getChecksums(String fileName) {
+
+        Map<String, String> value = StormEA.getChecksums(fileName);
+
+        return value;
+    }
+    
     /**
      * Computes the checksum of the given file and stores it in to an extended attribute.
      * 
@@ -128,14 +191,14 @@ public class ChecksumManager {
     		log.debug("Loading checksum remote hosts URLs");
     		initUrlArrays();
     	}
-        String checksum = retrieveChecksumFromExternalService(fileName);
+        String checksum = retrieveChecksumFromExternalService(fileName, defaultAlgorithm);
 
         if (checksum == null) {
             StormEA.removeChecksum(fileName);
             return false;
         }
 
-        StormEA.setChecksum(fileName, checksum, algorithm);
+        StormEA.setChecksum(fileName, checksum, defaultAlgorithm);
 
         return true;
     }
@@ -263,7 +326,7 @@ public class ChecksumManager {
         }
     }
 
-    private String retrieveChecksumFromExternalService(String fileName) {
+    private String retrieveChecksumFromExternalService(String fileName, String algorithm) {
 
         if (serviceUrlList.isEmpty()) {
 

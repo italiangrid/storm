@@ -1,0 +1,239 @@
+/*
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package it.grid.storm.check.sanity.filesystem;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import it.grid.storm.check.GenericCheckException;
+import it.grid.storm.check.Check;
+import it.grid.storm.check.CheckResponse;
+import it.grid.storm.check.CheckStatus;
+import it.grid.storm.ea.ExtendedAttributes;
+import it.grid.storm.ea.ExtendedAttributesException;
+import it.grid.storm.jna.ExtendedAttributesImpl;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+
+/**
+ * @author Michele Dibenedetto
+ */
+public class NamespaceFSExtendedAttributeUsageCheck implements Check
+{
+
+    private static final Logger log = LoggerFactory.getLogger(NamespaceFSExtendedAttributeUsageCheck.class);
+
+    private static final String CHECK_NAME = "NamespaceFSEATest";
+
+    private static final String CHECK_DESCRIPTION = "Namespace declared FS extended attribute Check";
+
+    /**
+     * The maximum number of attempts of temporary file creation
+     */
+    private static final int MAX_FILE_CREATION_ATTEMPTS = 10;
+
+    /**
+     * An extended attribute to be used in the check
+     */
+    private static final String CHECK_ATTRIBUTE_NAME = "user.Are.you.a.check";
+
+    /**
+     * THe value to be assigned to the extended attribute CHECK_ATTRIBUTE_NAME in the check
+     */
+    private static final String CHECK_ATTRIBUTE_VALUE = "Yes.I.am";
+
+    private final ExtendedAttributes extendedAttribute = new ExtendedAttributesImpl();
+
+    @Override
+    public CheckResponse execute() throws GenericCheckException
+    {
+        CheckStatus status = CheckStatus.SUCCESS;
+        String errorMessage = "";
+        try
+        {
+            // load declared file systems from namespace.xml
+            for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS())
+            {
+                String fsRootPath = vfs.getRootPath().trim();
+                if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar)
+                {
+                    fsRootPath += File.separatorChar;
+                }
+                // for each root path get a temporary file in it
+                File checkFile;
+                try
+                {
+                    checkFile = provideCheckFile(fsRootPath);
+                }
+                catch (GenericCheckException e)
+                {
+                    log.error("Unable to obtain a check temporary file. GenericCheckException : "
+                            + e.getMessage());
+                    errorMessage += "Unable to obtain a check temporary file. GenericCheckException : "
+                            + e.getMessage() + "; ";
+                    status = CheckStatus.INDETERMINATE;
+                    continue;
+                }
+                // tries to manage the extended attributes on file checkFile
+                boolean currentResponse = this.checkEA(checkFile);
+                if (!currentResponse)
+                {
+                    log.warn("Check on VFS " + vfs.getAliasName() + " to add EA on file "
+                            + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
+                            + " , root path =" + fsRootPath);
+                    errorMessage += "Check on VFS " + vfs.getAliasName() + " to add EA on file "
+                            + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
+                            + " , root path =" + fsRootPath + "; ";
+                }
+                log.debug("Check response for path " + fsRootPath + " is "
+                        + (currentResponse ? "success" : "failure"));
+                status = CheckStatus.and(status, currentResponse);
+                log.debug("Partial result is " + status.toString());
+                if (!checkFile.delete())
+                {
+                    log.warn("Unable to delete the temporary file used for the check "
+                            + checkFile.getAbsolutePath());
+                }
+            }
+        }
+        catch (NamespaceException e)
+        {
+            // NOTE: this exception is never thrown
+            log.error("Unable to proceede. NamespaceException : " + e.getMessage());
+            errorMessage += "Unable to proceede. NamespaceException : " + e.getMessage() + "; ";
+            status = CheckStatus.INDETERMINATE;
+        }
+        return new CheckResponse(status, errorMessage);
+    }
+
+    /**
+     * Provides a File located in rootPath with a pseudo-random name. It tries to provide the file and in case
+     * of error
+     * retries for MAX_FILE_CREATION_ATTEMPTS times changing file name
+     * 
+     * @param rootPath
+     * @return
+     * @throws GenericCheckException if is unable to provide a valid file
+     */
+    private File provideCheckFile(String rootPath) throws GenericCheckException
+    {
+        int attempCount = 1;
+        boolean fileAvailable = false;
+        File checkFile = null;
+        while (attempCount <= MAX_FILE_CREATION_ATTEMPTS && !fileAvailable)
+        {
+            checkFile = new File(rootPath + "EA-check-file-N_" + attempCount + "-"
+                    + Calendar.getInstance().getTimeInMillis());
+            if (checkFile.exists())
+            {
+                if (checkFile.isFile())
+                {
+                    fileAvailable = true;
+                    log.debug("A good check temporary file already exists at " + checkFile.getAbsolutePath());
+                }
+                else
+                {
+                    log.info("Unable to create check file, it already exists but is not a simple file : "
+                            + checkFile.getAbsolutePath());
+                }
+            }
+            else
+            {
+                try
+                {
+                    fileAvailable = checkFile.createNewFile();
+                    if (fileAvailable)
+                    {
+                        log.debug("Created check temporary file at " + checkFile.getAbsolutePath());
+                    }
+                }
+                catch (IOException e)
+                {
+                    log.warn("Unable to create the check file : " + checkFile.getAbsolutePath()
+                            + ". IOException: " + e.getMessage());
+                }
+            }
+            attempCount++;
+        }
+        if (!fileAvailable)
+        {
+            log.warn("Unable to create check file, reaced maximum iterations at path : "
+                    + checkFile.getAbsolutePath());
+            throw new GenericCheckException("Unable to create the check file for root path '" + rootPath
+                    + "'");
+        }
+        return checkFile;
+    }
+
+    /**
+     * Tries to write CHECK_ATTRIBUTE_NAME EA on file with value CHECK_ATTRIBUTE_VALUE, retrieve its value and
+     * remove it
+     * 
+     * @param file
+     * @return true if the write, read and remove operations succeeds and the retrieved value matches
+     *         CHECK_ATTRIBUTE_VALUE
+     */
+    private boolean checkEA(File file)
+    {
+        boolean response = false;
+        log.debug("Testing extended attribute management on file " + file.getAbsolutePath());
+        try
+        {
+            log.debug("Trying to set the extended attribute " + CHECK_ATTRIBUTE_NAME + " to value "
+                    + CHECK_ATTRIBUTE_VALUE + " on file " + file.getAbsolutePath());
+            extendedAttribute.setXAttr(file.getAbsolutePath(),
+                                       CHECK_ATTRIBUTE_NAME,
+                                       CHECK_ATTRIBUTE_VALUE.getBytes());
+            log.debug("Trying to get the extended attribute " + CHECK_ATTRIBUTE_NAME + " from file "
+                    + file.getAbsolutePath());
+            String value = new String(extendedAttribute.getXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME));
+            log.debug("Returned value is \'" + value + "\'");
+            log.debug("Trying to remove the extended attribute " + CHECK_ATTRIBUTE_NAME + " from file "
+                    + file.getAbsolutePath());
+            extendedAttribute.rmXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME);
+            if (!CHECK_ATTRIBUTE_VALUE.equals(value))
+            {
+                log.warn("Undesired behaviour! The returned extended attribute value \'" + value
+                        + "\' differs from the one setted \'" + CHECK_ATTRIBUTE_VALUE + "\'");
+            }
+            else
+            {
+                response = true;
+            }
+        }
+        catch (ExtendedAttributesException e)
+        {
+            log.warn("Unable to manage extended attributes on file " + file.getAbsolutePath()
+                    + " ExtendedAttributesException : " + e.getMessage());
+        }
+        return response;
+
+    }
+
+    @Override
+    public String getName()
+    {
+        return CHECK_NAME;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return CHECK_DESCRIPTION;
+    }
+}

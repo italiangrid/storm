@@ -4,15 +4,6 @@
  *
  * Interface of the @c posixfs_acl class.
  */
-/*
- * $Id: posixfs_acl.hpp,v 1.4 2006/03/31 13:35:01 rmurri Exp $
- *
- * Copyright (c) 2005, 2006 Riccardo Murri <riccardo.murri@ictp.it>
- * for the EGRID/INFN joint project StoRM.
- *
- * You may copy, modify and distribute this file under the same terms
- * as StoRM itself.
- */
 
 
 

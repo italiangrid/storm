@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS db_version (
   description VARCHAR(100));
 
 DELETE FROM storm_db.db_version;
-INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,5,4,'1 July 2010');
+INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,6,0,'1 October 2010');
    
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,

@@ -133,18 +133,13 @@ fi;
 
 %files
 %defattr(-,root,root)
-%{prefix}/doc/AUTHORS
 %{prefix}/doc/CREDITS
-%{prefix}/doc/INSTALL.txt
+%{prefix}/doc/RELEASE-NOTES.txt
 %{prefix}/doc/LICENSE.txt
 %config(noreplace) %{prefix}/etc/namespace-1.5.0.xsd
 %config(noreplace) %{prefix}/etc/logrotate.d/storm-backend.logrotate
 %config(noreplace) %{prefix}/etc/db/storm_mysql_grant.sql
 %config(noreplace) %{prefix}/etc/db/storm_mysql_tbl.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.3.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.0_to_1.5.4.sql
-%config(noreplace) %{prefix}/etc/db/storm_mysql_update_from_1.5.3_to_1.5.4.sql
 %config(noreplace) %{prefix}/etc/logging.xml
 %config(noreplace) %{prefix}/etc/sysconfig/storm-backend
 %config(noreplace) %{prefix}/etc/lcmaps.db
@@ -153,11 +148,9 @@ fi;
 %config(noreplace) %{prefix}/etc/welcome.txt
 %config(noreplace) %{prefix}/etc/namespace.xml
 %{prefix}/lib/native/%{platform}/libgpfsapi_interface.so
-%{prefix}/lib/native/%{platform}/liblcmaps_interface.so
 %{prefix}/lib/native/%{platform}/libposixapi_interface.so
 %{prefix}/lib/native/%{platform}/libxfsapi_interface.so
 %{prefix}/lib/native/%{platform}/libstorm_cutil.so
-%{prefix}/lib/native/%{platform}/libstorm_lcmaps.so
 %{prefix}/storm-backend.jar
 %defattr(755,root,root)
 %config(noreplace) %{prefix}/etc/db/storm_database_config.sh
@@ -231,8 +224,22 @@ rm -rf $RPM_BUILD_ROOT
 ### Package ChangeLog
 
 %changelog
-* Tue Aug 24 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+* Tue Nov 15 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
 - version %{version}-%{release}
+- fixed a bug on concurrent local groups handling
+- added a mechanism to check if filesystem is GPFS
+- solved a bug on libstorm_cutil.so library loading
+- added checking of modules path existence in the start up script
+- added a check on in on etc/namespace.xml to grant uniqueness of field space-token-description
+
+* Tue Oct 14 2010 <Michele Dibenedetto> <michele.dibenedetto@cnaf.infn.it>
+- version 1.6.0-5
+- fixed a bug on recall_table database connection management
+- fixed a bug in management of request coming from users providing certificates without VOMS extension
+- avoided exception raising in case of status check of a tape recall request expired and cleaned by garbage collector 
+
+* Tue Aug 24 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version 1.5.4-6
 - joined jar and server packages in one package
 - removed storm-backend-configure
 - removed sbin directory

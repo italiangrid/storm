@@ -1,14 +1,20 @@
 /*
- * LocalUser
  *
- * Copyright (c) 2005,2006 Riccardo Murri <riccardo.murri@ictp.it>
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  *
- * You may copy, distribute and modify this file under the terms
- * listed in the fikle LICENSE.txt
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * $Id: LocalUser.java,v 1.9 2006/06/27 11:59:07 ecorso Exp $
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
+
 package it.grid.storm.griduser;
 
 import org.slf4j.Logger;
@@ -35,8 +41,8 @@ public class LocalUser {
     
     private static final Logger log = LoggerFactory.getLogger(LocalUser.class);
     
-	private int   __uid;  /* FIXME: uid_t on Linux is unsigned 32-bit */
-	private int[] __gids;
+	private int   uid;  /* FIXME: uid_t on Linux is unsigned 32-bit */
+	private int[] gids;
 
 
 	// --- constructors --- //
@@ -53,25 +59,25 @@ public class LocalUser {
 	 * 2006-03-15)
      */
     public LocalUser(int uid, int[] gids, long ngids) {
-		__uid = uid;
+		this.uid = uid;
 
-		__gids = new int[(int)ngids];
+		this.gids = new int[(int)ngids];
 
 		for (int i = 0; i<ngids; i++)
-			__gids[i] = gids[i];
+			this.gids[i] = gids[i];
     }
 
     /**
      * Constructor taking UID, GID and list of supplementary GIDs.
      */
     public LocalUser(int uid, int gid, int[] supplementaryGids) {
-		__uid = uid;
+    	this.uid = uid;
 
-		__gids = new int[1 + supplementaryGids.length];
-		__gids[0] = gid;
+    	this.gids = new int[1 + supplementaryGids.length];
+    	this.gids[0] = gid;
 
 		for (int i = 1; i<=supplementaryGids.length; i++)
-			__gids[i] = supplementaryGids[i-1];
+			this.gids[i] = supplementaryGids[i-1];
     }
 
     /**
@@ -92,32 +98,39 @@ public class LocalUser {
      * In case the supplied String is null or invalid, by default a LocalUser with
      * uid=501 and one gid=501 is created.
      */
-    public LocalUser(String uidgids) {
-        this.__uid=501;
-        this.__gids = new int[1]; __gids[0] = 501;
-        if (uidgids!=null) {
-            String[] aux = uidgids.split(",");
-            //try parsing the chunks provided there are at least two!
-            if (aux.length>=2) {
-                try {
-                    int auxuid=Integer.parseInt(aux[0]);
-                    int[] auxgid = new int[aux.length-1];
-                    for (int i=0; i<aux.length-1; i++) auxgid[i]=Integer.parseInt(aux[i+1]);
-                    this.__uid = auxuid;
-                    this.__gids = auxgid;
-                } catch (NumberFormatException e) {
-                    log.error("LocalUser: Error while setting uid/gid. NFE:"+e);
-                }
-            }
-        }
-    }
+	public LocalUser(String uidgids) {
+
+		this.uid = 501;
+		this.gids = new int[1];
+		this.gids[0] = 501;
+		if(uidgids != null)
+		{
+			String[] aux = uidgids.split(",");
+			// try parsing the chunks provided there are at least two!
+			if(aux.length >= 2)
+			{
+				try
+				{
+					int auxuid = Integer.parseInt(aux[0]);
+					int[] auxgid = new int[aux.length - 1];
+					for(int i = 0; i < aux.length - 1; i++)
+						auxgid[i] = Integer.parseInt(aux[i + 1]);
+					this.uid = auxuid;
+					this.gids = auxgid;
+				} catch(NumberFormatException e)
+				{
+					log.error("LocalUser: Error while setting uid/gid. NFE:" + e);
+				}
+			}
+		}
+	}
 
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(__uid);
-        for (int i=0; i<__gids.length; i++) {
+        sb.append(uid);
+        for (int i=0; i<gids.length; i++) {
             sb.append(",");
-            sb.append(__gids[i]);
+            sb.append(gids[i]);
         }
         return sb.toString();
     }
@@ -137,7 +150,7 @@ public class LocalUser {
     // --- public accessor methods --- //
 
     public int getUid() {
-		return __uid;
+		return uid;
     }
 
     /**
@@ -148,7 +161,7 @@ public class LocalUser {
      * @return  int[] holding all GIDs, with the primary one at index 0.
      */
     public int[] getGids() {
-		return __gids;
+		return gids;
     }
 
     /**
@@ -157,6 +170,6 @@ public class LocalUser {
      * @return  the primary GID of this POSIX account.
      */
     public int getPrimaryGid() {
-		return __gids[0];
+		return gids[0];
     }
 }

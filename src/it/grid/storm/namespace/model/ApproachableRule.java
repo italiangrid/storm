@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.namespace.model;
 
 import it.grid.storm.griduser.DNMatchingRule;
@@ -118,45 +135,39 @@ public class ApproachableRule implements Comparable{
      * @param gUser GridUserInterface
      * @return boolean
      */
-    public boolean match(GridUserInterface gUser) {
+    public boolean match(GridUserInterface gUser)
+    {
+        boolean response = false;
         String dnString = gUser.getDn();
         VomsGridUser vomsUser = null;
         DistinguishedName dn = new DistinguishedName(dnString);
         boolean dnMatch = dnMatchingRule.match(dn);
-        if (!dnMatch) {  //DN doesn't match!
-            return false;
-        } else { // DN Match.
-            // ----  Check if VOMS Attributes are required ----
-            if (!vomsCertRequired) {
-                return true;  //VOMS Attributes aren't required.
-            } else {
-                //  VOMS Attribute required.
-                // ----  Check if gUSER is a USER with VOMS Attributes ----
-                if (gUser instanceof VomsGridUser) {
-                    vomsUser = (VomsGridUser)gUser;
-                    log.debug("Grid User Requestor   : "+vomsUser.toString());
-                    log.debug("  holds a VOMS cert ? : "+vomsUser.hasVoms());
-                    String voName = vomsUser.getVO().getValue();
-                } else {
-                    // The subject does not hold a VOMS Certificate (which is mandatory!)
-                    return false;
-                }
-
-
-                if (vomsUser.hasVoms()) {
-                    boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
-                    if (voNameMatch) {
-                        return true;
-                    }
-                } else {
-
-                }
-
+        if (dnMatch)
+        { // DN Match.
+            // ---- Check if VOMS Attributes are required ----
+            if (!vomsCertRequired)
+            {
+                response = true; // VOMS Attributes aren't required.
             }
-            return false;
+            else
+            {
+                // VOMS Attribute required.
+                // ---- Check if gUSER is a USER with VOMS Attributes ----
+                if (gUser instanceof VomsGridUser)
+                {
+                    vomsUser = (VomsGridUser) gUser;
+                    log.debug("Grid User Requestor   : " + vomsUser.toString());
+                    log.debug("  holds a VOMS cert ? : " + vomsUser.hasVoms());
+                    boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
+                    if (voNameMatch)
+                    {
+                        response = true;
+                    }
+                }
+            }
         }
+        return response;
     }
-
 
     @Override
     public String toString() {

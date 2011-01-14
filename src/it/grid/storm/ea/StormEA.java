@@ -1,9 +1,31 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.ea;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import it.grid.storm.checksum.ChecksumAlgorithm;
 import it.grid.storm.jna.ExtendedAttributesImpl;
 
 import org.slf4j.Logger;
@@ -20,6 +42,18 @@ public class StormEA {
 
     private static final ExtendedAttributes ea = new ExtendedAttributesImpl();
 
+    public static Map<String,String> getChecksums(String filename) {
+        HashMap<String,String> result = new HashMap<String, String>();
+        for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
+            String cksm = getChecksum(filename, checksumAlgorithm.toString());
+            if (cksm!=null) {
+                result.put(checksumAlgorithm.toString(),cksm);
+            }
+        }
+        return result;
+    }
+    
+    
     public static String getChecksum(String fileName, String algorithm) {
 
         String checksum = null;
@@ -53,6 +87,7 @@ public class StormEA {
 
         return checksum;
     }
+    
 
     public static boolean getMigrated(String fileName) {
 
@@ -96,11 +131,7 @@ public class StormEA {
             if (longString != null) {
                 log.debug("Retrieved PinLifeTime with value: '" + longString + "' (lenght:"
                         + longString.length() + ")");
-            } else {
-                log.debug("PinLifeTime is null. Return -1.");
-                return -1;
-            }
-
+            } 
             return Long.decode(longString);
 
         } catch (FileNotFoundException e) {

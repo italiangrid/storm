@@ -39,9 +39,7 @@ mkdir -p -v $source/tgz/lib$arch/storm-backend
 
 tgz=$source/tgz
 
-files='/doc/AUTHORS
-/doc/CREDITS
-/doc/INSTALL.txt
+files='/doc/CREDITS
 /doc/LICENSE.txt
 /etc/cron.d/storm-backend.cron
 /etc/db/storm_database_config.sh 
@@ -64,8 +62,6 @@ files='/doc/AUTHORS
 /var/tmp'
 
 echo "copy files in tar directories"
-cp $source/doc/INSTALL.txt $tgz/doc/INSTALL.txt
-cp $source/AUTHORS $tgz/doc/AUTHORS
 cp $source/CREDITS $tgz/doc/CREDITS
 cp $source/LICENSE.txt $tgz/doc/LICENSE.txt
 cp $source/etc/cron.d/storm-backend.cron $tgz/etc/cron.d/storm-backend.cron
@@ -87,10 +83,8 @@ cp $source/etc/storm.properties.template $tgz/etc/storm.properties.template
 cp $source/etc/sysconfig/storm-backend $tgz/etc/sysconfig/storm-backend
 cp $source/etc/welcome.txt $tgz/etc/welcome.txt
 cp $source/build/lib$arch/libgpfsapi_interface.so $tgz/lib$arch/libgpfsapi_interface.so
-cp $source/build/lib$arch/liblcmaps_interface.so $tgz/lib$arch/liblcmaps_interface.so
 cp $source/build/lib$arch/libposixapi_interface.so $tgz/lib$arch/libposixapi_interface.so
 cp $source/build/lib$arch/libstorm_cutil.so $tgz/lib$arch/libstorm_cutil.so
-cp $source/build/lib$arch/libstorm_lcmaps.so $tgz/lib$arch/libstorm_lcmaps.so
 cp $source/build/lib$arch/libxfsapi_interface.so $tgz/lib$arch/libxfsapi_interface.so
 cp $source/build/storm-backend.jar $tgz/storm-backend.jar
 
@@ -99,7 +93,7 @@ echo "create tar structure "
 echo $files
 
 file1=""
-for x in $files /lib$arch/libgpfsapi_interface.so /lib$arch/liblcmaps_interface.so /lib$arch/libposixapi_interface.so /lib$arch/libstorm_cutil.so /lib$arch/libstorm_lcmaps.so /lib$arch/libxfsapi_interface.so storm-backend.jar
+for x in $files /lib$arch/libgpfsapi_interface.so /lib$arch/libposixapi_interface.so /lib$arch/libstorm_cutil.so /lib$arch/libxfsapi_interface.so storm-backend.jar
 do
 #    echo $x
     file1="$tgz$x $file1"

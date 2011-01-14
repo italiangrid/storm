@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.namespace;
 
 import it.grid.storm.common.GUID;
@@ -7,6 +24,7 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.config.NamespaceParser;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.MappingRule;
@@ -77,6 +95,23 @@ public class Namespace implements NamespaceInterface {
 
     public VirtualFSInterface getDefaultVFS(GridUserInterface user) throws NamespaceException {
         TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(getApproachableRules(user));
+        if(appRules.isEmpty())
+        {
+            if(user instanceof VomsGridUser)
+            {
+                log.error("No approachable rules found for user with DN='" + user.getDn() + "' and VO = '"
+                        + ((VomsGridUser) user).getVO() + "'");
+                throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
+                        + "' and VO = '" + ((VomsGridUser) user).getVO() + "'");
+            }
+            else
+            {
+                log.error("No approachable rules found for user with DN='" + user.getDn()
+                        + "' User certificate has not VOMS extension");
+                throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
+                        + "' User certificate has not VOMS extension");
+            }
+        }
         log.debug("Compatible Approachable rules : " + appRules);
         ApproachableRule firstAppRule = appRules.first();
         log.debug("Default APP_RULE is the first (in respsect of name): " + firstAppRule);
@@ -461,6 +496,23 @@ public class Namespace implements NamespaceInterface {
         String result = null;
         TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(getApproachableRules(user));
         log.debug("Compatible Approachable rules : " + appRules);
+        if(appRules.isEmpty())
+        {
+            if(user instanceof VomsGridUser)
+            {
+                log.error("No approachable rules found for user with DN='" + user.getDn() + "' and VO = '"
+                        + ((VomsGridUser) user).getVO() + "'");
+                throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
+                        + "' and VO = '" + ((VomsGridUser) user).getVO() + "'");
+            }
+            else
+            {
+                log.error("No approachable rules found for user with DN='" + user.getDn()
+                        + "' User certificate has not VOMS extension");
+                throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
+                        + "' User certificate has not VOMS extension");
+            }
+        }
         ApproachableRule firstAppRule = appRules.first();
         log.debug("Default APP_RULE is the first (in respsect of name): " + firstAppRule);
         //Retrieve the Relative Path for Space Files

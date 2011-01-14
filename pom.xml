@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>BE_1.6</groupId>
+	<artifactId>BE_1.6</artifactId>
+	<version>1.6.0-7</version>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>com.google.code.maven-license-plugin</groupId>
+					<artifactId>maven-license-plugin</artifactId>
+					<version>1.8.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<basedir>${basedir}</basedir>
+					<header>${basedir}/doc/header-copyright.txt</header>
+					<strictChecking>true</strictChecking>
+					<mapping>
+						<java>SLASHSTAR_STYLE</java>
+						<c>SLASHSTAR_STYLE</c>
+						<h>SLASHSTAR_STYLE</h>
+						<ac>SCRIPT_STYLE</ac>
+						<am>SCRIPT_STYLE</am>
+					</mapping>
+					<includes>
+						<include>src/**</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+

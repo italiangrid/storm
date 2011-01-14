@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.asynch;
 
 import it.grid.storm.authz.AuthzDecision;
@@ -13,6 +30,7 @@ import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.InvalidPathException;
 import it.grid.storm.filesystem.InvalidPermissionOnFileException;
@@ -789,8 +807,9 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 	/**
      * @param storiFile
      * @return
+     * @throws FSException 
      */
-	private boolean isStoriOndisk(StoRI storiFile) {
+    private boolean isStoriOndisk(StoRI storiFile) throws FSException {
 
 		boolean result = true;
 		/* Check if Tape is Enabled */
@@ -836,38 +855,43 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 	public void completeRequest(RecallTaskStatus recallStatus) {
 
 		/* Updates request status on the DB and on the statusManager accordingly with the received recallStatus */
-		boolean success;
+		boolean requestSuccessfull = false;
 		if(recallStatus == RecallTaskStatus.SUCCESS)
 		{
-			if(bupLocalFile.isOnDisk())
-			{
-				success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser,
-							  bupTURL);
-			}
-			else
-			{
-				log.error("File " + bupLocalFile.getAbsolutePath()
-					+ " not found on the disk, but it was reported to"
-					+ " be successfully recalled from tape");
-				chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-				success = false;
-			}
+            try
+            {
+                if (bupLocalFile.isOnDisk())
+                {
+                    requestSuccessfull = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+                }
+                else
+                {
+                    log.error("File " + bupLocalFile.getAbsolutePath()
+                            + " not found on the disk, but it was reported to"
+                            + " be successfully recalled from tape");
+                    chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                }
+            }
+            catch (FSException e)
+            {
+                log.error("Unable to determine if file " + bupLocalFile.getAbsolutePath()
+                        + " is on disk . FSException : " + e.getMessage());
+                chunkData.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
+            }
 		}
 		else
 		{
 			if(recallStatus == RecallTaskStatus.ABORTED)
 			{
 				chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
-				success = false;
 			}
 			else
 			{
 				chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
-				success = false;
 			}
 		}
 		PtGChunkCatalog.getInstance().update(chunkData);
-		if(success)
+		if(requestSuccessfull)
 		{
 
 			gsm.successfulChunk(chunkData);
@@ -881,8 +905,6 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 				+ chunkData.fromSURL().toString());
 		}
 	}
-
-       
 
     public ChunkData getChunkData() {
         return chunkData;
@@ -924,7 +946,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 			+ " denied!");
 		failure = true;
 		log.debug("Read access to " + chunkData.fromSURL() + " denied!");
-}
+	}
 
     /**
      * Manager of the IsIndeterminate state: this state indicates that an error in the PolicySource occured and so the

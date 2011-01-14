@@ -1,11 +1,19 @@
-/**************************************************************************
- * This file is part of the StoRM project. Copyright (c) 2003-2009 INFN. All rights reserved. Licensed under the Apache
- * License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain
- * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
- * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
- * OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
- ***********************************************************************/
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package it.grid.storm.config;
 
@@ -1732,13 +1740,13 @@ public class Configuration {
 
     /**
      * Method used to retrieve the ClassName for the User Mapper Class If no value is found in the configuration medium,
-     * then the default one is used instead, that is "it.grid.storm.griduser.LcmapsMapper"
+     * then the default one is used instead, that is "it.grid.storm.griduser.LcmapsJNAMapper"
      * key="griduser.mapper.classname";
      */
     public String getGridUserMapperClassname() {
         if (!cr.getConfiguration().containsKey(GRID_USER_MAPPER_CLASSNAME_KEY)) {
             // return default
-            return "it.grid.storm.griduser.LcmapsMapper";
+        	return "it.grid.storm.griduser.LcmapsJNAMapper";
         } else {
             // load from external source
             return cr.getConfiguration().getString(GRID_USER_MAPPER_CLASSNAME_KEY);
@@ -1826,24 +1834,19 @@ public class Configuration {
         return portArray;
     }
 
+
     public String getChecksumAlgorithm() {
-
-
         if (cr.getConfiguration().containsKey(CHECKSUM_ALGORITHM_KEY)) {
-
             return cr.getConfiguration().getString(CHECKSUM_ALGORITHM_KEY);
         }
-
         return "Adler32";
     }
 
+
     public boolean getRecallTableTestingMode() {
-
-
         if (cr.getConfiguration().containsKey(RECALL_TABLE_TESTING_MODE_KEY)) {
             return cr.getConfiguration().getBoolean(RECALL_TABLE_TESTING_MODE_KEY);
         }
-
         return false;
     }
 

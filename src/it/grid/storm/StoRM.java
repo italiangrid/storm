@@ -1,7 +1,26 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.check.CheckManager;
+import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.config.WelcomeMessage;
@@ -49,7 +68,7 @@ public class StoRM {
      */
     public StoRM(String configurationPathname, int refresh) {
         // verifying supplied configurationPathname and print to screen...
-        if ((configurationPathname == null) || (configurationPathname == "")) {
+        if ((configurationPathname == null) || (configurationPathname.equals(""))) {
             // built-in configuration file to be used if nothing gets specified!
             configurationPathname = "/opt/storm/backend/etc/storm.properties";
             System.out.print("This instance of StoRM Backend was invoked without explicitly specifying ");
@@ -109,6 +128,19 @@ public class StoRM {
         picker = new AdvancedPicker();
         // this.xmlrpcServer = new SynchCallServer();
         xmlrpcServer = new XMLRPCHttpServer();
+        
+        //Execute checks
+        CheckManager checkManager = new SimpleCheckManager();
+        checkManager.init();
+        if(checkManager.lauchChecks())
+        {
+            log.info("Check suite executed successfully");
+        }
+        else
+        {
+            log.warn("Check suite failed!");
+            System.out.println("Check suite failed! Please check the log");
+        }
     }
 
     /**

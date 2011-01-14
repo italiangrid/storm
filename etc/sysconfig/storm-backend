@@ -38,7 +38,7 @@
 #STORM_BE_TMPDIR="$STORM_HOME/var/tmp"
 
 # options for the JVM running the StoRM BE server
-#STORM_BE_JVM_OPTS='-server'
+STORM_BE_JVM_OPTS='-server -Xms512m -Xmx512m'
 
 # port for the command server (FIXME: should read from conf. file)
 #export STORM_COMMAND_PORT=4444

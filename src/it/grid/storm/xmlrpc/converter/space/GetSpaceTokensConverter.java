@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 /**
  * This class represents the Type Converter for GetSpaceTokens function.
  * This class gets input data from xmlrpc call and converts it into a
@@ -43,22 +60,18 @@ public class GetSpaceTokensConverter implements Converter
     {
         GetSpaceTokensInputData inputData = null;
 
-        String memberName = null;
+        String memberName = new String("authorizationID");
 
         /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (1) authorizationID (never used) */
-        memberName = new String("authorizationID");
         String authID = (String) inputParam.get(memberName);
 
         /* (2) userSpaceTokenDescription */
         memberName = new String("userSpaceTokenDescription");
         String userSpaceTokenDescription = (String) inputParam.get(memberName);
-
-        inputData = new GetSpaceTokensInputData((VomsGridUser) guser, userSpaceTokenDescription);
+        inputData = new GetSpaceTokensInputData(guser, userSpaceTokenDescription);
 
         return inputData;
     }

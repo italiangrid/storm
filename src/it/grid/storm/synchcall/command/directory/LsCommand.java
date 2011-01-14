@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.synchcall.command.directory;
 
 import it.grid.storm.authz.AuthzDecision;
@@ -5,9 +22,11 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -55,9 +74,12 @@ import it.grid.storm.synchcall.data.directory.LSOutputData;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
+import it.grid.storm.checksum.ChecksumAlgorithm;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -89,7 +111,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         LSOutputData outputData = new LSOutputData();
         LSInputData inputData = (LSInputData) data;
-        TReturnStatus globalStatus = null;
+        TReturnStatus globalStatus = TReturnStatus.getInitialValue();
         @SuppressWarnings("unused")
         TRequestToken requestToken = null; // Not used (now LS is synchronous).
 
@@ -100,7 +122,7 @@ public class LsCommand extends DirectoryCommand implements Command {
          * Validate LSInputData. The check is done at this level to separate internal StoRM logic from xmlrpc specific
          * operation.
          */
-        if ((inputData == null) || ((inputData != null) && (inputData.getSurlArray() == null))) {
+        if (inputData == null || inputData.getSurlArray() == null || inputData.getSurlArray().size() == 0) {
             log.debug("srmLs: Input parameters for srmLs request NOT found!");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
@@ -497,8 +519,28 @@ public class LsCommand extends DirectoryCommand implements Command {
                 if (numberOfIterations.intValue() >= offset) {
                     // Retrieve information of the directory from the underlying file system
                     populateDetailFromFS(stori, currentElementDetail);
-                    if (fullDetailedList) {
-                        fullDetail(stori, guser, currentElementDetail);
+                    if (fullDetailedList)
+                    {
+                        try
+                        {
+                            fullDetail(stori, guser, currentElementDetail);
+                        }
+                        catch (FSException e)
+                        {
+                            log.error("srmLs: unable to get full details on stori " + stori.getAbsolutePath() + " . FSException : " + e.getMessage());
+                            errorCount++;
+                            //Set the file level request status to FAILURE
+                            try
+                            {
+                                currentElementDetail.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
+                                "Unable to get full details"));
+                            }
+                            catch (InvalidTReturnStatusAttributeException ex1)
+                            {
+                                log.error("srmLs: Error creating returnStatus " + ex1
+                                        + " NOTE: this is impossible!");
+                            }
+                        }
                     }
                     // In Any case set SURL value into TMetaDataPathDetail
                     currentElementDetail.setStFN(stori.getStFN());
@@ -549,8 +591,28 @@ public class LsCommand extends DirectoryCommand implements Command {
                 // Retrieve information on file from underlying file system
                 if (numberOfIterations.intValue() >= offset) {
                     populateDetailFromFS(stori, currentElementDetail);
-                    if (fullDetailedList) {
-                        fullDetail(stori, guser, currentElementDetail);
+                    if (fullDetailedList)
+                    {
+                        try
+                        {
+                            fullDetail(stori, guser, currentElementDetail);
+                        }
+                        catch (FSException e)
+                        {
+                            log.error("srmLs: unable to get full details on stori " + stori.getAbsolutePath() + " . FSException : " + e.getMessage());
+                            errorCount++;
+                            //Set the file level request status to FAILURE
+                            try
+                            {
+                                currentElementDetail.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
+                                "Unable to get full details"));
+                            }
+                            catch (InvalidTReturnStatusAttributeException ex1)
+                            {
+                                log.error("srmLs: Error creating returnStatus " + ex1
+                                        + " NOTE: this is impossible");
+                            }
+                        }
                     }
 
                     // In Any case set SURL value into TMetaDataPathDetail
@@ -694,7 +756,7 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @param guser GridUserInterface
      * @param elementDetail TMetaDataPathDetail
      */
-    private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail) {
+    private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail) throws FSException {
         LocalFile localElement = element.getLocalFile();
         
         /** Retrieve permissions information (used in both file or directory cases) */
@@ -796,10 +858,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
             elementDetail.setTRetentionPolicyInfo(retentionPolicyInfo);
 
-
+            //declare here to use again for checksumHasToBeRetrieved
+            boolean isFileOnDisk = false;
             if (isTapeEnabled) {
                 // fileLocality
-                boolean isFileOnDisk = localElement.isOnDisk();
+                isFileOnDisk = localElement.isOnDisk();
                 boolean isFileOnTape = localElement.isOnTape();
 
                 if (isFileOnTape && isFileOnDisk) {
@@ -826,30 +889,100 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
 
             // checksum
-            if (checksumHasToBeRetrieved(localElement, isTapeEnabled)) {
-
-                String checksum = localElement.getChecksum();
-
-                if (checksum != null) {
-                    TCheckSumValue checkSumValue = new TCheckSumValue(checksum);
-                    TCheckSumType checkSumType = new TCheckSumType(localElement.getChecksumAlgorithm());
-                    elementDetail.setCheckSumType(checkSumType);
+            Map<String, String> checksums = retrieveChecksum(localElement, isTapeEnabled, isFileOnDisk);
+            if (!(checksums.isEmpty())) {
+                String cksmAlg = checksums.keySet().iterator().next();
+                String cksmValue = checksums.get(cksmAlg);
+                TCheckSumValue checkSumValue = new TCheckSumValue(cksmValue);
+                try {
+                    ChecksumAlgorithm chkType = ChecksumAlgorithm.getChecksumAlgorithm(cksmAlg);
+                    TCheckSumType checkSumType = new TCheckSumType(chkType.toString());
+                    elementDetail.setCheckSumType(checkSumType); 
                     elementDetail.setCheckSumValue(checkSumValue);
-                } else {
-                    // Checksum is not available
-                    // so StoRM doesn't set the attributes checkSumType and checkSumValue
-                    log.warn("Checksum value is not available for file :'" + localElement.getAbsolutePath() + "'");
-                }
+                    
+                } catch (IllegalArgumentException iae) {
+                    log.warn("Checksum algorithm '"+cksmAlg+"' is unknown!");
+                } catch (NullPointerException npe) {
+                    log.warn("Checksum algorithm is empty or null!");
+                }                
             }
+            
             // Retrieve information on directory from PERSISTENCE
             populateFileDetailsFromPersistence(element, elementDetail);
         }
     }
+    
 
-    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled) {
+    private Map<String, String> retrieveChecksum(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
+        HashMap<String, String> checksums = new HashMap<String, String>();
+        if (localFile.hasChecksum()) {
+            checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), localFile.getDefaultChecksum());
+        }
+        else { // Checksum computed with default algorithm is not present.
+            if (Configuration.getInstance().getChecksumEnabled()) {
+                // Checksum is enabled.
+                if (tapeEnabled) {
+                    if (fileOnDisk) {
+                        // Only one checksum computation is admitted
+                        if (doNotComputeMoreChecksums) {
+                            log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath()
+                                    + "' because only one checksum per request will be computed.");
+                        }
+                        else {
+                            doNotComputeMoreChecksums = true;
+                            log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
+                            // Ask for checksum value, but only one time per request.
+                            String checksum = localFile.getDefaultChecksum();
+                            checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), checksum);
+                        }
+                    }
+                    else {
+                        // File is on tape
+                        log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath() + "' because it is on tape");
+                    }
+                }
+                else {
+                    // Tape not enabled
+                    // Only one checksum computation is admitted
+                    if (doNotComputeMoreChecksums) {
+                        log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath()
+                                + "' because only one checksum per request will be computed.");
+                    }
+                    else {
+                        doNotComputeMoreChecksums = true;
+                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
+                        String checksum = localFile.getDefaultChecksum();
+                        checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), checksum);
+                    }
+                }
+            }
+            else { // Checksum is disabled
+                // Check if there are other checksum values already computed
+                // Check if there is some other Checksum type
+                Map<String, String> cksms = localFile.getChecksums();
+                if (cksms.isEmpty()) {
+                    // Checksum is not available
+                    // so StoRM doesn't set the attributes checkSumType and checkSumValue
+                    log.warn("Checksum value is not available for file :'" + localFile.getAbsolutePath() + "'");
+                }
+                else {
+                    // Return the first checksum found
+                    String cksmAlg = cksms.keySet().iterator().next();
+                    String cksmValue = cksms.values().iterator().next();
+                    checksums.put(cksmAlg, cksmValue);
+                }
+            }
+
+        }
+        return checksums;
+    }
+     
+
+    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
 
         boolean retrieveChecksum;
 
+        // Check if checksum with default algorithm is already in place
         if (localFile.hasChecksum()) {
 
             // Computation of checksum is not needed
@@ -861,7 +994,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             if (Configuration.getInstance().getChecksumEnabled()) {
 
                 if (tapeEnabled) {
-                    if (localFile.isOnDisk()) {
+                    if (fileOnDisk) {
                         // Only one checksum computation is admitted
                         if (doNotComputeMoreChecksums) {
                             retrieveChecksum = false;

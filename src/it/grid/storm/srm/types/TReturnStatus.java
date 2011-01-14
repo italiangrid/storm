@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 /**
  * This class represents the TReturnStatus value in SRM request.
  * It is composed by a TStatusCode and an explanetion String
@@ -11,7 +28,6 @@ package it.grid.storm.srm.types;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 public class TReturnStatus implements Serializable
@@ -19,8 +35,8 @@ public class TReturnStatus implements Serializable
     private TStatusCode  statusCode   = null;          //TStatusCode.SRM_CUSTOM_STATUS;??
     private String       explanation;
 
-    public static String PNAME_RETURNSTATUS = "returnStatus";
-    public static String PNAME_STATUS       = "status";
+    public static final String PNAME_RETURNSTATUS = "returnStatus";
+    public static final String PNAME_STATUS       = "status";
 
     /**
      * Default constructor that makes a TReturnStatus with SRM_CUSTOM_STATUS, and
@@ -31,6 +47,17 @@ public class TReturnStatus implements Serializable
         this.explanation = "undefined";
     }
 
+    
+    public static TReturnStatus getInitialValue() {
+    	TReturnStatus result = null;
+    	try {
+    		result = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS, "Initial status..");
+		} catch (InvalidTReturnStatusAttributeException e) {
+           //Never Happen!!
+		}
+		return result;
+    }
+    
     /**
      * Can be Explanation String a null value?
      */
@@ -41,16 +68,6 @@ public class TReturnStatus implements Serializable
         this.explanation = explanation;
     }
 
-    /**
-     * Method used to set the TStatusCode: an InvalidTReturnStatusAttributeException
-     * is thrown if the supplied statusCode is null.
-     */
-    public void setStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException
-    {
-        if (statusCode == null)
-            throw new InvalidTReturnStatusAttributeException(statusCode, explanation);
-        this.statusCode = statusCode;
-    }
 
     /**
      * Returns the status code

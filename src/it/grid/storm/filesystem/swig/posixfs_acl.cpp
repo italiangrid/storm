@@ -1,18 +1,27 @@
 /**
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/**
  * @file    posixfs_acl.cpp
  * @author  Riccardo Murri <riccardo.murri@ictp.it>
  *
  * Implementation of the @c posixfs_acl class.
  */
-/*
- * $Id: posixfs_acl.cpp,v 1.28 2007/04/13 11:28:24 aforti Exp $
- *
- * Copyright (c) 2005, 2006 Riccardo Murri <riccardo.murri@ictp.it>
- * for the EGRID/INFN joint project StoRM.
- *
- * You may copy, modify and distribute this file under the same terms
- * as StoRM itself.
- */
+
 
 
 /** CVS Id. */

@@ -1,4 +1,21 @@
 /*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*
  * You may copy, distribute and modify this file under the terms of
  * the INFN GRID licence.
  * For a copy of the licence please visit
@@ -39,77 +56,69 @@ public class GridUserManager {
     static Configuration config = Configuration.getInstance();
     static GridUserFactory userFactory = null;
 
-    static {
+    static
+    {
         log.debug("Inizializating Grid User Director...");
         userFactory = initializeFactory();
     }
 
-    private GridUserManager() {
+    private GridUserManager()
+    {
         super();
     }
 
-
-    private static GridUserFactory initializeFactory() {
-        GridUserFactory factory = GridUserFactory.getInstance();
-        return factory;
+    private static GridUserFactory initializeFactory()
+    {
+        return GridUserFactory.getInstance();
     }
 
-
-    public static String getMapperClassName() {
-        String className = null;
-        className = config.getGridUserMapperClassname();
-        //className = "it.grid.storm.griduser.LcmapsMapper";
-        return className;
+    public static String getMapperClassName()
+    {
+        return config.getGridUserMapperClassname();
     }
 
     /**
      * PUBLIC and STATIC methods
      */
 
-    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, FQAN[] fqans) {
-        GridUserInterface result = null;
-        result = userFactory.createGridUser(dn, fqans, proxy);
-        return result;
+    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, FQAN[] fqans)
+    {
+        return userFactory.createGridUser(dn, fqans, proxy);
     }
 
-    public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans) {
-        GridUserInterface result = null;
-        result = userFactory.createGridUser(dn, fqans);
-        return result;
+    public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans)
+    {
+        return userFactory.createGridUser(dn, fqans);
     }
 
-    public static GridUserInterface makeGridUser(String dn) {
-        GridUserInterface result = null;
-        result = userFactory.createGridUser(dn);
-        return result;
+    public static GridUserInterface makeGridUser(String dn)
+    {
+        return userFactory.createGridUser(dn);
     }
 
-    public static GridUserInterface makeGridUser(String dn, String proxy) {
-        GridUserInterface result = null;
-        result = userFactory.createGridUser(dn, proxy);
-        return result;
+    public static GridUserInterface makeGridUser(String dn, String proxy)
+    {
+        return userFactory.createGridUser(dn, proxy);
     }
 
-    public static GridUserInterface makeStoRMGridUser() {
+    public static GridUserInterface makeStoRMGridUser()
+    {
         GridUserInterface result = null;
         String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it";
         result = userFactory.createGridUser(dn);
         return result;
     }
 
-    public static GridUserInterface makeSAGridUser() {
+    public static GridUserInterface makeSAGridUser()
+    {
         GridUserInterface result = null;
         String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm";
         result = userFactory.createGridUser(dn);
         return result;
     }
 
-
-    public static GridUserInterface decode(Map inputParam) {
-        GridUserInterface result = null;
-        result = userFactory.decode(inputParam);
-        return result;
-
+    public static GridUserInterface decode(Map inputParam)
+    {
+        return userFactory.decode(inputParam);
     }
-
 }

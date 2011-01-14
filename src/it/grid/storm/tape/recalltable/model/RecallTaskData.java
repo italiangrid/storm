@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 /**
  * 
  */
@@ -162,7 +179,7 @@ public class RecallTaskData {
         if (user instanceof VomsGridUser) {
             VomsGridUser vu = (VomsGridUser) user;
             fqans = new ArrayList<FQAN>(vu.getFQANsList());
-            fqansString = vu.getFQANsString();
+            fqansString = vu.getFQANsStringList().toArray(new String[0]);
             voName = vu.getVO().getValue();
         } else {
             voName = RecallTaskData.UNSPECIFIED_VO;
@@ -459,14 +476,17 @@ public class RecallTaskData {
      * 
      * @return
      */
-    private String getFqansTextFormat() {
+    private String getFqansTextFormat()
+    {
         String result = "";
         int fqansNum = (fqansString != null ? fqansString.length : 0);
         result += RecallTaskBuilder.fqansPrefix;
         result += RecallTaskBuilder.fqansArrayStart;
-        for (int i = 0; i < fqansNum; i++) {
+        for (int i = 0; i < fqansNum; i++)
+        {
             result += fqansString[i];
-            if (i < (fqansNum - 1)) {
+            if (i < (fqansNum - 1))
+            {
                 result += RecallTaskBuilder.fqanSep;
             }
         }

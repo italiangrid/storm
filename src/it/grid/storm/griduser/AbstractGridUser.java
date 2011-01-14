@@ -1,4 +1,21 @@
 /*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*
  * You may copy, distribute and modify this file under the terms of
  * the INFN GRID licence.
  * For a copy of the licence please visit
@@ -39,11 +56,18 @@ public abstract class AbstractGridUser implements GridUserInterface {
     protected MapperInterface userMapperClass = null;
     protected LocalUser localUser = null;
 
-
-    protected AbstractGridUser(MapperInterface mapperClass) {
+    protected AbstractGridUser(MapperInterface mapperClass, String distinguishedName)
+    {
+        if (mapperClass == null || distinguishedName == null)
+        {
+            log.error("Provided null parameter: mapperClass=\'" + mapperClass + "\' distinguishedName=\'"
+                    + distinguishedName + "\'");
+            throw new IllegalArgumentException("Provided null parameter: mapperClass=\'" + mapperClass
+                    + "\' distinguishedName=\'" + distinguishedName + "\'");
+        }
         this.userMapperClass = mapperClass;
+        this.setDistinguishedName(distinguishedName);
     }
-
 
     /**
      * used by the GridUserFactory to set User Mapper Instance.
@@ -51,17 +75,60 @@ public abstract class AbstractGridUser implements GridUserInterface {
      *
      * @param mapper MapperInterface
      */
-    void setUserMapper(MapperInterface mapperClass) {
+    void setUserMapper(MapperInterface mapperClass)
+    {
+        if (mapperClass == null)
+        {
+            throw new IllegalArgumentException("Provided null MapperInterface!");
+        }
         this.userMapperClass = mapperClass;
     }
 
+    /**
+     * used by the GridUserFactory to set Distinguished Name.
+     * This method has package visibility.
+     *
+     * @param dnString String
+     */
+    void setDistinguishedName(String dnString)
+    {
+        if (dnString == null)
+        {
+            throw new IllegalArgumentException("Provided null DistinguishedName!");
+        }
+        this.subjectDN = new DistinguishedName(dnString);
+    }
+    
+    /**
+     * Get GridUser Distinguish Name.
+     *
+     * @return String
+     */
+    public String getDn()
+    {
+        String dn = this.subjectDN.getDN();
+        return dn;
+    }
+
+    /**
+     * Get GridUser Domain Name.
+     * Used for metadada purpose.
+     *
+     * @return DistinguishedName
+     */
+    public DistinguishedName getDistinguishedName()
+    {
+        return subjectDN;
+    }
+    
     /**
      * used by the GridUserFactory to set Proxy String.
      * This method has package visibility.
      *
      * @param proxy String
      */
-    void setProxyString(String proxy) {
+    void setProxyString(String proxy)
+    {
         this.proxyString = proxy;
     }
 
@@ -72,21 +139,10 @@ public abstract class AbstractGridUser implements GridUserInterface {
      *
      * @return String
      */
-    public String getProxyString() {
+    public String getProxyString()
+    {
         return this.proxyString;
     }
-
-    /**
-     * used by the GridUserFactory to set Distinguished Name.
-     * This method has package visibility.
-     *
-     * @param dnString String
-     */
-    void setDistinguishedName(String dnString) {
-        this.subjectDN = new DistinguishedName(dnString);
-    }
-
-
 
     /**
      * Get Proxy certificate if there.
@@ -95,32 +151,10 @@ public abstract class AbstractGridUser implements GridUserInterface {
      *
      * @return String
      */
-    public String getUserCredentials() {
+    public String getUserCredentials()
+    {
         return this.proxyString;
     }
-
-
-    /**
-     * Get GridUser Distinguish Name.
-     *
-     * @return String
-     */
-    public String getDn() {
-        String dn = this.subjectDN.getDN();
-        return dn;
-    }
-
-
-    /**
-     * Get GridUser Domain Name.
-     * Used for metadada purpose.
-     *
-     * @return DistinguishedName
-     */
-    public DistinguishedName getDistinguishedName() {
-        return subjectDN;
-    }
-
 
     /**
      * Return the local user on wich the GridUser is mapped.
@@ -130,8 +164,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
      * @return LocalUser
      */
     public abstract LocalUser getLocalUser() throws CannotMapUserException;
-
-
 
     /**
      * Return the main Virtual Organization of the User.

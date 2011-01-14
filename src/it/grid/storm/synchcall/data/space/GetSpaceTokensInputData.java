@@ -1,7 +1,25 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.synchcall.data.space;
 
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
-import it.grid.storm.synchcall.data.InputData;
+import it.grid.storm.synchcall.data.AbstractInputData;
 
 /**
  * This class is part of the StoRM project.
@@ -17,14 +35,14 @@ import it.grid.storm.synchcall.data.InputData;
  */
 
 
-public class GetSpaceTokensInputData implements InputData
+public class GetSpaceTokensInputData extends AbstractInputData
 {
-    private VomsGridUser auth = null;
+    private GridUserInterface auth = null;
     private String spaceTokenAlias = null;
 
     public GetSpaceTokensInputData() {}
 
-    public GetSpaceTokensInputData(VomsGridUser auth, String spaceTokenAlias)
+    public GetSpaceTokensInputData(GridUserInterface auth, String spaceTokenAlias)
     {
         this.auth = auth;
         this.spaceTokenAlias = spaceTokenAlias;
@@ -35,7 +53,7 @@ public class GetSpaceTokensInputData implements InputData
      * Returns VomsGridUser specified in SRM request.
      */
 
-    public VomsGridUser getUser()
+    public GridUserInterface getUser()
     {
         return auth;
     }

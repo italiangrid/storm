@@ -1,3 +1,20 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 /**
  * This class represents the SpaceReservationOutputData associated with the SRM request, that is
  * it contains info about: UserID, spaceType, SizeDesired, SizeGuaranteed,ecc.
@@ -15,6 +32,7 @@ import java.io.Serializable;
 
 import it.grid.storm.srm.types.*;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceOutputDataAttributesException;
 
 public class ReserveSpaceOutputData implements Serializable, OutputData {
 
@@ -65,9 +83,7 @@ public class ReserveSpaceOutputData implements Serializable, OutputData {
         return spaceGuaranteed;
     }
 
-    /**
-     * Method that tells whether the SRM requst is suspended.
-     */
+
     public TSizeInBytes getTotalSize() {
         return spaceTotal;
     }
@@ -95,17 +111,7 @@ public class ReserveSpaceOutputData implements Serializable, OutputData {
         this.retentionPolicyInfo = retentionPolicyInfo;
     }
 
-    /**
-     * Method that tells whether the SRM requst is suspended.
-     */
-    public void setStatus(TStatusCode statusCode)
-            throws InvalidTReturnStatusAttributeException {
-        this.status.setStatus(statusCode);
-    }
 
-    /**
-     * Method that tells whether the SRM requst is suspended.
-     */
     public void setStatus(TReturnStatus status) {
         this.status = status;
     }

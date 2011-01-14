@@ -417,7 +417,7 @@ private void retrieveProtocol(String fsName, int nrProt) {
         log.debug("MAP Rule StFN-ROOTs = "+v);
     }
 
-    private void testResolveStoRIBySURL(){
+/*    private void testResolveStoRIBySURL(){
         SURL surl = new SURL("testbed006.cnaf.infn.it", 1234, "cnaf/test/pippo.txt", null);
         TSURL tsurl = null;
         try {
@@ -439,7 +439,7 @@ private void retrieveProtocol(String fsName, int nrProt) {
         catch (NamespaceException ex1) {
             ex1.printStackTrace();
         }
-    }
+    }*/
 
 
     private void testRetrieveVFSbyAbsolutePath(){

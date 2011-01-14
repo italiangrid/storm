@@ -9,6 +9,7 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class GridUserTest {
         Configuration config = Configuration.getInstance();
         String configurationPATH = System.getProperty("user.dir") + File.separator + "etc";
         String configurationFileName = configurationPATH + File.separator + "storm_test.properties";
-        config.setConfigReader(new ConfigReader(configurationFileName, refreshInSeconds));
+        //config.setConfigReader(new ConfigReader(configurationFileName, refreshInSeconds));
 
         log.debug(" CONFIGURATION = "+configurationFileName);
         log.debug("UserMapper Classname = "+config.getGridUserMapperClassname());
@@ -43,7 +44,7 @@ public class GridUserTest {
     }
 
 
-    public Map createInputParam(String userDN, Object[] userFQANS) {
+    public Map<?,?> createInputParam(String userDN, Object[] userFQANS) {
         Map result = new HashMap();
         result.put("userDN",userDN);
         result.put("userFQANS",userFQANS);
@@ -69,26 +70,30 @@ public class GridUserTest {
         Object[] userFQANS = test.createUserFQANS(fqans);
         log.debug("userDN    = " + userDN);
         log.debug("userFQANS = " + userFQANS);
-        Map inputParam = test.createInputParam(userDN,userFQANS);
-        log.debug("InputParam = "+inputParam);
+        Map<?,?> inputParam = test.createInputParam(userDN,userFQANS);
+        log.debug("InputParam = "+ParameterDisplayHelper.display(inputParam));
         GridUserInterface requestor = GridUserManager.decode(inputParam);
         String gridUserMapperClassname = GridUserManager.getMapperClassName();
         log.debug("Grid USer Mapper Classname = "+gridUserMapperClassname);
         log.debug("Requestor = "+requestor);
-        if (requestor instanceof VomsGridUser) {
+        if (requestor instanceof VomsGridUser)
+        {
             log.debug("VOMS Grid User found");
             VomsGridUser vUser = (VomsGridUser) requestor;
-            log.debug("FQAN in String[] = "+vUser.getFQANsString().length);
-            for (int i = 0; i < vUser.getFQANsString().length; i++) {
-                log.debug("FQAN in String["+i+"] = "+vUser.getFQANsString()[i]);
+            log.debug("FQAN in String[] = " + vUser.getFQANsStringList().size());
+            for (int i = 0; i < vUser.getFQANsStringList().size(); i++)
+            {
+                log.debug("FQAN in String[" + i + "] = " + vUser.getFQANsStringList().get(i));
             }
-            log.debug("FQAN in List<String> = "+vUser.getFQANsList());
-            try {
+            log.debug("FQAN in List<String> = " + vUser.getFQANsStringList());
+            try
+            {
                 LocalUser lu = vUser.getLocalUser();
-                log.debug("Local User = "+lu);
+                log.debug("Local User = " + lu);
             }
-            catch (CannotMapUserException ex) {
-                log.error("ERR:"+ex);
+            catch (CannotMapUserException ex)
+            {
+                log.error("ERR:" + ex);
             }
         }
     }

@@ -56,7 +56,7 @@
   	</appender>
 
 	<logger name="it.grid.storm" additivity="false">
-		<level value="DEBUG" />
+		<level value="INFO" />
 		<appender-ref ref="PROCESS" />
 	</logger>
 

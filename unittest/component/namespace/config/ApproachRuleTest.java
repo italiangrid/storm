@@ -121,7 +121,7 @@ public class ApproachRuleTest {
     /*******************************************************************
      * testResolveStoRIBySURL
      */
-    private void testResolveStoRIBySURL(){
+/*    private void testResolveStoRIBySURL(){
         SURL surl = new SURL("testbed006.cnaf.infn.it", 1234, "cnaf/test/pippo.txt", null);
 
         FakeGridUser fakeGU = null;
@@ -136,19 +136,19 @@ public class ApproachRuleTest {
         }
         StFN stfn = tsurl.sfn().stfn();
         log.debug(stfn.toString());
-        /**
+        *//**
       String other = "/afcqdaf/dfaf/rfd";
       log.debug(other);
       int d = NamespaceUtil.computeDistanceFromPath(stfn.toString(),other);
       log.debug("Distance = "+d);
-         **/
+         **//*
         try {
             NamespaceDirector.getNamespace().resolveStoRIbySURL(tsurl, fakeGU);
         }
         catch (NamespaceException ex1) {
             ex1.printStackTrace();
         }
-    }
+    }*/
 
 
     /*******************************************************************

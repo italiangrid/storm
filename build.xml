@@ -66,6 +66,7 @@ to get a list of the available targets for this buildfile.
 
 
 	<!-- load all properties from ``build.properties`` file -->
+	<!-- TODO this is not used (is in todolist in file doc/to-dos-1.5.0.txt)--> 
 	<property file="build.properties"/>
 
 	<!-- load environment vars under the env.* property hierarchy -->
@@ -82,7 +83,7 @@ to get a list of the available targets for this buildfile.
 	<property name="jvm.arch" value="${sun.arch.data.model}"/>
 
 	<!-- variable used by make -->
-	<property name="swig.location" value="/usr/local" />
+	<property name="swig.location" value="/usr" />
 	<property name="glite.location" value="/opt/glite" />
 	<property name="lcmaps.location" value="${glite.location}" />
 	<property name="lcmaps-without-gsi.location" value="${glite.location}" />
@@ -129,7 +130,7 @@ to get a list of the available targets for this buildfile.
 	<property name="version.info.dir" value="${src.java.dir}/it/grid/storm"/>
 	<property name="version.info.file" value="VERSION"/>
 	<available file="${version.info.dir}/${version.info.file}" property="version.file.exists"/>
-	
+
 	<!-- these names are chosen to match configure/Makefile common usage -->
 	<property name="prefix" location="${basedir}/install"/>
 	<property name="install.dir" location="${basedir}/install"/>
@@ -409,15 +410,15 @@ test.junit.dir
 		<include name="jna.jar"/>
 		<!-- DMAPI -->
 
-		<include name="rest-recalltable/asm-3.1.jar"/>
+		<include name="asm-3.1.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/grizzly-webserver-1.9.15b.jar"/>
+		<include name="grizzly-webserver-1.9.15b.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jersey-core-1.1.0-ea.jar"/>
+		<include name="jersey-core-1.1.0-ea.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jersey-server-1.1.0-ea.jar"/>
+		<include name="jersey-server-1.1.0-ea.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
-		<include name="rest-recalltable/jsr311-api-1.1.jar"/>
+		<include name="jsr311-api-1.1.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
 
 		<include name="json-20080701.jar"/>
@@ -457,10 +458,6 @@ test.junit.dir
 		<include name="storm_mysql_tbl.sql" />
 		<include name="storm_mysql_grant.sql" />
 		<include name="README" />
-		<include name="storm_mysql_update_from_1.4.0_to_1.5.0.sql" />
-		<include name="storm_mysql_update_from_1.5.0_to_1.5.3.sql" />
-		<include name="storm_mysql_update_from_1.5.3_to_1.5.4.sql" />
-		<include name="storm_mysql_update_from_1.5.0_to_1.5.4.sql" />
 	</fileset>
 
 	<!-- start/stop scripts -->
@@ -487,25 +484,21 @@ test.junit.dir
 
 
 	<!-- documentation and licenses -->
-	<fileset id="src.docs.proper"
-	dir="${src.doc.dir}">
-		<include name="INSTALL.txt"/>
-	</fileset>
-	<fileset id="src.docs.authors"
-        dir="${src.dir}"
-        includes="AUTHORS"/>
 	<fileset id="src.docs.credits"
         dir="${src.dir}"
         includes="CREDITS"/>
+	<fileset id="src.docs.release-note"
+			dir="${src.dir}"
+			includes="RELEASE-NOTES.txt"/>
 	<fileset id="src.docs.license"
-	dir="${src.dir}"
-	includes="LICENSE.txt"/>
+		dir="${src.dir}"
+		includes="LICENSE.txt"/>
 	<fileset id="src.docs.3rdparty.licenses"
-	dir="${src.dir}">
+		dir="${src.dir}">
 		<include name="ACKNOWLEDGEMENTS.txt"/>
 		<include name="lib/*.LICENSE"/>
 	</fileset>
-
+	
 	<!-- junit ant task support -->
 	<path id="test.classpath">
 		<pathelement location="${src.jars.dir}/junit.jar"/>
@@ -543,10 +536,6 @@ test.junit.dir
 			<arg value="BUILDDIR=${build.obj.dir}"/>
 			<arg value="gpfs_base_location=${gpfs-base.location}" />
 			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
 			<arg value="arch=${arch}"/>
 		</exec>
 	</target>
@@ -554,8 +543,9 @@ test.junit.dir
 
 	<!-- make SWIG Java interfaces -->
 	<target name="swig"
-	depends="swig.griduser,swig.filesystem"/>
+		depends="swig.filesystem"/>
 
+	<!-- deprecated target (now use JNA instead of SWIG) -->
 	<target name="swig.griduser" depends="init">
 
 		<condition property="arch" value="64" else="">
@@ -650,6 +640,7 @@ test.junit.dir
 
 
 
+	<!-- deprecated target (now use JNA instead of SWIG) -->
 	<!--
 	  ###  Make LCMAPS Wrapping with SWIG ### 
 	-->
@@ -679,7 +670,7 @@ test.junit.dir
 
 	<target name="libs"
 	description="compile native code libs"
-	depends="libs.griduser,libs.filesystem, clibs-jna"/>
+	depends="libs.filesystem, clibs-jna"/>
 
 	<target name="precompile"  depends="init,swig"/>
 
@@ -737,28 +728,27 @@ test.junit.dir
 		<exec dir="${basedir}" executable="${build.scripts.dir}/svnRevision.sh" failonerror="false" logerror="true" outputproperty="svn.revision.number" />
 		<echo message="## SVN Revision Number ${svn.revision.number}" />
 		<echo file="${version.info.dir}/${version.info.file}" append="false">#Build Information File - It contains information about the version number defined at building time !!!${line.separator}#DO NOT CHANGE !!!.${line.separator}</echo>
-		<echo file="${version.info.dir}/${version.info.file}" append="true">VERSION=${version}${line.separator}</echo> 
+		<echo file="${version.info.dir}/${version.info.file}" append="true">VERSION=${version}${line.separator}</echo>
 		<echo file="${version.info.dir}/${version.info.file}" append="true">RELEASE=${age}${line.separator}</echo>
 		<echo file="${version.info.dir}/${version.info.file}" append="true">svn.revision.number=${svn.revision.number}${line.separator}</echo>
 		<echo file="${version.info.dir}/${version.info.file}" append="true">build.date=${TODAY}${line.separator}</echo>
 		<echo file="${version.info.dir}/${version.info.file}" append="true">build.num=N/A [ ant.version = ${ant.version} ]${line.separator}</echo>
-    </target>
-	
+	</target>
+
 	<target name="make-version-info" unless="version.file.exists">
 		<input message="Insert VERSION (major.minor.update): " addproperty="version" />
 		<input message="Insert AGE : " addproperty="age" />
-		<echo message="version.file.exists = ${version.file.exists}"/>
 		<antcall target="version-info-automatic"/>
 		<antcall target="create-default-Version-Info"/>
 	</target>
-	
+
 	<target name="storm-backend.jar" 
 		description="Make the ${dist.jar} file out of compiled Java classes" 
 		depends="javac, make-version-info">
 		<tstamp>
 			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
 		</tstamp>
-        <antcall target="make-version-info"/>
+		<antcall target="make-version-info"/>
 		<jar destfile="${build.dir}/${dist.jar}">
 			<manifest>
 				<attribute name="Implementation-Title" value="StoRM-Backend-Server"/>
@@ -911,9 +901,8 @@ test.junit.dir
 		<copy
 		  todir="${docdir}"
 		  overwrite="true">
-			<fileset refid="src.docs.authors" />
 			<fileset refid="src.docs.credits" />
-			<fileset refid="src.docs.proper" />
+			<fileset refid="src.docs.release-note" />
 			<fileset refid="src.docs.license" />
 		</copy>
 		<copy todir="${confdb}" overwrite="true">
@@ -974,24 +963,39 @@ test.junit.dir
 		<tar destfile="${dist.tarfile}" compression="none" longfile="gnu">
 			<!-- main source tree -->
 			<tarfileset dir="${src.dir}" username="storm" group="storm" mode="0644" prefix="storm-backend-server/">
-				<!-- all relevant directories -->
-				<exclude name="build/**" />
+				<!-- NOTE: each time a file/folder is specified in an "include" tag automatically all other files/folders in the same 
+										   directory are excluded -->
+				<include name="LICENSE.txt" />
+				<include name="CREDITS" />
+				<include name="RELEASE-NOTES.txt" />
+				<include name="ACKNOWLEDGEMENTS.txt" />
+				<include name="build.xml" />
+				<include name="etc/" />
 				<exclude name="etc/storm_test.properties" />
 				<exclude name="etc/adminserver-config.xml" />
 				<exclude name="etc/adminserver-log.properties" />
-				<include name="LICENSE.txt" />
-				<include name="AUTHORS" />
-				<include name="CREDITS" />
-				<include name="ACKNOWLEDGEMENTS.txt" />
-				<include name="build.xml" />
+				<exclude name="etc/namespace_*.xml" />
+				<exclude name="etc/namespace-*.xml" />
+				<exclude name="etc/namespace-1.3.16.xsd" />
+				<exclude name="etc/namespace-1.3.18.xsd" />
+				<exclude name="etc/namespace-1.3.19.xsd" />
+				<exclude name="etc/namespace-1.4.0.xsd" />
+				<exclude name="etc/storm-properties.all-keys.txt" />
+				<exclude name="etc/sa1-lhcb.authz" />
+				<exclude name="etc/db/storm_mysql_update_from_1.0.0_to_1.3.2000.sql" />
+				<exclude name="etc/db/storm_mysql_update_from_1.3.2000_to_1.4.0.sql" />
+				<exclude name="etc/db/storm_mysql_update_from_1.4.0_to_1.5.0.sql" />
+				<exclude name="etc/db/storm_mysql_update_from_1.5.0_to_1.5.4.sql" />
+				<exclude name="etc/db/storm_mysql_update_from_1.5.3_to_1.5.4.sql" />
+				<exclude name="etc/db/recall-table.txt" />
 				<include name="config/" />
-				<include name="doc/" />
-				<include name="etc/" />
+				<include name="bin/" />
+				<include name="doc/header-copyright.txt" />
+				<include name="doc/storm-code-formatter-1.6.xml" />
 				<include name="lib/" />
 				<include name="rpm/" />
-				<!-- <include name="sbin/"/> -->
-				<!-- program sources -->
 				<include name="src/" />
+				<exclude name="src/it/grid/storm/VERSION" />
 				<exclude name="src/**/*.o" />
 				<exclude name="src/**/*.so" />
 				<include name="test/" />
@@ -1010,7 +1014,7 @@ test.junit.dir
 	<target name="build-rpm" depends="build">
 
 		<antcall target="make-version-info"/>
-		
+
 		<echo message="RPM script dir : '${rpm.scripts.dir}'" />
 		<echo message="RPM script builder : '${rpm.scripts.rpm-builder}'" />
 		<echo message="RPM spec file : '${rpm.spec.file}'" />
@@ -1019,7 +1023,7 @@ test.junit.dir
 		<echo message="RPM util jar : '${rpm.util.jar}'" />
 		<echo message="RPM version : '${version}'" />
 		<echo message="RPM age : '${age}'" />
-		
+
 		<delete file="${rpm.source.tar.file}"/>
 		<delete file="${rpm.source.tar.file}.gz"/>
 		<antcall target="tar.src"/>

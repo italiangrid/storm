@@ -66,7 +66,7 @@ function update_storm_db () {
     set_transition_script_filename
     while [ "$TRANSITION_SCRIPT_FILENAME" != script_not_found ]
     do
-        if [ -e $TRANSITION_SCRIPT_FILENAME ]; then
+        if [ -e "$TRANSITION_SCRIPT_FILENAME" ]; then
              mysql -u root $MYSQL_PWD_OPTION < $TRANSITION_SCRIPT_FILENAME
         fi
         get_stormdb_version

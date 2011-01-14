@@ -1,4 +1,21 @@
 /*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*
  * You may copy, distribute and modify this file under the terms of
  * the INFN GRID licence.
  * For a copy of the licence please visit
@@ -33,29 +50,31 @@ import org.slf4j.Logger;
 public class GridUserFactory {
 
     private static final Logger log = GridUserManager.log;
-    private String defaultMapperClassName = GridUserManager.getMapperClassName();
     private MapperInterface defaultMapperClass = null;
-
 
     private static GridUserFactory instance = null;
 
-    protected static Logger getLogger() {
+    protected static Logger getLogger()
+    {
         return log;
     }
 
-    private GridUserFactory() throws GridUserException {
-        super();
-        instance = this;
-        defaultMapperClass= makeMapperClass(defaultMapperClassName);
+    private GridUserFactory() throws GridUserException
+    {
+        defaultMapperClass = makeMapperClass(GridUserManager.getMapperClassName());
     }
 
-    static GridUserFactory getInstance() {
-        if (instance == null) {
-            try {
+    static GridUserFactory getInstance()
+    {
+        if (instance == null)
+        {
+            try
+            {
                 instance = new GridUserFactory();
             }
-            catch (GridUserException ex) {
-                log.error("Unable to load GridUser Mapper Driver!",ex);
+            catch (GridUserException ex)
+            {
+                log.error("Unable to load GridUser Mapper Driver!", ex);
             }
         }
         return instance;
@@ -67,9 +86,9 @@ public class GridUserFactory {
      *
      * @param mapper MapperInterface
      */
-    void setUserMapper(String mapperClassName) throws GridUserException {
-        this.defaultMapperClassName = mapperClassName;
-        defaultMapperClass= makeMapperClass(defaultMapperClassName);
+    void setUserMapper(String mapperClassName) throws GridUserException
+    {
+        defaultMapperClass = makeMapperClass(mapperClassName);
     }
 
     /**
@@ -77,11 +96,10 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    public GridUserInterface createGridUser(String distinguishName) {
-        GridUser user = null;
-
-        user = new GridUser(defaultMapperClass, distinguishName);
-        log.debug("Created new Grid User (NO VOMS) : "+user);
+    GridUserInterface createGridUser(String distinguishName)
+    {
+        GridUser user = new GridUser(defaultMapperClass, distinguishName);
+        log.debug("Created new Grid User (NO VOMS) : " + user);
         return user;
     }
 
@@ -92,11 +110,8 @@ public class GridUserFactory {
      * @return GridUserInterface
      */
     GridUserInterface createGridUser(String distinguishName, String proxyString) {
-        GridUser user = null;
-
-        user = new GridUser(defaultMapperClass, distinguishName);
+        GridUser user = new GridUser(defaultMapperClass, distinguishName);
         user.setProxyString(proxyString);
-
         log.debug("Created new Grid User (NO VOMS con PROXY) : "+user);
         return user;
     }
@@ -108,8 +123,7 @@ public class GridUserFactory {
      * @return GridUserInterface
      */
     GridUserInterface createGridUser(String distinguishName, FQAN[] fqans) {
-        GridUserInterface user = null;
-        user = new VomsGridUser(defaultMapperClass, distinguishName, null, fqans );
+        GridUserInterface user = new VomsGridUser(defaultMapperClass, distinguishName, null, fqans );
         log.debug("Created new Grid User (VOMS USER) : "+user);
         return user;
     }
@@ -121,8 +135,7 @@ public class GridUserFactory {
      * @return GridUserInterface
      */
     GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString) {
-        GridUserInterface user = null;
-        user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans );
+        GridUserInterface user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans );
         log.debug("Created new Grid User (VOMS USER) : "+user);
         return user;
     }
@@ -144,7 +157,7 @@ public class GridUserFactory {
         return user;
     }
 
-    public GridUserInterface decode(Map inputParam)
+    GridUserInterface decode(Map inputParam)
     {
         // Member name for VomsGridUser Creation
         String member_DN = new String("userDN");
@@ -206,18 +219,27 @@ public class GridUserFactory {
 
         MapperInterface mapperInstance = null;
 
-        if (mapperClass == null) {
+        if (mapperClass == null)
+        {
             throw new CannotMapUserException("Cannot build Mapper Driver instance without a valid Mapper Driver Class!");
         }
 
-        try {
+        if (!MapperInterface.class.isAssignableFrom(mapperClass))
+        {
+            throw new CannotMapUserException("Unable to instantiate the Mapper Driver. "
+                    + "The provided MapperClass does not implements MapperInterface");
+        }
+        try
+        {
             mapperInstance = (MapperInterface) mapperClass.newInstance();
         }
-        catch (IllegalAccessException ex) {
+        catch (IllegalAccessException ex)
+        {
             log.error("Unable to instantiate the Mapper Driver. Illegal Access.", ex);
             throw new CannotMapUserException("Unable to instantiate the Mapper Driver. Illegal Access.", ex);
         }
-        catch (InstantiationException ex) {
+        catch (InstantiationException ex)
+        {
             log.error("Unable to instantiate the Mapper Driver. Generic problem..", ex);
             throw new CannotMapUserException("Unable to instantiate the Mapper Driver. Generic problem..", ex);
         }
@@ -255,31 +277,26 @@ public class GridUserFactory {
         }
 
         //Check if the Class implements the right interface
-        Class[] intfs = mapperClass.getInterfaces();
-        boolean found = false;
-        for (Class intf : intfs) {
-            if (intf.equals(MapperInterface.class)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        if (!MapperInterface.class.isAssignableFrom(mapperClass))
+        {
             throw new GridUserException("Cannot load Mapper Driver instance without a valid Mapper Driver Class Name!");
         }
-        try {
+        try
+        {
             mapper = (MapperInterface) mapperClass.newInstance();
         }
-        catch (IllegalAccessException ex) {
-            log.error("makeMapperClass EXCEPTION. "+ex);
-            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"+mapperClassName+"'");
+        catch (IllegalAccessException ex)
+        {
+            log.error("makeMapperClass EXCEPTION. " + ex);
+            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"
+                    + mapperClassName + "'");
         }
-        catch (InstantiationException ex) {
-            log.error("makeMapperClass EXCEPTION. "+ex);
-            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"+mapperClassName+"'");
+        catch (InstantiationException ex)
+        {
+            log.error("makeMapperClass EXCEPTION. " + ex);
+            throw new GridUserException("Cannot create a new Instance of the Mapper Driver named :'"
+                    + mapperClassName + "'");
         }
-        return mapper; //mapperClass;
+        return mapper;
     }
-
-
-
 }

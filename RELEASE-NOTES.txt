@@ -1,24 +1,158 @@
-                        
-              StoRM Backend 1.5 RELEASE NOTES
+                       
+              StoRM Backend 1.6.0 RELEASE NOTES
 
-This release includes new features as well as bug fixes and enhancements.  
+This release includes new features as well as bug fixes and enhancements.
 
-Changes since StoRM-Backend 1.4.x include:
+Changes from StoRM-Backend 1.5.6 to StoRM-Backend 1.6.0
+=======================================================
 
 New features:
-o  <name> :  <description>  
-o  <name> :  <description>  
+------------
+
+   * checksum value on srmLs :  if for a file is stored a checksum value the value is returned 
+     in a srmLs even if the algorithm with this checksum has been calculated is not the one  
+     setted as default in StoRM Backend configuration file   
 
 Fixed Bugs:
-o  <name> :  <description>  
-o  <name> :  <description>  
+----------
 
-Changes:
-o  <name> :  <description>  
-o  <name> :  <description>  
+   * log file containing object id printing :  substituted erroneous log object id printing 
+     with meaningful object's string representation
+   
+Other changes:
+-------------
+
+   * default swig location :  changed default swig location in build.xml from /usr/local to /usr
+   
+   * recall-table rest service related jars relocation :  moved recall-table rest service 
+     related jars asm-3.1.jar, grizzly-webserver-1.9.15b.jar, jersey-core-1.1.0-ea.jar, 
+     jersey-server-1.1.0-ea.jar and jsr311-api-1.1.jar from folder lib/recall-table to folder lib/
+   	
+   * lcmaps wrapping native libraries : removed generated libraries liblcmaps_interface.so and 
+     libstorm_lcmaps.so
+     
+   * non sources file distribution :  removed non sources file from file storm-backend-server.tar.gz  
+     generated during rpm build
+     
+   * default checksum algorithm :  changed default checksum algorithm from CRC32 to Adler32 
+   
+   * request expiration time proposed value :  changed the value of the property expired.request.time  
+     in storm configuration file storm.properties.template located in etc/ from 3600 to 86400
+     
+   * JNA library version :  changed JNA library version from 3.2.4 to 3.2.7
+   
+   
+Changes from StoRM-Backend 1.5.5 to StoRM-Backend 1.5.6
+=======================================================
+
+New features:
+------------
+   
+
+Fixed Bugs:
+----------
+
+   * UnsatisfyedLinkException on libstorm-cutil.so library : solved a bug on libstorm_cutil.so library loading
+	
+   * Erroneous total space information per vo published on DBII : added a check on in on etc/namespace.xml to grant uniqueness of field space-token-description
+   
+Other changes:
+-------------
+
+   * GPFS filesystem identification : added a mechanism to check if filesystem is GPFS
+   
+   * module location at statrtup : added checking of modules path existence in the start up script
+   
+   
+Changes from StoRM-Backend 1.5.4 to StoRM-Backend 1.5.5
+=======================================================
+
+New features:
+------------
  
+Fixed Bugs:
+----------
+   
+   * Database connection pool grows costantly : fixed a bug on storm_be_ISAM.recall_table database connection management
+   
+   * Some user requests fail because a ClassCastException  : fixed a bug in management of request coming from users providing certificates without VOMS extension
+   
+Other changes:
+-------------
+   
+   * Garbage collection of tape recall request awareness : avoided exception raising in case of status check of a tape recall request expired and cleaned by garbage collector 
+   
+   
+Changes from StoRM-Backend 1.5.3 to StoRM-Backend 1.5.4
+=======================================================
+
+New features:
+------------
+ 
+   * srm-ping update :  added informations about StoRM Backend host platform in SRMping 
+     command output
+
+Fixed Bugs:
+----------
+
+   * StoRM does not accept surl containing '..' :  fixed bug related to GGUS ticket 58808 
+     on SURL validation  
+     
+   * File transfer problem INFN-T1 to RAL :  -fixed bug related to GGUS ticket 58901 on 
+     SURL default port usage  
+     
+   * storm.properties.version format :  fixed bug on storm.properties.version StoRM Backend 
+     configuration file handling
+     
+   * Unix group id size :  fixed bug on Unix group id parsing
+   
+   * SRM TExtraInfo Array building :  fixed a bug in SRM TExtraInfo type object construction
+     when assembled in an array
+   
+Other changes:
+-------------
+
+   * SURL validation default ports :  added new StoRM Backend configuration property 
+     storm.service.SURL.default-ports related to SURLs validation
+       
+   * database update script correction :  upgrade db schema script (from version 1.5.3 
+     to 1.5.4)
+     
+   * database upgrade :  created db update scripts from version 1.5.0 to version 1.5.4 
+     and from version 1.5.3 to version 1.5.4
+     
+   * multiple platform library loading :  added platform dependent library paths construction
+   
+   * multiple platform native library loading :  changed native code libraries location to 
+     the platform dependent location $STORM_HOME/lib/native/platform-name
+     
+   * startup script :  updated StoRM backend startup script storm-backend
+   
+   * logrotate cron :  moved StoRM backend logrotate cron script storm-backend.cron from 
+     directory $STORM_HOME/etc/logrotate.d $STORM_HOME/etc/crond.d
+     
+   * yaim cron link :  instructed yaim to create a link from /etc/cron.d/storm-backend.cron 
+     to $STORM_HOME/etc/cron.d/storm-backend.cron
+     
+   * single rpm :  collapsed StoRM Backend rpms to a single rpm named 
+     storm-backend-server-version.distribution.architecture.rpm
+     
+   * StoRM Backend jar relocation :  moved StoRM Backend jar to folder $STORM_HOME
+   
+   * StoRM Backend required jars relocation :  moved StoRM Backend java libraries to 
+     folder $STORM_HOME/lib
+     
+   * MySQL 5.* compliance :  added COMPLIANCE of StoRM Backend with MySQL version 5.1, 5.4, 5.5
+   
+   * rpm generation info logging :  added information in StoRM Backend log file about sources 
+     svn revision number and build date of StoRM Backend rpm
+   
+   * configuration property names logging :  added configuration file property name-value 
+     couple printing in StoRM Backend log file at StoRM Backend startup
+   
+   * warning cleaning :  removed misleading Warnings from StoRM log file
+   
+       
 For complete information on StoRM-Backend, see the StoRM website:
 
 http://storm.forge.cnaf.infn.it
-
-
