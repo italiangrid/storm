@@ -19,7 +19,6 @@ package it.grid.storm.griduser;
 
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import it.grid.storm.common.types.VO;
@@ -52,24 +51,36 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
 
     VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy)
     {
-        super(mapper, distinguishedName);
+        this(mapper, distinguishedName);
         this.setProxyString(proxy);
     }
 
     VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy, FQAN[] fqansArray)
     {
-        super(mapper, distinguishedName);
-        this.setProxyString(proxy);
-        this.fqans = Arrays.asList(fqansArray);
+        this(mapper, distinguishedName, proxy);
+        this.setFqans(fqansArray);
     }
 
     // --- SETTER Methods --- //
 
-    void setFqans(List<FQAN> fqans)
+    private void setFqans(FQAN[] fqans)
     {
-        this.fqans = new ArrayList<FQAN>(fqans);
+        this.fqans.clear();
+        this.fqansString.clear();
         for (FQAN fqan : fqans)
         {
+            this.fqans.add(fqan);
+            this.fqansString.add(fqan.toString());
+        }
+    }
+    
+    void setFqans(List<FQAN> fqans)
+    {
+        this.fqans.clear();
+        this.fqansString.clear();
+        for (FQAN fqan : fqans)
+        {
+            this.fqans.add(fqan);
             this.fqansString.add(fqan.toString());
         }
     }
@@ -110,7 +121,6 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
         if ((this.fqans != null) && (this.fqans.size() > 0))
         {
             return true;
-
         }
         else
         {

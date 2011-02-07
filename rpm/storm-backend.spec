@@ -224,8 +224,12 @@ rm -rf $RPM_BUILD_ROOT
 ### Package ChangeLog
 
 %changelog
-* Tue Nov 15 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+* Fri Feb 4 2011 <Michele Dibenedetto> <michele.dibenedetto@cnaf.infn.it>
 - version %{version}-%{release}
+- fixed a bug on VomsGridUser initialization causing wrong lcmaps mappings
+
+* Tue Nov 15 2010 <Elisabetta Ronchieri> <elisabetta.ronchieri@cnaf.infn.it>
+- version 1.6.0-6
 - fixed a bug on concurrent local groups handling
 - added a mechanism to check if filesystem is GPFS
 - solved a bug on libstorm_cutil.so library loading

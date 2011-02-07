@@ -66,7 +66,7 @@ to get a list of the available targets for this buildfile.
 
 
 	<!-- load all properties from ``build.properties`` file -->
-	<!-- TODO this is not used (is in todolist in file doc/to-dos-1.5.0.txt)--> 
+	<!-- TODO this is not used (is in todolist in file doc/to-dos-1.5.0.txt)-->
 	<property file="build.properties"/>
 
 	<!-- load environment vars under the env.* property hierarchy -->
@@ -125,7 +125,9 @@ to get a list of the available targets for this buildfile.
 	<property name="build.debug" value="false"/>
 	<property name="build.gpfs" value="true"/>
 	<property name="build.lustre" value="false"/>
+	<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
 	<antversion property="ant.version_1.8" atleast="1.8"/>
+	-->
 	<property name="build.scripts.dir" value="${basedir}/bin"/>
 	<property name="version.info.dir" value="${src.java.dir}/it/grid/storm"/>
 	<property name="version.info.file" value="VERSION"/>
@@ -498,7 +500,7 @@ test.junit.dir
 		<include name="ACKNOWLEDGEMENTS.txt"/>
 		<include name="lib/*.LICENSE"/>
 	</fileset>
-	
+
 	<!-- junit ant task support -->
 	<path id="test.classpath">
 		<pathelement location="${src.jars.dir}/junit.jar"/>
@@ -701,6 +703,7 @@ test.junit.dir
 		description="Compile *all* StoRM BE code"
 		depends="libs,javac,storm-backend.jar"/>
 
+	<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
 	<target name="version-info-automatic" if="ant.version_1.8">
 		<echo message="NOTE: File VERSION doesn't exist. A VERSION file will be created using ANT 1.8 features"/>
 		<echo message="## ANT version is :'${ant.version}'"/>
@@ -716,6 +719,7 @@ test.junit.dir
 			<entry key="build.num" type="int" default="0000" operation="+" pattern="0000" />
 		</propertyfile>
 	</target>
+	-->
 
 	<target name="create-default-Version-Info" unless="version.file.exists" 
 		description="Create the default Version Info, if needed.">
@@ -738,13 +742,25 @@ test.junit.dir
 	<target name="make-version-info" unless="version.file.exists">
 		<input message="Insert VERSION (major.minor.update): " addproperty="version" />
 		<input message="Insert AGE : " addproperty="age" />
+		<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
 		<antcall target="version-info-automatic"/>
+		-->
 		<antcall target="create-default-Version-Info"/>
 	</target>
 
-	<target name="storm-backend.jar" 
-		description="Make the ${dist.jar} file out of compiled Java classes" 
-		depends="javac, make-version-info">
+	<!-- Task useful to retrieve the version of ANT without the task antversion -->
+	<target name="ant-minor-version">
+		<exec executable="awk" inputstring="${ant.version}" outputproperty="ant.version.number">
+			<arg line="'{print $4}'" />
+		</exec>
+		<echo message="v-num=${ant.version.number}" />
+		<exec executable="awk" inputstring="${ant.version.number}" outputproperty="version.minor">
+			<arg line="'{split($0,a,&quot;.&quot;); print a[2];}'" />
+		</exec>
+		<echo message="minor=${version.minor}" />
+	</target>
+
+	<target name="storm-backend.jar" description="Make the ${dist.jar} file out of compiled Java classes" depends="javac, make-version-info">
 		<tstamp>
 			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
 		</tstamp>
