@@ -29,14 +29,12 @@
 package it.grid.storm.persistence.model;
 
 import it.grid.storm.common.types.VO;
-import it.grid.storm.config.DefaultValue;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VomsGridUser;
+import it.grid.storm.space.StorageSpaceData;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +43,14 @@ import org.slf4j.LoggerFactory;
  * @author Riccardo Zappi - riccardo.zappi AT cnaf.infn.it
  * @version $Id: StorageSpaceTO.java,v 1.13 2006/06/29 14:46:25 aforti Exp $
  */
-public class StorageSpaceTO implements Serializable, Comparable {
+public class StorageSpaceTO implements Serializable, Comparable<StorageSpaceTO> {
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -87317982494792808L;
+
+	/**
      *Logger.
      */
     private static final Logger log = LoggerFactory.getLogger(StorageSpaceTO.class);
@@ -57,23 +60,25 @@ public class StorageSpaceTO implements Serializable, Comparable {
     // ----- FIELDS ----//
     private String ownerName = null;
     private String voName = null;
-    private String spaceType = null;
+    private String spaceType = null;  //`SPACE_TYPE` VARCHAR(10) NOT NULL default ''
     private String alias = null;
     private String spaceToken = null;
-    private String spaceFile = null;
+    private String spaceFile = null;  //`SPACE_FILE` VARCHAR(145) NOT NULL default ''
+    private long lifetime = -1L;      //`LIFETIME` bigint(20) default NULL
+    private String storageInfo = null;//`STORAGE_INFO` VARCHAR(255) default NULL    
     private Date created = new Date();
-    private long totalSize = -1L;
-    private long guaranteedSize = -1L;
-    private long unusedSize = -1L;
-    private long lifetime = -1L;
-    private String storageInfo = null;
-
-    // ----- ASSOCIATIONS ----//
-    // Relationship with StorageFile [one-to-many (not-null = false)]
-    private final Set storageFiles = new HashSet();
-    // Component splitted into ownerName e voName
-    private GridUserInterface owner = null; // The maker
-
+    
+    private long totalSize = 0L;      //`TOTAL_SIZE` bigint(20) NOT NULL default '0'
+    private long guaranteedSize = 0L; //`GUAR_SIZE` bigint(20) NOT NULL default '0' 
+    private long freeSize = 0L;       //`FREE_SIZE` bigint(20) default NULL 
+    
+    private long usedSize = -1L;      //`USED_SIZE` bigint(20) NOT NULL default '-1'
+    private long busySize = -1L;     //`BUSY_SIZE` bigint(20) NOT NULL default '-1'
+    private long unavailableSize = -1L; //`UNAVAILABLE_SIZE` bigint(20) NOT NULL default '-1'
+    private long availableSize = -1L; //`AVAILABLE_SIZE` bigint(20) NOT NULL default '-1'
+    private long reservedSize = -1L; //`RESERVED_SIZE` bigint(20) NOT NULL default '-1'
+    private Date updateTime = null;
+    
     // ********************** Constructor methods ********************** //
 
     /**
@@ -84,131 +89,73 @@ public class StorageSpaceTO implements Serializable, Comparable {
     }
 
     /**
-     * Minimal constructor.
-     * 
-     * @param maker User
-     */
-    public StorageSpaceTO(GridUserInterface maker) {
-        // Always exists a creator!
-        owner = maker;
-        ownerName = maker.getDn();
-        voName = getVOName(maker);
-
-        // No Alias (or Token description) is setted
-        alias = null;
-
-        /**
-         * The below parameters are filled with DEFAULT values for named user.
-         */
-        spaceType = DefaultValue.getNamedVO_SpaceType(voName);;
-        guaranteedSize = DefaultValue.getNamedVO_GuaranteedSpaceSize(voName);
-        totalSize = DefaultValue.getNamedVO_TotalSpaceSize(voName);
-        lifetime = DefaultValue.getNamedVO_SpaceLifeTime(voName);
-
-        /**
-         * The below parameters are filled with GENERATED values for named user.
-         */
-        // StoRM generates a space_token
-        spaceToken = (new GUID()).toString();
-        spaceFile = "sf-" + spaceToken;
-    }
-
-    public StorageSpaceTO(GridUserInterface maker, String alias) {
-        // Always exists a creator!
-        owner = maker;
-        ownerName = maker.getDn();
-        voName = getVOName(maker);
-        // No Alias (or Token description) is setted
-        this.alias = alias;
-
-        /**
-         * The below parameters are filled with DEFAULT values for named user.
-         */
-        spaceType = DefaultValue.getNamedVO_SpaceType(voName);;
-        guaranteedSize = DefaultValue.getNamedVO_GuaranteedSpaceSize(voName);
-        totalSize = DefaultValue.getNamedVO_TotalSpaceSize(voName);
-        lifetime = DefaultValue.getNamedVO_SpaceLifeTime(voName);
-
-        /**
-         * The below parameters are filled with GENERATED values for named user.
-         */
-        // StoRM generates a space_token
-        spaceToken = (new GUID()).toString();
-        spaceFile = "/" + "sf-" + spaceToken;
-
-    }
-
-    /**
-     * Full constructor.
-     * 
-     * @param maker User
-     * @param alias String
-     * @param spaceToken String
-     * @param path PathName
-     */
-    public StorageSpaceTO(GridUserInterface maker, String alias, String spaceToken, String spaceFile) {
-        owner = maker;
-        this.alias = alias;
-        this.spaceToken = spaceToken;
-        this.spaceFile = spaceFile;
-    }
-
-    public StorageSpaceTO(GridUserInterface maker, String type, String alias, String spaceToken,
-            String spaceFile, long guaranteedSize, long totalSize) {
-        owner = maker;
-        ownerName = maker.getDn();
-        voName = getVOName(maker);
-        spaceType = type;
-        this.alias = alias;
-        this.spaceToken = spaceToken;
-        this.spaceFile = spaceFile;
-        this.guaranteedSize = guaranteedSize;
-        this.totalSize = totalSize;
-    }
-
-    /**
-     * Constructor from Domain Object
+     * Constructor from Domain Object StorageSpaceData
      * 
      * @param spaceData SpaceData
      */
-    public StorageSpaceTO(it.grid.storm.space.StorageSpaceData spaceData) {
-        if (spaceData != null) {
+    public StorageSpaceTO(StorageSpaceData spaceData)
+    {
+        if (spaceData != null)
+        {
             StorageSpaceTO.log.debug("Building StorageSpaceTO with " + spaceData);
-            owner = spaceData.getUser();
-            if (spaceData.getUser() != null) {
-                ownerName = (spaceData.getUser()).getDn();
-                voName = getVOName(spaceData.getUser());
+            if (spaceData.getOwner() != null)
+            {
+                ownerName = spaceData.getOwner().getDn();
+                voName = getVOName(spaceData.getOwner());
             }
-            if (spaceData.getSpaceType() != null) {
+            if (spaceData.getSpaceType() != null)
+            {
                 spaceType = (spaceData.getSpaceType()).getValue();
             }
-
             alias = spaceData.getSpaceTokenAlias();
-
-            if (spaceData.getSpaceToken() != null) {
+            if (spaceData.getSpaceToken() != null)
+            {
                 spaceToken = spaceData.getSpaceToken().getValue();
             }
-
             spaceFile = spaceData.getSpaceFileNameString();
-
-            if (spaceData.getGuaranteedSize() != null) {
-                guaranteedSize = spaceData.getGuaranteedSize().value();
+            if (spaceData.getTotalSpaceSize() != null)
+            {
+                totalSize = spaceData.getTotalSpaceSize().value();
             }
-
-            if (spaceData.getDesiredSize() != null) {
-                totalSize = spaceData.getDesiredSize().value();
+            if (spaceData.getTotalGuaranteedSize() != null)
+            {
+                guaranteedSize = spaceData.getTotalGuaranteedSize().value();
             }
-
-            if (spaceData.getUnusedSizes() != null) {
-                unusedSize = spaceData.getUnusedSizes().value();
+            if (spaceData.getAvailableSpaceSize() != null)
+            {
+                availableSize = spaceData.getAvailableSpaceSize().value();
             }
-
-            if (spaceData.getLifeTime() != null) {
+            if (spaceData.getUsedSpaceSize() != null)
+            {
+                usedSize = spaceData.getUsedSpaceSize().value();
+            }
+            if (spaceData.getFreeSpaceSize() != null)
+            {
+                freeSize = spaceData.getFreeSpaceSize().value();
+            }
+            if (spaceData.getUnavailableSpaceSize() != null)
+            {
+                unavailableSize = spaceData.getUnavailableSpaceSize().value();
+            }
+            if (spaceData.getBusySpaceSize() != null)
+            {
+                busySize = spaceData.getBusySpaceSize().value();
+            }
+            if (spaceData.getReservedSpaceSize() != null)
+            {
+                reservedSize = spaceData.getReservedSpaceSize().value();
+            }
+            if (spaceData.getLifeTime() != null)
+            {
                 lifetime = spaceData.getLifeTime().value();
             }
-
-            if (spaceData.getDate() != null) {
-                created = spaceData.getDate();
+            if (spaceData.getStorageInfo() != null)
+            {
+                storageInfo = spaceData.getStorageInfo().getValue();
+            }
+            if (spaceData.getCreationDate() != null)
+            {
+                created = spaceData.getCreationDate();
             }
         }
     }
@@ -230,18 +177,6 @@ public class StorageSpaceTO implements Serializable, Comparable {
 
     public void setStorageSpaceId(Long id) {
         storageSpaceId = id;
-    }
-
-    // -------------------------------------
-
-    public GridUserInterface getOwner() {
-        return owner;
-    }
-
-    public void setOwner(GridUserInterface owner) {
-        this.owner = owner;
-        // this.ownerName = owner.getDn();
-        // this.voName = (owner.getMainVo()).getValue();
     }
 
     // -------------------------------------
@@ -294,15 +229,6 @@ public class StorageSpaceTO implements Serializable, Comparable {
         this.totalSize = totalSize;
     }
 
-    // -------------------------------------
-
-    public long getUnusedSize() {
-        return unusedSize;
-    }
-
-    public void setUnusedSize(long unusedSize) {
-        this.unusedSize = unusedSize;
-    }
 
     // -------------------------------------
 
@@ -364,9 +290,111 @@ public class StorageSpaceTO implements Serializable, Comparable {
         created = date;
     }
 
+ // -------------------------------------
+    
+    /**
+	 * @return the freeSize
+	 */
+	public final long getFreeSize() {
+		return freeSize;
+	}
+
+	/**
+	 * @param freeSize the freeSize to set
+	 */
+	public final void setFreeSize(long freeSize) {
+		this.freeSize = freeSize;
+	}
+
+	/**
+	 * @return the usedSize
+	 */
+	public final long getUsedSize() {
+		return usedSize;
+	}
+
+	/**
+	 * @param usedSize the usedSize to set
+	 */
+	public final void setUsedSize(long usedSize) {
+		this.usedSize = usedSize;
+	}
+
+	/**
+	 * @return the busySize
+	 */
+	public final long getBusySize() {
+		return busySize;
+	}
+
+	/**
+	 * @param busySize the busySize to set
+	 */
+	public final void setBusySize(long busySize) {
+		this.busySize = busySize;
+	}
+
+	/**
+	 * @return the unavailableSize
+	 */
+	public final long getUnavailableSize() {
+		return unavailableSize;
+	}
+
+	/**
+	 * @param unavailableSize the unavailableSize to set
+	 */
+	public final void setUnavailableSize(long unavailableSize) {
+		this.unavailableSize = unavailableSize;
+	}
+
+	
+	/**
+	 * @return the reservedSize
+	 */
+	public final long getReservedSize() {
+		return reservedSize;
+	}
+
+	/**
+	 * @param reservedSize the reservedSize to set
+	 */
+	public final void setReservedSize(long reservedSize) {
+		this.reservedSize = reservedSize;
+	}
+
+	/**
+	 * @param availableSize the availableSize to set
+	 */
+	public void setAvailableSize(long availableSize) {
+		this.availableSize = availableSize;
+	}
+
+	/**
+	 * @return the availableSize
+	 */
+	public long getAvailableSize() {
+		return availableSize;
+	}
+	
+	
     // ********************** Common Methods ********************** //
 
-    @Override
+	/**
+	 * @param updateTime the updateTime to set
+	 */
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	/**
+	 * @return the updateTime
+	 */
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+	
+	@Override
     public boolean equals(Object o) {
     	if (o==null) {
     	  return false;		
@@ -392,7 +420,6 @@ public class StorageSpaceTO implements Serializable, Comparable {
     @Override
     public int hashCode() {
         int hash = 17;
-        hash = 37 * hash + spaceFile.hashCode();
         hash = 37 * hash + spaceToken.hashCode();
         return hash;
 
@@ -422,23 +449,42 @@ public class StorageSpaceTO implements Serializable, Comparable {
         sb.append("\n");
         sb.append(" GUARANTEED SIZE  = " + guaranteedSize);
         sb.append("\n");
-        sb.append(" FREE SIZE        = " + unusedSize);
+        sb.append(" FREE SIZE        = " + freeSize);
+        sb.append("\n");
+        sb.append(" USED SIZE        = " + usedSize);
+        sb.append("\n");
+        sb.append(" BUSY SIZE        = " + busySize);
+        sb.append("\n");
+        sb.append(" AVAILABLE      = " + availableSize);
+        sb.append("\n");
+        sb.append(" RESERVED      = " + reservedSize);
+        sb.append("\n");
+        sb.append("   UNAVAILABLE    = " + unavailableSize);
         sb.append("\n");
         sb.append(" LIFETIME (sec)   = " + lifetime);
         sb.append("\n");
         sb.append(" STORAGE INFO     = " + storageInfo);
+        sb.append("\n");
+        sb.append(" UPDATE TIME     = " + updateTime);
         sb.append("\n");
         sb.append(" NR STOR_FILES    = <UNDEF for NOW..>");
         sb.append("\n");
         return sb.toString();
     }
 
-    public int compareTo(Object o) {
+
+	@Override
+	public int compareTo(StorageSpaceTO o) {
         if (o instanceof StorageSpaceTO) {
             return getCreated().compareTo(((StorageSpaceTO) o).getCreated());
         }
         return 0;
-    }
+	}
+
+
+
+
+
 
     // ********************** Business Methods ********************** //
 }

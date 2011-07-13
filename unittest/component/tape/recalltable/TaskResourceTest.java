@@ -3,7 +3,7 @@
  */
 package component.tape.recalltable;
 
-import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
+import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -99,27 +99,27 @@ public class TaskResourceTest {
          * String fnExample = "/gpfs_tsm/dtem/test1.txt"; String dnExample ="/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it"
          * ; String dnExample2 =
          * "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Alberto Forti";
-         * String fqanExample1 = RecallTaskBuilder.fqanPrefix +
-         * "/infngrid/prod"; String fqanExample2 = RecallTaskBuilder.fqanPrefix
+         * String fqanExample1 = TapeRecallTaskBuilder.fqanPrefix +
+         * "/infngrid/prod"; String fqanExample2 = TapeRecallTaskBuilder.fqanPrefix
          * + "/infngrid/test"; String voNameExample1 = "ciccioVO";
          **/
 
-        String fnElement = RecallTaskBuilder.fnPrefix + filename;
-        String dnElement = RecallTaskBuilder.dnPrefix + dn;
-        String fqansElement = RecallTaskBuilder.fqansPrefix + RecallTaskBuilder.fqansArrayStart;
+        String fnElement = TapeRecallBuilder.fnPrefix + filename;
+        String dnElement = TapeRecallBuilder.dnPrefix + dn;
+        String fqansElement = TapeRecallBuilder.fqansPrefix + TapeRecallBuilder.fqansArrayStart;
         for (int i = 0; i < fqans.length; i++) {
-            fqansElement += RecallTaskBuilder.fqanPrefix + fqans[i];
+            fqansElement += TapeRecallBuilder.fqanPrefix + fqans[i];
             if (i < fqans.length - 1) {
-                fqansElement += RecallTaskBuilder.fqanSep;
+                fqansElement += TapeRecallBuilder.fqanSep;
             }
         }
 
-        fqansElement += RecallTaskBuilder.fqansArrayEnd;
-        String voNameElement = RecallTaskBuilder.voNamePrefix + voName;
+        fqansElement += TapeRecallBuilder.fqansArrayEnd;
+        String voNameElement = TapeRecallBuilder.voNamePrefix + voName;
 
-        String rtdS = RecallTaskBuilder.taskStart + fnElement + RecallTaskBuilder.elementSep + dnElement
-                + RecallTaskBuilder.elementSep + fqansElement + RecallTaskBuilder.elementSep + voNameElement
-                + RecallTaskBuilder.taskEnd;
+        String rtdS = TapeRecallBuilder.taskStart + fnElement + TapeRecallBuilder.elementSep + dnElement
+                + TapeRecallBuilder.elementSep + fqansElement + TapeRecallBuilder.elementSep + voNameElement
+                + TapeRecallBuilder.taskEnd;
         return rtdS;
     }
 

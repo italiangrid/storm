@@ -15,7 +15,7 @@ if [ -z "$STORM_MYSQL_HOSTNAME" ]; then
 fi
 
 if [ -z "$STORM_DBSCRIPT_DIR" ]; then
-    STORM_DBSCRIPT_DIR=/opt/storm/backend/etc/db
+    STORM_DBSCRIPT_DIR=/etc/storm/backend-server/db
 fi
 
 if [ -z "$MYSQL_PASSWORD" ]; then
@@ -32,10 +32,33 @@ function get_stormdb_version () {
     STORMDB_VERSION="$STORMDB_VERSION_MAJOR.$STORMDB_VERSION_MINOR.$STORMDB_VERSION_REVISION"
 }
 
+function get_stormbeISAM_version () {
+    local MYSQL_OPTS="-h $STORM_MYSQL_HOSTNAME -u root ${MYSQL_PWD_OPTION} "
+    local STORMBEISAM_VERSION_MAJOR=`mysql $MYSQL_OPTS -s -e"use storm_be_ISAM;select major from db_version;"`
+    local STORMBEISAM_VERSION_MINOR=`mysql $MYSQL_OPTS -s -e"use storm_be_ISAM;select minor from db_version;"`
+    local STORMBEISAM_VERSION_REVISION=`mysql $MYSQL_OPTS -s -e"use storm_be_ISAM;select revision from db_version;"`
+    STORMBEISAM_VERSION="$STORMBEISAM_VERSION_MAJOR.$STORMBEISAM_VERSION_MINOR.$STORMBEISAM_VERSION_REVISION"
+}
+
 function set_transition_script_filename () {
     if [ -n "$STORMDB_VERSION" ]; then
        
         tmp=`ls $STORM_DBSCRIPT_DIR/storm_mysql_update_from_${STORMDB_VERSION}* 2>&1`  
+       
+        if [ $? -eq 0 ]; then
+            TRANSITION_SCRIPT_FILENAME=$tmp
+        else
+            TRANSITION_SCRIPT_FILENAME=script_not_found # foo value, just a filename that doesn't exist
+        fi
+    else
+        TRANSITION_SCRIPT_FILENAME=script_not_found # foo value, just a filename that doesn't exist
+   fi
+}
+
+function set_stormbeISAM_transition_script_filename () {
+    if [ -n "$STORMBEISAM_VERSION" ]; then
+       
+        tmp=`ls $STORM_DBSCRIPT_DIR/storm_be_ISAM_mysql_update_from_${STORMBEISAM_VERSION}* 2>&1`  
        
         if [ $? -eq 0 ]; then
             TRANSITION_SCRIPT_FILENAME=$tmp
@@ -77,6 +100,21 @@ function update_storm_db () {
     echo "Update done!"
 }
 
+function update_storm_be_ISAM () {
+    get_stormbeISAM_version
+    set_stormbeISAM_transition_script_filename
+    while [ "$TRANSITION_SCRIPT_FILENAME" != script_not_found ]
+    do
+        if [ -e "$TRANSITION_SCRIPT_FILENAME" ]; then
+             mysql -u root $MYSQL_PWD_OPTION < $TRANSITION_SCRIPT_FILENAME
+        fi
+        get_stormbeISAM_version
+        set_stormbeISAM_transition_script_filename
+        # After running the script the DB version should be changed, if not then
+        # there is nothing else to do and the DB is up to date.
+    done
+    echo "Update done!"
+}
 
 ################################## Main #######################################
 # check for the existence of mysql
@@ -102,6 +140,7 @@ if [ "$?" -ne 0 ]; then
     create_new_storm_db
 else
     update_storm_db
+    update_storm_be_ISAM
 fi
 
 exit 0

@@ -22,9 +22,7 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -64,12 +62,10 @@ public class RmCommand implements Command {
     private final Logger log = LoggerFactory.getLogger(RmCommand.class);
     private final String funcName = "srmRm";
     private final NamespaceInterface namespace;
-    private final PtGChunkCatalog getcatalog;
     private final PtPChunkCatalog putcatalog;
 
     public RmCommand() {
         namespace = NamespaceDirector.getNamespace();
-        getcatalog = PtGChunkCatalog.getInstance();
         putcatalog = PtPChunkCatalog.getInstance();
     }
 
@@ -184,7 +180,25 @@ public class RmCommand implements Command {
                     // Creation of StoRI
                     try {
                         stori = namespace.resolveStoRIbySURL(surl, user);
-                    } catch (NamespaceException ex) {
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error("SrmRm: Unable to build StoRI by surl and user " + e);
+                        try
+                        {
+                            returnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build a STORI from surl=" + surl
+                                    + " user=" + user);
+                            log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                    + " [SURL:] failed with [status: " + returnStatus.toString() + "]");
+                        }
+                        catch (InvalidTReturnStatusAttributeException ex1)
+                        {
+                            log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                                    + " [SURL:] failed. Error creating returnStatus " + ex1);
+                        }
+                        failure = true;
+                    }
+                    catch (NamespaceException ex) {
                         log.debug("SrmRm: Unable to build StoRI by PFN " + ex);
                         try {
                             returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
@@ -268,7 +282,6 @@ public class RmCommand implements Command {
                                 log.warn(funcName
                                         + "Not able to build the virtual fs properties for checking Storage Area size enforcement!");
                             }
-
                         } else {
 
                             partialSuccess = true;
@@ -357,7 +370,6 @@ public class RmCommand implements Command {
     private TReturnStatus manageAuthorizedRM(LocalUser lUser, TSURL surl, StoRI stori) {
         TReturnStatus returnStatus = null;
         boolean fileRemoved;
-        boolean failure = false;
         String explanation = "";
         TStatusCode statusCode = TStatusCode.EMPTY;
 
@@ -365,12 +377,10 @@ public class RmCommand implements Command {
 
         if (!(file.exists())) {
             // The file does not exists!
-            failure = true;
             statusCode = TStatusCode.SRM_INVALID_PATH;
             explanation = "File does not exists";
         } else if ((file.isDirectory())) {
             // The file exists but it is a directory!
-            failure = true;
             statusCode = TStatusCode.SRM_INVALID_PATH;
             explanation = "The specified file is a directory. Not removed";
         } else {
@@ -392,7 +402,6 @@ public class RmCommand implements Command {
 
             if (!(fileRemoved)) {
                 // Deletion failed for not enough permission.
-                failure = true;
                 statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
                 explanation = "File not removed, permission denied.";
             } else { // File removed with success from underlying file system
@@ -421,25 +430,25 @@ public class RmCommand implements Command {
     private boolean removeTarget(LocalFile file, LocalUser lUser) {
         boolean result = false;
         // Check Permission
-        FilesystemPermission groupPermission = null;
-        try {
-            groupPermission = file.getGroupPermission(lUser);
-        } catch (CannotMapUserException ex) {
-            /**
-             * @todo : Why this exception?
-             */
-            log.debug("srmRm: WHY THIS? " + ex);
-        }
+//        FilesystemPermission groupPermission = null;
+//        try {
+//            groupPermission = file.getGroupPermission(lUser);
+//        } catch (CannotMapUserException ex) {
+//            /**
+//             * @todo : Why this exception?
+//             */
+//            log.debug("srmRm: WHY THIS? " + ex);
+//        }
 
-        FilesystemPermission userPermission = null;
-        try {
-            userPermission = file.getUserPermission(lUser);
-        } catch (CannotMapUserException ex1) {
-            /**
-             * @todo : Why this exception?
-             */
-            log.debug("srmRm: WHY THIS? " + ex1);
-        }
+//        FilesystemPermission userPermission = null;
+//        try {
+//            userPermission = file.getUserPermission(lUser);
+//        } catch (CannotMapUserException ex1) {
+//            /**
+//             * @todo : Why this exception?
+//             */
+//            log.debug("srmRm: WHY THIS? " + ex1);
+//        }
 
         /**
          * Same situation in Rmdir This check is really needed here? The check can not be done at this level. In Jit no

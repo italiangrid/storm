@@ -35,13 +35,13 @@ public class PerformanceBookKeeper extends BookKeeper {
     private static long THOUSAND = 1000L;
 
     private DelayQueue<LogEvent> timedLogBook = new DelayQueue<LogEvent>();
-    private int lenghtInSeconds = 0;
-    private long lenghtInMSec = 0;
+    private int lengthInSeconds = 0;
+    private long lengthInMSec = 0;
     private long visibleToGlancerInMSec = 0;
 
     public PerformanceBookKeeper(int timeWindowInSecond, int glancerPeriodInSec) {
-        this.lenghtInSeconds = timeWindowInSecond;
-        this.lenghtInMSec = timeWindowInSecond * THOUSAND;
+        this.lengthInSeconds = timeWindowInSecond;
+        this.lengthInMSec = timeWindowInSecond * THOUSAND;
         this.visibleToGlancerInMSec = glancerPeriodInSec * THOUSAND;
     }
 
@@ -61,7 +61,7 @@ public class PerformanceBookKeeper extends BookKeeper {
     }
 
     public int getTimeWindowInSecond() {
-        return this.lenghtInSeconds;
+        return this.lengthInSeconds;
     }
 
     /**

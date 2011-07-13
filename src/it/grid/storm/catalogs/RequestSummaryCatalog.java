@@ -21,13 +21,13 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -89,7 +89,8 @@ public class RequestSummaryCatalog {
             @Override
             public void run() {
                 try {
-                    PersistenceDirector.getDAOFactory().getTapeRecallDAO().purgeCompletedTasks(Configuration.getInstance().getPurgeBatchSize());
+                    TapeRecallCatalog rtCat = new TapeRecallCatalog();
+                    rtCat.purgeCatalog(Configuration.getInstance().getPurgeBatchSize());
                 } catch (DataAccessException e) {
                     log.error("Cannot purge expired entries of tape_recall table.", e);
                 }

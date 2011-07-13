@@ -41,7 +41,7 @@ public abstract class PathAuthzEvaluationAlgorithm {
         pathACL = new ArrayList<PathACE>(acl);
     }
 
-    public int getACLLenght() {
+    public int getACLLength() {
         return pathACL.size();
     }
 

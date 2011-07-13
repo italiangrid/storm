@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
@@ -263,7 +265,25 @@ public class VolatileAndJiTCatalog {
                                                      .getLocalFile();
                 LocalUser auxUser = new LocalUser(jituid, jitgid);
                 FilesystemPermission auxACL = new FilesystemPermission(jitacl);
-                auxFile.revokeUserPermission(auxUser, auxACL);
+                
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                //TODO ACL manager
+                if (auxFile == null)
+                {
+                    log.warn("VolatileAndJiT CATALOG! Unable to setting up the ACL. LocalFile is null!");
+                }
+                else
+                {
+                    try
+                    {
+                        manager.revokeUserPermission(auxFile, auxUser, auxACL);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error("Unable to revoke user permissions on the file. IllegalArgumentException: " + e.getMessage());
+                    }
+                }
+//                auxFile.revokeUserPermission(auxUser, auxACL);
             } catch (Exception e) {
                 // log exceptions
                 log.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but physical ACL " + jitacl

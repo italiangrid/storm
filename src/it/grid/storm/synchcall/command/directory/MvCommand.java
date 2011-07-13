@@ -17,6 +17,8 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -24,8 +26,11 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -149,6 +154,21 @@ public class MvCommand extends DirectoryCommand implements Command {
             try
             {
                 fromStori = namespace.resolveStoRIbySURL(fromSURL, guser);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + e);
+                try
+                {
+                    outputData.setStatus(new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
+                }
+                catch (InvalidTReturnStatusAttributeException e1)
+                {
+                    log.error("srmMv: Request failed. Error creating returnStatus "
+                              + e1);
+                }
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                          + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
+                return outputData;
             }
             catch (NamespaceException ex)
             {
@@ -156,7 +176,7 @@ public class MvCommand extends DirectoryCommand implements Command {
                 returnStatus_INVALID_PATH.setExplanation("Invalid fromSURL specified!");
                 outputData.setStatus(returnStatus_INVALID_PATH);
                 log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                        + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
+                        + "] failed with [status: " + outputData.getStatus() + "]");
                 return outputData;
             }
         }
@@ -178,6 +198,21 @@ public class MvCommand extends DirectoryCommand implements Command {
             try
             {
                 toStori = namespace.resolveStoRIbySURL(toSURL, guser);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]" + e);
+                try
+                {
+                    outputData.setStatus(new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
+                }
+                catch (InvalidTReturnStatusAttributeException e1)
+                {
+                    log.error("srmMv: Request failed. Error creating returnStatus "
+                              + e1);
+                }
+                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                          + "] failed with [status: " + outputData.getStatus() + "]");
+                return outputData;
             }
             catch (NamespaceException ex)
             {
@@ -271,6 +306,21 @@ public class MvCommand extends DirectoryCommand implements Command {
                 {
                     TSURL toSURLFile = TSURL.makeFromStringValidate(toSURLString);
                     toStoriFile = namespace.resolveStoRIbySURL(toSURLFile, guser);
+                } catch(IllegalArgumentException e)
+                {
+                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'", e);
+                    try
+                    {
+                        outputData.setStatus(new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
+                    }
+                    catch (InvalidTReturnStatusAttributeException e1)
+                    {
+                        log.error("srmMv: Request failed. Error creating returnStatus "
+                                  + e1);
+                    }
+                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL="
+                              + toSURL + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
+                    return outputData;
                 }
                 catch (NamespaceException ex1)
                 {
@@ -310,11 +360,21 @@ public class MvCommand extends DirectoryCommand implements Command {
         {
             log.debug("SrmMv: Mv authorized for " + guser + " for Source file = " + fromStori.getPFN()
                     + " to Target file =" + toStori.getPFN());
-            returnStatus = manageAuthorizedMV(fromStori, toFile, hasJiTACL);
+//            returnStatus = manageAuthorizedMV(fromStori, toFile, hasJiTACL);
+            returnStatus = manageAuthorizedMV(fromStori, toFile);
             if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
             {
                 log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] successfully done with [status: " + returnStatus.toString() + "]");
+                try
+                {
+                    setAclForHttps(fromStori, toStori, guser.getLocalUser());
+                }
+                catch (CannotMapUserException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             else
             {
@@ -359,6 +419,102 @@ public class MvCommand extends DirectoryCommand implements Command {
         return outputData;
     }
 
+    private void setAclForHttps(StoRI oldFileStoRI, StoRI newFileStoRI, LocalUser localUser)
+    {
+        LocalFile newLocalFile = newFileStoRI.getLocalFile();
+        LocalFile oldLocalFile = oldFileStoRI.getLocalFile();
+//        FilesystemPermission fp = null;
+//        boolean effective = false;
+//        try
+//        {
+//            fp = newLocalFile.getEffectiveUserPermission(localUser);
+//        }
+//        catch (CannotMapUserException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+        AclManager manager = AclManagerFSAndHTTPS.getInstance();
+        try
+        {
+            manager.moveHttpsPermissions(oldLocalFile, newLocalFile);
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unable to move permissions from the old to the new file. IllegalArgumentException: " + e.getMessage());
+        }
+        if (newFileStoRI.hasJustInTimeACLs()) {
+            // JiT
+            
+            
+            //TODO ACL manager
+            try
+            {
+                manager.grantHttpsUserPermission(newLocalFile,localUser, FilesystemPermission.ReadWrite);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to grant user read and write permission on the new file. IllegalArgumentException: " + e.getMessage());
+            }
+//            localFile.grantUserPermission(localUser, FilesystemPermission.ReadWrite);
+//            if (fp != null)
+//            {
+//                effective = fp.allows(FilesystemPermission.ReadWrite);
+//                if (effective) {
+                    // ACL was correctly set up! Track JiT!
+//                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(),
+//                                                                 localUser,
+//                                                                 FilesystemPermission.Read,
+//                                                                 start,
+//                                                                 chunkData.pinLifetime());
+//                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(),
+//                                                                 localUser,
+//                                                                 FilesystemPermission.Write,
+//                                                                 start,
+//                                                                 chunkData.pinLifetime());
+//                }
+//                else
+//                {
+//                    PtPChunk.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite User-ACL to be set up on"
+//                            + localFile.toString() + "!");
+//                }
+//            }
+//            else
+//            {
+//                PtPChunk.log.error("ERROR in PTP CHUNK! A ReadWrite User-ACL was set on "
+//                        + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
+//                        + " but when subsequently verifying its effectivity, a null ACE was found!");
+//            }
+        }
+        else
+        {
+            // AoT
+            //TODO ACL manager
+            try
+            {
+                manager.grantHttpsGroupPermission(newLocalFile, localUser, FilesystemPermission.ReadWrite);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to grant group read and write permission on the new file. IllegalArgumentException: " + e.getMessage());
+            }
+//            localFile.grantGroupPermission(localUser, FilesystemPermission.ReadWrite);
+//            fp = localFile.getEffectiveGroupPermission(localUser);
+//            if (fp != null) {
+//                effective = fp.allows(FilesystemPermission.ReadWrite);
+//                if (!effective) {
+//                    PtPChunk.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite Group-ACL to be set up on"
+//                            + localFile.toString() + "!");
+//                }
+//            } else {
+//                PtPChunk.log.error("ERROR in PTP CHUNK! ReadWrite Group-ACL was set on "
+//                        + fileStoRI.getAbsolutePath() + " for group " + localUser.toString()
+//                        + " but when subsequently verifying its effectivity, a null ACE was found!");
+//            }
+        }
+        
+    }
+
     /**
      * Split PFN , recursive creation is not supported, as reported at page 16 of Srm v2.1 spec.
      * 
@@ -367,7 +523,8 @@ public class MvCommand extends DirectoryCommand implements Command {
      * @param LocalFile toFile
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedMV(StoRI fromStori, LocalFile toFile, boolean hasJiTACL) {
+//    private TReturnStatus manageAuthorizedMV(StoRI fromStori, LocalFile toFile, boolean hasJiTACL) {
+    private TReturnStatus manageAuthorizedMV(StoRI fromStori, LocalFile toFile) {
         TReturnStatus returnStatus = null;
         boolean creationDone;
 

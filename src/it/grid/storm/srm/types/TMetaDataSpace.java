@@ -103,7 +103,7 @@ public class TMetaDataSpace implements Serializable
     }
 
     /**
-     * Constructor with SpaceData returnes by DAO.
+     * Constructor with SpaceData returned by DAO.
      * @param spaceData of type StorageSpaceData
      * @throws InvalidTMetaDataSpaceAttributeException
      * @throws InvalidTSizeAttributesException
@@ -135,11 +135,11 @@ public class TMetaDataSpace implements Serializable
             this.spaceType = spaceData.getSpaceType();
             this.spaceToken = spaceData.getSpaceToken();
             this.owner = spaceData.getUserID();
-            this.totalSize = spaceData.getTotalSize();
-            this.guaranteedSize = spaceData.getGuaranteedSize();
-            this.unusedSize = spaceData.getUnusedSizes();
+            this.totalSize = spaceData.getTotalSpaceSize();
+            this.guaranteedSize = spaceData.getReservedSpaceSize();
+            this.unusedSize = spaceData.getFreeSpaceSize();
             this.lifetimeAssigned = spaceData.getLifeTime();
-            this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getDate());
+            this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getCreationDate());
             try {
                 if ((this.lifetimeLeft.value() == 0)&&(this.spaceType!=TSpaceType.VOSPACE)) {
                     this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");

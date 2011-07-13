@@ -31,6 +31,8 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
@@ -118,7 +120,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 2- JiTs must me removed from the TURL;
         // 3- compute the checksum and store it in an extended attribute
         // 4- Tape stuff management.
-        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        // 5- Update FreeSpace into DB
+        // 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
             ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
@@ -151,7 +154,15 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 if (user == null) {
                     stori = namespace.resolveStoRIbySURL(surl);
                 } else {
-                    stori = namespace.resolveStoRIbySURL(surl, user);
+                    try
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl, user);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error(funcName + "unable to build STORI from surl=" + surl + " user=" + user);
+                        continue;
+                    }
                 }
 
                 // 1- if the SURL is volatile create an entry in the Volatile table
@@ -207,13 +218,29 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                     StormEA.setPremigrate(fileAbosolutePath);
                 }
 
+                // 5- Update FreeSpace into DB
+                /**
+                 * If Storage Area hard limit is enabled, update space on DB
+                 */
+                try {
+                    VirtualFSInterface fs = stori.getVirtualFileSystem();
+                    if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
+                        SpaceHelper sh = new SpaceHelper();
+                        // Update the used space into Database
+                        sh.decreaseFreeSpaceForSA(log, funcName, user, surl);
+                    }
+                } catch (NamespaceException e) {
+                    log.warn(funcName
+                            + " Not able to build the virtual fs properties for checking Storage Area size enforcement!");
+                }
+                
             } catch (NamespaceException e1) {
                 log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
                 continue;
             }
         }
 
-        // 5- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        // 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
 
         /* Unlock the SURLs */

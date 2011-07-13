@@ -40,13 +40,15 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
 
     private static final String CHECK_NAME = "NamespaceFSEATest";
 
-    private static final String CHECK_DESCRIPTION = "Namespace declared FS extended attribute Check";
+    private static final String CHECK_DESCRIPTION = "This check tries to use file system extended attributes on all the file systems declared in namespace.xml";
 
     /**
      * The maximum number of attempts of temporary file creation
      */
     private static final int MAX_FILE_CREATION_ATTEMPTS = 10;
 
+    private static final String TEST_FILE_INFIX = "EA-check-file-N_";
+    
     /**
      * An extended attribute to be used in the check
      */
@@ -59,6 +61,8 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
 
     private final ExtendedAttributes extendedAttribute = new ExtendedAttributesImpl();
 
+    private static final boolean criticalCheck = true;
+    
     @Override
     public CheckResponse execute() throws GenericCheckException
     {
@@ -78,11 +82,11 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
                 File checkFile;
                 try
                 {
-                    checkFile = provideCheckFile(fsRootPath);
+                    checkFile = provideCheckFile(fsRootPath, TEST_FILE_INFIX);
                 }
                 catch (GenericCheckException e)
                 {
-                    log.error("Unable to obtain a check temporary file. GenericCheckException : "
+                    log.warn("Unable to obtain a check temporary file. GenericCheckException : "
                             + e.getMessage());
                     errorMessage += "Unable to obtain a check temporary file. GenericCheckException : "
                             + e.getMessage() + "; ";
@@ -114,7 +118,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
         catch (NamespaceException e)
         {
             // NOTE: this exception is never thrown
-            log.error("Unable to proceede. NamespaceException : " + e.getMessage());
+            log.warn("Unable to proceede. NamespaceException : " + e.getMessage());
             errorMessage += "Unable to proceede. NamespaceException : " + e.getMessage() + "; ";
             status = CheckStatus.INDETERMINATE;
         }
@@ -127,17 +131,18 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
      * retries for MAX_FILE_CREATION_ATTEMPTS times changing file name
      * 
      * @param rootPath
+     * @param infix 
      * @return
      * @throws GenericCheckException if is unable to provide a valid file
      */
-    private File provideCheckFile(String rootPath) throws GenericCheckException
+    private File provideCheckFile(String rootPath, String infix) throws GenericCheckException
     {
         int attempCount = 1;
         boolean fileAvailable = false;
         File checkFile = null;
         while (attempCount <= MAX_FILE_CREATION_ATTEMPTS && !fileAvailable)
         {
-            checkFile = new File(rootPath + "EA-check-file-N_" + attempCount + "-"
+            checkFile = new File(rootPath + infix + attempCount + "-"
                     + Calendar.getInstance().getTimeInMillis());
             if (checkFile.exists())
             {
@@ -148,7 +153,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
                 }
                 else
                 {
-                    log.info("Unable to create check file, it already exists but is not a simple file : "
+                    log.warn("Unable to create check file, it already exists but is not a simple file : "
                             + checkFile.getAbsolutePath());
                 }
             }
@@ -235,5 +240,11 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
     public String getDescription()
     {
         return CHECK_DESCRIPTION;
+    }
+    
+    @Override
+    public boolean isCritical()
+    {
+        return criticalCheck;
     }
 }

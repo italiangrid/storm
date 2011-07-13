@@ -97,73 +97,122 @@ to get a list of the available targets for this buildfile.
 	<property name="gpfs-base.location" value="/usr/lpp/mmfs" />
 
 	<!-- sources used to build and make the distribution archives -->
-	<property name="src.dir" location="${basedir}"/>
-	<property name="src.doc.dir" location="${src.dir}/doc"/>
-	<property name="src.java.dir" location="${src.dir}/src"/>
-	<property name="src.jars.dir" location="${src.dir}/lib"/>
-	<property name="src.config.dir" location="${src.dir}/etc"/>
-	<property name="src.config.dir.db" location="${src.dir}/etc/db"/>
-	<property name="src.sbin.dir" location="${src.dir}/sbin"/>
-	<property name="src.sysvinit.dir" location="${src.dir}/etc/init.d"/>
-	<property name="src.logrotate.dir" location="${src.dir}/etc/logrotate.d"/>
-	<property name="src.cron.dir" location="${src.dir}/etc/cron.d"/>
-	<property name="info.dir" location="${src.dir}/info-provider"/>
+	<property name="src.dir" location="${basedir}" />
+	<property name="src.doc.dir" location="${src.dir}/doc" />
+	<property name="src.java.dir" location="${src.dir}/src" />
+	<property name="src.jars.dir" location="${src.dir}/lib" />
+	<property name="src.config.dir" location="${src.dir}/etc" />
+	<property name="src.config.dir.db" location="${src.dir}/etc/db" />
+	<property name="src.sysvinit.dir" location="${src.dir}/etc/init.d" />
+	<property name="src.logrotate.dir" location="${src.dir}/etc/logrotate.d" />
+	<property name="src.sysconfig.dir" location="${src.dir}/etc/sysconfig" />
+	<property name="src.cron.dir" location="${src.dir}/etc/cron.d" />
+	<property name="info.dir" location="${src.dir}/info-provider" />
 
-	<property name="build.encoding" value="ISO-8859-1"/>
+	<property name="build.encoding" value="ISO-8859-1" />
 
-	<property name="javac.debug" value="on"/>
-	<property name="javac.optimize" value="on"/>
-	<property name="javac.deprecation" value="off"/>
-	<property name="javac.version" value="1.6"/>
-	<property name="javac.args" value=""/>
-	<property name="javac.args.warnings" value="-Xlint:none"/>
+	<property name="javac.debug" value="on" />
+	<property name="javac.optimize" value="on" />
+	<property name="javac.deprecation" value="off" />
+	<property name="javac.version" value="1.6" />
+	<property name="javac.args" value="" />
+	<property name="javac.args.warnings" value="-Xlint:none" />
 
-	<property name="build.dir" location="${basedir}/build"/>
-	<property name="build.classes.dir" location="${build.dir}/classes"/>
-	<property name="build.libs.dir" location="${build.dir}/lib/native/${build.platform}"/>
-	<property name="build.obj.dir" location="${build.dir}/obj"/>
-	<property name="build.debug" value="false"/>
-	<property name="build.gpfs" value="true"/>
-	<property name="build.lustre" value="false"/>
+	<property name="build.dir" location="${basedir}/build" />
+	<property name="build.classes.dir" location="${build.dir}/classes" />
+	<property name="build.libs.dir" location="${build.dir}/lib/native/${build.platform}" />
+	<property name="build.obj.dir" location="${build.dir}/obj" />
+	<property name="build.debug" value="false" />
+	<property name="build.gpfs" value="true" />
+	<property name="build.lustre" value="false" />
 	<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
 	<antversion property="ant.version_1.8" atleast="1.8"/>
 	-->
-	<property name="build.scripts.dir" value="${basedir}/bin"/>
+	<property name="build.scripts.dir" value="${src.config.dir}"/>
 	<property name="version.info.dir" value="${src.java.dir}/it/grid/storm"/>
 	<property name="version.info.file" value="VERSION"/>
+	<!-- names, used as path element -->
+	<property name="service.prefix" value="storm" />
+	<property name="module.name" value="backend-server"/>
+	<property name="component.name" value="${service.prefix}-${module.name}"/>
+	<property name="dist.name" value="${component.name}"/>
+	
+	<!--<property name="lib.arch" value="${sun.arch.data.model}"/>-->
+	<condition property="lib.arch" value="64" else="">
+	   <equals arg1="${sun.arch.data.model}" arg2="64" />
+	</condition>
+	
 	<available file="${version.info.dir}/${version.info.file}" property="version.file.exists"/>
 
 	<!-- these names are chosen to match configure/Makefile common usage -->
+	
+	<!-- default value for prefix -->
 	<property name="prefix" location="${basedir}/install"/>
-	<property name="install.dir" location="${basedir}/install"/>
-
-	<property name="datadir" location="${prefix}/share"/>
-	<property name="docdir" location="${prefix}/doc"/>
-	<property name="nativedir" location="${prefix}/lib/native/${build.platform}"/>
-	<property name="jardir" location="${prefix}/lib"/>
-	<property name="localstatedir" location="${prefix}/var"/>
-	<property name="logdir" location="${localstatedir}/log"/>
-	<property name="sbindir" location="${prefix}/sbin"/>
+	
+	<!-- installation roots -->
 	<property name="sysconfdir" location="${prefix}/etc"/>
-	<property name="confdb" location="${prefix}/etc/db"/>
+	<property name="datadir" location="${prefix}/usr/share"/>
+	<property name="varlog" location="${prefix}/var/log"/>
+	<property name="vartmp" location="${prefix}/var/tmp"/>
+	
+	<!-- first level derivate paths -->
+	<property name="logdir" location="${varlog}/${service.prefix}"/>
+	<!-- <property name="tmpdir" location="${vartmp}/${component.name}"/> -->
+	
+	<!-- configuration directories -->
+	<property name="confdir" location="${sysconfdir}/${service.prefix}/${module.name}"/>
+    <property name="confdb" location="${confdir}/db"/>
 	<property name="sysvinitdir" location="${sysconfdir}/init.d"/>
 	<property name="logrotatedir" location="${sysconfdir}/logrotate.d"/>
 	<property name="crondir" location="${sysconfdir}/cron.d"/>
-	<property name="tmpdir" location="${localstatedir}/tmp"/>
+	<property name="sysconfigdir" location="${sysconfdir}/sysconfig"/>
 
-	<!-- the output file names -->
-	<property name="dist.jar" value="storm-backend.jar"/>
-	<property name="dist.tarfile" value="storm-backend-server.tar"/>
-	<property name="info.tarfile" value="glite-info-dynamic-storm.tar"/>
+	<property name="docdir" location="${datadir}/doc/${dist.name}-${version}"/>
+	<property name="libdir" location="${prefix}/usr/lib${lib.arch}"/>
+	<property name="nativedir" location="${libdir}/${component.name}/native/${build.platform}"/>
+	<property name="javadir" location="${datadir}/java/${component.name}"/>
 
+	<property name="dist.jar" value="storm-backend-server.jar"/>
+		
 	<!-- rpm building properties -->
 	<property name="rpm.scripts.dir" location="${basedir}/rpm"/>
 	<property name="rpm.scripts.rpm-builder" location="${rpm.scripts.dir}/build-be-rpm"/>
-	<property name="rpm.spec.file" location="${rpm.scripts.dir}/storm-backend.spec"/>
-	<property name="rpm.source.tar.file" location="${basedir}/${dist.tarfile}/"/>
+	<property name="rpm.spec.file" location="${rpm.scripts.dir}/storm-backend-server.spec"/>
 	<property name="rpm.dest.dir" location="${basedir}/rpm-build"/>
 	<property name="rpm.util.jar" location="${build.dir}/${dist.jar}"/>
 
+	<!-- the output file names -->
+
+	<property name="dist.src.tarfile" value="${basedir}/${dist.name}-${version}.tar"/>
+	<property name="dist.src.gzipfile" value="${dist.src.tarfile}.gz"/>
+
+	<target name="build.dist.bin.properties"
+		description="Produces the properties containing the name of the produced binary tar and tar.gz files">
+        <exec executable="/usr/java/latest/bin/java" outputproperty="distribution" >
+                   <arg value="-cp"/>
+                   <arg value="${rpm.util.jar}"/>
+                   <arg value="-Xmx32m"/>
+                   <arg value="it/grid.storm/Platform"/>
+                   <arg value="os_dist"/>
+           </exec>
+
+           <exec executable="sed" inputstring="${distribution}" outputproperty="nonspace.distribution">
+                   <arg value="s/ /_/g"/>
+           </exec>
+           <echo message="distribution=${nonspace.distribution}" />
+          <exec executable="uname" outputproperty="architecture" >
+                   <arg value="-m"/>
+           </exec>
+
+           <exec executable="sed" inputstring="${architecture}" outputproperty="nonspace.architecture">
+                   <arg value="s/ /_/g"/>
+           </exec>
+           <echo message="architecture=${nonspace.architecture}" />
+
+		<property name="dist.bin.tarfile" value="${basedir}/${dist.name}-${version}-${age}.${nonspace.distribution}.${nonspace.architecture}.tar"/>
+		<property name="dist.bin.gzipfile" value="${dist.bin.tarfile}.gz"/>
+	</target>
+		
 	<!-- where unit test files are located -->
 	<property name="test.junit.dir" value="${src.dir}/test"/>
 
@@ -203,10 +252,6 @@ src.jars.dir=${src.jars.dir}
 
 src.config.dir=${src.config.dir}
   Example configuration files; copied verbatim to the
-  installation tree
-
-src.sbin.dir=${src.sbin.dir}
-  Installation/setup scripts; copied verbatim to the the
   installation tree
 
 src.sysvinit.dir=${src.sysvinit.dir}
@@ -293,9 +338,6 @@ dist.tarfile=${dist.tarfile}
   The tarfile should contain whatever is needed to rebuild
   StoRM from the sources on another machine.
 
-info.tarfile=${info.tarfile}
-  The name of the created .tar file containing the glite 
-  dynamic information provider plugin.
 
 test.junit.dir
   Path to the directory containing the jUnit TestCase source files.
@@ -340,13 +382,8 @@ test.junit.dir
 	<fileset id="src.jars.dist"
      dir="${src.jars.dir}">
 		<include name="activation.jar"/>
-
-		<!-- <include name="axis-ant.jar"/> -->
 		<include name="axis.jar"/>
 		<include name="axis-schema.jar"/>
-
-		<!--<include name="backport-util-concurrent.jar"/>  ## Removed in 1.5.2 -->
-
 		<include name="srm22client.jar"/>
 
 		<include name="cog-axis.jar"/>
@@ -375,7 +412,6 @@ test.junit.dir
 		<!-- needed for Apache ConfigurationReader -->
 		<include name="cryptix32.jar"/>
 		<include name="cryptix-asn1.jar"/>
-		<!--<include name="cryptix.jar"/>  Old jar, out-of-date by cryptix32.jar -->
 
 		<include name="dom.jar"/>
 
@@ -422,8 +458,15 @@ test.junit.dir
 		<!-- JERSEY and GRIZZLY for REST Service -->
 		<include name="jsr311-api-1.1.jar"/>
 		<!-- JERSEY and GRIZZLY for REST Service -->
-
 		<include name="json-20080701.jar"/>
+		
+		<!-- JSON results for InfoService REST Service -->
+		<include name="jettison-1.1.jar"/>
+		<include name="stax-api-1.0-2.jar"/>
+		
+		<!-- Background DU -->
+		<include name="commons-io-2.0.1.jar"/>
+		
 	</fileset>
 
 	<fileset id="src.jars.build"
@@ -435,9 +478,10 @@ test.junit.dir
 	<fileset id="src.lib"
      dir="${build.libs.dir}">
 		<include name="*.so"/>
+		<exclude name="libgpfs.so"/>
 	</fileset>
 
-	<!-- config files; needed at runtime -->
+	<!-- config input files; needed at runtime -->
 	<fileset id="src.config"
      dir="${src.config.dir}">
 		<include name="namespace.xml"/>
@@ -447,9 +491,9 @@ test.junit.dir
 		<include name="storm.properties.template"/>
 		<include name="path-authz.db"/>
 		<include name="welcome.txt"/>
-		<include name="sysconfig/storm-backend"/>
-		<include name="cron.d/storm-backend.cron"/>
-		<include name="logrotate.d/storm-backend.logrotate"/>
+		<!-- removed because are not storm input file but, respectively cron and logrotate (they will be installed not in a storm created directory)-->
+		<!-- <include name="cron.d/storm-backend-server.cron"/>
+		<include name="logrotate.d/storm-backend-server"/> -->
 	</fileset>
 
 	<!-- configuration script for DB -->
@@ -459,36 +503,35 @@ test.junit.dir
 		<include name="storm_database_config.sh" />
 		<include name="storm_mysql_tbl.sql" />
 		<include name="storm_mysql_grant.sql" />
-		<include name="README" />
+		<include name="storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql" />
 	</fileset>
 
 	<!-- start/stop scripts -->
 	<fileset id="src.sysvinit" dir="${src.sysvinit.dir}">
-		<include name="storm-backend" />
+		<include name="storm-backend-server" />
 	</fileset>
 
 	<!-- logrotate scripts -->
 	<fileset id="src.logrotate" dir="${src.logrotate.dir}">
-		<include name="storm-backend.logrotate" />
+		<include name="storm-backend-server" />
 	</fileset>
 
 	<!-- cron scripts -->
 	<fileset id="src.cron" dir="${src.cron.dir}">
-		<include name="storm-backend.cron" />
+		<include name="storm-backend-server.cron" />
 	</fileset>
 
-	<!-- configuration script -->
-	<fileset id="src.sbin"
-     dir="${src.sbin.dir}">
-		<include name="storm-backend-configure"/>
+	<!-- start/stop scripts -->
+	<fileset id="src.sysconfig" dir="${src.sysconfig.dir}">
+		<include name="storm-backend-server" />
 	</fileset>
-
-
 
 	<!-- documentation and licenses -->
-	<fileset id="src.docs.credits"
-        dir="${src.dir}"
-        includes="CREDITS"/>
+	<fileset id="src.docs.credits" dir="${src.dir}" >
+	   <include name="CREDITS"/>
+	   <include name="ACKNOWLEDGEMENTS.txt"/>
+	</fileset>
+        
 	<fileset id="src.docs.release-note"
 			dir="${src.dir}"
 			includes="RELEASE-NOTES.txt"/>
@@ -497,7 +540,7 @@ test.junit.dir
 		includes="LICENSE.txt"/>
 	<fileset id="src.docs.3rdparty.licenses"
 		dir="${src.dir}">
-		<include name="ACKNOWLEDGEMENTS.txt"/>
+		
 		<include name="lib/*.LICENSE"/>
 	</fileset>
 
@@ -522,7 +565,23 @@ test.junit.dir
 		<mkdir dir="${build.obj.dir}"/>
 	</target>
 
+	
+	<!-- make MOCK GPFS shared libray -->
+	<target name="mock-gpfs" depends="init">
+		<condition property="arch" value="64" else="">
+			<equals arg1="64" arg2="${arch_bit}" trim="true" />
+		</condition>
+		<exec executable="make"
+			failonerror="true"
+			logError="true">
+			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/mock"/>
+			<arg value="DESTDIR=${build.libs.dir}"/>
+			<arg value="BUILDDIR=${build.obj.dir}"/>
+			<arg value="arch=${arch}"/>
+		</exec>
+	</target>	
 
+	
 	<!-- make c libs used by JNA -->
 	<target name="clibs-jna" depends="init">
 
@@ -536,8 +595,6 @@ test.junit.dir
 			<arg line="-C ${src.java.dir}/it/grid/storm/jna"/>
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="BUILDDIR=${build.obj.dir}"/>
-			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="glite_location=${glite.location}" />
 			<arg value="arch=${arch}"/>
 		</exec>
 	</target>
@@ -547,36 +604,26 @@ test.junit.dir
 	<target name="swig"
 		depends="swig.filesystem"/>
 
-	<!-- deprecated target (now use JNA instead of SWIG) -->
-	<target name="swig.griduser" depends="init">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig swig"/>
-			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}"/>
-		</exec>
-
-	</target>
-
 
 	<!--
-	  ###  Make FILESYSTEN Wrapping with SWIG ### 
+	  ###  Make FILESYSTEM Wrapping with SWIG ### 
 	-->
 	<target name="swig.filesystem" depends="init">
 
 		<condition property="arch" value="64" else="">
 			<equals arg1="64" arg2="${arch_bit}" trim="true" />
 		</condition>
+		
+        <echo message="- Build platform : ${build.platform} "/>
+        <echo message="- Source Java Dir: ${src.java.dir}"/>
+		<echo message="- Build dir: ${build.libs.dir}"/>
+        <echo message="- Architecture: ${arch}"/>
+        <echo message="- Swig location: ${swig.location}"/>
+        <echo message="- JDK location: ${jdk.location}"/>
+        <echo message="- Lib ACL location: ${libacl-devel.location}"/>
+        <echo message="- Lib ATTR location: ${libattr-devel.location}"/>
+        <echo message="- Lib GPFS location: ${gpfs-base.location}"/>
+		<echo message="- Lib XFS location: ${xfsprogs-devel.location}"/>		
 
 		<exec executable="make" failonerror="true" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig swig"/>
@@ -584,7 +631,7 @@ test.junit.dir
 			<arg value="DESTDIR=${build.libs.dir}" />
 			<arg value="arch=${arch}"/>
 			<arg value="swig_location=${swig.location}" />
-			<arg value="jdk_location=${env.JAVA_HOME}" />
+			<arg value="jdk_location=${jdk.location}" />
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
 			<arg value="libattr_devel_location=${libattr-devel.location}" />
 			<arg value="gpfs_base_location=${gpfs-base.location}" />
@@ -601,12 +648,18 @@ test.junit.dir
 			<equals arg1="64" arg2="${arch_bit}" trim="true" />
 		</condition>
 
+		<echo message="Java installation directory: ${java.home}"/>
+		<echo message="Java Virtual Machine specification version: ${java.vm.specification.version}"/>
+		<echo message="Java Virtual Machine specification vendor: ${java.vm.specification.vendor}"/>
+		<echo message="Java Virtual Machine specification name: ${java.vm.specification.name}"/>
+		<echo message="Java Virtual Machine implementation version: ${java.vm.version}"/>
+
 		<exec executable="make" failonerror="true" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig libso"/>
 			<arg value="DESTDIR=${build.libs.dir}" />
 			<arg value="arch=${arch}"/>
 			<arg value="swig_location=${swig.location}" />
-			<arg value="jdk_location=${env.JAVA_HOME}" />
+			<arg value="jdk_location=${jdk.location}" />
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
 			<arg value="libattr_devel_location=${libattr-devel.location}" />
 			<arg value="gpfs_base_location=${gpfs-base.location}" />
@@ -642,37 +695,9 @@ test.junit.dir
 
 
 
-	<!-- deprecated target (now use JNA instead of SWIG) -->
-	<!--
-	  ###  Make LCMAPS Wrapping with SWIG ### 
-	-->
-	<target name="libs.griduser" 	depends="init,swig.griduser">
-
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
-		<exec executable="make" failonerror="true" logError="true">
-			<arg line="-C ${src.java.dir}/it/grid/storm/griduser/swig libso"/>
-			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="glite_location=${glite.location}" />
-			<arg value="lcmaps_location=${lcmaps.location}" />
-			<arg value="lcmaps_without_gsi_location=${lcmaps-without-gsi.location}" />
-			<arg value="lcmaps_plugins_basic_location=${lcmaps-plugins-basic.location}" />
-			<arg value="lcmaps_plugins_voms_location=${lcmaps-plugins-voms.location}" />
-			<arg value="arch=${arch}"/>
-			<arg value="swig_location=${swig.location}"/>
-		</exec>
-	</target>
-
-	<!--
-	  <arg value="DESTDIR=${build.libs.dir}"/>
-	  <arg value="${build.libs.dir}/liblcmaps_interface.so"/>
-    -->
-
 	<target name="libs"
 	description="compile native code libs"
-	depends="libs.filesystem, clibs-jna"/>
+	depends="mock-gpfs, libs.filesystem, clibs-jna"/>
 
 	<target name="precompile"  depends="init,swig"/>
 
@@ -683,12 +708,12 @@ test.junit.dir
 			srcdir="${src.java.dir}"
 			includes="it/grid/storm/**/*.java"
 			destdir="${build.classes.dir}"
-		        debug="${javac.debug}"
+		    debug="${javac.debug}"
 			optimize="${javac.optimize}"
 			target="${javac.version}"
 			source="${javac.version}"
 			deprecation="${javac.deprecation}"
-                        includeantruntime="false">
+            includeantruntime="false">
 			<compilerarg line="${javac.args} ${javac.args.warnings}" />
 			<classpath>
 				<path refid="build.classpath"/>
@@ -701,25 +726,8 @@ test.junit.dir
 
 	<target name="build"  
 		description="Compile *all* StoRM BE code"
-		depends="libs,javac,storm-backend.jar"/>
+		depends="libs,javac,storm-backend-server.jar"/>
 
-	<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
-	<target name="version-info-automatic" if="ant.version_1.8">
-		<echo message="NOTE: File VERSION doesn't exist. A VERSION file will be created using ANT 1.8 features"/>
-		<echo message="## ANT version is :'${ant.version}'"/>
-		<chmod file="${build.scripts.dir}/svnRevision.sh" perm="ugo+rx"/>
-		<exec dir="${basedir}" executable="${build.scripts.dir}/svnRevision.sh" failonerror="false" logerror="true" outputproperty="svn.revision.number" />
-		<echo message="## SVN Revision Number ${svn.revision.number}" />
-		<propertyfile file="${version.info.dir}/${version.info.file}" 
-			comment=" Build Information File - It contains information about the version number defined at building time !!! DO NOT CHANGE !!!.">
-			<entry key="VERSION" type="string" operation="=" value="${version}"/>
-			<entry key="RELEASE" type="string" operation="=" value="${age}"/>
-			<entry key="svn.revision.number" type="int" operation="=" value="${svn.revision.number}" />
-			<entry key="build.date" type="date" value="now" pattern="dd.MM.yyyy HH:mm:ss" />
-			<entry key="build.num" type="int" default="0000" operation="+" pattern="0000" />
-		</propertyfile>
-	</target>
-	-->
 
 	<target name="create-default-Version-Info" unless="version.file.exists" 
 		description="Create the default Version Info, if needed.">
@@ -742,9 +750,6 @@ test.junit.dir
 	<target name="make-version-info" unless="version.file.exists">
 		<input message="Insert VERSION (major.minor.update): " addproperty="version" />
 		<input message="Insert AGE : " addproperty="age" />
-		<!-- ####  COMMENTED TO BE COMPATIBLE WITH ETICS 
-		<antcall target="version-info-automatic"/>
-		-->
 		<antcall target="create-default-Version-Info"/>
 	</target>
 
@@ -760,7 +765,7 @@ test.junit.dir
 		<echo message="minor=${version.minor}" />
 	</target>
 
-	<target name="storm-backend.jar" description="Make the ${dist.jar} file out of compiled Java classes" depends="javac, make-version-info">
+	<target name="storm-backend-server.jar" description="Make the ${dist.jar} file out of compiled Java classes" depends="javac, make-version-info">
 		<tstamp>
 			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
 		</tstamp>
@@ -785,6 +790,15 @@ test.junit.dir
 	<!-- CLEAN                                                           -->
 	<!-- =============================================================== -->
 
+	<!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
+	<target name="clean.mock-gpfs">
+		<exec executable="make" dir="${src.java.dir}/it/grid/storm/filesystem/mock" logError="true">
+			<arg value="DESTDIR=${build.libs.dir}"/>
+			<arg value="clean"/>
+		</exec>
+	</target>	
+	
+	
 	<!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
 	<target name="clean.clibs-jna">
 		<exec executable="make" dir="${src.java.dir}/it/grid/storm/jna" logError="true">
@@ -825,13 +839,15 @@ test.junit.dir
 
 	<target name="clean"
 	description="Remove build tree and all of the intermediate build files"
-	depends="clean.libs.wrapper,clean.swig.griduser,clean.swig.filesystem,clean.clibs-jna">
+	depends="clean.libs.wrapper,clean.swig.griduser,clean.swig.filesystem,clean.clibs-jna, clean.mock-gpfs">
 		<!-- Delete the ${build.dir} directory tree -->
 		<delete dir="${build.dir}" verbose="false"/>
-		<delete dir="${install.dir}" verbose="false"/>
+		<delete dir="${prefix}" verbose="false"/>
 		<delete file="${src.config.dir}/lcmaps.db" verbose="true" />
-		<delete file="${rpm.source.tar.file}" verbose="true"/>
-		<delete file="${rpm.source.tar.file}.gz" verbose="true"/>
+		<delete file="${dist.src.tarfile}" verbose="true"/>
+		<delete file="${dist.src.gzipfile}" verbose="true"/>
+		<delete file="${dist.bin.tarfile}" verbose="true"/>
+		<delete file="${dist.bin.gzipfile}" verbose="true"/>
 		<delete dir="${rpm.dest.dir}" verbose="false"/>
 		<delete file="${version.info.dir}/${version.info.file}" verbose="true"/>
 	</target>
@@ -862,34 +878,42 @@ test.junit.dir
 			overwrite="true" />
 	</target>
 
+	
 	<target name="install.nojars" 
 		description="Copy built files (except 3rd-party .jar's) to a deployable tree structure under ${prefix}" 
 		depends="replace-lcmaps.db, build">
 
 		<!-- Create the distribution directory hierarchy -->
-		<mkdir dir="${datadir}" />
-		<mkdir dir="${docdir}" />
-		<mkdir dir="${logdir}" />
 		<mkdir dir="${prefix}" />
-		<mkdir dir="${sbindir}" />
+		
+		<mkdir dir="${datadir}" />
+		<mkdir dir="${logdir}" />
+		<!-- <mkdir dir="${tmpdir}" /> -->
+		
 		<mkdir dir="${confdb}" />
-		<mkdir dir="${sysconfdir}" />
 		<mkdir dir="${sysvinitdir}" />
 		<mkdir dir="${logrotatedir}" />
 		<mkdir dir="${crondir}" />
-		<mkdir dir="${tmpdir}" />
-
+		<mkdir dir="${sysconfigdir}" />
+			
+		<mkdir dir="${docdir}" />
+		<mkdir dir="${libdir}" />
+		<mkdir dir="${nativedir}" />
+		<mkdir dir="${javadir}" />
+	
 		<!-- copy files -->
 		<copy
 		  file="${build.dir}/${dist.jar}"
-		  tofile="${prefix}/storm-backend.jar"
+		  tofile="${javadir}/storm-backend-server.jar"
 		  overwrite="true"/>
+
 		<copy
-		  todir="${sysconfdir}"
+		  todir="${confdir}"
 		  flatten="false"
 		  overwrite="true">
-			<fileset refid="src.config" />
+          <fileset refid="src.config" />
 		</copy>
+
 		<copy
 		  todir="${sysvinitdir}"
 		  flatten="true"
@@ -897,16 +921,22 @@ test.junit.dir
 			<fileset refid="src.sysvinit" />
 		</copy>
 		<copy
-			  todir="${logrotatedir}"
-			  flatten="true"
-			  overwrite="true">
+		   todir="${logrotatedir}"
+		  flatten="true"
+		  overwrite="true">
 			<fileset refid="src.logrotate" />
 		</copy>
 		<copy
-			  todir="${crondir}"
-			  flatten="true"
-			  overwrite="true">
+		  todir="${crondir}"
+		  flatten="true"
+		  overwrite="true">
 			<fileset refid="src.cron" />
+		</copy>
+		<copy
+		  todir="${sysconfigdir}"
+		  flatten="true"
+		  overwrite="true">
+			<fileset refid="src.sysconfig" />
 		</copy>
 		<copy
 		  todir="${nativedir}"
@@ -926,23 +956,21 @@ test.junit.dir
 		</copy>
 
 		<!-- fix permissions -->
-		<chmod perm="0755" type="dir">
+		<!-- <chmod perm="0755" type="dir"> -->
 			<!-- this is necessary if umask != 022 -->
-			<dirset id="dist.dirs" dir="${prefix}/" />
-		</chmod>
-		<chmod perm="0644" type="file">
+		<!--	<dirset id="dist.dirs" dir="${prefix}/" /> -->
+		<!-- </chmod> -->
+		<!-- <chmod perm="0644" type="file"> -->
 			<!-- this is necessary if umask != 022 -->
-			<fileset id="dist.files" dir="${prefix}/" />
-		</chmod>
-		<chmod perm="0755" type="file">
-			<fileset id="dist.bin" dir="${prefix}">
+		<!--	<fileset id="dist.files" dir="${prefix}/" /> -->
+		<!-- </chmod> -->
+		<!-- <chmod perm="0755" type="file"> -->
+		<!--	<fileset id="dist.bin" dir="${prefix}"> -->
 				<!-- set executable bit for binaries and scripts -->
-				<include name="bin/*" />
-				<include name="sbin/*" />
-				<include name="etc/init.d/*" />
-			</fileset>
-		</chmod>
-		<chmod perm="1755" type="dir" dir="${tmpdir}" />
+		<!-- 		<include name="etc/init.d/*" /> -->
+		<!-- </fileset> -->
+		<!-- </chmod> -->
+		<!-- <chmod perm="1755" type="dir" dir="${tmpdir}" /> -->
 	</target>
 
 
@@ -950,17 +978,18 @@ test.junit.dir
 
 		<!-- Create the distribution directory hierarchy -->
 		<mkdir dir="${docdir}" />
-		<mkdir dir="${jardir}" />
-
+		<mkdir dir="${javadir}" />
+		<mkdir dir="${javadir}/doc" />
+		
 		<!-- copy files -->
 		<copy
-		  todir="${jardir}"
+		  todir="${javadir}"
 		  flatten="true"
 		  overwrite="true">
 			<fileset refid="src.jars.dist" />
 		</copy>
 		<copy
-		  todir="${docdir}"
+		  todir="${javadir}/doc"
 		  flatten="true"
 		  overwrite="true">
 			<fileset refid="src.docs.3rdparty.licenses" />
@@ -974,11 +1003,11 @@ test.junit.dir
 	<!-- =============================================================== -->
 
 	<target name="tar.src" description="Roll a tarball of the checked-out sources" depends="build" >
-		<delete file="${dist.tarfile}"/>
-		<delete file="${dist.tarfile}.gz" />
-		<tar destfile="${dist.tarfile}" compression="none" longfile="gnu">
+		<delete file="${dist.src.tarfile}"/>
+		<delete file="${dist.src.gzipfile}" />
+		<tar destfile="${dist.src.tarfile}" compression="none" longfile="gnu">
 			<!-- main source tree -->
-			<tarfileset dir="${src.dir}" username="storm" group="storm" mode="0644" prefix="storm-backend-server/">
+			<tarfileset dir="${src.dir}" username="storm" group="storm" mode="0644" prefix="${dist.name}/">
 				<!-- NOTE: each time a file/folder is specified in an "include" tag automatically all other files/folders in the same 
 										   directory are excluded -->
 				<include name="LICENSE.txt" />
@@ -1005,10 +1034,10 @@ test.junit.dir
 				<exclude name="etc/db/storm_mysql_update_from_1.5.3_to_1.5.4.sql" />
 				<exclude name="etc/db/recall-table.txt" />
 				<include name="config/" />
-				<include name="bin/" />
 				<include name="doc/header-copyright.txt" />
 				<include name="doc/storm-code-formatter-1.6.xml" />
 				<include name="lib/" />
+                <exclude name="lib/apache2.LICENSE" />
 				<include name="rpm/" />
 				<include name="src/" />
 				<exclude name="src/it/grid/storm/VERSION" />
@@ -1018,38 +1047,48 @@ test.junit.dir
 			</tarfileset>
 		</tar>
 		<!-- FIXME: should check if filename ends in .gz and compress -->
-		<gzip src="${dist.tarfile}" destfile="${dist.tarfile}.gz" />
+		<gzip src="${dist.src.tarfile}" destfile="${dist.src.gzipfile}" />
+		<delete file="${dist.src.tarfile}" verbose="true"/>
 	</target>
 
-
+	<target name="tar.bin" description="Roll a tarball of the builded files" depends="build, install, build.dist.bin.properties" >
+		<delete file="${dist.bin.tarfile}"/>
+		<delete file="${dist.bin.gzipfile}" />
+		<tar basedir="${prefix}" destfile="${dist.bin.tarfile}" compression="none" longfile="gnu" />
+		<!-- FIXME: should check if filename ends in .gz and compress -->
+		<gzip src="${dist.bin.tarfile}" destfile="${dist.bin.gzipfile}" />
+		<delete file="${dist.bin.tarfile}"/>
+	</target>
 
 	<!-- =============================================================== -->
 	<!-- RPM BUILDING                                                    -->
 	<!-- =============================================================== -->
 
-	<target name="build-rpm" depends="build">
+	<target name="build-rpm" description="Create the rpm" depends="build">
 
 		<antcall target="make-version-info"/>
 
 		<echo message="RPM script dir : '${rpm.scripts.dir}'" />
 		<echo message="RPM script builder : '${rpm.scripts.rpm-builder}'" />
 		<echo message="RPM spec file : '${rpm.spec.file}'" />
-		<echo message="RPM source tar.gz : '${rpm.source.tar.file}'" />
+		<echo message="RPM source tar.gz : '${dist.src.gzipfile}'" />
+		<echo message="RPM bin tar.gz : '${dist.bin.gzipfile}'" />
 		<echo message="RPM dest dir : '${rpm.dest.dir}'" />
 		<echo message="RPM util jar : '${rpm.util.jar}'" />
 		<echo message="RPM version : '${version}'" />
 		<echo message="RPM age : '${age}'" />
 
-		<delete file="${rpm.source.tar.file}"/>
-		<delete file="${rpm.source.tar.file}.gz"/>
+		<!-- <delete file="${rpm.source.tar.file}"/> -->
+		<!-- <delete file="${rpm.source.gzip.file}"/> -->
 		<antcall target="tar.src"/>
+		
 		<delete dir="${rpm.dest.dir}"/>
 		<mkdir dir="${rpm.dest.dir}"/>
 
 		<exec executable="sh" failonerror="true" logerror="true">
 			<arg value="${rpm.scripts.rpm-builder}"/>
 			<arg value="${rpm.spec.file}"/>
-			<arg value="${rpm.source.tar.file}.gz"/>
+			<arg value="${dist.src.gzipfile}"/>
 			<arg value="${rpm.dest.dir}"/>
 			<arg value="${rpm.util.jar}"/>
 			<arg value="${swig.location}"/>
@@ -1063,6 +1102,7 @@ test.junit.dir
 			<arg value="${xfsprogs-devel.location}"/>
 			<arg value="${version}"/>
 			<arg value="${age}"/>
+			<arg value="${dist.name}"/>
 		</exec>
 	</target>
 

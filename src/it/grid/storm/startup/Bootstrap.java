@@ -21,9 +21,15 @@
 package it.grid.storm.startup;
 
 import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.https.HTTPPluginManager;
+import it.grid.storm.https.HTTPSPluginInterface;
+import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.logging.LoggingReloadTask;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
+import org.slf4j.Logger;
 
 /**
  * @author zappi
@@ -49,4 +55,85 @@ public class Bootstrap {
         AuthzDirector.initializePathAuthz(pathAuthzDBFileName);
     }
 
+    public static void initializeUsedSpace() {
+    	SpaceInfoManager.start();
+    }
+    
+    /**
+     * @param httpsInterfaceClassName
+     * @param log
+     */
+    public static void initializeAclManager(String httpsInterfaceClassName, Logger log) {
+        log.debug("Obtaining an instance of class " + httpsInterfaceClassName);
+        Class httpsInterfaceClass = null;
+        try
+        {
+            httpsInterfaceClass = Class.forName(httpsInterfaceClassName);
+        }
+        catch (ClassNotFoundException e)
+        {
+           log.error("Unable to load https plugin class" + httpsInterfaceClassName + " . ClassNotFoundException : " + e.getMessage());
+           return;
+        }
+        if(!HTTPSPluginInterface.class.isAssignableFrom(httpsInterfaceClass))
+        {
+            log.error("The class specified \'" + httpsInterfaceClassName + "\' does not implements the Interface HTTPSPluginInterface. Unable to load the https plugin");
+            return;
+        }
+        Constructor c = null;
+        try
+        {
+            c = httpsInterfaceClass.getConstructor(null);
+        }
+        catch (SecurityException e)
+        {
+            log.error("Unable to load a no argument constructor for class " + httpsInterfaceClassName + " SecurityException : "
+                    + e.getMessage());
+            return;
+        }
+        catch (NoSuchMethodException e)
+        {
+            log.error("Unable to load a no argument constructor for class " + httpsInterfaceClassName + " NoSuchMethodException : "
+                    + e.getMessage());
+            return;
+        }
+        Class[] parameters = c.getParameterTypes();
+        if(parameters != null && parameters.length > 0)
+        {
+            log.error("Unable to construct an instance of class " + parameters.length + " It does not provides a no argument constructor");
+            return;
+        }
+        HTTPSPluginInterface httpsInterface = null;
+        try
+        {
+            httpsInterface = (HTTPSPluginInterface) c.newInstance();
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unable to isntantiate class " + httpsInterfaceClassName + " IllegalArgumentException : "
+                      + e.getMessage());
+            return;
+        }
+        catch (InstantiationException e)
+        {
+            log.error("Unable to isntantiate class " + httpsInterfaceClassName + " InstantiationException : "
+                      + e.getMessage());
+            return;
+        }
+        catch (IllegalAccessException e)
+        {
+            log.error("Unable to isntantiate class " + httpsInterfaceClassName + " IllegalAccessException : "
+                      + e.getMessage());
+            return;
+        }
+        catch (InvocationTargetException e)
+        {
+            log.error("Unable to isntantiate class " + httpsInterfaceClassName + " InvocationTargetException : "
+                      + e.getMessage());
+            return;
+        }
+        log.info("Initializing AclManager");
+        HTTPPluginManager.init(httpsInterface);
+        log.info("ACL manager initialization completed");
+    }
 }

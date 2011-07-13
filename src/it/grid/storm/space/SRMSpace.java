@@ -17,16 +17,20 @@
 
 package it.grid.storm.space;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.catalogs.InvalidRetrievedDataException;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
 import it.grid.storm.catalogs.NoDataFoundException;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -146,8 +150,28 @@ public class SRMSpace {
             log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                     + spaceFN + "  " + "USER RW");
             try {
-                stori.getLocalFile().grantUserPermission(
-                        user.getLocalUser(), fp);
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                //TODO ACL manager
+                LocalFile localFile = stori.getLocalFile();
+                LocalUser localUser = user.getLocalUser();
+                if (localFile == null || localUser == null)
+                {
+                    log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                            + " localUser " + localUser);
+                }
+                else
+                {
+                    try
+                    {
+                        manager.grantUserPermission(localFile, localUser, fp);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error("Unable to grant user traverse permission on the file. IllegalArgumentException: " + e.getMessage());
+                    }
+                }
+//                stori.getLocalFile().grantUserPermission(
+//                        user.getLocalUser(), fp);
             } catch (CannotMapUserException ex5) {
                 log.debug("Unable to setting up the ACL ", ex5);
 
@@ -157,8 +181,28 @@ public class SRMSpace {
             log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                     + spaceFN + "  " + "GROUP RW");
             try {
-                stori.getLocalFile().grantGroupPermission(
-                        user.getLocalUser(), fp);
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                //TODO ACL manager
+                LocalFile localFile = stori.getLocalFile();
+                LocalUser localUser = user.getLocalUser();
+                if (localFile == null || localUser == null)
+                {
+                    log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                            + " localUser " + localUser);
+                }
+                else
+                {
+                    try
+                    {
+                        manager.grantGroupPermission(localFile, localUser, fp);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                    }
+                }
+//                stori.getLocalFile().grantGroupPermission(
+//                        user.getLocalUser(), fp);
             } catch (CannotMapUserException ex5) {
                 log.debug("Unable to setting up the ACL ", ex5);
 
@@ -199,24 +243,7 @@ public class SRMSpace {
          * Add Storage Space in Catalog
          */
 
-        // if(spaceDt.getSpaceTokenAlias().contains("PURGEVO"))
-        // catalog.purgeOldVOSA_token();
-        // if(spaceDt.getSpaceTokenAlias().contains("LUCATEST"))
-        // catalog.createVOSA_Token(spaceDt.getSpaceTokenAlias(),
-        // spaceDt.getGuaranteedSize(), spaceDt.getSpaceFileNameString(),
-        // false);
-        // else {
-        try {
-            catalog.addStorageSpace(spaceDt);
-        } catch (MultipleDataEntriesException ex8) {
-            log.debug("MultipleDataEntriesException", ex8);
-        } catch (InvalidRetrievedDataException ex8) {
-            log.debug("InvalidRetrievedDataException", ex8);
-        } catch (NoDataFoundException ex8) {
-            log.debug("NoDataFoundException", ex8);
-        }
-
-
+		catalog.addStorageSpace(spaceDt);
 
     }
 
@@ -234,8 +261,6 @@ public class SRMSpace {
         permission();
 
         registerToCatalog();
-
-
 
     }
 

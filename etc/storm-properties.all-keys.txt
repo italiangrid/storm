@@ -19,6 +19,7 @@ storm.service.hostname
 storm.machinenames
 storm.machineIPs
 storm.commandserver.port=4444
+storm.rest.services.port
 storm.service.defaultSpaceTokens (default empty)
 proxy.home=/opt/storm/var/proxies
 
@@ -78,6 +79,9 @@ checksum.enabled=false
 checksum.serviceURL=(empty array)
 checksum.algorithm=Adler32
 
+gridhttps.enabled=false
+gridhttps.plugin.classname=
+
 pinnedfiles.cleaning.delay=10
 pinnedfiles.cleaning.interval=300
 pinLifetime.minimum=259200
@@ -98,7 +102,6 @@ health.performance.mesauring.enabled=false
 health.bookkeeping.enabled=false
 
 tape.recalltable.service.test-mode=false
-tape.recalltable.service.port=9998
 tape.recalltable.service.param.retry-value=retry-value
 tape.recalltable.service.param.status=status
 tape.recalltable.service.param.takeover=first

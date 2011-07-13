@@ -1,70 +1,29 @@
 <namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.0.xsd" version="1.5.0">
  
   <filesystems>
-    <filesystem name="DTEAM-FS" fs_type="gpfs">
-      <space-token-description>srm2_d1t0</space-token-description>
-      <root>/home/ritz/workspace/BE_1.5.0/storage/dteam</root>
-      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
-      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+    <filesystem name="MY_FS" fs_type="">
+      <space-token-description></space-token-description>
+      <root></root>
+      <filesystem-driver></filesystem-driver>
+      <spacesystem-driver></spacesystem-driver>
       <storage-area-authz>
-         <fixed>permit-all</fixed>
+         <fixed></fixed>
       </storage-area-authz>
       <properties>
-          <RetentionPolicy>replica</RetentionPolicy>
-          <AccessLatency>online</AccessLatency>
-          <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" limited-size="true">146744</TotalOnlineSize>
-          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+          <RetentionPolicy></RetentionPolicy>
+          <AccessLatency></AccessLatency>
+          <ExpirationMode></ExpirationMode>
+          <TotalOnlineSize unit="GB" limited-size="true"></TotalOnlineSize>
+          <TotalNearlineSize unit="GB"></TotalNearlineSize>
       </properties>
       <capabilities>
-        <aclMode>AoT</aclMode>
+        <aclMode></aclMode>
         <trans-prot>
-          <prot name="file">
-            <schema>file</schema>
-          </prot>
-          <prot name="gsiftp">
-            <id>0</id>
-            <schema>gsiftp</schema>
-            <host>storm-be-lhcb-01.cr.cnaf.infn.it</host>
-            <port>2811</port>
-          </prot>
-        </trans-prot>
-      </capabilities>
-    </filesystem>
-
-    <filesystem name="LHCB_RAW-FS" fs_type="gpfs">
-      <space-token-description>LHCb_RAW</space-token-description>
-      <storage-class>T1D0</storage-class>
-      <root>/home/ritz/workspace/BE_1.5.0/storage/lhcb/raw</root>
-      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
-      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
-      <storage-area-authz>
-         <fixed>permit-all</fixed>
-      </storage-area-authz>
-      <properties>
-          <RetentionPolicy>replica</RetentionPolicy>
-          <AccessLatency>online</AccessLatency>
-          <ExpirationMode>neverExpire</ExpirationMode>
-          <TotalOnlineSize unit="GB" limited-size="true">146744</TotalOnlineSize>
-          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
-      </properties>
-      <capabilities>
-        <aclMode>AoT</aclMode>
-        <quota enabled="true">
-          <device>gpfs_lhcb</device>
-            <quotaElement>
-              <filesetName>LHCb_RAW</filesetName>
-            </quotaElement>
-        </quota> 
-        <trans-prot>
-          <prot name="file">
-            <schema>file</schema>
-          </prot>
-          <prot name="gsiftp">
-            <id>0</id>
-            <schema>gsiftp</schema>
-            <host>gridftp-storm-lhcb.cr.cnaf.infn.it</host>
-            <port>2811</port>
+          <prot name="">
+            <id></id>
+            <schema></schema>
+            <host></host>
+            <port></port>
           </prot>
         </trans-prot>
       </capabilities>
@@ -72,30 +31,19 @@
   </filesystems>
 
   <mapping-rules>
-    <map-rule name="dteam-maprule">
-      <stfn-root>/dteam</stfn-root>
-      <mapped-fs>DTEAM-FS</mapped-fs>
-    </map-rule>
-    <map-rule name="lhcb_raw-maprule">
-      <stfn-root>/t1d0/raw/lhcb</stfn-root>
-      <mapped-fs>LHCB_RAW-FS</mapped-fs>
+    <map-rule name="my_fs_maprule">
+      <stfn-root></stfn-root>
+      <mapped-fs>MY_FS</mapped-fs>
     </map-rule>
   </mapping-rules>
 
   <approachable-rules>
-    <app-rule name="dteam-rule">
+    <app-rule name="my_fs-rule">
       <subjects>
-        <dn>*</dn>
-	<vo-name>dteam</vo-name>
+        <dn></dn>
+	<vo-name></vo-name>
       </subjects>
-      <approachable-fs>DTEAM-FS</approachable-fs>
-    </app-rule>
-    <app-rule name="lhcb_raw-rule">
-      <subjects>
-        <dn>*</dn>
-	<vo-name>lhcb</vo-name>
-      </subjects>
-      <approachable-fs>LHCB_RAW-FS</approachable-fs>
+      <approachable-fs>MY_FS</approachable-fs>
     </app-rule>
   </approachable-rules>
 

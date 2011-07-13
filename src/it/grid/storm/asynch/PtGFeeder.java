@@ -276,64 +276,78 @@ public final class PtGFeeder implements Delegable {
 		try
 		{
 			/* Build StoRI for current chunk */
-			StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-								 chunkData.fromSURL(), gu);
-			/* Collection of children! */
-			//TODO MICHELE here if the recursion on directory is supported substiture the following withe the commented one
-			Collection<StoRI> storiChildren = stori.getChildren(chunkData
-				  .dirOption());
-//			Collection<StoRI> storiChildren = stori.generateChildrenNoFolders(chunkData
-//												  .dirOption());
-			
-			log.debug("PtGFeeder - Number of children in parent: " + storiChildren.size());
-			
-			// FIXME MICHELE why here we set the diroption in this way? maybe it
-			// is correct in this other way:
-			// new TDirOption(childStoRI.isDirectory() (this method doesn't
-			// exists), (childStoRI.isDirectory() ? auxChunkData.dirOption() :
-			// false).isAllLevelRecursive(), (childStoRI.isDirectory() ?
-			// auxChunkData.dirOption().getNumLevel() > 0 ?
-			// (auxChunkData.dirOption().getNumLevel()-1)) : 0 ) :0));
-			TDirOption notDir = new TDirOption(false, false, 0);
-			
-			PtGChunkData childData;
-			for(StoRI storiChild : storiChildren)
-			{
-				try
-				{
-					childData = new PtGChunkData(chunkData.requestToken(), storiChild.getSURL(),
-									chunkData.getPinLifeTime(), notDir, chunkData
-										.desiredProtocols(), chunkData.fileSize(), chunkData
-										.status(), chunkData.transferURL());
-					/* fill in new db row and set the PrimaryKey of ChildData! */
-					PtGChunkCatalog.getInstance().addChild(childData);
-					log.debug("PtGFeeder - added child data: " + childData);
-					
-					/* add chunk for global status consideration */
-					gsm.addChunk(childData);
-					/* manage chunk */
-					manageNotDirectory(childData);
-				} catch(InvalidPtGChunkDataAttributesException e)
-				{
-					/*
-					 * For some reason it was not possible to create a
-					 * PtGChunkData: it is a program bug!!! It should not
-					 * occur!!! Log it and skip to the next one!
-					 */
-					log.error("ERROR in PtGFeeder! While expanding recursive request,"
-						+ " it was not possible to create a new PtGChunkData! " + e);
-				}
-			}
-			log.debug("PtGFeeder - expansion completed.");
-			/*
-			 * A request on a Directory is considered done whether there is
-			 * somethig to expand or not!
-			 */
-			//FIXME MICHELE maybe here as in BOL we have to set the success status and not pinned
-			chunkData.changeStatusSRM_FILE_PINNED("srmPrepareToGet with dirOption set: "
-				+ "request successfully expanded!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-			gsm.successfulChunk(chunkData);
+		    StoRI stori = null;
+		    try
+            {
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(), gu);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to build StoRI by SURL and user", e);
+                chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+                PtGChunkCatalog.getInstance().update(chunkData);
+                log.error("ATTENTION in PtGFeeder! PtGFeeder received " + "request for a SURL and user not recognised by StoRI!"); // info
+                gsm.failedChunk(chunkData);
+            }
+            if (stori != null)
+            {
+    			/* Collection of children! */
+    			//TODO MICHELE here if the recursion on directory is supported substiture the following withe the commented one
+    			Collection<StoRI> storiChildren = stori.getChildren(chunkData
+    				  .dirOption());
+    //			Collection<StoRI> storiChildren = stori.generateChildrenNoFolders(chunkData
+    //												  .dirOption());
+    			
+    			log.debug("PtGFeeder - Number of children in parent: " + storiChildren.size());
+    			
+    			// FIXME MICHELE why here we set the diroption in this way? maybe it
+    			// is correct in this other way:
+    			// new TDirOption(childStoRI.isDirectory() (this method doesn't
+    			// exists), (childStoRI.isDirectory() ? auxChunkData.dirOption() :
+    			// false).isAllLevelRecursive(), (childStoRI.isDirectory() ?
+    			// auxChunkData.dirOption().getNumLevel() > 0 ?
+    			// (auxChunkData.dirOption().getNumLevel()-1)) : 0 ) :0));
+    			TDirOption notDir = new TDirOption(false, false, 0);
+    			
+    			PtGChunkData childData;
+    			for(StoRI storiChild : storiChildren)
+    			{
+    				try
+    				{
+    					childData = new PtGChunkData(chunkData.requestToken(), storiChild.getSURL(),
+    									chunkData.getPinLifeTime(), notDir, chunkData
+    										.desiredProtocols(), chunkData.fileSize(), chunkData
+    										.status(), chunkData.transferURL());
+    					/* fill in new db row and set the PrimaryKey of ChildData! */
+    					PtGChunkCatalog.getInstance().addChild(childData);
+    					log.debug("PtGFeeder - added child data: " + childData);
+    					
+    					/* add chunk for global status consideration */
+    					gsm.addChunk(childData);
+    					/* manage chunk */
+    					manageNotDirectory(childData);
+    				} catch(InvalidPtGChunkDataAttributesException e)
+    				{
+    					/*
+    					 * For some reason it was not possible to create a
+    					 * PtGChunkData: it is a program bug!!! It should not
+    					 * occur!!! Log it and skip to the next one!
+    					 */
+    					log.error("ERROR in PtGFeeder! While expanding recursive request,"
+    						+ " it was not possible to create a new PtGChunkData! " + e);
+    				}
+    			}
+    			log.debug("PtGFeeder - expansion completed.");
+    			/*
+    			 * A request on a Directory is considered done whether there is
+    			 * somethig to expand or not!
+    			 */
+    			//FIXME MICHELE maybe here as in BOL we have to set the success status and not pinned
+    			chunkData.changeStatusSRM_FILE_PINNED("srmPrepareToGet with dirOption set: "
+    				+ "request successfully expanded!");
+    			PtGChunkCatalog.getInstance().update(chunkData);
+    			gsm.successfulChunk(chunkData);
+        }
 		} catch(NamespaceException e)
 		{
 			/*

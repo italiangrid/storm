@@ -19,7 +19,7 @@ package it.grid.storm.check;
  */
 public enum CheckStatus
 {
-    SUCCESS, FAILURE, NOT_APPLICABLE, INDETERMINATE;
+    SUCCESS, FAILURE, CRITICAL_FAILURE, NOT_APPLICABLE, INDETERMINATE;
 
     /**
      * Performs the logic "and" between status and bol
@@ -57,10 +57,14 @@ public enum CheckStatus
         {
             return SUCCESS;
         }
-        if ((SUCCESS.equals(status) && FAILURE.equals(otherStatus))
-                || (FAILURE.equals(status) && (SUCCESS.equals(otherStatus) || FAILURE.equals(otherStatus))))
+        if ((FAILURE.equals(status) && FAILURE.equals(otherStatus))
+                || ((FAILURE.equals(status) || FAILURE.equals(otherStatus)) && (SUCCESS.equals(status) || SUCCESS.equals(otherStatus))))
         {
             return FAILURE;
+        }
+        if (CRITICAL_FAILURE.equals(status) || CRITICAL_FAILURE.equals(otherStatus))
+        {
+            return CRITICAL_FAILURE;
         }
         if (NOT_APPLICABLE.equals(status) && NOT_APPLICABLE.equals(otherStatus))
         {

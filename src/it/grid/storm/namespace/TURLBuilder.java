@@ -19,6 +19,9 @@ package it.grid.storm.namespace;
 
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.https.HTTPPluginManager;
+import it.grid.storm.https.HTTPSPluginException;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
@@ -93,5 +96,60 @@ public class TURLBuilder {
         String extraSlashesForROOT = Configuration.getInstance().getExtraSlashesForROOTTURL();
         return buildTURL(Protocol.ROOT, authority, extraSlashesForROOT, physicalFN) ;
     }
+
+    /**
+     * buildHHTPTURL
+     * 
+     * @param authority
+     * @param physicalFN
+     * @return
+     * @throws Exception 
+     * @throws IllegalStateException 
+     */
+ // TODO HTTPS TURL
+    public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile) throws HTTPSPluginException
+    {
+//        ????? NEEDED ??? String extraSlashesFor?? = Configuration.getInstance().getExtraSlashesFor??PTURL();
+//        return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP, physicalFN) ;
+        
+        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().MapLocalPath(localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+        return buildTURL(Protocol.HTTP, authority, "", serviceRelativePath);
+    }
+
+    /**
+     * buildHHTPTURL
+     * 
+     * @param authority
+     * @param physicalFN
+     * @return
+     * @throws Exception 
+     * @throws IllegalStateException 
+     */
+ // TODO HTTPS TURL
+    public static TTURL buildHTTPSTURL(Authority authority, LocalFile localFile) throws HTTPSPluginException
+    {
+//      ????? NEEDED ??? String extraSlashesFor?? = Configuration.getInstance().getExtraSlashesFor??PTURL();
+//      return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP, physicalFN) ;
+        
+//        String servicePath = HTTPPluginManager.getHTTPSPluginInstance().getServicePath(); // HTTPSPluginInterface.getServicePath();
+        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().MapLocalPath(localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+      return buildTURL(Protocol.HTTPS, authority, "", serviceRelativePath);
+    }
+    
+    private static TTURL buildTURL(Protocol protocol, Authority authority, String extraSlashes, String serviceRelativePath) {
+        TTURL turl = null;
+        String turlString = null;
+        try {
+            turlString = protocol.getProtocolPrefix() + authority.toString() + extraSlashes + serviceRelativePath;
+            log.debug("turlString used to build the TURL : " + turlString);
+            turl = TTURL.makeFromString( turlString );
+        }
+        catch ( InvalidTTURLAttributesException ex ) {
+            log.error("Error while constructing TURL with Authority :'" + authority + "'; EXCEP: "+ex);
+        }
+        return turl;
+    }
+    
+    //TODO MICHELE HTTPS here add the method that builds the HTTPS turl using the installed connector 
 
 }

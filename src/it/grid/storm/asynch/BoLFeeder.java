@@ -255,58 +255,74 @@ public final class BoLFeeder implements Delegable {
 		
 		try
 		{
-			StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-								 chunkData.getFromSURL(), gu);
-			/* Collection of children! */
-			Collection<StoRI> storiChildren = stori.getChildren(chunkData
-										   .getDirOption());
-			log.debug("BoLFeeder - Number of children in parent: " + storiChildren.size());
-			
-			TDirOption notDir = new TDirOption(false, false, 0);
-			BoLChunkData childData;
-			for(StoRI storiChild : storiChildren)
-			{
-				try
-				{
-					childData = new BoLChunkData(chunkData.getRequestToken(), storiChild
-									.getSURL(), chunkData.getLifeTime(), notDir, chunkData
-									.getDesiredProtocols(), chunkData.getFileSize(),
-									chunkData.getStatus(), chunkData.getTransferURL(),
-									chunkData.getDeferredStartTime());
-					
-					/* fill in new db row and set the PrimaryKey of ChildData! */
-					BoLChunkCatalog.getInstance().addChild(childData);
-					
-					log.debug("BoLFeeder - added child data: " + childData);
-					/* add chunk for global status consideration */
-					gsm.addChunk(childData);
-					
-					manageNotDirectory(childData);
-				} catch(InvalidBoLChunkDataAttributesException e)
-				{
-					/*
-					 * For some reason it was not possible to create a
-					 * BoLChunkData: it is a programme bug!!! It should not
-					 * occur!!! Log it and skip to the next one!
-					 */
-					log.error("ERROR in BoLFeeder! While expanding recursive request"
-						+ ", it was not possible to create a new BoLChunkData! " + e);
-				}
-			}
-			log.debug("BoLFeeder - expansion completed."); // info
-			/*
-			 * A request on a Directory is considered done whether there is
-			 * somethig to expand or not!
-			 */
-			/*
-			 * auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!"
-			 * );
-			 */
-			chunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption"
-				+ " set: request successfully expanded!");
-
-			BoLChunkCatalog.getInstance().update(chunkData);
-			gsm.successfulChunk(chunkData);
+            StoRI stori = null;
+            try
+            {
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getFromSURL(), gu);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to build StoRI by SURL and user", e);
+                chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+               BoLChunkCatalog.getInstance().update(chunkData);
+               
+               log.debug("ATTENTION in BoLFeeder! BoLFeeder received request"
+                   + " for a SURL and user not recognised by StoRI!");
+               gsm.failedChunk(chunkData);
+            }
+            if(stori != null)
+            {
+    			/* Collection of children! */
+    			Collection<StoRI> storiChildren = stori.getChildren(chunkData
+    										   .getDirOption());
+    			log.debug("BoLFeeder - Number of children in parent: " + storiChildren.size());
+    			
+    			TDirOption notDir = new TDirOption(false, false, 0);
+    			BoLChunkData childData;
+    			for(StoRI storiChild : storiChildren)
+    			{
+    				try
+    				{
+    					childData = new BoLChunkData(chunkData.getRequestToken(), storiChild
+    									.getSURL(), chunkData.getLifeTime(), notDir, chunkData
+    									.getDesiredProtocols(), chunkData.getFileSize(),
+    									chunkData.getStatus(), chunkData.getTransferURL(),
+    									chunkData.getDeferredStartTime());
+    					
+    					/* fill in new db row and set the PrimaryKey of ChildData! */
+    					BoLChunkCatalog.getInstance().addChild(childData);
+    					
+    					log.debug("BoLFeeder - added child data: " + childData);
+    					/* add chunk for global status consideration */
+    					gsm.addChunk(childData);
+    					
+    					manageNotDirectory(childData);
+    				} catch(InvalidBoLChunkDataAttributesException e)
+    				{
+    					/*
+    					 * For some reason it was not possible to create a
+    					 * BoLChunkData: it is a programme bug!!! It should not
+    					 * occur!!! Log it and skip to the next one!
+    					 */
+    					log.error("ERROR in BoLFeeder! While expanding recursive request"
+    						+ ", it was not possible to create a new BoLChunkData! " + e);
+    				}
+    			}
+    			log.debug("BoLFeeder - expansion completed."); // info
+    			/*
+    			 * A request on a Directory is considered done whether there is
+    			 * somethig to expand or not!
+    			 */
+    			/*
+    			 * auxChunkData.changeStatusSRM_FILE_PINNED("srmBringOnLine with dirOption set: request successfully expanded!"
+    			 * );
+    			 */
+    			chunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption"
+    				+ " set: request successfully expanded!");
+    
+    			BoLChunkCatalog.getInstance().update(chunkData);
+    			gsm.successfulChunk(chunkData);
+            }
 		} catch(NamespaceException e)
 		{
 			/*

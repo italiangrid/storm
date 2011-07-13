@@ -22,7 +22,7 @@ package it.grid.storm.tape.recalltable.persistence;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.TRequestToken;
 
 import java.io.File;
@@ -33,11 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -98,7 +95,7 @@ public class PropertiesDB {
      * @throws IOException
      * @throws DataAccessException
      */
-    public void addRecallTask(RecallTaskTO task) throws FileNotFoundException, IOException, DataAccessException {
+    public void addRecallTask(TapeRecallTO task) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
@@ -117,22 +114,22 @@ public class PropertiesDB {
     }
 
 
-    public void setRecallTask(List<RecallTaskTO> listTasks) throws FileNotFoundException, IOException,
+    public void setRecallTask(List<TapeRecallTO> listTasks) throws FileNotFoundException, IOException,
             DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
         TRequestToken taskToken = null;
         String taskStr = null;
-        for (RecallTaskTO recallTaskTO : listTasks) {
+        for (TapeRecallTO TapeRecallTO : listTasks) {
             // Retrieve the Task-id (unique-key)
-            taskToken = recallTaskTO.getRequestToken();
+            taskToken = TapeRecallTO.getRequestToken();
             if (taskToken == null) {
                 log.error("You are trying to store a Task without a RequestToken.");
                 throw new DataAccessException("You are trying to store a Task without a Request-Token.");
             }
             // Build the String related to Task-id
-            taskStr = recallTaskTO.toString();
+            taskStr = TapeRecallTO.toString();
             // Insert the new property entry
             properties.setProperty(taskToken.getValue(), taskStr);
             taskToken = null;
@@ -142,14 +139,14 @@ public class PropertiesDB {
     }
 
 
-    public List<RecallTaskTO> getRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
-        ArrayList<RecallTaskTO> result = new ArrayList<RecallTaskTO>();
+    public List<TapeRecallTO> getRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
+        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
   
         for (Object values : properties.values()) {
             String v = (String)values;
-            RecallTaskTO task = RecallTaskBuilder.build(v);
+            TapeRecallTO task = TapeRecallBuilder.build(v);
             if (task.getTaskId().equals(taskId)) {
                 result.add(task);
             }
@@ -163,7 +160,7 @@ public class PropertiesDB {
 
 
     
-    public void updateRecallTask(RecallTaskTO task) throws FileNotFoundException, IOException, DataAccessException {
+    public void updateRecallTask(TapeRecallTO task) throws FileNotFoundException, IOException, DataAccessException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
 
@@ -206,22 +203,22 @@ public class PropertiesDB {
     }
   
     
-    public LinkedHashMap<TRequestToken, RecallTaskTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
+    public LinkedHashMap<TRequestToken, TapeRecallTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
          
-        LinkedHashMap<TRequestToken, RecallTaskTO> tasksDBmem = new LinkedHashMap<TRequestToken, RecallTaskTO>();
-        ArrayList<RecallTaskTO> tasksList = new ArrayList<RecallTaskTO>();
+        LinkedHashMap<TRequestToken, TapeRecallTO> tasksDBmem = new LinkedHashMap<TRequestToken, TapeRecallTO>();
+        ArrayList<TapeRecallTO> tasksList = new ArrayList<TapeRecallTO>();
         Properties properties = new Properties();
         properties.load(new FileInputStream(propertiesDBName));
         Collection<Object> values = properties.values();
         for (Object element : values) {
             String line = (String) element;
-            RecallTaskTO task = RecallTaskBuilder.build(line);
+            TapeRecallTO task = TapeRecallBuilder.build(line);
             tasksList.add(task);
         }
-        RecallTaskTO[] tasksArray = tasksList.toArray(new RecallTaskTO[tasksList.size()]);
+        TapeRecallTO[] tasksArray = tasksList.toArray(new TapeRecallTO[tasksList.size()]);
         Arrays.sort(tasksArray);
         // Create the ordered LinkedHashMap
-        for (RecallTaskTO element : tasksArray) {
+        for (TapeRecallTO element : tasksArray) {
             tasksDBmem.put(element.getRequestToken(), element);
         }
         return tasksDBmem;

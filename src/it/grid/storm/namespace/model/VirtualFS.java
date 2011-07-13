@@ -92,7 +92,7 @@ public class VirtualFS implements VirtualFSInterface {
     genericfs genericFS = null;
     SpaceSystem spaceSystem = null;
     Filesystem fsWrapper = null;
-    List mappingRules = new ArrayList();
+    List<MappingRule> mappingRules = new ArrayList<MappingRule>();
     Configuration config;
     StorageClassType storageClass = null;
     TSpaceToken spaceToken;
@@ -292,7 +292,7 @@ public class VirtualFS implements VirtualFSInterface {
         return this.genericFS;
     }
 
-    public List getMappingRules() throws NamespaceException {
+    public List<MappingRule> getMappingRules() throws NamespaceException {
         if (this.mappingRules.isEmpty()) {
             throw new NamespaceException("No one MAPPING RULES bound with this VFS (" + aliasName + "). ");
         }
@@ -474,7 +474,7 @@ public class VirtualFS implements VirtualFSInterface {
          */
         StoRIType type = StoRIType.UNKNOWN;
         //log.debug("CREATING STORI BY RELATIVE PATH : "+relativePath);
-        StoRI stori = new StoRIImpl(this, (MappingRule) mappingRules.get(0), relativePath, type);
+        StoRI stori = new StoRIImpl(this, mappingRules.get(0), relativePath, type);
         return stori;
     }
 
@@ -483,7 +483,7 @@ public class VirtualFS implements VirtualFSInterface {
          * @todo Check if relativePath is a valid path for a file.
          */
         log.debug("VFS Class - Relative Path : " + relativePath);
-        StoRI stori = new StoRIImpl(this, (MappingRule) mappingRules.get(0), relativePath, type);
+        StoRI stori = new StoRIImpl(this, mappingRules.get(0), relativePath, type);
         return stori;
     }
 
@@ -601,23 +601,23 @@ public class VirtualFS implements VirtualFSInterface {
         }
 
         //Compute space to use
-        TSizeInBytes totalSpaceSize = spaceData.getTotalSize();
+        TSizeInBytes totalSpaceSize = spaceData.getTotalSpaceSize();
         log.debug("Total Space : " + totalSpaceSize);
-        TSizeInBytes guarSpaceSize = spaceData.getGuaranteedSize();
+        TSizeInBytes guarSpaceSize = spaceData.getReservedSpaceSize();
         log.debug("Guaranteed Space : " + guarSpaceSize);
-        TSizeInBytes usedSpaceSize = spaceData.getActualUsedSpace();
+        TSizeInBytes usedSpaceSize = spaceData.getUsedSpaceSize();
         log.debug("Used Space : " + usedSpaceSize);
-        TSizeInBytes unusedSpaceSize = spaceData.getUnusedSizes();
-        log.debug("Unused Space : " + unusedSpaceSize);
+        TSizeInBytes availableSpaceSize = spaceData.getAvailableSpaceSize();
+        log.debug("Available Space : " + availableSpaceSize);
 
         //The unusedSpaceSize should have the same size of Space File
         /**
-         * @todo : compare Real size and Unused Space size.
+         * @todo : compare Real size and Available Space size.
          */
 
         //Verify that Size retrieved from DB are not null.
-        if (unusedSpaceSize == null) {
-            unusedSpaceSize = TSizeInBytes.makeEmpty();
+        if (availableSpaceSize == null) {
+        	availableSpaceSize = TSizeInBytes.makeEmpty();
         }
         if (usedSpaceSize == null) {
             usedSpaceSize = TSizeInBytes.makeEmpty();
@@ -629,20 +629,19 @@ public class VirtualFS implements VirtualFSInterface {
             //consumeSize measures the amount of Space that will be consumed.
             long consumeSize = -1;
 
-            if (sizePresumed.value() > unusedSpaceSize.value()) {
-                consumeSize = unusedSpaceSize.value();
+            if (sizePresumed.value() > availableSpaceSize.value()) {
+                consumeSize = availableSpaceSize.value();
             }
             else {
-                consumeSize = sizePresumed.value(); //unusedSpaceSize.value() - sizePresumed.value();
-            }
+                consumeSize = sizePresumed.value();             }
 
             //remainingSize measures the amount of Space free after reservation.
-            long remainingSize = unusedSpaceSize.value() - consumeSize; //Greater or equal to zero for construction
+            long remainingSize = availableSpaceSize.value() - consumeSize; //Greater or equal to zero for construction
 
             //Retrieve the Space File
             PFN pfn = spaceData.getSpaceFileName();
 
-            long totalSize = spaceData.getTotalSize().value();
+            long totalSize = spaceData.getTotalSpaceSize().value();
             log.debug("VFS: PFN name "+pfn);
 
             //Create Space StoRI
@@ -675,19 +674,19 @@ public class VirtualFS implements VirtualFSInterface {
 
             //Update Storage Space to new values of size
             TSizeInBytes newUsedSpaceSize = TSizeInBytes.makeEmpty();
-            TSizeInBytes newUnusedSpaceSize = TSizeInBytes.makeEmpty();
+            TSizeInBytes newAvailableSpaceSize = TSizeInBytes.makeEmpty();
             try {
                 newUsedSpaceSize = TSizeInBytes.make(totalSpaceSize.value() - remainingSize, SizeUnit.BYTES);
-                newUnusedSpaceSize = TSizeInBytes.make(remainingSize,SizeUnit.BYTES);
+                newAvailableSpaceSize = TSizeInBytes.make(remainingSize,SizeUnit.BYTES);
             }
             catch (InvalidTSizeAttributesException ex) {
                 log.error("Unable to create Used Space Size, so use EMPTY size ", ex);
             }
 
             //Update the space data with new value
-            spaceData.setActualUsedSpace(newUsedSpaceSize);
+            spaceData.setUsedSpaceSize(newUsedSpaceSize);
             //spaceData.setUnusedSize(newUnusedSize);
-            spaceData.setUnusedSize(newUnusedSpaceSize);
+            spaceData.setUsedSpaceSize(newAvailableSpaceSize);
             //Update the catalogs
             storeSpaceByToken(spaceData);
         }
@@ -786,22 +785,22 @@ public class VirtualFS implements VirtualFSInterface {
 
 
             //Compute space to use
-            TSizeInBytes totalSpaceSize = spaceData.getTotalSize();
+            TSizeInBytes totalSpaceSize = spaceData.getTotalSpaceSize();
             log.debug("Total Space : " + totalSpaceSize);
-            TSizeInBytes guarSpaceSize = spaceData.getGuaranteedSize();
+            TSizeInBytes guarSpaceSize = spaceData.getReservedSpaceSize();
             log.debug("Guaranteed Space : " + guarSpaceSize);
-            TSizeInBytes usedSpaceSize = spaceData.getActualUsedSpace();
+            TSizeInBytes usedSpaceSize = spaceData.getUsedSpaceSize();
             log.debug("Used Space : " + usedSpaceSize);
-            TSizeInBytes unusedSpaceSize = spaceData.getUnusedSizes();
-            log.debug("Unused Space : " + unusedSpaceSize);
+            TSizeInBytes availableSpaceSize = spaceData.getAvailableSpaceSize();
+            log.debug("Available Space : " + availableSpaceSize);
 
-            if(defaultFileSize.value() <= (unusedSpaceSize.value()/2)) {
+            if(defaultFileSize.value() <= (availableSpaceSize.value()/2)) {
                 log.debug("UseAllSpaceForFile size:"+defaultFileSize);
                 useSpaceForFile(token, file, defaultFileSize );
             } else {
                 TSizeInBytes fileSizeToUse = null;
                 try {
-                    fileSizeToUse = TSizeInBytes.make(unusedSpaceSize.value()/2, SizeUnit.BYTES );
+                    fileSizeToUse = TSizeInBytes.make(availableSpaceSize.value()/2, SizeUnit.BYTES );
                 }
                 catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
                     log.debug("Invalid size created.");
@@ -809,38 +808,6 @@ public class VirtualFS implements VirtualFSInterface {
                 log.debug("UseAllSpaceForFile size:"+fileSizeToUse );
                 useSpaceForFile(token, file, fileSizeToUse);
             }
-            /*
-	        //Retrieve the Space File
-	        PFN pfn = spaceData.getSpaceFileName();
-	        StoRI spaceFile = retrieveSpaceFileByPFN(pfn, totalSpaceSize.value());
-	        spaceFile.setStoRIType(StoRIType.SPACE_BOUND);
-
-	        //Assign spaceFile to new File
-	        //Rename Space to the File Name to the name of LocalFile in file
-	        spaceFile.getLocalFile().renameTo(file.getAbsolutePath());
-
-	        //file.setSpace(spaceFile.getSpace());
-
-
-	        //Update Storage Space to new values of size
-	        //-1 is not correct , change here and add check on SpaceData
-	        TSizeInBytes newUnusedSpaceSize = TSizeInBytes.makeEmpty();
-	        try {
-	            newUnusedSpaceSize = TSizeInBytes.make(0, SizeUnit.BYTES);
-	        }
-	        catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
-	            log.debug("Invalid size created.");
-	        }
-
-	        spaceData.setActualUsedSpace(totalSpaceSize);
-	        spaceData.setUnusedSize(newUnusedSpaceSize);
-
-	        //Update the catalogs
-	        storeSpaceByToken(spaceData);
-             */
-
-
-
         }
 
 
@@ -861,7 +828,7 @@ public class VirtualFS implements VirtualFSInterface {
         /*
          * TODO Mapping rule should be choosen from the appropriate app-rule presents in the namespace.xml file...
          */
-        StoRI stori = new StoRIImpl(this, (MappingRule) mappingRules.get(0), relativePath, type);
+        StoRI stori = new StoRIImpl(this, mappingRules.get(0), relativePath, type);
 
         //Retrieve the instance of the right Space System
         SpaceSystem spaceSystem = getSpaceSystemDriverInstance();
@@ -1164,7 +1131,8 @@ public class VirtualFS implements VirtualFSInterface {
 
         //Retrieve Storage Space from Persistence
         ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
-        catalog.setFreeSize(spaceData);
+//        catalog.setFreeSize(spaceData);
+        catalog.updateStorageSpace(spaceData);
     }
 
     public StoRI retrieveSpaceFileByPFN(PFN pfn, long totalSize) throws NamespaceException {

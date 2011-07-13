@@ -32,6 +32,7 @@
 
 package it.grid.storm.filesystem;
 
+import it.grid.storm.acl.AclManager;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -274,7 +275,7 @@ public class LocalFile {
      * @return permission associated to the local account primary GID of the given LocalUser <i>u</i> in the given file
      *         ACL. or {@link Filesystem#NONE} if no ACE for that group was found.
      */
-    public FilesystemPermission getGroupPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission getGroupPermission(final LocalUser u) {
         return fs.getGroupPermission(u, localFile.getAbsolutePath());
     }
 
@@ -336,7 +337,7 @@ public class LocalFile {
      * @return permission associated to the local account UID of the given LocalUser <i>u</i> in this file ACL, or
      *         {@link Filesystem#NONE} if no ACE for that user was found.
      */
-    public FilesystemPermission getUserPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission getUserPermission(final LocalUser u) {
         return fs.getUserPermission(u, localFile.getAbsolutePath());
     }
 
@@ -355,8 +356,11 @@ public class LocalFile {
      * @return permission formerly associated to the local account primary GID of the given LocalUser <i>u</i> in this
      *         file ACL, or {@link Filesystem#NONE} if no ACE for that group was found.
      */
+    //TODO ACL manager
+//    public FilesystemPermission grantGroupPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission grantGroupPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.grantGroupPermission(u, localFile.getAbsolutePath(), permission);
     }
 
@@ -375,8 +379,11 @@ public class LocalFile {
      * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i> in this file ACL,
      *         or {@link Filesystem#NONE} if no ACE for that user was found.
      */
+    //TODO ACL manager
+//    public FilesystemPermission grantUserPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission grantUserPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.grantUserPermission(u, localFile.getAbsolutePath(), permission);
     }
 
@@ -521,7 +528,10 @@ public class LocalFile {
      * @return permission formerly associated to the local account primary GID of the given LocalUser <i>u</i> in this
      *         file ACL, or {@link Filesystem#NONE} if no ACE for that group was found.
      */
-    public FilesystemPermission removeGroupPermission(final LocalUser u) throws CannotMapUserException {
+    //TODO ACL manager
+//    public FilesystemPermission removeGroupPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission removeGroupPermission(final LocalUser u)
+    {
         return fs.removeGroupPermission(u, localFile.getAbsolutePath());
     }
 
@@ -537,7 +547,10 @@ public class LocalFile {
      * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i> in this file ACL,
      *         or {@link Filesystem#NONE} if no ACE for that user was found.
      */
-    public FilesystemPermission removeUserPermission(final LocalUser u) throws CannotMapUserException {
+    //TODO ACL manager
+//    public FilesystemPermission removeUserPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission removeUserPermission(final LocalUser u)
+    {
         return fs.removeUserPermission(u, localFile.getAbsolutePath());
     }
 
@@ -565,8 +578,11 @@ public class LocalFile {
      *         file ACL, or {@link Filesystem#NONE} if no ACE for that group was found.
      * @see fs_acl::revoke_group_perm()
      */
+    //TODO ACL manager
+//    public FilesystemPermission revokeGroupPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission revokeGroupPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.revokeGroupPermission(u, localFile.getAbsolutePath(), permission);
     }
 
@@ -585,8 +601,11 @@ public class LocalFile {
      * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i> in this file ACL,
      *         or {@link Filesystem#NONE} if no ACE for that user was found.
      */
+    //TODO ACL manager
+//    public FilesystemPermission revokeUserPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission revokeUserPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.revokeUserPermission(u, localFile.getAbsolutePath(), permission);
     }
 
@@ -677,8 +696,11 @@ public class LocalFile {
      * @return permission formerly associated to the local account primary GID of the given LocalUser <i>u</i> in this
      *         file ACL, or {@link Filesystem#NONE} if no ACE for that group was found.
      */
+    //TODO ACL manager
+//    public FilesystemPermission setGroupPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission setGroupPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.setGroupPermission(u, localFile.getAbsolutePath(), permission);
     }
 
@@ -693,8 +715,11 @@ public class LocalFile {
      * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i> in this file ACL,
      *         or {@link Filesystem#NONE} if no ACE for that user was found.
      */
+    //TODO ACL manager
+//    public FilesystemPermission setUserPermission(final LocalUser u, final FilesystemPermission permission)
+//            throws CannotMapUserException {
     public FilesystemPermission setUserPermission(final LocalUser u, final FilesystemPermission permission)
-            throws CannotMapUserException {
+    {
         return fs.setUserPermission(u, localFile.getAbsolutePath(), permission);
     }
 

@@ -206,13 +206,17 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
         }
 
     }
-
+    
     private String getNamespaceFileName() {
     	String configurationDir = it.grid.storm.config.Configuration.getInstance().configurationDir();
     	//Looking for namespace configuration file
     	String namespaceFN = it.grid.storm.config.Configuration.getInstance().getNamespaceConfigFilename();
     	//Build the filename
-    	String namespaceAbsFN = configurationDir + File.separatorChar + namespaceFN; 
+    	if(configurationDir.charAt(configurationDir.length() -1) != File.separatorChar)
+    	{
+    	    configurationDir += File.separatorChar;
+    	}
+    	String namespaceAbsFN = configurationDir + namespaceFN;
     	//Check the namespace conf file accessibility
     	File nsFile = new File(namespaceAbsFN);
     	if (nsFile.exists()) {

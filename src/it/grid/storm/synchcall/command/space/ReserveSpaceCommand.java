@@ -17,6 +17,8 @@
 
 package it.grid.storm.synchcall.command.space;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.catalogs.InvalidRetrievedDataException;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
@@ -30,6 +32,7 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -595,8 +598,42 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "USER RW");
                 try {
-                    spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    //TODO ACL manager
+                    LocalFile localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        log.error(formatLogMessage(FAILURE,
+                                                   user,
+                                                   data.getDesiredSize(),
+                                                   data.getGuaranteedSize(),
+                                                   data.getLifetime(),
+                                                   data.getRetentionPolicyInfo(),
+                                                   statusCode,
+                                                   explanation));
+                        return manageError(statusCode, explanation);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantUserPermission(localFile,localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant user permission on space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to grant group permission on space file ";
+                            return manageError(statusCode, explanation);
+                        }
+                    }
+//                    spaceFile.getLocalFile().grantUserPermission(
+//                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -611,19 +648,66 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 // AoT Case
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "GROUP RW");
-                try {
-                    spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
-                } catch (CannotMapUserException ex5) {
+                try
+                {
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    // TODO ACL manager
+                    LocalFile localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " , localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        log.error(formatLogMessage(FAILURE,
+                                                   user,
+                                                   data.getDesiredSize(),
+                                                   data.getGuaranteedSize(),
+                                                   data.getLifetime(),
+                                                   data.getRetentionPolicyInfo(),
+                                                   statusCode,
+                                                   explanation));
+                        return manageError(statusCode, explanation, 1, localFile);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(localFile, localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permission on the space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to setting up the ACL ";
+                            log.error(formatLogMessage(FAILURE,
+                                                       user,
+                                                       data.getDesiredSize(),
+                                                       data.getGuaranteedSize(),
+                                                       data.getLifetime(),
+                                                       data.getRetentionPolicyInfo(),
+                                                       statusCode,
+                                                       explanation));
+                            return manageError(statusCode, explanation, 1, localFile);
+                        }
+                    }
+                    // spaceFile.getLocalFile().grantGroupPermission(user.getLocalUser(), fp);
+                }
+                catch (CannotMapUserException ex5)
+                {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     explanation = "Unable to setting up the ACL ";
-                    log.error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
-                    return manageError(statusCode, explanation, 1, spaceFile
-                            .getLocalFile());
+                    log.error(formatLogMessage(FAILURE,
+                                               user,
+                                               data.getDesiredSize(),
+                                               data.getGuaranteedSize(),
+                                               data.getLifetime(),
+                                               data.getRetentionPolicyInfo(),
+                                               statusCode,
+                                               explanation));
+                    return manageError(statusCode, explanation, 1, spaceFile.getLocalFile());
                 }
             }
 
@@ -662,22 +746,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
              * Add Storage Space in Catalog
              */
 
-            // if(spaceDt.getSpaceTokenAlias().contains("PURGEVO"))
-            // catalog.purgeOldVOSA_token();
-            // if(spaceDt.getSpaceTokenAlias().contains("LUCATEST"))
-            // catalog.createVOSA_Token(spaceDt.getSpaceTokenAlias(),
-            // spaceDt.getGuaranteedSize(), spaceDt.getSpaceFileNameString(),
-            // false);
-            // else {
-            try {
-                catalog.addStorageSpace(spaceDt);
-            } catch (MultipleDataEntriesException ex8) {
-                log.debug("MultipleDataEntriesException", ex8);
-            } catch (InvalidRetrievedDataException ex8) {
-                log.debug("InvalidRetrievedDataException", ex8);
-            } catch (NoDataFoundException ex8) {
-                log.debug("NoDataFoundException", ex8);
-            }
+			catalog.addStorageSpace(spaceDt);
 
             try {
                 tok = TSpaceToken.make(spaceDt.getSpaceToken().toString());
@@ -756,11 +825,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         StorageSpaceData sdata = catalog.getStorageSpace(token);
         // Check if it a VO_SA_Token, in that case do nothing
         if (sdata.getSpaceType().equals(TSpaceType.VOSPACE)) {
-            return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-            "Abort file done.");
+            return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Abort file done.");
         }
 
-        GridUserInterface user = sdata.getUser();
+        GridUserInterface user = sdata.getOwner();
         PFN spacePFN = sdata.getSpaceFileName();
 
         // Obtain the PFN of the user-root directory.
@@ -796,9 +864,9 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         }
 
         // ************ RETRIEVE THE SIZEs OF SPACE from DB********************
-        TSizeInBytes desiderataSpaceSize = sdata.getTotalSize();
-        TSizeInBytes totalSize = sdata.getTotalSize();
-        TSizeInBytes guarSize = sdata.getGuaranteedSize();
+        TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
+        TSizeInBytes totalSize = sdata.getTotalSpaceSize();
+        TSizeInBytes guarSize = sdata.getReservedSpaceSize();
 
         /**
          * Check free space on file system.
@@ -871,8 +939,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "USER RW");
                 try {
-                    spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    // TODO ACL manager
+                    LocalFile localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " , localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        return manageErrorStatus(statusCode, explanation);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(localFile, localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to grant group permission on space file ";
+                            return manageErrorStatus(statusCode, explanation);
+                        }
+                    }
+//                    spaceFile.getLocalFile().grantUserPermission(
+//                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -884,8 +978,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "GROUP RW");
                 try {
-                    spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    //TODO ACL manager
+                    LocalFile localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " , localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        return manageErrorStatus(statusCode, explanation);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(localFile, localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to grant group permission on space file ";
+                            return manageErrorStatus(statusCode, explanation);
+                        }
+                    }
+//                    spaceFile.getLocalFile().grantGroupPermission(
+//                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -900,28 +1020,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
          * Update data into DB
          */
         // sdata.setSpaceFileName(spacePFN);
-        sdata.setUnusedSize(desiderataSpaceSize);
+        sdata.setUsedSpaceSize(desiderataSpaceSize);
 
         // UpdateData into the ReserveSpaceCatalog
-        try {
-            catalog.updateStorageSpace(sdata);
-
-        } catch (NoDataFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        } catch (InvalidRetrievedDataException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        } catch (MultipleDataEntriesException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        }
+        catalog.setFreeSize(sdata);
 
         return manageErrorStatus(TStatusCode.SRM_SUCCESS,
         "Successfull creation.");
@@ -942,13 +1044,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         TStatusCode statusCode = TStatusCode.EMPTY;
 
         StorageSpaceData sdata = catalog.getStorageSpace(token);
-        GridUserInterface user = sdata.getUser();
+        GridUserInterface user = sdata.getOwner();
         PFN spacePFN = sdata.getSpaceFileName();
 
         // Check if it a VO_SA_Token, in that case do nothing
         if (sdata.getSpaceType().equals(TSpaceType.VOSPACE)) {
-            return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-            "Abort file done.");
+            return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Abort file done.");
         }
 
         /**
@@ -987,19 +1088,19 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         }
 
         // ************ RETRIEVE THE SIZEs OF SPACE from DB********************
-        TSizeInBytes desiderataSpaceSize = sdata.getTotalSize();
-        TSizeInBytes totalSize = sdata.getTotalSize();
-        TSizeInBytes guarSize = sdata.getGuaranteedSize();
-        TSizeInBytes unusedSize = sdata.getUnusedSizes();
+        TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
+        TSizeInBytes totalSize = sdata.getTotalSpaceSize();
+        TSizeInBytes guarSize = sdata.getReservedSpaceSize();
+        TSizeInBytes availableSize = sdata.getAvailableSpaceSize();
 
-        log.debug("Unused Size : " + unusedSize.value());
+        log.debug("available Size : " + availableSize.value());
         log.debug("Size of removed file: " + sizeToAdd.value());
 
         /**
          * Add to the desiderata size the bytes freed from the abort
          */
         try {
-            desiderataSpaceSize = TSizeInBytes.make(unusedSize.value()
+            desiderataSpaceSize = TSizeInBytes.make(availableSize.value()
                     + sizeToAdd.value(), SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e1) {
             // TODO Auto-generated catch block
@@ -1087,8 +1188,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "USER RW");
                 try {
-                    spaceFile.getLocalFile().grantUserPermission(
-                            user.getLocalUser(), fp);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    // TODO ACL manager
+                    localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " , localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        return manageErrorStatus(statusCode, explanation);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(localFile, localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to grant group permission on space file ";
+                            return manageErrorStatus(statusCode, explanation);
+                        }
+                    }
+//                    spaceFile.getLocalFile().grantUserPermission(
+//                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -1100,8 +1227,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
                         + spacePFN + "  " + "GROUP RW");
                 try {
-                    spaceFile.getLocalFile().grantGroupPermission(
-                            user.getLocalUser(), fp);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    //TODO ACL manager
+                    localFile = spaceFile.getLocalFile();
+                    LocalUser localUser = user.getLocalUser();
+                    if (localFile == null || localUser == null)
+                    {
+                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
+                                + " , localUser " + localUser);
+                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        explanation = "Unable to setting up the ACL ";
+                        return manageErrorStatus(statusCode, explanation);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(spaceFile.getLocalFile(), localUser, fp);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            explanation = "Unable to grant group permission on space file ";
+                            return manageErrorStatus(statusCode, explanation);
+                        }
+                    }
+//                    spaceFile.getLocalFile().grantGroupPermission(
+//                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -1126,43 +1279,24 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
          */
         //
         try {
-            unusedSize = TSizeInBytes.make(sdata.getUnusedSizes().value()
+            availableSize = TSizeInBytes.make(sdata.getAvailableSpaceSize().value()
                     + sizeToAdd.value(), SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         // Update the free bytes!
-        sdata.setUnusedSize(unusedSize);
+        sdata.forceAvailableSpaceSize(availableSize);
 
         // UpdateData into the ReserveSpaceCatalog
-        try {
-
-            catalog.updateStorageSpace(sdata);
-
-        } catch (NoDataFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        } catch (InvalidRetrievedDataException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        } catch (MultipleDataEntriesException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return manageErrorStatus(TStatusCode.SRM_FAILURE,
-            "Error updating DB.");
-        }
+        catalog.setFreeSize(sdata);
 
         return manageErrorStatus(TStatusCode.SRM_SUCCESS,
         "Successfull creation.");
     }
 
     /**
-     * This function is use to create updata data in case of variuos kind of
+     * This function is use to create update data in case of various kind of
      * error.
      * 
      * @param statusCode

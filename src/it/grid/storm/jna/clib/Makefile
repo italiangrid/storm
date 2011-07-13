@@ -4,24 +4,24 @@ distdir=.
 globalprefix=storm
 backendprefix=backend
 package=storm-backend
-version=1.5.4
-PREFIX=/opt/storm/backend
+version=1.7.0
 
-gpfs_prefix=${gpfs_base_location}
+gpfs_mock_prefix=../../filesystem/mock
 architecture=${arch}
-
 
 -include Makefile.inc
 
 DESTDIR?=.
 BUILDDIR?=./lib$(architecture)
 
-# where gpfs library and includes are located
-# gpfs_location
+# where Mock gpfs library and includes are located
+# gpfs_mock_location
+
 # where the "gpfs.h" include file is located
-GPFSAPI_INCLUDES ?= -I$(gpfs_prefix)/include
+GPFSAPI_INCLUDES ?= -I$(gpfs_mock_prefix)
+
 # where libraries libposixapi_interface depends on
-GPFSAPI_LIBS ?= -lgpfs -L$(gpfs_prefix)/lib$(architecture)
+GPFSAPI_LIBS ?= -lgpfs -L$(DESTDIR)
 
 CC = gcc
 

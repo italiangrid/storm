@@ -39,9 +39,11 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
     private static final String POSIX_EXTENDED_ATTRIBUTES_OPTION_NAME = "user_xattr";
 
     private static final String CHECK_NAME = "NamespaceFSEAValidation";
-
-    private static final String CHECK_DESCRIPTION = "Namespace declared FS extended attribute abilitation Check";
-
+    private static final String CHECK_DESCRIPTION = "This check verifies that all the file systems declared " +
+    		"in namespace.xml are mounted at boot time with the mount \'extended attribute abilitation\' option ";
+    
+    private static final boolean criticalCheck = false;
+    
     @Override
     public CheckResponse execute() throws GenericCheckException
     {
@@ -55,7 +57,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
         }
         catch (IOException e)
         {
-            log.error("Unable to get the rows from mtab. IOException : " + e.getMessage());
+            log.warn("Unable to get the rows from mtab. IOException : " + e.getMessage());
             return new CheckResponse(CheckStatus.INDETERMINATE,
                                      "Check not performed. Unable to get the rows from mtab. IOException : "
                                              + e.getMessage());
@@ -70,7 +72,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
                 String fsRootPath = vfs.getRootPath();
                 if (fsTypeName == null || fsRootPath == null)
                 {
-                    log.error("Skipping chek on VFS with alias \'" + vfs.getAliasName()
+                    log.warn("Skipping chek on VFS with alias \'" + vfs.getAliasName()
                             + "\' has null type ->" + vfs.getFSType() + "<- or root path ->"
                             + vfs.getRootPath() + "<-");
                 }
@@ -93,7 +95,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
                             }
                             catch (IllegalArgumentException e)
                             {
-                                log.error("Unable to get the SupportedFSType for file system \'" + fsTypeName
+                                log.warn("Unable to get the SupportedFSType for file system \'" + fsTypeName
                                         + "\' IllegalArgumentException : " + e.getMessage());
                                 throw new GenericCheckException("Unable to get the SupportedFSType for file system \'"
                                         + fsTypeName + "\' IllegalArgumentException : " + e.getMessage());
@@ -123,7 +125,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
                             }
                             if (!retrievedStatus.equals(CheckStatus.SUCCESS))
                             {
-                                log.info("Check failed for file system at " + fsRootPath + " with type "
+                                log.error("Check failed for file system at " + fsRootPath + " with type "
                                         + fsType);
                                 errorMessage += "Check failed for file system at " + fsRootPath
                                         + " with type " + fsType + "; ";
@@ -134,7 +136,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
                     }
                     if (!found)
                     {
-                        log.info("No file systems are mounted at path " + fsRootPath + "!");
+                        log.error("No file systems are mounted at path " + fsRootPath + "!");
                         errorMessage += "No file systems are mounted at path " + fsRootPath + "; ";
                         status = CheckStatus.INDETERMINATE;
                     }
@@ -144,7 +146,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
         catch (NamespaceException e)
         {
             // NOTE: this exception is never thrown
-            log.error("Unable to proceede received a NamespaceException : " + e.getMessage());
+            log.warn("Unable to proceede received a NamespaceException : " + e.getMessage());
             errorMessage += "Unable to proceede received a NamespaceException : " + e.getMessage() + "; ";
             status = CheckStatus.INDETERMINATE;
         }
@@ -221,5 +223,11 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
     public String getDescription()
     {
         return CHECK_DESCRIPTION;
+    }
+    
+    @Override
+    public boolean isCritical()
+    {
+        return criticalCheck;
     }
 }

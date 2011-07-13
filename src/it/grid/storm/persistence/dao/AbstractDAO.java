@@ -32,24 +32,38 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractDAO {
 
+    /**
+     * 
+     */
     private static final Logger log = LoggerFactory.getLogger(AbstractDAO.class);
 
+    /**
+     * 
+     */
     private DataSourceConnectionFactory connFactory;
 
-    // private DataBaseStrategy db;
 
-    public AbstractDAO() {
-        // db = PersistenceDirector.getDataBase();
+    /**
+     * 
+     */
+    public AbstractDAO()
+    {
         connFactory = PersistenceDirector.getConnectionFactory();
     }
 
-    protected void commit(Connection conn) {
-        try {
-            
+
+    /**
+     * @param conn
+     */
+    protected void commit(Connection conn)
+    {
+        try
+        {
             conn.commit();
             conn.setAutoCommit(true);
-            
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             log.error("Cannot commit transaction", e);
         }
     }
@@ -60,12 +74,16 @@ public abstract class AbstractDAO {
      * @return Connection
      * @throws DataAccessException
      */
-    protected Connection getConnection() throws DataAccessException {
+    protected Connection getConnection() throws DataAccessException
+    {
         // Retrieve a Connection
         Connection conn = null;
-        try {
+        try
+        {
             conn = connFactory.borrowConnection();
-        } catch (PersistenceException ex) {
+        }
+        catch (PersistenceException ex)
+        {
             throw new DataAccessException(ex);
         }
         return conn;
@@ -78,14 +96,21 @@ public abstract class AbstractDAO {
      * @return Statement
      * @throws DataAccessException
      */
-    protected Statement getStatement(Connection conn) throws DataAccessException {
+    protected Statement getStatement(Connection conn) throws DataAccessException
+    {
         Statement stat = null;
-        if (conn == null) {
+        if (conn == null)
+        {
             throw new DataAccessException("No Connection available to create a Statement");
-        } else {
-            try {
+        }
+        else
+        {
+            try
+            {
                 stat = conn.createStatement();
-            } catch (SQLException ex1) {
+            }
+            catch (SQLException ex1)
+            {
                 log.error("Error while creating the statement");
                 throw new DataAccessException(ex1);
             }
@@ -105,6 +130,43 @@ public abstract class AbstractDAO {
             throws DataAccessException {
 
         // Release the ResultSet
+        closeResultSet(resultSet);
+
+        // Close the statement
+        closeStatement(statement);
+
+        // Release the connection
+        closeConnection(connection);
+    }
+
+
+    /**
+     * Release a connection and a list of statements and result sets Accessor method.
+     * 
+     * @param resultSets
+     * @param statements
+     * @param connection
+     * @throws DataAccessException
+     */
+    protected void releaseConnection(ResultSet[] resultSets, Statement[] statements, Connection connection) throws DataAccessException {
+        // Release the ResultSets
+        if (resultSets != null) {
+            for (ResultSet resultSet : resultSets) {
+                closeResultSet(resultSet);
+            }
+        }
+        // Close the statement
+        if (statements != null) {
+            for (Statement statement : statements) {
+                closeStatement(statement);
+            }
+        }
+        // Release the connection
+        closeConnection(connection);
+    }
+    
+    private void closeResultSet(ResultSet resultSet) throws DataAccessException
+    {
         if (resultSet != null) {
             try {
                 resultSet.close();
@@ -113,29 +175,38 @@ public abstract class AbstractDAO {
                 throw new DataAccessException(ex1);
             }
         }
+    }
+    
 
-        // Close the statement
+    private void closeStatement(Statement statement) throws DataAccessException {
         if (statement != null) {
             try {
                 statement.close();
-            } catch (SQLException ex2) {
+            }
+            catch (SQLException ex2) {
                 log.error("Error while releasing the statement");
                 throw new DataAccessException(ex2);
             }
         }
+    }
+    
 
-        // Release the connection
+    private void closeConnection(Connection connection) throws DataAccessException {
         if (connection != null) {
             try {
                 connFactory.giveBackConnection(connection);
-            } catch (PersistenceException ex3) {
+            }
+            catch (PersistenceException ex3) {
                 log.error("Error while releasing the connection");
                 throw new DataAccessException(ex3);
             }
         }
-
     }
 
+    
+    /**
+     * @param conn
+     */
     protected void rollback(Connection conn) {
         try {
             

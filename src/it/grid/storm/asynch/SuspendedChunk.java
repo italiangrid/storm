@@ -18,11 +18,11 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.ChunkData;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public interface SuspendedChunk {
     
-    public void completeRequest(RecallTaskStatus recallStatus);
+    public void completeRequest(TapeRecallStatus recallStatus);
     
     public ChunkData getChunkData();
 

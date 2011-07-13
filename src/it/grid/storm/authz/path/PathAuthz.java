@@ -63,6 +63,10 @@ public class PathAuthz implements PathAuthzInterface {
     }
 
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StoRI stori) {
+        return authorize(guser, pathOperation, stori.getStFN()); 
+    }
+    
+    public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StFN fileStFN) {
 
         AuthzDecision result = AuthzDecision.INDETERMINATE;
 
@@ -76,14 +80,12 @@ public class PathAuthz implements PathAuthzInterface {
             groupName = "unknown";
         }
 
-        // Retrieve the StFN from StoRI
-        StFN fileName = stori.getStFN();
-        log.debug("<PathAuthz> Compute authorization for groupName:'" + groupName + "', filename:'" + fileName
+        log.debug("<PathAuthz> Compute authorization for groupName:'" + groupName + "', filename:'" + fileStFN
                 + "', pathOperation:'" + pathOperation + "'");
 
-        result = authz.evaluate(groupName, fileName, pathOperation);
+        result = authz.evaluate(groupName, fileStFN, pathOperation);
 
-        log.info("<PathAuthz>: " + groupName + " is " + result + " to perform " + pathOperation + " on " + fileName);
+        log.info("<PathAuthz>: " + groupName + " is " + result + " to perform " + pathOperation + " on " + fileStFN);
         return result;
 
     }

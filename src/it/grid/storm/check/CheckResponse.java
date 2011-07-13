@@ -22,7 +22,7 @@ public class CheckResponse
     /**
      * The final status of a check
      */
-    private final CheckStatus status;
+    private CheckStatus status;
 
     /**
      * An error message describing a check failure
@@ -45,6 +45,16 @@ public class CheckResponse
         return this.status.equals(CheckStatus.SUCCESS);
     }
 
+    public CheckStatus getStatus()
+    {
+        return this.status;
+    }
+    
+    public void setStatus(CheckStatus status)
+    {
+        this.status = status;
+    }
+    
     /**
      * @return the error message (eventually blank)
      */

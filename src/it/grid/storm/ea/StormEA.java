@@ -129,7 +129,7 @@ public class StormEA {
 
             longString = new String(byteArray);
             if (longString != null) {
-                log.debug("Retrieved PinLifeTime with value: '" + longString + "' (lenght:"
+                log.debug("Retrieved PinLifeTime with value: '" + longString + "' (length:"
                         + longString.length() + ")");
             } 
             return Long.decode(longString);

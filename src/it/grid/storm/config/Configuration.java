@@ -46,116 +46,122 @@ public class Configuration {
     // configuration
     // class
 
-    private final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
-    private final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
-    private final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
-    private final String SERVICE_PORT_KEY = "storm.service.port";
-    private final String LIST_OF_MACHINE_NAMES_KEY = "storm.service.FE-list.hostnames";
-    private final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-    private final String DB_DRIVER_KEY = "storm.service.request-db.dbms-vendor";
-    private final String DB_URL_1KEY = "storm.service.request-db.protocol";
-    private final String DB_URL_2KEY = "storm.service.request-db.host";
-    private final String DB_URL_3KEY = "storm.service.request-db.db-name";
-    private final String DB_USER_NAME_KEY = "storm.service.request-db.username";
-    private final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
-    private final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
-    private final String DB_RECONNECT_DELAY_KEY = "asynch.db.DelayPeriod";
-    private final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
-    private final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
-    private final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
-    private final String FILE_LIFETIME_DEFAULT_KEY = "fileLifetime.default";
-    private final String PIN_LIFETIME_DEFAULT_KEY = "pinLifetime.default";
-    private final String PIN_LIFETIME_MAXIMUM_KEY = "pinLifetime.maximum";
-    private final String TRANSIT_INITIAL_DELAY_KEY = "transit.delay";
-    private final String TRANSIT_TIME_INTERVAL_KEY = "transit.interval";
-    private final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
-    private final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
-    private final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
-    private final String SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY = "asynch.srmclient.retrytime";
-    private final String SRMCLIENT_PUT_TIME_OUT_KEY = "asynch.srmclient.timeout";
-    private final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
-    private final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
-    private final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
-    private final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
-    private final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
-    private final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
-    private final String SRMCLIENT_KEY = "asynch.srmclient";
-    private final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-    private final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
-    private final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
-    private final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
-    private final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
-    private final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
-    private final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
-    private final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
-    private final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
-    private final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
-    private final String BE_PERSISTENCE_POOL_DB_KEY = "persistence.internal-db.connection-pool";
-	private final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY = "persistence.internal-db.connection-pool.maxActive";
-    private final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY = "persistence.internal-db.connection-pool.maxWait";
-    private final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
-    private final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
-    private final String LS_ALL_LEVEL_RECURSIVE_KEY = "synchcall.directoryManager.default.AllLevelRecursive";
-    private final String LS_NUM_OF_LEVELS_KEY = "synchcall.directoryManager.default.Levels";
-    private final String LS_OFFSET_KEY = "synchcall.directoryManager.default.Offset";
-    private final String PTP_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerCorePoolSize";
-    private final String PTP_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerMaxPoolSize";
-    private final String PTP_QUEUE_SIZE_KEY = "scheduler.chunksched.ptp.queueSize";
-    private final String PTG_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerCorePoolSize";
-    private final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
-    private final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
-    private final String COPY_CORE_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerCorePoolSize";
-    private final String COPY_MAX_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerMaxPoolSize";
-    private final String COPY_QUEUE_SIZE_KEY = "scheduler.chunksched.copy.queueSize";
-    private final String BOL_CORE_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerCorePoolSize";
-    private final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
-    private final String BOL_QUEUE_SIZE_KEY = "scheduler.chunksched.bol.queueSize";
-    private final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
-    private final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
-    private final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
-    private final String NAMESPACE_CONFIG_FILENAME_KEY = "namespace.filename";
-    private final String NAMESPACE_SCHEMA_FILENAME_KEY = "namespace.schema.filename";
-    private final String NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY = "namespace.refreshrate";
-    private final String NAMESPACE_AUTOMATIC_RELOADING_KEY = "namespace.automatic-config-reload";
-    private final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
-    private final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
-    private final String PROXY_HOME_KEY = "proxy.home";
-    private final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
-    private final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
-    private final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
-    private final String PURGE_BATCH_SIZE_KEY = "purge.size";
-    private final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
-    private final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
-    private final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
-    private final String EXPIRED_REQUEST_PURGING_KEY = "purging";
-    private final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes.file";
-    private final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes.rfio";
-    private final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes.gsiftp";
-    private final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes.root";
-    private final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping-properties.filename";
-    private final String HEARTHBEAT_PERIOD_KEY = "health.electrocardiogram.period";
-    private final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY = "health.performance.glance.timeInterval";
-    private final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY = "health.performance.logbook.timeInterval";
-    private final String PERFORMANCE_MEASURING_KEY = "health.performance.mesauring.enabled";
-    private final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
-    private final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
-    private final String MAX_LOOP_KEY = "abort.maxloop";
-    private final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
-    private final String AUTHZ_DB_PATH_KEY = "authzdb.path";
-    private final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-    private final String CHECKSUM_HOSTS_KEY = "checksum.server.hostnames";
-    private final String CHECKSUM_SERVICE_PORTS_KEY = "checksum.server.service_ports";
-    private final String CHECKSUM_STATUS_PORTS_KEY = "checksum.server.status_ports";
-    private final String CHECKSUM_ALGORITHM_KEY = "checksum.algorithm";
-    private final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
-    private final String RECALL_TABLE_SERVICE_PORT_KEY = "tape.recalltable.service.port";
-    private final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-    private final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
-    private final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-    private final String CHECKSUM_ENABLED_KEY = "checksum.enabled";
-    private final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
-    private final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
-    private final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
+    private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
+    private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
+    private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
+    private static final String SERVICE_PORT_KEY = "storm.service.port";
+    private static final String LIST_OF_MACHINE_NAMES_KEY = "storm.service.FE-list.hostnames";
+    private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
+    private static final String DB_DRIVER_KEY = "storm.service.request-db.dbms-vendor";
+    private static final String DB_URL_1KEY = "storm.service.request-db.protocol";
+    private static final String DB_URL_2KEY = "storm.service.request-db.host";
+    private static final String DB_URL_3KEY = "storm.service.request-db.db-name";
+    private static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
+    private static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
+    private static final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
+    private static final String DB_RECONNECT_DELAY_KEY = "asynch.db.DelayPeriod";
+    private static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
+    private static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
+    private static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
+    private static final String FILE_LIFETIME_DEFAULT_KEY = "fileLifetime.default";
+    private static final String PIN_LIFETIME_DEFAULT_KEY = "pinLifetime.default";
+    private static final String PIN_LIFETIME_MAXIMUM_KEY = "pinLifetime.maximum";
+    private static final String TRANSIT_INITIAL_DELAY_KEY = "transit.delay";
+    private static final String TRANSIT_TIME_INTERVAL_KEY = "transit.interval";
+    private static final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
+    private static final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
+    private static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
+    private static final String SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY = "asynch.srmclient.retrytime";
+    private static final String SRMCLIENT_PUT_TIME_OUT_KEY = "asynch.srmclient.timeout";
+    private static final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
+    private static final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
+    private static final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
+    private static final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+    private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
+    private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
+    private static final String SRMCLIENT_KEY = "asynch.srmclient";
+    private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
+    private static final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
+    private static final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
+    private static final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
+    private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
+    private static final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
+    private static final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
+    private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
+    private static final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
+    private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
+    private static final String BE_PERSISTENCE_POOL_DB_KEY = "persistence.internal-db.connection-pool";
+	private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY = "persistence.internal-db.connection-pool.maxActive";
+    private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY = "persistence.internal-db.connection-pool.maxWait";
+    private static final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
+    private static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
+    private static final String LS_ALL_LEVEL_RECURSIVE_KEY = "synchcall.directoryManager.default.AllLevelRecursive";
+    private static final String LS_NUM_OF_LEVELS_KEY = "synchcall.directoryManager.default.Levels";
+    private static final String LS_OFFSET_KEY = "synchcall.directoryManager.default.Offset";
+    private static final String PTP_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerCorePoolSize";
+    private static final String PTP_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerMaxPoolSize";
+    private static final String PTP_QUEUE_SIZE_KEY = "scheduler.chunksched.ptp.queueSize";
+    private static final String PTG_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerCorePoolSize";
+    private static final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
+    private static final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
+    private static final String COPY_CORE_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerCorePoolSize";
+    private static final String COPY_MAX_POOL_SIZE_KEY = "scheduler.chunksched.copy.workerMaxPoolSize";
+    private static final String COPY_QUEUE_SIZE_KEY = "scheduler.chunksched.copy.queueSize";
+    private static final String BOL_CORE_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerCorePoolSize";
+    private static final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
+    private static final String BOL_QUEUE_SIZE_KEY = "scheduler.chunksched.bol.queueSize";
+    private static final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
+    private static final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
+    private static final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
+    private static final String NAMESPACE_CONFIG_FILENAME_KEY = "namespace.filename";
+    private static final String NAMESPACE_SCHEMA_FILENAME_KEY = "namespace.schema.filename";
+    private static final String NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY = "namespace.refreshrate";
+    private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY = "namespace.automatic-config-reload";
+    private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
+    private static final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
+    private static final String PROXY_HOME_KEY = "proxy.home";
+    private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
+    private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
+    private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
+    private static final String PURGE_BATCH_SIZE_KEY = "purge.size";
+    private static final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
+    private static final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
+    private static final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
+    private static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
+    private static final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes.file";
+    private static final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes.rfio";
+    private static final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes.gsiftp";
+    private static final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes.root";
+    private static final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping-properties.filename";
+    private static final String HEARTHBEAT_PERIOD_KEY = "health.electrocardiogram.period";
+    private static final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY = "health.performance.glance.timeInterval";
+    private static final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY = "health.performance.logbook.timeInterval";
+    private static final String PERFORMANCE_MEASURING_KEY = "health.performance.mesauring.enabled";
+    private static final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
+    private static final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
+    private static final String MAX_LOOP_KEY = "abort.maxloop";
+    private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
+    private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
+    private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
+    private static final String CHECKSUM_HOSTS_KEY = "checksum.server.hostnames";
+    private static final String CHECKSUM_SERVICE_PORTS_KEY = "checksum.server.service_ports";
+    private static final String CHECKSUM_STATUS_PORTS_KEY = "checksum.server.status_ports";
+    private static final String CHECKSUM_ALGORITHM_KEY = "checksum.algorithm";
+    private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
+    private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
+    private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
+    private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
+    private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
+    private static final String CHECKSUM_ENABLED_KEY = "checksum.enabled";
+    private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
+    private static final String GRIDHTTPS_SERVER_HOST_KEY = "gridhttps.server.host";
+    private static final String GRIDHTTPS_SERVER_PORT_KEY = "gridhttps.server.port";
+    private static final String GRIDHTTPS_PLUGIN_CLASSNAME_KEY = "gridhttps.plugin.classname";
+    private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
+    private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
+    private static final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
+    private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
+    
 
     
     private Configuration() {
@@ -1027,7 +1033,7 @@ public class Configuration {
     public int getPtPCorePoolSize() {
         if (!cr.getConfiguration().containsKey(PTP_CORE_POOL_SIZE_KEY)) {
             // return default
-            return 10;
+            return 50;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY);
@@ -1048,7 +1054,7 @@ public class Configuration {
     public int getPtPMaxPoolSize() {
         if (!cr.getConfiguration().containsKey(PTP_MAX_POOL_SIZE_KEY)) {
             // return default
-            return 100;
+            return 200;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY);
@@ -1069,7 +1075,7 @@ public class Configuration {
     public int getPtPQueueSize() {
         if (!cr.getConfiguration().containsKey(PTP_QUEUE_SIZE_KEY)) {
             // return default
-            return 100;
+            return 1000;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY);
@@ -1090,7 +1096,7 @@ public class Configuration {
     public int getPtGCorePoolSize() {
         if (!cr.getConfiguration().containsKey(PTG_CORE_POOL_SIZE_KEY)) {
             // return default
-            return 10;
+            return 50;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY);
@@ -1111,7 +1117,7 @@ public class Configuration {
     public int getPtGMaxPoolSize() {
         if (!cr.getConfiguration().containsKey(PTG_MAX_POOL_SIZE_KEY)) {
             // return default
-            return 100;
+            return 200;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY);
@@ -1132,7 +1138,7 @@ public class Configuration {
     public int getPtGQueueSize() {
         if (!cr.getConfiguration().containsKey(PTG_QUEUE_SIZE_KEY)) {
             // return default
-            return 100;
+            return 2000;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY);
@@ -1174,7 +1180,7 @@ public class Configuration {
     public int getCopyMaxPoolSize() {
         if (!cr.getConfiguration().containsKey(COPY_MAX_POOL_SIZE_KEY)) {
             // return default
-            return 100;
+            return 50;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(COPY_MAX_POOL_SIZE_KEY);
@@ -1195,7 +1201,7 @@ public class Configuration {
     public int getCopyQueueSize() {
         if (!cr.getConfiguration().containsKey(COPY_QUEUE_SIZE_KEY)) {
             // return default
-            return 100;
+            return 500;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(COPY_QUEUE_SIZE_KEY);
@@ -1216,7 +1222,7 @@ public class Configuration {
     public int getBoLCorePoolSize() {
         if (!cr.getConfiguration().containsKey(BOL_CORE_POOL_SIZE_KEY)) {
             // return default
-            return 10;
+            return 50;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY);
@@ -1237,7 +1243,7 @@ public class Configuration {
     public int getBoLMaxPoolSize() {
         if (!cr.getConfiguration().containsKey(BOL_MAX_POOL_SIZE_KEY)) {
             // return default
-            return 100;
+            return 200;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY);
@@ -1258,7 +1264,7 @@ public class Configuration {
     public int getBoLQueueSize() {
         if (!cr.getConfiguration().containsKey(BOL_QUEUE_SIZE_KEY)) {
             // return default
-            return 100;
+            return 2000;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY);
@@ -1299,7 +1305,7 @@ public class Configuration {
     public int getMaxPoolSize() {
         if (!cr.getConfiguration().containsKey(MAX_POOL_SIZE_KEY)) {
             // return default
-            return 100;
+            return 50;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY);
@@ -1320,7 +1326,7 @@ public class Configuration {
     public int getQueueSize() {
         if (!cr.getConfiguration().containsKey(QUEUE_SIZE_KEY)) {
             // return default
-            return 100;
+            return 2000;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(QUEUE_SIZE_KEY);
@@ -1851,17 +1857,17 @@ public class Configuration {
     }
 
     /**
-     * Method used to retrieve the PORT where the Recall Table (RESTful) service listen If no value is found in the
+     * Method used to retrieve the PORT where RESTful services listen (like the Recall Table service) If no value is found in the
      * configuration medium, then the default one is used instead, that is the "9998"
      * key="tape.recalltable.service.port";
      */
-    public int getRecallTableServicePort() {
-        if (!cr.getConfiguration().containsKey(RECALL_TABLE_SERVICE_PORT_KEY)) {
+    public int getRestServicesPort() {
+        if (!cr.getConfiguration().containsKey(REST_SERVICES_PORT_KEY)) {
             // return default
             return 9998;
         } else {
             // load from external source
-            return cr.getConfiguration().getInt(RECALL_TABLE_SERVICE_PORT_KEY);
+            return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY);
         }
     }
 
@@ -1922,6 +1928,48 @@ public class Configuration {
         }
     }
 
+    /**
+     * This is the FLAG to support or not the http(s) protocol. Default is false.
+     * 
+     * @return
+     */
+    public boolean getGridhttpsEnabled() {
+        if (!cr.getConfiguration().containsKey(GRIDHTTPS_ENABLED_KEY)) {
+            // return default
+            return false;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(GRIDHTTPS_ENABLED_KEY);
+        }
+    }
+    
+  
+    /**
+     * @return the host running gridhttps serivice
+     */
+    public String getGridhttpsServerHost() {
+        if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_HOST_KEY)) {
+            // return default
+            return "localhost";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(GRIDHTTPS_SERVER_HOST_KEY);
+        }
+    }
+    
+    /**
+     * @return the port on which gridhttps mapping serivice is listening
+     */
+    public int getGridhttpsServerPort() {
+        if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_PORT_KEY)) {
+            // return default
+            return 8080;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(GRIDHTTPS_SERVER_PORT_KEY);
+        }
+    }
+    
     public String getStoRMPropertiesVersion() {
         if (!cr.getConfiguration().containsKey(STORM_PROPERTIES_VERSION_KEY)) {
             // return default
@@ -1932,6 +1980,22 @@ public class Configuration {
         }
     }
 
+    /**
+     * Flag to support or not the TAPE integration.
+     * Default value is false.
+     * 
+     * @return
+     */
+    public boolean getTapeSupportEnabled() {
+        if (!cr.getConfiguration().containsKey(TAPE_SUPPORT_ENABLED_KEY)) {
+            // return default
+            return false;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY);
+        }
+    }
+    
     public String getGroupTapeReadBuffer() {
         if (!cr.getConfiguration().containsKey(GROUP_TAPE_READ_BUFFER_KEY)) {
             // return default
@@ -1949,6 +2013,20 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getString(GROUP_TAPE_WRITE_BUFFER_KEY);
+        }
+    }
+    
+    /**
+     * @return
+     */
+    public String getGRIDHTTPSPluginClassName()
+    {
+        if (!cr.getConfiguration().containsKey(GRIDHTTPS_PLUGIN_CLASSNAME_KEY)) {
+            // return default
+            return "it.grid.storm.https.HTTPSPluginInterfaceStub";
+        } else {
+            // load from external source
+            return cr.getConfiguration().getString(GRIDHTTPS_PLUGIN_CLASSNAME_KEY);
         }
     }
 

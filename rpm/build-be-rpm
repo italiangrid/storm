@@ -78,18 +78,19 @@ echo VERSION=$version
 age=${15}
 echo AGE=$age
 
+PACKAGE=${16}
+echo PACKAGE=$PACKAGE
+
 # some Java parameters
-if [ "$JAVA_HOME" != "" ]; then
-  #echo "run java in $JAVA_HOME"
+if [ -z "$JAVA_HOME" ]; then
+  echo "Error: JAVA_HOME is not set."
+  echo " .. try to continue .. " 
+else
+  echo "run java in $JAVA_HOME"
   JAVA_HOME=$JAVA_HOME
 fi
 
-if [ "$JAVA_HOME" = "" ]; then
-  echo "Error: JAVA_HOME is not set."
-  exit 1
-fi
-
-JAVA=$JAVA_HOME/bin/java
+JAVA=/usr/java/latest/bin/java
 echo JAVA=$JAVA
 
 PLATFORM=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform platform | sed -e "s/ /_/g"`
@@ -98,7 +99,7 @@ echo NATIVE_PLATFORM=$PLATFORM
 OS_DIST=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform os_dist | sed -e "s/ /_/g"`
 echo OS_DIST=$OS_DIST
 
-PACKAGE="storm-backend"
+#PACKAGE="storm-backend-server"
 
 # make rpm directory structure
 echo "make rpm directory structure ", $topdir
@@ -129,14 +130,8 @@ distributionrpm="sl5"
 lpvage="5.1"
 lwgage="4"
 lwgversion="1.4.3"
-if [ "$OS_DIST" != "sl5" ]; then
-  distributionrpm="slc4"
-  lpvage="5"
-  lwgage="1"
-  lwgversion="1.4.2"
-fi
 
-echo "create rpm"
+echo "create rpm $topdir"
 # Generate RPMs
-rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}" --define "swig ${swig}" --define "jdk ${jdk}" --define "lcmaps ${lcmaps}" --define "lcmaps_without_gsi ${lcmaps_without_gsi}" --define "lcmaps_plugins_basic ${lcmaps_plugins_basic}" --define "lcmaps_plugins_voms ${lcmaps_plugins_voms}" --define "libacl_devel ${libacl_devel}" --define "libattr_devel ${libattr_devel}" --define "xfsprogs_devel ${xfsprogs_devel}" --define "version ${version}" --define "age ${age}" --define "distribution ${OS_DIST}" --define "distributionrpm ${distributionrpm}" --define "lpvage ${lpvage}" --define "lwgage ${lwgage}" --define "lwgversion ${lwgversion}" -ba SPECS/storm-backend.spec
+rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}" --define "swig ${swig}" --define "jdk ${jdk}" --define "lcmaps ${lcmaps}" --define "lcmaps_without_gsi ${lcmaps_without_gsi}" --define "lcmaps_plugins_basic ${lcmaps_plugins_basic}" --define "lcmaps_plugins_voms ${lcmaps_plugins_voms}" --define "libacl_devel ${libacl_devel}" --define "libattr_devel ${libattr_devel}" --define "xfsprogs_devel ${xfsprogs_devel}" --define "version ${version}" --define "age ${age}" --define "distribution ${OS_DIST}" --define "distributionrpm ${distributionrpm}" --define "lpvage ${lpvage}" --define "lwgage ${lwgage}" --define "lwgversion ${lwgversion}" -ba SPECS/storm-backend-server.spec
 

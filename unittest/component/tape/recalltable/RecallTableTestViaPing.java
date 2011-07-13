@@ -7,7 +7,7 @@ import it.grid.storm.synchcall.command.discovery.PingCommand;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
-import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
+import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
 import java.io.File;
 import java.util.Random;
@@ -58,18 +58,18 @@ public class RecallTableTestViaPing {
         
         String result = "new-task"; 
             
-        String param = RecallTaskBuilder.taskStart;
-        param += RecallTaskBuilder.fnPrefix;
-        param += RecallTaskBuilder.equalChar+filename;
-        param += RecallTaskBuilder.elementSep;
-        param += RecallTaskBuilder.dnPrefix;
-        param += RecallTaskBuilder.equalChar+dn;
-        param += RecallTaskBuilder.elementSep;
-        param += RecallTaskBuilder.fqansArrayStart;
-        param += RecallTaskBuilder.fqanPrefix;
-        param += RecallTaskBuilder.equalChar+voname;
-        param += RecallTaskBuilder.fqansArrayEnd;
-        param += RecallTaskBuilder.taskEnd;
+        String param = TapeRecallBuilder.taskStart;
+        param += TapeRecallBuilder.fnPrefix;
+        param += TapeRecallBuilder.equalChar+filename;
+        param += TapeRecallBuilder.elementSep;
+        param += TapeRecallBuilder.dnPrefix;
+        param += TapeRecallBuilder.equalChar+dn;
+        param += TapeRecallBuilder.elementSep;
+        param += TapeRecallBuilder.fqansArrayStart;
+        param += TapeRecallBuilder.fqanPrefix;
+        param += TapeRecallBuilder.equalChar+voname;
+        param += TapeRecallBuilder.fqansArrayEnd;
+        param += TapeRecallBuilder.taskEnd;
         
         if (param.length()>0) {
             result = result+"="+param;

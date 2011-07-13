@@ -1,0 +1,547 @@
+#!/bin/bash
+#
+# start/stop StoRM BackEnd server.
+# 
+#Copyright (c) 2008 Magnoni Luca <luca.magnoni@cnaf.infn.it>, 
+#Riccardo Zappi <riccardo.zappi@cnaf.infn.it> 
+#
+# You may copy, modify and distribute this file under the same terms
+# as StoRM itself. 
+#
+#
+
+# Comments to support chkconfig on RedHat Linux
+# chkconfig: 2345 90 20
+# description: StoRM BackEnd server
+
+# Comments to support LSB init script conventions
+### BEGIN INIT INFO
+# Provides: storm-backend
+# Required-Start: $local_fs $network $remote_fs mysql
+# Required-Stop: $local_fs $network $remote_fs
+# Should-Start: $syslog $time
+# Should-Stop: $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start/stop the StoRM BackEnd server
+# Description: The StoRM BackEnd server.
+#
+#  StoRM provides an SRM interface to any POSIX filesystem with direct file 
+#  access ("file:" transport protocol), but can take advantage of special 
+#  features of high performance parallel and cluster file systems, as GPFS 
+#  from IBM and Lustre from SUN.
+#
+#
+#
+### END INIT INFO
+
+
+INITSCRIPT="`basename $0`"
+
+NAME=storm-backend-server
+DESC="StoRM BackEnd server"
+UMASK="077"
+STORM_BE_USER="storm"
+GPFS_PATH=/usr/lpp/mmfs/bin
+PIDFILE=/var/run/${NAME}.pid
+LOCKFILE=/var/lock/subsys/${NAME}
+
+## useful functions
+
+
+# RH defines LSB functions as shell aliases,
+# and bash will not expand shell aliases unless 
+# in POSIXLY_CORRECT mode...
+set -o posix
+
+# RH init script functions (*before* LSB functions)
+if test -e /etc/init.d/functions; then
+    source /etc/init.d/functions
+else
+    # no RH, no 'status' function
+    status () { die 1 "status query not supported on this system."; }
+fi
+
+# LSB init script functions (*after* RH functions...)
+if [ -f /lib/lsb/init-functions ]; then
+    source /lib/lsb/init-functions
+else
+    alias log_success_msg="echo SUCCESS! '$@'"
+    alias log_failure_msg="echo FAILURE! '$@'"
+    alias log_warning_msg="echo WARNING! '$@'"
+fi
+
+function die () {
+    rc="$1"
+    shift
+    echo -n "$INITSCRIPT: " 1>&2
+    if [ $# -gt 0 ]; then
+        echo "$@" 1>&2
+    else
+        cat 1>&2
+    fi
+    log_failure_msg "$DESC"
+    exit $rc
+}
+
+setenv_if_not_set () {
+    # a little black magic makes a script more spicy ;-)
+    if test -z "${!1}"; then
+        eval export $1=\'"$2"\'
+    fi
+}
+
+function command_in_path () {
+    type -p "$1" >&/dev/null;
+}
+
+function require_command () {
+    local cmd="$1"
+
+    command_in_path "$cmd" \
+        || die 1 "Cannot find command '$cmd' in the current PATH - aborting."
+}
+
+function user_exists () {
+    getent passwd "$1" >/dev/null 
+}
+
+function group_exists () {
+    getent group "$1" >/dev/null 
+}
+
+function normalize_dirpath () {
+    cd "$1" && pwd -P && cd - > /dev/null
+}
+
+## execution environment setup
+
+if test -e "/etc/profile.d/grid-env.sh"; then
+    source /etc/profile.d/grid-env.sh
+else
+    echo "Warning! No grid-env.sh script found in /etc/profile.d!"
+fi
+
+
+# read config values override (INSTALL_ROOT is from LCG-2's site.def)
+for file in \
+    "$INSTALL_ROOT/etc/sysconfig/globus" \
+    "$INSTALL_ROOT/etc/sysconfig/glite" \
+    "$INSTALL_ROOT/etc/sysconfig/edg" \
+    "$INSTALL_ROOT/etc/sysconfig/storm-backend-server" \
+    ;
+do
+  if test -e "$file"; then
+      source "$file"
+  fi
+done
+
+# retrieve architecture BITs
+platform=`uname -m`
+case $platform in
+"i686")
+	ARCH=""
+	echo "32-bit OS"
+	;;
+"x86_64")
+	ARCH="64"
+	echo "64-bit OS"
+	;;
+*)
+	echo "Unknown platform"
+	# Don't install any packages
+	;;
+esac
+
+
+# try to find the installation directory
+#if test -z "$STORM_HOME"; then
+#    for dir in \
+#        "`dirname $0`/../.." \
+#        /opt/storm/backend \
+#        /usr/local/storm \
+#        /home/storm \
+#        ;
+#      do
+#      if test -e "$dir"/${NAME}.jar; then
+#          STORM_HOME="$dir"
+#          break
+#      fi
+#    done
+#    if test -z "$STORM_HOME"; then
+#        die 5 "Cannot find StoRM backend installation directory - please set environment variable STORM_HOME and run '$0 $@' again."
+#    fi
+#fi
+
+#export STORM_HOME="`normalize_dirpath "$STORM_HOME"`"
+
+# some Java parameters
+if [ -z $JAVA_HOME ]; then
+    if [ ! -z $JAVA_LOCATION ]; then
+         JAVA_HOME=$JAVA_LOCATION
+    else
+         die 5  "Error! No JAVA_HOME neither JAVA_LOCATION available! Unable to set JAVA_HOME"
+    fi
+fi
+
+  
+JAVA=$JAVA_HOME/bin/java
+
+
+# LCMAPS modules library
+#setenv_if_not_set STORM_BE_CONFIG_FILE "$STORM_HOME/etc/storm.properties"
+setenv_if_not_set STORM_BE_CONFIG_FILE "/etc/storm/backend-server/storm.properties"
+setenv_if_not_set STORM_BE_CONFIG_REFRESH 0
+setenv_if_not_set STORM_BE_CONFIGDIR "`dirname $STORM_BE_CONFIG_FILE`"
+#setenv_if_not_set STORM_BE_LOGDIR "$STORM_HOME/var/log"
+setenv_if_not_set STORM_BE_LOGDIR "/var/log/storm"
+#setenv_if_not_set STORM_BE_TMPDIR "$STORM_HOME/var/tmp"
+setenv_if_not_set STORM_BE_USER "`id -u -n`"
+
+
+
+#setenv_if_not_set STORM_BE_JAR "$STORM_HOME/${NAME}.jar"
+#setenv_if_not_set STORM_BE_JARDIR "$STORM_HOME/lib"
+setenv_if_not_set STORM_BE_JARDIR "/usr/share/java/${NAME}"
+setenv_if_not_set STORM_BE_JAR "${STORM_BE_JARDIR}/${NAME}.jar"
+
+
+#######################
+## make Java classpath without Native Lib
+#######################
+
+#classpath="$STORM_BE_JAR"
+for jar in "$STORM_BE_JARDIR"/*.jar; do
+	if [ -z $classpath ] ; then
+		classpath="$jar"
+	else
+		classpath="$classpath:$jar"	
+	fi
+done
+
+# log4j looks for its config file in the classpath...
+classpath="$classpath:$STORM_BE_CONFIGDIR"
+
+######################
+## Retrieve NATIVE_PATH by PLATFORM
+######################
+PLATFORM=`${JAVA} -cp $STORM_BE_JAR -Xmx32m it.grid.storm.Platform | sed -e "s/ /_/g"`
+
+#setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/native/$PLATFORM/"
+setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/${NAME}/native/$PLATFORM/"
+#export LD_LIBRARY_PATH="/opt/glite/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="/usr/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
+
+# port for the command server (FIXME: should read from conf. file)
+setenv_if_not_set STORM_COMMAND_PORT 4444
+
+# LCMAPS config file
+setenv_if_not_set LCMAPS_DB_FILE "$STORM_BE_CONFIGDIR/lcmaps.db"
+
+# LCMAPS user mapping policy (defined in $LCMAPS_DB_FILE)
+setenv_if_not_set LCMAPS_POLICY_NAME standard
+
+# LCMAPS log file
+setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
+
+# LCMAPS log verbosity: 0 minimum (default), 5 maximum
+setenv_if_not_set LCMAPS_DEBUG_LEVEL 0
+
+
+# Set SSL options.
+if [ "$ENABLE_SSL"x == yesx ]; 
+    then
+    if [ -z "$SSL_TRUST_STORE_PWD" -o -z "$SSL_KEY_STORE_PWD" ]; then
+        die 6 "The SSL Keystore and Truststore need to be protected by password!"
+    fi
+    #setenv_if_not_set SSL_TRUST_STORE "/opt/storm/backend/etc/ecar.ts"
+    setenv_if_not_set SSL_TRUST_STORE "$STORM_BE_CONFIGDIR/ecar.ts"
+    #setenv_if_not_set SSL_KEY_STORE "/opt/storm/backend/etc/ecar.p12"
+    setenv_if_not_set SSL_KEY_STORE "$STORM_BE_CONFIGDIR/ecar.p12"
+    setenv_if_not_set SSL_KEY_STORE_TYPE "PKCS12"
+    export STORM_SSL_OPTIONS="-Djavax.net.ssl.trustStore=\"$SSL_TRUST_STORE\" \
+-Djavax.net.ssl.keyStore=\"$SSL_KEY_STORE\" \
+-Djavax.net.ssl.keyStoreType=\"$SSL_KEY_STORE_TYPE\" \
+-Djavax.net.ssl.trustStorePassword=\"$SSL_TRUST_STORE_PWD\" \
+-Djavax.net.ssl.keyStorePassword=\"$SSL_KEY_STORE_PWD\" "
+else
+    export STORM_SSL_OPTIONS=""
+fi
+
+## sanity checks
+
+if ! test -d "$STORM_BE_LIBDIR"; then
+    die 5 "Cannot find directory '$STORM_BE_LIBDIR' - please set environment variable STORM_HOME or STORM_BE_LIBDIR and run '$0 $@' again."
+fi
+if ! test -e "$STORM_BE_JAR"; then
+    die 5 "Cannot find '`basename $STORM_BE_JAR`' in '$STORM_BE_LIBDIR' - please set environment variable STORM_HOME or STORM_BE_LIBDIR and run '$0 $@' again."
+fi
+if ! test -d "$STORM_BE_JARDIR"; then
+    die 5 "Cannot find third-party .jar files directory '$STORM_BE_JARDIR' - please set environment variable STORM_HOME or STORM_BE_JARDIR and run '$0 $@' again."
+fi
+if ! test -e "$STORM_BE_CONFIG_FILE"; then
+    die 6 "Cannot find configuration file '$STORM_BE_CONFIG_FILE' - please set environment variable STORM_HOME or STORM_BE_CONFIG_FILE and run '$0 $@' again."
+fi
+if ! expr match "$STORM_BE_CONFIG_REFRESH" '[0-9][0-9]*' >&/dev/null; 
+then
+    die 6 "Environment variable STORM_BE_CONFIG_REFRESH value is not an integer: 'STORM_BE_CONFIG_REFRESH=$STORM_BE_CONFIG_REFRESH' - please set it appropriately and run '$0 $@' again."
+fi
+if ! test -d "$STORM_BE_LOGDIR"; then
+    die 5 "Cannot find log files directory '$STORM_BE_LOGDIR' - please set environment variable STORM_BE_LOGDIR and run '$0 $@' again."
+fi
+#if ! test -d "$STORM_BE_TMPDIR"; then
+#    die 5 "Cannot find temporary files directory '$STORM_BE_TMPDIR' - please set environment variable STORM_BE_TMPDIR and run '$0 $@' again."
+#fi
+if ! test -e "$LCMAPS_DB_FILE"; then
+    die 6 "Cannot find LCMAPS configuration file '$LCMAPS_DB_FILE' - please set environment variable LCMAPS_DB_FILE and run '$0 $@' again."
+fi
+
+if ! user_exists "$STORM_BE_USER"; then
+    die 1 "User '$STORM_BE_USER' not found in system database; cannot run StoRM BE process - please set environment variable STORM_BE_USER to a sane value."
+fi
+
+#if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_TMPDIR'"; then
+#    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_TMPDIR
+#    die 1 "Temporary files directory '$STORM_BE_TMPDIR' is not writable by user '$STORM_BE_USER' - aborting."
+#fi
+
+#TODO dont do this here, do it in yaim!
+if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
+    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_LOGDIR
+#    echo 1>&2 "Log files directory '$STORM_BE_LOGDIR' is not writable by user '$STORM_BE_USER' - StoRM might not be able to *create* log files."
+fi
+
+## command server interaction
+
+suspend () {
+    (echo STOP; echo exit) | nc localhost $STORM_COMMAND_PORT
+
+    if [ $? -eq 0 ]; then
+        log_success_msg "StoRM backend: sent command STOP"
+        return 0
+    else
+        echo 1>&2 "$0: StoRM backend: cannot contact StoRMCommandServer on localhost:$STORM_COMMAND_PORT"
+        return 1
+    fi
+}
+
+resume () {
+    (echo START; echo exit) | nc localhost $STORM_COMMAND_PORT
+
+    if [ $? -eq 0 ]; then
+        log_success_msg "StoRM backend: sent command START"
+        return 0
+    else
+        echo 1>&2 "$0: StoRM backend: cannot contact StoRMCommandServer on localhost:$STORM_COMMAND_PORT"
+        return 1
+    fi
+}
+
+
+## start
+
+start () {
+    if test -e "$LCMAPS_DB_FILE"; then
+       echo 1>&2 "LCMAPS DB file '$LCMAPS_DB_FILE'"
+    fi
+    if test -n "$LCMAPS_LOG_FILE"; then
+       echo 1>&2 "LCMAPS LOG file '$LCMAPS_LOG_FILE'"
+    fi
+    if test -n "$LCMAPS_DEBUG_LEVEL"; then
+       echo 1>&2 "LCMAPS DEBUG level '$LCMAPS_DEBUG_LEVEL'"
+    fi
+
+    local pid
+
+        run () { "$@" & : ; }
+
+    #cd "$STORM_HOME"
+    #probably this is the directory where the dump file are created in case of JVM crash
+	cd "$HOME"
+	
+    export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
+#    run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
+#        java \
+#        $STORM_BE_JVM_OPTS \
+#        -cp '$classpath' \
+#        $STORM_DEBUG_OPTION \
+#        $STORM_JMX_OPTION \
+#        -Djava.library.path='$STORM_BE_LIBDIR' \
+#        -Djna.library.path='$LD_LIBRARY_PATH:$STORM_BE_LIBDIR' \
+#        -Daxis.client.connect.timeout=30000 \
+#        -Djava.protocol.handler.pkgs=org.globus.net.protocol \
+#        -Dnetworkaddress.cache.negative.ttl=0 \
+#        -Dnetworkaddress.cache.ttl=0 \
+#        -Dstorm.home='$STORM_HOME' \
+#        -Dstorm.log.dir='$STORM_BE_LOGDIR' \
+#        -Dstorm.user='$STORM_BE_USER' \
+#        -Dsun.net.client.defaultConnectTimeout=30000 \
+#        -Dsun.net.client.defaultReadTimeout=30000 \
+#        $STORM_SSL_OPTIONS \
+#        -Dwrapper.filesystem.acl.temp='$STORM_BE_TMPDIR' \
+#        it.grid.storm.StoRMCommandServer \
+#        '$STORM_BE_CONFIG_FILE' '$STORM_BE_CONFIG_REFRESH' \
+#        1>$STORM_BE_LOGDIR/storm-backend.stdout \
+#        2>$STORM_BE_LOGDIR/storm-backend.stderr "
+
+	run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
+        java \
+        $STORM_BE_JVM_OPTS \
+        -cp '$classpath' \
+        $STORM_DEBUG_OPTION \
+        $STORM_JMX_OPTION \
+        -Djava.library.path='$STORM_BE_LIBDIR' \
+        -Djna.library.path='$LD_LIBRARY_PATH:$STORM_BE_LIBDIR' \
+        -Daxis.client.connect.timeout=30000 \
+        -Djava.protocol.handler.pkgs=org.globus.net.protocol \
+        -Dnetworkaddress.cache.negative.ttl=0 \
+        -Dnetworkaddress.cache.ttl=0 \
+        -Dstorm.log.dir='$STORM_BE_LOGDIR' \
+        -Dstorm.user='$STORM_BE_USER' \
+        -Dsun.net.client.defaultConnectTimeout=30000 \
+        -Dsun.net.client.defaultReadTimeout=30000 \
+        $STORM_SSL_OPTIONS \
+        it.grid.storm.StoRMCommandServer \
+        '$STORM_BE_CONFIG_FILE' '$STORM_BE_CONFIG_REFRESH' \
+        1>$STORM_BE_LOGDIR/storm-backend.stdout \
+        2>$STORM_BE_LOGDIR/storm-backend.stderr "
+    pid="$!"
+
+    # XXX: kludge to test if server is up
+    # (we need to rewrite main class using commons-daemon!)
+    sleep 5
+    test -d /proc/$pid \
+        || die 7 "StoRM backend server process unexpectedly died - startup failed."
+    sleep 5
+    resume \
+        || die 7 "StoRMCommandServer not responding on localhost:$STORM_COMMAND_PORT - startup failed."
+
+    # lock subsys (see http://www.redhat.com/magazine/008jun05/departments/tips_tricks/ )
+    if test -w /var/lock/subsys; then
+        echo $pid > "/var/lock/subsys/`basename $0`"
+    fi
+
+    # save pid
+    echo $pid > /var/run/${NAME}.pid
+
+    # LSB compliant logging
+    log_success_msg "Starting $DESC"
+}
+
+
+## stop
+
+stop () {
+    local pid
+
+    # shutdown via command server...
+    (echo SHUTDOWN; echo exit) | nc localhost $STORM_COMMAND_PORT
+
+    # XXX: kludge to test if server is still up;
+    # need to rewrite main class using commons-daemon
+    pid=`cat /var/run/${NAME}.pid`
+    if test -n "$pid"; then
+        sleep 5
+        test -d /proc/$pid \
+            && die 1 "StoRM backend server still running after SHUDOWN command."
+        #kill `cat /var/run/${NAME}.pid`
+    fi
+
+    # remove pidfile
+    rm -f /var/run/${NAME}.pid
+
+    # remove subsys lock (see http://www.redhat.com/magazine/008jun05/departments/tips_tricks/ )
+    rm -f "/var/lock/subsys/`basename $0`"
+
+    # LSB compliant logging
+    log_success_msg "Stopping $DESC"
+}
+
+## status -----------------------------------
+
+status(){
+
+   pslist=$( ps -ef | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
+    if [ -n "$pslist" ]; then
+        log_success_msg "StoRM-BE (pid $pslist) is running"
+        return 0
+    fi
+    if [ -f $PIDFILE ]; then
+        log_warning_msg "StoRM-BE dead but pid file exists"
+        return 1
+    fi
+    if [ -f $LOCKFILE ]; then
+        log_warning_msg "StoRM-BE dead but subsys locked"
+        return 2
+    fi
+    log_success_msg "StoRM-BE is stopped"
+    return 3
+}
+
+
+## main
+
+set -e
+
+case "$1" in
+    start)  
+    		if [ $# -gt 1 ]; then
+                if [ $2 = "debug" ]; then
+                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+                elif [ $2 = "jmx" ]; then
+                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+                else
+                    start;
+                fi
+            else
+                start;
+            fi ;;
+    stop) stop ;;
+  #reload
+    #
+    #   If the daemon can reload its config files on the fly
+    #   for example by sending it SIGHUP, do it here.
+    #
+    #   If the daemon responds to changes in its config file
+    #   directly anyway, make this a do-nothing entry.
+    #
+    # echo "Reloading $DESC configuration files."
+    # start-stop-daemon --stop --signal 1 --quiet --pidfile \
+    #   /var/run/$NAME.pid --exec $DAEMON
+  #;;
+    restart|force-reload)
+    #
+    #   If the "reload" option is implemented, move the "force-reload"
+    #   option to the "reload" entry above. If not, "force-reload" is
+    #   just the same as "restart".
+    #
+	    stop; 
+	    sleep 1;  
+	    if [ $# -gt 1 ]; then
+	    	if [ $2 = "debug" ]; then
+				STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+			elif [ $2 = "jmx" ]; then
+            	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+	        else
+	        	start;
+	        fi
+		else
+	    	start;
+		fi ;;
+    # stop Picker
+    suspend) suspend ;;
+	
+    # start Picker and XmlRpcServer
+	resume) resume ;;
+    # query status (only RH systems)
+    # FIXME: this cannot work until the BE has a proper UNIX startup...
+    # the 'status' function uses 'pidof' to search, and our process has
+    # has process name 'java'...
+    status) status;;
+	
+    *)
+        die 2 "Usage: $0 {start|stop|restart|force-reload|status}"
+        ;;
+esac
+
+exit 0

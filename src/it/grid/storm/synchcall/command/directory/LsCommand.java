@@ -305,6 +305,14 @@ public class LsCommand extends DirectoryCommand implements Command {
             if (!surl.isEmpty()) {
                 try {
                     stori = namespace.resolveStoRIbySURL(surl, guser);
+                } catch(IllegalArgumentException e)
+                {
+                    log.error("srmLs: Unable to build StoRI by SURL: " + e);
+                    failure = true;
+                    fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                    fileLevelExplanation = "Unable to build StoRI, Illegal Argument Exception";
+                    log.error("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
+                            + "] failed with [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + " ]");
                 } catch (NamespaceException ex) {
                     log.debug("srmLs: Unable to build StoRI by SURL: " + ex);
                     failure = true;

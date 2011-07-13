@@ -20,14 +20,17 @@ package it.grid.storm;
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.check.CheckManager;
+import it.grid.storm.check.CheckResponse;
+import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.config.WelcomeMessage;
 import it.grid.storm.health.HealthDirector;
+import it.grid.storm.logging.StoRMLoggers;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
-import it.grid.storm.tape.recalltable.RecallTableService;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 import java.io.IOException;
@@ -114,11 +117,21 @@ public class StoRM {
         String pathAuthzDBFileName = configurationDir + "path-authz.db";
         Bootstrap.initializePathAuthz(pathAuthzDBFileName);
 
+        // Initialize Used Space
+        Bootstrap.initializeUsedSpace();
+        
+        if(Configuration.getInstance().getGridhttpsEnabled())
+        {
+            log.info("Initializing the https plugin");
+            String httpsFactoryName = Configuration.getInstance().getGRIDHTTPSPluginClassName();
+            Bootstrap.initializeAclManager(httpsFactoryName, LoggerFactory.getLogger(Bootstrap.class));
+        }
+        
         /**
          * RESTFul Service Start-up
          */
         try {
-            RecallTableService.start();
+            RestService.startServer();
         } catch (IOException e) {
             StoRM.log.error("Unable to start internal HTTP Server listening for RESTFul services");
             e.printStackTrace();
@@ -132,14 +145,24 @@ public class StoRM {
         //Execute checks
         CheckManager checkManager = new SimpleCheckManager();
         checkManager.init();
-        if(checkManager.lauchChecks())
+        CheckResponse checkResponse = checkManager.lauchChecks();
+        if(checkResponse.isSuccessfull())
         {
             log.info("Check suite executed successfully");
         }
         else
         {
-            log.warn("Check suite failed!");
-            System.out.println("Check suite failed! Please check the log");
+            if(checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE))
+            {
+                log.error("Storm Check suite is failed for some critical checks!");
+                StoRMLoggers.getStderrLogger().error("Storm Check suite is failed for some critical checks! Please check the log for more details");
+                throw new RuntimeException("Storm Check suite is failed for some critical checks! Please check the log for more details");
+            }
+            else
+            {
+                log.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
+                StoRMLoggers.getStderrLogger().error("Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
+            }
         }
     }
 

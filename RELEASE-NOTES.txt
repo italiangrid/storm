@@ -1,7 +1,26 @@
                        
-              StoRM Backend 1.6.1 RELEASE NOTES
+              StoRM Backend 1.6.2 RELEASE NOTES
 
 This release includes new features as well as bug fixes and enhancements.
+
+Changes from StoRM-Backend 1.6.1 to StoRM-Backend 1.6.2
+=======================================================
+
+New features:
+------------
+   * logging on standard error :  added explicit log appenders for stdout and stderr
+   * critical checks failure must stop the service : added distinction between critical and not critical checks 
+   * StoRM BackEnd needs file system extended ACL support : added a sanity check to verify the possibility of read/write extended ACL
+
+Fixed Bugs:
+----------
+
+   * erroneous logging on standard error file of sanity checks : redirected sanity check errors to standard error file
+   * useless check on mtab for extended attributes : removed the useless check
+   
+Other changes:
+
+
 
 Changes from StoRM-Backend 1.6.0 to StoRM-Backend 1.6.1
 =======================================================

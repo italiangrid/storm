@@ -139,13 +139,13 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
         if ((forceFileRelease) || (nopinned)) {
             // Verify if the requester is the owner of the token
-            if (data.getUser().getDn().equals(user.getDn())) {
+            if (data.getOwner().getDn().equals(user.getDn())) {
                 // This is an authorized request of ReleaseSpace.
                 // The user that perform the ReleaseSpace is the owner of the
                 // SpaceToken.
                 ReleaseSpaceCommand.log
                 .debug("ReleaseCommand: Authorized Release Space for user: "
-                        + data.getUser());
+                        + data.getOwner());
                 returnStatus = manageAuthorizedReleaseSpace(data, user);
             } else {
                 ReleaseSpaceCommand.log.debug("ReleaseCommand: Unauthorized ReleaseSpaceRequest!");

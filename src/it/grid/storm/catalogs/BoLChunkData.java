@@ -58,7 +58,7 @@ public class BoLChunkData implements ChunkData {
     private TSizeInBytes fileSize; // size of file
     private TReturnStatus status; // return status for this chunk of request
     private TTURL transferURL; // TURL for picking up the requested file
-    private int deferredStartTime = -1;
+    private int deferredStartTime = 0; //how many seconds to wait before to make the lifeTime start consuming 
 
     public BoLChunkData(TRequestToken requestToken, TSURL fromSURL, TLifeTimeInSeconds lifeTime,
             TDirOption dirOption, TURLPrefix desiredProtocols, TSizeInBytes fileSize, TReturnStatus status,

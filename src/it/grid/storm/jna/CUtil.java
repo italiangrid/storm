@@ -32,7 +32,8 @@ class CUtil {
 
         LibcLibrary INSTANCE = (LibcLibrary) Native.loadLibrary((JNA_LIBRARY_NAME), LibcLibrary.class);
 
-        long stat_get_blocks_size(String fileName);
+        long gpfs_stat_get_blocks_size(String fileName);
+        long stat_get_blocks(String fileName);
         int set_file_group(String fileName, String groupName);
         
     }
@@ -40,7 +41,11 @@ class CUtil {
     private static final Logger log = LoggerFactory.getLogger(CUtil.class);
     
     public static long getFileBlocksSize(String fileName) {
-        return LibcLibrary.INSTANCE.stat_get_blocks_size(fileName);
+        return LibcLibrary.INSTANCE.gpfs_stat_get_blocks_size(fileName);
+    }
+    
+    public static long getFileBlocks(String fileName) {
+        return LibcLibrary.INSTANCE.stat_get_blocks(fileName);
     }
     
     public static int setFileGroup(String fileName, String groupName) {

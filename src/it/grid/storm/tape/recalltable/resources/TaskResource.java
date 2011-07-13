@@ -22,21 +22,21 @@ package it.grid.storm.tape.recalltable.resources;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.RecallTaskTO;
-import it.grid.storm.tape.recalltable.RecallTableCatalog;
-import it.grid.storm.tape.recalltable.RecallTableException;
-import it.grid.storm.tape.recalltable.model.PutTaskStatusLogic;
-import it.grid.storm.tape.recalltable.model.PutTaskStatusValidator;
-import it.grid.storm.tape.recalltable.model.RecallTaskData;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
-import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
+import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
+import it.grid.storm.tape.recalltable.model.TapeRecallData;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.ws.rs.Consumes;
@@ -84,57 +84,60 @@ public class TaskResource {
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putTaskStatus(InputStream input) throws RecallTableException {
+    public Response putTaskStatus(InputStream input) throws TapeRecallException {
         String inputString = buildInputString(input);
         log.debug("putTaskStatus() - Input:" + inputString);
         
-        PutTaskStatusValidator validator = new PutTaskStatusValidator(inputString);
+        PutTapeRecallStatusValidator validator = new PutTapeRecallStatusValidator(inputString);
         
         if (!validator.validate()) {
             return validator.getResponse();
         }
         
         /* Business logic */
-        Response response = PutTaskStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+        Response response = PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
 
         return response;
     }
 
     @PUT
-    @Path("/{taskId}")
+    @Path("/{groupTaskId}")
     @Consumes("text/plain")
-    public void putNewTaskStatusOrRetryValue(@PathParam("taskId") UUID taskId, InputStream input)
-            throws RecallTableException {
+    public void putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId, InputStream input)
+            throws TapeRecallException {
 
-        log.debug("Requested to change recall table value for taskId " + taskId);
-        // Retrieve if running in TEST setup
-        boolean test = config.getRecallTableTestingMode();
+        log.debug("Requested to change recall table value for taskId " + groupTaskId);
 
         // Retrieve the Input String
         String inputStr = buildInputString(input);
-        TaskResource.log.debug("@PUT (input string) = '" + inputStr + "'");
+        log.debug("@PUT (input string) = '" + inputStr + "'");
 
         // Retrieve Tasks corresponding to taskId 
-        //  - the relationship between taskId and entries within the DB is one-to-many
-        ArrayList<RecallTaskTO> tasks = new ArrayList<RecallTaskTO>();
+        //  - the relationship between groupTaskId and entries within the DB is one-to-many
 
         // Recall Table Catalog
-        RecallTableCatalog rtCat = null;
+        TapeRecallCatalog rtCat = null;
 
         String errorStr = null;
-
+        
         try {
-            rtCat = new RecallTableCatalog(test);
+            rtCat = new TapeRecallCatalog();
         } catch (DataAccessException e) {
             log.error("Unable to use RecallTable DB.");
-            throw new RecallTableException("Unable to use RecallTable DB.");
+            throw new TapeRecallException("Unable to use RecallTable DB.");
         }
-
-        try {
-            tasks = new ArrayList<RecallTaskTO>(rtCat.getTask(taskId));
-        } catch (DataAccessException e) {
-            log.error("Unable to retrieve Recall Task with ID = '" + taskId + "' " + e.getMessage());
-            throw new RecallTableException("Unable to retrieve Recall Task with ID = '" + taskId + "' " +e.getMessage());
+        try
+        {
+            if(!rtCat.existsGroupTask(groupTaskId))
+           {
+                log.info("Received a tape recall status update but no Recall Group Task found with ID = '" + groupTaskId + "'");
+               throw new TapeRecallException("No Recall Group Task found with ID = '" + groupTaskId + "'");   
+           }
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Unable to retrieve Recall Group Task with ID = '" + groupTaskId + "' " + e.getMessage());
+            throw new TapeRecallException("Unable to retrieve Recall Group Task with ID = '" + groupTaskId + "' " +e.getMessage());
         }
 
         // Retrieve value from Body param
@@ -142,60 +145,62 @@ public class TaskResource {
         String keyStatus = config.getStatusKey();
         int eqIndex = inputStr.indexOf('=');
 
+        String value, key = null;
         if (eqIndex > 0)
         {
-            String value = inputStr.substring(eqIndex);
-            String key = inputStr.substring(0, eqIndex);
-            if (key.equals(keyRetryValue))
-            { // **** Set the Retry value
-                try
-                {
-                    // trim out the '\n' end.
-                    int retryValue = Integer.valueOf(value.substring(1, value.length() - 1));
-                    rtCat.changeRetryValue(taskId, retryValue);
-
-                }
-                catch (NumberFormatException e)
-                {
-                    errorStr = "Unable to understand the number value = '" + value + "'";
-                    throw new RecallTableException(errorStr);
-                }
-            }
-            else
-            {
-                if (key.equals(keyStatus))
-                { // **** Set the Status
-                    try
-                    {
-                        // trim out the '\n' end.
-                        int statusValue = Integer.valueOf(value.substring(1, value.length() - 1));
-                        log.debug("Changing status of task " + taskId + " to " + statusValue);
-                        rtCat.changeStatus(taskId, RecallTaskStatus.getRecallTaskStatus(statusValue));
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        errorStr = "Unable to understand the number value = '" + value + "'";
-                        throw new RecallTableException(errorStr);
-                    }
-                }
-                else
-                {
-                    errorStr = "Unable to understand the key = '" + key + "' in @PUT request.";
-                    throw new RecallTableException(errorStr);
-                }
-            }
+            value = inputStr.substring(eqIndex);
+            key = inputStr.substring(0, eqIndex);
         }
         else
         {
             errorStr = "Body '" + inputStr + "'is wrong";
-            throw new RecallTableException(errorStr);
+            throw new TapeRecallException(errorStr);
+        }
+        int intValue;
+        try
+        {
+            // trim out the '\n' end.
+            intValue = Integer.valueOf(value.substring(1, value.length() - 1));
+
+        }
+        catch (NumberFormatException e)
+        {
+            errorStr = "Unable to understand the number value = '" + value + "'";
+            throw new TapeRecallException(errorStr);
+        }
+        if (key.equals(keyRetryValue))
+        { // **** Set the Retry value
+            log.debug("Changing retry attempt of task " + groupTaskId + " to " + intValue);
+            rtCat.changeGroupTaskRetryValue(groupTaskId, intValue);
+        }
+        else
+        {
+            if (key.equals(keyStatus))
+            { // **** Set the Status
+                log.debug("Changing status of task " + groupTaskId + " to " + intValue);
+                try {
+                    rtCat.changeGroupTaskStatus(groupTaskId, TapeRecallStatus.getRecallTaskStatus(intValue), new Date());
+                }
+                catch (DataAccessException e) {
+                    log.error("Unable to change the status for group task id " + groupTaskId + " to status " + intValue
+                            + " . DataAccessException : " + e.getMessage());
+                    throw new TapeRecallException("Unable to change the status for group task id " + groupTaskId + " to status " + intValue
+                                                  + " . DataAccessException : " + e.getMessage());
+                }
+            }
+            else
+            {
+                errorStr = "Unable to understand the key = '" + key + "' in @PUT request.";
+                throw new TapeRecallException(errorStr);
+            }
         }
     }
 
+    
     @POST
     @Path("/")
     @Consumes("text/plain")
-    public Response postNewTask(InputStream input) throws RecallTableException {
+    public Response postNewTask(InputStream input) throws TapeRecallException {
 
         Response result = Response.noContent().build();
 
@@ -206,37 +211,41 @@ public class TaskResource {
         String inputStr = buildInputString(input);
         log.debug("@POST (input string) = '" + inputStr + "'");
 
-        // Retrieve if running in TEST setup
-        boolean test = config.getRecallTableTestingMode();
-
         // Recall Table Catalog
-        RecallTableCatalog rtCat = null;
+        TapeRecallCatalog rtCat = null;
         try {
-            rtCat = new RecallTableCatalog(test);
+            rtCat = new TapeRecallCatalog();
         } catch (DataAccessException e) {
             errorStr = "Unable to use RecallTable DB.";
             log.error(errorStr);
-            throw new RecallTableException(errorStr);
+            throw new TapeRecallException(errorStr);
+            //TODO
+            /**
+             * @todo : // Build an error response!
+             * result = Response.serverError().build();
+             */
         }
 
         // Parsing of the inputString to extract the fields of RecallTask
         // RecallTaskData rtd = new RecallTaskData(inputStr);
-        RecallTaskData rtd = RecallTaskData.buildFromString(inputStr);
+        TapeRecallData rtd = TapeRecallData.buildFromString(inputStr);
         log.debug("RTD=" + rtd.toString());
 
         // Store the new Recall Task if it is all OK.
-        RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
+        TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
         if (rtCat != null) {
-            rtCat.insertNewTask(task);
+            try {
+                rtCat.insertNewTask(task);
+            }
+            catch (DataAccessException e) {
+                errorStr = "Unable to insert the new task in tape recall DB.";
+                log.error(errorStr);
+                throw new TapeRecallException(errorStr);
+            }
             URI newResource = URI.create("/" + task.getTaskId());
             result = Response.created(newResource).build();
             log.debug("New task resource created: " + newResource);
-        } else {
-            result = Response.serverError().build();
-            /**
-             * @todo : // Build an error response!
-             */
-        }
+        } 
         return result;
     }
 

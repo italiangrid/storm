@@ -233,62 +233,74 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
             TStatusCode fileStatusCode;
             String fileStatusExplanation;
             try {
-                stori = namespace.resolveStoRIbySURL(surl, guser);
-                LocalFile localFile = stori.getLocalFile();
-                if (localFile.exists()) {
-                    ExtendFileLifeTimeCommand.log.debug(stori.getPFN().toString());
-                    List volatileInfo = catalog.volatileInfoOn(stori.getPFN());
-                    if (volatileInfo.isEmpty()) {
-                        fileStatusCode = TStatusCode.SRM_SUCCESS;
-                        fileStatusExplanation = "Nothing to do, SURL is permanent";
-                        newLifetime = TLifeTimeInSeconds.makeInfinite();
-                        requestFailure = false;
-                    } else if (volatileInfo.size() > 2) {
-                        fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                        fileStatusExplanation = "Found more than one entry.... that's a BUG.";
-                        // For lifetimes infinite means also unknown
-                        newLifetime = TLifeTimeInSeconds.makeInfinite();
+                try
+                {
+                    stori = namespace.resolveStoRIbySURL(surl, guser);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    ExtendFileLifeTimeCommand.log.error("Unable to build StoRI by SURL and user", e);
+                    fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                    fileStatusExplanation = "Unable to build StoRI by SURL and user";
+                } 
+                if(stori != null)
+                {
+                    LocalFile localFile = stori.getLocalFile();
+                    if (localFile.exists()) {
+                        ExtendFileLifeTimeCommand.log.debug(stori.getPFN().toString());
+                        List volatileInfo = catalog.volatileInfoOn(stori.getPFN());
+                        if (volatileInfo.isEmpty()) {
+                            fileStatusCode = TStatusCode.SRM_SUCCESS;
+                            fileStatusExplanation = "Nothing to do, SURL is permanent";
+                            newLifetime = TLifeTimeInSeconds.makeInfinite();
+                            requestFailure = false;
+                        } else if (volatileInfo.size() > 2) {
+                            fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                            fileStatusExplanation = "Found more than one entry.... that's a BUG.";
+                            // For lifetimes infinite means also unknown
+                            newLifetime = TLifeTimeInSeconds.makeInfinite();
+                            requestSuccess = false;
+                        } else if (isStoRISURLBusy(stori)) {
+                            fileStatusCode = TStatusCode.SRM_FILE_BUSY;
+                            fileStatusExplanation = "File status is SRM_SPACE_AVAILABLE. SURL lifetime cannot be extend (try with PIN lifetime)";
+                            // For lifetimes infinite means also unknown
+                            newLifetime = TLifeTimeInSeconds.makeInfinite();
+                            requestSuccess = false;
+                        } else { // Ok, extend the lifetime of the SURL
+                            // Update the DB with the new lifetime
+                            catalog.trackVolatile(stori.getPFN(), (Calendar) volatileInfo.get(0), newLifetime);
+                            // TODO: return the correct lifetime, i.e. the one which is written to the DB.
+                            // TLifeTimeInSeconds writtenLifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
+    
+                            fileStatusCode = TStatusCode.SRM_SUCCESS;
+                            fileStatusExplanation = "Lifetime extended";
+                            requestFailure = false;
+                        }
+                    } else { // Requested SURL does not exists in the filesystem
+                        fileStatusCode = TStatusCode.SRM_INVALID_PATH;
+                        fileStatusExplanation = "File does not exists";
                         requestSuccess = false;
-                    } else if (isStoRISURLBusy(stori)) {
-                        fileStatusCode = TStatusCode.SRM_FILE_BUSY;
-                        fileStatusExplanation = "File status is SRM_SPACE_AVAILABLE. SURL lifetime cannot be extend (try with PIN lifetime)";
-                        // For lifetimes infinite means also unknown
-                        newLifetime = TLifeTimeInSeconds.makeInfinite();
-                        requestSuccess = false;
-                    } else { // Ok, extend the lifetime of the SURL
-                        // Update the DB with the new lifetime
-                        catalog.trackVolatile(stori.getPFN(), (Calendar) volatileInfo.get(0), newLifetime);
-                        // TODO: return the correct lifetime, i.e. the one which is written to the DB.
-                        // TLifeTimeInSeconds writtenLifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
-
-                        fileStatusCode = TStatusCode.SRM_SUCCESS;
-                        fileStatusExplanation = "Lifetime extended";
-                        requestFailure = false;
                     }
-                } else { // Requested SURL does not exists in the filesystem
-                    fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-                    fileStatusExplanation = "File does not exists";
-                    requestSuccess = false;
+    
+                    // Set the file level information to be returned.
+                    TReturnStatus fileStatus = new TReturnStatus(fileStatusCode, fileStatusExplanation);
+                    if (fileStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+                        ExtendFileLifeTimeCommand.log.info("srmExtendFileLifeTime: <" + guser
+                                + "> Request for [token:" + requestToken + "] for [SURL:" + surl
+                                + "] with [lifetime:" + newLifetime + " ] successfully done with: [status:"
+                                + fileStatus + "]");
+                    } else {
+                        ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <" + guser
+                                + "> Request for [token:" + requestToken + "] for [SURL:" + surl
+                                + "] with [lifetime:" + newLifetime + "] failed with: [status:" + fileStatus
+                                + "]");
+                    }
+                    TSURLLifetimeReturnStatus lifetimeReturnStatus = new TSURLLifetimeReturnStatus(surl,
+                                                                                                   fileStatus,
+                                                                                                   newLifetime,
+                                                                                                   null);
+                    details.addTSurlReturnStatus(lifetimeReturnStatus);
                 }
-
-                // Set the file level information to be returned.
-                TReturnStatus fileStatus = new TReturnStatus(fileStatusCode, fileStatusExplanation);
-                if (fileStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                    ExtendFileLifeTimeCommand.log.info("srmExtendFileLifeTime: <" + guser
-                            + "> Request for [token:" + requestToken + "] for [SURL:" + surl
-                            + "] with [lifetime:" + newLifetime + " ] successfully done with: [status:"
-                            + fileStatus + "]");
-                } else {
-                    ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <" + guser
-                            + "> Request for [token:" + requestToken + "] for [SURL:" + surl
-                            + "] with [lifetime:" + newLifetime + "] failed with: [status:" + fileStatus
-                            + "]");
-                }
-                TSURLLifetimeReturnStatus lifetimeReturnStatus = new TSURLLifetimeReturnStatus(surl,
-                                                                                               fileStatus,
-                                                                                               newLifetime,
-                                                                                               null);
-                details.addTSurlReturnStatus(lifetimeReturnStatus);
             } catch (NamespaceException e1) {
                 ExtendFileLifeTimeCommand.log.debug("Unable to build StoRI by SURL", e1);
                 fileStatusCode = TStatusCode.SRM_INVALID_PATH;
@@ -370,91 +382,116 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
         boolean requestFailure = true;
         TLifeTimeInSeconds PINLifetime;
         TLifeTimeInSeconds dbLifetime = null;
-        for (int i = 0; i < arrayOfSURLS.size(); i++) {
+        for (int i = 0; i < arrayOfSURLS.size(); i++)
+        {
             TSURL surl = arrayOfSURLS.getTSURL(i);
             TStatusCode statusOfTheSURL = null;
             TStatusCode fileStatusCode;
             String fileStatusExplanation;
             boolean surlFound = false;
             // Check if the current SURL belongs to the request token
-            for (int j = 0; j < requestSURLsList.size(); j++) {
+            for (int j = 0; j < requestSURLsList.size(); j++)
+            {
                 SURLData surlData = (SURLData) requestSURLsList.get(j);
-                if (surl.equals(surlData.surl)) {
+                if (surl.equals(surlData.surl))
+                {
                     statusOfTheSURL = surlData.statusCode;
                     requestSURLsList.remove(j);
                     surlFound = true;
                     break;
                 }
             }
-            try {
-
-                if (surlFound) {
+            try 
+            {
+                if (surlFound) 
+                {
                     ExtendFileLifeTimeCommand.log.debug("Found SURL: " + surl.getSURLString() + " (status: "
                             + statusOfTheSURL.toString() + ")");
                     NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                    StoRI stori = namespace.resolveStoRIbySURL(surl, guser);
-                    LocalFile localFile = stori.getLocalFile();
-                    if (localFile.exists()) {
-                        VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
-                        List volatileInfo = catalog.volatileInfoOn(stori.getPFN());
-
-                        if ((statusOfTheSURL != TStatusCode.SRM_FILE_PINNED)
-                                && (statusOfTheSURL != TStatusCode.SRM_SPACE_AVAILABLE)
-                                && (statusOfTheSURL != TStatusCode.SRM_SUCCESS)) // ULTIMO CASE e da rimuovere. questo
-                                                                                 // e' il caso di REQUEST_TOKEN senza
-                                                                                 // niente, che deve ritornare valori di
-                                                                                 // default.
-                        {
-                            fileStatusCode = TStatusCode.SRM_INVALID_REQUEST;
-                            fileStatusExplanation = "No TURL available";
-                            PINLifetime = null;
-                            requestSuccess = false;
-                        } else if (volatileInfo.size() > 2) {
-                            fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                            fileStatusExplanation = "Found more than one entry.... that's a BUG.";
-                            // For lifetimes infinite means also unknown
-                            PINLifetime = TLifeTimeInSeconds.makeInfinite();
-                            requestSuccess = false;
-                        } else { // OK, extend the PIN lifetime.
-                            // If the status is success the extension will not take place, only in case of empty
-                            // parametetr
-                            // the current value are returned, otherwaise the request must fail!
-
-                            if ((statusOfTheSURL == TStatusCode.SRM_SUCCESS) && (!newPINLifetime.isEmpty())) {
-
+                    StoRI stori = null; 
+                    try
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl, guser);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        log.error("Unable to build StoRI by SURL and user", e);   
+                    } 
+                    if(stori != null)
+                    {
+                        LocalFile localFile = stori.getLocalFile();
+                        if (localFile.exists()) {
+                            VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
+                            List volatileInfo = catalog.volatileInfoOn(stori.getPFN());
+    
+                            if ((statusOfTheSURL != TStatusCode.SRM_FILE_PINNED)
+                                    && (statusOfTheSURL != TStatusCode.SRM_SPACE_AVAILABLE)
+                                    && (statusOfTheSURL != TStatusCode.SRM_SUCCESS)) // ULTIMO CASE e da rimuovere. questo
+                                                                                     // e' il caso di REQUEST_TOKEN senza
+                                                                                     // niente, che deve ritornare valori di
+                                                                                     // default.
+                            {
                                 fileStatusCode = TStatusCode.SRM_INVALID_REQUEST;
                                 fileStatusExplanation = "No TURL available";
                                 PINLifetime = null;
                                 requestSuccess = false;
-
-                            } else {
-
-                                fileStatusCode = TStatusCode.SRM_SUCCESS;
-
-                                if (volatileInfo.isEmpty()) { // SURL is permanent
-                                    dbLifetime = TLifeTimeInSeconds.makeInfinite();
+                            } else if (volatileInfo.size() > 2) {
+                                fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                                fileStatusExplanation = "Found more than one entry.... that's a BUG.";
+                                // For lifetimes infinite means also unknown
+                                PINLifetime = TLifeTimeInSeconds.makeInfinite();
+                                requestSuccess = false;
+                            } else { // OK, extend the PIN lifetime.
+                                // If the status is success the extension will not take place, only in case of empty
+                                // parametetr
+                                // the current value are returned, otherwaise the request must fail!
+    
+                                if ((statusOfTheSURL == TStatusCode.SRM_SUCCESS) && (!newPINLifetime.isEmpty())) {
+    
+                                    fileStatusCode = TStatusCode.SRM_INVALID_REQUEST;
+                                    fileStatusExplanation = "No TURL available";
+                                    PINLifetime = null;
+                                    requestSuccess = false;
+    
                                 } else {
-                                    dbLifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
+    
+                                    fileStatusCode = TStatusCode.SRM_SUCCESS;
+    
+                                    if (volatileInfo.isEmpty()) { // SURL is permanent
+                                        dbLifetime = TLifeTimeInSeconds.makeInfinite();
+                                    } else {
+                                        dbLifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
+                                    }
+                                    if ((!dbLifetime.isInfinite())
+                                            && (newPINLifetime.value() > dbLifetime.value())) {
+                                        PINLifetime = dbLifetime;
+                                        fileStatusExplanation = "The requested PIN lifetime is greater than the lifetime of the SURL."
+                                                + " PIN lifetime is now equal to the lifetime of the SURL.";
+                                    } else {
+                                        PINLifetime = newPINLifetime;
+                                        fileStatusExplanation = "Lifetime extended";
+                                    }
+                                    ExtendFileLifeTimeCommand.log.debug("New PIN lifetime is: "
+                                            + PINLifetime.value() + "(SURL: " + surl.getSURLString() + ")");
+                                    // TODO: update the RequestSummaryCatalog with the new pinLifetime
+                                    // it is better to do it only once after the for loop
+                                    requestFailure = false;
                                 }
-                                if ((!dbLifetime.isInfinite())
-                                        && (newPINLifetime.value() > dbLifetime.value())) {
-                                    PINLifetime = dbLifetime;
-                                    fileStatusExplanation = "The requested PIN lifetime is greater than the lifetime of the SURL."
-                                            + " PIN lifetime is now equal to the lifetime of the SURL.";
-                                } else {
-                                    PINLifetime = newPINLifetime;
-                                    fileStatusExplanation = "Lifetime extended";
-                                }
-                                ExtendFileLifeTimeCommand.log.debug("New PIN lifetime is: "
-                                        + PINLifetime.value() + "(SURL: " + surl.getSURLString() + ")");
-                                // TODO: update the RequestSummaryCatalog with the new pinLifetime
-                                // it is better to do it only once after the for loop
-                                requestFailure = false;
                             }
+                        } else { // file does not exist in the file system
+                            fileStatusCode = TStatusCode.SRM_INVALID_PATH;
+                            fileStatusExplanation = "Invalid path";
+                            PINLifetime = null;
+                            requestSuccess = false;
+                        
                         }
-                    } else { // file does not exist in the file system
-                        fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-                        fileStatusExplanation = "Invalid path";
+                    }
+                    else
+                    {
+                        log.error("Unable to build StoRI by SURL and user");   
+                        fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                        fileStatusExplanation = "Unable to build StoRI by SURL and user";
+                        // For lifetimes infinite means also unknown
                         PINLifetime = null;
                         requestSuccess = false;
                     }

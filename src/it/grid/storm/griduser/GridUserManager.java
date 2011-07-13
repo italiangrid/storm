@@ -86,6 +86,18 @@ public class GridUserManager {
         return userFactory.createGridUser(dn, fqans, proxy);
     }
 
+    /**
+     * @param dn
+     * @param vo
+     * @return
+     */
+    public static GridUserInterface makeVOMSGridUser(String dn, String vo)
+    {
+        FQAN[] fqans = new FQAN[1];
+        fqans[0] = FQAN.makeVoFQAN(vo); 
+        return userFactory.createGridUser(dn, fqans);
+    }
+    
     public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans)
     {
         return userFactory.createGridUser(dn, fqans);
@@ -99,14 +111,6 @@ public class GridUserManager {
     public static GridUserInterface makeGridUser(String dn, String proxy)
     {
         return userFactory.createGridUser(dn, proxy);
-    }
-
-    public static GridUserInterface makeStoRMGridUser()
-    {
-        GridUserInterface result = null;
-        String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it";
-        result = userFactory.createGridUser(dn);
-        return result;
     }
 
     public static GridUserInterface makeSAGridUser()

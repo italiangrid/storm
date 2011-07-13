@@ -217,101 +217,101 @@ public class DBConnectionPool implements DataSourceConnectionFactory{
 
     }
 
-    public static void main(String[] args) {
-        DataBaseStrategy db = DataBaseStrategy.MYSQL;
-        db.setDbUrl("localhost");
-        db.setDbName("storm_be_ISAM");
-        db.setDbUsr("storm");
-        db.setDbPwd("storm");
-        System.out.println("Connection string ="+ db.getConnectionString());
-
-        try {
-            DBConnectionPool.initPool(db, 10, 50);
-        }
-        catch (PersistenceException ex1) {
-            ex1.printStackTrace();
-        }
-
-        DBConnectionPool pool = DBConnectionPool.getPoolInstance();
-
-        printInfo(pool);
-
-        Connection conn = null;
-        try {
-            conn = pool.borrowConnection();
-        }
-        catch (PersistenceException ex) {
-            ex.printStackTrace();
-        }
-
-        printInfo(pool);
-
-        Statement myStatement = null;
-        ResultSet myResult = null;
-
-        if (conn != null) {
-            try {
-                myStatement = conn.createStatement();
-                /**
-        myResult = myStatement.executeQuery("SELECT count(*) FROM storage_file s;");
-        // Get the resulting data back, and loop through it
-        // to simulate the data retrieval.
-        int numcols = myResult.getMetaData().getColumnCount();
-        while (myResult.next()) {
-          for (int i = 1; i <= numcols; i++) {
-            System.out.println("res("+i+")= "+myResult.getString(i));
-          }
-        }
-                 **/
-                StorageSpaceTO ssTO = new StorageSpaceTO();
-                ssTO.setAlias("Test");
-                ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
-                ssTO.setGuaranteedSize(10000);
-                ssTO.setLifetime(1000);
-                GridUserInterface gu = null;
-                gu = GridUserManager.makeGridUser("/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it");
-                //gu = VomsGridUser.make("testUser");
-                ssTO.setOwner(gu);
-                ssTO.setSpaceFile("test_spaceFile");
-                ssTO.setSpaceToken("test_spaceToken");
-                ssTO.setSpaceType("volatile");
-
-
-
-
-
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
-            finally {
-                // We want to be agressive about ensuring that our
-                // connection is properly cleaned up and returned to
-                // our pool.
-                try {
-                    myResult.close();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-                try {
-                    myStatement.close();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-                try {
-                    pool.giveBackConnection(conn);
-                    //conn.close();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            printInfo(pool);
-        }
-
-    }
+//    public static void main(String[] args) {
+//        DataBaseStrategy db = DataBaseStrategy.MYSQL;
+//        db.setDbUrl("localhost");
+//        db.setDbName("storm_be_ISAM");
+//        db.setDbUsr("storm");
+//        db.setDbPwd("storm");
+//        System.out.println("Connection string ="+ db.getConnectionString());
+//
+//        try {
+//            DBConnectionPool.initPool(db, 10, 50);
+//        }
+//        catch (PersistenceException ex1) {
+//            ex1.printStackTrace();
+//        }
+//
+//        DBConnectionPool pool = DBConnectionPool.getPoolInstance();
+//
+//        printInfo(pool);
+//
+//        Connection conn = null;
+//        try {
+//            conn = pool.borrowConnection();
+//        }
+//        catch (PersistenceException ex) {
+//            ex.printStackTrace();
+//        }
+//
+//        printInfo(pool);
+//
+//        Statement myStatement = null;
+//        ResultSet myResult = null;
+//
+//        if (conn != null) {
+//            try {
+//                myStatement = conn.createStatement();
+//                /**
+//        myResult = myStatement.executeQuery("SELECT count(*) FROM storage_file s;");
+//        // Get the resulting data back, and loop through it
+//        // to simulate the data retrieval.
+//        int numcols = myResult.getMetaData().getColumnCount();
+//        while (myResult.next()) {
+//          for (int i = 1; i <= numcols; i++) {
+//            System.out.println("res("+i+")= "+myResult.getString(i));
+//          }
+//        }
+//                 **/
+//                StorageSpaceTO ssTO = new StorageSpaceTO();
+//                ssTO.setAlias("Test");
+//                ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
+//                ssTO.setGuaranteedSize(10000);
+//                ssTO.setLifetime(1000);
+//                GridUserInterface gu = null;
+//                gu = GridUserManager.makeGridUser("/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it");
+//                //gu = VomsGridUser.make("testUser");
+//                ssTO.setOwner(gu);
+//                ssTO.setSpaceFile("test_spaceFile");
+//                ssTO.setSpaceToken("test_spaceToken");
+//                ssTO.setSpaceType("volatile");
+//
+//
+//
+//
+//
+//            }
+//            catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//            finally {
+//                // We want to be agressive about ensuring that our
+//                // connection is properly cleaned up and returned to
+//                // our pool.
+//                try {
+//                    myResult.close();
+//                }
+//                catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    myStatement.close();
+//                }
+//                catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    pool.giveBackConnection(conn);
+//                    //conn.close();
+//                }
+//                catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            printInfo(pool);
+//        }
+//
+//    }
 
     /**
   public class DBCPDemo {

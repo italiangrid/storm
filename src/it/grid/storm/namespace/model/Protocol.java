@@ -43,6 +43,10 @@ public class Protocol {
     public final static Protocol RFIO = new Protocol(3, "RFIO", "rfio", 5001);
     public final static Protocol SRM = new Protocol(4, "SRM", "srm", 8444);
     public final static Protocol ROOT = new Protocol(5, "ROOT", "root", 1094);
+    // TODO HTTPS TURL
+    public final static Protocol HTTP = new Protocol(6, "HTTP", "http", 8080);
+    public final static Protocol HTTPS = new Protocol(7, "HTTPS", "https", 443);
+    
     public final static Protocol EMPTY = new Protocol(0, "EMPTY", "", -1);
     public final static Protocol UNKNOWN = new Protocol(-1, "UNKNOWN", "", -1);
 
@@ -109,6 +113,14 @@ public class Protocol {
         if (scheme.toLowerCase().replaceAll(" ", "").equals(SRM.getSchema().toLowerCase())) {
             return SRM;
         }
+     // TODO HTTPS TURL
+        if (scheme.toLowerCase().replaceAll(" ", "").equals(HTTP.getSchema().toLowerCase())) {
+            return HTTP;
+        }
+        if (scheme.toLowerCase().replaceAll(" ", "").equals(HTTPS.getSchema().toLowerCase())) {
+            return HTTPS;
+        }
+        
         if (scheme.toLowerCase().replaceAll(" ", "").equals(EMPTY.getSchema().toLowerCase())) {
             return EMPTY;
         }

@@ -48,8 +48,10 @@ public class ExtendedAttributesImpl implements ExtendedAttributes {
         ExtendedAttributes dmapi = new ExtendedAttributesImpl();
 
         if ("check".equals(args[0].toLowerCase())) {
-
+            // Native.getPreserveLastError() is deprecated: The preferred method of obtaining the last error result 
+            // is to declare your mapped method to throw LastErrorException instead. 
             System.out.println("System last error is preserved: " + Native.getPreserveLastError());
+            
 
         } else if ("get".equals(args[0].toLowerCase())) {
 

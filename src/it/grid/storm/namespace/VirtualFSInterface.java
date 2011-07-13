@@ -23,6 +23,7 @@ import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.SAAuthzType;
 import it.grid.storm.namespace.model.StoRIType;
@@ -79,7 +80,7 @@ public interface VirtualFSInterface {
 
     public PropertyInterface getProperties() throws NamespaceException;
 
-    public List getMappingRules() throws NamespaceException;
+    public List<MappingRule> getMappingRules() throws NamespaceException;
 
     /**************************************************
      *    Methods used to retrieve the Status of VFS

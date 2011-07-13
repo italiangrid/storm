@@ -19,12 +19,11 @@ distdir=.
 globalprefix=storm
 backendprefix=backend
 package=storm-backend
-version=1.5.4
-PREFIX=/opt/storm/backend
+version=1.7.0
 
 libacl_devel_prefix=${libacl_devel_location}
 libattr_devel_prefix=${libattr_devel_location}
-gpfs_prefix=${gpfs_base_location}
+gpfs_mock_prefix=../mock
 xfsprogs_devel_prefix=${xfsprogs_devel_location}
 jdk_prefix=${jdk_location}
 swig_prefix=${swig_location}
@@ -50,7 +49,6 @@ default: all
 #  xfs
 #  posix  (ignored; generic POSIX support is *always* compiled in)
 #
-#FILESYSTEMS:=gpfs,xfs,posix
 FILESYSTEMS ?= posix,gpfs,xfs
 
 # Whether to compile debugging code
@@ -66,18 +64,22 @@ JAVA_PACKAGE ?= it.grid.storm.filesystem.swig
 
 # where the "jni.h" and "jni_md.h" include files are located
 JAVA_INCLUDES ?= \
-	-I$(JAVA_HOME)/include \
-	-I$(JAVA_HOME)/include/linux
+	-I$(jdk_prefix)/include \
+	-I$(jdk_prefix)/include/linux
 
 # additional libraries libposixapi_interface depends on
 POSIXAPI_INCLUDES ?= -I$(libacl_devel_prefix)/usr/include -I$(libattr_devel_prefix)/usr/include -I$(libacl_devel_prefix)/include -I$(libattr_devel_prefix)/include
 # where acl lib file is located
 POSIXAPI_LIBS ?= -L$(libacl_devel_prefix)/usr/lib$(architecture) -L$(libacl_devel_prefix)/lib$(architecture) -lacl
 
-# where gpfs library and includes are located
-GPFSAPI_INCLUDES ?= -I$(gpfs_prefix)/include
+# where the "gpfs.h" include file is located
+#GPFSAPI_INCLUDES ?= -I$(gpfs_prefix)/include
+GPFSAPI_INCLUDES ?= -I$(gpfs_mock_prefix)
+
 # where libraries libposixapi_interface depends on
-GPFSAPI_LIBS ?= $(POSIXAPI_LIBS) -L$(gpfs_prefix)/lib$(architecture) -lgpfs
+#GPFSAPI_LIBS ?= $(POSIXAPI_LIBS) -L$(gpfs_prefix)/lib$(architecture) -lgpfs
+GPFSAPI_LIBS ?= -lgpfs -L$(DESTDIR)
+
 
 # where  the "xfs/libxfs.h" include file is located
 XFSAPI_INCLUDES ?= -I$(xfsprogs_devel_prefix)/usr/include -I$(xfsprogs_devel_prefix)/include
@@ -102,12 +104,10 @@ defines += -fPIC
 #defines += -D_LARGEFILE_SOURCE
 +defines += -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
-
 # compile GPFS code?
 ifeq (gpfs, $(findstring gpfs,$(FILESYSTEMS)))
 BUILD_GPFS:=1
 endif
-
 
 # compile XFS code?
 ifeq (xfs, $(findstring xfs,$(FILESYSTEMS)))
@@ -197,7 +197,7 @@ swig: posixapi_swig gpfsapi_swig xfsapi_swig
 clean:
 	rm -f *~ *.o *.class *.dep *.so 
 swigclean:
-	rm -f $(posixapi_swig_output) $(gpfsapi_swig_output) $(xfsapi_swig_output)
+	rm -f $(posixapi_swig_output) $(xfsapi_swig_output)
 extraclean: clean swigclean
 	rm -f errno.java
 
@@ -283,7 +283,6 @@ $(posixapi_objs): CXXFLAGS += $(POSIXAPI_INCLUDES)
 
 # automatic source files dependencies
 -include $(posixapi_srcs:.cpp=.dep)
-
 
 
 # ====================================================================
@@ -420,7 +419,7 @@ $(xfsapi_objs): CXXFLAGS += $(XFSAPI_INCLUDES)
 #
 # ====================================================================
 
-tests := test_posixfs_acl test_gpfs23_acl
+tests := test_posixfs_acl
 
 tests: $(tests)
 
@@ -432,12 +431,6 @@ run-all-tests: $(tests:test_%=run-test_%)
 test_posixfs_acl: test_posixfs_acl.o $(libposixapi_interface)
 	$(CXX) $(CXXFLAGS) -o test_posixfs_acl test_posixfs_acl.o \
 		$(libposixapi_interface) $(POSIXAPI_LIBS) \
-		-lboost_unit_test_framework
-
-test_gpfs23_acl: test_gpfs23_acl.o $(libposixapi_interface) $(libgpfsapi_interface)
-	$(CXX) $(CXXFLAGS) -o test_gpfs23_acl test_gpfs23_acl.o \
-		$(libgpfsapi_interface) $(libposixapi_interface) \
-		$(GPFSAPI_LIBS) $(POSIXAPI_LIBS) \
 		-lboost_unit_test_framework
 
 test_helper_command: test_helper_command.o helper_command.o fs_errors.o

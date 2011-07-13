@@ -35,6 +35,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -42,7 +43,9 @@ import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,10 +141,10 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
     /* (non-Javadoc)
      * @see it.grid.storm.asynch.SuspendedChunk#completeRequest(it.grid.storm.tape.recalltable.model.RecallTaskStatus)
      */
-    public void completeRequest(RecallTaskStatus recallStatus){
+    public void completeRequest(TapeRecallStatus recallStatus){
 
         boolean requestSuccessfull = false;
-        if (recallStatus == RecallTaskStatus.SUCCESS)
+        if (recallStatus == TapeRecallStatus.SUCCESS)
         {
             try
             {
@@ -167,7 +170,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         }
         else
         {
-            if (recallStatus == RecallTaskStatus.ABORTED)
+            if (recallStatus == TapeRecallStatus.ABORTED)
             {
                 chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
             }
@@ -209,25 +212,37 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
         } else {
             try {
 
-                StoRI fileStoRI = NamespaceDirector.getNamespace()
+                StoRI fileStoRI = null;
+                try
+                {
+                fileStoRI = NamespaceDirector.getNamespace()
                                                    .resolveStoRIbySURL(chunkData.getFromSURL(), gu);
-
-                SpaceHelper sp = new SpaceHelper();
-                TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
-                SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-                if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
-
-                    manageIsPermit(fileStoRI);
-
-                } else {
+                } catch(IllegalArgumentException e)
+                {
                     failure = true;
-                    chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
-                            + chunkData.getFromSURL() + " in Storage Area: " + token);
-                    log.debug("Read access to " + chunkData.getFromSURL() + " in Storage Area: " + token
-                            + " denied!");
+                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                            + chunkData.getFromSURL());
+                    log.error("Unable to get StoRI for surl "
+                              + chunkData.getFromSURL() + " IllegalArgumentException: " + e.getMessage());
                 }
-
+                if(!failure)
+                {
+                    SpaceHelper sp = new SpaceHelper();
+                    TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+                    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+    
+                    if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
+    
+                        manageIsPermit(fileStoRI);
+    
+                    } else {
+                        failure = true;
+                        chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
+                                + chunkData.getFromSURL() + " in Storage Area: " + token);
+                        log.debug("Read access to " + chunkData.getFromSURL() + " in Storage Area: " + token
+                                + " denied!");
+                    }
+                }
             } catch (NamespaceException e) {
                 // The Supplied SURL does not contain a root that could be identified by the StoRI factory
                 // as referring to a VO being managed by StoRM... that is SURLs begining with such root
@@ -316,7 +331,8 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                 if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 
                     // Compute the Expiration Time in seconds
-                    long expDate = (System.currentTimeMillis() / 1000 + chunkData.getLifeTime().value());
+                    //Add the deferred start time to the expiration date
+                    long expDate = (System.currentTimeMillis() / 1000 + (chunkData.getLifeTime().value() + chunkData.getDeferredStartTime()));
                     StormEA.setPinned(localFile.getAbsolutePath(), expDate);
 
                     // set group permission for tape quota management
@@ -336,10 +352,15 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                             voName = ((VomsGridUser) gu).getVO().getValue();
                         }
 
-                        PersistenceDirector.getDAOFactory()
-                                           .getTapeRecallDAO()
-                                           .insertTask(this, voName, localFile.getAbsolutePath());
+                        TapeRecallCatalog rtCat = null;
 
+                        try {
+                            rtCat = new TapeRecallCatalog();
+                        } catch (DataAccessException e) {
+                            log.error("Unable to use RecallTable DB.");
+                            throw new TapeRecallException("Unable to use RecallTable DB.");
+                        }
+                        rtCat.insertTask(this, voName, localFile.getAbsolutePath());
                         backupData(localFile);
                     }
                 } else {

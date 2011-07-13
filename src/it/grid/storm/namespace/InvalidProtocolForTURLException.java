@@ -30,8 +30,9 @@ public class InvalidProtocolForTURLException extends InvalidTTURLAttributesExcep
   }
 
 
-  public InvalidProtocolForTURLException( Throwable cause ) {
+  public InvalidProtocolForTURLException( Throwable cause,  String protocolSchema) {
     super( cause );
+    this.protocolSchema = protocolSchema;
   }
 
   public String toString() {

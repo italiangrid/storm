@@ -484,8 +484,22 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
             if (!surl.isEmpty()) {
                 try {
                     stori = namespace.resolveStoRIbySURL(surl, guser);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    PtPAbortExecutor.log.error("Unable to build StoRI by SURL and user", e);   
+                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+                    putCatalog.update(chunkData);
+                    surlReturnStatus.setSurl(chunkData.toSURL());
+                    surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Unable to build StoRI by SURL and user"));
+                    return surlReturnStatus;
                 } catch (NamespaceException ex) {
-                    PtPAbortExecutor.log.error("Unable to build StoRI by SURL", ex);
+                    PtPAbortExecutor.log.error("Unable to build StoRI by SURL and user", ex);
+                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+                    putCatalog.update(chunkData);
+                    surlReturnStatus.setSurl(chunkData.toSURL());
+                    surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Unable to build StoRI by SURL and user"));
+                    return surlReturnStatus;
                 }
             }
 

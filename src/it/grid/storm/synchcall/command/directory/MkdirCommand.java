@@ -17,6 +17,8 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -123,6 +125,22 @@ public class MkdirCommand extends DirectoryCommand implements Command {
             // Building StoRI representation of SURL within the request.
             try {
                 stori = namespace.resolveStoRIbySURL(surl, guser);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("srmMkdir: <" + guser + "> Unable to get StoRI for surl: " + e);
+                try
+                {
+                    returnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to get StoRI for surl");
+                }
+                catch (InvalidTReturnStatusAttributeException e1)
+                {
+                    log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
+                              + "'] failed. Error creating returnStatus " + e1);
+                }
+                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
+                        + returnStatus.toString() + "]");
+                outData = new MkdirOutputData(returnStatus);
+                return outData;
             } catch (NamespaceException ex) {
                 // Something was wrong ....
                 log.debug("srmMkdir: <" + guser + "> Unable to build StoRI by SURL: " + ex);
@@ -237,17 +255,31 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                     // There are Default ACLs to set into the file
                     List<ACLEntry> dacl_list = dacl.getACL();
                     for (ACLEntry ace : dacl_list) {
+                        // TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or xrw in respect to getEnableWritePermOnDirectory
                         log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
                                 + ace.getFilePermissionString());
                         LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                        try {
-                            file.grantGroupPermission(u, fp);
-                        } catch (CannotMapUserException e) {
-                            // TODO Auto-generated catch block
-                            log.error("Error adding default ACL for the gid: " + ace.getGroupID()
-                                    + " with permission: " + ace.getFilePermissionString());
-                            e.printStackTrace();
-                        }
+                        //TODO ACL manager
+//                        try {
+                            AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                            //TODO ACL manager
+                            try
+                            {
+                                manager.grantGroupPermission(file, u, fp);
+                            }
+                            catch (IllegalArgumentException e)
+                            {
+                                log.error("Unable to grant group permission on the created folder. IllegalArgumentException: " + e.getMessage());
+                                returnStatus.setExplanation(returnStatus.getExplanation() + "NOTE: Unable to grant group permission on the created folder");
+                            }
+//                            file.grantGroupPermission(u, fp);
+                            //TODO ACL manager
+//                        } catch (CannotMapUserException e) {
+//                            // TODO Auto-generated catch block
+//                            log.error("Error adding default ACL for the gid: " + ace.getGroupID()
+//                                    + " with permission: " + ace.getFilePermissionString());
+//                            e.printStackTrace();
+//                        }
                     }
                 }
             } else {
@@ -362,7 +394,28 @@ public class MkdirCommand extends DirectoryCommand implements Command {
             } else {
                 // AoT Case
                 try {
-                    file.grantGroupPermission(user.getLocalUser(), fpLIST);
+                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    //TODO ACL manager
+                    if(user.getLocalUser() == null)
+                    {
+                        log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
+                        failure = true;
+                        explanation = explanation + " [ Unable to setting up the ACL ]";
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(file,user.getLocalUser(), fpLIST);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: " + e.getMessage());
+                            failure = true;
+                            explanation = explanation + " [ Unable to grant group permission on the created folder]";
+                        }
+                    }
+//                    file.grantGroupPermission(user.getLocalUser(), fpLIST);
                 } catch (CannotMapUserException ex5) {
                     log.info("SrmMkdir: Unable to setting up the ACL " + ex5);
                     failure = true;

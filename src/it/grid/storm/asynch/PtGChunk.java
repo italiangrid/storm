@@ -17,6 +17,8 @@
 
 package it.grid.storm.asynch;
 
+import it.grid.storm.acl.AclManager;
+import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -48,6 +50,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.persistence.PersistenceDirector;
+import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -56,7 +59,9 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import java.util.Calendar;
 import java.util.Iterator;
@@ -170,35 +175,45 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 		else
 		{
 			/* proceed normally! */
-			try
-			{
-				StoRI fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-									  chunkData.fromSURL(), gu);
-				AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu,
-											 SRMFileRequest.PTG, fileStoRI);
-
-				if(ptgAuthz.equals(AuthzDecision.PERMIT))
-				{
-					manageIsPermit(fileStoRI);
-				}
-				else
-				{
-					if(ptgAuthz.equals(AuthzDecision.DENY))
-					{
-						manageIsDeny();
-					}
-					else
-					{
-						if(ptgAuthz.equals(AuthzDecision.INDETERMINATE))
-						{
-							manageIsIndeterminate(ptgAuthz);
-						}
-						else
-						{
-							manageIsNotApplicabale(ptgAuthz);
-						}
-					}
-				}
+            try
+            {
+                StoRI fileStoRI = null;
+                try
+                {
+                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(), gu);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    failure = true;
+                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl " + chunkData.fromSURL());
+                    log.error("Unable to get StoRY for surl " + chunkData.fromSURL() + " IllegalArgumentException: " + e.getMessage());
+                }
+                if (!failure)
+                {
+                    AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
+                    if (ptgAuthz.equals(AuthzDecision.PERMIT))
+                    {
+                        manageIsPermit(fileStoRI);
+                    }
+                    else
+                    {
+                        if (ptgAuthz.equals(AuthzDecision.DENY))
+                        {
+                            manageIsDeny();
+                        }
+                        else
+                        {
+                            if (ptgAuthz.equals(AuthzDecision.INDETERMINATE))
+                            {
+                                manageIsIndeterminate(ptgAuthz);
+                            }
+                            else
+                            {
+                                manageIsNotApplicabale(ptgAuthz);
+                            }
+                        }
+                    }
+                }
 			} catch(NamespaceException e)
 			{
 				/*
@@ -313,9 +328,16 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 									voName = ((VomsGridUser) gu).getVO().getValue();
 								}
 
-								PersistenceDirector.getDAOFactory().getTapeRecallDAO().insertTask(
-									this, voName, localFile.getAbsolutePath());
+		                        TapeRecallCatalog rtCat = null;
 
+		                        try {
+		                            rtCat = new TapeRecallCatalog();
+		                        } catch (DataAccessException e) {
+		                            log.error("Unable to use RecallTable DB.");
+		                            throw new TapeRecallException("Unable to use RecallTable DB.");
+		                        }
+		                        rtCat.insertTask(this, voName, localFile.getAbsolutePath());
+		                        
 								/* Stores the parameters in this object */
 								backupData(fileStoRI, localFile, localUser, turl);
 
@@ -486,7 +508,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 					if(fileStoRI.hasJustInTimeACLs())
 					{
 						// JiT
-						parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+					    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                        //TODO ACL manager
+					    try
+					    {
+                            manager.grantUserPermission(parentFile,localUser, FilesystemPermission.Traverse);
+    					}
+    	                catch (IllegalArgumentException e)
+    	                {
+    	                    log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+    	                }
+//						parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
 						fp = parentFile.getEffectiveUserPermission(localUser);
 						if(fp != null)
 						{
@@ -515,7 +547,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 					else
 					{
 						// AoT
-						parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+					    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+		                //TODO ACL manager
+					    try
+					    {
+    					    manager.grantGroupPermission(parentFile,localUser, FilesystemPermission.Traverse);
+    					}
+    	                catch (IllegalArgumentException e)
+    	                {
+    	                    log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+    	                }
+//						parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
 						fp = parentFile.getEffectiveGroupPermission(localUser);
 						if(fp != null)
 						{
@@ -633,7 +675,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 			if(fileStoRI.hasJustInTimeACLs())
 			{
 				// JiT
-				localFile.grantUserPermission(localUser, FilesystemPermission.Read);
+			    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                //TODO ACL manager
+			    try
+			    {
+                    manager.grantUserPermission(localFile,localUser, FilesystemPermission.Read);
+    			}
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Unable to grant user read permission on the file. IllegalArgumentException: " + e.getMessage());
+                }
+//				localFile.grantUserPermission(localUser, FilesystemPermission.Read);
 				fp = localFile.getEffectiveUserPermission(localUser);
 				if(fp != null)
 				{
@@ -662,7 +714,17 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 			else
 			{
 				// AoT
-				localFile.grantGroupPermission(localUser, FilesystemPermission.Read);
+			    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                //TODO ACL manager
+			    try
+			    {
+                    manager.grantGroupPermission(localFile,localUser, FilesystemPermission.Read);
+    			}
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Unable to grant user read permission on the file. IllegalArgumentException: " + e.getMessage());
+                }
+//				localFile.grantGroupPermission(localUser, FilesystemPermission.Read);
 				fp = localFile.getEffectiveGroupPermission(localUser);
 				if(fp != null)
 				{
@@ -698,7 +760,25 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 						PtGChunk.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
 							+ " with permission: " + ace.getFilePermissionString());
 						LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-						localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+						 AclManager manager = AclManagerFSAndHTTPS.getInstance();
+		                //TODO ACL manager
+	                    if(ace.getFilesystemPermission() == null)
+	                    {
+	                        log.warn("Unable to setting up the ACL. ACl entry permission is null!");
+	                    }
+	                    else
+	                    {
+	                        try
+	                        {
+	                            manager.grantGroupPermission(localFile,u, ace.getFilesystemPermission());
+	                            
+    	                    }
+    	                    catch (IllegalArgumentException e)
+    	                    {
+    	                        log.error("Unable to grant group permissions on the file. IllegalArgumentException: " + e.getMessage());
+    	                    }
+	                    }
+//						localFile.grantGroupPermission(u, ace.getFilesystemPermission());
 					}
 				}
 			}
@@ -852,11 +932,11 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 		s.ptgStreet(this);
 	}
 
-	public void completeRequest(RecallTaskStatus recallStatus) {
+	public void completeRequest(TapeRecallStatus recallStatus) {
 
 		/* Updates request status on the DB and on the statusManager accordingly with the received recallStatus */
 		boolean requestSuccessfull = false;
-		if(recallStatus == RecallTaskStatus.SUCCESS)
+		if(recallStatus == TapeRecallStatus.SUCCESS)
 		{
             try
             {
@@ -881,7 +961,7 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 		}
 		else
 		{
-			if(recallStatus == RecallTaskStatus.ABORTED)
+			if(recallStatus == TapeRecallStatus.ABORTED)
 			{
 				chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
 			}

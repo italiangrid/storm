@@ -19,12 +19,14 @@ package it.grid.storm.persistence.dao;
 
 
 
+import java.util.Collection;
+import java.util.Date;
+
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.StorageSpaceTO;
-import java.util.*;
 
 import it.grid.storm.griduser.GridUserInterface;
-//import it.grid.storm.griduser.VomsGridUser;
+
 
 
 /**
@@ -40,15 +42,15 @@ public interface StorageSpaceDAO {
 
   public StorageSpaceTO getStorageSpaceById(Long ssId) throws DataAccessException;
 
-  public Collection getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias) throws DataAccessException;
+  public Collection<StorageSpaceTO> getStorageSpaceByOwner(GridUserInterface owner, String spaceAlias) throws DataAccessException;
 
-  public Collection getStorageSpaceBySpaceType(String stype) throws DataAccessException;
+  public Collection<StorageSpaceTO> getStorageSpaceBySpaceType(String stype) throws DataAccessException;
 
-  public Collection getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException;
+  public Collection<StorageSpaceTO> getStorageSpaceByAliasOnly(String spaceAlias) throws DataAccessException;
 
   public StorageSpaceTO getStorageSpaceByToken(String token) throws DataAccessException;
 
-  public Collection findAll() throws DataAccessException;
+  public Collection<StorageSpaceTO> findAll() throws DataAccessException;
 
   public void addStorageSpace(StorageSpaceTO ss) throws DataAccessException;
 
@@ -57,9 +59,15 @@ public interface StorageSpaceDAO {
   public void removeStorageSpace(String spaceToken) throws DataAccessException;
 
   public void updateStorageSpace(StorageSpaceTO ss) throws DataAccessException;
+  
+  public void updateStorageSpaceFreeSpace(StorageSpaceTO ss) throws DataAccessException;
 
   public void updateAllStorageSpace(StorageSpaceTO ss) throws DataAccessException;
 
-  public Collection getExpired(long currentTimeInSecond) throws DataAccessException ;
+  public Collection<StorageSpaceTO> getExpired(long currentTimeInSecond) throws DataAccessException ;
+
+  public Collection<StorageSpaceTO> getStorageSpaceByUnavailableUsedSpace(long unavailableSizeValue) throws DataAccessException ;
+
+public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate(Date lastUpdateTimestamp) throws DataAccessException ;
 
 }

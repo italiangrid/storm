@@ -115,7 +115,7 @@ public interface NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException;
+    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException, IllegalArgumentException;
 
     /**
      *

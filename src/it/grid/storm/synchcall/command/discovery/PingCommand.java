@@ -20,7 +20,7 @@ package it.grid.storm.synchcall.command.discovery;
 import it.grid.storm.Constants;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.RecallTaskTO;
+import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.InvalidTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TExtraInfo;
@@ -30,10 +30,10 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
-import it.grid.storm.tape.recalltable.RecallTableCatalog;
-import it.grid.storm.tape.recalltable.RecallTableException;
-import it.grid.storm.tape.recalltable.model.RecallTaskData;
-import it.grid.storm.tape.recalltable.persistence.RecallTaskBuilder;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.TapeRecallData;
+import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -258,30 +258,39 @@ public class PingCommand extends DiscoveryCommand implements Command {
         ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
         // Recall Table Catalog
         String errorStr;
-        RecallTableCatalog rtCat = null;
+        TapeRecallCatalog rtCat = null;
         try {
-            rtCat = new RecallTableCatalog(false);
+            rtCat = new TapeRecallCatalog();
         } catch (DataAccessException e) {
             errorStr = "Unable to use RecallTable DB.";
             log.error(errorStr);
+            return arrayResult;
         }
 
         // Parsing of the inputString to extract the fields of RecallTask
-        RecallTaskData rtd;
+        TapeRecallData rtd;
         try {
-            rtd = RecallTaskData.buildFromString(param);
+            rtd = TapeRecallData.buildFromString(param);
             log.debug("RTD=" + rtd.toString());
             // Store the new Recall Task if it is all OK.
-            RecallTaskTO task = RecallTaskBuilder.buildFromPOST(rtd);
+            TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
             if (rtCat != null) {
-                rtCat.insertNewTask(task);
+                try {
+                    rtCat.insertNewTask(task);
+                }
+                catch (DataAccessException e) {
+                    errorStr = "Unable to use RecallTable DB.";
+                    log.error(errorStr);
+                    return arrayResult;
+                }
                 URI newResource = URI.create("/" + task.getTaskId());
                 log.debug("New task resource created: " + newResource);
             }       
            
-        } catch (RecallTableException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (TapeRecallException e) {
+            errorStr = "Unable to use build the recall task from the provided string \'" + param + "\'";
+            log.error(errorStr);
+            return arrayResult;
         }
       
         return arrayResult;
@@ -307,18 +316,18 @@ public class PingCommand extends DiscoveryCommand implements Command {
         int numbOfTask = 1;
 
         // Recall Table Catalog
-        RecallTableCatalog rtCat = null;
+        TapeRecallCatalog rtCat = null;
 
         try {
-            rtCat = new RecallTableCatalog(false);
+            rtCat = new TapeRecallCatalog();
             // Retrieve the Task
-            ArrayList<RecallTaskTO> tasks = rtCat.takeoverNTasks(numbOfTask);
+            ArrayList<TapeRecallTO> tasks = rtCat.takeoverNTasksWithDoubles(numbOfTask);
 
             if (tasks != null) {
                 // Build the response
 
-                for (RecallTaskTO recallTaskTO : tasks) {
-                    otherInfo = new TExtraInfo(recallTaskTO.getTaskId().toString(), recallTaskTO.toString());
+                for (TapeRecallTO tapeRecallTO : tasks) {
+                    otherInfo = new TExtraInfo(tapeRecallTO.getTaskId().toString(), tapeRecallTO.toString());
                     arrayResult.addTExtraInfo(otherInfo);
                 }
             }

@@ -17,46 +17,18 @@
 
 package it.grid.storm.persistence.dao;
 
-import it.grid.storm.asynch.SuspendedChunk;
-import it.grid.storm.catalogs.BoLChunkData;
-import it.grid.storm.catalogs.ChunkData;
-import it.grid.storm.catalogs.PtGChunkData;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.RecallTaskTO;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.tape.recalltable.model.RecallTaskStatus;
+import it.grid.storm.persistence.model.TapeRecallTO;
 
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tape Recall Data Access Object (DAO)
  */
 
 public abstract class TapeRecallDAO extends AbstractDAO {
-
-    private static final Logger log = LoggerFactory.getLogger(TapeRecallDAO.class);
-    private static ConcurrentHashMap<TRequestToken, SuspendedChunk> chunkMap = new ConcurrentHashMap<TRequestToken, SuspendedChunk>();
-
-    /**
-     * 
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract List<RecallTaskTO> getInProgressTask() throws DataAccessException;
-
-    /**
-     * 
-     * @param voName
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract List<RecallTaskTO> getInProgressTask(String voName) throws DataAccessException;
 
     /**
      * 
@@ -72,22 +44,6 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      * @throws DataAccessException
      */
     public abstract int getNumberInProgress(String voName) throws DataAccessException;
-
-    /**
-     * Method used to monitor the status of the Recall Table
-     * 
-     * @throws DataAccessException
-     */
-    public abstract int getNumberOfTasksWithStatus(RecallTaskStatus status, String voName)
-            throws DataAccessException;
-
-    /**
-     * Method used to monitor the status of the Recall Table Return the number of tasks with the status = QUEUED or
-     * IN_PROGRESS
-     * 
-     * @throws DataAccessException
-     */
-    public abstract int getNumberOfToDoTasks() throws DataAccessException;
 
     /**
      * 
@@ -120,81 +76,22 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     public abstract int getReadyForTakeOver(String voName) throws DataAccessException;
 
     /**
-     * 
      * @param taskId
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract String getRequestToken(UUID taskId) throws DataAccessException;
-
-    /**
-     * 
-     * @param taskId
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract int getRetryValue(UUID taskId) throws DataAccessException;
-
-    /**
-     * 
-     * @param taskId
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract List<RecallTaskTO> getTask(UUID taskId) throws DataAccessException;
-
-    /**
-     * 
      * @param requestToken
-     * @param pfn
      * @return
      * @throws DataAccessException
      */
-    public abstract UUID getTaskId(String requestToken, String pfn) throws DataAccessException;
-
+    public abstract TapeRecallTO getTask(UUID taskId, String requestToken) throws DataAccessException;
+    
     /**
-     * 
-     * @param taskId
+     * @param groupTaskId
      * @return
      * @throws DataAccessException
      */
-    public abstract int getTaskStatus(UUID taskId) throws DataAccessException;
+    public abstract List<TapeRecallTO> getGroupTasks(UUID groupTaskId) throws DataAccessException;
 
-    /**
-     * 
-     * @param task
-     * @return
-     * @throws DataAccessException
-     */
-    public abstract void insertTask(RecallTaskTO task) throws DataAccessException;
-
-    /**
-     * Method used by PtGChunk and BoLChunk
-     * 
-     * @param chunk
-     * @param voName
-     * @param absoluteFileName
-     * @return
-     * @throws DataAccessException
-     */
-    public TRequestToken insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
-
-        RecallTaskTO task = getTaskFromChunk(chunk.getChunkData());
-        task.setFileName(absoluteFileName);
-        task.setVoName(voName);
-
-        TRequestToken taskToken = task.getRequestToken();
-        insertTask(task);
-
-        if (chunkMap.containsKey(taskToken)) {
-
-            log.error("File 'absoluteFileName' already recalled by another Recall: " + taskToken);
-            return taskToken;
-
-        }
-        chunkMap.put(taskToken, chunk);
-        return taskToken;
-    }
+    
+    public abstract boolean existsGroupTask(UUID groupTaskId) throws DataAccessException;
 
     /**
      * Method called by a garbage collector that removes all tape recalls that are not in QUEUED 
@@ -205,69 +102,18 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     public abstract void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException;
 
     /**
-     * 
      * @param taskId
-     * @param value
+     * @param newValue
      * @throws DataAccessException
      */
-    public abstract void setRetryValue(UUID taskId, int value) throws DataAccessException;
-
-    /**
-     * 
-     * @param taskId
-     * @param status
-     * @return
-     * @throws DataAccessException
-     */
-    public boolean setTaskStatus(UUID taskId, int status) throws DataAccessException {
-
-        RecallTaskStatus recallTaskStatus = RecallTaskStatus.getRecallTaskStatus(status);
-
-        if (!setTaskStatusDBImpl(taskId, recallTaskStatus.getStatusId())) {
-            /*
-             * The status of the given task hasn't been changed. The most probable reason is that the new status was
-             * equal to the one already stored in the DB.
-             * 
-             * "taskId" is not removed from the hash map.
-             */
-            
-            log.debug("Task status has been left unchanged. TaskId=" + taskId + " requestedStatus=" + status);
-            
-            return false;
-        }
-
-        if ((recallTaskStatus == RecallTaskStatus.IN_PROGRESS)
-                || (recallTaskStatus == RecallTaskStatus.QUEUED)) {
-
-            log.warn("Setting the status to IN_PROGRESS or QUEUED using setTaskStatus() is not a legal operation, doing it anyway. taskId="
-                    + taskId);
-            return true;
-
-        }
-
-        SuspendedChunk chunk = chunkMap.remove(taskId);
-
-        if (chunk == null) {
-            /*
-             * Happens when the task is inserted with insertTask(RecallTaskTO task) or when the status of the same task
-             * has been set multiple times.
-             */
-            log.info("Task status has been set but no information found about PtG or BoL. taskId=\"" + taskId
-                    + "\" status=" + recallTaskStatus.getStatusId());
-            return true;
-        }
-
-        chunk.completeRequest(recallTaskStatus);
-
-        return true;
-    }
-
+    public abstract void setGroupTaskRetryValue(UUID groupTaskId, int value) throws DataAccessException;
+    
     /**
      * 
      * @return
      * @throws DataAccessException
      */
-    public abstract RecallTaskTO takeoverTask() throws DataAccessException;
+    public abstract TapeRecallTO takeoverTask() throws DataAccessException;
 
     /**
      * 
@@ -275,15 +121,17 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      * @return
      * @throws DataAccessException
      */
-    public abstract RecallTaskTO takeoverTask(String voName) throws DataAccessException;
+    public abstract TapeRecallTO takeoverTask(String voName) throws DataAccessException;
 
     /**
+     * Performs the take-over of max numberOfTaks tasks possibly returning more than 
+     * one file recall task for some files
      * 
      * @param numberOfTaks
      * @return
      * @throws DataAccessException
      */
-    public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks) throws DataAccessException;
+    public abstract List<TapeRecallTO> takeoverTasksWithDoubles(int numberOfTaks) throws DataAccessException;
 
     /**
      * 
@@ -292,64 +140,24 @@ public abstract class TapeRecallDAO extends AbstractDAO {
      * @return
      * @throws DataAccessException
      */
-    public abstract List<RecallTaskTO> takeoverTasks(int numberOfTaks, String voName)
+    public abstract List<TapeRecallTO> takeoverTasksWithDoubles(int numberOfTaks, String voName)
             throws DataAccessException;
 
     /**
-     * Method used to store an updated Task. If the task does not exits then a DataAccessException will be thrown.
-     * 
      * @param task
-     * @throws DataAccessException
-     */
-    public abstract void updateTask(RecallTaskTO task) throws DataAccessException;
-
-    /**
-     * 
-     * @param chunkData
-     * @return
-     * @throws DataAccessException 
-     */
-    private RecallTaskTO getTaskFromChunk(ChunkData chunkData) throws DataAccessException {
-
-        RecallTaskTO task = new RecallTaskTO();
-
-        Date currentDate = new Date();
-        task.setInsertionInstant(currentDate);
-
-        if (chunkData instanceof PtGChunkData) {
-
-            PtGChunkData ptgChunk = (PtGChunkData) chunkData;
-
-            task.setRequestType(RecallTaskTO.PTG_REQUEST);
-            task.setRequestToken(ptgChunk.requestToken());
-            
-            task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
-            task.setDeferredRecallInstant(currentDate);
-
-        } else if (chunkData instanceof BoLChunkData) {
-
-            BoLChunkData bolChunk = (BoLChunkData) chunkData;
-
-            task.setRequestType(RecallTaskTO.BOL_REQUEST);
-            task.setRequestToken(bolChunk.getRequestToken());
-            task.setPinLifetime((int) bolChunk.getLifeTime().value());
-
-            Date deferredStartDate = new Date(currentDate.getTime()
-                    + (bolChunk.getDeferredStartTime() * 1000));
-            task.setDeferredRecallInstant(deferredStartDate);
-
-        } else {
-            throw new DataAccessException("Unable to build a RecallTaskTO because unknown chunk type.");
-        }
-        return task;
-    }
-
-    /**
-     *     
-     * @param taskId
-     * @param status
+     * @param statuses
+     * @param proposedGroupTaskId
      * @return
      * @throws DataAccessException
      */
-    protected abstract boolean setTaskStatusDBImpl(UUID taskId, int status) throws DataAccessException;
+    public abstract UUID insertCloneTask(TapeRecallTO task, int[] statuses, UUID proposedGroupTaskId) throws DataAccessException;
+    
+    /**
+     * @param groupTaskId
+     * @param statusId
+     * @return
+     * @throws DataAccessException
+     */
+    public abstract boolean setGroupTaskStatus(UUID groupTaskId, int statusId, Date timestamp) throws DataAccessException;
+    
 }

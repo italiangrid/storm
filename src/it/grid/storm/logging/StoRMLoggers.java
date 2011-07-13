@@ -34,6 +34,8 @@ public class StoRMLoggers {
     private static Logger bookkeepingLogger;
     private static Logger heartbeatLogger;
     private static Logger performanceLogger;
+    private static Logger stdoutLogger;
+    private static Logger stderrLogger;
     private static boolean initDone = false;
 
     private static void initLoggers() {
@@ -41,6 +43,8 @@ public class StoRMLoggers {
         bookkeepingLogger = loggerContext.getLogger("bookkeeping");
         heartbeatLogger = loggerContext.getLogger("health");
         performanceLogger = loggerContext.getLogger("performance");
+        stdoutLogger = loggerContext.getLogger("system.out");
+        stderrLogger = loggerContext.getLogger("system.err");
     }
 
     public static Logger getBKLogger() {
@@ -62,6 +66,20 @@ public class StoRMLoggers {
             initLoggers();
         }
         return performanceLogger;
+    }
+    
+    public static Logger getStdoutLogger() {
+        if (!initDone) {
+            initLoggers();
+        }
+        return stdoutLogger;
+    }
+    
+    public static Logger getStderrLogger() {
+        if (!initDone) {
+            initLoggers();
+        }
+        return stderrLogger;
     }
 
 }

@@ -35,6 +35,13 @@ public interface Check
     public String getDescription();
 
     /**
+     * Return true if the check is critical, if a critical check fails storm backend must not start 
+     * 
+     * @return
+     */
+    public boolean isCritical();
+    
+    /**
      * Executes the check
      * 
      * @return a successful CheckResponse if the check succeeds, a non successful with an error message

@@ -62,14 +62,14 @@ public abstract class CheckManager
      * 
      * @return true if all the checks succeeds, false otherwise
      */
-    public boolean lauchChecks()
+    public CheckResponse lauchChecks()
     {
         getLogger().debug("Executing check schedule");
-        boolean result = true;
+        CheckResponse result = new CheckResponse(CheckStatus.SUCCESS, "");
         for (Check check : checkSchedule)
         {
             getLogger().info("Executing check : " + check.getName());
-            getLogger().debug("Check description : " + check.getDescription());
+            getLogger().info("Check description : " + check.getDescription());
             CheckResponse response;
             try
             {
@@ -77,15 +77,22 @@ public abstract class CheckManager
             }
             catch (GenericCheckException e)
             {
-                getLogger().error("Received a GenericCheckException during " + check.getName()
+                getLogger().warn("Received a GenericCheckException during " + check.getName()
                         + " check execution : " + e.getMessage());
                 response = new CheckResponse(CheckStatus.INDETERMINATE,
                                              "Received a GenericCheckException during " + check.getName()
                                                      + " check execution : " + e.getMessage());
             }
             getLogger().info("Check \'" + check.getName() + "\' response is : " + response.toString());
-            result &= response.isSuccessfull();
-            getLogger().debug("Partial result is " + (result ? "success" : "failure"));
+            if(!response.isSuccessfull() && check.isCritical())
+            {
+                result.setStatus(CheckStatus.and(result.getStatus(), CheckStatus.CRITICAL_FAILURE));   
+            }
+            else
+            {
+                result.setStatus(CheckStatus.and(result.getStatus(), response.getStatus()));                
+            }
+            getLogger().debug("Partial result is " + (result.isSuccessfull() ? "success" : "failure"));
         }
         return result;
     }

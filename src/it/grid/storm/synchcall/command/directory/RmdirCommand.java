@@ -23,7 +23,6 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.common.SRMConstants;
-import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -124,6 +123,28 @@ public class RmdirCommand extends DirectoryCommand implements Command {
         if (!surl.isEmpty()) {
             try {
                 stori = namespace.resolveStoRIbySURL(surl, guser);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("srmRmdir: Unable to build StoRI by surl and user " + e);
+                try
+                {
+                    returnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build a STORI from surl=" + surl
+                            + " user=" + guser);
+                    log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                             + returnStatus.toString() + "]");
+                }
+                catch (InvalidTReturnStatusAttributeException ex1)
+                {
+                    log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
+                              + "] failed. Error creating returnStatus " + ex1);
+                }
+                try {
+                    outData = new RmdirOutputData(returnStatus);
+                } catch (InvalidRmOutputAttributeException e2) {
+                    log.error("Unable to create the RmdirOutputData from status " + returnStatus + " RmdirOutputData: " + e2);
+                }
+                return outData;
             } catch (NamespaceException ex) {
                 log.debug("srmRm: Unable to build StoRI by SURL : '" + surl + "'" + ex);
                 try {
@@ -138,8 +159,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
                 try {
                     outData = new RmdirOutputData(returnStatus);
                 } catch (InvalidRmOutputAttributeException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.error("Unable to create the RmdirOutputData from status " + returnStatus + " RmdirOutputData: " + e);
                 }
                 return outData;
             }
@@ -277,7 +297,6 @@ public class RmdirCommand extends DirectoryCommand implements Command {
         TReturnStatus returnStatus = null;
         boolean dirRemoved;
 
-        boolean failure = false;
         String explanation = "";
         TStatusCode statusCode = TStatusCode.EMPTY;
 
@@ -293,7 +312,6 @@ public class RmdirCommand extends DirectoryCommand implements Command {
                 boolean purgingResult = deleteDirectoryContent(directory, lUser);
 
                 if (!(purgingResult)) { // There was some problems
-                    failure = true;
                     statusCode = TStatusCode.SRM_FAILURE;
                     explanation = "Unable to delete some files within directory. Permission denied.";
                 }
@@ -302,11 +320,9 @@ public class RmdirCommand extends DirectoryCommand implements Command {
             // NON-Recursive Option
             dirRemoved = removeFile(directory, lUser);
             if (!(dirRemoved)) { // There was some problems
-                failure = true;
                 statusCode = TStatusCode.SRM_NON_EMPTY_DIRECTORY;
                 explanation = "Directory is not empty";
             } else { // Success!!
-                failure = false;
                 statusCode = TStatusCode.SRM_SUCCESS;
                 explanation = "Directory removed with success!";
             }
@@ -314,12 +330,10 @@ public class RmdirCommand extends DirectoryCommand implements Command {
             log.debug("RMDIR : request with invalid directory specified!");
             // ParentDirectory doesn't exists!
             if (!directory.exists()) {
-                failure = true;
                 statusCode = TStatusCode.SRM_INVALID_PATH;
                 explanation = "Directory does not exists";
             } else {
                 if (!directory.isDirectory()) {
-                    failure = true;
                     statusCode = TStatusCode.SRM_INVALID_PATH;
                     explanation = "Not a directory";
                 }
@@ -363,25 +377,25 @@ public class RmdirCommand extends DirectoryCommand implements Command {
     private boolean removeTarget(LocalFile file, LocalUser lUser) {
         boolean result = false;
         // Check Permission
-        FilesystemPermission groupPermission = null;
-        try {
-            groupPermission = file.getGroupPermission(lUser);
-        } catch (CannotMapUserException ex) {
-            /**
-             * @todo : Why this exception?
-             */
-            log.error("WHY THIS? " + ex);
-        }
+//        FilesystemPermission groupPermission = null;
+//        try {
+//            groupPermission = file.getGroupPermission(lUser);
+//        } catch (CannotMapUserException ex) {
+//            /**
+//             * @todo : Why this exception?
+//             */
+//            log.error("WHY THIS? " + ex);
+//        }
 
-        FilesystemPermission userPermission = null;
-        try {
-            userPermission = file.getUserPermission(lUser);
-        } catch (CannotMapUserException ex1) {
-            /**
-             * @todo : Why this exception?
-             */
-            log.debug("WHY THIS? " + ex1);
-        }
+//        FilesystemPermission userPermission = null;
+//        try {
+//            userPermission = file.getUserPermission(lUser);
+//        } catch (CannotMapUserException ex1) {
+//            /**
+//             * @todo : Why this exception?
+//             */
+//            log.debug("WHY THIS? " + ex1);
+//        }
 
         /**
          * @todo this check is not needed here. If Auth source say that user have the right permission. At this level

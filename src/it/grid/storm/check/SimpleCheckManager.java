@@ -15,10 +15,18 @@ package it.grid.storm.check;
 
 
 import it.grid.storm.check.sanity.filesystem.NamespaceFSAssociationCheck;
-import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedAttributeDeclarationCheck;
+import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedACLUsageCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedAttributeUsageCheck;
+import it.grid.storm.filesystem.MtabUtil;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +53,63 @@ public class SimpleCheckManager extends CheckManager
     protected void loadChecks()
     {
         /* Add by hand a new element for each requested check */
-        checks.add(new NamespaceFSAssociationCheck());
-        checks.add(new NamespaceFSExtendedAttributeDeclarationCheck());
+        addNamespaceFSAssociationCheck();
+//        checks.add(new NamespaceFSExtendedAttributeDeclarationCheck()); Removed
         checks.add(new NamespaceFSExtendedAttributeUsageCheck());
+        checks.add(new NamespaceFSExtendedACLUsageCheck());
     }
 
+    /**
+     * 
+     */
+    private void addNamespaceFSAssociationCheck()
+    {
+        Map<String, String> mountPoints;
+        // load mstab mount points and file system types
+        try
+        {
+            mountPoints = MtabUtil.getFSMountPoints();
+        }
+        catch (IOException e)
+        {
+            log.error("Unable to add NamespaceFSAssociationCheck, an IOException occurred during mountPoints retriving : " + e.getMessage());
+            return;
+        }
+        log.debug("Retrieved MountPoints: " + printMapCoupples(mountPoints));
+        Collection<VirtualFSInterface> vfsSet;
+        try
+        {
+            vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
+        }
+        catch (NamespaceException e)
+        {
+            log.error("Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : " + e.getMessage());
+            return;
+        }
+        checks.add(new NamespaceFSAssociationCheck(mountPoints, vfsSet));
+    }
+    
+    /**
+     * Prints the couple <key,value> from a Map
+     * 
+     * @param map
+     * @return
+     */
+    private String printMapCoupples(Map<String, String> map)
+    {
+        String output = "";
+        for (Entry<String, String> couple : map.entrySet())
+        {
+            if (output.trim().length() != 0)
+            {
+                output += " ; ";
+            }
+            output += "<" + couple.getKey() + "," + couple.getValue() + ">";
+        }
+        return output;
+    }
+    
+    
     @Override
     protected List<Check> prepareSchedule()
     {

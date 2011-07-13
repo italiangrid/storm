@@ -127,8 +127,13 @@ public class Namespace implements NamespaceInterface {
         return true;
     }
 
-    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException {
+    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException, IllegalArgumentException {
 
+        if(user == null)
+        {
+            log.error("Received null parameters: surl= " + surl + " user=" + user);
+            throw new IllegalArgumentException("Received null parameters");
+        }
         HashSet vfsNamesApproachable = (HashSet) getListOfVFSName(user);
 
         return resolveStoRIbySURL(surl, vfsNamesApproachable);
@@ -424,7 +429,7 @@ public class Namespace implements NamespaceInterface {
             //Check if the selected Rule holds a VFS belonging to the set of VFS
             //approachable by the requestor
             String mappedVFS = rule.getMappedFS();
-            log.debug("### Rules : '" + mappedVFS + "'  Lenght:" + mappedVFS.length());
+            log.debug("### Rules : '" + mappedVFS + "'  Length:" + mappedVFS.length());
             log.debug("VFS Approachable set : " + vfsNameApproachable);
             log.debug("Contained? = " + vfsNameApproachable.contains(mappedVFS));
             if (vfsNameApproachable.contains(mappedVFS)) {

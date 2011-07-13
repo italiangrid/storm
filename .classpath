@@ -2,8 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="unittest"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="var" path="BE_JAR_LIB"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/activation.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/ant-junit-1.6.1.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/asm-3.1.jar"/>
@@ -62,5 +61,10 @@
 	<classpathentry kind="var" path="BE_JAR_LIB/xml-apis.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/xmlrpc-common-3.0.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/xmlrpc-server-3.0.jar"/>
+	<classpathentry kind="var" path="BE_JAR_LIB/stax-api-1.0-2.jar"/>
+	<classpathentry kind="var" path="BE_JAR_LIB/jettison-1.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/StoRM_BE_1.7"/>
+	<classpathentry kind="var" path="BE_JAR_LIB"/>
+	<classpathentry kind="var" path="BE_JAR_LIB/commons-io-2.0.1.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

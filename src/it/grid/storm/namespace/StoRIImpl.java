@@ -33,6 +33,7 @@ import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.https.HTTPSPluginException;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.MappingRule;
@@ -634,7 +635,9 @@ implements StoRI {
                         transProt = protList.get(0);
                         authority = transProt.getAuthority();
                     }
-                    resultTURL = buildTURL(firstMatch, authority, getPFN());
+                 // TODO HTTPS TURL
+//                    resultTURL = buildTURL(firstMatch, authority, getPFN());
+                    resultTURL = buildTURL(firstMatch, authority);
                 }
             }
         }
@@ -747,16 +750,68 @@ implements StoRI {
         return surl.toString();
     }
 
-    private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
+    //TODO MICHELE HTTPS here we can add a case to build https TURL...what really matter is that probably because it is an URL we cannot build it
+    //just using the infomation available actually from the parameters
+    //I can make an hypothesis on web server url construction, maybe it is 
+    //https://server_name.server_domain:web_server_https_port/file_server_service_identifier/file_relative_url
+    // in such a case we need: web_server_https_port -> can be retrieved from Protocol object : we can associate a default port to protocol the effective value  
+    //                                                                                          has to be demanded to the connector
+    //                         file_server_service_identifier -> also from Protocol object ... not so true... hummm : it has to be demanded to the connector
+    //                         file_relative_url -> here start real problems... : we have to hope that from the physicalFN we are able to build this value
+    //                                                                              - it has to be demanded to the connector
+ // TODO HTTPS TURL
+//    private TTURL buildTURL(Protocol protocol, Authority authority, PFN physicalFN) throws InvalidProtocolForTURLException {
+    private TTURL buildTURL(Protocol protocol, Authority authority) throws InvalidProtocolForTURLException {
         TTURL result = null;
-        switch (protocol.getProtocolIndex())  {
-        case 0 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //EMPTY Protocol
-        case 1 :  result = TURLBuilder.buildFileTURL(authority,physicalFN); break; //FILE Protocol
-        case 2 :  result = TURLBuilder.buildGsiftpTURL(authority,physicalFN); break; //GSIFTP Protocol
-        case 3 :  result = TURLBuilder.buildRFIOTURL(authority,physicalFN); break; //RFIO Protocol
-        case 4 :  throw new InvalidProtocolForTURLException(protocol.getSchema()); //SRM Protocol
-        case 5 :  result = TURLBuilder.buildROOTTURL(authority,physicalFN); break; //ROOT Protocol
-        default : throw new InvalidProtocolForTURLException(protocol.getSchema()); //UNKNOWN Protocol
+      //TODO MICHELE HTTPS NOTE: this is the only access point to TURLBuilder class (good sign)
+        switch (protocol.getProtocolIndex())
+        {
+            case 0: // EMPTY Protocol
+                throw new InvalidProtocolForTURLException(protocol.getSchema()); 
+            case 1:
+//                result = TURLBuilder.buildFileTURL(authority, physicalFN);
+                result = TURLBuilder.buildFileTURL(authority, this.getPFN());
+                break; // FILE Protocol
+            case 2:
+//                result = TURLBuilder.buildGsiftpTURL(authority, physicalFN);
+                result = TURLBuilder.buildGsiftpTURL(authority, this.getPFN());
+                break; // GSIFTP Protocol
+            case 3:
+//                result = TURLBuilder.buildRFIOTURL(authority, physicalFN);
+                result = TURLBuilder.buildRFIOTURL(authority, this.getPFN());
+                break; // RFIO Protocol
+            case 4: // SRM Protocol
+                throw new InvalidProtocolForTURLException(protocol.getSchema()); 
+            case 5:
+//                result = TURLBuilder.buildROOTTURL(authority, physicalFN);
+                result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
+                break; // ROOT Protocol
+            // TODO HTTPS TURL
+            case 6:
+                try
+                {
+                    result = TURLBuilder.buildHTTPTURL(authority, this.getLocalFile());
+                }
+                catch (HTTPSPluginException e)
+                {
+                    log.error("Unable to build the TURL for protocol " + protocol.toString() + " for authority " + authority.toString() + " and file " + this.getLocalFile().toString() + " . HTTPSPluginException: " + e.getMessage());
+                    throw new InvalidProtocolForTURLException(e , protocol.getSchema());
+                }
+                break; // HTTP Protocol
+            case 7:
+                try
+                {
+                    result = TURLBuilder.buildHTTPSTURL(authority, this.getLocalFile());
+                }
+                catch (HTTPSPluginException e)
+                {
+                    log.error("Unable to build the TURL for protocol " + protocol.toString() + " for authority " + authority.toString() + " and file " + this.getLocalFile().toString() + " . HTTPSPluginException: " + e.getMessage());
+                    throw new InvalidProtocolForTURLException(e , protocol.getSchema());
+                }
+                break; // HTTPS Protocol
+
+            default:
+                throw new InvalidProtocolForTURLException(protocol.getSchema()); // UNKNOWN Protocol
         }
         return result;
     }

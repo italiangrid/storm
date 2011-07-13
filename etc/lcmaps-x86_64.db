@@ -1,7 +1,7 @@
 # LCMAPS policy file/plugin definition
 #
 ### default path
-path = /opt/glite/lib64/modules
+path = /usr/lib64/modules
 
 ### Plugin definitions:
 good             = "lcmaps_dummy_good.mod"

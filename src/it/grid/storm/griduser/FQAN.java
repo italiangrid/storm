@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 public class FQAN implements SubjectAttribute {
 
   static private Pattern fqanPattern = Pattern.compile("/[\\w-\\.]+(/[\\w-\\.]+)*(/Role=[\\w-\\.]+)?(/Capability=[\\w-\\.]+)?");
+  private static final char VO_FQAN_ESCAPE_CHAR = '/';
   private String fqan;
   private String vo;
   private String group;
@@ -74,6 +75,17 @@ public class FQAN implements SubjectAttribute {
         setRole(role);
         setCapability(capability);
         generateFqan();
+    }
+    
+    /**
+     * Produce an FQAN object for the provided VO name
+     * 
+     * @param voName
+     * @return
+     */
+    public static FQAN makeVoFQAN(String voName)
+    {
+        return new FQAN(VO_FQAN_ESCAPE_CHAR + voName);
     }
 
 
