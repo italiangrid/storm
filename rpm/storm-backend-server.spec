@@ -137,7 +137,7 @@ if [ "$1" = "1" ] ; then
   /sbin/chkconfig --add %{_servicename}
 fi;
 if [ "$1" = "2" ] ; then
-  echo "The StoRM FrontEnd server has been upgraded but NOT configured yet.
+  echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to use yaim to configure the server.
 "
   echo 'stop service'
@@ -202,7 +202,7 @@ if [ "$1" = "0" ] ; then
   rm -f %{_sysconfdir}/%{_generalprefix}/%{_modulename}/storm.properties
 fi;
 if [ "$1" = "1" ] ; then
-  echo "The StoRM FrontEnd server has been upgraded but NOT configured yet.
+  echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to use yaim to configure the server.
 "
   echo 'stop service'
@@ -220,7 +220,7 @@ if [ "$1" = "0" ] ; then
 fi;
 
 if [ "$1" = "1" ] ; then
-  echo "The StoRM FrontEnd server has been upgraded but NOT configured yet.
+  echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to use yaim to configure the server.
 "
   echo 'stop service'
@@ -255,6 +255,7 @@ fi;
 %{_libdir}/%{_servicename}/native/%{platform}/libgpfsapi_interface.so
 %{_libdir}/%{_servicename}/native/%{platform}/libxfsapi_interface.so
 %{_libdir}/%{_servicename}/native/%{platform}/libstorm_cutil.so
+%{_libdir}/%{_servicename}/native/%{platform}/libstorm_lcmaps.so
 
 %dir %{_javadir}/%{_servicename}
 %{_javadir}/%{_servicename}/storm-backend-server.jar

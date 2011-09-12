@@ -25,6 +25,8 @@ public class ExecCommand {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecCommand.class);
 
+    private static final long DEFAULT_TIMEOUT = 10; //10 sec as default Timeout;
+    
     private long timeout = 0;
     private final List<String> command;
     
@@ -51,8 +53,9 @@ public class ExecCommand {
             try {
                 StringBuffer readBuffer = new StringBuffer();
                 String buff;
+                String eol = System.getProperty("line.separator"); 
                 while ((buff = br.readLine()) != null) {
-                    readBuffer.append(buff);
+                    readBuffer.append(buff).append(eol); 
                     LOG.debug(" - output-reader: " + buff);
                 }
                 
@@ -97,6 +100,14 @@ public class ExecCommand {
     }
 
    
+    public String getCommand() {
+    	String result = "";
+    	for (String cmdElement : this.command) {
+    		result += cmdElement + " ";
+		}
+    	return result;
+    }
+    
     /**
 	 * 
 	 */
@@ -132,7 +143,11 @@ public class ExecCommand {
             
             Future<Integer> ft = executorService.submit(call);
             LOG.debug("START WaitFor the result of Native Command.");
-            result = ft.get(timeout, TimeUnit.SECONDS);
+            if (timeout>0) {
+                result = ft.get(timeout, TimeUnit.SECONDS);    
+            } else {
+                result = ft.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+            }
             LOG.debug("END WaitFor the result of Native Command.");
             
         } catch (IOException e) {
@@ -167,8 +182,19 @@ public class ExecCommand {
         String outputResult = "";
         try {
             LOG.debug("Get Output message ... ");
-            outputResult = outputFuture.get(timeout, TimeUnit.SECONDS);
-            LOG.debug(" .. :" + outputResult);
+            if(outputFuture != null)
+                {
+                if (timeout>0) {
+                    outputResult = outputFuture.get(timeout, TimeUnit.SECONDS);    
+                } else {
+                    outputResult = outputFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+                }
+                LOG.debug(" .. :" + outputResult);
+            }
+            else
+            {
+                LOG.warn("Unable to get outputResult value. outputResult is NULL");
+            }
         } catch (ExecutionException e) {
             LOG.warn("ExecutionException occours when retrieving OUTPUT stream returned by native command."
                     + e.getMessage());
@@ -187,7 +213,11 @@ public class ExecCommand {
         String errorResult = "";
         try {
             LOG.debug("Get Error Message .. ");
-            errorResult = errorFuture.get(timeout, TimeUnit.SECONDS);
+            if (timeout>0) {
+                errorResult = errorFuture.get(timeout, TimeUnit.SECONDS);
+            } else {
+                errorResult = outputFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+            }
             LOG.debug(" .. :" + errorResult);
 
         } catch (ExecutionException e) {

@@ -634,4 +634,12 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
         return false;
     }
 
+
+    @Override
+    public boolean existsTask(UUID taskId, String requestToken) throws DataAccessException
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

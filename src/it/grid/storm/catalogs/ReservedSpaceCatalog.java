@@ -306,20 +306,14 @@ public class ReservedSpaceCatalog {
 
     }
 
-
-
-
     /**
-     *
-     * @param spaceToken TSpaceToken
-     * @return SpaceData
+     * @param desc
+     * @return
      */
     public StorageSpaceData getStorageSpaceByAlias(String desc) {
 
         StorageSpaceData result = null; //new StorageSpaceData();
         log.debug("Retrieve Storage Space start... ");
-
-        StorageSpaceTO ssTO = null;
 
         // Retrieve the Data Access Object from the factory
         try {
@@ -333,18 +327,17 @@ public class ReservedSpaceCatalog {
         //Get StorageSpaceTO form persistence
         try {
             Collection<StorageSpaceTO> cl = ssDAO.getStorageSpaceByAliasOnly(desc);
-            Iterator<StorageSpaceTO> iter = cl.iterator();
-            ssTO = iter.next();
-            log.debug("Storage Space retrieved by Token. ");
-            //Build the result
-            if (ssTO != null) {
+            if(cl != null && !cl.isEmpty())
+            {
+                log.debug("Storage Space retrieved by Token. ");
+                //Build the result
                 try
                 {
-                    result = new StorageSpaceData(ssTO);
+                    result = new StorageSpaceData(cl.toArray(new StorageSpaceTO[0])[0]);
                 }
                 catch (IllegalArgumentException e)
                 {
-                    //this will never happen, we check ssTO to be not null
+                    //this will never happen, we know there is at least one element in the collection
                     log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
                 }
             }
@@ -361,7 +354,6 @@ public class ReservedSpaceCatalog {
      * Provides a list of storage spaces not initialized by comparing the used space stored against the well know not initialized value
      * <code>NOT_INITIALIZED_SIZE_VALUE<code>
      * 
-     * @param spaceToken TSpaceToken
      * @return SpaceData
      */
     public List<StorageSpaceData> getStorageSpaceNotInitialized()

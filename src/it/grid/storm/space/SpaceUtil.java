@@ -11,7 +11,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
-import it.grid.storm.space.quota.GPFSQuotaCommand;
+import it.grid.storm.space.quota.GPFSRepQuotaCommand;
 import it.grid.storm.space.quota.GPFSQuotaParameters;
 import it.grid.storm.space.quota.QuotaException;
 import it.grid.storm.space.quota.QuotaInfoInterface;
@@ -34,59 +34,59 @@ public class SpaceUtil {
     }
 
 	
-	public StorageSpaceData getRealTimeSpaceData(TSpaceToken token) {
-	
-		StorageSpaceData storageSpaceData = catalog.getStorageSpace(token);
-		
-		//Check if it is needed an update using quota or other tool     		
-	    log.debug("Executing Quota Command for SA with token '" + token + "'");
-        QuotaInfoInterface quotaInfo = null;
-        try {
-            // Retrieve MetaData Info from the execution of Quota Command
-            quotaInfo = retrieveInfoFromQuota(token);
-            // Update METADATA result with QuotaInfo
-
-            
-            // Setting UNUSED SIZE
-            long freeSpace = quotaInfo.getBlockSoftLimit() - quotaInfo.getBlockUsage();
-            try {
-                TSizeInBytes unused = (TSizeInBytes.make(freeSpace, quotaInfo.getSizeUnit()));
-                long unusedD = new Double(unused.getSizeIn(SizeUnit.BYTES)).longValue();
-                storageSpaceData.setUsedSpaceSize(TSizeInBytes.make(unusedD, SizeUnit.BYTES));
-            } catch (InvalidTSizeAttributesException ex2) {
-                log.error("srmGetSpaceMetaData: freeSpace (" + freeSpace
-                        + " KBytes) returned by Quota is wrong.");
-                log.error("srmGetSpaceMetaData: QuotaInfo returned was: " + quotaInfo);
-            }
-
-            // Setting TOTAL SIZE and GUARANTEED SIZE
-            try {
-                TSizeInBytes totalSize =
-                        (TSizeInBytes.make(quotaInfo.getBlockSoftLimit(), quotaInfo.getSizeUnit()));
-                long totalSizeL = new Double(totalSize.getSizeIn(SizeUnit.BYTES)).longValue();
-                storageSpaceData.setTotalSpaceSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
-                storageSpaceData.setReservedSpaceSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
-            } catch (InvalidTSizeAttributesException ex3) {
-                log.error(" TotalSize (" + quotaInfo.getBlockSoftLimit()+ " KBytes) returned by Quota is wrong.");
-                log.error("QuotaInfo returned was: " + quotaInfo);
-            }
-
-            catalog.updateAllStorageSpace(storageSpaceData);
-            
-        } catch (QuotaException qe) {
-            log.error("srmGetSpaceMetaData: Unable to complete Quota Command." + qe.getMessage());
-        } catch (NoDataFoundException e) {
-        	log.error(""+e.getMessage());
-		} catch (InvalidRetrievedDataException e) {
-			log.error(""+e.getMessage());
-		} catch (MultipleDataEntriesException e) {
-			log.error(""+e.getMessage());
-		}
-        
-        
-        
-        return storageSpaceData;
-	}
+//	public StorageSpaceData getRealTimeSpaceData(TSpaceToken token) {
+//	
+//		StorageSpaceData storageSpaceData = catalog.getStorageSpace(token);
+//		
+//		//Check if it is needed an update using quota or other tool     		
+//	    log.debug("Executing Quota Command for SA with token '" + token + "'");
+//        QuotaInfoInterface quotaInfo = null;
+//        try {
+//            // Retrieve MetaData Info from the execution of Quota Command
+//            quotaInfo = retrieveInfoFromQuota(token);
+//            // Update METADATA result with QuotaInfo
+//
+//            
+//            // Setting UNUSED SIZE
+//            long freeSpace = quotaInfo.getBlockSoftLimit() - quotaInfo.getBlockUsage();
+//            try {
+//                TSizeInBytes unused = (TSizeInBytes.make(freeSpace, quotaInfo.getSizeUnit()));
+//                long unusedD = new Double(unused.getSizeIn(SizeUnit.BYTES)).longValue();
+//                storageSpaceData.setUsedSpaceSize(TSizeInBytes.make(unusedD, SizeUnit.BYTES));
+//            } catch (InvalidTSizeAttributesException ex2) {
+//                log.error("srmGetSpaceMetaData: freeSpace (" + freeSpace
+//                        + " KBytes) returned by Quota is wrong.");
+//                log.error("srmGetSpaceMetaData: QuotaInfo returned was: " + quotaInfo);
+//            }
+//
+//            // Setting TOTAL SIZE and GUARANTEED SIZE
+//            try {
+//                TSizeInBytes totalSize =
+//                        (TSizeInBytes.make(quotaInfo.getBlockSoftLimit(), quotaInfo.getSizeUnit()));
+//                long totalSizeL = new Double(totalSize.getSizeIn(SizeUnit.BYTES)).longValue();
+//                storageSpaceData.setTotalSpaceSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
+//                storageSpaceData.setReservedSpaceSize(TSizeInBytes.make(totalSizeL, SizeUnit.BYTES));
+//            } catch (InvalidTSizeAttributesException ex3) {
+//                log.error(" TotalSize (" + quotaInfo.getBlockSoftLimit()+ " KBytes) returned by Quota is wrong.");
+//                log.error("QuotaInfo returned was: " + quotaInfo);
+//            }
+//
+//            catalog.updateAllStorageSpace(storageSpaceData);
+//            
+//        } catch (QuotaException qe) {
+//            log.error("srmGetSpaceMetaData: Unable to complete Quota Command." + qe.getMessage());
+//        } catch (NoDataFoundException e) {
+//        	log.error(""+e.getMessage());
+//		} catch (InvalidRetrievedDataException e) {
+//			log.error(""+e.getMessage());
+//		} catch (MultipleDataEntriesException e) {
+//			log.error(""+e.getMessage());
+//		}
+//        
+//        
+//        
+//        return storageSpaceData;
+//	}
 	
     /**
      * 
@@ -166,14 +166,16 @@ public class SpaceUtil {
             String param2 = null;
             param2 = quota.getDevice();
 
-            GPFSQuotaCommand quotaCommand = new GPFSQuotaCommand();
+            GPFSRepQuotaCommand quotaCommand = new GPFSRepQuotaCommand();
             ArrayList<String> params = new ArrayList<String>();
 
             params.add(0, param1);
             params.add(1, param2);
             GPFSQuotaParameters quotaParameters = new GPFSQuotaParameters(params);
 
-            result = quotaCommand.executeGetQuotaInfo(quotaParameters);
+            //Call the CallableGPFSQuota
+            
+           // result = quotaCommand.executeGetQuotaInfo(quotaParameters);
 
         }
         return result;

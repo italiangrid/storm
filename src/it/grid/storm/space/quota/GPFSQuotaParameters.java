@@ -21,7 +21,7 @@ import java.util.*;
 
 public class GPFSQuotaParameters implements QuotaParametersInterface {
 
-  private static final String COMMAND = "mmlsquota";
+  private static final String COMMAND = "mmrepquota";
   private List<String> parameters = null;
 
   public GPFSQuotaParameters(List<String> parameters) {

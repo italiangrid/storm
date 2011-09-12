@@ -274,11 +274,6 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             }
             task = new TapeRecallTO();
             setTaskInfo(task, res);
-            // uuidString = res.getString(TapeRecallMySQLHelper.COL_TASK_ID);
-            // taskId = UUID.fromString(uuidString);
-        }
-        catch (IllegalArgumentException e) {
-            throw new DataAccessException("Error creating UUID from string : " + query, e);
         }
         catch (SQLException e) {
             throw new DataAccessException("Error executing query: '" + query + "' " + e.getMessage(), e);
@@ -287,6 +282,30 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
             releaseConnection(res, statment, dbConnection);
         }
         return task;
+    }
+    
+    @Override
+    public boolean existsTask(UUID taskId, String requestToken) throws DataAccessException {
+        
+        boolean response;
+        String query = sqlHelper.getQueryGetTask(taskId, requestToken);
+        
+        Connection dbConnection = getConnection();
+        Statement statment = null;
+        ResultSet res = null;
+        try {
+            log.debug("QUERY: " + query);
+            statment = getStatement(dbConnection);
+            res = statment.executeQuery(query);
+            response = res.first();
+            log.debug("Task for requestToken=" + requestToken + " " + " taskId=" + taskId.toString() + " does " + (response ? "" : "NOT ") + "exists");
+        } catch (SQLException e) {
+            throw new DataAccessException("Error executing query: '" + query + "' " + e.getMessage(), e);
+        }
+        finally {
+            releaseConnection(res, statment, dbConnection);
+        }
+        return response;
     }
 
     /* (non-Javadoc)

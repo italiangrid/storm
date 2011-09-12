@@ -48,7 +48,6 @@
 	<classpathentry kind="var" path="BE_JAR_LIB/logback-classic-0.9.15.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/logback-core-0.9.15.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/mail.jar"/>
-	<classpathentry kind="var" path="BE_JAR_LIB/mysql-connector-java-3.1.11-bin.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/mysql-connector-java-5.1.13-bin.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/puretls.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/saaj.jar"/>

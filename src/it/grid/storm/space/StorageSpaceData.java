@@ -612,10 +612,48 @@ public class StorageSpaceData {
     public final void setUsedSpaceSize(TSizeInBytes usedSpaceSize) {
         this.usedSpaceSize = usedSpaceSize;
         // let the computed fields built upon this value to be computed from now on
+        // RitZ : ????
         this.unforceBusySpaceSize();
         this.unforceFreeSpaceSize();
+        updateFreeSize();
+        updateBusySize();
+        updateAvailableSize();
     }
 
+    private final void updateFreeSize() {
+        long freeSizeValue = this.totalSpaceSize.value() - this.getUsedSpaceSize().value();
+        if ((freeSizeValue < this.totalSpaceSize.value()) && (freeSizeValue >= 0)) {
+            try {
+                this.freeSpaceSize = TSizeInBytes.make(freeSizeValue, SizeUnit.BYTES);
+            } catch (InvalidTSizeAttributesException e) {
+            }
+        }       
+    }
+    
+    private final void updateBusySize() {
+        long usedSizeValue = getUsedSpaceSize().value();
+        long unavailableSizeValue = getUnavailableSpaceSize().value();
+        long reservedSizeValue = getReservedSpaceSize().value();
+        long busySize = usedSizeValue + reservedSizeValue + unavailableSizeValue;
+        if ((busySize < this.totalSpaceSize.value()) && (busySize >= 0)) {
+            try {
+                this.busySpaceSize = TSizeInBytes.make(busySize, SizeUnit.BYTES);
+            } catch (InvalidTSizeAttributesException e) {
+            }
+        }       
+    }
+    
+    private final void updateAvailableSize() {
+        long busySizeValue = getBusySpaceSize().value();
+        long availableSizeValue = getTotalSpaceSize().value() - busySizeValue;
+        if ((availableSizeValue < this.totalSpaceSize.value()) && (availableSizeValue >= 0)) {
+            try {
+                this.availableSpaceSize = TSizeInBytes.make(availableSizeValue, SizeUnit.BYTES);
+            } catch (InvalidTSizeAttributesException e) {
+            }
+        }    
+        
+    }
 
     /**
      * @return the unavailableSpaceSize
@@ -762,7 +800,7 @@ public class StorageSpaceData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("-- StorageSpaceData -- ");
+        builder.append("\n-- StorageSpaceData -- ");
         builder.append("  owner              = ");
         builder.append(owner);
         builder.append("\n");

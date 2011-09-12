@@ -25,11 +25,14 @@ import it.grid.storm.https.HTTPPluginManager;
 import it.grid.storm.https.HTTPSPluginInterface;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.logging.LoggingReloadTask;
+import it.grid.storm.space.StorageSpaceData;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Timer;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
@@ -37,6 +40,7 @@ import org.slf4j.Logger;
 public class Bootstrap {
 
     private static final Timer reloadTasks = new Timer(true);
+    private static Logger log = LoggerFactory.getLogger(Bootstrap.class);
 
     /**
      * Initializes the logging system and starts the process to watch for config file changes.
@@ -56,7 +60,14 @@ public class Bootstrap {
     }
 
     public static void initializeUsedSpace() {
-    	SpaceInfoManager.start();
+        int failures = SpaceInfoManager.updateSpaceUsed();
+        int numberQuotas = SpaceInfoManager.howManyQuotas();
+        log.info("Computed '"+numberQuotas+"' GPFS quotas.");
+        if (failures>0) {
+            log.error("Some QUOTA was failed! Check logs!");    
+        }
+    	int numberOfBgDU = SpaceInfoManager.howManyBackgroundDU();
+    	log.info("Submitted '"+numberOfBgDU+"' background DU tasks.");
     }
     
     /**

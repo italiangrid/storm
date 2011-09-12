@@ -19,7 +19,9 @@ package it.grid.storm.synchcall.command.space;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.space.StorageSpaceNotInitializedException;
+import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -74,7 +76,9 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
      */
     public OutputData execute(InputData indata) {
         log.debug("<GetSpaceMetaData Start!>");
-
+        log.debug(" Updating SA with GPFS quotas results");
+        SpaceInfoManager.execGPFSQuota(false, false);
+        
         GetSpaceMetaDataInputData data = (GetSpaceMetaDataInputData) indata;
 
         int errorCount = 0;

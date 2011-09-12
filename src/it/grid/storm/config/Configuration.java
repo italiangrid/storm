@@ -161,6 +161,7 @@ public class Configuration {
     private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
     private static final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
     private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
+    private static final String QUOTA_PERIODIC_CHECK_ENABLED_KEY = "info.quota-periodic-check.enabled";
     
 
     
@@ -1752,7 +1753,7 @@ public class Configuration {
     public String getGridUserMapperClassname() {
         if (!cr.getConfiguration().containsKey(GRID_USER_MAPPER_CLASSNAME_KEY)) {
             // return default
-        	return "it.grid.storm.griduser.LcmapsJNAMapper";
+            return "it.grid.storm.griduser.StormLcmapsJNAMapper";
         } else {
             // load from external source
             return cr.getConfiguration().getString(GRID_USER_MAPPER_CLASSNAME_KEY);
@@ -1963,7 +1964,7 @@ public class Configuration {
     public int getGridhttpsServerPort() {
         if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_PORT_KEY)) {
             // return default
-            return 8080;
+            return 8088;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(GRIDHTTPS_SERVER_PORT_KEY);
@@ -2100,6 +2101,16 @@ public class Configuration {
         		configurationStringBuilder.insert(0, "!!! Cannot do toString! Got an Exception: " + e +"\n");
         	}
         	return configurationStringBuilder.toString();
+        }
+    }
+
+    public boolean getQuotaPeriodicCheckEnabled() {
+        if (!cr.getConfiguration().containsKey(QUOTA_PERIODIC_CHECK_ENABLED_KEY)) {
+            // return default
+            return true;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(QUOTA_PERIODIC_CHECK_ENABLED_KEY);
         }
     }
 }

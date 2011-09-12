@@ -2,18 +2,32 @@
 <configuration>
 
 	<appender name="PROCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>${storm.log.dir}/storm-backend.log
-		</File>
+		<File>${storm.log.dir}/storm-backend.log</File>
 		<ImmediateFlush>true</ImmediateFlush>
 
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
-            <!-- keep 365 days' worth of history -->
-            <!-- <MaxHistory>365</MaxHistory> -->
+            <!-- keep 60 days' worth of history -->
+            <MaxHistory>60</MaxHistory>
         </rollingPolicy>
 
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>%date{HH:mm:ss.SSS} - %level [%thread] - %msg%n</Pattern>
+        </layout>
+    </appender>
+    
+    <appender name="DEBUGGING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${storm.log.dir}/storm-backend.log</File>
+        <ImmediateFlush>true</ImmediateFlush>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <!-- keep 60 days' worth of history -->
+            <MaxHistory>20</MaxHistory>
+        </rollingPolicy>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%date{HH:mm:ss.SSS} - %level [%thread][%C{0}.%M] - %msg%n</Pattern>
         </layout>
     </appender>
 
@@ -66,6 +80,14 @@
 		<level value="INFO" />
 		<appender-ref ref="PROCESS" />
 	</logger>
+	
+	<!-- Decomment this in case of debug (comment the above one) -->
+	<!-- 
+	<logger name="it.grid.storm" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="DEBUGGING" />
+    </logger>
+    -->
 
 	<logger name="health" additivity="false">
 		<level value="INFO" />

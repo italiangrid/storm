@@ -29,6 +29,10 @@
 
 package it.grid.storm.griduser;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +287,65 @@ public class GridUserFactory {
         }
         try
         {
-            mapper = (MapperInterface) mapperClass.newInstance();
+            Constructor<MapperInterface>[] constructors = (Constructor<MapperInterface>[])mapperClass.getConstructors();
+            boolean found = false;
+            for(Constructor<MapperInterface> constructor :  constructors)
+            {
+                if(constructor.getParameterTypes().length == 0)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if(found)
+            {
+                mapper = (MapperInterface) mapperClass.newInstance();    
+            }
+            else
+            {
+                try
+                {
+                    Method method = ((Class<MapperInterface>)mapperClass).getMethod("getInstance", null);
+                    if(Modifier.isStatic(method.getModifiers()))
+                    {
+                        try
+                        {
+                            mapper = (MapperInterface) method.invoke(this, null);
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("makeMapperClass EXCEPTION during getInstance method invocation. " + e);
+                            throw new GridUserException("Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
+                                    + mapperClassName + "'");
+                        }
+                        catch (InvocationTargetException e)
+                        {
+                            log.error("makeMapperClass EXCEPTION during getInstance method invocation. " + e);
+                            throw new GridUserException("Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
+                                    + mapperClassName + "'");
+                        }
+                    }
+                    else
+                    {
+                        log.error("Unable to instantiate the class using eiter no args constructor niether getInstance method. getInstance exists but is not static");
+                        throw new GridUserException("Cannot instantiate Mapper Driver using new or getInstance for Mapper Driver named :'"
+                                + mapperClassName + "'");
+                    }
+                }
+                catch (SecurityException e)
+                {
+                    log.error("makeMapperClass EXCEPTION during getMethod(\"getInstance\") method invocation. " + e);
+                    throw new GridUserException("Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
+                            + mapperClassName + "'");
+                }
+                catch (NoSuchMethodException e)
+                {
+                    log.error("Unable to instantiate the class using eiter no args constructor niether getInstance method. " + e);
+                    throw new GridUserException("Cannot instantiate Mapper Driver using new or getInstance for Mapper Driver named :'"
+                            + mapperClassName + "'");
+                }
+            }
+            
         }
         catch (IllegalAccessException ex)
         {

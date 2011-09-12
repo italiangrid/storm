@@ -29,7 +29,6 @@ public class Quota {
     private boolean enabled = false;
     private String device = null;
     private QuotaType quotaType = null;
-    private String quotaElementName = null;
 
     public Quota() {
         super();
@@ -81,15 +80,10 @@ public class Quota {
      * @return the quotaElementName 
      */
     public String getQuotaElementName() {
-        return quotaElementName;
+        return quotaType.getValue();
     }
 
-    /**
-     * @param quotaElementName the quotaElementName to set
-     */
-    public void setQuotaElementName(String quotaElementName) {
-        this.quotaElementName = quotaElementName;
-    }
+
 
     @Override
     public String toString() {

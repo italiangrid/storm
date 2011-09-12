@@ -11,16 +11,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.info.BackgroundDUTasks.BgDUTask;
+import it.grid.storm.namespace.CapabilityInterface;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.space.CallableDU;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
+import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class SpaceInfoManager {
     
@@ -43,6 +54,8 @@ public class SpaceInfoManager {
     //Reference to the Catalog
     private static final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
    
+    private static int quotas = 0;
+    
     
     private SpaceInfoManager() {
     }
@@ -74,23 +87,57 @@ public class SpaceInfoManager {
 				if (bgDUTask.getSpaceToken().equals(spaceToken)) {
 					result = true;
 				}
-			}
-			
+			}	
 		}
 		return result;
 	}
     
-    
-    
-	public static int start() {
-		int result = 0;
+	
+	public static int updateSpaceUsed() {
+	    int quotaFailures = 0;
+	    quotaFailures = execGPFSQuota(false, true);
+	    startBackGroundDU();
+	    return quotaFailures;
+	}
+	
+	public static int howManyBackgroundDU() {
+	    return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
+	}
+	
+	public static int howManyQuotas() {
+	    return SpaceInfoManager.getInstance().quotas;
+	}
+	       
+    public static int execGPFSQuota(boolean test, boolean bootstrap) {
+        int result = 0;
+        boolean quotaPeriodicCheck = Configuration.getInstance().getQuotaPeriodicCheckEnabled();
+        if (bootstrap) {
+            QuotaManager.getInstance().updateSAwithQuota(test);
+            quotas = QuotaManager.getInstance().getHowmanyQuotas();
+            LOG.info("Executed '" + quotas + " mmlsquota in order to update related SAs");
+        } else if (quotaPeriodicCheck) {
+            QuotaManager.getInstance().updateSAwithQuota(test);
+            quotas = QuotaManager.getInstance().getHowmanyQuotas();
+            LOG.info("Executed '" + quotas + ". Periodic check");
+        } else {
+            LOG.debug("Quota Check is disabled.");
+        }
+        return result;
+    }
+	
+	
+	private static int startBackGroundDU() {
+    	int result = 0;
+		//This call populate the Task Queue: "bDUTasks"
 		SpaceInfoManager.getInstance().foundSAtoAnalyze();
 		result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
 		LOG.debug(String.format("Tasks: %d", result));
+		//Submit the tasks
 		SpaceInfoManager.getInstance().submitTasks(SpaceInfoManager.getInstance().bDUTasks);
 		return result;
 	}
-    
+
+		
 	
 	public static int startTest(List<String> absPaths) {
         int result = 0;
@@ -101,6 +148,7 @@ public class SpaceInfoManager {
         return result;	    
 	}
 	
+	
 	public static int stop() {
 	    int result = 0;
 	    SpaceInfoManager.getInstance().stopExecution();
@@ -108,15 +156,138 @@ public class SpaceInfoManager {
 	    return result;
 	}
 	
+	
 	//********************************************
 	// Package methods
 	//********************************************
 	
+
+    public List<StorageSpaceData> retrieveSSDtoInitializeWithQuota() {
+        // Dispatch SA to compute in two categories: Quota and DU tasks
+        List<StorageSpaceData> ssdSet = new ArrayList<StorageSpaceData>();
+        List<VirtualFSInterface> vfsSet = retrieveSAtoInitializeWithQuota();	
+        ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
+        for (VirtualFSInterface vfsEntry : vfsSet) {
+			try {
+				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
+				StorageSpaceData ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
+				ssdSet.add(ssd);
+			} catch (NamespaceException e) {
+				LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+			}
+		}
+        return ssdSet;
+    }
+	
+    
+    public StorageSpaceData getSSDfromQuotaName(String quotaName) {
+        StorageSpaceData ssd = null;
+        List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
+        ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
+        for (VirtualFSInterface vfsEntry : vfsList) {
+            try {
+                String qName = vfsEntry.getCapabilities().getQuota().getQuotaElementName();
+                if (qName.equals(quotaName)) {
+                    String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
+                    ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
+                }
+            }  catch (NamespaceException e) {
+                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+            }
+        }
+        return ssd;
+    }
+    
+    
+    public List<String> retrieveQuotaNamesToUse() {
+        List<String> quotaNames = new ArrayList<String>();
+        List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
+        for (VirtualFSInterface vfsEntry : vfsList) {
+            try {
+                LOG.debug("vfsEntry (AliasName): "+vfsEntry.getAliasName());
+                String quotaName = vfsEntry.getCapabilities().getQuota().getQuotaElementName();
+                LOG.debug("Found this quotaName to check: '"+quotaName+"'");
+                quotaNames.add(quotaName);
+            }  catch (NamespaceException e) {
+                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+            }
+        }
+        LOG.debug("Number of quotaNames: " + quotaNames.size() );
+        return quotaNames;
+    }
+	
+    
+    public List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
+        // Dispatch SA to compute in two categories: Quota and DU tasks
+        List<VirtualFSInterface> vfsSet = getAllVFS();
+        List<VirtualFSInterface> vfsSetQuota = new ArrayList<VirtualFSInterface>();
+        if (vfsSet.size() > 0) { // Exists at least a VFS defined
+            for (VirtualFSInterface vfsItem : vfsSet) {
+                if (gpfsQuotaEnabled(vfsItem)) {
+                    vfsSetQuota.add(vfsItem);
+                }
+            }
+        }
+        LOG.debug("Number of VFS with Quota enabled: "+vfsSetQuota.size());
+        return vfsSetQuota;
+    }
+    
+    
+ 
+	
+	private boolean gpfsQuotaEnabled(VirtualFSInterface vfsItem) {
+	    boolean result = false;
+	    if (vfsItem!=null) {
+	        CapabilityInterface cap = null;
+	        Quota quota = null;
+	        String fsType = "Unknown";
+            try {
+                fsType = vfsItem.getFSType();
+                if ( fsType != null) {
+                    if (fsType.trim().toLowerCase().equals("gpfs")) {
+                        cap = vfsItem.getCapabilities();
+                        if (cap!=null) {
+                            quota = cap.getQuota();    
+                        }
+                        if (quota!=null) {
+                           result = ((quota.getDefined()) && (quota.getEnabled()));    
+                        }        
+                    }
+                }
+                
+            }
+            catch (NamespaceException e) {
+                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+            }
+	        
+	    }
+	    return result;
+	}
+	
+	
+	private List<VirtualFSInterface> getAllVFS() {
+	    Collection<VirtualFSInterface> vfsCollection = null ;
+        try {
+            vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+        }
+        catch (NamespaceException e) {
+            LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+        }
+        if (vfsCollection!=null) {
+            vfsCollection = new ArrayList<VirtualFSInterface>(vfsCollection);    
+        } else {
+            vfsCollection = new ArrayList<VirtualFSInterface>();
+        }
+        LOG.debug("Found '"+vfsCollection.size()+"' VFS defined in Namespace.xml" );
+	    return (List<VirtualFSInterface>) vfsCollection;
+	}
+    
+    
 	
     /**
      * Populate with DU tasks
      */
-    void fakeSAtoAnalyze(List<String> absPaths) {
+    private void fakeSAtoAnalyze(List<String> absPaths) {
         //Create a list of SSD using the list of AbsPaths
         List<StorageSpaceData> toAnalyze = new ArrayList<StorageSpaceData>();
         for (String path : absPaths) {
@@ -152,27 +323,19 @@ public class SpaceInfoManager {
     /**
      * Populate with DU tasks
      */
-    void foundSAtoAnalyze()
-    {
+    private void foundSAtoAnalyze() {
         List<StorageSpaceData> toAnalyze = spaceCatalog.getStorageSpaceNotInitialized();
-        for (StorageSpaceData ssd : toAnalyze)
-        {
+        for (StorageSpaceData ssd : toAnalyze) {
             TSpaceToken sT = ssd.getSpaceToken();
             String absPath = ssd.getSpaceFileNameString();
-            if (sT == null || absPath == null)
-            {
-                LOG.error("Unable to submit DU test, StorageSpaceData returns null values: SpaceToken=" + sT + " , SpaceFileNameString="
-                        + absPath);
-            }
-            else
-            {
-                try
-                {
+            if (sT == null || absPath == null) {
+                LOG.error("Unable to submit DU test, StorageSpaceData returns null values: SpaceToken=" + sT + " , SpaceFileNameString="+ absPath);
+            } else {
+                //SA with GPFS should be already initializated
+                try  {
                     bDUTasks.addTask(sT, absPath);
                     LOG.debug("Added " + absPath + " to the DU-Task Queue. (size:" + bDUTasks.howManyTask() + ")");
-                }
-                catch (SAInfoException e)
-                {
+                } catch (SAInfoException e) {
                     LOG.error("Unable to add task with '" + absPath + "' absolute path." + e.getMessage());
                 }
             }
@@ -325,10 +488,42 @@ public class SpaceInfoManager {
     	
         LOG.info("Submitting "+this.tasksToComplete+" DU tasks.");
         for (BgDUTask task : tasksToSubmit ) {
+            //task.getSpaceToken();
             bDU.addStorageArea(task.getAbsPath(), task.getTaskId());
         }
+       
+        LOG.info("Setting fake used space to "+this.tasksToComplete+" DU tasks.");
+        //Set fake used space, in order to avoid -1 result during the computation
+        setFakeUsedSpace(tasksToSubmit);
+        
+        LOG.info("Start DU background execution");
         bDU.startExecution();
    
+    }
+
+    
+    
+    /**
+     * 
+     * @param tasksToSubmit
+     */
+    private void setFakeUsedSpace(Collection<BgDUTask> tasksToSubmit) {
+        ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+        for (BgDUTask task : tasksToSubmit ) {
+            TSpaceToken sToken = task.getSpaceToken();
+            StorageSpaceData ssd = spaceCatalog.getStorageSpace(sToken);
+            TSizeInBytes totalSize = ssd.getTotalSpaceSize();
+            TSizeInBytes fakeUsed = TSizeInBytes.makeEmpty();
+            try {
+                fakeUsed = TSizeInBytes.make(totalSize.value() / 2, SizeUnit.BYTES);
+            }
+            catch (InvalidTSizeAttributesException e) {
+                LOG.warn("Unable to create Fake Size to set to used_size");
+            }
+            ssd.setUsedSpaceSize(fakeUsed); //By default also freeSize will be updated.
+            spaceCatalog.updateStorageSpace(ssd);
+        }  
+        
     }
 
 

@@ -17,10 +17,11 @@
 
 package it.grid.storm.space.quota;
 
-import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.namespace.model.QuotaType;
+
+import it.grid.storm.namespace.model.Quota;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -42,199 +43,674 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  *
  *
- * typedef struct gpfs_quotaInfo
- * {
- *   gpfs_off64_t blockUsage;      /* current block count *
- *   gpfs_off64_t blockHardLimit;  * absolute limit on disk blks alloc *
- *   gpfs_off64_t blockSoftLimit;  /* preferred limit on disk blks *
- *   gpfs_off64_t blockInDoubt;    /* distributed shares + "lost" usage for blks *
- *   int          inodeUsage;      /* current # allocated inodes *
- *   int          inodeHardLimit;  /* absolute limit on allocated inodes *
- *   int          inodeSoftLimit;  /* preferred inode limit *
- *   int          inodeInDoubt;    /* distributed shares + "lost" usage for inodes *
- *   gpfs_uid_t   quoId;           /* uid, gid or fileset id
- *   int          entryType;       /* entry type, not used *
- *   unsigned int blockGraceTime;  /* time limit for excessive disk use *
- *   unsigned int inodeGraceTime;  /* time limit for excessive inode use *
- * } gpfs_quotaInfo_t;
- *
- *                          Block Limits                                    |     File Limits
-Filesystem type             KB      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
-gpfs_storm FILESET  110010268672 126953000960 126953125888     492384     none |  1796915       0        0      197     none
+**/
 
- blockUsage
-     Current block count in 1 KB units.
- blockHardLimit
-     Absolute limit on disk block allocation.
- blockSoftLimit
-     Preferred limit on disk block allocation.
- blockInDoubt
-     Distributed shares and block usage that have not been not accounted for.
- inodeUsage
-     Current number of allocated inodes.
- inodeHardLimit
-     Absolute limit on allocated inodes.
- inodeSoftLimit
-     Preferred inode limit.
- inodeInDoubt
-     Distributed inode share and inode usage that have not been accounted for.
- quoId
-     user ID, group ID, or fileset ID.
- entryType
-     Not used
- blockGraceTime
-     Time limit (in seconds since the Epoch) for excessive disk use.
- inodeGraceTime
-    Time limit (in seconds since the Epoch) for excessive inode use.
- *
- **/
-
-public class GPFSQuotaInfo extends QuotaInfoAbstract {
-
-    private static final Logger log = LoggerFactory.getLogger(GPFSQuotaInfo.class);
-
-    private long blockInDoubt = -1L;
-    private long iNodeInDoubt = -1L;
-    private String remarks = null;
-
-    private int filesystemTokenIndex = 0;
-    private int quotaTypeTokenIndex = 1;
-    private int sizeUsedTokenIndex = 2;
-    private int sizeHardLimitTokenIndex = 4;
-    private int sizeSoftLimitTokenIndex = 3;
-    private int sizeInDoubtTokenIndex = 5;
-    private int sizeGracePeriodTokenIndex = 6;
-    private int separator = 7;
-    private int iNodeUsedTokenIndex = 8;
-    private int iNodeHardLimitTokenIndex = 10;
-    private int iNodeSoftLimitTokenIndex = 9;
-    private int iNodeInDoubtTokenIndex = 11;
-    private int iNodeGracePeriodTokenIndex = 12;
-    private int remarkTokenIndex = 13;
-
-
+public class GPFSQuotaInfo {
 
     public GPFSQuotaInfo() {
-        super();
+        initializated = false;
+        failure = false;
     }
 
+
     /**
-     * Used to build QuotaInfo from a String corresponding to
-     * Filesystem, type, KB, quota, limit, in_doubt, grace | files, quota, limit, in_doubt, grace, Remarks
+     * @return the failure
+     */
+    public final boolean isFailure() {
+        return failure;
+    }
+
+
+    /**
+     * @param failure the failure to set
+     */
+    public final void setFailure(boolean failure) {
+        this.failure = failure;
+    }
+
+
+    private static final Logger log = LoggerFactory.getLogger(GPFSQuotaInfo.class);
+    
+    private boolean initializated = false;
+    private boolean failure = false;
+    
+    /**
+     * 
+     * @author ritz
      *
+     */
+    public enum QuotaType {
+        USR(0, "USR"), GRP(1, "GRP"), FILESET(2, "FILESET"), UNDEFINED(-1, "UNDEFINED");
+
+        private int code;
+        private String printOut;
+        
+        QuotaType(int c, String printOut) {
+            this.code = c;
+            this.printOut = printOut; 
+        }
+
+        public int getCode() {
+            return code;
+        }
+        
+        public String getPrintOut() {
+            return printOut;
+        }
+
+        static QuotaType getQuotaType(int code) {
+        	QuotaType result = QuotaType.UNDEFINED;
+            for (QuotaType qt : QuotaType.values()) {
+                if (qt.getCode() == code) {
+                    result = qt;
+                    break;
+                }
+            }
+            return result;
+        }
+        
+        static QuotaType getQuotaType(String printOut) {
+            QuotaType result = QuotaType.UNDEFINED;
+            for (QuotaType qt : QuotaType.values()) {
+                if (qt.getPrintOut().equals(printOut) ) {
+                    result = qt;
+                    break;
+                }
+            }
+            return result;
+        }
+        
+    }
+    
+    public enum EntryType {
+        DEFAULT_ON(0, "default on"), 
+        DEFAULT_OFF(1, "default off"), 
+        EXPLICIT_QUOTA(2, "e"), 
+        DEFAULT_QUOTA(3, "d"), 
+        INITIAL_QUOTA(4, "i"),  
+        UNDEFINED(-1, "?");
+
+        private int code;
+        private String printOut;
+
+        EntryType(int c, String printOut) {
+            this.code = c;
+            this.printOut = printOut;
+        }
+
+        public int getCode() {
+            return code;
+        }
+        
+        public String getPrintOut() {
+            return printOut;
+        }
+                
+
+        static EntryType getEntryType(String printOut) {
+        	EntryType result = EntryType.UNDEFINED;
+            for (EntryType et : EntryType.values()) {
+                if (et.getPrintOut().equals(printOut) ) {
+                    result = et;
+                    break;
+                }
+            }
+            return result;
+        }
+    }
+    
+    /**
+     * 
+0 <DeviceName> devicename 
+1 <Name> root
+2 <QuotaType> USR
+3 <CurrentUsage> 15617856
+4 <SoftLimit> 0
+5 <HardLimit> 0
+6 <SpaceInDoubt> 42976
+7 <GracePeriod> none
+8 <sep> |
+9 <CurrentNumbFiles> 56
+0 <SoftLimit> 0
+1 <HardLimit> 0
+2 <FilesInDoubt> 34
+3 <GracePeriod> none
+4 <EntryType>  i
+     */
+    
+    private String deviceName;
+    private static int deviceNameIndex = 0;
+    
+    private String quotaEntryName;
+    private static int quotaEntryNameIndex = 1;    
+    
+    private QuotaType quotaType;
+    private static int quotaTypeIndex = 2;      
+   
+    private long currentBlocksUsage = -1L;
+    private static int currentBlocksUsageIndex = 3; 
+    
+    private long softBlocksLimit = -1L;
+    private static int softBlocksLimitIndex = 4;  
+    
+    private long hardBlocksLimit = -1L;
+    private static int hardBlocksLimitIndex = 5;      
+    
+    private long spaceInDoubt = -1L;
+    private static int spaceInDoubtIndex = 6;  
+    
+    private long blockGracePeriod = -1L;
+    private static int blockGracePeriodIndex = 7;  
+    
+    private long currentNumberOfFiles = -1L;
+    private static int currentNumberOfFilesIndex = 9;    
+    
+    private long softFilesLimit = -1L;
+    private static int softFilesLimitIndex = 10;    
+    
+    private long hardFilesLimit = -1L;
+    private static int hardFilesLimitIndex = 11;    
+    
+    private long filesInDoubt = -1L;
+    private static int filesInDoubtIndex = 12;
+    
+    private long fileGracePeriod = -1L;
+    private static int fileGracePeriodIndex = 13;
+    
+    private EntryType entryType;
+    private static int entryTypeIndex = 14;
+
+    /**
+	 * @return the deviceName
+	 */
+	public final String getDeviceName() {
+		return deviceName;
+	}
+
+
+	/**
+	 * @return the quotaEntryName
+	 */
+	public final String getQuotaEntryName() {
+		return quotaEntryName;
+	}
+
+
+
+	/**
+	 * @return the quotaType
+	 */
+	public final QuotaType getQuotaType() {
+		return quotaType;
+	}
+
+
+	/**
+	 * @return the currentBlocksUsage
+	 */
+	public final long getCurrentBlocksUsage() {
+		return currentBlocksUsage;
+	}
+
+
+
+	/**
+	 * @return the softBlocksLimit
+	 */
+	public final long getSoftBlocksLimit() {
+		return softBlocksLimit;
+	}
+
+
+
+	/**
+	 * @return the hardBlocksLimit
+	 */
+	public final long getHardBlocksLimit() {
+		return hardBlocksLimit;
+	}
+
+
+	/**
+	 * @return the spaceInDoubt
+	 */
+	public final long getSpaceInDoubt() {
+		return spaceInDoubt;
+	}
+
+
+	/**
+	 * @return the blockGracePeriod
+	 */
+	public final long getBlockGracePeriod() {
+		return blockGracePeriod;
+	}
+
+
+	/**
+	 * @return the currentNumebrOfFiles
+	 */
+	public final long getCurrentNumebrOfFiles() {
+		return currentNumberOfFiles;
+	}
+
+
+	/**
+	 * @return the softFilesLimit
+	 */
+	public final long getSoftFilesLimit() {
+		return softFilesLimit;
+	}
+
+
+	/**
+	 * @return the hardFilesLimit
+	 */
+	public final long getHardFilesLimit() {
+		return hardFilesLimit;
+	}
+
+
+	/**
+	 * @return the filesInDoubt
+	 */
+	public final long getFilesInDoubt() {
+		return filesInDoubt;
+	}
+
+
+
+	/**
+	 * @return the fileGracePeriod
+	 */
+	public final long getFileGracePeriod() {
+		return fileGracePeriod;
+	}
+
+
+
+	/**
+	 * @return the entryType
+	 */
+	public final EntryType getEntryType() {
+		return entryType;
+	}
+
+
+    public static List<String> splitTokens(String outputLine) {
+        ArrayList<String> outputList = new ArrayList<String>();
+        if (outputLine!=null) {
+            StringTokenizer st = new StringTokenizer(outputLine);
+            int cont = 0;
+            while (st.hasMoreTokens()) {
+                String element = st.nextToken();
+                outputList.add(element);
+                log.trace(element);
+                cont++;
+            }    
+        }
+        return outputList;
+    }
+	
+	
+	public static final boolean meaningfullLine(String outputLine) {
+	    boolean result = true;
+	    List<String> tokens = splitTokens(outputLine);
+	    if (tokens.size()!=15) {
+	        result = false;
+	    } else {
+	        if (tokens.get(0) != null) {
+	            if (tokens.get(0).equals("Name")) {
+	                result = false;
+	            }
+	        }
+	    }
+	    return result;
+	}
+	
+	/**
+     * Used to build QuotaInfo from a String corresponding to
+     * 
+     * 
+        <DeviceName> devicename 
+        <Name> root
+        <QuotaType> USR
+        <CurrentUsage> 15617856
+        <SoftLimit> 0
+        <HardLimit> 0
+        <SpaceInDoubt> 42976
+        <GracePeriod> none
+        <sep> |
+        <CurrentNumbFiles> 56
+        <SoftLimit> 0
+        <HardLimit> 0
+        <FilesInDoubt> 34
+        <GracePeriod> none
+        <EntryType>  i
+     * 
      * @param output String
      * @return QuotaInfoInterface
      */
-    public void build(String output) {
-        StringTokenizer st = new StringTokenizer(output);
-        ArrayList<String> outputList = new ArrayList<String>();
-        int cont = 0;
-        while (st.hasMoreTokens()) {
-            String element = st.nextToken();
-            outputList.add(element);
-            log.debug(element);
-            //System.out.println("ELEMENT ("+cont+"): "+element);
-            cont++;
+    public void build(String outputLine) {
+
+        initializated = true;
+        
+        List<String> outputList = splitTokens(outputLine);
+
+        // ### DeviceName
+        deviceName = outputList.get(deviceNameIndex);
+        
+        // ### QuotaEntryName
+        quotaEntryName = outputList.get(quotaEntryNameIndex);
+        
+        // ### QuotaType
+        quotaType = QuotaType.getQuotaType(outputList.get(quotaTypeIndex));
+
+        // ### EntryType
+        try {
+            currentBlocksUsage = Long.parseLong(outputList.get(currentBlocksUsageIndex));
         }
-        //Retrieve and Set Filesystem
-        String fileSystemName = outputList.get(filesystemTokenIndex);
-        this.setFilesystemName(fileSystemName);
-        //Retrieve and Set QuotaType
-        this.setQuotaType(QuotaType.getQuotaType(outputList.get(quotaTypeTokenIndex)));
-        //Retrieve and Set Size Used
-        this.setBlockUsage(Long.parseLong(outputList.get(sizeUsedTokenIndex)));
-        //Retrieve and Set Size Hard Limit
-        this.setBlockHardLimit(Long.parseLong(outputList.get(sizeHardLimitTokenIndex)));
-        //Retrieve and Set Size Soft Limit
-        this.setBlockSoftLimit(Long.parseLong(outputList.get(sizeSoftLimitTokenIndex)));
-        //Retrieve and Set Size In Doubt
-        this.setBlockInDoubt(Long.parseLong(outputList.get(sizeInDoubtTokenIndex)));
-        //Retrieve and Set Size Grace Time
-        this.setBlockGraceTime(outputList.get(sizeGracePeriodTokenIndex));
-        //Retrieve and Set INode used
-        this.setINodeUsage(Long.parseLong(outputList.get(iNodeUsedTokenIndex)));
-        //Retrieve and Set INode Hard Limit
-        this.setINodeHardLimit(Long.parseLong(outputList.get(iNodeHardLimitTokenIndex)));
-        //Retrieve and Set INode Soft Limit
-        this.setINodeSoftLimit(Long.parseLong(outputList.get(iNodeSoftLimitTokenIndex)));
-        //Retrieve and Set INode In Doubt
-        this.setINodeInDoubt(Long.parseLong(outputList.get(iNodeInDoubtTokenIndex)));
-        //Retrieve and Set INode Grace Time
-        this.setINodeGraceTime(outputList.get(iNodeGracePeriodTokenIndex));
-        //Retrieve and Set Remarks
-        this.setRemarks("N/A");
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(currentBlocksUsageIndex) + "'");
+            currentBlocksUsage = 0;
+        }
+
+        // ### EntryType
+        try {
+            softBlocksLimit = Long.parseLong(outputList.get(softBlocksLimitIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(softBlocksLimitIndex) + "'");
+            softBlocksLimit = 0;
+        }
+        // ### EntryType
+        try {
+            hardBlocksLimit = Long.parseLong(outputList.get(hardBlocksLimitIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(hardBlocksLimitIndex) + "'");
+            hardBlocksLimit = 0;
+        }
+
+        // ### EntryType
+        try {
+            spaceInDoubt = Long.parseLong(outputList.get(spaceInDoubtIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(spaceInDoubtIndex) + "'");
+            spaceInDoubt = 0;
+        }
+        // ### EntryType
+        String grecePeriodString = outputList.get(blockGracePeriodIndex);
+        if (grecePeriodString.equalsIgnoreCase("none")) {
+            blockGracePeriod = 0;
+        }
+        else {
+            try {
+                blockGracePeriod = Long.parseLong(outputList.get(blockGracePeriodIndex));
+            }
+            catch (NumberFormatException nfe) {
+                log.info("Unable to parse Long '" + outputList.get(blockGracePeriodIndex) + "'");
+                blockGracePeriod = 0;
+            }
+        }
+        // ### EntryType
+        try {
+            currentNumberOfFiles = Long.parseLong(outputList.get(currentNumberOfFilesIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(currentNumberOfFilesIndex) + "'");
+            currentNumberOfFiles = 0;
+        }
+
+        // ### EntryType
+        try {
+            softFilesLimit = Long.parseLong(outputList.get(softFilesLimitIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(softFilesLimitIndex) + "'");
+            softFilesLimit = 0;
+        }
+        // ### EntryType
+        try {
+            hardFilesLimit = Long.parseLong(outputList.get(hardFilesLimitIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(hardFilesLimitIndex) + "'");
+            hardFilesLimit = 0;
+        }
+        // ### EntryType
+        try {
+            filesInDoubt = Long.parseLong(outputList.get(filesInDoubtIndex));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(filesInDoubtIndex) + "'");
+            filesInDoubt = 0;
+        }
+
+        // ### EntryType
+        String fileGracePeriodString = outputList.get(fileGracePeriodIndex);
+        if (fileGracePeriodString.equalsIgnoreCase("none")) {
+            fileGracePeriod = 0;
+        }
+        else {
+            try {
+                fileGracePeriod = Long.parseLong(outputList.get(fileGracePeriodIndex));
+            }
+            catch (NumberFormatException nfe) {
+                log.info("Unable to parse Long '" + outputList.get(fileGracePeriodIndex) + "'");
+                fileGracePeriod = 0;
+            }
+        }
+
+        // ### EntryType
+        entryType = EntryType.getEntryType(outputList.get(entryTypeIndex));
 
     }
+    
 
+    public boolean isInitializated() {
+        return initializated;
+    }
+    
+    
+    
+    public void buildLs(String line, Quota quotaElement) {
+        initializated = true;
+        
+        List<String> outputList = splitTokens(line);
 
+       // Filesystem type             KB      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
+        
+        // ### DeviceName
+        deviceName = outputList.get(0);
+       
+        quotaEntryName = quotaElement.getQuotaElementName();
+        log.debug("QuotaEntryName : "+quotaEntryName);
+        
+        // ### QuotaType
+        quotaType = QuotaType.getQuotaType(outputList.get(1));
+
+        // ### EntryType
+        try {
+            currentBlocksUsage = Long.parseLong(outputList.get(2));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(2) + "'");
+            currentBlocksUsage = 0;
+        }
+
+        // ### EntryType
+        try {
+            softBlocksLimit = Long.parseLong(outputList.get(3));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(3) + "'");
+            softBlocksLimit = 0;
+        }
+        // ### EntryType
+        try {
+            hardBlocksLimit = Long.parseLong(outputList.get(4));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(4) + "'");
+            hardBlocksLimit = 0;
+        }
+
+        // ### EntryType
+        try {
+            spaceInDoubt = Long.parseLong(outputList.get(5));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(5) + "'");
+            spaceInDoubt = 0;
+        }
+        // ### EntryType
+        String grecePeriodString = outputList.get(6);
+        if (grecePeriodString.equalsIgnoreCase("none")) {
+            blockGracePeriod = 0;
+        }
+        else {
+            try {
+                blockGracePeriod = Long.parseLong(outputList.get(6));
+            }
+            catch (NumberFormatException nfe) {
+                log.info("Unable to parse Long '" + outputList.get(6) + "'");
+                blockGracePeriod = 0;
+            }
+        }
+        // ### EntryType
+        try {
+            currentNumberOfFiles = Long.parseLong(outputList.get(8));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(8) + "'");
+            currentNumberOfFiles = 0;
+        }
+
+        // ### EntryType
+        try {
+            softFilesLimit = Long.parseLong(outputList.get(9));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(9) + "'");
+            softFilesLimit = 0;
+        }
+        // ### EntryType
+        try {
+            hardFilesLimit = Long.parseLong(outputList.get(10));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(10) + "'");
+            hardFilesLimit = 0;
+        }
+        // ### EntryType
+        try {
+            filesInDoubt = Long.parseLong(outputList.get(11));
+        }
+        catch (NumberFormatException nfe) {
+            log.warn("Unable to parse Long '" + outputList.get(11) + "'");
+            filesInDoubt = 0;
+        }
+
+        // ### EntryType
+        String fileGracePeriodString = outputList.get(12);
+        if (fileGracePeriodString.equalsIgnoreCase("none")) {
+            fileGracePeriod = 0;
+        }
+        else {
+            try {
+                fileGracePeriod = Long.parseLong(outputList.get(12));
+            }
+            catch (NumberFormatException nfe) {
+                log.info("Unable to parse Long '" + outputList.get(12) + "'");
+                fileGracePeriod = 0;
+            }
+        }
+
+        // ### EntryType
+        entryType = EntryType.UNDEFINED;        
+    }
+    
     /**
-     * getRemarks
-     *
-     * @return String
+
+-- OK --
+[]# /usr/lpp/mmfs/bin/mmlsquota -j data1 gemss_test
+                         Block Limits                                    |     File Limits
+Filesystem type             KB      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
+gemss_test FILESET         512 2147483648 2147483648          0     none |     3128       0        0        0     none 
+[]# 
+
+-- ERR1 (wrong device) -- 
+[root@vm-storage-03 backend-server]# /usr/lpp/mmfs/bin/mmlsquota -j data1 gemss_test3
+mmlsquota: File system gemss_test3 is not known to the GPFS cluster.
+mmlsquota: Command failed.  Examine previous error messages to determine cause.
+[root@vm-storage-03 backend-server]#
+
+-- ERR2 (wrong fileset) --
+[root@vm-storage-03 backend-server]# /usr/lpp/mmfs/bin/mmlsquota -j dat991 gemss_test
+dat991: no such fileset in quota enabled file systems
+mmlsquota: Command failed.  Examine previous error messages to determine cause.
+[root@vm-storage-03 backend-server]#
+
+*/
+
+
+    public static boolean meaningfullLineForLS(String line) {
+        boolean result = true;
+        List<String> tokens = splitTokens(line);
+        int size = tokens.size();
+        if (size!=13) {
+            result = false;
+        } else {
+            if (tokens.get(0) != null) {
+                if (tokens.get(0).equals("Filesystem")) {
+                    result = false;
+                }
+            }
+        }
+        return result;
+    }
+
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
      */
-    public String getRemarks() {
-        return this.remarks;
-    }
-
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-
-    /**
-     * getINodeInDoubt
-     *
-     * @return String
-     */
-    public long getINodeInDoubt() {
-        return this.iNodeInDoubt;
-    }
-
-    public void setINodeInDoubt(long iNodeInDoubt) {
-        this.iNodeInDoubt = iNodeInDoubt;
-    }
-
-    /**
-     * getBlockInDoubt
-     *
-     * @return String
-     */
-    public long getBlockInDoubt() {
-        return this.blockInDoubt;
-    }
-
-    public void setBlockInDoubt(long blockInDoubt) {
-        this.blockInDoubt = blockInDoubt;
-    }
-
-
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer();
-        result.append("QUOTA [ Filesystem: '"+getFilesystemName()+"' \n");
-        result.append("  Size used: '"+getBlockUsage()+" "+getSizeUnit()+"' \n");
-        result.append("  Size Hard Limit: '"+getBlockHardLimit()+" "+getSizeUnit()+"' \n");
-        result.append("  Size Soft Limit: '"+getBlockSoftLimit()+" "+getSizeUnit()+"' \n");
-        result.append("  Size In Doubt: '"+getBlockInDoubt()+" "+getSizeUnit()+"' \n");
-        if (getSizeTimeUnit().equals(TimeUnit.EMPTY)) {
-            result.append("  Size Grace Time: '"+getSizeTimeUnit()+"' \n");
-        } else {
-            result.append("  Size Grace Time: '"+getBlockGraceTime()+" "+getSizeTimeUnit()+"' \n");
-        }
-        result.append("  iNode used: '"+getINodeUsage()+"' \n");
-        result.append("  iNode Hard Limit: '"+getINodeHardLimit()+"' \n");
-        result.append("  iNode Soft Limit: '"+getINodeSoftLimit()+"' \n");
-        result.append("  iNode In Doubt: '"+getINodeInDoubt()+"' \n");
-        if (getINodeTimeUnit().equals(TimeUnit.EMPTY)) {
-            result.append("  iNode Grace Time: '"+getINodeTimeUnit()+"' \n");
-        } else {
-            result.append("  iNode Grace Time: '"+getINodeGraceTime()+" "+getINodeTimeUnit()+"' \n");
-        }
-
-        result.append("  Remarks : '"+getRemarks()+"' \n");
-        result.append("]");
-        return result.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("GPFSQuotaInfo [deviceName=");
+        builder.append(deviceName);
+        builder.append(", quotaEntryName=");
+        builder.append(quotaEntryName);
+        builder.append(", quotaType=");
+        builder.append(quotaType);
+        builder.append(", currentBlocksUsage=");
+        builder.append(currentBlocksUsage);
+        builder.append(", softBlocksLimit=");
+        builder.append(softBlocksLimit);
+        builder.append(", hardBlocksLimit=");
+        builder.append(hardBlocksLimit);
+        builder.append(", spaceInDoubt=");
+        builder.append(spaceInDoubt);
+        builder.append(", blockGracePeriod=");
+        builder.append(blockGracePeriod);
+        builder.append(", currentNumberOfFiles=");
+        builder.append(currentNumberOfFiles);
+        builder.append(", softFilesLimit=");
+        builder.append(softFilesLimit);
+        builder.append(", hardFilesLimit=");
+        builder.append(hardFilesLimit);
+        builder.append(", filesInDoubt=");
+        builder.append(filesInDoubt);
+        builder.append(", fileGracePeriod=");
+        builder.append(fileGracePeriod);
+        builder.append(", entryType=");
+        builder.append(entryType);
+        builder.append("]");
+        return builder.toString();
     }
+
 
 
 

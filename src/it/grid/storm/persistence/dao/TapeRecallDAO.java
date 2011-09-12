@@ -91,6 +91,21 @@ public abstract class TapeRecallDAO extends AbstractDAO {
     public abstract List<TapeRecallTO> getGroupTasks(UUID groupTaskId) throws DataAccessException;
 
     
+    /**
+     * Verifies that a recall task with the given taskId and request token exists on the database  
+     * 
+     * @param taskId
+     * @param requestToken
+     * @return true if the recall task exists
+     * @throws DataAccessException
+     */
+    public abstract boolean existsTask(UUID taskId, String requestToken) throws DataAccessException;
+    
+    /**
+     * @param groupTaskId
+     * @return
+     * @throws DataAccessException
+     */
     public abstract boolean existsGroupTask(UUID groupTaskId) throws DataAccessException;
 
     /**

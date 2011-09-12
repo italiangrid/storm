@@ -1,50 +1,204 @@
 <namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.0.xsd" version="1.5.0">
- 
   <filesystems>
-    <filesystem name="MY_FS" fs_type="">
-      <space-token-description></space-token-description>
-      <root></root>
-      <filesystem-driver></filesystem-driver>
-      <spacesystem-driver></spacesystem-driver>
+    <filesystem name="DTEAMTEST1-FS" fs_type="gpfs">
+      <space-token-description>TEST1</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/gpfs/gemss_test/test/data1</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
       <storage-area-authz>
-         <fixed></fixed>
+         <fixed>permit-all</fixed>
       </storage-area-authz>
       <properties>
-          <RetentionPolicy></RetentionPolicy>
-          <AccessLatency></AccessLatency>
-          <ExpirationMode></ExpirationMode>
-          <TotalOnlineSize unit="GB" limited-size="true"></TotalOnlineSize>
-          <TotalNearlineSize unit="GB"></TotalNearlineSize>
+          <RetentionPolicy>custodial</RetentionPolicy>
+          <AccessLatency>nearline</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB" limited-size="true">3669</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
       </properties>
       <capabilities>
-        <aclMode></aclMode>
+        <aclMode>AoT</aclMode>
+        <quota enabled="true">
+          <device>gemss_test</device>
+            <quotaElement>
+              <filesetName>Data1</filesetName>
+            </quotaElement>
+        </quota> 
         <trans-prot>
-          <prot name="">
-            <id></id>
-            <schema></schema>
-            <host></host>
-            <port></port>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>diskserv-san-41.cr.cnaf.infn.it</host>
+            <port>2811</port>
           </prot>
         </trans-prot>
       </capabilities>
     </filesystem>
-  </filesystems>
 
+    <filesystem name="DTEAMTEST2-FS" fs_type="gpfs">
+      <space-token-description>TEST2</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/gpfs/gemss_test/test/data2</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+         <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+          <RetentionPolicy>custodial</RetentionPolicy>
+          <AccessLatency>nearline</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB" limited-size="true">3669</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <quota enabled="true">
+          <device>gemss_test</device>
+            <quotaElement>
+              <filesetName>Data2</filesetName>
+            </quotaElement>
+        </quota> 
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>diskserv-san-41.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+        </trans-prot>
+      </capabilities>
+    </filesystem>
+
+    <filesystem name="DTEAMTEST3-FS" fs_type="gpfs">
+      <space-token-description>TEST3</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/gpfs/gemss_test2/test/data3</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+         <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+          <RetentionPolicy>custodial</RetentionPolicy>
+          <AccessLatency>nearline</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB" limited-size="true">7338</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <quota enabled="true">
+          <device>gemss_test2</device>
+            <quotaElement>
+              <filesetName>Data3</filesetName>
+            </quotaElement>
+        </quota> 
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>diskserv-san-41.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+        </trans-prot>
+      </capabilities>
+    </filesystem>
+
+    <filesystem name="DTEAMTEST4-FS" fs_type="gpfs">
+      <space-token-description>TEST4</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/gpfs/gemss_test2/test/data4</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.gpfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.GPFSSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+         <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+          <RetentionPolicy>custodial</RetentionPolicy>
+          <AccessLatency>nearline</AccessLatency>
+          <ExpirationMode>neverExpire</ExpirationMode>
+          <TotalOnlineSize unit="GB" limited-size="true">7338</TotalOnlineSize>
+          <TotalNearlineSize unit="GB">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <quota enabled="true">
+          <device>gemss_test2</device>
+            <quotaElement>
+              <filesetName>Data4</filesetName>
+            </quotaElement>
+        </quota> 
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>diskserv-san-41.cr.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+        </trans-prot>
+      </capabilities>
+    </filesystem>
+
+  </filesystems>
   <mapping-rules>
-    <map-rule name="my_fs_maprule">
-      <stfn-root></stfn-root>
-      <mapped-fs>MY_FS</mapped-fs>
+    <map-rule name="dteamtest1-maprule">
+      <stfn-root>/data1</stfn-root>
+      <mapped-fs>DTEAMTEST1-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="dteamtest2-maprule">
+      <stfn-root>/data2</stfn-root>
+      <mapped-fs>DTEAMTEST2-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="dteamtest3-maprule">
+      <stfn-root>/data3</stfn-root>
+      <mapped-fs>DTEAMTEST3-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="dteamtest4-maprule">
+      <stfn-root>/data4</stfn-root>
+      <mapped-fs>DTEAMTEST4-FS</mapped-fs>
     </map-rule>
   </mapping-rules>
-
   <approachable-rules>
-    <app-rule name="my_fs-rule">
+    <app-rule name="dteamtest1-rule">
       <subjects>
-        <dn></dn>
-	<vo-name></vo-name>
+        <dn>*</dn>
+	<vo-name>dteam</vo-name>
       </subjects>
-      <approachable-fs>MY_FS</approachable-fs>
+      <approachable-fs>DTEAMTEST1-FS</approachable-fs>
+    </app-rule>
+    <app-rule name="dteamtest2-rule">
+      <subjects>
+        <dn>*</dn>
+	<vo-name>dteam</vo-name>
+      </subjects>
+      <approachable-fs>DTEAMTEST2-FS</approachable-fs>
+    </app-rule>
+    <app-rule name="dteamtest3-rule">
+      <subjects>
+        <dn>*</dn>
+	<vo-name>dteam</vo-name>
+      </subjects>
+      <approachable-fs>DTEAMTEST3-FS</approachable-fs>
+    </app-rule>
+    <app-rule name="dteamtest4-rule">
+      <subjects>
+        <dn>*</dn>
+	<vo-name>dteam</vo-name>
+      </subjects>
+      <approachable-fs>DTEAMTEST4-FS</approachable-fs>
     </app-rule>
   </approachable-rules>
-
 </namespace>

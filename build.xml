@@ -86,7 +86,7 @@ to get a list of the available targets for this buildfile.
 	<property name="swig.location" value="/usr" />
 	<property name="glite.location" value="/opt/glite" />
 	<property name="lcmaps.location" value="${glite.location}" />
-	<property name="lcmaps-without-gsi.location" value="${glite.location}" />
+	<property name="lcmaps-without-gsi.location" value="/usr" />
 	<property name="lcmaps-plugins-basic.location" value="${glite.location}" />
 	<property name="lcmaps-plugins-voms.location" value="${glite.location}" />
 	<property name="jdk.location" value="${env.JAVA_HOME}" />
@@ -596,6 +596,7 @@ test.junit.dir
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="BUILDDIR=${build.obj.dir}"/>
 			<arg value="arch=${arch}"/>
+			<arg value="lcmaps-without-gsi.location=${lcmaps-without-gsi.location}"/>
 		</exec>
 	</target>
 
@@ -790,7 +791,7 @@ test.junit.dir
 	<!-- CLEAN                                                           -->
 	<!-- =============================================================== -->
 
-	<!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
+	<!-- Invoke 'clean' target on it/grid/storm/filesystem/mock/Makefile -->
 	<target name="clean.mock-gpfs">
 		<exec executable="make" dir="${src.java.dir}/it/grid/storm/filesystem/mock" logError="true">
 			<arg value="DESTDIR=${build.libs.dir}"/>
@@ -799,10 +800,11 @@ test.junit.dir
 	</target>	
 	
 	
-	<!-- Invoke 'clean' target on it/grid/storm/jna/clib/Makefile -->
+	<!-- Invoke 'clean' target on it/grid/storm/jna/Makefile -->
 	<target name="clean.clibs-jna">
 		<exec executable="make" dir="${src.java.dir}/it/grid/storm/jna" logError="true">
 			<arg value="DESTDIR=${build.libs.dir}"/>
+			<arg value="BUILDDIR=${build.obj.dir}"/>
 			<arg value="clean"/>
 		</exec>
 	</target>

@@ -38,7 +38,9 @@ public class AclManagerFSAndHTTPS implements AclManager
             
     }
 
-
+    /**
+     * @return
+     */
     public static AclManager getInstance()
     {
         return instance;
@@ -230,17 +232,13 @@ public class AclManagerFSAndHTTPS implements AclManager
         {
             throw new IllegalArgumentException("Unable to perform the operation. The received file parameter is null");
         }
-        if(!localFile.exists())
-        {
-            throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
-        }
         if (isHttpsEnabled)
         {
+            if(!localFile.exists())
+            {
+                throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
+            }
             aclManagement.removeAllPermissions(localFile);
-        }
-        else
-        {
-            
         }
     }
 
@@ -253,12 +251,12 @@ public class AclManagerFSAndHTTPS implements AclManager
             throw new IllegalArgumentException("Unable to perform the operation. The received null parameters: localFile=" + localFile
                                                + " localUser=" +localUser + " permission=" + permission);
         }
-        if(!localFile.exists())
-        {
-            throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
-        }
         if (isHttpsEnabled)
         {
+            if(!localFile.exists())
+            {
+                throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
+            }
             aclManagement.grantUserPermission(localFile, localUser, permission);
         }
     }
@@ -272,12 +270,12 @@ public class AclManagerFSAndHTTPS implements AclManager
             throw new IllegalArgumentException("Unable to perform the operation. The received null parameters: localFile=" + localFile
                                                + " localUser=" +localUser + " permission=" + permission);
         }
-        if(!localFile.exists())
-        {
-            throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
-        }
         if (isHttpsEnabled)
         {
+            if(!localFile.exists())
+            {
+                throw new IllegalArgumentException("Unable to perform the operation. The received file parameter points to a non existent file");
+            }
             aclManagement.grantGroupPermission(localFile, localUser, permission);
         }
     }
@@ -291,16 +289,16 @@ public class AclManagerFSAndHTTPS implements AclManager
             throw new IllegalArgumentException("Unable to perform the operation. The received null parameters: fromLocalFile=" + fromLocalFile
                                                + " toLocalFile=" +toLocalFile);
         }
-        if(!fromLocalFile.exists())
-        {
-            throw new IllegalArgumentException("Unable to perform the operation. The received source file parameter points to a non existent file");
-        }
-        if(!toLocalFile.exists())
-        {
-            throw new IllegalArgumentException("Unable to perform the operation. The received destination file parameter points to a non existent file");
-        }
         if (isHttpsEnabled)
         {
+            if(!fromLocalFile.exists())
+            {
+                throw new IllegalArgumentException("Unable to perform the operation. The received source file parameter points to a non existent file");
+            }
+            if(!toLocalFile.exists())
+            {
+                throw new IllegalArgumentException("Unable to perform the operation. The received destination file parameter points to a non existent file");
+            }
             aclManagement.moveAllPermissions(fromLocalFile, toLocalFile);
         }
     }

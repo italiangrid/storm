@@ -1,0 +1,41 @@
+top_srcdir=.
+stagedir=.
+distdir=.
+globalprefix=storm
+backendprefix=backend-server
+package=storm-backend-server
+version=1.7.1
+
+architecture=${arch}
+lcmaps_without_gsi_location=${lcmaps-without-gsi.location}
+DESTDIR?=.
+BUILDDIR?=./lib$(architecture)
+
+LCMAPS_INCLUDES ?= -I$(lcmaps_without_gsi_location)/include/ 
+#\
+#-I/usr/include/lcmaps/lcmaps_return_poolindex_without_gsi.h
+
+LCMAPS_LIBS ?= \
+ ${lcmaps_without_gsi_location}/lib$(arch)/liblcmaps_return_poolindex_without_gsi.so 
+ #\
+ #${lcmaps_location}/lib$(arch)/liblcmaps.so
+
+GCC=gcc
+
+GCCFLAGS=-g -O -fPIC
+GCCFLAGS += $(LCMAPS_INCLUDES)
+
+LCMAPSFGLAGS=-DLCMAPS_RETURN_POOLINDEX_WITHOUT_GSI_C
+.PHONY: all clean lib
+
+all: lib
+
+clean:
+	rm -f $(DESTDIR)/libstorm_lcmaps.so $(BUILDDIR)/storm_lcmaps.o *.o *.so
+
+storm_lcmaps: storm_lcmaps.c storm_lcmaps.h
+	$(GCC) -c $(GCCFLAGS) $(LCMAPSFGLAGS) storm_lcmaps.c -o $(BUILDDIR)/storm_lcmaps.o
+
+lib: storm_lcmaps
+	$(GCC) -shared -Wall -o $(DESTDIR)/libstorm_lcmaps.so $(BUILDDIR)/storm_lcmaps.o $(LCMAPS_LDFLAGS) $(LCMAPS_LIBS)
+

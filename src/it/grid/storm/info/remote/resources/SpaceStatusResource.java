@@ -21,6 +21,7 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
 import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 
@@ -48,8 +49,15 @@ public class SpaceStatusResource {
     @Produces("application/json")
     @Path("/{alias}")
     public String getStatusSummary(@PathParam("alias") String saAlias) {
-    	String result ="";
+
+        
+        String result ="";
     	log.debug("Received call getStatusSummary for SA '"+saAlias+"'");
+    	
+    	// Update SA used space using quota defined..
+        log.debug(" ... updating SA with GPFS quotas results");
+        QuotaManager.getInstance().updateSAwithQuota(false);
+        
         // Check if saAlias exists
     	
     	// Retrieve info for saAlias

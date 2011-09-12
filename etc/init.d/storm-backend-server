@@ -141,11 +141,11 @@ platform=`uname -m`
 case $platform in
 "i686")
 	ARCH=""
-	echo "32-bit OS"
+	#echo "32-bit OS"
 	;;
 "x86_64")
 	ARCH="64"
-	echo "64-bit OS"
+	#echo "64-bit OS"
 	;;
 *)
 	echo "Unknown platform"
@@ -341,16 +341,6 @@ resume () {
 ## start
 
 start () {
-    if test -e "$LCMAPS_DB_FILE"; then
-       echo 1>&2 "LCMAPS DB file '$LCMAPS_DB_FILE'"
-    fi
-    if test -n "$LCMAPS_LOG_FILE"; then
-       echo 1>&2 "LCMAPS LOG file '$LCMAPS_LOG_FILE'"
-    fi
-    if test -n "$LCMAPS_DEBUG_LEVEL"; then
-       echo 1>&2 "LCMAPS DEBUG level '$LCMAPS_DEBUG_LEVEL'"
-    fi
-
     local pid
 
         run () { "$@" & : ; }
@@ -487,12 +477,23 @@ case "$1" in
     start)  
     		if [ $# -gt 1 ]; then
                 if [ $2 = "debug" ]; then
-                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n";
                 elif [ $2 = "jmx" ]; then
-                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false";
                 else
                     start;
                 fi
+                if [ $# -gt 2 ]; then
+	                if [ $3 = "debug" ]; then
+	                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+	                elif [ $3 = "jmx" ]; then
+	                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+	                else
+	                    start;
+	                fi
+                else
+             	   start;
+            	fi ;
             else
                 start;
             fi ;;
@@ -517,17 +518,28 @@ case "$1" in
     #
 	    stop; 
 	    sleep 1;  
-	    if [ $# -gt 1 ]; then
-	    	if [ $2 = "debug" ]; then
-				STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
-			elif [ $2 = "jmx" ]; then
-            	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
-	        else
-	        	start;
-	        fi
-		else
-	    	start;
-		fi ;;
+		if [ $# -gt 1 ]; then
+            if [ $2 = "debug" ]; then
+                STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n";
+            elif [ $2 = "jmx" ]; then
+            	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false";
+            else
+                start;
+            fi
+            if [ $# -gt 2 ]; then
+                if [ $3 = "debug" ]; then
+                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+                elif [ $3 = "jmx" ]; then
+                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+                else
+                    start;
+                fi
+            else
+         	   start;
+        	fi ;
+        else
+            start;
+        fi ;;
     # stop Picker
     suspend) suspend ;;
 	

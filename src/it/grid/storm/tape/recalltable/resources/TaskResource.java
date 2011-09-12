@@ -81,10 +81,15 @@ public class TaskResource {
         return "doGetTaskStatus: TASK-ID = " + taskId;
     }
 
+
+    /*
+     * Method called by storm Frontend when it find a ptg or bol marked as in progress 
+     * on the db (for boot tape enabled and disk only SA)
+     */
     @PUT
     @Path("/")
     @Consumes("text/plain")
-    public Response putTaskStatus(InputStream input) throws TapeRecallException {
+    public Response putTaskStatus(InputStream input) {
         String inputString = buildInputString(input);
         log.debug("putTaskStatus() - Input:" + inputString);
         
@@ -95,11 +100,23 @@ public class TaskResource {
         }
         
         /* Business logic */
-        Response response = PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+        Response response;
+        try
+        {
+            response = PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+        }
+        catch (TapeRecallException e)
+        {
+            log.error("Error serving request. TapeRecallException: " + e.getMessage());
+            response =  Response.status(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
 
         return response;
     }
 
+    /*
+     * Method called by GEMSS
+     */
     @PUT
     @Path("/{groupTaskId}")
     @Consumes("text/plain")

@@ -193,6 +193,18 @@ public class TapeRecallCatalog {
         return tapeRecallDAO.getTask(taskId, requestToken);
     }
     
+    /**
+     * Verifies that a recall task with the given taskId and request token exists on the database  
+     * 
+     * @param taskId
+     * @param requestToken
+     * @return true if the recall task exists
+     * @throws DataAccessException
+     */
+    public boolean existsTask(UUID taskId, String requestToken) throws DataAccessException {
+        return tapeRecallDAO.existsTask(taskId, requestToken);
+    }
+    
 
     /**
      * @param groupTaskId
