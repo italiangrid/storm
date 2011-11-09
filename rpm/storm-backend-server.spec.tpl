@@ -19,18 +19,18 @@
 %define longname   storm-backend-server
 %define default_user root
 
-%define version 1.7.3
-%define age 1
-%define swig /usr
-%define jdk /usr/java/latest
-%define lcmaps /home/joda/storm-src/stage
-%define lcmaps_without_gsi /home/joda/storm-src/stage/usr
-%define lcmaps_plugins_basic /home/joda/storm-src/stage
-%define lcmaps_plugins_voms /home/joda/storm-src/stage
-%define libacl_devel /usr
-%define libattr_devel /usr
-%define xfsprogs_devel /usr
-%define platform Linux-amd64-64
+%define version @version@
+%define age @age@
+%define swig @swig@
+%define jdk @jdk@
+%define lcmaps @lcmaps@
+%define lcmaps_without_gsi @lcmaps_without_gsi@
+%define lcmaps_plugins_basic @lcmaps_plugins_basic@
+%define lcmaps_plugins_voms @lcmaps_plugins_voms@
+%define libacl_devel @libacl_devel@
+%define libattr_devel @libattr_devel@
+%define xfsprogs_devel @xfsprogs_devel@
+%define platform @platform@
 
 Name:    %{longname}
 Version: %{version}

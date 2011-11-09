@@ -1,2 +1,4 @@
-int gid = it.grid.storm.namespace.util.userinfo.UserInfoExecutor.retrieveGroupID_ENT("ritz");
-System.out.print("GID = "+gid);
+
+java.text.DateFormat formatter = new java.text.SimpleDateFormat("E, dd MMM yyyy HH:mm:ss Z");
+java.util.Date date = (java.util.Date)formatter.parse("Tue, 29 Jan 2002 22:14:02 -0500");
+System.out.print(date);

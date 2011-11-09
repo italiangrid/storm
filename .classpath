@@ -62,8 +62,8 @@
 	<classpathentry kind="var" path="BE_JAR_LIB/xmlrpc-server-3.0.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/stax-api-1.0-2.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/jettison-1.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/StoRM_BE_1.7"/>
 	<classpathentry kind="var" path="BE_JAR_LIB"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/commons-io-2.0.1.jar"/>
+	<classpathentry kind="var" path="BE_JAR_LIB/ini4j-0.5.2.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

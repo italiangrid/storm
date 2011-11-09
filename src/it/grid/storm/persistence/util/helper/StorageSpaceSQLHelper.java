@@ -494,6 +494,93 @@ public class StorageSpaceSQLHelper extends SQLHelper{
         return query;
     }
   
+    /**
+     * Provides a query that updates all row fields accordingly to the provided StorageSpaceTO and using SpaceToken as key
+     * 
+     * @param ssTO
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public String updateByTokenQuery(StorageSpaceTO ssTO) throws IllegalArgumentException
+    {
+        if (ssTO == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        String query = "UPDATE `storage_space` SET";
+        if (ssTO.getOwnerName() != null)
+        {
+            query += " `" + COLS.get("ownerName") + "` = " + format(ssTO.getOwnerName()) + " ,";
+        }
+        query += " `" + COLS.get("ownerVO") + "` = " + format(getVOName(ssTO.getVoName())) + " ,";
+        if (ssTO.getCreated() != null)
+        {
+            query += " `" + COLS.get("created") + "` = " + format(ssTO.getCreated()) + " ,";
+        }
+        if (ssTO.getAlias() != null)
+        {
+            query += " `" + COLS.get("alias") + "` = " + format(ssTO.getAlias()) + " ,";
+        }
+        if (ssTO.getSpaceFile() != null)
+        {
+            query += " `" + COLS.get("spaceFile") + "` = " + format(ssTO.getSpaceFile()) + " ,";
+        }
+        if (ssTO.getStorageInfo() != null)
+        {
+            query += " `" + COLS.get("storaqeInfo") + "` = " + format(ssTO.getStorageInfo()) + " ,";
+        }
+        if (ssTO.getLifetime() != -1)
+        {
+            query += " `" + COLS.get("lifeTime") + "` = " + format(ssTO.getLifetime()) + " ,";
+        }
+        if (ssTO.getSpaceType() != null)
+        {
+            query += " `" + COLS.get("spaceType") + "` = " + format(ssTO.getSpaceType()) + " ,";
+        }
+        if ((ssTO.getTotalSize() != 0) || (ssTO.getTotalSize() != -1))
+        {
+            query += " `" + COLS.get("total_size") + "` = " + format(ssTO.getTotalSize()) + " ,";
+        }
+        if ((ssTO.getGuaranteedSize() != 0) || (ssTO.getGuaranteedSize() != -1))
+        {
+            query += " `" + COLS.get("guar_size") + "` = " + format(ssTO.getGuaranteedSize()) + " ,";
+        }
+        if ((ssTO.getFreeSize() != 0) || (ssTO.getFreeSize() != -1))
+        {
+            query += " `" + COLS.get("free_size") + "` = " + format(ssTO.getFreeSize()) + " ,";
+        }
+        if ((ssTO.getUsedSize() != 0) || (ssTO.getUsedSize() != -1))
+        {
+            query += " `" + COLS.get("used_size") + "` = " + format(ssTO.getUsedSize()) + " ,";
+        }
+        if ((ssTO.getBusySize() != 0) || (ssTO.getBusySize() != -1))
+        {
+            query += " `" + COLS.get("busy_size") + "` = " + format(ssTO.getBusySize()) + " ,";
+        }
+        if ((ssTO.getUnavailableSize() != 0) || (ssTO.getUnavailableSize() != -1))
+        {
+            query += " `" + COLS.get("unavailable_size") + "` = " + format(ssTO.getUnavailableSize()) + " ,";
+        }
+        if ((ssTO.getAvailableSize() != 0) || (ssTO.getAvailableSize() != -1))
+        {
+            query += " `" + COLS.get("available_size") + "` = " + format(ssTO.getAvailableSize()) + " ,";
+        }
+        if ((ssTO.getReservedSize() != 0) || (ssTO.getReservedSize() != -1))
+        {
+            query += " `" + COLS.get("reserved_size") + "` = " + format(ssTO.getReservedSize()) + " ,";
+        }
+        if (ssTO.getUpdateTime() != null)
+        {
+            query += " `" + COLS.get("update_time") + "` = " + format(ssTO.getUpdateTime()) + "";
+        }
+        if (query.charAt(query.length() - 1) == ',')
+        {
+            query = query.substring(0, query.length() - 1);
+        }
+        query += " where `" + COLS.get("token") + "` = " + format(ssTO.getSpaceToken());
+        return query;
+    }
+    
   /**
    *
    * @param token String
@@ -533,19 +620,19 @@ public class StorageSpaceSQLHelper extends SQLHelper{
 
  }
   
-  /**
-  *
-  * @param token String
-  * @param freeSpace long
-  * @return String
-  */
- public String updateAllByTokenQuery(String token, String alias, long size, String filename, Date updateTimestamp)
- {
-	/**
-	 * @todo all size are the same in this version!!!
-	 */
-   return "UPDATE `storage_space` SET `alias`='"+alias+"', `total_size`='"+size+"', `guar_size`='"+size+"', `free_size`='"+size+"', `space_file`='"+filename+"' "+", " + "`UPDATE_TIME`=" + format(updateTimestamp) +" WHERE space_token='"+token+"'";
- }
+//  /**
+//  *
+//  * @param token String
+//  * @param freeSpace long
+//  * @return String
+//  */
+// public String updateAllByTokenQuery(String token, String alias, long size, String filename, Date updateTimestamp)
+// {
+//	/**
+//	 * @todo all size are the same in this version!!!
+//	 */
+//   return "UPDATE `storage_space` SET `alias`='"+alias+"', `total_size`='"+size+"', `guar_size`='"+size+"', `free_size`='"+size+"', `space_file`='"+filename+"' "+", " + "`UPDATE_TIME`=" + format(updateTimestamp) +" WHERE space_token='"+token+"'";
+// }
 
 //  /**
 //   * Main - only for test

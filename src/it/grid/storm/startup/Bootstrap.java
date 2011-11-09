@@ -25,11 +25,9 @@ import it.grid.storm.https.HTTPPluginManager;
 import it.grid.storm.https.HTTPSPluginInterface;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.logging.LoggingReloadTask;
-import it.grid.storm.space.StorageSpaceData;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +58,9 @@ public class Bootstrap {
     }
 
     public static void initializeUsedSpace() {
+        int numberOfSpaceInitializated = SpaceInfoManager.initSpaceFromINIFile();
+        log.info("Initializated '"+numberOfSpaceInitializated+"' SA from 'used-space.ini'");
+        
         int failures = SpaceInfoManager.updateSpaceUsed();
         int numberQuotas = SpaceInfoManager.howManyQuotas();
         log.info("Computed '"+numberQuotas+"' GPFS quotas.");

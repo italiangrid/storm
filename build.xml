@@ -178,6 +178,7 @@ to get a list of the available targets for this buildfile.
 	<property name="rpm.scripts.dir" location="${basedir}/rpm"/>
 	<property name="rpm.scripts.rpm-builder" location="${rpm.scripts.dir}/build-be-rpm"/>
 	<property name="rpm.spec.file" location="${rpm.scripts.dir}/storm-backend-server.spec"/>
+        <property name="rpm.spec.file-tpl" location="${rpm.scripts.dir}/storm-backend-server.spec.tpl"/>
 	<property name="rpm.dest.dir" location="${basedir}/rpm-build"/>
 	<property name="rpm.util.jar" location="${build.dir}/${dist.jar}"/>
 
@@ -379,8 +380,7 @@ test.junit.dir
 		<pathelement path="${src.java.dir}"/>
 	</path>
 
-	<fileset id="src.jars.dist"
-     dir="${src.jars.dir}">
+	<fileset id="src.jars.dist" dir="${src.jars.dir}">
 		<include name="activation.jar"/>
 		<include name="axis.jar"/>
 		<include name="axis-schema.jar"/>
@@ -467,6 +467,9 @@ test.junit.dir
 		<!-- Background DU -->
 		<include name="commons-io-2.0.1.jar"/>
 		
+		<!-- Parsing INI files -->
+		<include name="ini4j-0.5.2.jar"/>
+		
 	</fileset>
 
 	<fileset id="src.jars.build"
@@ -489,6 +492,7 @@ test.junit.dir
 		<include name="lcmaps.db"/>
 		<include name="logging.xml"/>
 		<include name="storm.properties.template"/>
+		<include name="used-space.ini.template"/>
 		<include name="path-authz.db"/>
 		<include name="welcome.txt"/>
 		<!-- removed because are not storm input file but, respectively cron and logrotate (they will be installed not in a storm created directory)-->
@@ -617,14 +621,14 @@ test.junit.dir
 		
         <echo message="- Build platform : ${build.platform} "/>
         <echo message="- Source Java Dir: ${src.java.dir}"/>
-		<echo message="- Build dir: ${build.libs.dir}"/>
+	<echo message="- Build dir: ${build.libs.dir}"/>
         <echo message="- Architecture: ${arch}"/>
         <echo message="- Swig location: ${swig.location}"/>
         <echo message="- JDK location: ${jdk.location}"/>
         <echo message="- Lib ACL location: ${libacl-devel.location}"/>
         <echo message="- Lib ATTR location: ${libattr-devel.location}"/>
         <echo message="- Lib GPFS location: ${gpfs-base.location}"/>
-		<echo message="- Lib XFS location: ${xfsprogs-devel.location}"/>		
+	<echo message="- Lib XFS location: ${xfsprogs-devel.location}"/>		
 
 		<exec executable="make" failonerror="true" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig swig"/>
@@ -1066,7 +1070,29 @@ test.junit.dir
 	<!-- RPM BUILDING                                                    -->
 	<!-- =============================================================== -->
 
-	<target name="build-rpm" description="Create the rpm" depends="build">
+        <target name="build-spec" description="Create the spec file">
+	        <delete file="${rpm.spec.file}" quiet="true"/>
+	        <copy file="${rpm.spec.file-tpl}" tofile="${rpm.spec.file}">
+                        <filterchain>
+                        <replacetokens>
+                                <token key="version" value="${version}"/>
+                                <token key="age" value="${age}"/>
+                                <token key="swig" value="${swig.location}"/>
+                                <token key="jdk" value="${jdk.location}"/>
+                                <token key="lcmaps" value="${lcmaps.location}"/>
+                                <token key="lcmaps_without_gsi" value="${lcmaps-without-gsi.location}"/>
+                                <token key="lcmaps_plugins_basic" value="${lcmaps-plugins-basic.location}"/>
+                                <token key="lcmaps_plugins_voms" value="${lcmaps-plugins-voms.location}"/>
+                                <token key="libacl_devel" value="${libacl-devel.location}"/>
+                                <token key="libattr_devel" value="${libattr-devel.location}"/>
+                                <token key="xfsprogs_devel" value="${xfsprogs-devel.location}"/>
+                                <token key="platform" value="${build.platform}"/>
+                        </replacetokens>
+                        </filterchain>
+                </copy>
+        </target>
+
+	<target name="build-rpm" description="Create the rpm" depends="build, build-spec">
 
 		<antcall target="make-version-info"/>
 

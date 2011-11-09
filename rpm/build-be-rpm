@@ -45,42 +45,6 @@ echo BUILDING_DIR=$topdir
 utiljar="$4";
 echo UTIL_JAR=$utiljar
 
-swig="$5";
-echo SWIG=$swig
-
-jdk="$6"
-echo JDK=$jdk
-
-lcmaps="$7"
-echo LCMAPS=$lcmaps
-
-lcmaps_without_gsi="$8"
-echo LCMAPS_WITHOUT_GSI=$lcmaps_without_gsi 
-
-lcmaps_plugins_basic="$9"
-echo LCMAPS_PLUGINS_BASIC=$lcmaps_plugins_basic
-
-lcmaps_plugins_voms=${10}
-echo LCMAPS_PLUGINS_VOMS=$lcmaps_plugins_voms
-
-libacl_devel=${11}
-echo LIBACL_DEVEL=$libacl_devel
-
-libattr_devel=${12}
-echo LIBATTR_DEVEL=$libattr_devel
-
-xfsprogs_devel=${13}
-echo XFSPROGS_DEVEL=$xfsprogs_devel
-
-version=${14}
-echo VERSION=$version
-
-age=${15}
-echo AGE=$age
-
-PACKAGE=${16}
-echo PACKAGE=$PACKAGE
-
 # some Java parameters
 if [ -z "$JAVA_HOME" ]; then
   echo "Error: JAVA_HOME is not set."
@@ -98,8 +62,6 @@ echo NATIVE_PLATFORM=$PLATFORM
 
 OS_DIST=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform os_dist | sed -e "s/ /_/g"`
 echo OS_DIST=$OS_DIST
-
-#PACKAGE="storm-backend-server"
 
 # make rpm directory structure
 echo "make rpm directory structure ", $topdir
@@ -126,12 +88,8 @@ cp -v $spec $topdir/SPECS/
 
 cd $topdir
 
-distributionrpm="sl5"
-lpvage="5.1"
-lwgage="4"
-lwgversion="1.4.3"
-
 echo "create rpm $topdir"
 # Generate RPMs
-rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}" --define "swig ${swig}" --define "jdk ${jdk}" --define "lcmaps ${lcmaps}" --define "lcmaps_without_gsi ${lcmaps_without_gsi}" --define "lcmaps_plugins_basic ${lcmaps_plugins_basic}" --define "lcmaps_plugins_voms ${lcmaps_plugins_voms}" --define "libacl_devel ${libacl_devel}" --define "libattr_devel ${libattr_devel}" --define "xfsprogs_devel ${xfsprogs_devel}" --define "version ${version}" --define "age ${age}" --define "distribution ${OS_DIST}" --define "distributionrpm ${distributionrpm}" --define "lpvage ${lpvage}" --define "lwgage ${lwgage}" --define "lwgversion ${lwgversion}" -ba SPECS/storm-backend-server.spec
+#rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}"  -ba SPECS/storm-backend-server.spec
+rpmbuild --define "_topdir ${topdir}" --nodeps -ba SPECS/storm-backend-server.spec
 

@@ -378,7 +378,7 @@ public class RmCommand implements Command {
         if (!(file.exists())) {
             // The file does not exists!
             statusCode = TStatusCode.SRM_INVALID_PATH;
-            explanation = "File does not exists";
+            explanation = "File does not exist";
         } else if ((file.isDirectory())) {
             // The file exists but it is a directory!
             statusCode = TStatusCode.SRM_INVALID_PATH;

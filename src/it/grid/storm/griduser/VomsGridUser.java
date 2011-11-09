@@ -180,4 +180,53 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
         sb.append(" FQANS:"+fqans);
         return sb.toString();
     }
+    
+    
+    public int hashCode() {
+        int result = 17;
+        result += 31 * this.subjectDN.hashCode();
+        for (FQAN fqan : fqans) {
+            result += 37*fqan.hashCode();
+        }
+        return result;
+    }
+    
+    /**
+     * Return true if other is a VomsGridUser with the same String representation, that is:
+     *  - same DN, and
+     *  - same FQANs
+     */
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj != null) {
+            if (obj instanceof VomsGridUser) {
+                VomsGridUser other = (VomsGridUser) obj;
+                if (!(other.hasVoms())) {
+                    result = this.getDistinguishedName().equals(other.getDistinguishedName());
+                }
+                else {
+                    // Also the other is a VomsGridUser
+                    if (this.getDistinguishedName().equals(other.getDistinguishedName())) {
+                        // Equals if they have the same FQANs
+                        List<FQAN> otherFQANs = other.getFQANsList();
+                        if (otherFQANs.size() == this.fqans.size()) {
+                            result = true;
+                            for (int i = 0; i < otherFQANs.size(); i++) {
+                                if (!(otherFQANs.get(i)).equals(this.fqans.get(i))) {
+                                    result = false;
+                                    break; // Exit from the loop at first fail.
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        result = false;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+   
 }

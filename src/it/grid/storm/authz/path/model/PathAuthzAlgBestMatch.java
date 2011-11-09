@@ -47,7 +47,7 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     private List<PathACE> getCompatibleACE(String subjectGroup) {
         log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
         ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
-        if ((pathACL != null) || (!(pathACL.isEmpty()))) {
+        if ((pathACL != null) && (!(pathACL.isEmpty()))) {
             for (PathACE pathACE : pathACL) {
                 if (pathACE.subjectMatch(subjectGroup)) {
                     log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' match with subject='" + subjectGroup

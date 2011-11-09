@@ -278,7 +278,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                         }
                     } else { // Requested SURL does not exists in the filesystem
                         fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-                        fileStatusExplanation = "File does not exists";
+                        fileStatusExplanation = "File does not exist";
                         requestSuccess = false;
                     }
     

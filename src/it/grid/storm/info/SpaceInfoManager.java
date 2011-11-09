@@ -1,8 +1,26 @@
+/*
+ *
+ *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package it.grid.storm.info;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,6 +41,8 @@ import it.grid.storm.space.CallableDU;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.space.init.UsedSpaceFile;
+import it.grid.storm.space.init.UsedSpaceFile.SaUsedSize;
 import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -110,15 +130,15 @@ public class SpaceInfoManager {
 	       
     public static int execGPFSQuota(boolean test, boolean bootstrap) {
         int result = 0;
-        boolean quotaPeriodicCheck = Configuration.getInstance().getQuotaPeriodicCheckEnabled();
+        boolean quotaCheck = Configuration.getInstance().getQuotaCheckEnabled();
         if (bootstrap) {
             QuotaManager.getInstance().updateSAwithQuota(test);
             quotas = QuotaManager.getInstance().getHowmanyQuotas();
             LOG.info("Executed '" + quotas + " mmlsquota in order to update related SAs");
-        } else if (quotaPeriodicCheck) {
+        } else if (quotaCheck) {
             QuotaManager.getInstance().updateSAwithQuota(test);
             quotas = QuotaManager.getInstance().getHowmanyQuotas();
-            LOG.info("Executed '" + quotas + ". Periodic check");
+            LOG.info("Executed \'" + quotas + "\'  check");
         } else {
             LOG.debug("Quota Check is disabled.");
         }
@@ -527,6 +547,133 @@ public class SpaceInfoManager {
     }
 
 
+    /**
+     * @return
+     */
+    public static int initSpaceFromINIFile()
+    {
+        List<StorageSpaceData> toAnalyze = spaceCatalog.getStorageSpaceNotInitialized();
+        ArrayList<String> toAnalyzeAlias = new ArrayList<String>();
+        for (StorageSpaceData ssd : toAnalyze)
+        {
+            toAnalyzeAlias.add(ssd.getSpaceTokenAlias());
+        }
+        printInitializedStorageAreas(toAnalyzeAlias);
+        int storageSpaceUpdated = 0;
+        UsedSpaceFile usedSpaceFile = new UsedSpaceFile(toAnalyzeAlias);
+        List<SaUsedSize> saUsedSizeList =  usedSpaceFile.getDefinedSizes();
+        for(SaUsedSize saUsedSize: saUsedSizeList)
+        {
+            if(saUsedSize.hasUpdateTime())
+            {
+                try
+                {
+                    updateUsedSpaceOnPersistence(saUsedSize.getSaName(), saUsedSize.getUsedSize(), saUsedSize.getUpdateTime());
+                    storageSpaceUpdated++;
+                }
+                catch (IllegalArgumentException e)
+                {
+                    LOG.error("Unable to updated used space on persistence for Storage Area " + saUsedSize.getSaName() + " to value "
+                            + saUsedSize.getUsedSize() + " with update time " + saUsedSize.getUpdateTime() + ". IllegalArgumentException: "
+                            + e.getMessage());
+                }
+            }
+            else
+            {
+                try
+                {
+                    updateUsedSpaceOnPersistence(saUsedSize.getSaName(), saUsedSize.getUsedSize());
+                    storageSpaceUpdated++;
+                }
+                catch (IllegalArgumentException e)
+                {
+                    LOG.error("Unable to updated used space on persistence for Storage Area " + saUsedSize.getSaName() + " to value "
+                            + saUsedSize.getUsedSize() + ". IllegalArgumentException: " + e.getMessage());
+                }                
+            }
+        }
+        
+        return storageSpaceUpdated;
+    }
+
+    /**
+     * @return
+     */
+    private static void printInitializedStorageAreas(List<String> saAlias)
+    {
+        try
+        {
+            for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS())
+            {
+                if (!(saAlias.contains(vfs.getSpaceTokenDescription())))
+                {
+                    LOG.debug("SA '" + vfs.getAliasName() + "' is already initializated");
+                }
+            }
+        }
+        catch (NamespaceException e)
+        {
+            // never thrown
+            LOG.error("Unexpected Exception: NamespaceException on getAllDefinedVFS: ", e);
+        }
+    }
     
+    /**
+     * @param saAlias
+     * @param usedSize
+     * @throws IllegalArgumentException
+     */
+    private static void updateUsedSpaceOnPersistence(String saName, Long usedSize) throws IllegalArgumentException
+    {
+        if(saName == null || usedSize == null)
+        {
+            LOG.error("Received null arguments: saName = " + saName + " usedSize = " + usedSize);
+            throw new IllegalArgumentException("Received null arguments: saName = " + saName + " usedSize = " + usedSize);
+        }
+        updateUsedSpaceOnPersistence(saName, usedSize, null);
+    }
     
+    /**
+     * @param saName
+     * @param usedSize
+     * @param updateTime
+     */
+    private static void updateUsedSpaceOnPersistence(String saName, Long usedSize, Date updateTime) throws IllegalArgumentException
+    {
+        if(saName == null || usedSize == null)
+        {
+            LOG.error("Received null arguments: saName = " + saName + " usedSize = " + usedSize);
+            throw new IllegalArgumentException("Received null arguments: saName = " + saName + " usedSize = " + usedSize);
+        }
+        StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(saName);
+        if (ssd != null)
+        {
+            // Update the used space size with new value
+            try
+            {
+                ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize, SizeUnit.BYTES));
+            }
+            catch (InvalidTSizeAttributesException e)
+            {
+                LOG.error("Invalid Used Size: " + usedSize + " . InvalidTSizeAttributesException: " + e.getMessage());
+                throw new IllegalArgumentException("Invalid Used Size: " + usedSize+ " Unable to update Storage Space");
+            }
+            // Persist the change.
+            if(updateTime == null)
+            {
+                spaceCatalog.updateStorageSpace(ssd);    
+            }
+            else
+            {
+                spaceCatalog.updateStorageSpace(ssd, updateTime);    
+            }
+            LOG.debug("StorageSpace table updated for SA: '" + saName + "' with used size = " + usedSize);
+        }
+        else
+        {
+            LOG.warn("Unable to retrieve StorageSpaceData with Alias: " + saName);
+            throw new IllegalArgumentException("Unable to retrieve StorageSpaceData with Alias: " + saName);
+        }
+        
+    }
 }

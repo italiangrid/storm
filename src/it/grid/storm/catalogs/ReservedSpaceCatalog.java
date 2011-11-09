@@ -209,12 +209,25 @@ public class ReservedSpaceCatalog {
      */
     public void updateStorageSpace(StorageSpaceData ssd) {
 
+        updateStorageSpace(ssd, null);
+    }
+    
+    /**
+     * @param ssd
+     * @param updateTime
+     */
+    public void updateStorageSpace(StorageSpaceData ssd, Date updateTime) {
+
         log.debug("UPDATE StorageSpace Start...");
         // Build StorageSpaceTO from SpaceData
         StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
         log.debug("Storage Space TO Created");
-        ssTO.setUpdateTime(new Date());
-
+        
+        if(updateTime == null)
+        {
+            // The update time of the information is now
+            ssTO.setUpdateTime(new Date());
+        }
         // Retrieve the Data Access Object from the factory
         try {
             ssDAO = daoFactory.getStorageSpaceDAO();
@@ -236,19 +249,36 @@ public class ReservedSpaceCatalog {
     }
     
     /**
+     * @param ssd
+     * @throws NoDataFoundException
+     * @throws InvalidRetrievedDataException
+     * @throws MultipleDataEntriesException
+     */
+    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd) throws NoDataFoundException,
+                                                                 InvalidRetrievedDataException,
+                                                                 MultipleDataEntriesException
+    {
+        updateStorageSpaceFreeSpace(ssd, null);
+    }
+    
+    /**
      * Update StorageSpace.
      * This method is used to update the StorageSpace into the ReserveSpace Catalog.
      * The update operation take place after a AbortRequest for a PrepareToPut operation
      * done with the spaceToken.(With or without the size specified).
      */
-    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd) throws NoDataFoundException, InvalidRetrievedDataException,
+    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd, Date updateTime) throws NoDataFoundException, InvalidRetrievedDataException,
     MultipleDataEntriesException {
 
         log.debug("UPDATE StorageSpace Start...");
         // Build StorageSpaceTO from SpaceData
         StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
         log.debug("Storage Space TO Created");
-        ssTO.setUpdateTime(new Date());
+        if(updateTime == null)
+        {
+            // The update time of the information is now
+            ssTO.setUpdateTime(new Date());
+        }
 
         // Retrieve the Data Access Object from the factory
         try {
@@ -271,20 +301,37 @@ public class ReservedSpaceCatalog {
     }
 
     /**
+     * @param ssd
+     * @throws NoDataFoundException
+     * @throws InvalidRetrievedDataException
+     * @throws MultipleDataEntriesException
+     */
+    public void updateAllStorageSpace(StorageSpaceData ssd) throws NoDataFoundException,
+                                                           InvalidRetrievedDataException,
+                                                           MultipleDataEntriesException
+    {
+        updateAllStorageSpace(ssd, null);
+    }
+    
+    /**
      * Update StorageSpace.
      * This method is used to update the StorageSpace into the ReserveSpace Catalog.
      * The update operation take place after a AbortRequest for a PrepareToPut operation
      * done with the spaceToken.(With or without the size specified).
      */
 
-    public void updateAllStorageSpace(StorageSpaceData ssd) throws NoDataFoundException, InvalidRetrievedDataException,
+    public void updateAllStorageSpace(StorageSpaceData ssd, Date updateTime) throws NoDataFoundException, InvalidRetrievedDataException,
     MultipleDataEntriesException {
 
         log.debug("UPDATE StorageSpace Start...");
         // Build StorageSpaceTO from SpaceData
         StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
         log.debug("Storage Space TO Created");
-        ssTO.setUpdateTime(new Date());
+        if(updateTime == null)
+        {
+            // The update time of the information is now
+            ssTO.setUpdateTime(new Date());
+        }
 
         // Retrieve the Data Access Object from the factory
         try {
@@ -303,7 +350,6 @@ public class ReservedSpaceCatalog {
         catch (DataAccessException daEx) {
             log.error("Error while inserting new row in StorageSpace", daEx);
         }
-
     }
 
     /**

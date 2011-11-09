@@ -21,7 +21,6 @@ import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +52,14 @@ public class SimpleCheckManager extends CheckManager
     protected void loadChecks()
     {
         /* Add by hand a new element for each requested check */
-        addNamespaceFSAssociationCheck();
+        try
+        {
+            checks.add(getNamespaceFSAssociationCheck());
+        }
+        catch (IllegalStateException e)
+        {
+            log.warn("Skipping NamespaceFSAssociationCheck. IllegalStateException: " + e.getMessage());
+        }
 //        checks.add(new NamespaceFSExtendedAttributeDeclarationCheck()); Removed
         checks.add(new NamespaceFSExtendedAttributeUsageCheck());
         checks.add(new NamespaceFSExtendedACLUsageCheck());
@@ -62,7 +68,7 @@ public class SimpleCheckManager extends CheckManager
     /**
      * 
      */
-    private void addNamespaceFSAssociationCheck()
+    private Check getNamespaceFSAssociationCheck() throws IllegalStateException
     {
         Map<String, String> mountPoints;
         // load mstab mount points and file system types
@@ -70,10 +76,10 @@ public class SimpleCheckManager extends CheckManager
         {
             mountPoints = MtabUtil.getFSMountPoints();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            log.error("Unable to add NamespaceFSAssociationCheck, an IOException occurred during mountPoints retriving : " + e.getMessage());
-            return;
+            log.error("Unable to get filesystem mount points. Exception: " + e.getMessage() );
+            throw new IllegalStateException("Unable to get filesystem mount points");
         }
         log.debug("Retrieved MountPoints: " + printMapCoupples(mountPoints));
         Collection<VirtualFSInterface> vfsSet;
@@ -83,10 +89,11 @@ public class SimpleCheckManager extends CheckManager
         }
         catch (NamespaceException e)
         {
-            log.error("Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : " + e.getMessage());
-            return;
+            //never thrown
+            log.error("Unexpected NamespaceException during vfsSet retriving " + e.getMessage() + " . Unable to add NamespaceFSAssociationCheck" );
+            throw new IllegalStateException("Unexpected NamespaceException from getAllDefinedVFS");
         }
-        checks.add(new NamespaceFSAssociationCheck(mountPoints, vfsSet));
+        return new NamespaceFSAssociationCheck(mountPoints, vfsSet);
     }
     
     /**

@@ -27,40 +27,24 @@ package it.grid.storm.srm.types;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
-import java.util.Vector;
 import it.grid.storm.srm.types.TMetaDataSpace;
 import java.io.Serializable;
 
 public class ArrayOfTMetaDataSpace implements Serializable {
     public static String PNAME_ARRAYOFSPACEDETAILS = "arrayOfSpaceDetails";
     
-//    private static String 
-//    private static String 
-//    private static String 
-//    private static String 
+    ArrayList<TMetaDataSpace>  metaDataList;
 
-    ArrayList  metaDataList;
-
-    /**
-     * Constructor that requires a String. If it is null, then an
-     * InvalidArrayOfTTMetaDataSpaceAttributeException is thrown.
-     */
-    public ArrayOfTMetaDataSpace(TMetaDataSpace[] tokenArray) throws InvalidArrayOfTMetaDataSpaceAttributeException {
-
-        if (tokenArray==null) throw new InvalidArrayOfTMetaDataSpaceAttributeException(tokenArray);
-        //FIXME this.tokenArray = tokenArray;
-    } 
 	
     public ArrayOfTMetaDataSpace() {
-	    metaDataList = new ArrayList();
+	    metaDataList = new ArrayList<TMetaDataSpace>();
     }
    
     
     public TMetaDataSpace[] getArray()
     {
-      return (TMetaDataSpace[]) metaDataList.toArray();
+      return (TMetaDataSpace[]) metaDataList.toArray(new TMetaDataSpace[metaDataList.size()]);
     }
 
     public TMetaDataSpace getTMetaDataSpace(int i) {

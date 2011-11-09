@@ -144,6 +144,7 @@ public abstract class AbstractGridUser implements GridUserInterface {
         return this.proxyString;
     }
 
+    
     /**
      * Get Proxy certificate if there.
      * Else return null.
@@ -156,6 +157,10 @@ public abstract class AbstractGridUser implements GridUserInterface {
         return this.proxyString;
     }
 
+    
+ 
+    
+    
     /**
      * Return the local user on wich the GridUser is mapped.
      * This method is abstract.

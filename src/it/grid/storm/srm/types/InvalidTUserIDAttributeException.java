@@ -31,7 +31,9 @@ public class InvalidTUserIDAttributeException extends Exception {
       
 	public InvalidTUserIDAttributeException(String id) {
 		nullString = (id == null);
-		emptyString = (id.equals(""));
+		if (id!=null) {
+		    emptyString = (id.equals(""));    
+		}
 	}
 
     public String toString() {

@@ -29,6 +29,7 @@
 
 package it.grid.storm.srm.types;
 
+import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.StorageSpaceData;
 
 import java.io.Serializable;
@@ -136,10 +137,33 @@ public class TMetaDataSpace implements Serializable
             this.spaceToken = spaceData.getSpaceToken();
             this.owner = spaceData.getUserID();
             this.totalSize = spaceData.getTotalSpaceSize();
-            this.guaranteedSize = spaceData.getReservedSpaceSize();
+            this.guaranteedSize = spaceData.getTotalGuaranteedSize();
+            try
+            {
+                if (SpaceHelper.isStorageArea(spaceData))
+                {
+                    this.guaranteedSize = spaceData.getTotalGuaranteedSize();
+                }
+                else
+                {
+                    this.guaranteedSize = spaceData.getReservedSpaceSize();
+                }
+            }
+            catch (IllegalArgumentException e)
+            {
+                //impossible
+            }
+            
             this.unusedSize = spaceData.getFreeSpaceSize();
             this.lifetimeAssigned = spaceData.getLifeTime();
-            this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getCreationDate());
+            if(this.lifetimeAssigned.isInfinite())
+            {
+                this.lifetimeLeft = TLifeTimeInSeconds.makeInfinite();
+            }
+            else
+            {
+                this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getCreationDate());    
+            }
             try {
                 if ((this.lifetimeLeft.value() == 0)&&(this.spaceType!=TSpaceType.VOSPACE)) {
                     this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");

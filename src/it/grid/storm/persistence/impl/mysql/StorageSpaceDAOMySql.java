@@ -465,6 +465,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
     {
     	
         String query = helper.updateByAliasAndTokenQuery(ssTO);
+        
         log.debug("UPDATE query = " + query);
         
         Connection conn = getConnection();
@@ -509,8 +510,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         long freeSpace = ssTO.getFreeSize();
         String query = helper.updateFreeSpaceByTokenQuery(ssTO.getSpaceToken(), freeSpace, ssTO.getUpdateTime());
         log.debug("UPDATE query = " + query);
-        
-        
+              
         Connection conn = getConnection();
         Statement stat = null;
         try
@@ -533,20 +533,22 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
             releaseConnection(null, stat, conn);
         }
     }
+    
     /**
      * 
-     * @param ss StorageSpaceTO
+     * @param ssTO StorageSpaceTO
      * @throws DataAccessException
      */
-    public void updateAllStorageSpace(StorageSpaceTO ss) throws DataAccessException
+    public void updateAllStorageSpace(StorageSpaceTO ssTO) throws DataAccessException
     {
         /**
          * @todo: Update all changeable column! not only FreeSpace.
          */
-        String query = helper.updateAllByTokenQuery(ss.getSpaceToken(),
-                                                    ss.getAlias(),
-                                                    ss.getGuaranteedSize(),
-                                                    ss.getSpaceFile(), ss.getUpdateTime());
+//        String query = helper.updateAllByTokenQuery(ss.getSpaceToken(),
+//                                                    ss.getAlias(),
+//                                                    ss.getGuaranteedSize(),
+//                                                    ss.getSpaceFile(), ss.getUpdateTime());
+        String query = helper.updateByTokenQuery(ssTO);
         log.debug("UPDATE query = " + query);
 
         Connection conn = getConnection();
@@ -556,9 +558,16 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
             stat = getStatement(conn);
             int res = stat.executeUpdate(query);
             log.debug("UPDATE row count = " + res);
-            if (res <= 0)
+            if (res != 1)
             {
-                log.error("db error : " + query);
+                if(res < 1)
+                {
+                    log.error("No storage space rows updated by query : " + query);
+                }
+                else
+                {
+                    log.warn("More than a single storage space rows updated by query : " + query + " updated " + res + " rows");
+                }
             }
         }
         catch (SQLException ex)

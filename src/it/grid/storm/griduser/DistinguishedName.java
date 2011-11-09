@@ -30,6 +30,7 @@
 
 package it.grid.storm.griduser;
 
+import it.grid.storm.authz.path.model.PathOperation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -331,6 +332,15 @@ public class DistinguishedName implements SubjectAttribute {
     }
 
 
+    public int hashCode() {
+        int result = 17;
+        if (x500DN != null) {
+            result += 31 * x500DN.hashCode();
+        }
+        return result;
+    }
+    
+    
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer();

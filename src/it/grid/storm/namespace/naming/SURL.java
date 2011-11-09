@@ -239,14 +239,18 @@ public class SURL extends SRMURL {
         return buffer.toString();
     }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result += 37*schemes.hashCode() + 63*(directory?1:0);        
+        return result;
+    }
+    
+	/* 
+	 * 
 	 */
 	@Override
 	public boolean equals(Object obj) {
-
-		if(this == obj)
-			return true;
 		if(!super.equals(obj))
 			return false;
 		if(!(obj instanceof SURL))

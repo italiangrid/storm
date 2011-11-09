@@ -161,7 +161,7 @@ public class Configuration {
     private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
     private static final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
     private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
-    private static final String QUOTA_PERIODIC_CHECK_ENABLED_KEY = "info.quota-periodic-check.enabled";
+    private static final String QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
     
 
     
@@ -2104,13 +2104,16 @@ public class Configuration {
         }
     }
 
-    public boolean getQuotaPeriodicCheckEnabled() {
-        if (!cr.getConfiguration().containsKey(QUOTA_PERIODIC_CHECK_ENABLED_KEY)) {
+    /**
+     * @return
+     */
+    public boolean getQuotaCheckEnabled() {
+        if (!cr.getConfiguration().containsKey(QUOTA_CHECK_ENABLED_KEY)) {
             // return default
-            return true;
+            return false;
         } else {
             // load from external source
-            return cr.getConfiguration().getBoolean(QUOTA_PERIODIC_CHECK_ENABLED_KEY);
+            return cr.getConfiguration().getBoolean(QUOTA_CHECK_ENABLED_KEY);
         }
     }
 }

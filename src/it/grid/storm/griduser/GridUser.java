@@ -94,4 +94,21 @@ public class GridUser extends AbstractGridUser {
     {
         return "Grid User (no VOMS): '" + getDistinguishedName().getX500DN_rfc1779() + "'";
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj != null) {
+           if (obj instanceof GridUserInterface) {
+               GridUserInterface other = (GridUserInterface) obj;
+               if (other.getDistinguishedName().equals(this.getDistinguishedName())) {
+                   result = true;
+               } else {
+                   result = false;
+               }
+           }
+        }
+        return result;
+    }
+    
 }

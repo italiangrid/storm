@@ -33,7 +33,11 @@ public class InvalidGetTURLNullPrefixAttributeException
     private boolean isNullPrefixOfProtocol = false;
 
     public InvalidGetTURLNullPrefixAttributeException(TURLPrefix turls) {
-        isNullPrefixOfProtocol = (turls.size() == 0);
+        if (turls!=null) {
+           isNullPrefixOfProtocol = (turls.size() == 0);
+        } else {
+            isNullPrefixOfProtocol = true;
+        }
     }
 
     public String toString() {

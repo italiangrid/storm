@@ -1,0 +1,19 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Take in mind that this file is managed by YAIM. Your modifications will be overwritten
+; by service reconfiguration
+;
+; This file contains used space value for Storage Area not yet initialized
+; StoRM Backend reads this file at bootstrap and update Storage Space information 
+; accordingly with the value provided
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; EXAMPLE
+; Each Section represent a Storage Area identified by its token
+;[sa-alias-1]
+; Date in format RFC-2822. It is the output of command 'date --rfc-2822'
+; OPTIONAL 
+;checktime = Fri, 23 Sep 2011 11:56:53 +0200
+; Size values are considered expressed in Bytes
+; Online Used Size amount 
+;usedsize = 1099511627776 

@@ -22,10 +22,10 @@ package=storm-backend
 version=1.5.4
 PREFIX=/opt/storm/backend
 
-lcmaps_prefix=${lcmaps_location}
-lcmaps_without_gsi_prefix=${lcmaps_without_gsi_location}
-lcmaps_plugins_basic_prefix=${lcmaps_plugins_basic_location}
-lcmaps_plugins_voms_prefix=${lcmaps_plugins_voms_location}
+lcmaps_prefix=${lcmaps_location} 
+lcmaps_without_gsi_prefix=${lcmaps_without_gsi_location} 
+lcmaps_plugins_basic_prefix=${lcmaps_plugins_basic_location} 
+lcmaps_plugins_voms_prefix=${lcmaps_plugins_voms_location} 
 
 jdk_prefix=${jdk_location}
 swig_prefix=${swig_location}
@@ -43,22 +43,41 @@ JAVA_INCLUDES ?= \
 	-I$(JAVA_HOME)/include \
 	-I$(JAVA_HOME)/include/linux
 
-LCMAPS_INCLUDES ?= -I$(lcmaps_without_gsi_prefix)/include/glite/security/lcmaps_without_gsi
+LCMAPS_INCLUDES ?= -I$(lcmaps_without_gsi_prefix)/include/glite/security/lcmaps_without_gsi 
 LCMAPS_LIBS ?= \
- $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_return_poolindex_without_gsi.so \
- $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_without_gsi.so \
- $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_dummy_bad.so \
- $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_dummy_good.so \
- $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_localaccount.so \
- $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_poolaccount.so \
- $(lcmaps_plugins_basic_prefix)/lib$(architecture)/modules/liblcmaps_posix_enf.so \
- $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_localaccount.so \
- $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_localgroup.so \
- $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_poolaccount.so \
- $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms_poolgroup.so \
- $(lcmaps_plugins_voms_prefix)/lib$(architecture)/modules/liblcmaps_voms.so
+ $(LCMAPS_RETURN_POOLINDEX_WITHOUT_GSI_LIBS) \
+ $(LCMAPS_WITHOUT_GSI_LIBS) \
+ $(LCMAPS_DUMMY_BAD_LIBS) \
+ $(LCMAPS_DUMMY_GOOD_LIBS) \
+ $(LCMAPS_LOCALACCOUNT_LIBS) \
+ $(LCMAPS_POOLACCOUNT_LIBS) \
+ $(LCMAPS_POSIX_ENF_LIBS) \
+ $(LCMAPS_VOMS_LOCALACCOUNT_LIBS) \
+ $(LCMAPS_VOMS_LOCALGROUP_LIBS) \
+ $(LCMAPS_VOMS_POOLACCOUNT_LIBS) \
+ $(LCMAPS_VOMS_POOLGROUP_LIBS) \
+ $(LCMAPS_VOMS_LIBS) 
 
-LIB_INCLUDES ?= -I$(libacl_devel_prefix)/usr/include -I$(libattr_devel_prefix)/usr/include -I$(libacl_devel_prefix)/include -I$(libattr_devel_prefix)/include
+lcmaps_prefix=${lcmaps_location} 
+lcmaps_without_gsi_prefix=${lcmaps_without_gsi_location}
+lcmaps_plugins_basic_prefix=${lcmaps_plugins_basic_location} 
+lcmaps_plugins_voms_prefix=${lcmaps_plugins_voms_location}
+
+
+LCMAPS_RETURN_POOLINDEX_WITHOUT_GSI_LIBS:=$(shell file=`if test -e $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_return_poolindex_without_gsi.so; then file=$(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_return_poolindex_without_gsi.so; else file=/usr/lib$(architecture)/liblcmaps_return_poolindex_without_gsi.so; fi;`)
+LCMAPS_WITHOUT_GSI_LIBS:=$(shell file=`if test -e $(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_without_gsi.so; then file=$(lcmaps_without_gsi_prefix)/lib$(architecture)/liblcmaps_without_gsi.so; else file=/usr/lib$(architecture)/liblcmaps_without_gsi.so; fi;`)
+LCMAPS_DUMMY_BAD_LIBS:=$(shell file=`if test -e $(lcmaps_plugin_basic_prefix)/lib$(architecture)/liblcmaps_dummy_bad.so; then file=$(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_dummy_bad.so; else file=/usr/lib$(architecture)/liblcmaps_dummy_bad.so; fi;`)
+LCMAPS_DUMMY_GOOD_LIBS:=$(shell file=`if test -e $(lcmaps_pluging_basic_prefix)/lib$(architecture)/liblcmaps_dummy_good.so; then file=$(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_dummy_good.so; else file=/usr/lib$(architecture)/liblcmaps_dummy_good.so; fi;`)
+LCMAPS_LOCALACCOUNT_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_localaccount.so; then file=$(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_localaccount.so; else file=/usr/lib$(architecture)/liblcmaps_localaccount.so; fi;`)
+LCMAPS_POOLACCOUNT_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_poolaccount.so; then file=$(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_poolaccount.so; else file=/usr/lib$(architecture)/liblcmaps_poolaccount.so; fi;`)
+LCMAPS_POSIX_ENF_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_posix_enf.so; then file=$(lcmaps_plugins_basic_prefix)/lib$(architecture)/liblcmaps_posix_enf.so; else file=/usr/lib$(architecture)/liblcmaps_posix_enf.so; fi;`)
+LCMAPS_VOMS_LOCALACCOUNT_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_localaccount.so; then file=$(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_localaccount.so; else file=/usr/lib$(architecture)/liblcmaps_voms_localaccount.so; fi;`)
+LCMAPS_VOMS_LOCALGROUP_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_localgroup.so; then file=$(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_localgroup.so; else file=/usr/lib$(architecture)/liblcmaps_voms_localgroup.so; fi;`)
+LCMAPS_VOMS_POOLACCOUNT_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_poolaccount.so; then file=$(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_poolaccount.so; else file=/usr/lib$(architecture)/liblcmaps_voms_poolaccount.so; fi;`)
+LCMAPS_VOMS_POOLGROUP_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_poolgroup.so; then file=$(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms_poolgroup.so; else file=/usr/lib$(architecture)/liblcmaps_voms_poolgroup.so; fi;`)
+LCMAPS_VOMS_LIBS:=$(shell file=`if test -e $(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms.so; then file=$(lcmaps_plugins_voms_prefix)/lib$(architecture)/liblcmaps_voms.so; else file=/usr/lib$(architecture)/liblcmaps_voms.so; fi;`)
+
+LIB_INCLUDES ?= -I$(libacl_devel_prefix)/usr/include -I$(libattr_devel_prefix)/usr/include -I$(libacl_devel_prefix)/include -I$(libattr_devel_prefix)/include -I/usr/include
 
 # the swig binary
 SWIG_BIN ?= $(swig_prefix)/bin/swig

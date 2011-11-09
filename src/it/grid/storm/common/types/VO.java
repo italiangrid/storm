@@ -53,10 +53,12 @@ public class VO  implements Serializable {
 	}
 
         public boolean equals(Object o) {
-		if (o==this) return true;
-  		if (!(o instanceof VO)) return false;
-		VO tmp = (VO) o;
-     		return (vo.equals(tmp.getValue()));
+  		if (!(o instanceof VO)) 
+  		    return false;
+  		if (o==this) return true;
+  		VO tmp = (VO) o;
+  		
+     	return (vo.equals(tmp.getValue()));
     }
 
 }

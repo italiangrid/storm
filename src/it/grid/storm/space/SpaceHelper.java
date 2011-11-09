@@ -67,6 +67,7 @@ public class SpaceHelper {
     private static final int REMOVE  = 1;
     private Configuration config;
     private static final Logger log = LoggerFactory.getLogger(SpaceHelper.class);
+    public static GridUserInterface storageAreaOwner = GridUserManager.makeSAGridUser();
 
 
     public SpaceHelper() {
@@ -352,38 +353,24 @@ public class SpaceHelper {
         return response;
     }
 
+    
+    
+    /**
+     * 
+     * @param log
+     * @param stori
+     * @return
+     */
     public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
 
         log.debug("SpaceHelper: getting space token from StoRI");
         TSpaceToken token = TSpaceToken.makeEmpty();
         VirtualFSInterface fs = stori.getVirtualFileSystem();
 
-        /**
-             OLD STYLE, that is for each request there is a query to DB
-
-        // Get StorageSpaceData from the database
-        String SSDesc;
-        StorageSpaceData spaceData = null;
-
-        try {
-            SSDesc = fs.getSpaceTokenDescription();
-            spaceData = fs.getSpaceByAlias(SSDesc);
-
-        } catch (NamespaceException e1) {
-            log.error("Unable to create storage space data", e1);
-        }
-
-        if(spaceData != null)
-            token = spaceData.getSpaceToken();
-         **/
-
-        // NEW STYLE
-
         try {
             token = fs.getSpaceToken();
         } catch (NamespaceException e) {
             log.warn("Unable to retrieve SpaceToken for stori:'"+stori+"'");
-
         }
 
         return token;
@@ -414,6 +401,9 @@ public class SpaceHelper {
     }
 
 
+
+    
+    
     /**
      * This method is used by the namespace parser component to
      * insert a new Space Token Description data into the space catalog.
@@ -438,13 +428,7 @@ public class SpaceHelper {
         ArrayOfTSpaceToken tokenArray;
         ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
 
-        /*
-         * Build the storage space Data
-         * 
-         * A default Storage Area OWNER will be used, that is the same of StoRM
-         * service.
-         */
-        GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
+ 
 
         // Try with fake user, if it does not work remove it and use different
         // method
@@ -466,7 +450,7 @@ public class SpaceHelper {
             StorageSpaceData ssd = null;
 
             try {
-                ssd = new StorageSpaceData(stormServiceUser, 
+                ssd = new StorageSpaceData(storageAreaOwner, 
                 		                   TSpaceType.VOSPACE, 
                 		                   spaceTokenAlias, 
                 		                   totalOnLineSize,
@@ -479,6 +463,7 @@ public class SpaceHelper {
                 try {
                     ssd.setUnavailableSpaceSize(TSizeInBytes.make(0, SizeUnit.BYTES));
                     ssd.setReservedSpaceSize(TSizeInBytes.make(0, SizeUnit.BYTES));
+                    
                 }
                 catch (InvalidTSizeAttributesException e) {
                     // never thrown
@@ -509,7 +494,7 @@ public class SpaceHelper {
 
             if (catalog_ssd != null) {
 
-                if (catalog_ssd.getOwner().getDn().equals(stormServiceUser.getDn())
+                if (catalog_ssd.getOwner().getDn().equals(storageAreaOwner.getDn())
                         && (catalog_ssd.getSpaceTokenAlias().equals(spaceTokenAlias))
                         && (catalog_ssd.getTotalSpaceSize().value() == totalOnLineSize.value())
                         && (catalog_ssd.getSpaceFileName().toString().equals(spaceFileName))) {
@@ -531,7 +516,7 @@ public class SpaceHelper {
                 SpaceHelper.log.debug("VOSpaceArea for space token description " + spaceTokenAlias
                         + " is different in some parameters. Updating the catalog.");
                 try {
-                    catalog_ssd.setOwner(stormServiceUser);
+                    catalog_ssd.setOwner(storageAreaOwner);
                     catalog_ssd.setTotalSpaceSize(totalOnLineSize);
                     catalog_ssd.setTotalGuaranteedSize(totalOnLineSize);
 
@@ -622,11 +607,22 @@ public class SpaceHelper {
 
     }
 
-
-
-
-
-
-
-
+    /**
+     * @param spaceData
+     * @return
+     */
+    public static boolean isStorageArea(StorageSpaceData spaceData) throws IllegalArgumentException
+    {
+        if(spaceData == null)
+        {
+            log.error("Received null spaceData parameter");
+            throw new IllegalArgumentException("Received null spaceData parameter");
+        }
+        boolean result = false;
+        if (spaceData.getOwner() != null)
+        {
+            result = spaceData.getOwner().equals(SpaceHelper.storageAreaOwner);
+        }
+        return result;
+    }
 }

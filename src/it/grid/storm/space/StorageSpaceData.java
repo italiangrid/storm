@@ -76,8 +76,7 @@ public class StorageSpaceData {
     private boolean busySpaceSizeForced = false;
 
     private static final Logger log = LoggerFactory.getLogger(StorageSpaceData.class);
-
-
+    
     public StorageSpaceData() {
     }
 
@@ -368,7 +367,6 @@ public class StorageSpaceData {
         }
 
     }
-
 
     /**
      * @return
@@ -860,9 +858,4 @@ public class StorageSpaceData {
         builder.append("-- ^^^^^^^^^^^^^^^^ -- ");
         return builder.toString();
     }
-
-
-    
-   
-
 }

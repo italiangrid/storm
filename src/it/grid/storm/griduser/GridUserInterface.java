@@ -53,8 +53,4 @@ public interface GridUserInterface {
 	 */
     public DistinguishedName getDistinguishedName();
 
-        /**
-	 * Return String rapresentation.
-	 */
-	public String toString();
 }

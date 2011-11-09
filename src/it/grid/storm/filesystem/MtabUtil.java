@@ -13,6 +13,7 @@
 package it.grid.storm.filesystem;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -102,28 +103,60 @@ public class MtabUtil
         return false;
     }
 
-    public static Map<String, String> getFSMountPoints() throws IOException 
+
+    public static Map<String, String> getFSMountPoints() throws Exception
     {
         HashMap<String, String> mountPointToFSMap = new HashMap<String, String>();
-        BufferedReader mtab;
-        mtab = new BufferedReader(new FileReader(getFilePath()));
-        String line;
-        while ((line = mtab.readLine()) != null)
+        BufferedReader mtab = null;
+        try
         {
-            if (skipLineForMountPoints(line))
+            try
             {
-                continue;
+                mtab = new BufferedReader(new FileReader(getFilePath()));
             }
-            LinkedList<String> elementsList = tokenizeLine(line);
-            if((elementsList.size() - 1) < getMountPointIndex() || (elementsList.size() - 1) < getFsNameIndex())
+            catch (FileNotFoundException e)
             {
-                log.warn("Unable to produce a valid file system mount point from line \'" + line
-                        + "\' . not enough elements in the tokenized array : " + elementsList.toString()
-                        + ". Skipping the line");
+                log.error("Unable to find mtab file at " +getFilePath() +  " . FileNotFoundException: " + e.getMessage());
+                throw new Exception("Unable to get mount points. mtab file not found");
             }
-            else
+            String line;
+            try
             {
-                mountPointToFSMap.put(elementsList.get(getMountPointIndex()), elementsList.get(getFsNameIndex()));                
+                while ((line = mtab.readLine()) != null)
+                {
+                    if (skipLineForMountPoints(line))
+                    {
+                        continue;
+                    }
+                    LinkedList<String> elementsList = tokenizeLine(line);
+                    if ((elementsList.size() - 1) < getMountPointIndex() || (elementsList.size() - 1) < getFsNameIndex())
+                    {
+                        log.warn("Unable to produce a valid file system mount point from line \'" + line
+                                + "\' . not enough elements in the tokenized array : " + elementsList.toString() + ". Skipping the line");
+                    }
+                    else
+                    {
+                        mountPointToFSMap.put(elementsList.get(getMountPointIndex()), elementsList.get(getFsNameIndex()));
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                log.error("Unable to read from mtab file at " + getFilePath() +  " . IOException: " + e.getMessage());
+                throw new Exception("Unable to get mount points. Erro reading from mtab");
+            }
+        }
+        finally
+        {
+            if (mtab != null)
+            {
+                try
+                {
+                    mtab.close();
+                }
+                catch (IOException e)
+                {
+                }
             }
         }
         return mountPointToFSMap;

@@ -110,7 +110,7 @@ public class SpaceStatusSummary {
 	 */
 	public long getAvailableSpace()
     {
-	    return this.usedSpace - this.getBusySpace();
+	    return this.totalSpace - this.getBusySpace();
     }
 	
 	/**

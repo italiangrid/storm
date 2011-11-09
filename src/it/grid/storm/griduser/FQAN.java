@@ -297,12 +297,15 @@ public class FQAN implements SubjectAttribute {
      */
     public boolean equals(Object obj)
     {
-        if (obj == null)
-        {
+        if (obj == null) {
             return false;            
+        } 
+        if (obj instanceof FQAN) {
+            FQAN fqan2 = (FQAN) obj;
+            return (fqan2.fqan == null) ? fqan == null : fqan2.fqan.equalsIgnoreCase(fqan);    
+        } else {
+            return false;
         }
-        FQAN fqan2 = (FQAN) obj;
-        return (fqan2.fqan == null) ? fqan == null : fqan2.fqan.equalsIgnoreCase(fqan);
     }
 
 

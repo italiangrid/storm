@@ -199,7 +199,7 @@ public class GPFSQuotaInfo {
     private long spaceInDoubt = -1L;
     private static int spaceInDoubtIndex = 6;  
     
-    private long blockGracePeriod = -1L;
+    private String blockGracePeriod;
     private static int blockGracePeriodIndex = 7;  
     
     private long currentNumberOfFiles = -1L;
@@ -214,7 +214,7 @@ public class GPFSQuotaInfo {
     private long filesInDoubt = -1L;
     private static int filesInDoubtIndex = 12;
     
-    private long fileGracePeriod = -1L;
+    private String fileGracePeriod;
     private static int fileGracePeriodIndex = 13;
     
     private EntryType entryType;
@@ -282,7 +282,7 @@ public class GPFSQuotaInfo {
 	/**
 	 * @return the blockGracePeriod
 	 */
-	public final long getBlockGracePeriod() {
+	public final String getBlockGracePeriod() {
 		return blockGracePeriod;
 	}
 
@@ -323,7 +323,7 @@ public class GPFSQuotaInfo {
 	/**
 	 * @return the fileGracePeriod
 	 */
-	public final long getFileGracePeriod() {
+	public final String getFileGracePeriod() {
 		return fileGracePeriod;
 	}
 
@@ -441,19 +441,8 @@ public class GPFSQuotaInfo {
             spaceInDoubt = 0;
         }
         // ### EntryType
-        String grecePeriodString = outputList.get(blockGracePeriodIndex);
-        if (grecePeriodString.equalsIgnoreCase("none")) {
-            blockGracePeriod = 0;
-        }
-        else {
-            try {
-                blockGracePeriod = Long.parseLong(outputList.get(blockGracePeriodIndex));
-            }
-            catch (NumberFormatException nfe) {
-                log.info("Unable to parse Long '" + outputList.get(blockGracePeriodIndex) + "'");
-                blockGracePeriod = 0;
-            }
-        }
+        blockGracePeriod = outputList.get(blockGracePeriodIndex);
+        
         // ### EntryType
         try {
             currentNumberOfFiles = Long.parseLong(outputList.get(currentNumberOfFilesIndex));
@@ -489,19 +478,8 @@ public class GPFSQuotaInfo {
         }
 
         // ### EntryType
-        String fileGracePeriodString = outputList.get(fileGracePeriodIndex);
-        if (fileGracePeriodString.equalsIgnoreCase("none")) {
-            fileGracePeriod = 0;
-        }
-        else {
-            try {
-                fileGracePeriod = Long.parseLong(outputList.get(fileGracePeriodIndex));
-            }
-            catch (NumberFormatException nfe) {
-                log.info("Unable to parse Long '" + outputList.get(fileGracePeriodIndex) + "'");
-                fileGracePeriod = 0;
-            }
-        }
+        fileGracePeriod = outputList.get(fileGracePeriodIndex);
+
 
         // ### EntryType
         entryType = EntryType.getEntryType(outputList.get(entryTypeIndex));
@@ -566,19 +544,8 @@ public class GPFSQuotaInfo {
             spaceInDoubt = 0;
         }
         // ### EntryType
-        String grecePeriodString = outputList.get(6);
-        if (grecePeriodString.equalsIgnoreCase("none")) {
-            blockGracePeriod = 0;
-        }
-        else {
-            try {
-                blockGracePeriod = Long.parseLong(outputList.get(6));
-            }
-            catch (NumberFormatException nfe) {
-                log.info("Unable to parse Long '" + outputList.get(6) + "'");
-                blockGracePeriod = 0;
-            }
-        }
+        blockGracePeriod = outputList.get(6);
+
         // ### EntryType
         try {
             currentNumberOfFiles = Long.parseLong(outputList.get(8));
@@ -614,19 +581,7 @@ public class GPFSQuotaInfo {
         }
 
         // ### EntryType
-        String fileGracePeriodString = outputList.get(12);
-        if (fileGracePeriodString.equalsIgnoreCase("none")) {
-            fileGracePeriod = 0;
-        }
-        else {
-            try {
-                fileGracePeriod = Long.parseLong(outputList.get(12));
-            }
-            catch (NumberFormatException nfe) {
-                log.info("Unable to parse Long '" + outputList.get(12) + "'");
-                fileGracePeriod = 0;
-            }
-        }
+        fileGracePeriod = outputList.get(12);
 
         // ### EntryType
         entryType = EntryType.UNDEFINED;        
