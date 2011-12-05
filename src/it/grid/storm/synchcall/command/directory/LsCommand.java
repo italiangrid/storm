@@ -126,10 +126,10 @@ public class LsCommand extends DirectoryCommand implements Command {
             log.debug("srmLs: Input parameters for srmLs request NOT found!");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
-                log.error("srmLs: <> Request for [SURL:] failed with: [status:" + globalStatus.toString() + "]");
+                log.info("srmLs: <guser:NULL> Request for [SURL:NULL] failed with: [status:" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown.
-                log.error("srmLs: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
+                log.error("srmLs: <guser=NULL> Request for [SURL:NULL] failed. Error creating returnStatus " + ex1);
             }
             outputData.setStatus(globalStatus);
             return outputData;
@@ -142,12 +142,11 @@ public class LsCommand extends DirectoryCommand implements Command {
         if (guser == null) {
             log.debug("srmLs: Unable to get user credential. ");
             try {
-                globalStatus =
-                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.error("srmLs: <> Request for [SURL:] failed with: [status" + globalStatus.toString() + "]");
+                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
+                log.info("srmLs: <guser=NULL> Request for [SURL:] failed with: [status" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 // Nothing to do, it will never be thrown.
-                log.error("srmLs: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
+                log.error("srmLs: <guser=NULL> Request for [SURL:] failed. Error creating returnStatus " + ex1);
             }
             outputData.setStatus(globalStatus);
             outputData.setRequestToken(null);
@@ -173,10 +172,8 @@ public class LsCommand extends DirectoryCommand implements Command {
                     + "> Request for [SURL:] failed since not supported filtering by FileStorageType:"
                     + fileStorageType.toString());
             try {
-                globalStatus =
-                        new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
-                                          "Filtering result by fileStorageType not supported.");
-                log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                globalStatus = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, "Filtering result by fileStorageType not supported.");
+                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] failed with [status" + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
@@ -213,7 +210,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 try {
                     globalStatus =
                             new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'numOfLevels' is negative");
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
                     // Nothing to do, it will never be thrown.
@@ -235,10 +232,8 @@ public class LsCommand extends DirectoryCommand implements Command {
             count = inputData.getCount().intValue();
             if (count < 0) {
                 try {
-                    globalStatus =
-                            new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                              "Parameter 'count' is less or equal zero");
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'count' is less or equal zero");
+                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException e) {
                     // Nothing to do, it will never be thrown.
@@ -262,7 +257,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             if (offset < 0) {
                 try {
                     globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'offset' is negative");
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                             + "] failed with [status" + globalStatus.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
                     // Nothing to do, it will never be thrown.
@@ -371,7 +366,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                 TReturnStatus status = null;
                 try {
                     status = new TReturnStatus(fileLevelStatusCode, fileLevelExplanation);
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString() + "] failed with [status"
+                    log.info("srmLs: <" + guser + "> Request for [SURL:" + surl.toString() + "] failed with [status"
                             + status.toString() + "]");
                 } catch (InvalidTReturnStatusAttributeException ex1) {
                     log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString()
@@ -455,7 +450,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             } else {
 
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
-                log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
+                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
                         + "] failed with [status:" + globalStatus.toString() + "]");
             }
 
@@ -664,13 +659,13 @@ public class LsCommand extends DirectoryCommand implements Command {
             result = element.getChildren(dirOption);
 
         } catch (InvalidDescendantsFileRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
+            log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
         } catch (InvalidDescendantsPathRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
+            log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
         } catch (InvalidDescendantsAuthRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
+            log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
         } catch (InvalidDescendantsEmptyRequestException ex1) {
-            log.debug("srmLs: Unable to retrieve StoRI children !" + ex1);
+            log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
         }
 
         if (result == null) {
@@ -706,7 +701,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     size = TSizeInBytes.make(0, SizeUnit.BYTES);
                 }
             } catch (InvalidTSizeAttributesException ex) {
-                log.debug("srmLs: Unable to create the size of file.", ex);
+                log.error("srmLs: Unable to create the size of file.", ex);
                 failure = true;
             }
             elementDetail.setSize(size);
@@ -909,9 +904,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                     elementDetail.setCheckSumValue(checkSumValue);
                     
                 } catch (IllegalArgumentException iae) {
-                    log.warn("Checksum algorithm '"+cksmAlg+"' is unknown!");
+                    log.error("Checksum algorithm '"+cksmAlg+"' is unknown!");
                 } catch (NullPointerException npe) {
-                    log.warn("Checksum algorithm is empty or null!");
+                    log.error("Checksum algorithm is empty or null!");
                 }                
             }
             

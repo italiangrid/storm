@@ -358,7 +358,7 @@ class fs_acl {
       perm parameter. */
   permission_t revoke_owner_perm (const permission_t perm)
     { permission_t old = owner_perm.get_perm(); 
-        owner_perm.set_perm(old|perm); return old;}
+        owner_perm.set_perm(old & ~perm); return old;}
 
   /** Clear all bits that are cleared in the @c mask parameter in the
    * user ACL entry associated to the given <code>uid</code>.  If the

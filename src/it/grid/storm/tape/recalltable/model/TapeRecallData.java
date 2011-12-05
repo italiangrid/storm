@@ -20,14 +20,15 @@
  */
 package it.grid.storm.tape.recalltable.model;
 
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,11 +177,11 @@ public class TapeRecallData {
      */
     public TapeRecallData(String filename, GridUserInterface user) {
         fileName = filename;
-        if (user instanceof VomsGridUser) {
-            VomsGridUser vu = (VomsGridUser) user;
-            fqans = new ArrayList<FQAN>(vu.getFQANsList());
-            fqansString = vu.getFQANsStringList().toArray(new String[0]);
-            voName = vu.getVO().getValue();
+        if (user instanceof AbstractGridUser && ((AbstractGridUser)user).hasVoms()) {
+            AbstractGridUser gridUser = (AbstractGridUser) user;
+            fqans = new ArrayList<FQAN>(Arrays.asList(gridUser.getFQANs()));
+            fqansString = gridUser.getFQANsAsString();
+            voName = gridUser.getVO().getValue();
         } else {
             voName = UNSPECIFIED_VO;
         }

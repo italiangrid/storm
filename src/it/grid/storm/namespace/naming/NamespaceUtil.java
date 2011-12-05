@@ -17,13 +17,22 @@
 
 package it.grid.storm.namespace.naming;
 
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.naming.NamespaceUtil.PathElement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NamespaceUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(NamespaceUtil.class);
+    
     /**
      * PRIVATE Constructor
      */
@@ -32,7 +41,7 @@ public class NamespaceUtil {
 
     /**
      * Compute the distance between two path.
-     * Return -1 when the two path are different completly.
+     * Return -1 when the two path are different completely.
      *
      * @param path1 String
      * @param path2 String
@@ -80,6 +89,41 @@ public class NamespaceUtil {
         }
     }
 
+    
+    /**
+     * Return all the VFS residing on a specified path (mount-point)
+     *   
+     * @param mountPointPath
+     * @return the set 
+     */
+    public static Collection<VirtualFSInterface> getResidentVFS(String mountPointPath) {
+        Collection<VirtualFSInterface> vfsSet = Collections.emptySet();
+        try  {
+            vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
+        }
+        catch (NamespaceException e) {
+            log.error("Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : " + e.getMessage());
+            return vfsSet;
+        }
+        for (VirtualFSInterface vfs : vfsSet) {
+            String vfsRootPath;
+            boolean enclosed;
+            try {
+                vfsRootPath = vfs.getRootPath();
+                enclosed = NamespaceUtil.isEnclosed(mountPointPath, vfsRootPath);
+                if (!enclosed) {
+                    vfsSet.remove(vfs);
+                }
+            }
+            catch (NamespaceException e) {
+                log.debug("Skipped vfs while retrieving resident VFS");
+            }
+        }
+        return vfsSet;
+    }
+    
+    
+    
     public static String consumeFileName(String file) {
         if (file != null) {
             if (file.endsWith(NamingConst.SEPARATOR)) {
@@ -128,18 +172,16 @@ public class NamespaceUtil {
             int rootLength = rootPath.getLength();
 
             Path absPath = new Path(absolute);
-            ArrayList elem = new ArrayList();
-
-            //System.out.println("root lenght: "+rootLength+"abs lenght:"+absPath.getLength());
+            ArrayList<PathElement> elem = new ArrayList<PathElement>();
 
             for (int i = 0; i < absPath.getLength(); i++) {
-                //Why use lenght and not compare single elemnt?
+                //Why use length and not compare single element?
                 if (i >= rootLength) {
                     elem.add(absPath.getElementAt(i));
                 }
             }
             Path result = new Path(elem, false);
-            //System.out.println("Result:"+result.getPath());
+
             return result.getPath();
         }
         else {
@@ -147,6 +189,13 @@ public class NamespaceUtil {
         }
     }
 
+    /**
+     * Is the first path within the second one?
+     * 
+     * @param root
+     * @param wrapperCandidate
+     * @return
+     */
     public static boolean isEnclosed(String root, String wrapperCandidate) {
         boolean result = false;
         Path rootPath = new Path(root);
@@ -168,7 +217,7 @@ public class NamespaceUtil {
      * <p>Description: </p>
      *
      */
-    private static class PathElement {
+    static class PathElement {
 
         private final String pathChunk;
 
@@ -180,6 +229,11 @@ public class NamespaceUtil {
             return this.pathChunk;
         }
 
+        @Override
+        public int hashCode() {
+            return this.pathChunk.hashCode();
+        }
+        
         @Override
         public boolean equals(Object obj) {
             boolean result = true;
@@ -208,39 +262,24 @@ public class NamespaceUtil {
      */
     private static class Path {
 
-        private ArrayList path;
+        private ArrayList<PathElement> path;
         private static String PATH_SEPARATOR = "/";
         public static final String[] EMPTY_STRING_ARRAY = {};
         public boolean directory;
         public boolean absolutePath;
 
         public Path() {
-            this.path = new ArrayList();
+            this.path = new ArrayList<PathElement>();
             this.directory = false;
             this.absolutePath = true;
         }
 
-        public Path(ArrayList path) {
-            this.path = path;
-            this.directory = false;
-            this.absolutePath = true;
-        }
-
-        public Path(ArrayList path, boolean absolutePath) {
+        public Path(ArrayList<PathElement> path, boolean absolutePath) {
             this.path = path;
             this.directory = false;
             this.absolutePath = absolutePath;
         }
 
-        public Path(String[] pathElements) {
-            if (pathElements != null) {
-                for (String pathElement : pathElements) {
-                    addPathElement(new PathElement(pathElement));
-                }
-            }
-            this.directory = false;
-            this.absolutePath = true;
-        }
 
         public Path(String path) {
             //Factorize path into array of PathElement...
@@ -260,7 +299,7 @@ public class NamespaceUtil {
             String[] pathElements = factorizePath(path);
             if (pathElements != null) {
                 // ...and build Path
-                this.path = new ArrayList(pathElements.length);
+                this.path = new ArrayList<PathElement>(pathElements.length);
                 for (String pathElement : pathElements) {
                     addPathElement(new PathElement(pathElement));
                 }
@@ -273,7 +312,7 @@ public class NamespaceUtil {
 
         public Collection<String> getPathElements() {
             Collection<String> result = new ArrayList<String>(this.getLength());
-            Iterator scan = path.iterator();
+            Iterator<PathElement> scan = path.iterator();
             PathElement p;
             while (scan.hasNext()) {
                 p = (PathElement) scan.next();
@@ -310,7 +349,7 @@ public class NamespaceUtil {
             if (this.absolutePath) {
                 buf.append(PATH_SEPARATOR);
             }
-            for (Iterator iter = path.iterator(); iter.hasNext(); ) {
+            for (Iterator<PathElement> iter = path.iterator(); iter.hasNext(); ) {
                 PathElement item = (PathElement) iter.next();
                 //DEBUG
                 //System.out.println("Item: "+item.toString());

@@ -81,9 +81,25 @@ public class GridUserManager {
      * PUBLIC and STATIC methods
      */
 
-    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, FQAN[] fqans)
+    public static GridUserInterface makeVOMSGridUser(String dn, String proxy, FQAN[] fqans) throws IllegalArgumentException
     {
-        return userFactory.createGridUser(dn, fqans, proxy);
+        if(proxy == null || dn == null || fqans == null || fqans.length == 0)
+        {
+            log.error("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn + "\' fqans=\'" + fqans + "\' proxy=\'" + proxy + "\'");
+            throw new IllegalArgumentException("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn + "\' fqans=\'" + fqans + "\' proxy=\'" + proxy + "\'");
+        }
+        GridUserInterface gridUser = null;
+        try
+        {
+            gridUser = userFactory.createGridUser(dn, fqans, proxy); 
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+        return gridUser;
+        
     }
 
     /**
@@ -91,15 +107,41 @@ public class GridUserManager {
      * @param vo
      * @return
      */
-    public static GridUserInterface makeVOMSGridUser(String dn, String vo)
+    public static GridUserInterface makeVOMSGridUser(String dn, String vo) throws IllegalArgumentException
     {
+        if(vo == null || dn == null)
+        {
+            log.error("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn + "\' vo=\'" + vo + "\'");
+            throw new IllegalArgumentException("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn + "\' vo=\'" + vo + "\'");
+        }
+        GridUserInterface gridUser = null;
         FQAN[] fqans = new FQAN[1];
-        fqans[0] = FQAN.makeVoFQAN(vo); 
-        return userFactory.createGridUser(dn, fqans);
+        fqans[0] = FQAN.makeVoFQAN(vo);
+        try
+        {
+            userFactory.createGridUser(dn, fqans); 
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+        return gridUser;
     }
     
-    public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans)
+    /**
+     * @param dn
+     * @param fqans
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans) throws IllegalArgumentException
     {
+        if(fqans == null || fqans.length == 0)
+        {
+            log.error("Unable to make VomsGridUser. Inavlid fqans argument: " + fqans);
+            throw new IllegalArgumentException("Unable to make VomsGridUser. Inavlid fqans argument: " + fqans);
+        }
         return userFactory.createGridUser(dn, fqans);
     }
 

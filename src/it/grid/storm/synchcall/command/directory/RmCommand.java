@@ -92,7 +92,7 @@ public class RmCommand implements Command {
             log.debug("srmRm : Invalid input parameter specified");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "arrayOfSURLs is empty");
-                log.error("srmRm: <>  Request for [SURL=] failed with [status: " + globalStatus.toString() + "]");
+                log.info("srmRm: <>  Request for [SURL=] failed with [status: " + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRm: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
 
@@ -112,7 +112,7 @@ public class RmCommand implements Command {
             try {
                 globalStatus =
                         new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential");
-                log.error("srmRm: <> Request for [SURL:] failed with [status: " + globalStatus.toString() + "]");
+                log.info("srmRm: <> Request for [SURL:] failed with [status: " + globalStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);
             }
@@ -169,7 +169,7 @@ public class RmCommand implements Command {
                     log.debug("srmRm: Malformed SURL passed from converter ");
                     try {
                         returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL");
-                        log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
+                        log.info("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
                                 + " [SURL:] failed with [status: " + returnStatus.toString() + "]");
                     } catch (InvalidTReturnStatusAttributeException ex1) {
                         log.error("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
@@ -230,7 +230,7 @@ public class RmCommand implements Command {
                                     new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
                                                       ": User not authorized to perform srmRm request on the storage area: "
                                                               + token);
-                            log.error("srmRm: <> Request for [SURL:+] failed with [status: " + globalStatus.toString()
+                            log.info("srmRm: <> Request for [SURL:+] failed with [status: " + globalStatus.toString()
                                     + "]");
                         } catch (InvalidTReturnStatusAttributeException ex1) {
                             log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus " + ex1);

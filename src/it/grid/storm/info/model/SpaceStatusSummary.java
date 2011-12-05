@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package it.grid.storm.info.model;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -17,11 +29,12 @@ import org.slf4j.LoggerFactory;
 
 public class SpaceStatusSummary {
 
-	protected String saAlias;        /** defined in config/db (static value) **/
-	protected long usedSpace;        /** info retrieved by sensors **/ //published by DIP
-	protected long unavailableSpace; /** info retrieved by sensors **/
-	protected long reservedSpace;    /** info retrieved from DB **/ //published by DIP SETTED TO ZERO BECAUSE CURRENTLY RETURN FAKE VALUES 
-	protected long totalSpace;       /** defined in config/db (static value) **/ //published by DIP
+	protected final String saAlias;        /** defined in config/db (static value) **/
+	protected final long totalSpace;       /** defined in config/db (static value) **/ //published by DIP
+	
+	protected long usedSpace = -1;        /** info retrieved by sensors **/ //published by DIP
+	protected long unavailableSpace = -1; /** info retrieved by sensors **/
+	protected long reservedSpace = -1;    /** info retrieved from DB **/ //published by DIP SETTED TO ZERO BECAUSE CURRENTLY RETURN FAKE VALUES 
     //For now do not consider the reserved space, a better management is needed
 
 	private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
@@ -33,16 +46,18 @@ public class SpaceStatusSummary {
 	 */
 	
 	/**
-	 * 
+	 * @param saAlias
+	 * @param totalSpace
+	 * @throws IllegalArgumentException
 	 */
-	public SpaceStatusSummary(String saAlias, long totalSpace) {
+	public SpaceStatusSummary(String saAlias, long totalSpace) throws IllegalArgumentException{
+	    if(totalSpace < 0 || saAlias == null)
+	    {
+	        log.error("Unable to create SpaceStatusSummary. Received illegal parameter: saAlias: " + saAlias + " totalSpace: " + totalSpace);
+	        throw new IllegalArgumentException("Unable to create SpaceStatusSummary. Received illegal parameter");
+	    }
 		this.saAlias = saAlias;
 		this.totalSpace = totalSpace;
-	}
-	
-	public SpaceStatusSummary(String saAlias) {
-		this.saAlias = saAlias;
-		this.totalSpace = -1;  // -1 means undefined;
 	}
 	
 	private SpaceStatusSummary(String saAlias, long usedSpace, long unavailableSpace, long reservedSpace, long totalSpace) {
@@ -78,9 +93,6 @@ public class SpaceStatusSummary {
                                           storageSpaceData.getUnavailableSpaceSize().value(),
                                           storageSpaceData.getReservedSpaceSize().value(),
                                           storageSpaceData.getTotalSpaceSize().value());
-//            summary.forceAvailableSpace(storageSpaceData.getAvailableSpaceSize().value());
-//            summary.forceFreeSpace(storageSpaceData.getFreeSpaceSize().value());
-//            summary.forceBusySpace(storageSpaceData.getBusySpaceSize().value());
             return summary;
         }
     }
@@ -191,7 +203,6 @@ public class SpaceStatusSummary {
 	/*******************************
 	 *  JSON Building 
 	 */
-	
 
 	
 	/**
@@ -252,23 +263,19 @@ public class SpaceStatusSummary {
 	        w.writeEndDocument();
 	        w.close();   
 		} catch (XMLStreamException e) {
-			e.printStackTrace();
+		    log.error("Unable to produce Json representation of the object. XMLStreamException: " + e.getMessage());
 		}
-		try {
-			strWriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try
+        {
+            strWriter.close();
+        }
+        catch (IOException e)
+        {
+            log.error("Unable to close the StringWriter for Json representation of the object. IOException: "
+                    + e.getMessage());
+        }
 		result = strWriter.toString();
 		return result;
-	}
-
-	public void generateRandomValues() {
-		this.totalSpace = Long.MAX_VALUE;
-		this.usedSpace = Math.round((Math.random()*32768*32768*32));
-		this.unavailableSpace = Math.round((Math.random()*32768*32768*4));
-		this.reservedSpace = Math.round((Math.random()*32768*32768*4));
 	}
 
     @Override
@@ -278,31 +285,4 @@ public class SpaceStatusSummary {
                 + ", getReservedSpace()=" + getReservedSpace() + ", getTotalSpace()=" + getTotalSpace() + ", getFreeSpace()="
                 + getFreeSpace() + "]";
     }
-
-//    /* (non-Javadoc)
-//     * @see java.lang.Object#toString()
-//     */
-//    @Override
-//    public String toString()
-//    {
-//        return "SpaceStatusSummary [busySpace=" + busySpace + ", freeSpace=" + freeSpace + ", reservedSpace=" + reservedSpace
-//                + ", saAlias=" + saAlias + ", totalSpace=" + totalSpace + ", unavailableSpace=" + unavailableSpace + ", usedSpace="
-//                + usedSpace + "]";
-//    }
-    
-    
-
-//	public void retrieveFromDB(String saAlias) {
-//		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
-//		StorageSpaceData ssd = catalog.getStorageSpaceByAlias(saAlias);
-//		if (ssd!=null) {
-//			this.usedSpace = ssd.getUsedSpaceSize().value();
-//			this.freeSpace = ssd.getFreeSpaceSize().value();
-//			this.busySpace = ssd.getBusySpaceSize().value();
-//			this.reservedSpace = ssd.getReservedSpaceSize().value();
-//			this.unavailableSpace = ssd.getUnavailableSpaceSize().value();
-//		}
-//	}
-	
-	
 }

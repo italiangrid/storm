@@ -102,7 +102,7 @@ public class GridUserFactory {
      */
     GridUserInterface createGridUser(String distinguishName)
     {
-        GridUser user = new GridUser(defaultMapperClass, distinguishName);
+        GridUserInterface user = new GridUser(defaultMapperClass, distinguishName);
         log.debug("Created new Grid User (NO VOMS) : " + user);
         return user;
     }
@@ -114,9 +114,8 @@ public class GridUserFactory {
      * @return GridUserInterface
      */
     GridUserInterface createGridUser(String distinguishName, String proxyString) {
-        GridUser user = new GridUser(defaultMapperClass, distinguishName);
-        user.setProxyString(proxyString);
-        log.debug("Created new Grid User (NO VOMS con PROXY) : "+user);
+        GridUserInterface user = new GridUser(defaultMapperClass, distinguishName, proxyString);
+        log.debug("Created new Grid User (NO VOMS with PROXY) : "+user);
         return user;
     }
 
@@ -126,38 +125,42 @@ public class GridUserFactory {
      *
      * @return GridUserInterface
      */
-    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans) {
-        GridUserInterface user = new VomsGridUser(defaultMapperClass, distinguishName, null, fqans );
-        log.debug("Created new Grid User (VOMS USER) : "+user);
-        return user;
-    }
-
-    /**
-     * Build a VOMS Grid User, if FQAN passed are not null.
-     * Otherwise a simple GridUser instance wil be returned.
-     *
-     * @return GridUserInterface
-     */
-    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString) {
-        GridUserInterface user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans );
-        log.debug("Created new Grid User (VOMS USER) : "+user);
-        return user;
-    }
-
-    /**
-     * Special method used to build a GridUser with a specific Mapper without change
-     * the behaviour of this factory with default Mapper. To change the behaviour of this factory use
-     * setUserMapper method instead.
-     *
-     * Build a VOMS Grid User, if FQAN passed are not null.
-     * Otherwise a simple GridUser instance wil be returned.
-     *
-     *
-     * @return GridUserInterface
-     */
-    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString, MapperInterface userMapper) {
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans) throws IllegalArgumentException {
         GridUserInterface user = null;
-        log.debug("**** NULL METHOD **** Created new Grid User (VOMS USER) : "+user);
+        try
+        {
+            user = new VomsGridUser(defaultMapperClass, distinguishName, fqans);
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on VomsGridUser creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+            throw e;
+        }
+        log.debug("Created new Grid User (VOMS USER) : "+user);
+        return user;
+    }
+
+    /**
+     * Build a VOMS Grid User, if FQAN passed are not null.
+     * Otherwise a simple GridUser instance wil be returned.
+     *
+     * @return GridUserInterface
+     */
+    GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString) throws IllegalArgumentException
+    {
+        GridUserInterface user = null;
+        try
+        {
+            user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans);    
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on VomsGridUser creation. Contact StoRM Support : IllegalArgumentException "
+                            + e.getMessage());
+            throw e;
+        }
+        log.debug("Created new Grid User (VOMS USER with PROXY) : "+user);
         return user;
     }
 
@@ -200,10 +203,21 @@ public class GridUserFactory {
         if (dnString != null) {
             log.debug("DN: " + dnString);
             // Creation of srm GridUser type
-            if (fqansList != null) {
+            if (fqans != null && fqans.length > 0)
+            {
                 log.debug("VomsGU with FQAN");
-                return createGridUser(dnString, fqans);
-            } else {
+                try
+                {
+                    return createGridUser(dnString, fqans);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                            + e.getMessage());
+                }
+            }
+            else
+            {
                 return createGridUser(dnString);
             }
         }

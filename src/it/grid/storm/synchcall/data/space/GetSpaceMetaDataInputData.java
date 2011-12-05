@@ -20,12 +20,11 @@ package it.grid.storm.synchcall.data.space;
 import java.io.Serializable;
 
 
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataInputAttributeException;
-import it.grid.storm.griduser.VomsGridUser;
 
 /**
  * This class is part of the StoRM project.
@@ -44,7 +43,8 @@ import it.grid.storm.griduser.VomsGridUser;
 
 public class GetSpaceMetaDataInputData extends AbstractInputData implements Serializable {
 
-    private VomsGridUser auth = null;
+    private GridUserInterface auth = null;
+    
     private ArrayOfTSpaceToken tokenArray = null;
 
     public GetSpaceMetaDataInputData()
@@ -53,7 +53,7 @@ public class GetSpaceMetaDataInputData extends AbstractInputData implements Seri
     }
 
 
-    public GetSpaceMetaDataInputData(VomsGridUser auth, ArrayOfTSpaceToken tokenArray) throws
+    public GetSpaceMetaDataInputData(GridUserInterface auth, ArrayOfTSpaceToken tokenArray) throws
 	    InvalidGetSpaceMetaDataInputAttributeException
     {
 
@@ -74,7 +74,7 @@ public class GetSpaceMetaDataInputData extends AbstractInputData implements Seri
 
      */
 
-    public VomsGridUser getUser()
+    public GridUserInterface getUser()
     {
 	return auth;
     }
@@ -84,7 +84,7 @@ public class GetSpaceMetaDataInputData extends AbstractInputData implements Seri
      *
      *
      */
-    public void setUser(VomsGridUser user)
+    public void setUser(GridUserInterface user)
     {
 
 	this.auth = user;

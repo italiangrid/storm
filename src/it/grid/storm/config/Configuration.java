@@ -161,8 +161,9 @@ public class Configuration {
     private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
     private static final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
     private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
-    private static final String QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
-    
+    private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
+    private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
+    private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
 
     
     private Configuration() {
@@ -2030,6 +2031,47 @@ public class Configuration {
             return cr.getConfiguration().getString(GRIDHTTPS_PLUGIN_CLASSNAME_KEY);
         }
     }
+    
+    /**
+     * @return
+     */
+    public boolean getSynchronousQuotaCheckEnabled() {
+        if (!cr.getConfiguration().containsKey(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY)) {
+            // return default
+            return false;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY);
+        }
+    }
+
+    /**
+     * 
+     * @return the refresh period in seconds
+     */
+    public int getGPFSQuotaRefreshPeriod() {
+        // GPFS_QUOTA_REFRESH_PERIOD_KEY
+        if (!cr.getConfiguration().containsKey(GPFS_QUOTA_REFRESH_PERIOD_KEY)) {
+            // return default
+            return 900; //15 minutes
+        } else {
+            // load from external source
+            return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY);
+        }
+    }
+
+    /**
+     * @return
+     */
+    public boolean getFastBootstrapEnabled() {
+        if (!cr.getConfiguration().containsKey(FAST_BOOTSTRAP_ENABLED_KEY)) {
+            // return default
+            return true;
+        } else {
+            // load from external source
+            return cr.getConfiguration().getBoolean(FAST_BOOTSTRAP_ENABLED_KEY);
+        }
+    }
 
     @Override
     public String toString() {
@@ -2101,19 +2143,6 @@ public class Configuration {
         		configurationStringBuilder.insert(0, "!!! Cannot do toString! Got an Exception: " + e +"\n");
         	}
         	return configurationStringBuilder.toString();
-        }
-    }
-
-    /**
-     * @return
-     */
-    public boolean getQuotaCheckEnabled() {
-        if (!cr.getConfiguration().containsKey(QUOTA_CHECK_ENABLED_KEY)) {
-            // return default
-            return false;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getBoolean(QUOTA_CHECK_ENABLED_KEY);
         }
     }
 }

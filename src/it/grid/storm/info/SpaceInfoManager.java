@@ -37,12 +37,13 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
-import it.grid.storm.space.CallableDU;
 import it.grid.storm.space.DUResult;
+import it.grid.storm.space.ExitCode;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.space.init.UsedSpaceFile;
 import it.grid.storm.space.init.UsedSpaceFile.SaUsedSize;
+import it.grid.storm.space.quota.BackgroundGPFSQuota;
 import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -55,10 +56,10 @@ import org.slf4j.LoggerFactory;
 
 public class SpaceInfoManager {
     
-    private static SpaceInfoManager instance = new SpaceInfoManager();
+    private final Logger LOG;
+    private static final SpaceInfoManager instance = new SpaceInfoManager();
     private int timeOutDurationInSec = 7200; //2 hours per task (This value is multiplied by attempt)
     private BackgroundDU bDU;
-    private static final Logger LOG = LoggerFactory.getLogger(SpaceInfoManager.class);
     private AtomicInteger tasksToComplete;
     private AtomicInteger tasksToSave;
     private AtomicInteger success;
@@ -66,19 +67,38 @@ public class SpaceInfoManager {
     private AtomicInteger numberOfTasks;
     
     //Package variable used in testing mode (without DB)
-    static AtomicBoolean testMode = new AtomicBoolean(false); 
+    AtomicBoolean testMode = new AtomicBoolean(false); 
     
-    private static final int MaxAttempt = 2; 
+    private final int MaxAttempt = 2; 
     
-    private static CatalogUpdater persist = new CatalogUpdater();
+    private CatalogUpdater persist = new CatalogUpdater();
     //Reference to the Catalog
-    private static final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+    private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
    
-    private static int quotas = 0;
+    private int quotas = 0;
+    private int quotasDefined = 0;
+        
     
-    
+    /**
+     * 
+     */
     private SpaceInfoManager() {
+        LOG = LoggerFactory.getLogger(SpaceInfoManager.class);
+        List<VirtualFSInterface> vfsS = retrieveSAtoInitializeWithQuota();
+        if (vfsS!=null) {
+            this.quotasDefined= vfsS.size();
+        } else {
+            this.quotasDefined = 0;
+        }
     }
+  
+    /**
+     * @return the quotasDefined
+     */
+    public final int getQuotasDefined() {
+        return quotasDefined;
+    }
+
     
     private final BackgroundDUTasks bDUTasks = new BackgroundDUTasks();
 	private int attempt = 1;
@@ -113,7 +133,7 @@ public class SpaceInfoManager {
 	}
     
 	
-	public static int updateSpaceUsed() {
+	public int updateSpaceUsed() {
 	    int quotaFailures = 0;
 	    quotaFailures = execGPFSQuota(false, true);
 	    startBackGroundDU();
@@ -124,29 +144,38 @@ public class SpaceInfoManager {
 	    return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
 	}
 	
-	public static int howManyQuotas() {
-	    return SpaceInfoManager.getInstance().quotas;
+	public int howManyQuotas() {
+	    return this.quotas;
 	}
 	       
-    public static int execGPFSQuota(boolean test, boolean bootstrap) {
+    public int execGPFSQuota(boolean test, boolean bootstrap) {
         int result = 0;
-        boolean quotaCheck = Configuration.getInstance().getQuotaCheckEnabled();
+        boolean synchronousQuotaCheck = Configuration.getInstance().getSynchronousQuotaCheckEnabled();
         if (bootstrap) {
-            QuotaManager.getInstance().updateSAwithQuota(test);
-            quotas = QuotaManager.getInstance().getHowmanyQuotas();
-            LOG.info("Executed '" + quotas + " mmlsquota in order to update related SAs");
-        } else if (quotaCheck) {
-            QuotaManager.getInstance().updateSAwithQuota(test);
+            //Check if it is "fast-bootstrap"
+            boolean fastBootstrapEnabled = Configuration.getInstance().getFastBootstrapEnabled();
+            if (!fastBootstrapEnabled) {
+                QuotaManager.getInstance().updateSAwithQuotaSynch(test);
+                quotas = QuotaManager.getInstance().getHowmanyQuotas();
+                LOG.info("Executed '" + quotas + " mmlsquota in order to update related SAs");
+            } else {
+                BackgroundGPFSQuota.getInstance().submitGPFSQuota();
+                LOG.info("Submitted an asynchronous GPFS Quota job");
+            }
+        } else if (synchronousQuotaCheck) {
+            QuotaManager.getInstance().updateSAwithQuotaSynch(test);
             quotas = QuotaManager.getInstance().getHowmanyQuotas();
             LOG.info("Executed \'" + quotas + "\'  check");
         } else {
-            LOG.debug("Quota Check is disabled.");
+            LOG.debug("Quota Check is disabled. Submit GPFS Quota job.");
+            BackgroundGPFSQuota.getInstance().submitGPFSQuota();
         }
+
         return result;
     }
 	
 	
-	private static int startBackGroundDU() {
+	private int startBackGroundDU() {
     	int result = 0;
 		//This call populate the Task Queue: "bDUTasks"
 		SpaceInfoManager.getInstance().foundSAtoAnalyze();
@@ -159,7 +188,7 @@ public class SpaceInfoManager {
 
 		
 	
-	public static int startTest(List<String> absPaths) {
+	public int startTest(List<String> absPaths) {
         int result = 0;
         testMode = new AtomicBoolean(true); 
         SpaceInfoManager.getInstance().fakeSAtoAnalyze(absPaths);
@@ -182,6 +211,9 @@ public class SpaceInfoManager {
 	//********************************************
 	
 
+    /**
+     * @return a list of StorageSpaceData related to SA with quota enabled to be initialized. Can be empty.
+     */
     public List<StorageSpaceData> retrieveSSDtoInitializeWithQuota() {
         // Dispatch SA to compute in two categories: Quota and DU tasks
         List<StorageSpaceData> ssdSet = new ArrayList<StorageSpaceData>();
@@ -239,7 +271,18 @@ public class SpaceInfoManager {
     
     public List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
         // Dispatch SA to compute in two categories: Quota and DU tasks
-        List<VirtualFSInterface> vfsSet = getAllVFS();
+        List<VirtualFSInterface> vfsSet = null;;
+        try
+        {
+            vfsSet = new ArrayList<VirtualFSInterface>(NamespaceDirector.getNamespace().getAllDefinedVFS());
+        }
+        catch (NamespaceException e)
+        {
+            LOG.error("Unable to get the defined Virtual File Systems. NamespaceException : " + e.getMessage());
+            LOG.error("Returning an empty list");
+            return new ArrayList<VirtualFSInterface>();
+        }
+        LOG.debug("Found '" + vfsSet.size() + "' VFS defined in Namespace.xml");
         List<VirtualFSInterface> vfsSetQuota = new ArrayList<VirtualFSInterface>();
         if (vfsSet.size() > 0) { // Exists at least a VFS defined
             for (VirtualFSInterface vfsItem : vfsSet) {
@@ -285,22 +328,21 @@ public class SpaceInfoManager {
 	}
 	
 	
-	private List<VirtualFSInterface> getAllVFS() {
-	    Collection<VirtualFSInterface> vfsCollection = null ;
-        try {
-            vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
-        }
-        catch (NamespaceException e) {
-            LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
-        }
-        if (vfsCollection!=null) {
-            vfsCollection = new ArrayList<VirtualFSInterface>(vfsCollection);    
-        } else {
-            vfsCollection = new ArrayList<VirtualFSInterface>();
-        }
-        LOG.debug("Found '"+vfsCollection.size()+"' VFS defined in Namespace.xml" );
-	    return (List<VirtualFSInterface>) vfsCollection;
-	}
+	/**
+	 * @return
+	 */
+//	private List<VirtualFSInterface> getAllVFS() {
+//	    Collection<VirtualFSInterface> vfsCollection = null ;
+//        try {
+//            vfsCollection = new ArrayList<VirtualFSInterface>(NamespaceDirector.getNamespace().getAllDefinedVFS());
+//        }
+//        catch (NamespaceException e) {
+//            LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+//            
+//        }
+//        LOG.debug("Found '"+vfsCollection.size()+"' VFS defined in Namespace.xml" );
+//	    return (List<VirtualFSInterface>) vfsCollection;
+//	}
     
     
 	
@@ -389,7 +431,7 @@ public class SpaceInfoManager {
         }
           
         // Check if the result is success, otherwise ...
-        if (result.getCmdResult().equals(CallableDU.ExitCode.SUCCESS)) {
+        if (result.getCmdResult().equals(ExitCode.SUCCESS)) {
             TSpaceToken st = task.getSpaceToken();
 
             // Start the Pool dedicated to save the result into the DB
@@ -550,7 +592,7 @@ public class SpaceInfoManager {
     /**
      * @return
      */
-    public static int initSpaceFromINIFile()
+    public int initSpaceFromINIFile()
     {
         List<StorageSpaceData> toAnalyze = spaceCatalog.getStorageSpaceNotInitialized();
         ArrayList<String> toAnalyzeAlias = new ArrayList<String>();
@@ -599,7 +641,7 @@ public class SpaceInfoManager {
     /**
      * @return
      */
-    private static void printInitializedStorageAreas(List<String> saAlias)
+    private void printInitializedStorageAreas(List<String> saAlias)
     {
         try
         {
@@ -623,7 +665,7 @@ public class SpaceInfoManager {
      * @param usedSize
      * @throws IllegalArgumentException
      */
-    private static void updateUsedSpaceOnPersistence(String saName, Long usedSize) throws IllegalArgumentException
+    private void updateUsedSpaceOnPersistence(String saName, Long usedSize) throws IllegalArgumentException
     {
         if(saName == null || usedSize == null)
         {
@@ -638,7 +680,7 @@ public class SpaceInfoManager {
      * @param usedSize
      * @param updateTime
      */
-    private static void updateUsedSpaceOnPersistence(String saName, Long usedSize, Date updateTime) throws IllegalArgumentException
+    private void updateUsedSpaceOnPersistence(String saName, Long usedSize, Date updateTime) throws IllegalArgumentException
     {
         if(saName == null || usedSize == null)
         {

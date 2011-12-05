@@ -385,7 +385,7 @@ public class AuthorizationResource
     {
         if(dn == null || fqansStringVector == null || fqansStringVector.length == 0)
         {
-            log.error("Received null DN parameter in loadVomsGridUser!");
+            log.error("Received invalid arguments DN parameter in loadVomsGridUser!");
             throw new IllegalArgumentException("Received null DN parameter");
         }
         
@@ -394,7 +394,17 @@ public class AuthorizationResource
         {
             fqansVector[i] = new FQAN(fqansStringVector[i]);
         }
-        return GridUserManager.makeVOMSGridUser(dn, fqansVector);
+        GridUserInterface gridUser = null;
+        try
+        {
+            gridUser = GridUserManager.makeVOMSGridUser(dn, fqansVector);
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+        return gridUser;
     }
     
     /**

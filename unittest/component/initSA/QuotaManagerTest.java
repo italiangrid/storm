@@ -35,7 +35,7 @@ public class QuotaManagerTest {
     public void testUpdateSAwithQuota() {
         init();
         QuotaManager qm = QuotaManager.getInstance();
-        qm.updateSAwithQuota(true);
+        qm.updateSAwithQuotaSynch(true);
         
         
     }

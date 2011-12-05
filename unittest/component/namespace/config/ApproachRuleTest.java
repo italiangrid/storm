@@ -6,7 +6,6 @@ import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -14,9 +13,6 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 import it.grid.storm.namespace.config.xml.XMLParserUtil;
 import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TSURL;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -233,7 +229,7 @@ public class ApproachRuleTest {
 
     }
 
-    private void retrieveVFSsFromAppRules(VomsGridUser fakeGU) {
+    private void retrieveVFSsFromAppRules(GridUserInterface fakeGU) {
         //FakeGridUser fakeGU = null;
         //fakeGU = new FakeGridUser("/C=UK/O=eScience/OU=Bristol/L=IS/CN=jon wakelin", "ciccio");
         //fakeGU = new FakeGridUser("C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Luca Magnoni,Email=aaa@ssrq","ciccio");
@@ -290,13 +286,13 @@ public class ApproachRuleTest {
     }
 
 
-    private VomsGridUser makeFakeVomsGridUser() {
-        VomsGridUser fakeVOMSUser = null;
+    private GridUserInterface makeFakeVomsGridUser() {
+        GridUserInterface fakeVOMSUser = null;
         String dnString = "/C=UK/O=eScience/OU=Bristol/L=IS/CN=jon wakelin";
         String fqanString = "/infngrid/Role=NULL/Capability=NULL";
         //Fqan[] fqan = { new Fqan(fqanString) };
         FQAN[] fqans = { new FQAN(fqanString) };
-        fakeVOMSUser = (VomsGridUser)GridUserManager.makeVOMSGridUser(dnString,fqans);
+        fakeVOMSUser = GridUserManager.makeVOMSGridUser(dnString,fqans);
         //fakeVOMSUser = VomsGridUser.make(dnString, fqan);
 
         log.debug("Fake VOMS User : "+fakeVOMSUser);

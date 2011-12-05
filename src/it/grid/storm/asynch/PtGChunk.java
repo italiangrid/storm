@@ -38,10 +38,10 @@ import it.grid.storm.filesystem.InvalidPathException;
 import it.grid.storm.filesystem.InvalidPermissionOnFileException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.WrongFilesystemType;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -49,7 +49,6 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -323,9 +322,9 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 									+ " file from tape");
 								
 								String voName = null;
-								if(gu instanceof VomsGridUser)
+								if(gu instanceof AbstractGridUser)
 								{
-									voName = ((VomsGridUser) gu).getVO().getValue();
+									voName = ((AbstractGridUser) gu).getVO().getValue();
 								}
 
 		                        TapeRecallCatalog rtCat = null;

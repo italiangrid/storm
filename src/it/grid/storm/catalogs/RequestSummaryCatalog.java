@@ -277,14 +277,34 @@ public class RequestSummaryCatalog {
         }
 
         RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn + " " + fqans_string + " " + proxyString);
-        if ((dn != null) && (fqans_string != null) && (proxyString != null)) {
+        if ((dn != null) && (fqans_vector != null) && (fqans_vector.length > 0) && (proxyString != null)) {
             // all credentials available!
             RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request " + rtoken);
-            return GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_vector);
-        } else if ((dn != null) && (fqans_string != null) && (proxyString == null)) {
+            GridUserInterface gridUser = null;
+            try
+            {
+                gridUser = GridUserManager.makeVOMSGridUser(dn, proxyString, fqans_vector);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                          + e.getMessage());
+            }
+            return gridUser;
+        } else if ((dn != null) && (fqans_vector != null && fqans_vector.length > 0) && (proxyString == null)) {
             // voms credentials without proxy
             RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request " + rtoken);
-            return GridUserManager.makeVOMSGridUser(dn, fqans_vector);
+            GridUserInterface gridUser = null;
+            try
+            {
+                gridUser = GridUserManager.makeVOMSGridUser(dn, fqans_vector);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                          + e.getMessage());
+            }
+            return gridUser;
         } else if ((dn != null) && (fqans_string == null) && (proxyString != null)) {
             // NON-voms credentials with proxy
             RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and Proxy found for request " + rtoken);

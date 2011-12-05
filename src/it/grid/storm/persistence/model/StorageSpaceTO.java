@@ -29,8 +29,8 @@
 package it.grid.storm.persistence.model;
 
 import it.grid.storm.common.types.VO;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.space.StorageSpaceData;
 
 import java.io.Serializable;
@@ -163,8 +163,8 @@ public class StorageSpaceTO implements Serializable, Comparable<StorageSpaceTO> 
     // ************ HELPER Method *************** //
     private String getVOName(GridUserInterface maker) {
         String voStr = VO.makeNoVo().getValue();
-        if (maker instanceof VomsGridUser) {
-            voStr = ((VomsGridUser) maker).getVO().getValue();
+        if (maker instanceof AbstractGridUser) {
+            voStr = ((AbstractGridUser) maker).getVO().getValue();
         }
         return voStr;
     }

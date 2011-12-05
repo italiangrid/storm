@@ -25,7 +25,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
 import it.grid.storm.space.ExecCommand;
-import it.grid.storm.space.quota.GPFSQuotaCommand.ExitCode;
+import it.grid.storm.space.ExitCode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,13 +43,34 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
     private static String gpfsCommandPath = pathSep + "usr" + pathSep + "lpp" + pathSep + "mmfs" + pathSep + "bin";
     private static String gpfsCommand = gpfsCommandPath + pathSep + "mmlsquota";
 
+    static final long DEFAULT_TIMEOUT = 10; //10 sec as default Timeout;
+    
+    /**
+     * Default constructor
+     * @param timeout
+     */
+    public GPFSLsQuotaCommand(long timeout) {
+        super(timeout);
+    }
+
+    /**
+     * 
+     */
+    public GPFSLsQuotaCommand() {
+        super(DEFAULT_TIMEOUT);
+    }
+    
+    
+
     public String getQuotaCommandString() {
         return gpfsCommand;
     }
     
-
+    
     @Override
-    public GPFSQuotaInfo executeGetQuotaInfo(Quota quotaElement, boolean test) throws QuotaException {
+    public GPFSQuotaCommandResult executeGetQuotaInfo(Quota quotaElement, boolean test) throws QuotaException {
+       
+        GPFSQuotaCommandResult cmdResult = new GPFSQuotaCommandResult();
         GPFSQuotaInfo result = new GPFSQuotaInfo();
         String command = getQuotaCommandString();
         List<String> commandList = new ArrayList<String>();
@@ -59,26 +80,27 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
         ExecCommand ec = new ExecCommand(commandList, this.timeout);
         String output = null;
 
-        ExitCode cmdResult;
-        if (test) {
-            cmdResult = ExitCode.SUCCESS;
-            log.debug("[TEST-MODE] Command result: " + cmdResult);
+        ExitCode cmdExitCode;
+        if (test) {  // TEST mode
+            cmdExitCode = ExitCode.SUCCESS;
+            log.debug("[TEST-MODE] Command result: " + cmdExitCode);
             output = MockGPFSQuotaResult.getMockOutputLs();
             log.debug("[TEST-MODE] Output: '" + output + "'");
-        }
-        else {
-            cmdResult = ExitCode.getExitCode(ec.runCommand());
-            log.debug("Command result: " + cmdResult);
+        } 
+        else {  //******** PRODUCTION mode ********
+            cmdExitCode = ExitCode.getExitCode(ec.runCommand());
+            log.debug("Command result: " + cmdExitCode);
             output = ec.getOutput();
             log.debug(" Output: '" + output + "'");
         }
         
         //Checking the result
-        if (cmdResult.equals(ExitCode.SUCCESS)) {
+        if (cmdExitCode.equals(ExitCode.SUCCESS)) {
             // Manage success
             result = manageSuccess(output, quotaElement);
             if (!(result.isInitializated())) {
-                cmdResult = ExitCode.EMPTY_OUTPUT;
+                cmdExitCode = ExitCode.EMPTY_OUTPUT;
+                log.info("Command result: " + cmdExitCode);
                 result.setFailure(true);
             }
         } else {
@@ -90,11 +112,17 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
             log.warn("Quota execution returned nothing usefull. ("+quotaElement.getDevice()+":"+quotaElement.getQuotaElementName()+")  Check QUOTA on GPFS! ");
         }
         ec.stopExecution();
-        
-        return result;
+        cmdResult.addQuotaResult(result);
+        cmdResult.setCmdResult(cmdExitCode);
+        cmdResult.endOfExecution();
+        return cmdResult;
     }
     
-    public ArrayList<GPFSQuotaInfo> executeGetQuotaInfo(boolean test) throws QuotaException {
+    /**
+     * Return a list of GPFSQuotaInfo including also failures
+     */
+    public GPFSQuotaCommandResult executeGetQuotaInfo(boolean test) {
+        GPFSQuotaCommandResult returnValue = new GPFSQuotaCommandResult();
         ArrayList<GPFSQuotaInfo> result = new ArrayList<GPFSQuotaInfo>();
         List<VirtualFSInterface> vfsS = SpaceInfoManager.getInstance().retrieveSAtoInitializeWithQuota();
         for (VirtualFSInterface vfs : vfsS) {
@@ -102,19 +130,28 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
                 CapabilityInterface cap = vfs.getCapabilities();
                 if (cap!=null) {
                     Quota quotaElement = cap.getQuota();
-                    GPFSQuotaInfo qInfo = executeGetQuotaInfo(quotaElement, test);
+                    GPFSQuotaCommandResult quotaResult;
+                    try {
+                        quotaResult = executeGetQuotaInfo(quotaElement, test);
+                    } catch (QuotaException qe) {
+                       log.warn("Something was wrong in mmlsquota execution: "+qe);
+                       quotaResult = new GPFSQuotaCommandResult();
+                       quotaResult.setCmdResult(ExitCode.UNDEFINED);
+                    }
+                    GPFSQuotaInfo qInfo = new GPFSQuotaInfo();
+                    qInfo = quotaResult.getQuotaResults().get(0); //Supposed to be unique result
                     result.add(qInfo);
                 } else {
                     log.warn("Capability of VFS: "+vfs.getAliasName()+" is null?!");
                 }
-              
             } catch (NamespaceException e) {
                 log.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());    
             }
-            
         }
-
-        return result;
+        
+        returnValue.setQuotaInfos(result);
+        returnValue.endOfExecution();
+        return returnValue;
     }
 
 
@@ -217,6 +254,10 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
     }
 
 
+    
+    public String toString() {
+        return getQuotaCommandString();
+    }
 
 
 

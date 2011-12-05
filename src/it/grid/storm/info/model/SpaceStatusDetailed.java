@@ -10,11 +10,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	private long nrMedFilesPerDir;
 	private long oldestAccessedFile;
 	
-	public SpaceStatusDetailed(String saAlias) {
-		super(saAlias);
-	}
-	
-	public SpaceStatusDetailed(String saAlias, long spaceTotal) {
+	public SpaceStatusDetailed(String saAlias, long spaceTotal) throws IllegalArgumentException{
 		super(saAlias, spaceTotal);
 	}
 

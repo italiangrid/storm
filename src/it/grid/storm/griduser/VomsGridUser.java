@@ -36,28 +36,34 @@ import it.grid.storm.common.types.VO;
  *
  *
  */
-public class VomsGridUser extends AbstractGridUser implements Serializable {
+class VomsGridUser extends GridUser implements Serializable {
 
 
+    private static final long serialVersionUID = -117007717079470189L;
     private List<FQAN> fqans = new ArrayList<FQAN> ();
     private List<String> fqansString = new ArrayList<String>();
 
     // --- public accessor methods --- //
 
-    VomsGridUser(MapperInterface mapper, String distinguishedName)
+    VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy, FQAN[] fqansArray) throws IllegalArgumentException
+    {
+        super(mapper, distinguishedName, proxy);
+        if(fqansArray == null || fqansArray.length == 0)
+        {
+            log.error("Unable to create VomsGridUser. Inavlid fqansArray argument: " + fqansArray);
+            throw new IllegalArgumentException("Unable to create VomsGridUser. Inavlid fqansArray argument: " + fqansArray);
+        }
+        this.setFqans(fqansArray);
+    }
+    
+    VomsGridUser(MapperInterface mapper, String distinguishedName, FQAN[] fqansArray) throws IllegalArgumentException
     {
         super(mapper, distinguishedName);
-    }
-
-    VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy)
-    {
-        this(mapper, distinguishedName);
-        this.setProxyString(proxy);
-    }
-
-    VomsGridUser(MapperInterface mapper, String distinguishedName, String proxy, FQAN[] fqansArray)
-    {
-        this(mapper, distinguishedName, proxy);
+        if(fqansArray == null || fqansArray.length == 0)
+        {
+            log.error("Unable to create VomsGridUser. Inavlid fqansArray argument: " + fqansArray);
+            throw new IllegalArgumentException("Unable to create VomsGridUser. Inavlid fqansArray argument: " + fqansArray);
+        }
         this.setFqans(fqansArray);
     }
 
@@ -74,17 +80,6 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
         }
     }
     
-    void setFqans(List<FQAN> fqans)
-    {
-        this.fqans.clear();
-        this.fqansString.clear();
-        for (FQAN fqan : fqans)
-        {
-            this.fqans.add(fqan);
-            this.fqansString.add(fqan.toString());
-        }
-    }
-
     public void addFqan(FQAN fqan)
     {
         this.fqans.add(fqan);
@@ -94,16 +89,6 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
     
     // --- GETTER Methods --- //
 
-    public List<FQAN> getFQANsList()
-    {
-        return this.fqans;
-    }
-
-    public List<String> getFQANsStringList()
-    {
-        return this.fqansString;
-    }
-    
     /**
      * Return <code>true</code> if any VOMS attributes are stored in
      * this object.
@@ -118,44 +103,41 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
      */
     public boolean hasVoms()
     {
-        if ((this.fqans != null) && (this.fqans.size() > 0))
-        {
             return true;
-        }
-        else
-        {
-            return false;
-        }
     }
-
-    /**
-     * Return the local user on wich the GridUser is mapped.
-     *
-     * @throws CannotMapUserException
-     * @return LocalUser
+    
+    
+    /* (non-Javadoc)
+     * @see it.grid.storm.griduser.GridUser#getFQANsAsString()
      */
-    public LocalUser getLocalUser() throws CannotMapUserException
+    @Override
+    public FQAN[] getFQANs()
     {
-        if (null == localUser)
+        FQAN[] FQANs = null;
+        if(fqans != null)
         {
-            log.debug("VomsGridUser.getLocalUser");
-
-            // call LCMAPS and do the mapping
-            try
-            {
-                localUser = userMapperClass.map(getDn(), fqansString.toArray(new String[0]));
-            }
-            catch (CannotMapUserException ex)
-            {
-                // log the operation that failed
-                log.error("Error in mapping '" + this + "' to a local user: " + ex.getMessage());
-                // re-throw same exception
-                throw ex;
-            }
+            FQANs = fqans.toArray(new FQAN[fqans.size()]);
         }
-        return localUser;
+        return FQANs;
+    }
+    
+    /* (non-Javadoc)
+     * @see it.grid.storm.griduser.GridUser#getFQANsAsString()
+     */
+    @Override
+    public String[] getFQANsAsString()
+    {
+        String[] FQANs = null;
+        if(fqansString != null)
+        {
+            FQANs = fqansString.toArray(new String[fqansString.size()]);
+        }
+        return FQANs;
     }
 
+    /* (non-Javadoc)
+     * @see it.grid.storm.griduser.GridUser#getVO()
+     */
     public VO getVO()
     {
         VO result = VO.makeNoVo();
@@ -209,11 +191,12 @@ public class VomsGridUser extends AbstractGridUser implements Serializable {
                     // Also the other is a VomsGridUser
                     if (this.getDistinguishedName().equals(other.getDistinguishedName())) {
                         // Equals if they have the same FQANs
-                        List<FQAN> otherFQANs = other.getFQANsList();
-                        if (otherFQANs.size() == this.fqans.size()) {
+                        FQAN[] otherFQANs = other.getFQANs();
+                        FQAN[] thisFQANs = this.getFQANs();
+                        if (otherFQANs.length == thisFQANs.length) {
                             result = true;
-                            for (int i = 0; i < otherFQANs.size(); i++) {
-                                if (!(otherFQANs.get(i)).equals(this.fqans.get(i))) {
+                            for (int i = 0; i < otherFQANs.length; i++) {
+                                if (!(otherFQANs[i].equals(thisFQANs[i]))) {
                                     result = false;
                                     break; // Exit from the loop at first fail.
                                 }

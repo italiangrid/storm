@@ -20,8 +20,10 @@ package it.grid.storm;
 import it.grid.storm.config.Configuration;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -44,12 +46,70 @@ import org.slf4j.LoggerFactory;
  */
 public class StoRMCommandServer {
 
+    private enum Command{
+        START("START"), STOP("STOP"), SHUTDOWN("SHUTDOWN"), STATUS("STATUS"), EXIT("EXIT"), UNKNOW("UNKNOW");
+        
+        private final String name;
+        private Command(String name)
+        {
+            this.name = name;
+        }
+        
+        public static Command getCommand(String name)
+        {
+            if(name != null)
+            {
+                for(Command command: Command.values())
+                {
+                    if(command.getName().equals(name.trim().toUpperCase()))
+                    {
+                        return command;
+                    }
+                }                
+            }
+            return UNKNOW;
+        }
+
+        private String getName()
+        {
+            return name;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return this.name;
+        }
+    }
+    
+    private enum StormStatus{
+        BOOTSTRAPPING("BOOTSTRAPPING"), RUNNING("RUNNING"), STOPPED("STOPPED"), STARTING("STARTING"), STOPPING("STOPPING"), SHUTTING_DOWN("SHUTTING_DOWN"), UNKNOW("UNKNOW");
+        
+        private final String statusMessage;
+        private StormStatus(String name)
+        {
+            this.statusMessage = name;
+        }
+        
+        private String getStatusMessage()
+        {
+            return statusMessage;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return this.statusMessage;
+        }
+    }
+    
     private StoRM storm; //only StoRM object that the command server administers!
     private int listeningPort; //command server binding port
     private ServerSocket server = null; //server socket of command server!
     private static Logger log;
-
-    public StoRMCommandServer(StoRM s) {
+    private boolean shutdownInProgress = false;
+    
+    public StoRMCommandServer(StoRM storm) {
         //Warning! StoRM must be initialized _before_ anything else! This is because
         //of the configuration file that sets the properties that will subsequently
         //be used by all parts of StoRM, including the CommandServer itself!!!
@@ -59,7 +119,7 @@ public class StoRMCommandServer {
         //server to a different file/mechanism!!!
         //
         //Initialize handle to StoRM
-        this.storm = s;
+        this.storm = storm;
         //Initialize this log!
         log = LoggerFactory.getLogger(StoRMCommandServer.class);
         //set Listening port of StoRMCommandServer!
@@ -71,34 +131,35 @@ public class StoRMCommandServer {
     /**
      * Private method that starts a listening ServerSocket, and handles multiple
      * requests by spawning different CommandExecuterThreads!
+     * @param storm 
      */
     private void startCommandServer() {
         try {
             //
             //set listening port
             server = new ServerSocket(listeningPort);
-            //
-            //start new thread for ServerSocket listening!
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            //when a new connection is received, handle it in a different thread! This is a multithreaded command server!
-                            new CommandExecuterThread(server.accept(), storm).start();
-                        }
-                    } catch (IOException e) {
-                        //something went wrong with server.accept()!
-                        log.error("UNEXPECTED ERROR! Something went wrong with server.accept()! "+e);
-                        System.exit(1);
-                    }
-                }
-            }.start();
         } catch (IOException e) {
             //could not bind to listeningPort!
             log.error("UNEXPECTED ERROR! Could not bind to listeningPort! "+e);
             System.exit(1);
         }
+        //
+        //start new thread for ServerSocket listening!
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        //when a new connection is received, handle it in a different thread! This is a multithreaded command server!
+                        new CommandExecuterThread(server.accept(), storm).start();
+                    }
+                } catch (IOException e) {
+                    //something went wrong with server.accept()!
+                    log.error("UNEXPECTED ERROR! Something went wrong with server.accept()! "+e);
+                    System.exit(1);
+                }
+            }
+        }.start();
     }
 
 
@@ -108,7 +169,9 @@ public class StoRMCommandServer {
      * own thread for processing the commands sent to StoRM
      */
     private class CommandExecuterThread extends Thread {
-        private StoRM storm;   //instance of StoRM to command!
+        private static final String REQUEST_SUCCESS_RESPONSE = "SUCCESS";
+        private static final String REQUEST_FAILURE_RESPONSE = "FAILURE";
+        private static final String REQUEST_WARNING_RESPONSE = "WARNING";
         private Socket socket; //socket receiveing the communication with the client!
 
         /**
@@ -117,52 +180,311 @@ public class StoRMCommandServer {
          */
         private CommandExecuterThread(Socket socket, StoRM storm) {
             this.socket = socket;
-            this.storm = storm;
         }
 
         @Override
         public void run() {
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //input stream from client!
-                String inputLine;
-                while ( (inputLine = in.readLine()) != null) {
-                    if (inputLine.toUpperCase().equals("START")) {
-                        //manage START command!
-                        log.info("StoRM: starting Backend...");
-                        storm.startPicker();
-                        storm.startXmlRpcServer();
-                        storm.startSpaceGC();
-                        log.info("StoRM: Backend successfully started.");
-                    } else if (inputLine.toUpperCase().equals("STOP")) {
-                        //manage STOP command!
-                        log.info("StoRM: stopping Backend...");
-                        storm.stopPicker();
-                        log.info("StoRM: Backend successfully stopped.");
-                    } else if (inputLine.toUpperCase().equals("SHUTDOWN")) {
-                        log.info("StoRM: Backend shutdown...");
-                        in.close();
-                        socket.close();
-                        log.info("StoRM: Backend shutdown complete.");
-                        System.exit(0);
-                    } else {
-                        //any other command breaks the connection, but the command server remains on!
-                        break; //break while!
+            BufferedReader in;
+            try
+            {
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream())); // input stream from client!
+            }
+            catch (IOException e)
+            {
+                log.error("UNEXPECTED ERROR! Unable to get a reader for the client socket. IOException : " + e.getMessage());
+                return;
+            }
+            BufferedWriter out;
+            try
+            {
+                out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())); // output stream to the client
+            }
+            catch (IOException e)
+            {
+                log.error("UNEXPECTED ERROR! Unable to get a writer for the client socket. IOException : " + e.getMessage());
+                return;
+            }
+            String response = REQUEST_FAILURE_RESPONSE;
+            boolean acceptCommands = true;
+            String inputLine;
+            try
+            {
+                inputLine = in.readLine();
+            }
+            catch (IOException e)
+            {
+                log.error("UNEXPECTED ERROR! Unable to read from the client socket. IOException : " + e.getMessage());
+                return;
+            }
+            if(inputLine != null)
+            {
+                do 
+                {
+                    switch (Command.getCommand(inputLine))
+                    {
+                        case START:
+                            // manage START command!
+                            log.info("StoRM: starting Backend services...");
+                            if (startServices())
+                            {
+                                response = REQUEST_SUCCESS_RESPONSE;
+                                log.info("StoRM: Backend services successfully started.");
+                            }
+                            else
+                            {
+                                log.error("StoRM: error starting storm services.");
+                            }
+                            break;
+                        case STOP:
+                         // manage STOP command!
+                            log.info("StoRM: stopping Backend services...");
+                            if (stopServices())
+                            {
+                                response = REQUEST_SUCCESS_RESPONSE;
+                                log.info("StoRM: Backend successfully stopped.");
+                            }
+                            else
+                            {
+                                log.error("StoRM: error stopping storm services.");
+                            }
+                            break;
+                        case SHUTDOWN:
+                            shutdownInProgress = true;
+                            log.info("StoRM: Backend shutdown...");
+                            log.info("StoRM: stopping Backend services...");
+                            stopServices();
+                            response = REQUEST_SUCCESS_RESPONSE;
+                            sendOutputAndClose(response, out, in, socket);
+                            log.info("StoRM: Backend shutdown complete.");
+                            System.exit(0);
+                            break;
+                        case STATUS:
+                                switch (getCurrentStatus())
+                                {
+                                    case RUNNING:
+                                        response = StormStatus.RUNNING.getStatusMessage(); 
+                                        break;
+                                    case STOPPED:
+                                        response = StormStatus.STOPPED.getStatusMessage();
+                                        break;
+                                    case STARTING:
+                                        response = StormStatus.STARTING.getStatusMessage();
+                                        break;
+                                    case STOPPING:
+                                        response = StormStatus.STOPPING.getStatusMessage();
+                                        break;
+                                    case SHUTTING_DOWN:
+                                        response = StormStatus.SHUTTING_DOWN.getStatusMessage();
+                                        break;
+                                    case UNKNOW:
+                                        response = REQUEST_WARNING_RESPONSE;
+                                        break;
+                                    default:
+                                        response = REQUEST_WARNING_RESPONSE;
+                                        break;
+                                }
+                            break;
+                        case EXIT:
+                            //sequence of commands completed
+                            break;
+                        case UNKNOW:
+                            log.warn("Received an unknown command: " + inputLine);
+                            acceptCommands = false;
+                         // any other command breaks the connection, but the command server remains on!
+                            break; 
+                        default:
+                         // any other command breaks the connection, but the command server remains on!
+                            acceptCommands = false;
+                            log.warn("Received an unknown command: " + inputLine);
+                            break; 
                     }
+                    try
+                    {
+                        inputLine = in.readLine();
+                    }
+                    catch (IOException e)
+                    {
+                        log.error("UNEXPECTED ERROR! Unable to read from the client socket. IOException : " + e.getMessage());
+                        return;
+                    }
+                } while(inputLine != null && acceptCommands);
+            }
+            sendOutputAndClose(response, out, in, socket);
+        }
+        
+        /**
+         * @return
+         */
+        private boolean startServices()
+        {
+            boolean response = true;
+            if (!storm.pickerIsRunning())
+            {
+                storm.startPicker();
+            }
+            try
+            {
+                if (!storm.xmlRpcServerIsRunning())
+                {
+                    storm.startXmlRpcServer();
                 }
-                in.close();
-                socket.close();
-            } catch (IOException e) {
-                //something went wrong with getting InputStream from socket, or with readLine(), or with any of the two close().
-                log.error("UNEXPECTED ERROR! Something went wrong with getting InputStream from socket, or with readLine(), or with any of the two close() operations! " + e);
+            }
+            catch (Exception e)
+            {
+                log.error("Unable to start the xmlrpc server. Exception: " + e.getMessage());
+                stopServices();
+                return false;
+            }
+            try
+            {
+                if (!storm.restServerIsRunning())
+                {
+                    storm.startRestServer();
+                }
+            }
+            catch (Exception e)
+            {
+                log.error("Unable to start the Rest server. Exception: " + e.getMessage());
+                stopServices();
+                return false;
+            }
+            if (!storm.spaceGCIsRunning())
+            {
+                storm.startSpaceGC();
+            }
+            return response;
+        }
+        
+        /**
+         * @return
+         */
+        private boolean stopServices()
+        {
+            boolean response = true;
+            storm.stopPicker();
+            storm.stopXmlRpcServer();
+            storm.stopRestServer();
+            storm.stopSpaceGC();
+            return response;
+        }
+        
+        /**
+         * @param response
+         * @param out
+         * @param in
+         * @param socket
+         */
+        private void sendOutputAndClose(String response, BufferedWriter out, BufferedReader in, Socket socket)
+        {
+            try
+            {
+                try
+                {
+                    out.write(response, 0, response.length());
+                    out.newLine();
+                }
+                catch (IOException e)
+                {
+                    log.error("UNEXPECTED ERROR! Unable to write on the client socket. IOException : " + e.getMessage());
+                }
+                try
+                {
+                    out.close();
+                    in.close();
+                }
+                catch (IOException e)
+                {
+                    log.error("UNEXPECTED ERROR! Unable to close client socket streams. IOException : " + e.getMessage());
+                }
+            }
+            finally
+            {
+                try
+                {
+                    socket.close();
+                }
+                catch (IOException e)
+                {
+                    log.error("UNEXPECTED ERROR! Unable to close client socket. IOException : " + e.getMessage());
+                }
             }
         }
+        
+        /**
+         * @return
+         */
+        private StormStatus getCurrentStatus()
+        {
+            if (bootstrapInProgress())
+            {
+                return StormStatus.BOOTSTRAPPING;
+            }
+            if (shutdownInProgress())
+            {
+                return StormStatus.SHUTTING_DOWN;
+            }
+            if (servicesRunning())
+            {
+                return StormStatus.RUNNING;
+            }
+            if (servicesStopped())
+            {
+                return StormStatus.STOPPED;
+            }
+            if (servicesStarting())
+            {
+                return StormStatus.STARTING;
+            }
+            if (servicesStopping())
+            {
+                return StormStatus.STOPPING;
+            }
+            return StormStatus.UNKNOW;
+        }
+
+        
+        private boolean bootstrapInProgress()
+        {
+            return false;
+        }
+
+        /**
+         * @return
+         */
+        private boolean shutdownInProgress()
+        {
+            return shutdownInProgress;
+        }
+        
+        private boolean servicesRunning()
+        {
+            return storm.pickerIsRunning() &&
+            storm.xmlRpcServerIsRunning() &&
+            storm.restServerIsRunning() &&
+            storm.spaceGCIsRunning();
+        }
+        
+        private boolean servicesStopped()
+        {
+            return !storm.pickerIsRunning() &&
+            !storm.xmlRpcServerIsRunning() &&
+            !storm.restServerIsRunning() &&
+            !storm.spaceGCIsRunning();
+        }
+        
+        private boolean servicesStarting()
+        {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
+        private boolean servicesStopping()
+        {
+            // TODO Auto-generated method stub
+            return false;
+        }
     }
-
-
-
-
-
-
+    
     /**
      * Method that automatically starts a CommandServer listening on the port specified
      * in the configuration file.
@@ -210,6 +532,6 @@ public class StoRMCommandServer {
         }
 
         System.out.println("Now booting StoRM...");
-        StoRMCommandServer stormCmdServer = new StoRMCommandServer(new StoRM(configurationPathname,refresh));
+        new StoRMCommandServer(new StoRM(configurationPathname,refresh));
     }
 }

@@ -76,7 +76,7 @@ public class CatalogUpdater {
 		public void run() {
 		    LOG.debug("Saving info into DB... ");
 		    StorageSpaceData ssd = null;
-		    if (SpaceInfoManager.testMode.get()) {
+		    if (SpaceInfoManager.getInstance().testMode.get()) {
 		        // this IS a TEST!
                 // Create a fake SSD
 		        ssd = new StorageSpaceData();
@@ -103,7 +103,7 @@ public class CatalogUpdater {
 			} catch (InvalidTSizeAttributesException e) {
 				LOG.error("Negative size?");
 			}
-			if (SpaceInfoManager.testMode.get()) {
+			if (SpaceInfoManager.getInstance().testMode.get()) {
                 // this IS a TEST!
 			    LOG.debug("Saved SSD info into the DB ");
 			} else {

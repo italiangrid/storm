@@ -14,7 +14,7 @@ public abstract class TestSpaceInfoManager {
          paths.add(System.getProperty("user.dir"));
          //paths.add(System.getProperty("user.dir")+File.separator+"..");
          paths.add(System.getProperty("user.dir")+File.separator+".."+File.separator+"TreeTraversal");
-         SpaceInfoManager.startTest(paths);
+         SpaceInfoManager.getInstance().startTest(paths);
 //         try {
 //            Thread.sleep(1500);
 //        } catch (InterruptedException e) {

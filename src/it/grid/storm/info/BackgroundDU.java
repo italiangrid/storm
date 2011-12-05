@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.concurrency.NamedThreadFactory;
 import it.grid.storm.concurrency.TimingThreadPool;
 import it.grid.storm.space.CallableDU;
-import it.grid.storm.space.CallableDU.ExitCode;
+import it.grid.storm.space.ExitCode;
 import it.grid.storm.space.DUResult;
 
 import java.util.ArrayList;

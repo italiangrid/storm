@@ -29,12 +29,11 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -348,8 +347,9 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                         chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
 
                         String voName = null;
-                        if (gu instanceof VomsGridUser) {
-                            voName = ((VomsGridUser) gu).getVO().getValue();
+                        if (gu instanceof AbstractGridUser)
+                        {
+                            voName = ((AbstractGridUser) gu).getVO().getValue();
                         }
 
                         TapeRecallCatalog rtCat = null;
