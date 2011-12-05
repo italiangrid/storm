@@ -23,12 +23,24 @@ public class MockGridUser {
 
 
     public static GridUserInterface buildMockGridUser() {
+        
+        GridUserInterface gridUser = null;
+        
         String userDN = "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni";
         FQAN fqan0 = new FQAN("/dteam/Role=NULL/Capability=NULL");
         FQAN fqan1 = new FQAN("/dteam/italy/Role=NULL/Capability=NULL");
         FQAN fqan2 = new FQAN("/dteam/italy/INFN-CNAF/Role=NULL/Capability=NULL");
         FQAN[] fqans = {fqan0, fqan1, fqan2};
-        return GridUserManager.makeVOMSGridUser(userDN, fqans);
+        try
+        {
+            gridUser = GridUserManager.makeVOMSGridUser(userDN, fqans);
+        }
+        catch (IllegalArgumentException e)
+        {
+            System.err.println("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+        return gridUser;
     }
 
 }

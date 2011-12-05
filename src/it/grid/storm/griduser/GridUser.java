@@ -45,18 +45,24 @@ import it.grid.storm.common.types.*;
  * @author R.Zappi
  * @version 1.0
  */
-public class GridUser extends AbstractGridUser {
+class GridUser extends AbstractGridUser {
 
     GridUser(MapperInterface mapper, String distinguishedName)
     {
         super(mapper, distinguishedName);
     }
+    
+    GridUser(MapperInterface mapper, String distinguishedName, String proxy)
+    {
+        super(mapper, distinguishedName, proxy);
+    }
 
+    /* (non-Javadoc)
+     * @see it.grid.storm.griduser.AbstractGridUser#getVO()
+     */
     /**
      * Return the main Virtual Organization of the User. Since User is presenting without VOMS Proxy, then default VO is
      * named NO_VO.
-     * 
-     * @return VO
      */
     public VO getVO()
     {
@@ -64,35 +70,22 @@ public class GridUser extends AbstractGridUser {
         return vo;
     }
 
-    /**
-     * Return the local user on which the GridUser is mapped. Note that the mapping is done at Mapper construction time.
-     * 
-     * @throws CannotMapUserException
-     * @return LocalUser
-     */
-    public LocalUser getLocalUser() throws CannotMapUserException
+    @Override
+    public boolean hasVoms()
     {
-        if (localUser == null)
-        {
-            try
-            {
-                localUser = userMapperClass.map(getDn(), null);
-            }
-            catch (CannotMapUserException ex)
-            {
-                // log the operation that failed
-                log.error("Error in mapping '" + subjectDN.getX500DN_rfc1779() + "' to a local user: "
-                        + ex.getMessage());
-                // re-throw same exception
-                throw ex;
-            }
-        }
-        return localUser;
+        return false;
     }
-
-    public String toString()
+    
+    @Override
+    public String[] getFQANsAsString()
     {
-        return "Grid User (no VOMS): '" + getDistinguishedName().getX500DN_rfc1779() + "'";
+        return new String[0];
+    }
+    
+    @Override
+    public FQAN[] getFQANs()
+    {
+        return new FQAN[0];
     }
     
     @Override
@@ -110,5 +103,9 @@ public class GridUser extends AbstractGridUser {
         }
         return result;
     }
-    
+
+    public String toString()
+    {
+        return "Grid User (no VOMS): '" + getDistinguishedName().getX500DN_rfc1779() + "'";
+    }
 }

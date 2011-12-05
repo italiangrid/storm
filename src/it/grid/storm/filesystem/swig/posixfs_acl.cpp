@@ -488,6 +488,7 @@ posixfs_acl::enforce(const string& pathname)
 
   // set ACL on pathname
   int rc = acl_set_file(pathname.c_str(), ACL_TYPE_ACCESS, acl);
+  acl_free(acl);
   if (-1 == rc)
     throw_error(errno, pathname, "acl_set_file");
 

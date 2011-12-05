@@ -89,7 +89,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
             // Something was wrong..
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified.");
-                log.error("srmMkdir: <> [SURL=] Request failed with [status: " + returnStatus.toString() + "]");
+                log.info("srmMkdir: <guser=NULL> [SURL=NULL] Request failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmMkdir: <> [SURL=] Request failed. Error creating returnStatus " + ex1);
             }
@@ -105,9 +105,8 @@ public class MkdirCommand extends DirectoryCommand implements Command {
             // Something was wrong..
             log.info("srmMkdir: Unable to get user credential. ");
             try {
-                returnStatus =
-                        new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.error("srmMkdir: <> [SURL=] Request failed with [status: " + returnStatus.toString() + "]");
+                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
+                log.info("srmMkdir: <> [SURL=] Request failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmMkdir: <> [SURL=] Request failed. Error creating returnStatus " + ex1);
             }
@@ -283,7 +282,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                     }
                 }
             } else {
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
+                log.info("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
                         + returnStatus.toString() + "]");
             }
 
@@ -292,7 +291,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                 returnStatus =
                         new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
                                           "User is not authorized to make a new directory");
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
+                log.info("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl

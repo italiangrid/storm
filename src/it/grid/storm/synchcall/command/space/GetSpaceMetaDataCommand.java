@@ -21,6 +21,7 @@ import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.space.StorageSpaceNotInitializedException;
+import it.grid.storm.space.quota.BackgroundGPFSQuota;
 import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
@@ -77,7 +78,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
     public OutputData execute(InputData indata) {
         log.debug("<GetSpaceMetaData Start!>");
         log.debug(" Updating SA with GPFS quotas results");
-        SpaceInfoManager.execGPFSQuota(false, false);
+        BackgroundGPFSQuota.getInstance().submitGPFSQuota();
         
         GetSpaceMetaDataInputData data = (GetSpaceMetaDataInputData) indata;
 
@@ -101,13 +102,11 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 metadata = catalog.getMetaDataSRMSpace(token);
             }
             catch (StorageSpaceNotInitializedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Unable to retrieve the space metadata for token " + token + " .StorageSpaceNotInitializedException : " + e.getMessage());
                 isInitialized = false;
             }
 
-            if(!isInitialized)
-            {
+            if(!isInitialized) {
                 errorCount++;
                 metadata = TMetaDataSpace.makeEmpty();
                 metadata.setSpaceToken(token);
@@ -121,8 +120,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                 metadata.setStatus(status);
                 log.error(formatLogMessage(SUCCESS, LOCALSTATUS, data.getUser(), token, null, status));
             }
-            else
-            {
+            else {
                 if (metadata == null) { // There are some problems...
                     errorCount++;
                     metadata = TMetaDataSpace.makeEmpty();
@@ -176,7 +174,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
                                           globalStatus));
             } else if (requestFailure) {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No valid space tokens");
-                log.error(formatLogMessage(FAILURE,
+                log.info(formatLogMessage(FAILURE,
                                            GLOBALSTATUS,
                                            data.getUser(),
                                            null,
@@ -185,7 +183,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
             } else {
                 globalStatus =
                         new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, "Check space tokens statuses for details");
-                log.error(formatLogMessage(SUCCESS,
+                log.info(formatLogMessage(SUCCESS,
                                            GLOBALSTATUS,
                                            data.getUser(),
                                            null,

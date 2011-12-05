@@ -17,11 +17,11 @@
 
 package it.grid.storm.namespace.model;
 
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.DNMatchingRule;
 import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VONameMatchingRule;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 
@@ -139,7 +139,7 @@ public class ApproachableRule implements Comparable{
     {
         boolean response = false;
         String dnString = gUser.getDn();
-        VomsGridUser vomsUser = null;
+        GridUserInterface gridUser = null;
         DistinguishedName dn = new DistinguishedName(dnString);
         boolean dnMatch = dnMatchingRule.match(dn);
         if (dnMatch)
@@ -153,12 +153,11 @@ public class ApproachableRule implements Comparable{
             {
                 // VOMS Attribute required.
                 // ---- Check if gUSER is a USER with VOMS Attributes ----
-                if (gUser instanceof VomsGridUser)
+                if (gUser instanceof AbstractGridUser && ((AbstractGridUser)gUser).hasVoms())
                 {
-                    vomsUser = (VomsGridUser) gUser;
-                    log.debug("Grid User Requestor   : " + vomsUser.toString());
-                    log.debug("  holds a VOMS cert ? : " + vomsUser.hasVoms());
-                    boolean voNameMatch = voNameMatchingRule.match(vomsUser.getVO().getValue());
+                    AbstractGridUser absGridUser = (AbstractGridUser) gUser;
+                    log.debug("Grid User Requestor   : " + absGridUser.toString());
+                    boolean voNameMatch = voNameMatchingRule.match(absGridUser.getVO().getValue());
                     if (voNameMatch)
                     {
                         response = true;

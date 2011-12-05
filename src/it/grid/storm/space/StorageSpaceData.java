@@ -151,8 +151,17 @@ public class StorageSpaceData {
         }
         else {
             // Ownership of Storage Space
-            if (!(ssTO.getVoName() == null || ssTO.getVoName().equals(VO.NO_VO.getValue()))) {
-                this.owner = GridUserManager.makeVOMSGridUser(ssTO.getOwnerName(), ssTO.getVoName());
+            if (!(ssTO.getOwnerName() == null || ssTO.getVoName() == null || ssTO.getVoName().equals(VO.NO_VO.getValue()))) {
+                try
+                {
+                    this.owner = GridUserManager.makeVOMSGridUser(ssTO.getOwnerName(), ssTO.getVoName());
+                }
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                              + e.getMessage());
+                    throw e;
+                }
             }
             else {
                 this.owner = GridUserManager.makeGridUser(ssTO.getOwnerName());
@@ -849,9 +858,10 @@ public class StorageSpaceData {
         builder.append("\n");
         builder.append("  reservedSpaceSize   = ");
         builder.append(reservedSpaceSize);
-        builder.append("  busySpaceSize       = ");
         builder.append("\n");
+        builder.append("  busySpaceSize       = ");
         builder.append(busySpaceSize);
+        builder.append("\n");
         builder.append("  busySpaceSizeForced = ");
         builder.append(busySpaceSizeForced);
         builder.append("\n");

@@ -458,12 +458,6 @@ public class Filesystem {
     /** @} **/
 
 
-
-
-
-
-
-
     /**
 
     @defgroup fs_acl ACL Manipulation
@@ -1112,7 +1106,9 @@ public class Filesystem {
 
         fs_acl acl = fs.new_acl();
         acl.load(fileOrDirectory,false);
-        return permissionMethod.get(acl, u);
+        FilesystemPermission permission = permissionMethod.get(acl, u);
+        deleteAcl(acl);
+        return permission; 
     }
 
 
@@ -1213,6 +1209,7 @@ public class Filesystem {
         } finally {
             lock.release();
             locks.remove(fileOrDirectory);
+            deleteAcl(acl);
         }
         return oldPermission;
     }
@@ -1401,10 +1398,46 @@ public class Filesystem {
         } finally {
             lock.release();
             locks.remove(fileOrDirectory);
+            deleteAcl(acl);
         }
         return oldPermission;
     }
 
-
-
+    /**
+     * @param acl
+     * @throws IllegalArgumentException
+     */
+    private void deleteAcl(fs_acl acl) throws IllegalArgumentException
+    {
+        if(acl == null)
+        {
+            log.error("Received null fs_acl");
+            throw new IllegalArgumentException("Received null fs_acl");
+        }
+        if(acl.getClass().equals(it.grid.storm.filesystem.swig.fs_acl.class))
+        {
+            long swigCPtr = it.grid.storm.filesystem.swig.fs_aclWrap.getPointer(acl);
+            it.grid.storm.filesystem.swig.fs_aclWrap.deleteAcl(swigCPtr);
+            return;
+        }
+        if(acl.getClass().equals(it.grid.storm.filesystem.swig.posixfs_acl.class))
+        {
+            long swigCPtr = it.grid.storm.filesystem.swig.posixfs_aclWrap.getPointer(acl);
+            it.grid.storm.filesystem.swig.posixfs_aclWrap.deleteAcl(swigCPtr);
+            return;
+        }
+        if(acl.getClass().equals(it.grid.storm.filesystem.swig.gpfs23_acl.class))
+        {
+            long swigCPtr = it.grid.storm.filesystem.swig.gpfs23_aclWrap.getPointer(acl);
+            it.grid.storm.filesystem.swig.gpfs23_aclWrap.deleteAcl(swigCPtr);
+            return;
+        }
+        if(acl.getClass().equals(it.grid.storm.filesystem.swig.gpfs31_acl.class))
+        {
+            long swigCPtr = it.grid.storm.filesystem.swig.gpfs31_aclWrap.getPointer(acl);
+            it.grid.storm.filesystem.swig.gpfs31_aclWrap.deleteAcl(swigCPtr);
+            return;
+        }
+        log.error("Unable to find a wrapper for acl class: " + acl.getClass());
+    }
 }

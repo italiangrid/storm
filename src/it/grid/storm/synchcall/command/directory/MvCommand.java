@@ -85,10 +85,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 
         TReturnStatus returnStatus = null;
         TReturnStatus returnStatus_INVALID_PATH = null;
+        TReturnStatus returnStatus_INVALID_REQUEST = null;
         // Defined here because it is used many times... (exception handling stuff...)
         try
         {
             returnStatus_INVALID_PATH = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "");
+            returnStatus_INVALID_REQUEST =  new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "");
         }
         catch (InvalidTReturnStatusAttributeException ex)
         {
@@ -106,7 +108,7 @@ public class MvCommand extends DirectoryCommand implements Command {
             try
             {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified.");
-                log.error("srmMv: Request failed with [status: "
+                log.info("srmMv: Request failed with [status: "
                         + returnStatus.toString() + "]");
             }
             catch (InvalidTReturnStatusAttributeException ex1)
@@ -129,7 +131,7 @@ public class MvCommand extends DirectoryCommand implements Command {
             {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
                                                  "Unable to get user credential!");
-                log.error("srmMv: Request failed with [status: "
+                log.info("srmMv: Request failed with [status: "
                         + returnStatus.toString() + "]");
             }
             catch (InvalidTReturnStatusAttributeException ex1)
@@ -156,17 +158,17 @@ public class MvCommand extends DirectoryCommand implements Command {
                 fromStori = namespace.resolveStoRIbySURL(fromSURL, guser);
             } catch(IllegalArgumentException e)
             {
-                log.error("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + e);
+                log.info("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + e);
                 try
                 {
-                    outputData.setStatus(new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
+                    outputData.setStatus(new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
                 }
                 catch (InvalidTReturnStatusAttributeException e1)
                 {
                     log.error("srmMv: Request failed. Error creating returnStatus "
                               + e1);
                 }
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                           + "] failed with [status: " + returnStatus_INVALID_PATH.toString() + "]");
                 return outputData;
             }

@@ -123,9 +123,21 @@ public class RestService {
     }
 
     /**
-     * @throws IOException
+     * @return
      */
-    public static void stop() throws IOException {
-        httpThreadSelector.stopEndpoint();
+    public static boolean isRunning()
+    {
+        return httpThreadSelector != null;
+    }
+    
+    /**
+     * 
+     */
+    public static void stop()
+    {
+        if (httpThreadSelector != null)
+        {
+            httpThreadSelector.stopEndpoint();
+        }
     }
 }

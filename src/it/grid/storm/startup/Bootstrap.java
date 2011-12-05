@@ -58,11 +58,11 @@ public class Bootstrap {
     }
 
     public static void initializeUsedSpace() {
-        int numberOfSpaceInitializated = SpaceInfoManager.initSpaceFromINIFile();
+        int numberOfSpaceInitializated = SpaceInfoManager.getInstance().initSpaceFromINIFile();
         log.info("Initializated '"+numberOfSpaceInitializated+"' SA from 'used-space.ini'");
         
-        int failures = SpaceInfoManager.updateSpaceUsed();
-        int numberQuotas = SpaceInfoManager.howManyQuotas();
+        int failures = SpaceInfoManager.getInstance().updateSpaceUsed();
+        int numberQuotas = SpaceInfoManager.getInstance().howManyQuotas();
         log.info("Computed '"+numberQuotas+"' GPFS quotas.");
         if (failures>0) {
             log.error("Some QUOTA was failed! Check logs!");    

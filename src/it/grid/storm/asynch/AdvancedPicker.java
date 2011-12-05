@@ -52,7 +52,7 @@ public class AdvancedPicker {
     /* link to scheduler that handles Feeder taks in StoRM! */
     private final Scheduler s = SchedulerFacade.getInstance().crusherScheduler(); 
     /* Timer object in charge of retrieving info from the DB! */
-    private Timer retriever = null; 
+    private Timer retriever = new Timer(); 
     private TimerTask retrievingTask = null;
     /* Delay time before starting retriever thread! Set to 5 seconds */
     private final long delay = Configuration.getInstance().getPickingInitialDelay() * 1000; 
@@ -73,8 +73,9 @@ public class AdvancedPicker {
      */
     public void stopIt() {
         log.debug("ADVANCED PICKER: stopped");
-        if (retriever != null) {
-            retriever.cancel();
+        if (retriever != null && retrievingTask != null) {
+            retrievingTask.cancel();
+            retriever.purge();
         }
     }
 
@@ -84,10 +85,6 @@ public class AdvancedPicker {
      */
     public void startIt() {
         log.debug("ADVANCED PICKER: started");
-        if (retriever != null) {
-            retriever.cancel();
-        }
-        retriever = new Timer();
         retrievingTask = new TimerTask() {
 
             @Override

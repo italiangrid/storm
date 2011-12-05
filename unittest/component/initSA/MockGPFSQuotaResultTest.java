@@ -3,8 +3,8 @@ package component.initSA;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
 import it.grid.storm.space.quota.GPFSLsQuotaCommand;
+import it.grid.storm.space.quota.GPFSQuotaCommandResult;
 import it.grid.storm.space.quota.GPFSQuotaInfo;
-import it.grid.storm.space.quota.GPFSRepQuotaCommand;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ public class MockGPFSQuotaResultTest {
     
     @Test
     public void testExecuteGetQuotaInfo() {
-        GPFSRepQuotaCommand quotaCmd = new GPFSRepQuotaCommand();
+        GPFSLsQuotaCommand quotaCmd = new GPFSLsQuotaCommand();
         quotaCmd.executeGetQuotaInfo(true);
     }
     
@@ -28,9 +28,14 @@ public class MockGPFSQuotaResultTest {
         QuotaType qt = QuotaType.FILESET;
         qt.setValue("data1");
         quota.setQuotaType(qt);
-        GPFSQuotaInfo qInfo = quotaCmd.executeGetQuotaInfo(quota, true);
-        log.debug(qInfo.toString());
-        log.debug("Space Used (KB): "+qInfo.getCurrentBlocksUsage());
+        GPFSQuotaCommandResult qResult = quotaCmd.executeGetQuotaInfo(quota, true);
+        log.debug(qResult.toString());
+        log.debug("How many quotas: "+qResult.getQuotaResults().size());
+        GPFSQuotaInfo qInfo = qResult.getQuotaResults().get(0);
+        if (qInfo!=null){
+            log.debug("Space Used (KB): "+qInfo.getCurrentBlocksUsage());
+        }
+        
     }
 
 }

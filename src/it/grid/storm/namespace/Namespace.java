@@ -22,9 +22,9 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.Space;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.namespace.config.NamespaceParser;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.MappingRule;
@@ -97,12 +97,12 @@ public class Namespace implements NamespaceInterface {
         TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(getApproachableRules(user));
         if(appRules.isEmpty())
         {
-            if(user instanceof VomsGridUser)
+            if(user instanceof AbstractGridUser)
             {
                 log.error("No approachable rules found for user with DN='" + user.getDn() + "' and VO = '"
-                        + ((VomsGridUser) user).getVO() + "'");
+                        + ((AbstractGridUser) user).getVO() + "'");
                 throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
-                        + "' and VO = '" + ((VomsGridUser) user).getVO() + "'");
+                        + "' and VO = '" + ((AbstractGridUser) user).getVO() + "'");
             }
             else
             {
@@ -503,12 +503,12 @@ public class Namespace implements NamespaceInterface {
         log.debug("Compatible Approachable rules : " + appRules);
         if(appRules.isEmpty())
         {
-            if(user instanceof VomsGridUser)
+            if(user instanceof AbstractGridUser)
             {
                 log.error("No approachable rules found for user with DN='" + user.getDn() + "' and VO = '"
-                        + ((VomsGridUser) user).getVO() + "'");
+                        + ((AbstractGridUser) user).getVO() + "'");
                 throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
-                        + "' and VO = '" + ((VomsGridUser) user).getVO() + "'");
+                        + "' and VO = '" + ((AbstractGridUser) user).getVO() + "'");
             }
             else
             {

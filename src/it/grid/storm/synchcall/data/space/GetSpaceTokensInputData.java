@@ -18,7 +18,6 @@
 package it.grid.storm.synchcall.data.space;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
 /**
@@ -61,7 +60,7 @@ public class GetSpaceTokensInputData extends AbstractInputData
     /**
      * Sets VomsGridUser
      */
-    public void setUser(VomsGridUser user)
+    public void setUser(GridUserInterface user)
     {
         this.auth = user;
     }

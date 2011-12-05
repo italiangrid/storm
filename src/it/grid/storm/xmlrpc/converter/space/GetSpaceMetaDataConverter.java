@@ -19,7 +19,6 @@ package it.grid.storm.xmlrpc.converter.space;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidArrayOfTSpaceTokenAttributeException;
@@ -92,7 +91,7 @@ public class GetSpaceMetaDataConverter implements Converter
         }
 
         try {
-            inputData = new GetSpaceMetaDataInputData((VomsGridUser) guser, arrayOfSpaceTokens);
+            inputData = new GetSpaceMetaDataInputData(guser, arrayOfSpaceTokens);
         } catch (InvalidGetSpaceMetaDataInputAttributeException e) {
             log.error("Error Creating inputData for GetSpaceMetaDataManager" + e);
         }

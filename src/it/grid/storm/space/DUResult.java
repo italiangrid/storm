@@ -1,6 +1,5 @@
 package it.grid.storm.space;
 
-import it.grid.storm.space.CallableDU.ExitCode;
 
 import java.util.Date;
 
@@ -66,11 +65,11 @@ public class DUResult implements Cloneable {
 
     
     public boolean isSuccess() {
-    	return (this.cmdResult.equals(CallableDU.ExitCode.SUCCESS));
+    	return (this.cmdResult.equals(ExitCode.SUCCESS));
     }
     
     public boolean isPoisoned() {
-        return (this.cmdResult.equals(CallableDU.ExitCode.POISON_PILL)); 
+        return (this.cmdResult.equals(ExitCode.POISON_PILL)); 
     }
     /**
      * @return the cmdResult

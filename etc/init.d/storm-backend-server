@@ -35,16 +35,14 @@
 #
 ### END INIT INFO
 
-
-INITSCRIPT="`basename $0`"
-
 NAME=storm-backend-server
-DESC="StoRM BackEnd server"
+DESC="storm-backend-server"
 UMASK="077"
 STORM_BE_USER="storm"
 GPFS_PATH=/usr/lpp/mmfs/bin
 PIDFILE=/var/run/${NAME}.pid
-LOCKFILE=/var/lock/subsys/${NAME}
+LOCKFOLDER=/var/lock/subsys
+LOCKFILE=${LOCKFOLDER}/${NAME}
 
 ## useful functions
 
@@ -74,7 +72,7 @@ fi
 function die () {
     rc="$1"
     shift
-    echo -n "$INITSCRIPT: " 1>&2
+    echo -n "${NAME}: " 1>&2
     if [ $# -gt 0 ]; then
         echo "$@" 1>&2
     else
@@ -86,11 +84,16 @@ function die () {
 
 setenv_if_not_set () {
     # a little black magic makes a script more spicy ;-)
+    # Explaining the magic:
+    # - receives a couple of parameters, the first represent the name of a variable, the second its value
+    # - if the current value for variable is an empty string then set this variable to the provided value 
     if test -z "${!1}"; then
         eval export $1=\'"$2"\'
     fi
 }
 
+
+# check if a program can be executed given the current path (does not work with builtin commands)
 function command_in_path () {
     type -p "$1" >&/dev/null;
 }
@@ -99,7 +102,7 @@ function require_command () {
     local cmd="$1"
 
     command_in_path "$cmd" \
-        || die 1 "Cannot find command '$cmd' in the current PATH - aborting."
+        || die 1 "Cannot find command - $cmd - in the current PATH - aborting."
 }
 
 function user_exists () {
@@ -154,27 +157,6 @@ case $platform in
 esac
 
 
-# try to find the installation directory
-#if test -z "$STORM_HOME"; then
-#    for dir in \
-#        "`dirname $0`/../.." \
-#        /opt/storm/backend \
-#        /usr/local/storm \
-#        /home/storm \
-#        ;
-#      do
-#      if test -e "$dir"/${NAME}.jar; then
-#          STORM_HOME="$dir"
-#          break
-#      fi
-#    done
-#    if test -z "$STORM_HOME"; then
-#        die 5 "Cannot find StoRM backend installation directory - please set environment variable STORM_HOME and run '$0 $@' again."
-#    fi
-#fi
-
-#export STORM_HOME="`normalize_dirpath "$STORM_HOME"`"
-
 # some Java parameters
 if [ -z $JAVA_HOME ]; then
     if [ ! -z $JAVA_LOCATION ]; then
@@ -183,25 +165,15 @@ if [ -z $JAVA_HOME ]; then
          die 5  "Error! No JAVA_HOME neither JAVA_LOCATION available! Unable to set JAVA_HOME"
     fi
 fi
-
   
 JAVA=$JAVA_HOME/bin/java
 
-
 # LCMAPS modules library
-#setenv_if_not_set STORM_BE_CONFIG_FILE "$STORM_HOME/etc/storm.properties"
 setenv_if_not_set STORM_BE_CONFIG_FILE "/etc/storm/backend-server/storm.properties"
 setenv_if_not_set STORM_BE_CONFIG_REFRESH 0
 setenv_if_not_set STORM_BE_CONFIGDIR "`dirname $STORM_BE_CONFIG_FILE`"
-#setenv_if_not_set STORM_BE_LOGDIR "$STORM_HOME/var/log"
 setenv_if_not_set STORM_BE_LOGDIR "/var/log/storm"
-#setenv_if_not_set STORM_BE_TMPDIR "$STORM_HOME/var/tmp"
 setenv_if_not_set STORM_BE_USER "`id -u -n`"
-
-
-
-#setenv_if_not_set STORM_BE_JAR "$STORM_HOME/${NAME}.jar"
-#setenv_if_not_set STORM_BE_JARDIR "$STORM_HOME/lib"
 setenv_if_not_set STORM_BE_JARDIR "/usr/share/java/${NAME}"
 setenv_if_not_set STORM_BE_JAR "${STORM_BE_JARDIR}/${NAME}.jar"
 
@@ -227,9 +199,7 @@ classpath="$classpath:$STORM_BE_CONFIGDIR"
 ######################
 PLATFORM=`${JAVA} -cp $STORM_BE_JAR -Xmx32m it.grid.storm.Platform | sed -e "s/ /_/g"`
 
-#setenv_if_not_set STORM_BE_LIBDIR "$STORM_HOME/lib/native/$PLATFORM/"
 setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/${NAME}/native/$PLATFORM/"
-#export LD_LIBRARY_PATH="/opt/glite/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH="/usr/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
 # port for the command server (FIXME: should read from conf. file)
@@ -254,9 +224,7 @@ if [ "$ENABLE_SSL"x == yesx ];
     if [ -z "$SSL_TRUST_STORE_PWD" -o -z "$SSL_KEY_STORE_PWD" ]; then
         die 6 "The SSL Keystore and Truststore need to be protected by password!"
     fi
-    #setenv_if_not_set SSL_TRUST_STORE "/opt/storm/backend/etc/ecar.ts"
     setenv_if_not_set SSL_TRUST_STORE "$STORM_BE_CONFIGDIR/ecar.ts"
-    #setenv_if_not_set SSL_KEY_STORE "/opt/storm/backend/etc/ecar.p12"
     setenv_if_not_set SSL_KEY_STORE "$STORM_BE_CONFIGDIR/ecar.p12"
     setenv_if_not_set SSL_KEY_STORE_TYPE "PKCS12"
     export STORM_SSL_OPTIONS="-Djavax.net.ssl.trustStore=\"$SSL_TRUST_STORE\" \
@@ -289,21 +257,12 @@ fi
 if ! test -d "$STORM_BE_LOGDIR"; then
     die 5 "Cannot find log files directory '$STORM_BE_LOGDIR' - please set environment variable STORM_BE_LOGDIR and run '$0 $@' again."
 fi
-#if ! test -d "$STORM_BE_TMPDIR"; then
-#    die 5 "Cannot find temporary files directory '$STORM_BE_TMPDIR' - please set environment variable STORM_BE_TMPDIR and run '$0 $@' again."
-#fi
 if ! test -e "$LCMAPS_DB_FILE"; then
     die 6 "Cannot find LCMAPS configuration file '$LCMAPS_DB_FILE' - please set environment variable LCMAPS_DB_FILE and run '$0 $@' again."
 fi
-
 if ! user_exists "$STORM_BE_USER"; then
-    die 1 "User '$STORM_BE_USER' not found in system database; cannot run StoRM BE process - please set environment variable STORM_BE_USER to a sane value."
+    die 1 "User '$STORM_BE_USER' not found in system database; cannot run storm-backend-server process - please set environment variable STORM_BE_USER to a sane value."
 fi
-
-#if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_TMPDIR'"; then
-#    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_TMPDIR
-#    die 1 "Temporary files directory '$STORM_BE_TMPDIR' is not writable by user '$STORM_BE_USER' - aborting."
-#fi
 
 #TODO dont do this here, do it in yaim!
 if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
@@ -313,44 +272,109 @@ fi
 
 ## command server interaction
 
-suspend () {
-    (echo STOP; echo exit) | nc localhost $STORM_COMMAND_PORT
+send_command(){
+    if [ $# -ne 2 ]; then
+				echo -n "INTERNAL ERROR: missing parameters '$'@=$@ required COMMAND , RETURN_VARIABLE" 1>&2 
+				return -1
+		fi
+		COMMAND=$1
+		nc -z localhost $STORM_COMMAND_PORT > /dev/null
+#    lsof -i tcp:$STORM_COMMAND_PORT > /dev/null
+		if [ ! $? -eq 0 ]; then
+		    log_failure_msg "StoRMCommandServer on localhost:$STORM_COMMAND_PORT is closed"
+		    return 1
+    fi
+    LOCAL_OUTPUT=$({ (echo $COMMAND; echo exit) | nc localhost $STORM_COMMAND_PORT; })
+    if [ ! $? -eq 0 ]; then
+		    log_failure_msg "Error sending $COMMAND to StoRMCommandServer on localhost:$STORM_COMMAND_PORT"
+		    return 2
+    fi
+    export $2="$LOCAL_OUTPUT"
+    return 0
+}
 
-    if [ $? -eq 0 ]; then
+getRunningPids(){
+	if [ $# -ne 1 ]; then
+		echo -n "INTERNAL ERROR: missing parameters '$'@=$@ required RETURN_PIDS" 1>&2 
+		return 1
+	fi
+  pslist=$( ps -ef | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
+  export $1="$pslist"
+  return 0
+}
+
+stop () {
+    send_command "STOP" "OUTPUT"
+    if [ ! $? -eq 0 ]; then
+        return 3
+    fi
+    case "$OUTPUT" in
+      "SUCCESS") #stop OK
         log_success_msg "StoRM backend: sent command STOP"
         return 0
-    else
-        echo 1>&2 "$0: StoRM backend: cannot contact StoRMCommandServer on localhost:$STORM_COMMAND_PORT"
-        return 1
-    fi
+      ;;
+      "FAILURE") 
+        log_failure_msg "$NAME stop failure."
+		return 1
+        ;;
+      *)
+      # error
+        log_failure_msg "$NAME stop unknown response '$OUTPUT'."            
+		return 2
+        ;; 
+    esac
 }
-
-resume () {
-    (echo START; echo exit) | nc localhost $STORM_COMMAND_PORT
-
-    if [ $? -eq 0 ]; then
-        log_success_msg "StoRM backend: sent command START"
-        return 0
-    else
-        echo 1>&2 "$0: StoRM backend: cannot contact StoRMCommandServer on localhost:$STORM_COMMAND_PORT"
-        return 1
-    fi
-}
-
-
-## start
 
 start () {
+    send_command "START" "OUTPUT"
+    if [ ! $? -eq 0 ]; then
+        return 3
+    fi
+    case "$OUTPUT" in
+      "SUCCESS") #start OK
+        log_success_msg "Starting $DESC"
+        return 0
+      ;;
+      "FAILURE") 
+        log_failure_msg "$NAME start failure."
+        return 1
+        ;;
+      *)
+      # error
+        log_failure_msg "$NAME start unknown response '$OUTPUT'."            
+        return 2
+        ;;
+    esac 
+}
+
+
+## bootstrap
+
+bootstrap () {
     ulimit -n 4096
 
     local pid
-
-        run () { "$@" & : ; }
+    local ppid
+        run () { "$@" 1> /dev/null 2>&1 & : ; }
 
     #cd "$STORM_HOME"
     #probably this is the directory where the dump file are created in case of JVM crash
-	cd "$HOME"
-	
+    cd "$HOME"
+	  getRunningPids "PIDS"
+    if [ $? -ne 0 ]; then
+        return -1
+    fi
+    if [ -n "$PIDS" ]; then
+        local old_pid=`cat ${PIDFILE}`
+        echo $PIDS | grep $old_pid >> /dev/null
+        if [ $? -eq 0 ]; then
+            log_success_msg "$DESC already running"
+            return 0
+        else
+            log_warning_msg "$NAME running but wrong pid '$old_pid' in pidfile"
+            return 1
+        fi
+    fi
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
 #    run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
 #        java \
@@ -383,7 +407,7 @@ start () {
         $STORM_DEBUG_OPTION \
         $STORM_JMX_OPTION \
         -Djava.library.path='$STORM_BE_LIBDIR' \
-        -Djna.library.path='$LD_LIBRARY_PATH:$STORM_BE_LIBDIR' \
+        -Djna.library.path='$LD_LIBRARY_PATH' \
         -Daxis.client.connect.timeout=30000 \
         -Djava.protocol.handler.pkgs=org.globus.net.protocol \
         -Dnetworkaddress.cache.negative.ttl=0 \
@@ -397,83 +421,162 @@ start () {
         '$STORM_BE_CONFIG_FILE' '$STORM_BE_CONFIG_REFRESH' \
         1>$STORM_BE_LOGDIR/storm-backend.stdout \
         2>$STORM_BE_LOGDIR/storm-backend.stderr "
-    pid="$!"
-
+    
     # XXX: kludge to test if server is up
     # (we need to rewrite main class using commons-daemon!)
     sleep 5
-    test -d /proc/$pid \
-        || die 7 "StoRM backend server process unexpectedly died - startup failed."
-    sleep 10
-    resume \
-        || (echo 1>&2 "still starting..."; sleep 20; resume) || die 7 "StoRMCommandServer not responding on localhost:$STORM_COMMAND_PORT - startup failed."
+    ppid="$!"
+    pid=`ps --ppid $ppid -o pid | grep -v PID | xargs ps --ppid 2> /dev/null | grep -v PID | awk '{print $1}'`
+    if [[ "x" == "x"$pid || ! -d /proc/$pid ]]; then
+        log_failure_msg "The storm-backend-server process unexpectedly died"
+        return 1
+    fi
 
+    
     # lock subsys (see http://www.redhat.com/magazine/008jun05/departments/tips_tricks/ )
-    if test -w /var/lock/subsys; then
-        echo $pid > "/var/lock/subsys/`basename $0`"
+    if test -w ${LOCKFOLDER}; then
+        echo $pid > ${LOCKFILE}
     fi
 
     # save pid
-    echo $pid > /var/run/${NAME}.pid
+    echo $pid > ${PIDFILE}
 
     # LSB compliant logging
-    log_success_msg "Starting $DESC"
+    log_success_msg "Bootstrapping $DESC"
 }
 
 
-## stop
+## shutdown
 
-stop () {
+shutdown () {
+
     local pid
-
+    
     # shutdown via command server...
-    (echo SHUTDOWN; echo exit) | nc localhost $STORM_COMMAND_PORT
-
-    # XXX: kludge to test if server is still up;
-    # need to rewrite main class using commons-daemon
-    pid=`cat /var/run/${NAME}.pid`
-    if test -n "$pid"; then
-        sleep 5
-        test -d /proc/$pid \
-            && die 1 "StoRM backend server still running after SHUDOWN command."
-        #kill `cat /var/run/${NAME}.pid`
+	getRunningPids "PIDS"
+    if [ $? -ne 0 ]; then
+        return -1
     fi
-
+    if [ -n "$PIDS" ]; then
+        send_command "SHUTDOWN" "OUTPUT"
+        if [ ! $? -eq 0 ]; then
+            kill_zombie
+		        return 1
+        fi
+        case "$OUTPUT" in
+          "SUCCESS") #shutdown OK
+          ;;
+          "FAILURE") 
+            log_warning_msg "shutdown error. Forcing off"
+            kill_zombie
+            return 0
+            ;;
+          *)
+          # error
+            log_warning_msg "shutdown unknown response '$OUTPUT'. Forcing off"            
+            kill_zombie
+            return 0
+            ;;
+        esac
+            # trick to test if server is still up;
+        sleep 2
+        if [ -f ${PIDFILE} ]; then
+            pid=`cat ${PIDFILE}`
+    
+            if  test -n "$pid"; then
+                # do not sleep, stop call is synchronous
+                #sleep 5
+                if [ -d /proc/$pid ]; then
+                    log_warning_msg "$NAME still running after SHUDOWN. Forcing off"
+                    kill_zombie
+                    return 0
+                fi
+            fi
+        fi
+        # LSB compliant logging
+        log_success_msg "Stopping $DESC"
+    else
+        log_success_msg "$DESC already stopped"
+    fi
     # remove pidfile
-    rm -f /var/run/${NAME}.pid
-
+    rm -f ${PIDFILE}
     # remove subsys lock (see http://www.redhat.com/magazine/008jun05/departments/tips_tricks/ )
-    rm -f "/var/lock/subsys/`basename $0`"
+    rm -f ${LOCKFILE}
+    return 0
+}
 
-    # LSB compliant logging
-    log_success_msg "Stopping $DESC"
+kill_zombie(){
+    local pid=`cat ${PIDFILE}`
+    kill -9 $pid
+    rm -f ${PIDFILE}
+    # remove subsys lock (see http://www.redhat.com/magazine/008jun05/departments/tips_tricks/ )
+    rm -f ${LOCKFILE}
+    log_success_msg "Roughly killing $DESC"
+    return 0
 }
 
 ## status -----------------------------------
 
 status(){
-
-   pslist=$( ps -ef | grep java | grep $NAME | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
-    if [ -n "$pslist" ]; then
-        log_success_msg "$NAME (pid $pslist) is running"
-        return 0
+  
+    local PIDS
+    getRunningPids "PIDS"
+    if [ $? -ne 0 ]; then
+        return -1
     fi
-    if [ -f $PIDFILE ]; then
+    if [ -n "$PIDS" ]; then
+        if [ ! -f ${PIDFILE} ]; then
+            log_warning_msg "$NAME running but pid file exists"
+            return 1
+        fi
+        if [ ! -f ${LOCKFILE} ]; then
+            log_warning_msg "$NAME running but subsys locked"
+            return 2
+        fi
+        local pid=`cat ${PIDFILE}`
+        echo ${PIDS} | grep ${pid} > /dev/null
+        if [ $? -ne 0 ]; then
+            log_warning_msg "$NAME running but wrong pid in PIDFILE"
+            return 3
+        fi
+	      send_command "STATUS" "OUTPUT"
+        if [ ! $? -eq 0 ]; then
+          return -2
+        fi
+			    case "$OUTPUT" in
+            "STARTING") 
+              ;;
+            "STOPPED") 
+              ;;
+            "RUNNING") 
+              ;;
+            "STOPPING") 
+              ;;
+            "SHUTTING_DOWN") 
+              ;;
+            *)
+              log_warning_msg "$NAME unknown status '$OUTPUT'."
+              return 4
+              ;;
+          esac          
+          log_success_msg "$NAME (pid ${pid}) is $OUTPUT"
+          return 0
+    fi
+    if [ -f ${PIDFILE} ]; then
         log_warning_msg "$NAME dead but pid file exists"
         return 1
     fi
-    if [ -f $LOCKFILE ]; then
+    if [ -f ${LOCKFILE} ]; then
         log_warning_msg "$NAME dead but subsys locked"
         return 2
     fi
     log_success_msg "$NAME is stopped"
-    return 3
+    return 0
 }
-
 
 ## main
 
-set -e
+#set -e # removed! do not exit if a command fails!
 
 case "$1" in
     start)  
@@ -483,23 +586,25 @@ case "$1" in
                 elif [ $2 = "jmx" ]; then
                 	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false";
                 else
-                    start;
+                    bootstrap && start;
                 fi
                 if [ $# -gt 2 ]; then
 	                if [ $3 = "debug" ]; then
-	                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+	                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; 
+                      bootstrap && start;
 	                elif [ $3 = "jmx" ]; then
-	                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+	                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ;
+                    bootstrap && start;
 	                else
-	                    start;
+	                    bootstrap && start;
 	                fi
                 else
-             	   start;
+             	   bootstrap && start;
             	fi ;
             else
-                start;
+                bootstrap && start;
             fi ;;
-    stop) stop ;;
+    stop) shutdown ;;
   #reload
     #
     #   If the daemon can reload its config files on the fly
@@ -518,7 +623,7 @@ case "$1" in
     #   option to the "reload" entry above. If not, "force-reload" is
     #   just the same as "restart".
     #
-	    stop; 
+	    shutdown; 
 	    sleep 1;  
 		if [ $# -gt 1 ]; then
             if [ $2 = "debug" ]; then
@@ -526,27 +631,29 @@ case "$1" in
             elif [ $2 = "jmx" ]; then
             	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false";
             else
-                start;
+                bootstrap && start;
             fi
             if [ $# -gt 2 ]; then
                 if [ $3 = "debug" ]; then
-                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; start;
+                    STORM_DEBUG_OPTION="-Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n" ; 
+                    bootstrap && start;
                 elif [ $3 = "jmx" ]; then
-                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; start;
+                	STORM_JMX_OPTION="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false" ; 
+                  bootstrap && start;
                 else
-                    start;
+                    bootstrap && start;
                 fi
             else
-         	   start;
+         	   bootstrap && start;
         	fi ;
         else
-            start;
+            bootstrap && start;
         fi ;;
     # stop Picker
-    suspend) suspend ;;
+    suspend) stop ;;
 	
     # start Picker and XmlRpcServer
-    resume) resume ;;
+    resume) start ;;
     # query status (only RH systems)
     # FIXME: this cannot work until the BE has a proper UNIX startup...
     # the 'status' function uses 'pidof' to search, and our process has
@@ -559,3 +666,4 @@ case "$1" in
 esac
 
 exit 0
+ 

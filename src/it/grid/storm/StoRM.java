@@ -60,7 +60,12 @@ public class StoRM {
     private static Logger log;
 
     private final Timer GC = new Timer(); // Timer object in charge to call periodically the Space Garbace Collector
-
+    private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+    private TimerTask cleaningTask = null;
+    private boolean isPickerRunning = false;
+    private boolean isXmlrpcServerRunning = false;
+    private boolean isSpaceGCRunning = false;
+    
     /**
      * Public constructor that requires a String containing the complete pathname to the configuration file, as well as
      * the desired refresh rate in seconds for changes in configuration. Beware that by pathname it is meant the
@@ -127,16 +132,6 @@ public class StoRM {
             Bootstrap.initializeAclManager(httpsFactoryName, LoggerFactory.getLogger(Bootstrap.class));
         }
         
-        /**
-         * RESTFul Service Start-up
-         */
-        try {
-            RestService.startServer();
-        } catch (IOException e) {
-            StoRM.log.error("Unable to start internal HTTP Server listening for RESTFul services");
-            e.printStackTrace();
-        }
-
         //
         picker = new AdvancedPicker();
         // this.xmlrpcServer = new SynchCallServer();
@@ -171,6 +166,7 @@ public class StoRM {
      */
     synchronized public void startPicker() {
         picker.startIt();
+        this.isPickerRunning = true;
     }
 
     /**
@@ -178,35 +174,111 @@ public class StoRM {
      */
     synchronized public void stopPicker() {
         picker.stopIt();
+        this.isPickerRunning = false;
     }
 
     /**
-     * Method used to start xmlrpcServer.
+     * @return
      */
-    synchronized public void startXmlRpcServer() {
+    public synchronized boolean pickerIsRunning()
+    {
+        return this.isPickerRunning;
+    }
+    /**
+     * Method used to start xmlrpcServer.
+     * @throws Exception 
+     */
+    synchronized public void startXmlRpcServer() throws Exception {
         xmlrpcServer.createServer();
+        this.isXmlrpcServerRunning = true;
     }
 
+    /**
+     * Method used to stop xmlrpcServer.
+     */
+    synchronized public void stopXmlRpcServer() {
+        xmlrpcServer.stopServer();
+        this.isXmlrpcServerRunning = false;
+    }
+    
+    /**
+     * @return
+     */
+    public synchronized boolean xmlRpcServerIsRunning()
+    {
+        return this.isXmlrpcServerRunning;
+    }
+    
+    /**
+     * RESTFul Service Start-up
+     */
+    synchronized public void startRestServer() throws Exception
+    {
+        try
+        {
+            RestService.startServer();
+        }
+        catch (IOException e)
+        {
+            System.err.println("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
+            throw new Exception("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
+        }
+    }
+    
+    /**
+     * @throws Exception
+     */
+    synchronized public void stopRestServer() 
+    {
+            RestService.stop();
+    }
+    
+    /**
+     * @return
+     */
+    public synchronized boolean restServerIsRunning()
+    {
+        return RestService.isRunning();
+    }
+    
     /**
      * Method use to start the space Garbage Collection Thread.
      */
     synchronized public void startSpaceGC() {
-        StoRM.log.debug("Space GC started.");
-        final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
-        TimerTask cleaningTask = new TimerTask() {
+        StoRM.log.debug("Starting Space GC.");
+        long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay time before starting
+        // cleaning thread! Set to 1 minute
+        long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period of execution of cleaning!
+        // Set to 1 hour
+        cleaningTask = new TimerTask() {
             @Override
             public void run() {
                 spaceCatalog.purge();
             }
         };
-
-        long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay time before starting
-        // cleaning thread! Set to 1 minute
-        long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period of execution of cleaning!
-        // Set to 1 hour
-
-        GC.scheduleAtFixedRate(cleaningTask, delay, period);
-
+        GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
+        this.isSpaceGCRunning = true;
+        StoRM.log.debug("Space GC started.");
     }
 
+    /**
+     * 
+     */
+    synchronized public void stopSpaceGC() {
+        StoRM.log.debug("Stopping Space GC.");
+        if (cleaningTask != null) {
+            cleaningTask.cancel();
+            GC.purge();
+        }
+        StoRM.log.debug("Space GC stopped.");
+        this.isSpaceGCRunning = false;
+    }
+
+    /**
+     * @return
+     */
+    public synchronized boolean spaceGCIsRunning()
+    {
+        return this.isSpaceGCRunning;
+    }
 }

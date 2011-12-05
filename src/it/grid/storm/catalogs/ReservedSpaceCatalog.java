@@ -150,7 +150,6 @@ public class ReservedSpaceCatalog {
                 }
                 catch (IllegalArgumentException e)
                 {
-                    //this will never happen, we check ssTO to be not null
                     log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
                 }
            }
@@ -383,7 +382,6 @@ public class ReservedSpaceCatalog {
                 }
                 catch (IllegalArgumentException e)
                 {
-                    //this will never happen, we know there is at least one element in the collection
                     log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
                 }
             }
@@ -431,7 +429,6 @@ public class ReservedSpaceCatalog {
                     }
                     catch (IllegalArgumentException e)
                     {
-                        //this will never happen, we check ssTO to be not null
                         log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
                     }
                 }
@@ -484,7 +481,6 @@ public class ReservedSpaceCatalog {
                     }
                     catch (IllegalArgumentException e)
                     {
-                        //this will never happen, we check ssTO to be not null
                         log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
                     }
                 }
@@ -708,7 +704,7 @@ public class ReservedSpaceCatalog {
 
         TMetaDataSpace metaData = null;
         StorageSpaceData spaceData = getStorageSpace(spaceToken);
-
+        
         if (spaceData != null) 
         {
             if(!spaceData.isInitialized())
@@ -720,7 +716,7 @@ public class ReservedSpaceCatalog {
             }
             //Convert Space Data in TMetaDataSpace
             try {
-                    metaData = new TMetaDataSpace(spaceData);
+                metaData = new TMetaDataSpace(spaceData);
             }
             catch (InvalidTMetaDataSpaceAttributeException e) {
                 log.error("getMetaDataSpace: Retrieved invalid Space token from DB",e);
@@ -729,10 +725,10 @@ public class ReservedSpaceCatalog {
                 log.error("ReservedSpaceCatalog Exception!",e);
             }
         }
-        else
-        {
-          //Unable to retrieve information about Space pointed by token
+        else {
             log.warn("getMetaDataSpace: unable to retrieve SpaceData for token: "+spaceToken);
+            throw new StorageSpaceNotInitializedException("Unable to create a valid TMetaDataSpace for storage space token \'" + spaceToken
+                                                          + "\', the space is not initialized");
         }
         return metaData;
     }

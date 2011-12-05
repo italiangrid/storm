@@ -3,12 +3,12 @@ package component.griduser;
 
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.griduser.VomsGridUser;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
 import java.io.File;
@@ -76,24 +76,28 @@ public class GridUserTest {
         String gridUserMapperClassname = GridUserManager.getMapperClassName();
         log.debug("Grid USer Mapper Classname = "+gridUserMapperClassname);
         log.debug("Requestor = "+requestor);
-        if (requestor instanceof VomsGridUser)
+        if (requestor instanceof AbstractGridUser)
         {
-            log.debug("VOMS Grid User found");
-            VomsGridUser vUser = (VomsGridUser) requestor;
-            log.debug("FQAN in String[] = " + vUser.getFQANsStringList().size());
-            for (int i = 0; i < vUser.getFQANsStringList().size(); i++)
+            
+            AbstractGridUser vUser = (AbstractGridUser) requestor;
+            if(vUser.hasVoms())
             {
-                log.debug("FQAN in String[" + i + "] = " + vUser.getFQANsStringList().get(i));
-            }
-            log.debug("FQAN in List<String> = " + vUser.getFQANsStringList());
-            try
-            {
-                LocalUser lu = vUser.getLocalUser();
-                log.debug("Local User = " + lu);
-            }
-            catch (CannotMapUserException ex)
-            {
-                log.error("ERR:" + ex);
+                log.debug("VOMS Grid User found");
+                log.debug("FQAN in String[] = " + vUser.getFQANsAsString().length);
+                for (int i = 0; i < vUser.getFQANsAsString().length; i++)
+                {
+                    log.debug("FQAN in String[" + i + "] = " + vUser.getFQANsAsString()[i]);
+                }
+                log.debug("FQAN in List<String> = " + vUser.getFQANsAsString());
+                try
+                {
+                    LocalUser lu = vUser.getLocalUser();
+                    log.debug("Local User = " + lu);
+                }
+                catch (CannotMapUserException ex)
+                {
+                    log.error("ERR:" + ex);
+                }
             }
         }
     }

@@ -56,6 +56,10 @@ public abstract class AbstractGridUser implements GridUserInterface {
     protected MapperInterface userMapperClass = null;
     protected LocalUser localUser = null;
 
+    /**
+     * @param mapperClass
+     * @param distinguishedName
+     */
     protected AbstractGridUser(MapperInterface mapperClass, String distinguishedName)
     {
         if (mapperClass == null || distinguishedName == null)
@@ -69,6 +73,17 @@ public abstract class AbstractGridUser implements GridUserInterface {
         this.setDistinguishedName(distinguishedName);
     }
 
+    /**
+     * @param mapperClass
+     * @param distinguishedName
+     * @param proxy
+     */
+    protected AbstractGridUser(MapperInterface mapperClass, String distinguishedName, String proxy)
+    {
+        this(mapperClass, distinguishedName);
+        this.setProxyString(proxy);
+    }
+    
     /**
      * used by the GridUserFactory to set User Mapper Instance.
      * This method has package visibility.
@@ -143,7 +158,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
     {
         return this.proxyString;
     }
-
     
     /**
      * Get Proxy certificate if there.
@@ -157,10 +171,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
         return this.proxyString;
     }
 
-    
- 
-    
-    
     /**
      * Return the local user on wich the GridUser is mapped.
      * This method is abstract.
@@ -168,7 +178,47 @@ public abstract class AbstractGridUser implements GridUserInterface {
      * @throws CannotMapUserException
      * @return LocalUser
      */
-    public abstract LocalUser getLocalUser() throws CannotMapUserException;
+    public LocalUser getLocalUser() throws CannotMapUserException
+    {
+        if (localUser == null)
+        {
+            try
+            {
+                if(this.hasVoms())
+                {
+                    localUser = userMapperClass.map(getDn(), this.getFQANsAsString());
+                }
+                else
+                {
+                    localUser = userMapperClass.map(getDn(), null);
+                }
+            }
+            catch (CannotMapUserException ex)
+            {
+                // log the operation that failed
+                log.error("Error in mapping '" + subjectDN.getX500DN_rfc1779() + "' to a local user: "
+                        + ex.getMessage());
+                // re-throw same exception
+                throw ex;
+            }
+        }
+        return localUser;
+    }
+
+    /**
+     * @return
+     */
+    public abstract String[] getFQANsAsString();
+    
+    /**
+     * @return
+     */
+    public abstract FQAN[] getFQANs();
+
+    /**
+     * @return
+     */
+    public abstract boolean hasVoms();
 
     /**
      * Return the main Virtual Organization of the User.

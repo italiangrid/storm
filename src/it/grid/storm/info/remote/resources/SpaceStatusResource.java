@@ -18,9 +18,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
 import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.space.quota.BackgroundGPFSQuota;
 import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -54,10 +56,13 @@ public class SpaceStatusResource {
         String result ="";
     	log.debug("Received call getStatusSummary for SA '"+saAlias+"'");
     	
-    	// Update SA used space using quota defined..
-        log.debug(" ... updating SA with GPFS quotas results");
-        QuotaManager.getInstance().updateSAwithQuota(false);
-        
+    	int quotaDefined = SpaceInfoManager.getInstance().getQuotasDefined();
+    	if (quotaDefined>0) {
+    	       // Update SA used space using quota defined..
+            BackgroundGPFSQuota.getInstance().submitGPFSQuota();
+            log.info("Submitted an asynchronous GPFS Quota job");
+    	}
+       
         // Check if saAlias exists
     	
     	// Retrieve info for saAlias
@@ -91,17 +96,34 @@ public class SpaceStatusResource {
             throw new WebApplicationException(responseBuilder.build());
         }
         log.debug("Decoded saAlias = " + saAliasDecoded);
-        if (saAliasDecoded == null || saAliasDecoded.equals("") || totalSpace == null || totalSpace < 0
-                || usedSpace == null || usedSpace < 0)
+        /* 
+         * saAlias is mandatory
+         * if totalSpace is set then all parameters are needed
+         */
+        if (saAliasDecoded == null || saAliasDecoded.equals("") || (totalSpace != null && (usedSpace == null || reservedSpace == null || unavailableSpace == null ))) 
         {
             log.error("Unable to update space alias status. Some parameters are missing : saAlias " + saAliasDecoded + " totalSpace "
-                      + totalSpace + " usedSpace " + usedSpace);
+                      + totalSpace + " usedSpace " + usedSpace + " reservedSpace " + reservedSpace + " unavailableSpace " + unavailableSpace);
             ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(Response.Status.BAD_REQUEST);
             responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
             throw new WebApplicationException(responseBuilder.build());
         }
-        
+        /*
+         * If not null size parameters must be >= 0
+         */
+        if((totalSpace != null && totalSpace < 0) || 
+            (usedSpace != null && usedSpace < 0) || 
+            (reservedSpace != null && reservedSpace < 0) ||
+            (unavailableSpace != null && unavailableSpace < 0))
+        {
+            log.error("Unable to update space alias status. Some size parameters are lower than zero : totalSpace "
+                      + totalSpace + " usedSpace " + usedSpace + " reservedSpace " + reservedSpace + " unavailableSpace " + unavailableSpace);
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to evaluate permissions. Some size parameters are lower than zero");
+            throw new WebApplicationException(responseBuilder.build());
+        }
         //returns null if no rows found
         StorageSpaceData storageSpaceData = catalog.getStorageSpaceByAlias(saAliasDecoded);
         if(storageSpaceData == null)
@@ -112,13 +134,30 @@ public class SpaceStatusResource {
             responseBuilder.entity("Unable to update space alias status. Some parameters are not well formed");
             throw new WebApplicationException(responseBuilder.build());
         }
-        SpaceStatusSummary spaceStatusSummary = new SpaceStatusSummary(saAlias, totalSpace);
-        spaceStatusSummary.setUsedSpace(usedSpace);
-        spaceStatusSummary.setReservedSpace(reservedSpace);
-        spaceStatusSummary.setUnavailableSpace(unavailableSpace);
+        SpaceStatusSummary spaceStatusSummary;
+        if(totalSpace != null)
+        {
+            spaceStatusSummary = new SpaceStatusSummary(saAlias, totalSpace);    
+        }
+        else
+        {
+            spaceStatusSummary = new SpaceStatusSummary(saAlias, storageSpaceData.getTotalSpaceSize().value());
+        }
+        if(usedSpace != null)
+        {
+            spaceStatusSummary.setUsedSpace(usedSpace);    
+        }
+        if(reservedSpace != null)
+        {
+            spaceStatusSummary.setReservedSpace(reservedSpace);    
+        }
+        if(unavailableSpace != null)
+        {
+            spaceStatusSummary.setUnavailableSpace(unavailableSpace);    
+        }
         try
         {
-            updateSASummary(storageSpaceData, spaceStatusSummary);
+            updateSASummary(storageSpaceData, spaceStatusSummary , totalSpace != null);
         }
         catch (IllegalArgumentException e)
         {
@@ -137,12 +176,12 @@ public class SpaceStatusResource {
 	 * @param spaceStatusSummary
 	 * @throws IllegalArgumentException
 	 */
-	private void updateSASummary(StorageSpaceData storageSpaceData, SpaceStatusSummary spaceStatusSummary) throws IllegalArgumentException
+	private void updateSASummary(StorageSpaceData storageSpaceData, SpaceStatusSummary spaceStatusSummary, boolean updateTotalSpace) throws IllegalArgumentException
     {
         //fill in the StorageSpaceData the provided values
         try
         {
-            if (spaceStatusSummary.getTotalSpace() >= 0)
+            if (updateTotalSpace && spaceStatusSummary.getTotalSpace() >= 0)
             {
                 storageSpaceData.setTotalSpaceSize(TSizeInBytes.make(spaceStatusSummary.getTotalSpace(), SizeUnit.BYTES));
             }

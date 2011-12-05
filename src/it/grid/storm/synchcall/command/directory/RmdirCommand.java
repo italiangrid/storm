@@ -80,7 +80,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
         if ((inputData == null) || ((inputData != null) && (inputData.getSurl() == null))) {
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid paramter specified.");
-                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
+                log.info("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
             }
@@ -103,7 +103,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
             try {
                 returnStatus =
                         new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.error("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
+                log.info("srmRmdir: <>  Request for [SURL=] failed with [status: " + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRmdir: <>  Request for [SURL=] failed. Error creating returnStatus " + ex1);
             }
@@ -168,7 +168,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
             // Empty SURL. Error in surl creation.
             try {
                 returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified");
-                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                log.info("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
@@ -209,7 +209,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
                         new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
                                           ": User not authorized to perform srmRmdir request on the storage area: "
                                                   + token);
-                log.error("srmRmdir: <> Request for [SURL:" + surl + "] failed with [status: "
+                log.info("srmRmdir: <> Request for [SURL:" + surl + "] failed with [status: "
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRmdir: <> Request for [SURL=" + surl + "] failed. Error creating returnStatus " + ex1);
@@ -268,7 +268,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
         if (failure) { // Unauthorized access!
             try {
                 returnStatus = new TReturnStatus(statusCode, explanation);
-                log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
+                log.info("srmRmdir: <" + guser + ">  Request for [SURL=" + surl + "] failed with [status: "
                         + returnStatus.toString() + "]");
             } catch (InvalidTReturnStatusAttributeException ex1) {
                 log.error("srmRmdir: <" + guser + ">  Request for [SURL=" + surl
