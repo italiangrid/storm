@@ -272,52 +272,16 @@ public class AuthorizationResource
             builder.entity("Unable to build a GridUser for DN \'" + DNDecoded + "\' and FQANS \'" + Arrays.toString(FQANSArray) + "\'. Missing argument(s)");
             throw new WebApplicationException(builder.build());
         }
-        String VFSRootPath;
         String VFSStFNRoot;
         try
         {
             VirtualFSInterface fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
             if(fileVFS != null)
             {
-                VFSRootPath = fileVFS.getRootPath();
-                if(VFSRootPath == null)
-                {
-                    log.error("Unable to build StFN for path \'" + filePathDecoded + "\'. VFS: " + fileVFS.getAliasName() + " has null RootPath");
-                    ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-                    responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-                    responseBuilder.entity("Unable to build StFN for path the provided path");
-                    throw new WebApplicationException(responseBuilder.build());
-                }
-                if(!VFSRootPath.startsWith("/"))
-                {
-                    VFSRootPath = "/" + VFSRootPath;
-                }
-                if(VFSRootPath.endsWith("/"))
-                {
-                    VFSRootPath = VFSRootPath.substring(0, VFSRootPath.length() - 1);
-                }
-                log.debug("Chosen VFSRootPath " + VFSRootPath);
                 List<MappingRule> VFSMappingRules = fileVFS.getMappingRules();
                 if(VFSMappingRules != null && VFSMappingRules.size() > 0)
                 {
                     VFSStFNRoot = VFSMappingRules.get(0).getStFNRoot();
-                    if(VFSStFNRoot == null)
-                    {
-                        log.error("Unable to build StFN for path \'" + filePathDecoded + "\'. VFS: " + fileVFS.getAliasName() + " has null StFNRoot");
-                        ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-                        responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-                        responseBuilder.entity("Unable to build StFN for path the provided path");
-                        throw new WebApplicationException(responseBuilder.build());
-                    }
-                    if(!VFSStFNRoot.startsWith("/"))
-                    {
-                        VFSStFNRoot = "/" + VFSStFNRoot;
-                    }
-                    if(VFSStFNRoot.endsWith("/"))
-                    {
-                        VFSStFNRoot = VFSStFNRoot.substring(0, VFSStFNRoot.length() - 1);
-                    }
-                    log.debug("Chosen StFNRoot " + VFSStFNRoot);
                 }
                 else
                 {
@@ -345,15 +309,16 @@ public class AuthorizationResource
             responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
             throw new WebApplicationException(responseBuilder.build());
         }
-        if(!filePathDecoded.startsWith(VFSRootPath))
+        int rootIndex = filePathDecoded.indexOf(VFSStFNRoot);
+        if(rootIndex < 0)
         {
-            log.error("The provided file path does not starts with the VFSRoot of its VFS");
+            log.error("The provided file path does not contains the StFNRoot of its VFS");
             ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-            responseBuilder.entity("The provided file path does not starts with the VFSRoot of its VFS");
+            responseBuilder.entity("The provided file path does not contains the StFNRoot of its VFS");
             throw new WebApplicationException(responseBuilder.build());
         }
-        String fileStFNpath = VFSStFNRoot + filePathDecoded.substring(VFSRootPath.length(), filePathDecoded.length());
+        String fileStFNpath = filePathDecoded.substring(rootIndex, filePathDecoded.length());
         StFN fileStFN;
         try
         {
