@@ -60,10 +60,11 @@ public class StoRM {
     private static Logger log;
 
     private final Timer GC = new Timer(); // Timer object in charge to call periodically the Space Garbace Collector
-    private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+    private final ReservedSpaceCatalog spaceCatalog;
     private TimerTask cleaningTask = null;
     private boolean isPickerRunning = false;
     private boolean isXmlrpcServerRunning = false;
+    private boolean isRestServerRunning = false;
     private boolean isSpaceGCRunning = false;
     
     /**
@@ -96,6 +97,9 @@ public class StoRM {
         System.out.println(currentConfig);
         // print welcome
         System.out.println("\n" + welcome);
+        
+        /* Now that configuration file has been loaded create the catalog instance*/
+        spaceCatalog = new ReservedSpaceCatalog();
         
         /**
          * INIT LOGGING COMPONENT
@@ -223,6 +227,7 @@ public class StoRM {
             System.err.println("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
             throw new Exception("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
         }
+        this.isRestServerRunning = true;
     }
     
     /**
@@ -231,6 +236,7 @@ public class StoRM {
     synchronized public void stopRestServer() 
     {
             RestService.stop();
+            this.isRestServerRunning = false;
     }
     
     /**
@@ -238,7 +244,7 @@ public class StoRM {
      */
     public synchronized boolean restServerIsRunning()
     {
-        return RestService.isRunning();
+        return this.isRestServerRunning;
     }
     
     /**
