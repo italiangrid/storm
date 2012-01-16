@@ -84,7 +84,7 @@ GPFSAPI_LIBS ?= -lgpfs -L$(DESTDIR)
 # where  the "xfs/libxfs.h" include file is located
 XFSAPI_INCLUDES ?= -I$(xfsprogs_devel_prefix)/usr/include -I$(xfsprogs_devel_prefix)/include
 # additional libraries libposixapi_interface depends on
-XFSAPI_LIBS ?= -L$(xfsprogs_devel_prefix)/usr/lib$(architecture) -L$(xfsprogs_devel_prefix)/lib$(architecture) -lhandle -lxfs
+XFSAPI_LIBS ?= -L$(xfsprogs_devel_prefix)/usr/lib$(architecture) -L$(xfsprogs_devel_prefix)/lib$(architecture) -lhandle
 
 # the SWIG interface generator invocation
 SWIG_BIN ?= $(swig_prefix)/bin/swig
@@ -347,7 +347,7 @@ $(libgpfsapi_interface): \
 		gpfsapi_interface_wrap.o
 	$(LINK.cpp) -shared -o $(libgpfsapi_interface) \
 		gpfsapi_interface_wrap.o \
-		$(gpfsapi_objs) $(GPFSAPI_LIBS)
+		$(gpfsapi_objs)
 
 # use GPFS_INCLUDES for gpfsapi files
 $(gpfsapi_objs): CXXFLAGS += $(GPFSAPI_INCLUDES)

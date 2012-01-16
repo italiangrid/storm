@@ -189,7 +189,7 @@ to get a list of the available targets for this buildfile.
 
 	<target name="build.dist.bin.properties"
 		description="Produces the properties containing the name of the produced binary tar and tar.gz files">
-        <exec executable="/usr/java/latest/bin/java" outputproperty="distribution" >
+        <exec executable="/usr/bin/java" outputproperty="distribution" >
                    <arg value="-cp"/>
                    <arg value="${rpm.util.jar}"/>
                    <arg value="-Xmx32m"/>

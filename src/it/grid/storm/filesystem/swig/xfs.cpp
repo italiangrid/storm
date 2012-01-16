@@ -39,7 +39,43 @@ static const char* const RCSID="$Id: xfs.cpp,v 1.3 2006/05/26 09:24:58 amessina 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
-#include <xfs/libxfs.h>
+//#include <xfs/libxfs.h>
+
+#define XFS_BIG_INUMS   1
+#define XFS_BIG_BLKNOS  1
+
+#include <xfs/platform_defs.h>
+
+#include <xfs/list.h>
+#include <xfs/cache.h>
+#include <xfs/bitops.h>
+#include <xfs/kmem.h>
+#include <xfs/swab.h>
+
+#include <xfs/xfs_fs.h>
+#include <xfs/xfs_types.h>
+#include <xfs/xfs_arch.h>
+#include <xfs/xfs_bit.h>
+#include <xfs/xfs_inum.h>
+#include <xfs/xfs_sb.h>
+#include <xfs/xfs_ag.h>
+#include <xfs/xfs_dir2.h>
+#include <xfs/xfs_mount.h>
+#include <xfs/xfs_da_btree.h>
+#include <xfs/xfs_bmap_btree.h>
+#include <xfs/xfs_alloc_btree.h>
+#include <xfs/xfs_ialloc_btree.h>
+#include <xfs/xfs_dir_sf.h>
+#include <xfs/xfs_dir2_sf.h>
+#include <xfs/xfs_attr_sf.h>
+#include <xfs/xfs_dinode.h>
+#include <xfs/xfs_inode.h>
+#include <xfs/xfs_buf_item.h>
+#include <xfs/xfs_inode_item.h>
+#include <xfs/xfs_alloc.h>
+#include <xfs/xfs_btree.h>
+#include <xfs/xfs_btree_trace.h>
+#include <xfs/xfs_bmap.h>
 
 
 
