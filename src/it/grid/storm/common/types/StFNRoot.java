@@ -41,4 +41,12 @@ public class StFNRoot {
        	 StFNRoot po = (StFNRoot) o;
        	 return stfnroot.equals(po.stfnroot);
    	 }
+
+        @Override
+        public int hashCode() {
+        	int result = 17;
+        	result = 31 * result + (stfnroot!=null?stfnroot.hashCode():0);
+        	return result;
+        }      
+        
 }

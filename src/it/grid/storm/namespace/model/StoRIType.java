@@ -108,4 +108,15 @@ public class StoRIType {
         return false;
     }
 
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + (typeName!=null ? typeName.hashCode() : 0 );
+    	result = 31 * result + (dataContent ? 1 : 0);
+    	result = 31 * result + (children ? 1 : 0);
+    	result = 31 * result + (attributes ? 1 : 0);
+    	result = 31 * result + (physical ? 1 : 0);
+    	return result;
+    }
+    
 }

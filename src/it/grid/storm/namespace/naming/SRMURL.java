@@ -233,6 +233,15 @@ public abstract class SRMURL {
 			return true;
 		}
 
+		@Override
+		public int hashCode() {
+
+			final int prime = 31;
+			int result = 17;
+			result = prime * result + type.hashCode();
+			return result;
+		}
+		
     }
 
 	/* (non-Javadoc)
@@ -242,7 +251,7 @@ public abstract class SRMURL {
 	public int hashCode() {
 
 		final int prime = 31;
-		int result = 1;
+		int result = 17;
 		result = prime * result + local;
 		result = prime * result + (localSURL ? 1231 : 1237);
 		result = prime * result + ((path == null) ? 0 : path.hashCode());

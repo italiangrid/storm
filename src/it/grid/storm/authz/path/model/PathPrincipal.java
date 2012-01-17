@@ -61,4 +61,13 @@ public class PathPrincipal {
         return result;
     }
     
+    
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + (localGroupName!=null?localGroupName.hashCode():0);
+    	result = 31 * result + (principalCategory ? 1 : 0);
+    	return result;
+    }
+    
 }

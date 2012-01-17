@@ -60,5 +60,12 @@ public class VO  implements Serializable {
   		
      	return (vo.equals(tmp.getValue()));
     }
+        
+        @Override
+        public int hashCode() {
+        	int result = 17;
+        	result = 31 * result + (vo!=null?vo.hashCode():0);
+        	return result;
+        }
 
 }

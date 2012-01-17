@@ -314,6 +314,14 @@ public class Capability implements CapabilityInterface {
             }
             return false;
         }
+        
+        @Override
+        public int hashCode() {
+        	int result = 17;
+        	result = 31 * result + (aclMode!=null?aclMode.hashCode():0);
+        	return result;
+        }
+        
 
     }
 

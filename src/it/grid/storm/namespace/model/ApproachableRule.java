@@ -209,5 +209,15 @@ public class ApproachableRule implements Comparable{
         return result;
     }
 
+    
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + (ruleName!=null?ruleName.hashCode():0);
+    	result = 31 * result + (subjectRules!=null?subjectRules.hashCode():0);
+    	result = 31 * result + (dnMatchingRule!=null?dnMatchingRule.hashCode():0);
+    	result = 31 * result + (voNameMatchingRule!=null?voNameMatchingRule.hashCode():0);
+    	return result;
+    }
 
 }

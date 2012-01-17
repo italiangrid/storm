@@ -89,4 +89,12 @@ public class Authority {
       return result;
     }
 
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + (hostname!=null?hostname.hashCode():0);
+    	result = 31 * result + port;
+    	return result;
+    }
+    
 }

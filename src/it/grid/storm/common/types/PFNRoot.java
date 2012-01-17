@@ -47,5 +47,12 @@ public class PFNRoot {
        	 PFNRoot po = (PFNRoot) o;
        	 return pfnroot.equals(po.pfnroot);
     }
+	
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + (pfnroot!=null?pfnroot.hashCode():0);
+    	return result;
+    }
 
 }

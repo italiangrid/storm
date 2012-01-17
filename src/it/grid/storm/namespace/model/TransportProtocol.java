@@ -98,4 +98,13 @@ public class TransportProtocol {
       return result;
     }
 
+    @Override
+    public int hashCode() {
+    	int result = 17;
+    	result = 31 * result + protocolID;
+    	result = 31 * result + ((protocol == null) ? 0 : protocol.hashCode());
+    	result = 31 * result + ((service == null) ? 0 : service.hashCode());       
+    	return result;
+    }
+    
 }
