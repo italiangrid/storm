@@ -24,7 +24,6 @@ version=1.7.0
 libacl_devel_prefix=${libacl_devel_location}
 libattr_devel_prefix=${libattr_devel_location}
 gpfs_mock_prefix=../mock
-xfsprogs_devel_prefix=${xfsprogs_devel_location}
 jdk_prefix=${jdk_location}
 swig_prefix=${swig_location}
 architecture=${arch}
@@ -46,10 +45,9 @@ default: all
 #
 # Currently legal values are:
 #  gpfs
-#  xfs
 #  posix  (ignored; generic POSIX support is *always* compiled in)
 #
-FILESYSTEMS ?= posix,gpfs,xfs
+FILESYSTEMS ?= posix,gpfs
 
 # Whether to compile debugging code
 #
@@ -80,12 +78,6 @@ GPFSAPI_INCLUDES ?= -I$(gpfs_mock_prefix)
 #GPFSAPI_LIBS ?= $(POSIXAPI_LIBS) -L$(gpfs_prefix)/lib$(architecture) -lgpfs
 GPFSAPI_LIBS ?= -lgpfs -L$(DESTDIR)
 
-
-# where  the "xfs/libxfs.h" include file is located
-XFSAPI_INCLUDES ?= -I$(xfsprogs_devel_prefix)/usr/include -I$(xfsprogs_devel_prefix)/include
-# additional libraries libposixapi_interface depends on
-XFSAPI_LIBS ?= -L$(xfsprogs_devel_prefix)/usr/lib$(architecture) -L$(xfsprogs_devel_prefix)/lib$(architecture) -lhandle
-
 # the SWIG interface generator invocation
 SWIG_BIN ?= $(swig_prefix)/bin/swig
 # ====================================================================
@@ -108,12 +100,6 @@ defines += -fPIC
 ifeq (gpfs, $(findstring gpfs,$(FILESYSTEMS)))
 BUILD_GPFS:=1
 endif
-
-# compile XFS code?
-ifeq (xfs, $(findstring xfs,$(FILESYSTEMS)))
-BUILD_XFS:=1
-endif
-
 
 # compile debugging and assertion code?
 #
@@ -165,7 +151,6 @@ endif
 # these need to be defined early...
 libposixapi_interface := $(destdir)libposixapi_interface.so
 libgpfsapi_interface := $(destdir)libgpfsapi_interface.so
-libxfsapi_interface := $(destdir)libxfsapi_interface.so
 
 
 # ====================================================================
@@ -182,22 +167,17 @@ ifeq (1,$(BUILD_GPFS))
 libsoo += $(libgpfsapi_interface)
 endif
 
-# only build XFS if BUILD_XFS is true
-ifeq (1,$(BUILD_XFS))
-libsoo += $(libxfsapi_interface)
-endif
-
 libso: $(libsoo)
 
 #all: $(all)
 all: swig libso
 
-swig: posixapi_swig gpfsapi_swig xfsapi_swig
+swig: posixapi_swig gpfsapi_swig
 
 clean:
 	rm -f *~ *.o *.class *.dep *.so 
 swigclean:
-	rm -f $(posixapi_swig_output) $(xfsapi_swig_output)
+	rm -f $(posixapi_swig_output)
 extraclean: clean swigclean
 	rm -f errno.java
 
@@ -354,63 +334,6 @@ $(gpfsapi_objs): CXXFLAGS += $(GPFSAPI_INCLUDES)
 
 # automatic source files dependencies
 -include $(gpfsapi_srcs:.cpp=.dep)
-
-
-# ====================================================================
-#
-# XFSAPI TARGETS
-#
-# ====================================================================
-
-# files
-xfsapi_srcs := \
-	xfs.cpp
-
-xfsapi_objs := $(xfsapi_srcs:.cpp=.o)
-
-xfsapi_swig_output_cxx := \
-	xfsapi_interface_wrap.cxx
-
-xfsapi_swig_output_java := \
-	xfsapi_interface.java \
-	xfsapi_interfaceJNI.java \
-	xfs.java
-
-xfsapi_swig_output := \
-	$(xfsapi_swig_output_cxx) \
-	$(xfsapi_swig_output_java)
-
-
-# generate all SWIG files in one run
-# (FIXME: individual file dependencies?)
-xfsapi_swig: $(xfsapi_swig_output)
-$(xfsapi_swig_output): \
-		xfsapi_interface.i \
-		pass_vector_by_value_java.i
-	$(SWIG_BIN) -c++ -java -package $(JAVA_PACKAGE) -Wall xfsapi_interface.i
-
-# SWIG-generated C wrapper
-xfsapi_interface_wrap.o: xfsapi_interface_wrap.cxx
-	$(COMPILE.cpp) $(JAVA_INCLUDES) $(OUTPUT_OPTION) $<
-
-# automatic C wrapper files dependencies
--include $(xfsapi_swig_output_cxx:.cxx=.dep)
-
-# main target
-$(libxfsapi_interface): \
-		$(xfsapi_objs) \
-		xfsapi_interface_wrap.o \
-		$(libposixapi_interface)
-	$(LINK.cpp) -shared -o $(libxfsapi_interface) \
-		xfsapi_interface_wrap.o \
-		$(xfsapi_objs) $(XFSAPI_LIBS) \
-		-L$(destdir) -lposixapi_interface
-
-# use XFS_INCLUDES for xfsapi files
-$(xfsapi_objs): CXXFLAGS += $(XFSAPI_INCLUDES)
-
-# automatic source files dependencies
--include $(xfsapi_srcs:.cpp=.dep)
 
 
 # ====================================================================

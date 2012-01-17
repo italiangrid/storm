@@ -32,7 +32,6 @@ import it.grid.storm.filesystem.MockSpaceSystem;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
-import it.grid.storm.filesystem.XFSSpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.CapabilityInterface;
@@ -387,10 +386,8 @@ public class VirtualFS implements VirtualFSInterface {
 
         //Check if SpaceSystem is GPFSSpaceSystem used for GPFS FS
         //Check if SpaceSystem is MockSpaceSystem used for Posix FS
-        //Check if SpaceSystem is MockSpaceSystem used for XFS FS
         if ( (this.spaceSystemDriver.getName().equals(GPFSSpaceSystem.class.getName())) ||
-                (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName())) ||
-                (this.spaceSystemDriver.getName().equals(XFSSpaceSystem.class.getName()))) {
+                (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName()))) {
 
             //The class type argument is the mount point of GPFS file system
             Class ssArgumentsClass[] = new Class[1];

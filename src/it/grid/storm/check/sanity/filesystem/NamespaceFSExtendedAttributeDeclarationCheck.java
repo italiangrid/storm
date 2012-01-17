@@ -112,9 +112,6 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
                                 case GPFS:
                                     retrievedStatus = checkGPFS(row.getMountOptions());
                                     break;
-                                case XFS:
-                                    retrievedStatus = checkXFS(row.getMountOptions());
-                                    break;
                                 default:
                                 {
                                     log.error("Unable to switch on the provided SupportedFSType (unknown) : "
@@ -188,28 +185,6 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check
          * in mtab
          */
         CheckStatus response = CheckStatus.SUCCESS;
-        return response;
-    }
-
-    /**
-     * Checks if the ext3 mount option POSIX_EXTENDED_ATTRIBUTES_OPTION_NAME is in the provided mount options
-     * list
-     * 
-     * @param fsOptions a comma separated list of mount options
-     * @return a successful CheckStatus if the option is available
-     */
-    private CheckStatus checkXFS(List<String> fsOptions)
-    {
-        log.debug("Checking xfs file system estended attribute options against \'" + fsOptions.toString()
-                + "\'");
-        CheckStatus response = CheckStatus.FAILURE;
-        if (fsOptions.contains(POSIX_EXTENDED_ATTRIBUTES_OPTION_NAME))
-        {
-            // TODO check that this assertion is true!
-            log.debug("Options for xfs correctly set");
-            response = CheckStatus.SUCCESS;
-
-        }
         return response;
     }
 

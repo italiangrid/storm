@@ -69,7 +69,6 @@
 				<xs:restriction base="xs:NMTOKEN">
 					<xs:enumeration value="ext3"/>
 					<xs:enumeration value="gpfs"/>
-					<xs:enumeration value="xfs"/>
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
@@ -80,7 +79,6 @@
 				<xs:enumeration value="it.grid.storm.filesystem.swig.posixfs"/>
 				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs"/>
 				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs23"/>
-				<xs:enumeration value="it.grid.storm.filesystem.swig.xfs"/>
 			</xs:restriction>
 		</xs:simpleType>
 	</xs:element>
@@ -155,7 +153,6 @@
 			<xs:restriction base="xs:string">
 				<xs:enumeration value="it.grid.storm.filesystem.GPFSSpaceSystem"/>
 				<xs:enumeration value="it.grid.storm.filesystem.MockSpaceSystem"/>
-				<xs:enumeration value="it.grid.storm.filesystem.XFSSpaceSystem"/>
 			</xs:restriction>
 		</xs:simpleType>
 	</xs:element>

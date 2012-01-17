@@ -35,33 +35,12 @@ die () {
 spec="$1";
 echo SPEC_FILE=$spec
 
-# rest  of args is SOURCE files...'
+# rest of args is SOURCE files...'
 source="$2";
 echo SOURCES=$source
 
 topdir="$3";
 echo BUILDING_DIR=$topdir
-
-utiljar="$4";
-echo UTIL_JAR=$utiljar
-
-# some Java parameters
-if [ -z "$JAVA_HOME" ]; then
-  echo "Error: JAVA_HOME is not set."
-  echo " .. try to continue .. " 
-else
-  echo "run java in $JAVA_HOME"
-  JAVA_HOME=$JAVA_HOME
-fi
-
-JAVA=/usr/java/latest/bin/java
-echo JAVA=$JAVA
-
-PLATFORM=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform platform | sed -e "s/ /_/g"`
-echo NATIVE_PLATFORM=$PLATFORM
-
-OS_DIST=`${JAVA} -cp ${utiljar} -Xmx32m it.grid.storm.Platform os_dist | sed -e "s/ /_/g"`
-echo OS_DIST=$OS_DIST
 
 # make rpm directory structure
 echo "make rpm directory structure ", $topdir
@@ -78,18 +57,17 @@ mkdir -p -v $topdir/BUILD
 mkdir -p -v $topdir/RPMS
 
 echo "rm the source(s)"
-rm -rf $topdir/SOURCES/$source
+rm -rf $topdir/SOURCES/*
 
 echo "copy the source(s) ", $source
 cp -v $source $topdir/SOURCES/
 
 echo "now build the binaries and the rpms. ", $spec
-cp -v $spec $topdir/SPECS/
+cp -v $spec $topdir/SPECS/${spec##*/}
 
 cd $topdir
 
 echo "create rpm $topdir"
 # Generate RPMs
-#rpmbuild --define "_topdir ${topdir}" --define "platform ${PLATFORM}"  -ba SPECS/storm-backend-server.spec
-rpmbuild --define "_topdir ${topdir}" --nodeps -ba SPECS/storm-backend-server.spec
+rpmbuild --define "_topdir ${topdir}" --nodeps -ba SPECS/${spec##*/}
 

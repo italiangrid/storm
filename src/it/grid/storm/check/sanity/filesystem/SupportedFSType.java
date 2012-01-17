@@ -19,7 +19,7 @@ package it.grid.storm.check.sanity.filesystem;
  */
 public enum SupportedFSType
 {
-    EXT3, GPFS, XFS;
+    EXT3, GPFS;
 
     /**
      * Parses the provided fsString and returns the matching SupportedFSType
@@ -30,10 +30,6 @@ public enum SupportedFSType
      */
     public static SupportedFSType parseFS(String fsString) throws IllegalArgumentException
     {
-        if (fsString.trim().equals("xfs"))
-        {
-            return SupportedFSType.XFS;
-        }
         if (fsString.trim().equals("gpfs"))
         {
             return SupportedFSType.GPFS;

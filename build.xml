@@ -89,11 +89,10 @@ to get a list of the available targets for this buildfile.
 	<property name="lcmaps-without-gsi.location" value="/usr" />
 	<property name="lcmaps-plugins-basic.location" value="${glite.location}" />
 	<property name="lcmaps-plugins-voms.location" value="${glite.location}" />
-	<property name="jdk.location" value="${env.JAVA_HOME}" />
+	<property name="jdk.location" value="/usr/lib/jvm/java" />
 	<property name="arch_bit" value="${jvm.arch}"/>
 	<property name="libacl-devel.location" value="/usr" />
 	<property name="libattr-devel.location" value="/usr" />
-	<property name="xfsprogs-devel.location" value="/usr" />
 	<property name="gpfs-base.location" value="/usr/lpp/mmfs" />
 
 	<!-- sources used to build and make the distribution archives -->
@@ -628,7 +627,6 @@ test.junit.dir
         <echo message="- Lib ACL location: ${libacl-devel.location}"/>
         <echo message="- Lib ATTR location: ${libattr-devel.location}"/>
         <echo message="- Lib GPFS location: ${gpfs-base.location}"/>
-	<echo message="- Lib XFS location: ${xfsprogs-devel.location}"/>		
 
 		<exec executable="make" failonerror="true" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig swig"/>
@@ -640,7 +638,6 @@ test.junit.dir
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
 			<arg value="libattr_devel_location=${libattr-devel.location}" />
 			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="xfsprogs_devel_location=${xfsprogs-devel.location}" />
 		</exec>
 	</target>
 
@@ -668,37 +665,8 @@ test.junit.dir
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
 			<arg value="libattr_devel_location=${libattr-devel.location}" />
 			<arg value="gpfs_base_location=${gpfs-base.location}" />
-			<arg value="xfsprogs_devel_location=${xfsprogs-devel.location}" />
 		</exec>
 	</target>
-
-
-	<!-- make wrapper component native libs -->
-	<target name="libs.wrapper" depends="init">
-		<condition property="libs.wrapper.debug" value="1">
-			<istrue value="${build.debug}"/>
-		</condition>
-		<condition property="libs.wrapper.gpfs" value="1">
-			<istrue value="${build.gpfs}"/>
-		</condition>
-		<condition property="libs.wrapper.lustre" value="lustre">
-			<istrue value="${build.lustre}"/>
-		</condition>
-		<exec executable="make" 
-			dir="${src.java.dir}/it/grid/storm/wrapper"
-			failonerror="true"
-			logError="true">
-			<arg value="BUILDDIR=${build.libs.dir}"/>
-			<arg value="DEBUG=${libs.wrapper.debug}"/>
-			<arg value="destdir=${build.libs.dir}"/>
-			<arg value="FILESYSTEMS=posix gpfs xfs"/>
-			<!-- ${libs.wrapper.gpfs} ${libs.wrapper.lustre}" -->
-			<arg value="all"/>
-			<arg value="alllib"/>
-		</exec>
-	</target>
-
-
 
 	<target name="libs"
 	description="compile native code libs"
@@ -1085,7 +1053,6 @@ test.junit.dir
                                 <token key="lcmaps_plugins_voms" value="${lcmaps-plugins-voms.location}"/>
                                 <token key="libacl_devel" value="${libacl-devel.location}"/>
                                 <token key="libattr_devel" value="${libattr-devel.location}"/>
-                                <token key="xfsprogs_devel" value="${xfsprogs-devel.location}"/>
                                 <token key="platform" value="${build.platform}"/>
                         </replacetokens>
                         </filterchain>
@@ -1118,19 +1085,6 @@ test.junit.dir
 			<arg value="${rpm.spec.file}"/>
 			<arg value="${dist.src.gzipfile}"/>
 			<arg value="${rpm.dest.dir}"/>
-			<arg value="${rpm.util.jar}"/>
-			<arg value="${swig.location}"/>
-			<arg value="${jdk.location}"/>
-			<arg value="${lcmaps.location}"/>
-			<arg value="${lcmaps-without-gsi.location}"/>
-			<arg value="${lcmaps-plugins-basic.location}"/>
-			<arg value="${lcmaps-plugins-voms.location}"/>
-			<arg value="${libacl-devel.location}"/>
-			<arg value="${libattr-devel.location}"/>
-			<arg value="${xfsprogs-devel.location}"/>
-			<arg value="${version}"/>
-			<arg value="${age}"/>
-			<arg value="${dist.name}"/>
 		</exec>
 	</target>
 
