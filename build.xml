@@ -75,11 +75,6 @@ to get a list of the available targets for this buildfile.
 	<!-- set default global properties for this build -->
 	<property name="basedir" location="."/>
 
-	<!-- where to put class and native library files -->
-	<exec executable="sed" inputstring="${os.name}" outputproperty="nonspace.os">
-		<arg value="s/ /_/g"/>
-	</exec>
-	<property name="build.platform" value="${nonspace.os}-${os.arch}-${sun.arch.data.model}"/>
 	<property name="jvm.arch" value="${sun.arch.data.model}"/>
 
 	<!-- variable used by make -->
@@ -618,9 +613,8 @@ test.junit.dir
 			<equals arg1="64" arg2="${arch_bit}" trim="true" />
 		</condition>
 		
-        <echo message="- Build platform : ${build.platform} "/>
         <echo message="- Source Java Dir: ${src.java.dir}"/>
-	<echo message="- Build dir: ${build.libs.dir}"/>
+		<echo message="- Build dir: ${build.libs.dir}"/>
         <echo message="- Architecture: ${arch}"/>
         <echo message="- Swig location: ${swig.location}"/>
         <echo message="- JDK location: ${jdk.location}"/>
@@ -1053,7 +1047,6 @@ test.junit.dir
                                 <token key="lcmaps_plugins_voms" value="${lcmaps-plugins-voms.location}"/>
                                 <token key="libacl_devel" value="${libacl-devel.location}"/>
                                 <token key="libattr_devel" value="${libattr-devel.location}"/>
-                                <token key="platform" value="${build.platform}"/>
                         </replacetokens>
                         </filterchain>
                 </copy>
