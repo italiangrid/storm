@@ -276,12 +276,10 @@ fi;
 %{_datadir}/doc/%{name}-%{version}/ACKNOWLEDGEMENTS.txt
 
 %dir %{_libdir}/%{longname}
-%dir %{_libdir}/%{longname}/native
-%dir %{_libdir}/%{longname}/native/%{platform}
-%{_libdir}/%{longname}/native/%{platform}/libposixapi_interface.so
-%{_libdir}/%{longname}/native/%{platform}/libgpfsapi_interface.so
-%{_libdir}/%{longname}/native/%{platform}/libstorm_cutil.so
-%{_libdir}/%{longname}/native/%{platform}/libstorm_lcmaps.so
+%{_libdir}/%{longname}/libposixapi_interface.so
+%{_libdir}/%{longname}/libgpfsapi_interface.so
+%{_libdir}/%{longname}/libstorm_cutil.so
+%{_libdir}/%{longname}/libstorm_lcmaps.so
 
 %dir %{_javadir}/%{longname}
 %{_javadir}/%{longname}/storm-backend-server.jar

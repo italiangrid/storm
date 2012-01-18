@@ -25,14 +25,13 @@ vomspoolaccount  = "lcmaps_voms_poolaccount.mod"
                        "-gridmapdir /etc/grid-security/gridmapdir"
 
 ### Policies:
-# 
-# Prima cerca di individuare il gruppo primario, in base alle
-# credenziali VOMS; se questo ha successo, prosegue a cercare di
-# allocare un pool account in base alle credenziali VOMS.  Se uno dei
-# due passi fallisce, cerca di mappare in un poolaccount seguendo il
-# normale /etc/grid-security/grid-mapfile. Se anche questo fallisce
-# cerca di mappare su un account locale (necessario per gli utenti
-# *sgm)
+#
+#At first try to locate the primary group, based on VOMS credentials, 
+#if this is successful, continue trying to allocate a pool account based on VOMS credentials. 
+#If any of the steps fails, it tries to map a poolaccount following the normal 
+#/etc/grid-security/grid-mapfile. 
+#If even that fails tries to map a local account (necessary for *sgm users)
+#
 
 acquisition_policy:
 vomslocalgroup -> vomspoolaccount | poolaccount
