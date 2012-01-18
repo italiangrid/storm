@@ -29,7 +29,6 @@
 %define lcmaps_plugins_voms @lcmaps_plugins_voms@
 %define libacl_devel @libacl_devel@
 %define libattr_devel @libattr_devel@
-%define platform @platform@
 
 Name:    %{longname}
 Version: %{version}
