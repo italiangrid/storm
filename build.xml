@@ -75,8 +75,6 @@ to get a list of the available targets for this buildfile.
 	<!-- set default global properties for this build -->
 	<property name="basedir" location="."/>
 
-	<property name="jvm.arch" value="${sun.arch.data.model}"/>
-
 	<!-- variable used by make -->
 	<property name="swig.location" value="/usr" />
 	<property name="glite.location" value="/opt/glite" />
@@ -85,7 +83,6 @@ to get a list of the available targets for this buildfile.
 	<property name="lcmaps-plugins-basic.location" value="${glite.location}" />
 	<property name="lcmaps-plugins-voms.location" value="${glite.location}" />
 	<property name="jdk.location" value="/usr/lib/jvm/java" />
-	<property name="arch_bit" value="${jvm.arch}"/>
 	<property name="libacl-devel.location" value="/usr" />
 	<property name="libattr-devel.location" value="/usr" />
 	<property name="gpfs-base.location" value="/usr/lpp/mmfs" />
@@ -131,11 +128,12 @@ to get a list of the available targets for this buildfile.
 	<property name="component.name" value="${service.prefix}-${module.name}"/>
 	<property name="dist.name" value="${component.name}"/>
 	
-	<!--<property name="lib.arch" value="${sun.arch.data.model}"/>-->
-	<condition property="lib.arch" value="64" else="">
-	   <equals arg1="${sun.arch.data.model}" arg2="64" />
+    <exec executable="uname" outputproperty="architecture" >
+    	<arg value="-m"/>
+    </exec>
+	<condition property="arch_bit" value="64" else="">
+		<equals arg1="x86_64" arg2="${architecture}" trim="true" />
 	</condition>
-	
 	<available file="${version.info.dir}/${version.info.file}" property="version.file.exists"/>
 
 	<!-- these names are chosen to match configure/Makefile common usage -->
@@ -162,7 +160,7 @@ to get a list of the available targets for this buildfile.
 	<property name="sysconfigdir" location="${sysconfdir}/sysconfig"/>
 
 	<property name="docdir" location="${datadir}/doc/${dist.name}-${version}"/>
-	<property name="libdir" location="${prefix}/usr/lib${lib.arch}"/>
+	<property name="libdir" location="${prefix}/usr/lib${arch_bit}"/>
 	<property name="nativedir" location="${libdir}/${component.name}"/>
 	<property name="javadir" location="${datadir}/java/${component.name}"/>
 
@@ -195,9 +193,7 @@ to get a list of the available targets for this buildfile.
                    <arg value="s/ /_/g"/>
            </exec>
            <echo message="distribution=${nonspace.distribution}" />
-          <exec executable="uname" outputproperty="architecture" >
-                   <arg value="-m"/>
-           </exec>
+
 
            <exec executable="sed" inputstring="${architecture}" outputproperty="nonspace.architecture">
                    <arg value="s/ /_/g"/>
@@ -566,16 +562,14 @@ test.junit.dir
 	
 	<!-- make MOCK GPFS shared libray -->
 	<target name="mock-gpfs" depends="init">
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
+
 		<exec executable="make"
 			failonerror="true"
 			logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/mock"/>
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="BUILDDIR=${build.obj.dir}"/>
-			<arg value="arch=${arch}"/>
+			<arg value="arch=${arch_bit}"/>
 		</exec>
 	</target>	
 
@@ -583,14 +577,9 @@ test.junit.dir
 	<!-- make c libs used by JNA -->
 	<target name="clibs-jna" depends="init">
 
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
 		<echo message="- DESTDIR : ${build.libs.dir}"/>
 		<echo message="- BUILDDIR : ${build.obj.dir}"/>
-		<echo message="- arch : ${arch}"/>
-		<echo message="- arch_bit : ${arch_bit}"/>
+		<echo message="- arch : ${arch_bit}"/>
 		<echo message="- lcmaps-without-gsi.location : ${lcmaps-without-gsi.location}"/>
 		
 		<exec executable="make"
@@ -599,7 +588,7 @@ test.junit.dir
 			<arg line="-C ${src.java.dir}/it/grid/storm/jna"/>
 			<arg value="DESTDIR=${build.libs.dir}"/>
 			<arg value="BUILDDIR=${build.obj.dir}"/>
-			<arg value="arch=${arch}"/>
+			<arg value="arch=${arch_bit}"/>
 			<arg value="lcmaps-without-gsi.location=${lcmaps-without-gsi.location}"/>
 		</exec>
 	</target>
@@ -615,13 +604,9 @@ test.junit.dir
 	-->
 	<target name="swig.filesystem" depends="init">
 
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-		
         <echo message="- Source Java Dir: ${src.java.dir}"/>
 		<echo message="- Build dir: ${build.libs.dir}"/>
-        <echo message="- Architecture: ${arch}"/>
+        <echo message="- Architecture: ${arch_bit}"/>
         <echo message="- Swig location: ${swig.location}"/>
         <echo message="- JDK location: ${jdk.location}"/>
         <echo message="- Lib ACL location: ${libacl-devel.location}"/>
@@ -632,7 +617,7 @@ test.junit.dir
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig swig"/>
 			<arg line="fs_acl.java genericfs.java"/>
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="arch=${arch}"/>
+			<arg value="arch=${arch_bit}"/>
 			<arg value="swig_location=${swig.location}" />
 			<arg value="jdk_location=${jdk.location}" />
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
@@ -646,10 +631,6 @@ test.junit.dir
 	<target name="libs.filesystem" 
 		depends="init,swig.filesystem">
 
-		<condition property="arch" value="64" else="">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
-		</condition>
-
 		<echo message="Java installation directory: ${java.home}"/>
 		<echo message="Java Virtual Machine specification version: ${java.vm.specification.version}"/>
 		<echo message="Java Virtual Machine specification vendor: ${java.vm.specification.vendor}"/>
@@ -659,7 +640,7 @@ test.junit.dir
 		<exec executable="make" failonerror="true" logError="true">
 			<arg line="-C ${src.java.dir}/it/grid/storm/filesystem/swig libso"/>
 			<arg value="DESTDIR=${build.libs.dir}" />
-			<arg value="arch=${arch}"/>
+			<arg value="arch=${arch_bit}"/>
 			<arg value="swig_location=${swig.location}" />
 			<arg value="jdk_location=${jdk.location}" />
 			<arg value="libacl_devel_location=${libacl-devel.location}" />
@@ -843,7 +824,7 @@ test.junit.dir
 		<condition property="lcmaps-substitute-file" 
 			value="${src.config.dir}/lcmaps-x86_64.db" 
 			else="${src.config.dir}/lcmaps-i386.db">
-			<equals arg1="64" arg2="${arch_bit}" trim="true" />
+			<equals arg1="x86_64" arg2="${architecture}" trim="true" />
 		</condition>
 
 		<copy 
