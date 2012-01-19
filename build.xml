@@ -587,6 +587,12 @@ test.junit.dir
 			<equals arg1="64" arg2="${arch_bit}" trim="true" />
 		</condition>
 
+		<echo message="- DESTDIR : ${build.libs.dir}"/>
+		<echo message="- BUILDDIR : ${build.obj.dir}"/>
+		<echo message="- arch : ${arch}"/>
+		<echo message="- arch_bit : ${arch_bit}"/>
+		<echo message="- lcmaps-without-gsi.location : ${lcmaps-without-gsi.location}"/>
+		
 		<exec executable="make"
 			failonerror="true"
 			logError="true">
