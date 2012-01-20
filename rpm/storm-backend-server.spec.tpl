@@ -21,6 +21,7 @@
 
 %define version @version@
 %define age @age@
+%define os @os@
 %define swig @swig@
 %define jdk @jdk@
 %define lcmaps @lcmaps@
@@ -32,7 +33,7 @@
 
 Name:    %{longname}
 Version: %{version}
-Release: %{age}.@os@
+Release: %{age}.%{os}
 Summary: The StoRM BackEnd component.
 License:  Apache License
 Url: http://storm.forge.cnaf.infn.it
