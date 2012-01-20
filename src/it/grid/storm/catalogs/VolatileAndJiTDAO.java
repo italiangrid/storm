@@ -95,7 +95,11 @@ public class VolatileAndJiTDAO {
      * make it more readable. pinLifetime remains in seconds.
      */
     public void addJiT(String filename, int uid, int gid, int acl, long start, long pinLifetime) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. addJiT:  unable to get a valid connection!");
+            return;
+        }
         String sql = "INSERT INTO jit(file,uid,gid,acl,start,pinLifetime) VALUES(?,?,?,?,FROM_UNIXTIME(?),?)";
         PreparedStatement stmt = null;
         try {
@@ -132,7 +136,11 @@ public class VolatileAndJiTDAO {
      * make it more readable. pinLifetime remains in seconds.
      */
     public void addVolatile(String filename, long start, long fileLifetime) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. addVolatile:  unable to get a valid connection!");
+            return;
+        }
         String sql = "INSERT INTO volatile(file,start,fileLifetime) VALUES(?,FROM_UNIXTIME(?),?)";
         PreparedStatement stmt = null;
         try {
@@ -161,7 +169,11 @@ public class VolatileAndJiTDAO {
      *         otherwise.
      */
     public boolean exists(String filename) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. exists:  unable to get a valid connection!");
+            return false;
+        }
         String sql = "SELECT ID FROM volatile WHERE file=? LIMIT 1";
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -215,7 +227,11 @@ public class VolatileAndJiTDAO {
      * acl, are used as criteria to select records.
      */
     public void forceUpdateJiT(String filename, int uid, int acl, long start, long pinLifetime) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. forceUpdateJiT:  unable to get a valid connection!");
+            return;
+        }
         String sql = "UPDATE jit "+
         "SET start=FROM_UNIXTIME(?), pinLifetime=? "+
         "WHERE file=? AND uid=? AND acl=?";
@@ -253,7 +269,11 @@ public class VolatileAndJiTDAO {
      * -1 is returned if there are problems with the DB.
      */
     public int numberJiT(String filename, int uid, int acl) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. numberJiT:  unable to get a valid connection!");
+            return -1;
+        }
         String sql = "SELECT COUNT(ID) FROM jit WHERE file=? AND uid=? AND acl=?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -297,7 +317,11 @@ public class VolatileAndJiTDAO {
      * -1 is returned if there are problems with the DB.
      */
     public int numberVolatile(String filename) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. numberVolatile:  unable to get a valid connection!");
+            return -1;
+        }
         String sql = "SELECT COUNT(ID) FROM volatile WHERE file=?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -332,7 +356,11 @@ public class VolatileAndJiTDAO {
      * that set up the ACL!
      */
     public void removeAllJiTsOn(String filename) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. removeAllJiTsOn:  unable to get a valid connection!");
+            return;
+        }
         String sql = "DELETE FROM jit WHERE file=?";
         PreparedStatement stmt = null;
         try {
@@ -370,7 +398,11 @@ public class VolatileAndJiTDAO {
      * the DB, so a Roll Back should return everything to its original state!
      */
     public Collection[] removeExpired(long time) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. removeExpired:  unable to get a valid connection!");
+            return new Collection[] {new ArrayList(), new ArrayList()}; //in case of any failure return an array of two empty Collection
+        }
 
         String vol = "SELECT ID,file FROM volatile WHERE (UNIX_TIMESTAMP(start)+fileLifetime<?)";
         String jit = "SELECT ID,file,acl,uid,gid FROM jit WHERE (UNIX_TIMESTAMP(start)+pinLifetime<?)";
@@ -477,7 +509,11 @@ public class VolatileAndJiTDAO {
      * that match the specified filename.
      */
     public void removeVolatile(String filename) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. removeVolatile:  unable to get a valid connection!");
+            return;
+        }
         String sql = "DELETE FROM volatile WHERE file=?";
         PreparedStatement stmt = null;
         try {
@@ -512,7 +548,11 @@ public class VolatileAndJiTDAO {
      * acl, are used as criteria to select records.
      */
     public void updateJiT(String filename, int uid, int acl, long start, long pinLifetime) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. updateJiT:  unable to get a valid connection!");
+            return;
+        }
         String sql = "UPDATE jit "+
         "SET start=FROM_UNIXTIME(?), pinLifetime=? "+
         "WHERE file=? AND uid=? AND acl=? AND (UNIX_TIMESTAMP(start)+pinLifetime<?)";
@@ -555,7 +595,11 @@ public class VolatileAndJiTDAO {
      * and fileLifetime, is larger than the existing one.
      */
     public void updateVolatile(String filename, long start, long fileLifetime) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. updateVolatile:  unable to get a valid connection!");
+            return;
+        }
         String sql = "UPDATE volatile "+
         "SET file=?, start=FROM_UNIXTIME(?), fileLifetime=? "+
         "WHERE file=? AND (UNIX_TIMESTAMP(start)+fileLifetime<?)";
@@ -595,7 +639,11 @@ public class VolatileAndJiTDAO {
      * and proper error messagges get logged.
      */
     public List<Long>  volatileInfoOn(String filename) {
-        checkConnection();
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. volatileInfoOn:  unable to get a valid connection!");
+            return new ArrayList<Long>();
+        }
         String sql = "SELECT UNIX_TIMESTAMP(start), fileLifetime FROM volatile WHERE file=?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -628,13 +676,18 @@ public class VolatileAndJiTDAO {
      * Auxiliary method that checks if time for resetting the connection has
      * come, and eventually takes it down and up back again.
      */
-    private void checkConnection() {
+    private boolean checkConnection() {
+        boolean response = true;
         if (reconnect) {
             log.debug("VolatileAndJiTDAO: reconnecting to DB. ");
             takeDownConnection();
-            setUpConnection();
-            reconnect = false;
+            response = setUpConnection();
+            if(response)
+            {
+                reconnect = false;    
+            }
         }
+        return response;
     }
 
     /**
@@ -733,14 +786,19 @@ public class VolatileAndJiTDAO {
     /**
      * Auxiliary method that sets up the connection to the DB.
      */
-    private void setUpConnection() {
+    private boolean setUpConnection() {
+        boolean response = false;
         try {
             Class.forName(driver);
             con = DriverManager.getConnection(url,name,password);
             if (con==null) {
                 log.error("VolatileAndJiTDAO! DriverManager returned a null Connection!");
             }
-            logWarnings(con.getWarnings());
+            else
+            {
+                response = con.isValid(0);
+                logWarnings(con.getWarnings());
+            }
         } catch (ClassNotFoundException e) {
             log.error("VolatileAndJiTDAO! Exception in setUpconnection! "+e);
         } catch (SQLException e) {
@@ -748,16 +806,20 @@ public class VolatileAndJiTDAO {
         } catch (Exception e) {
             log.error("VolatileAndJiTDAO! Exception in setUpConnection! "+e);
         }
+        return response;
     }
 
     /**
      * Auxiliary method that takes down a conenctin to the DB.
      */
     private void takeDownConnection() {
-        try {
-            con.close();
-        } catch (Exception e) {
-            log.error("VolatileAndJiTDAO! Exception in takeDownConnection! "+e);
+        if(con != null)
+        {
+            try {
+                con.close();
+            } catch (Exception e) {
+                log.error("VolatileAndJiTDAO! Exception in takeDownConnection! "+e);
+            }
         }
     }
 

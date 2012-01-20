@@ -113,7 +113,11 @@ public class CopyChunkDAO {
      */
 	public void update(CopyChunkDataTO to) {
 
-		checkConnection();
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: update - unable to get a valid connection!");
+            return;
+        }
 		PreparedStatement updateFileReq = null;
 		try
 		{
@@ -178,7 +182,11 @@ public class CopyChunkDAO {
 	//TODO MICHELE USER_SURL new method
 	public void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
 
-		checkConnection();
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: updateIncomplete - unable to get a valid connection!");
+            return;
+        }
 		String str = "UPDATE request_Copy SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=?, normalized_targetSURL_StFN=?, targetSURL_uniqueID=? "
 						 + "WHERE ID=?";
 		PreparedStatement stmt = null;
@@ -238,7 +246,11 @@ public class CopyChunkDAO {
      */
 	public Collection<CopyChunkDataTO> find(TRequestToken requestToken) {
 
-		checkConnection();
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<CopyChunkDataTO>();
+        }
 		String strToken = requestToken.toString();
 		String str = null;
 		PreparedStatement find = null;
@@ -330,7 +342,11 @@ public class CopyChunkDAO {
      */
 	public void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
 
-		checkConnection();
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: signalMalformedCopyChunk - unable to get a valid connection!");
+            return;
+        }
 		String signalSQL =
 						   "UPDATE status_Copy SET statusCode="
 							   + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
@@ -401,8 +417,8 @@ public class CopyChunkDAO {
     /**
      * Auxiliary method that sets up the conenction to the DB.
      */
-	private void setUpConnection() {
-
+	private boolean setUpConnection() {
+	    boolean response = false;
 		try
 		{
 			Class.forName(driver);
@@ -414,6 +430,7 @@ public class CopyChunkDAO {
 			else
 			{
 				logWarnings(con.getWarnings());
+				response = con.isValid(0);
 			}
 		} catch(ClassNotFoundException e)
 		{
@@ -422,21 +439,27 @@ public class CopyChunkDAO {
 		{
 			log.error("COPY CHUNK DAO! Exception in setUpConnection! " + e);
 		}
+		return response;
 	}
 
 	 /**
      * Auxiliary method that checks if time for resetting the connection has
      * come, and eventually takes it down and up back again.
      */
-	private void checkConnection() {
+	private boolean checkConnection() {
 
+	    boolean response = true;
 		if(reconnect)
 		{
 			log.debug("COPY CHUNK DAO! Reconnecting to DB! ");
 			takeDownConnection();
-			setUpConnection();
-			reconnect = false;
+			response = setUpConnection();
+            if(response)
+            {
+                reconnect = false;    
+            }
 		}
+		return response;
 	}
 	
     /**
@@ -444,12 +467,15 @@ public class CopyChunkDAO {
      */
 	private void takeDownConnection() {
 
-		try
-		{
-			con.close();
-		} catch(SQLException e)
-		{
-			log.error("COPY CHUNK DAO! Exception in takeDownConnection method: " + e);
-		}
+	    if(con != null)
+        {
+    		try
+    		{
+    			con.close();
+    		} catch(SQLException e)
+    		{
+    			log.error("COPY CHUNK DAO! Exception in takeDownConnection method: " + e);
+    		}
+        }
 	}
 }
