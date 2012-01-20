@@ -21,7 +21,7 @@
 
 %define version @version@
 %define age @age@
-%define os @os@
+%define os_acronim @os_acronim@
 %define swig @swig@
 %define jdk @jdk@
 %define lcmaps @lcmaps@
@@ -33,7 +33,7 @@
 
 Name:    %{longname}
 Version: %{version}
-Release: %{age}.%{os}
+Release: %{age}.%{os_acronim}
 Summary: The StoRM BackEnd component.
 License:  Apache License
 Url: http://storm.forge.cnaf.infn.it
@@ -94,7 +94,7 @@ IBM and Lustre from SUN.
 %setup -q -n %{name}
 
 %build
-ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dversion="%{version}" -Dage="%{age}" -Dplatform.acronym="%{os}" build
+ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dversion="%{version}" -Dage="%{age}" -Dplatform.acronym="%{os_acronim}" build
 
 %pre
 TMP_FOLDER=%{_sysconfdir}/%{prefixname}/tmp/storm_permissions_mantainance
@@ -133,7 +133,7 @@ fi
 
 %install
 rm -rf $RPM_BUILD_ROOT
-ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dversion="%{version}" -Dage="%{age}" -Dplatform.acronym="%{os}" -Dprefix="$RPM_BUILD_ROOT" install
+ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dversion="%{version}" -Dage="%{age}" -Dplatform.acronym="%{os_acronim}" -Dprefix="$RPM_BUILD_ROOT" install
 echo $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.d

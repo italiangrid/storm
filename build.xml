@@ -1030,7 +1030,7 @@ test.junit.dir
                         <replacetokens>
                                 <token key="version" value="${version}"/>
                                 <token key="age" value="${age}"/>
-	                        	<token key="os" value="${platform.acronym}"/>
+	                        	<token key="os_acronim" value="${platform.acronym}"/>
                                 <token key="swig" value="${swig.location}"/>
                                 <token key="jdk" value="${jdk.location}"/>
                                 <token key="lcmaps" value="${lcmaps.location}"/>
