@@ -32,13 +32,13 @@
 
 Name:    %{longname}
 Version: %{version}
-Release: %{age}.sl5
+Release: %{age}.%{os}
 Summary: The StoRM BackEnd component.
 License:  Apache License
 Url: http://storm.forge.cnaf.infn.it
 Vendor: EMI
 Group: Applications/File
-Packager: Luca Magnoni <storm-support@lists.infn.it> 
+Packager: Elisabetta Ronchieri <storm-support@lists.infn.it> 
 AutoReqProv:    yes
 BuildRoot: %{_tmppath}/%{name}
 Source:    %{name}-%{version}.tar.gz
@@ -68,7 +68,7 @@ Requires: lcmaps-interface
 Requires: lcmaps-without-gsi
 Requires: lcmaps-plugins-basic
 Requires: lcmaps-plugins-voms
-Requires: java-devel
+Requires: java
 Requires: nc
 Requires: xml-commons-apis
 Requires: mysql-connector-java

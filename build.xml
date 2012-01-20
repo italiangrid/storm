@@ -134,6 +134,10 @@ to get a list of the available targets for this buildfile.
 	<condition property="arch_bit" value="64" else="">
 		<equals arg1="x86_64" arg2="${architecture}" trim="true" />
 	</condition>
+	
+	<!-- default value for platform.acronym -->
+	<property name="platform.acronym" value="sl5" />
+	
 	<available file="${version.info.dir}/${version.info.file}" property="version.file.exists"/>
 
 	<!-- these names are chosen to match configure/Makefile common usage -->
@@ -170,7 +174,7 @@ to get a list of the available targets for this buildfile.
 	<property name="rpm.scripts.dir" location="${basedir}/rpm"/>
 	<property name="rpm.scripts.rpm-builder" location="${rpm.scripts.dir}/build-be-rpm"/>
 	<property name="rpm.spec.file" location="${rpm.scripts.dir}/storm-backend-server.spec"/>
-        <property name="rpm.spec.file-tpl" location="${rpm.scripts.dir}/storm-backend-server.spec.tpl"/>
+    <property name="rpm.spec.file-tpl" location="${rpm.scripts.dir}/storm-backend-server.spec.tpl"/>
 	<property name="rpm.dest.dir" location="${basedir}/rpm-build"/>
 	<property name="rpm.util.jar" location="${build.dir}/${dist.jar}"/>
 
@@ -1026,6 +1030,7 @@ test.junit.dir
                         <replacetokens>
                                 <token key="version" value="${version}"/>
                                 <token key="age" value="${age}"/>
+	                        	<token key="os" value="${platform.acronym}"/>
                                 <token key="swig" value="${swig.location}"/>
                                 <token key="jdk" value="${jdk.location}"/>
                                 <token key="lcmaps" value="${lcmaps.location}"/>
