@@ -97,7 +97,6 @@ to get a list of the available targets for this buildfile.
 	<property name="src.sysvinit.dir" location="${src.dir}/etc/init.d" />
 	<property name="src.logrotate.dir" location="${src.dir}/etc/logrotate.d" />
 	<property name="src.sysconfig.dir" location="${src.dir}/etc/sysconfig" />
-	<property name="src.cron.dir" location="${src.dir}/etc/cron.d" />
 	<property name="info.dir" location="${src.dir}/info-provider" />
 
 	<property name="build.encoding" value="ISO-8859-1" />
@@ -160,7 +159,6 @@ to get a list of the available targets for this buildfile.
     <property name="confdb" location="${confdir}/db"/>
 	<property name="sysvinitdir" location="${sysconfdir}/init.d"/>
 	<property name="logrotatedir" location="${sysconfdir}/logrotate.d"/>
-	<property name="crondir" location="${sysconfdir}/cron.d"/>
 	<property name="sysconfigdir" location="${sysconfdir}/sysconfig"/>
 
 	<property name="docdir" location="${datadir}/doc/${dist.name}-${version}"/>
@@ -489,9 +487,8 @@ test.junit.dir
 		<include name="used-space.ini.template"/>
 		<include name="path-authz.db"/>
 		<include name="welcome.txt"/>
-		<!-- removed because are not storm input file but, respectively cron and logrotate (they will be installed not in a storm created directory)-->
-		<!-- <include name="cron.d/storm-backend-server.cron"/>
-		<include name="logrotate.d/storm-backend-server"/> -->
+		<!-- removed because are not storm input file but logrotate (they will be installed not in a storm created directory)-->
+		<!-- <include name="logrotate.d/storm-backend-server"/> -->
 	</fileset>
 
 	<!-- configuration script for DB -->
@@ -512,11 +509,6 @@ test.junit.dir
 	<!-- logrotate scripts -->
 	<fileset id="src.logrotate" dir="${src.logrotate.dir}">
 		<include name="storm-backend-server" />
-	</fileset>
-
-	<!-- cron scripts -->
-	<fileset id="src.cron" dir="${src.cron.dir}">
-		<include name="storm-backend-server.cron" />
 	</fileset>
 
 	<!-- start/stop scripts -->
@@ -584,6 +576,12 @@ test.junit.dir
 		<echo message="- DESTDIR : ${build.libs.dir}"/>
 		<echo message="- BUILDDIR : ${build.obj.dir}"/>
 		<echo message="- arch : ${arch_bit}"/>
+		<echo message="- lcmaps-without-gsi.location : ${lcmaps-without-gsi.location}"/>
+		
+		<echo message="- DESTDIR : ${build.libs.dir}"/>
+		<echo message="- BUILDDIR : ${build.obj.dir}"/>
+		<echo message="- arch : ${arch}"/>
+		<echo message="- arch_bit : ${arch_bit}"/>
 		<echo message="- lcmaps-without-gsi.location : ${lcmaps-without-gsi.location}"/>
 		
 		<exec executable="make"
@@ -852,7 +850,6 @@ test.junit.dir
 		<mkdir dir="${confdb}" />
 		<mkdir dir="${sysvinitdir}" />
 		<mkdir dir="${logrotatedir}" />
-		<mkdir dir="${crondir}" />
 		<mkdir dir="${sysconfigdir}" />
 			
 		<mkdir dir="${docdir}" />
@@ -884,12 +881,6 @@ test.junit.dir
 		  flatten="true"
 		  overwrite="true">
 			<fileset refid="src.logrotate" />
-		</copy>
-		<copy
-		  todir="${crondir}"
-		  flatten="true"
-		  overwrite="true">
-			<fileset refid="src.cron" />
 		</copy>
 		<copy
 		  todir="${sysconfigdir}"

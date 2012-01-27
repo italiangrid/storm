@@ -360,7 +360,7 @@ bootstrap () {
     #cd "$STORM_HOME"
     #probably this is the directory where the dump file are created in case of JVM crash
     cd "$HOME"
-	  getRunningPids "PIDS"
+	getRunningPids "PIDS"
     if [ $? -ne 0 ]; then
         return -1
     fi
@@ -424,7 +424,7 @@ bootstrap () {
     
     # XXX: kludge to test if server is up
     # (we need to rewrite main class using commons-daemon!)
-    sleep 5
+    sleep 20
     ppid="$!"
     pid=`ps --ppid $ppid -o pid | grep -v PID | xargs ps --ppid 2> /dev/null | grep -v PID | awk '{print $1}'`
     if [[ "x" == "x"$pid || ! -d /proc/$pid ]]; then

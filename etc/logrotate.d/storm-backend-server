@@ -1,27 +1,10 @@
-missingok
-rotate 26
-compress
-notifempty
-create 644 storm storm
-
-/var/log/storm/storm-backend.stdout {
+/var/log/storm/storm-backend.stdout /var/log/storm/storm-backend.stderr /var/log/storm/lcmaps.log {
+	daily
+    missingok
+    notifempty
+    rotate 26
+    copytruncate
     size=50M
-    lastaction
-        DATE=`date +%Y-%m-%d`; mv /var/log/storm/storm-backend.stdout.1.gz /var/log/storm/storm-backend.stdout.$DATE.gz
-    endscript
+    compress
+    dateext
 }
-
-/var/log/storm/storm-backend.stderr {
-    size=50M
-    lastaction
-        DATE=`date +%Y-%m-%d`; mv /var/log/storm/storm-backend.stderr.1.gz /var/log/storm/storm-backend.stderr.$DATE.gz
-    endscript
-}
-
-/var/log/storm/lcmaps.log {
-    daily
-    lastaction
-        DATE=`date +%Y-%m-%d`; mv /var/log/storm/lcmaps.log.1.gz /var/log/storm/lcmaps.log.$DATE.gz
-     endscript
-}
-

@@ -136,7 +136,6 @@ rm -rf $RPM_BUILD_ROOT
 ant -Dswig.location="%{swig}" -Djdk.location="%{jdk}" -Dlcmaps.location="%{lcmaps}" -Dlcmaps-without-gsi.location="%{lcmaps_without_gsi}" -Dlcmaps-plugins-basic.location="%{lcmaps_plugins_basic}" -Dlcmaps-plugins-voms.location="%{lcmaps_plugins_voms}" -Dlibacl-devel.location=%{libacl_devel} -Dlibattr-devel.location="%{libattr_devel}" -Dversion="%{version}" -Dage="%{age}" -Dplatform.acronym="%{os_acronim}" -Dprefix="$RPM_BUILD_ROOT" install
 echo $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 mkdir -p $RPM_BUILD_ROOT%{_varlog}/%{prefixname}
@@ -287,7 +286,6 @@ fi;
 %dir %attr(755,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}
 %attr(755,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_database_config.sh
 %config(noreplace) %attr(644,%{default_user},%{default_user}) %{_sysconfdir}/logrotate.d/%{longname}
-%config(noreplace) %attr(644,%{default_user},%{default_user}) %{_sysconfdir}/cron.d/%{longname}.cron
 %config(noreplace) %attr(644,%{default_user},%{default_user}) %{_sysconfdir}/sysconfig/%{longname}
 %attr(755,%{default_user},%{default_user}) %{_sysconfdir}/init.d/%{longname}
 

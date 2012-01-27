@@ -1,1 +1,0 @@
-00 00 * * * root /usr/sbin/logrotate -s /etc/logrotate.d/logrotate.status /etc/logrotate.d/storm-backend-server
