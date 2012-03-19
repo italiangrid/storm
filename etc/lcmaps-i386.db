@@ -1,7 +1,7 @@
 # LCMAPS policy file/plugin definition
 #
 ### default path
-path = /usr/lib/modules
+path = /usr/lib/lcmaps
 
 ### Plugin definitions:
 good             = "lcmaps_dummy_good.mod"
