@@ -1156,7 +1156,7 @@ public class VirtualFS implements VirtualFSInterface {
         return this.spaceToken;
     }
 
-    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException {
+    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) {
         return this.capabilities.getPoolByScheme(protocol);
     }
 

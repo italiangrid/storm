@@ -40,9 +40,9 @@ package it.grid.storm.balancer;
 public interface Strategy<E extends Node> {
     
     
-    public abstract E getNextElement();
+    public abstract E getNextElement() throws BalancerException;
     
-    public abstract StrategyType getType();
+    public abstract BalancerStrategyType getType();
     
     public abstract void notifyChangeInPool();
     

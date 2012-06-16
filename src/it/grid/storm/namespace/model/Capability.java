@@ -19,7 +19,7 @@ package it.grid.storm.namespace.model;
 
 import it.grid.storm.balancer.Balancer;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.balancer.StrategyType;
+import it.grid.storm.balancer.BalancerStrategyType;
 import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -115,28 +115,19 @@ public class Capability implements CapabilityInterface {
 
     public void addProtocolPoolBySchema(Protocol protocol, ProtocolPool protPool) {
         protocolPoolsByScheme.put(protocol, protPool);
+        
         //Building Balancer and put it into Map of Balancers
-        Balancer balancer = null;
         if (protocol.equals(Protocol.GSIFTP)) {
-            balancer = new Balancer<FTPNode>();
-            StrategyType strat = null;
-            if (protPool.getBalanceStrategy().equals("round-robin")) {
-                strat = StrategyType.ROUNDROBIN;
-            } else if (protPool.getBalanceStrategy().equals("random")) {
-                strat = StrategyType.ROUNDROBIN;
-            } else if (protPool.getBalanceStrategy().equals("weight")) {
-                strat = StrategyType.ROUNDROBIN;
-            } else  {
-                log.error("The current version manage only 'round-robin', 'random' and 'weight' strategy");
-            }
-            balancer.setStrategy(strat);
+            Balancer<FTPNode> balancer = new Balancer<FTPNode>(protPool.getBalanceStrategy());
+           
             for (PoolMember member: protPool.getPoolMembers()) {
-                String hostname = member.getMemeberProtocol().getAuthority().getServiceHostname();
-                int port =  member.getMemeberProtocol().getAuthority().getServicePort();
-                int weight = member.getMemberWeight();
-
-                log.debug("toooreemove member ppol: "+hostname );
-                FTPNode ftpNode = new FTPNode(hostname, port, weight);
+                String hostname = member.getMemberProtocol().getAuthority().getServiceHostname();
+                int port =  member.getMemberProtocol().getAuthority().getServicePort();
+                FTPNode ftpNode = new FTPNode(hostname, port);
+                if (protPool.getBalanceStrategy().requireWeight()) {
+                	int weight = member.getMemberWeight();
+                	ftpNode.setWeight(weight);
+                }
                 balancer.addElement(ftpNode);
             }
             balancerByScheme.put(protocol,balancer);

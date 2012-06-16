@@ -17,6 +17,7 @@
 
 package it.grid.storm.namespace.config.xml;
 
+import it.grid.storm.balancer.BalancerStrategyType;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -579,22 +580,25 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          */
         boolean isPresentPool = parserUtil.getPoolDefined(fsName);
         if (isPresentPool) {
-            String balanceStrategy = parserUtil.getBalancerStrategy(fsName);
+            BalancerStrategyType balanceStrategy = BalancerStrategyType.getByValue(parserUtil.getBalancerStrategy(fsName));
             ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
             PoolMember poolMember;
             int nrMembers = parserUtil.getNumberOfPoolMembers(fsName);
             TransportProtocol tProtMember;
             int protIndex;
-            int memberWeight;
             for (int i = 0; i < nrMembers; i++) {
                 protIndex = parserUtil.getMemberID(fsName, i);
-                tProtMember = cap.getProtocolByID(protIndex);
-                if (tProtMember != null) { //Protocol with ID=protIndex exists!
-                    memberWeight = parserUtil.getMemberWeight(fsName, i);
-                    poolMember = new PoolMember(protIndex, memberWeight);
+                tProtMember = cap.getProtocolByID(protIndex);  //search for the member with specified ID
+                if (tProtMember != null) { // member found!
+                	if (balanceStrategy.requireWeight()) { //Check for the weight
+                		int memberWeight = parserUtil.getMemberWeight(fsName, i);
+                		poolMember = new PoolMember(protIndex, memberWeight);
+                	} else {
+                		poolMember = new PoolMember(protIndex);  
+                	}                 
                     poolMember.setMemberProtocol(tProtMember);
                     poolMembers.add(poolMember);
-                } else {
+                } else { // member pointed out doesn't exist!!
                     log.error("POOL Building: Protocol with index " + protIndex + " does not exists in the VFS :"
                             + fsName);
                     throw new NamespaceException("POOL Building: Protocol with index " + protIndex
@@ -605,13 +609,13 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
             //Check Protocol Homogeneity
             Protocol prot = Protocol.EMPTY;
             if (!(poolMembers.isEmpty())) {
-                prot = poolMembers.get(0).getMemeberProtocol().getProtocol();
+                prot = poolMembers.get(0).getMemberProtocol().getProtocol();
                 for (PoolMember m : poolMembers) {
-                    if (!(m.getMemeberProtocol().getProtocol().equals(prot))) {
-                        throw new NamespaceException("POOL Defined is NOT HOMOGENEOUS!");
+                    if (!(m.getMemberProtocol().getProtocol().equals(prot))) {
+                        throw new NamespaceException("Defined Pool is NOT HOMOGENEOUS!");
                     }
                 }
-                log.debug("Pool defined is homogeneous (" + prot + ") with " + poolMembers.size() + " elements");
+                log.debug("Defined pool is homogeneous (" + prot + "), and its size is " + poolMembers.size() + " elements");
             } else {
                 throw new NamespaceException("POOL Defined is EMPTY!");
             }

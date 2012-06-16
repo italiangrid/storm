@@ -462,6 +462,9 @@ test.junit.dir
 		<!-- Parsing INI files -->
 		<include name="ini4j-0.5.2.jar"/>
 		
+		<!-- Smart Round Robin -->
+		<include name="netty-3.5.0.Final.jar"/>
+		
 	</fileset>
 
 	<fileset id="src.jars.build"

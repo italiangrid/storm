@@ -22,5 +22,13 @@ public interface Node {
     public abstract void setWeight(int w);
     
     public abstract int getWeight();
+    
+    public abstract String getHostName();
+
+    public abstract void setHostname(String hostname);
+
+    public abstract int getPort();
+
+    public abstract void setPort(int port) ;
 
 }

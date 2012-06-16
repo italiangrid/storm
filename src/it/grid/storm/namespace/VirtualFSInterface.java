@@ -171,7 +171,7 @@ public interface VirtualFSInterface {
 
     public boolean isPoolDefined(Protocol protocol) throws NamespaceException;
 
-    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) throws NamespaceException;
+    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol);
 
 
 }

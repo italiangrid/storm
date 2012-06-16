@@ -18,6 +18,7 @@
 package it.grid.storm.namespace;
 
 import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancerException;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
@@ -818,23 +819,29 @@ implements StoRI {
 
 
 
-    private Authority getPooledAuthority(Protocol pooledProtocol) {
-        Authority authority = null;
-        try {
-            if (vfs.getProtocolBalancer(pooledProtocol) != null) {
-                Balancer<? extends Node> bal = vfs.getProtocolBalancer(pooledProtocol);
-                if (pooledProtocol.equals(Protocol.GSIFTP)) {
-                    FTPNode node = (FTPNode) bal.getNextElement();
-                    authority = new Authority(node.getHostName(), node.getPort());
-                } else {
-                    log.error("Unable to manage pool with protocol different from GSIFTP.");
-                }
-            }
-        } catch (NamespaceException e) {
-            log.error("Error getting the protocol balancer.");
-        }
-        return authority;
-    }
+	private Authority getPooledAuthority(Protocol pooledProtocol) {
+		Authority authority = null;
+
+		if (vfs.getProtocolBalancer(pooledProtocol) != null) {
+			Balancer<? extends Node> bal = vfs
+					.getProtocolBalancer(pooledProtocol);
+			if (pooledProtocol.equals(Protocol.GSIFTP)) {
+				FTPNode node;
+				try {
+					node = (FTPNode) bal.getNextElement();
+					authority = new Authority(node.getHostName(), node.getPort());
+				} catch (BalancerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			} else {
+				log.error("Unable to manage pool with protocol different from GSIFTP.");
+			}
+		}
+
+		return authority;
+	}
 
     private String getVFSName() {
         String result = "UNDEF";

@@ -149,6 +149,15 @@
             <port>2811</port>
           </prot>
         </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+        
+              
+            </member>
+          </members>
+        </pool>
       </capabilities>
     </filesystem>
 

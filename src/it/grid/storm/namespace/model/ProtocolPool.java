@@ -17,23 +17,25 @@
 
 package it.grid.storm.namespace.model;
 
+import it.grid.storm.balancer.BalancerStrategyType;
+
 import java.util.List;
 import java.util.ArrayList;
 
 public class ProtocolPool {
 
   private Protocol poolType = Protocol.EMPTY;
-  private String balanceStrategy;
+  private BalancerStrategyType balanceStrategy;
   private List<PoolMember> poolMembers = new ArrayList<PoolMember>();
 
   public ProtocolPool() {
   }
 
-  public void setBalanceStrategy(String balanceStrategy) {
+  public void setBalanceStrategy(BalancerStrategyType balanceStrategy) {
     this.balanceStrategy = balanceStrategy;
   }
 
-  public String getBalanceStrategy(){
+  public BalancerStrategyType getBalanceStrategy(){
     return this.balanceStrategy;
   }
 

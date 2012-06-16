@@ -65,5 +65,6 @@
 	<classpathentry kind="var" path="BE_JAR_LIB"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/commons-io-2.0.1.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/ini4j-0.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/netty-3.5.0.Final.jar" sourcepath="C:/Users/ritz/workspace/BE_1.9/lib/netty-3.5.0.Final-sources.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

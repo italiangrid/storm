@@ -44,38 +44,18 @@ public class Balancer<E extends Node> {
      * @param strategy
      */
     public Balancer() {
-        //Base strategy
-        this(StrategyType.ROUNDROBIN);
     }
 
-    public Balancer(StrategyType tp) {
+    public Balancer(BalancerStrategyType tp) {
         pool = new LinkedList<E>();
         this.strategy =  StrategyFactory.getStrategy(tp, pool);
     }
 
     public void addElement(E element) {
-        //Crea nuovo elemento con peso 0
-        //element.setWeight(0);
         pool.add(element);
         strategy.notifyChangeInPool();
 
     }
-
-    /**
-     *
-     * Peso compreso da 1 a 10?
-     *
-     * @param element
-     * @param weight
-     */
-    private void addElementWithWeight(E element, int weight) {
-        element.setWeight(weight);
-        pool.add(element);
-        strategy.notifyChangeInPool();
-
-    }
-
-
 
     /**
      *
@@ -96,13 +76,17 @@ public class Balancer<E extends Node> {
      *
      * @return Element
      */
-    public E getNextElement() {
+    public E getNextElement() throws BalancerException {
         return strategy.getNextElement();
     }
 
 
-    public void setStrategy(StrategyType type) {
+    public void setStrategy(BalancerStrategyType type) {
         this.strategy =  StrategyFactory.getStrategy(type,pool);
+    }
+    
+    public BalancerStrategyType getStrategy() {
+    	return this.strategy.getType();
     }
 
     public String toString() {

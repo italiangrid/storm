@@ -690,7 +690,7 @@ public class XMLParserUtil implements XMLConst {
      * @param element String
      * @return int
      */
-    private int getIntProperty(String element) throws NamespaceException {
+    private int getIntProperty(String element) {
         int prop = -1;
         try {
             prop = configuration.getInt(element);
@@ -904,7 +904,7 @@ public class XMLParserUtil implements XMLConst {
                 numOfMembers = 1;
             }
         } else {
-            log.error("Mmmm");
+            log.error("Error during the retrieve of the number of pool member of "+nameOfFS);
         }
         return numOfMembers;
     }
@@ -913,8 +913,8 @@ public class XMLParserUtil implements XMLConst {
         return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_ID));
     }
 
-    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException {
-        return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
+    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException{
+    	return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
     }
 
 }

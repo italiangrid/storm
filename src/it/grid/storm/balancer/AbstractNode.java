@@ -19,10 +19,24 @@ package it.grid.storm.balancer;
 
 public abstract class AbstractNode implements Node {
     
-    private int ID;
+    protected int nodeId = 0;
+	protected int weight = 0;
     
-    protected int weight = 0;
+    public int getWeight() {
+        return weight;
+    }
     
+    public void setWeight(int w) {
+        //Weight between 1 and 100
+        weight = w%100;
+    }
 
-
+    public void setId(int id) {
+    	nodeId=id;
+    }
+    
+    public int getId() {
+    	return nodeId;
+    }
+    
 }

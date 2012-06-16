@@ -41,7 +41,7 @@ import java.util.List;
 
 public abstract class AbstractStrategy<E extends Node> implements Strategy<E>{
     
-    protected StrategyType type;
+    protected BalancerStrategyType type;
     protected LinkedList<E> nodePool = null;
     
     public AbstractStrategy(List<E> pool) { 
@@ -49,7 +49,7 @@ public abstract class AbstractStrategy<E extends Node> implements Strategy<E>{
         
   }
     
-    public StrategyType getType() {
+    public BalancerStrategyType getType() {
         return type;
     }
     

@@ -344,6 +344,7 @@ fi;
 %{_javadir}/%{longname}/logback-classic-0.9.15.jar
 %{_javadir}/%{longname}/logback-core-0.9.15.jar
 %{_javadir}/%{longname}/mail.jar
+%{_javadir}/%{longname}/netty-3.5.0.Final.jar
 %{_javadir}/%{longname}/puretls.jar
 %{_javadir}/%{longname}/saaj.jar
 %{_javadir}/%{longname}/srm22client.jar

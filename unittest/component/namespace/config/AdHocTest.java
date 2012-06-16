@@ -502,12 +502,10 @@ private void retrieveProtocol(String fsName, int nrProt) {
     private void testGetProtocolBalancer() {
         VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
         Balancer<? extends Node> balancer = null;
-        try {
+        
             balancer = vfs.getProtocolBalancer(Protocol.GSIFTP);
-        }
-        catch (NamespaceException ex) {
-            log.error("AHH!",ex);
-        }
+        
+        
         log.debug(" BALANCER : "+balancer);
     }
 
