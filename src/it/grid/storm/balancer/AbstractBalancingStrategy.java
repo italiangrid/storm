@@ -17,6 +17,8 @@
 
 package it.grid.storm.balancer;
 
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -37,15 +39,22 @@ package it.grid.storm.balancer;
  *
  */
 
-public interface Strategy<E extends Node> {
+public abstract class AbstractBalancingStrategy<E extends Node> implements BalancingStrategy<E>{
     
+    protected BalancingStrategyType type;
+    protected LinkedList<E> nodePool = null;
     
-    public abstract E getNextElement() throws BalancerException;
+    public AbstractBalancingStrategy(List<E> pool) { 
+        nodePool = (LinkedList<E>) pool;
+        
+  }
     
-    public abstract BalancerStrategyType getType();
+    public BalancingStrategyType getType() {
+        return type;
+    }
     
-    public abstract void notifyChangeInPool();
-    
-    
+    public String toString() {
+        return this.getClass().getName();
+    }
 
 }

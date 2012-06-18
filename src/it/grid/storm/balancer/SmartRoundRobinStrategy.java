@@ -1,57 +1,78 @@
 package it.grid.storm.balancer;
 
 import it.grid.storm.balancer.ftp.CyclicCounter;
-import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.balancer.ftp.SmartRRManager;
+import it.grid.storm.config.Configuration;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
-public class SmartRoundRobinStrategy <E extends Node> extends AbstractStrategy<E> {
+public class SmartRoundRobinStrategy <E extends Node> extends AbstractBalancingStrategy<E> {
 
-    private static final Logger logger = Logger.getLogger(SmartRoundRobinStrategy.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(SmartRoundRobinStrategy.class);
+    
+    
+	private final CyclicCounter counter;
 	
-	private CyclicCounter counter;
-	private int poolSize;
+    public SmartRoundRobinStrategy(List<E> nodes) throws IllegalArgumentException
+    {
+        super(nodes);
+        if(nodes == null || nodes.size() == 0)
+        {
+            throw new IllegalArgumentException("Unable to build SmartRoundRobinStrategy, " +
+            		"received null/empty node pool");
+        }
+        
+        counter = new CyclicCounter(nodes.size() - 1);
+        SmartRRManager manager = SmartRRManager.getInstance();
+        for(E node : nodes)
+        {
+            manager.add(node.getHostName(), node.getPort());
+        }
+        Long lifetime = Configuration.getInstance().getGridftpPoolStatusCheckTimeout();
+        if(lifetime != null)
+        {
+            manager.setCacheEntryLifetime(lifetime);
+        }
+    }
 	
-	public SmartRoundRobinStrategy(List<E> pool) {
-		super(pool);
-		poolSize = pool.size();
-		counter = new CyclicCounter(poolSize);
-		for (E e : pool) {
-			SmartRRManager mngr = SmartRRManager.getInstance();
-			mngr.add(e.getHostName(),e.getPort());
-		}
-	}
-
-	
-	@SuppressWarnings("unchecked")
 	@Override
-	public E getNextElement() throws BalancerException {
-		AtomicInteger attempts = new AtomicInteger(0);
-		SmartRRManager manager = SmartRRManager.getInstance();
+    public E getNextElement() throws BalancingStrategyException
+    {
+        int attempts = 0;
+        SmartRRManager manager = SmartRRManager.getInstance();
 
-		FTPNode remoteService = null;
-		boolean responsiveFound = false;
-		while (!responsiveFound) {
-			remoteService = (FTPNode) nodePool.get(counter.cyclicallyIncrementAndGet());
-			responsiveFound = manager.isResponsive(remoteService.getHostName(),remoteService.getPort());
-			if (!responsiveFound) {
-				if (attempts.addAndGet(1) > poolSize) {
-					// No one remote service is responsive!
-					logger.warning("No one remote service is responsive!");
-					throw new BalancerException();
-				}
-			}
-		}
-		return (E)remoteService;
-	}
+        E remoteService = null;
+        boolean responsiveFound = false;
+        while (!responsiveFound)
+        {
+            attempts++;
+            //maybe should be better to remove the CyclicCounterand use a concurrent list
+            remoteService =  nodePool.get(counter.next());
+            try
+            {
+                responsiveFound = manager.isResponsive(remoteService.getHostName(), remoteService.getPort());
+            } catch(Exception e)
+            {
+                log.warn("Unable to check the status of the The GFTP " + remoteService.toString()
+                        + " . .Exception : " + e.getMessage());
+                throw new BalancingStrategyException("Unable to check the status of the The GFTP");
+            }
+            if (!responsiveFound)
+            {
+                if (attempts >= nodePool.size())
+                {
+                    // No one remote service is responsive!
+                    log.warn("No one remote service is responsive!");
+                    throw new BalancingStrategyException("No remote services are responsive");
+                }
+            }
+        }
+        return remoteService;
+    }
 
 	@Override
 	public void notifyChangeInPool() {
-		// TODO Auto-generated method stub
-		
 	}
-
 }

@@ -17,7 +17,7 @@
 
 package it.grid.storm.namespace;
 
-import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.SpaceSystem;
@@ -171,7 +171,7 @@ public interface VirtualFSInterface {
 
     public boolean isPoolDefined(Protocol protocol) throws NamespaceException;
 
-    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol);
+    public BalancingStrategy<? extends Node> getProtocolBalancingStrategy(Protocol protocol);
 
 
 }

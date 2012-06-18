@@ -21,16 +21,23 @@ package it.grid.storm.balancer;
 import java.util.List;
 
 
-public class StrategyFactory {
+public class BalancingStrategyFactory {
 
-    public static <E extends Node> Strategy<E> getStrategy(BalancerStrategyType type, List<E> pool) {
-        switch(type) {
-        case RANDOM: return new RandomStrategy<E>(pool);
-        case ROUNDROBIN: return new RoundRobinStrategy<E>(pool);
-        case WEIGHT: return new WeightStrategy<E>(pool);
+    public static <E extends Node> BalancingStrategy<E> getBalancingStrategy(BalancingStrategyType type,
+            List<E> pool) throws IllegalArgumentException
+    {
+        switch (type)
+        {
+            case RANDOM:
+                return new RandomStrategy<E>(pool);
+            case ROUNDROBIN:
+                return new RoundRobinStrategy<E>(pool);
+            case WEIGHT:
+                return new WeightStrategy<E>(pool);
+            case SMART_RR:
+                return new SmartRoundRobinStrategy<E>(pool);
         }
-        throw new AssertionError("StrategyFactory: Unknown op: ");
-     
+        throw new IllegalArgumentException("StrategyFactory: Unknown BalancingStrategyType: " + type);
     }
 
 }

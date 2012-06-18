@@ -48,9 +48,10 @@ public interface StoRI {
      * @param prefixOfAcceptedTransferProtocols TURLPrefix  Collection of @link TransferProcol specified in SRM Request.
      * @return TTURL : TransportURL for StoRI.
      * @throws InvalidGetTURLNullPrefixAttributeException
+     * @throws Exception 
      */
     public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException ;
+        InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException, TURLBuildingException;
 
 
     public TSURL getSURL();

@@ -1,6 +1,6 @@
 package component.namespace.config;
 
-import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.griduser.GridUserInterface;
@@ -501,9 +501,9 @@ private void retrieveProtocol(String fsName, int nrProt) {
     //******************************************************** 1.4.0 ************
     private void testGetProtocolBalancer() {
         VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
-        Balancer<? extends Node> balancer = null;
+        BalancingStrategy<? extends Node> balancer = null;
         
-            balancer = vfs.getProtocolBalancer(Protocol.GSIFTP);
+            balancer = vfs.getProtocolBalancingStrategy(Protocol.GSIFTP);
         
         
         log.debug(" BALANCER : "+balancer);
@@ -594,7 +594,7 @@ private void retrieveProtocol(String fsName, int nrProt) {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
-            Balancer<? extends Node> balancer = capabilities.getPoolByScheme(Protocol.GSIFTP);
+            BalancingStrategy<? extends Node> balancer = capabilities.getBalancingStrategyByScheme(Protocol.GSIFTP);
             log.debug("Balancer per GSIFTP di VFS ("+vfsName+")?" + balancer);
         }
         catch (NamespaceException ex1) {

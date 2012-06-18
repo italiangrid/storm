@@ -17,10 +17,9 @@
 
 package it.grid.storm.namespace;
 
-import it.grid.storm.balancer.Balancer;
-import it.grid.storm.balancer.BalancerException;
+import it.grid.storm.balancer.BalancingStrategy;
+import it.grid.storm.balancer.BalancingStrategyException;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
@@ -583,11 +582,11 @@ implements StoRI {
 
     /*****************************************************************************
      *  READ METHODs
-     * @throws InvalidGetTURLProtocolException
+     * @throws Exception 
      ***************************************************************************/
 
 
-    public TTURL getTURL(TURLPrefix desiredProtocols) throws InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException {
+    public TTURL getTURL(TURLPrefix desiredProtocols) throws InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException, TURLBuildingException {
 
         //TransportProtocol protocolPrefix = null;
         TTURL resultTURL = null;
@@ -625,7 +624,13 @@ implements StoRI {
                     Authority authority = null;
                     if (pooledProtocol) { //POOLED PROTOCOL
                         log.debug("The protocol selected is in POOL Configuration");
-                        authority = getPooledAuthority(firstMatch);
+                        try
+                        {
+                            authority = getPooledAuthority(firstMatch);
+                        } catch(BalancingStrategyException e)
+                        {
+                            throw new TURLBuildingException("Unable to get the pool member to be used to build the turl. BalancerException : " + e.getMessage()); 
+                        }
                     } else { //SINGLE PROTOCOL
                         log.debug("The protocol selected is in NON-POOL Configuration");
                         TransportProtocol transProt = null;
@@ -819,29 +824,29 @@ implements StoRI {
 
 
 
-	private Authority getPooledAuthority(Protocol pooledProtocol) {
-		Authority authority = null;
-
-		if (vfs.getProtocolBalancer(pooledProtocol) != null) {
-			Balancer<? extends Node> bal = vfs
-					.getProtocolBalancer(pooledProtocol);
-			if (pooledProtocol.equals(Protocol.GSIFTP)) {
-				FTPNode node;
-				try {
-					node = (FTPNode) bal.getNextElement();
-					authority = new Authority(node.getHostName(), node.getPort());
-				} catch (BalancerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			} else {
-				log.error("Unable to manage pool with protocol different from GSIFTP.");
-			}
-		}
-
-		return authority;
-	}
+    /**
+     * @param pooledProtocol
+     * @return
+     * @throws BalancerException 
+     */
+    private Authority getPooledAuthority(Protocol pooledProtocol) throws BalancingStrategyException
+    {
+        Authority authority = null;
+        if (pooledProtocol.equals(Protocol.GSIFTP))
+        {
+            BalancingStrategy<? extends Node> bal = vfs.getProtocolBalancingStrategy(pooledProtocol);
+            if (bal != null)
+            {
+                Node node = bal.getNextElement();
+                authority = new Authority(node.getHostName(), node.getPort());
+            }
+        }
+        else
+        {
+            log.error("Unable to manage pool with protocol different from GSIFTP.");
+        }
+        return authority;
+    }
 
     private String getVFSName() {
         String result = "UNDEF";

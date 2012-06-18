@@ -34,7 +34,7 @@ import java.util.List;
  *
  */
 
-public class RoundRobinStrategy <E extends Node> extends AbstractStrategy<E> {
+public class RoundRobinStrategy <E extends Node> extends AbstractBalancingStrategy<E> {
     
     private int index = 0;
    

@@ -46,6 +46,7 @@ import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
@@ -328,6 +329,11 @@ public class PtPChunk implements Delegable, Chooser {
                 PtPChunk.log.error("ERROR in PtPChunk! There was a failure in mapping " + gu.getDn()
                         + " to a local user! Error returned: " + e);
 
+            } catch(TURLBuildingException e)
+            {
+                chunkData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
+                failure = true; // gsm.failedChunk(chunkData);
+                PtPChunk.log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException " + e);
             }
 
         } else { /* Not Authorized for the storage area */

@@ -17,9 +17,9 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancingStrategy;
+import it.grid.storm.balancer.BalancingStrategyFactory;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.balancer.BalancerStrategyType;
 import it.grid.storm.balancer.ftp.FTPNode;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -27,6 +27,7 @@ import it.grid.storm.namespace.NamespaceException;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,7 @@ public class Capability implements CapabilityInterface {
     //List of ProtocolPool.
     private Map<Protocol, ProtocolPool> protocolPoolsByScheme = new Hashtable<Protocol,ProtocolPool>();
     //List of Balancer.
-    private Map<Protocol, Balancer<? extends Node>> balancerByScheme = new Hashtable<Protocol,Balancer<? extends Node>>();
+    private Map<Protocol, BalancingStrategy<? extends Node>> balancerByScheme = new Hashtable<Protocol,BalancingStrategy<? extends Node>>();
 
     private DefaultACL defaultACL = new DefaultACL();
 
@@ -113,25 +114,40 @@ public class Capability implements CapabilityInterface {
         this.quota = quota;
     }
 
-    public void addProtocolPoolBySchema(Protocol protocol, ProtocolPool protPool) {
+    public void addProtocolPoolBySchema(Protocol protocol, ProtocolPool protPool) throws NamespaceException
+    {
         protocolPoolsByScheme.put(protocol, protPool);
-        
-        //Building Balancer and put it into Map of Balancers
-        if (protocol.equals(Protocol.GSIFTP)) {
-            Balancer<FTPNode> balancer = new Balancer<FTPNode>(protPool.getBalanceStrategy());
-           
-            for (PoolMember member: protPool.getPoolMembers()) {
+
+        // Building Balancer and put it into Map of Balancers
+        if (protocol.equals(Protocol.GSIFTP))
+        {
+            LinkedList<FTPNode> nodeList = new LinkedList<FTPNode>();
+            for (PoolMember member : protPool.getPoolMembers())
+            {
                 String hostname = member.getMemberProtocol().getAuthority().getServiceHostname();
-                int port =  member.getMemberProtocol().getAuthority().getServicePort();
+                int port = member.getMemberProtocol().getAuthority().getServicePort();
                 FTPNode ftpNode = new FTPNode(hostname, port);
-                if (protPool.getBalanceStrategy().requireWeight()) {
-                	int weight = member.getMemberWeight();
-                	ftpNode.setWeight(weight);
+                if (protPool.getBalanceStrategy().requireWeight())
+                {
+                    int weight = member.getMemberWeight();
+                    ftpNode.setWeight(weight);
                 }
-                balancer.addElement(ftpNode);
+                nodeList.add(ftpNode);
             }
-            balancerByScheme.put(protocol,balancer);
-        } else {
+            BalancingStrategy<FTPNode> balancingStrategy;
+            try
+            {
+                balancingStrategy = BalancingStrategyFactory.getBalancingStrategy(protPool.getBalanceStrategy(), nodeList);    
+            } catch(IllegalArgumentException e)
+            {
+                log.error("Unable to get " + protPool.getBalanceStrategy().toString()
+                        + " balacing strategy for nodes " + nodeList.toString());
+                throw new NamespaceException("Unable to create a balancing schema from the protocol pool");
+            }
+            balancerByScheme.put(protocol, balancingStrategy);
+        }
+        else
+        {
             log.error("The current version manage only GSIFTP POOL.");
         }
     }
@@ -207,8 +223,17 @@ public class Capability implements CapabilityInterface {
      *           VERSION 1.4                  *
      *******************************************/
 
-    public Balancer<? extends Node> getPoolByScheme(Protocol protocol) {
-        Balancer balancer = null;
+    public ProtocolPool getPoolByScheme(Protocol protocol) {
+        ProtocolPool poll = null;
+        boolean isPresent = protocolPoolsByScheme.containsKey(protocol);
+        if (isPresent) {
+            poll = protocolPoolsByScheme.get(protocol);
+        }
+        return poll;
+    }
+    
+    public BalancingStrategy<? extends Node> getBalancingStrategyByScheme(Protocol protocol) {
+        BalancingStrategy balancer = null;
         boolean isPresent = balancerByScheme.containsKey(protocol);
         if (isPresent) {
             balancer = balancerByScheme.get(protocol);

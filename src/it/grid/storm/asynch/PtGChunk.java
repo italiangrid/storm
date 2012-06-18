@@ -46,6 +46,7 @@ import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
@@ -402,7 +403,13 @@ public class PtGChunk implements Delegable, Chooser, SuspendedChunk {
 				log
 					.error("ERROR in PtGChunk! Null TURLPrefix in PtGChunkData caused StoRI to be unable to establish TTURL! StoRI object returned: "
 						+ e);
-			} catch(Exception e)
+			} catch(TURLBuildingException e)
+            {
+                chunkData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
+                failure = true; 
+                log.error("ERROR in PtGChunk! There was a failure building the TURL. : TURLBuildingException " + e);
+            } 
+			catch(Exception e)
 			{
 				/*
 				 * There could be unexpected runtime errors given the fact that

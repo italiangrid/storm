@@ -10,6 +10,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -211,6 +212,10 @@ public class StoRITest {
         }
         catch (InvalidGetTURLProtocolException ex) {
             /** @todo Handle this exception */
+        } catch(TURLBuildingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         prot = Protocol.GSIFTP;
@@ -225,6 +230,10 @@ public class StoRITest {
         }
         catch (InvalidGetTURLProtocolException ex) {
             /** @todo Handle this exception */
+        } catch(TURLBuildingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         //int d = NamespaceUtil.computeDistanceFromPath("/cnaf", "/cnaf");

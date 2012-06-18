@@ -164,6 +164,7 @@ public class Configuration {
     private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
     private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
     private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
+    private static final String GRIDFTP_POOL_STATUS_CHECK_TIMEOUT_KEY = "gridftp-pool.status-check.timeout";
 
     
     private Configuration() {
@@ -2070,6 +2071,20 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getBoolean(FAST_BOOTSTRAP_ENABLED_KEY);
+        }
+    }
+    
+    /**
+     * @return
+     */
+    public Long getGridftpPoolStatusCheckTimeout()
+    {
+        if (!cr.getConfiguration().containsKey(GRIDFTP_POOL_STATUS_CHECK_TIMEOUT_KEY)) {
+            // return default
+            return new Long(20000); //20 seconds
+        } else {
+            // load from external source
+            return new Long(cr.getConfiguration().getLong(GRIDFTP_POOL_STATUS_CHECK_TIMEOUT_KEY));
         }
     }
 

@@ -17,7 +17,7 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.GUID;
@@ -1156,8 +1156,8 @@ public class VirtualFS implements VirtualFSInterface {
         return this.spaceToken;
     }
 
-    public Balancer<? extends Node> getProtocolBalancer(Protocol protocol) {
-        return this.capabilities.getPoolByScheme(protocol);
+    public BalancingStrategy<? extends Node> getProtocolBalancingStrategy(Protocol protocol) {
+        return this.capabilities.getBalancingStrategyByScheme(protocol);
     }
 
     public boolean isPoolDefined(Protocol protocol) throws NamespaceException {

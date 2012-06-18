@@ -17,38 +17,35 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.balancer.BalancerStrategyType;
+import it.grid.storm.balancer.BalancingStrategyType;
 
 import java.util.List;
 import java.util.ArrayList;
 
 public class ProtocolPool {
 
-  private Protocol poolType = Protocol.EMPTY;
-  private BalancerStrategyType balanceStrategy;
-  private List<PoolMember> poolMembers = new ArrayList<PoolMember>();
+  private final Protocol poolType;
+  private final BalancingStrategyType balanceStrategy;
+  private final List<PoolMember> poolMembers = new ArrayList<PoolMember>();
 
-  public ProtocolPool() {
-  }
+    public ProtocolPool(Protocol protocol, BalancingStrategyType strategy, List<PoolMember> members)
+    {
+        this.poolType = protocol;
+        this.balanceStrategy = strategy;
+        this.poolMembers.addAll(members);
+    }
 
-  public void setBalanceStrategy(BalancerStrategyType balanceStrategy) {
-    this.balanceStrategy = balanceStrategy;
-  }
+    public ProtocolPool(BalancingStrategyType strategy, List<PoolMember> members)
+    {
+        this(members.get(0).getMemberProtocol().getProtocol(), strategy, members);
+    }
 
-  public BalancerStrategyType getBalanceStrategy(){
+  public BalancingStrategyType getBalanceStrategy(){
     return this.balanceStrategy;
-  }
-
-  public void setPoolType(Protocol poolType) {
-    this.poolType = poolType;
   }
 
   public Protocol getPoolType() {
     return this.poolType;
-  }
-
-  public void setPoolMembers(List<PoolMember> poolMembers) {
-    this.poolMembers = poolMembers;
   }
 
   public List<PoolMember> getPoolMembers() {
@@ -59,18 +56,18 @@ public class ProtocolPool {
     poolMembers.add(member);
   }
 
-  public String toString() {
-    StringBuffer sb = new StringBuffer();
-    String sep = System.getProperty("line.separator");
-    sb.append(sep + "......... POOL DEFINITION ........." + sep);
-    sb.append(" Balancer Strategy : "+this.balanceStrategy+sep);
-    int count = 0;
-    for (PoolMember member: poolMembers) {
-      sb.append(" Member "+count+" = " + member + sep);
-      count++;
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ProtocolPool [poolType=");
+        builder.append(poolType);
+        builder.append(", balanceStrategy=");
+        builder.append(balanceStrategy);
+        builder.append(", poolMembers=");
+        builder.append(poolMembers);
+        builder.append("]");
+        return builder.toString();
     }
-    sb.append("..................................." + sep);
-    return sb.toString();
-  }
 
 }

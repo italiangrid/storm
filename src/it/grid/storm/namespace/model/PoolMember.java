@@ -19,16 +19,17 @@ package it.grid.storm.namespace.model;
 
 public class PoolMember {
 
-  private int memberID;
-  private int memberWeight = -1; //-1 means undefined
-  private TransportProtocol memberProtocol;
+  private final int memberID;
+  private final int memberWeight; //-1 means undefined
+  private final TransportProtocol memberProtocol;
 
-  public PoolMember(int memberID) {
-	this.memberID = memberID;
+  public PoolMember(int memberID, TransportProtocol protocol) {
+	this(memberID, protocol, -1);
   }
   
-  public PoolMember(int memberID, int weight) {
+  public PoolMember(int memberID, TransportProtocol protocol, int weight) {
     this.memberID = memberID;
+    this.memberProtocol = protocol;
     this.memberWeight = weight;
   }
 
@@ -38,10 +39,6 @@ public class PoolMember {
 
   public int getMemberWeight() {
     return this.memberWeight;
-  }
-
-  public void setMemberProtocol(TransportProtocol protocol) {
-    this.memberProtocol = protocol;
   }
 
   public TransportProtocol getMemberProtocol() {

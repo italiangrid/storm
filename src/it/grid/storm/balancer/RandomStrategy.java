@@ -37,7 +37,7 @@ import java.util.Date;
  *
  */
 
- class RandomStrategy<E extends Node> extends  AbstractStrategy<E> {
+ class RandomStrategy<E extends Node> extends  AbstractBalancingStrategy<E> {
    
 
     private Random random = null;

@@ -20,9 +20,10 @@ package it.grid.storm.namespace;
 import java.util.*;
 
 import it.grid.storm.namespace.model.Capability.*;
+import it.grid.storm.namespace.model.ProtocolPool;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.balancer.Balancer;
+import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.balancer.Node;
@@ -47,7 +48,9 @@ public interface CapabilityInterface {
 
     public boolean isPooledProtocol(Protocol protocol);
 
-    public Balancer<? extends Node> getPoolByScheme(Protocol protocol);
+    public ProtocolPool getPoolByScheme(Protocol protocol);
+    
+    public BalancingStrategy<? extends Node> getBalancingStrategyByScheme(Protocol protocol);
 
     public TransportProtocol getProtocolByID(int id);
 

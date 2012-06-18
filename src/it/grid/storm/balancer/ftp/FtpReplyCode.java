@@ -36,10 +36,6 @@ public enum FtpReplyCode {
         return code >= 200 && code < 300;
     }
 
-    public boolean isPositiveCompletion() {
-        return code >= 200 && code < 300;
-    }
-    
     public static boolean isPositiveIntermediate(int code) {
         return code >= 300 && code < 400;
     }
