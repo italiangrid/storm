@@ -618,32 +618,51 @@ implements StoRI {
                     throw new InvalidGetTURLProtocolException(desiredProtocols);
                 } else {
                     log.debug("Protocol matching.. Intersection size:"+desiredP.size());
-                    Protocol firstMatch = desiredP.get(0);
-                    log.debug("Selected Protocol (the first) :"+firstMatch);
-                    boolean pooledProtocol = capability.isPooledProtocol(firstMatch);
+                    
+                    Protocol choosen = null;
                     Authority authority = null;
-                    if (pooledProtocol) { //POOLED PROTOCOL
-                        log.debug("The protocol selected is in POOL Configuration");
-                        try
+                    int index = 0;
+                    boolean turlBuilt = false;
+                    while (!turlBuilt && index < desiredP.size())
+                    {
+                        choosen = desiredP.get(index);
+                        authority = null;
+                        log.debug("Selected Protocol :" + choosen);
+                        if (capability.isPooledProtocol(choosen))
                         {
-                            authority = getPooledAuthority(firstMatch);
-                        } catch(BalancingStrategyException e)
+                            log.debug("The protocol selected is in POOL Configuration");
+                            try
+                            {
+                                authority = getPooledAuthority(choosen);
+                            } catch(BalancingStrategyException e)
+                            {
+                                log.warn("Unable to get the pool member to be used to build the turl. BalancerException : "
+                                        + e.getMessage());
+                                index++;
+                                continue;
+                            }
+                        }
+                        else
                         {
-                            throw new TURLBuildingException("Unable to get the pool member to be used to build the turl. BalancerException : " + e.getMessage()); 
+                            log.debug("The protocol selected is in NON-POOL Configuration");
+                            TransportProtocol transProt = null;
+                            List<TransportProtocol> protList = capability.getManagedProtocolByScheme(choosen);
+                            if (protList.size() > 1)
+                            { // Strange case
+                                log.warn("More than one protocol " + choosen
+                                        + " defined but NOT in POOL Configuration. Taking the first one.");
+                            }
+                            transProt = protList.get(0);
+                            authority = transProt.getAuthority();
                         }
-                    } else { //SINGLE PROTOCOL
-                        log.debug("The protocol selected is in NON-POOL Configuration");
-                        TransportProtocol transProt = null;
-                        List<TransportProtocol> protList = capability.getManagedProtocolByScheme(firstMatch);
-                        if (protList.size()>1) { //Strange case
-                            log.warn("More than one protocol "+firstMatch+" defined but NOT in POOL Configuration. Taking the first one.");
-                        }
-                        transProt = protList.get(0);
-                        authority = transProt.getAuthority();
+                        // TODO HTTPS TURL
+                        resultTURL = buildTURL(choosen, authority);
+                        turlBuilt = true;
                     }
-                 // TODO HTTPS TURL
-//                    resultTURL = buildTURL(firstMatch, authority, getPFN());
-                    resultTURL = buildTURL(firstMatch, authority);
+                    if(!turlBuilt)
+                    {
+                        throw new TURLBuildingException("Unable to build the turl given protocols " + desiredP.toString());
+                    }
                 }
             }
         }
@@ -775,21 +794,17 @@ implements StoRI {
             case 0: // EMPTY Protocol
                 throw new InvalidProtocolForTURLException(protocol.getSchema()); 
             case 1:
-//                result = TURLBuilder.buildFileTURL(authority, physicalFN);
                 result = TURLBuilder.buildFileTURL(authority, this.getPFN());
                 break; // FILE Protocol
             case 2:
-//                result = TURLBuilder.buildGsiftpTURL(authority, physicalFN);
                 result = TURLBuilder.buildGsiftpTURL(authority, this.getPFN());
                 break; // GSIFTP Protocol
             case 3:
-//                result = TURLBuilder.buildRFIOTURL(authority, physicalFN);
                 result = TURLBuilder.buildRFIOTURL(authority, this.getPFN());
                 break; // RFIO Protocol
             case 4: // SRM Protocol
                 throw new InvalidProtocolForTURLException(protocol.getSchema()); 
             case 5:
-//                result = TURLBuilder.buildROOTTURL(authority, physicalFN);
                 result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
                 break; // ROOT Protocol
             // TODO HTTPS TURL

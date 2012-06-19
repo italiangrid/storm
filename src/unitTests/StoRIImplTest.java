@@ -131,4 +131,79 @@ public class StoRIImplTest
         }
     }
     
+    @Test
+    public final void testGetTURLMultipleProtocols()
+    {
+        VirtualFS vfs = new VirtualFS(true);
+        try
+        {
+            vfs.setRoot("/ciao/banane");
+        } catch(NamespaceException e)
+        {
+            fail("Unable to set root to VFS " + e);
+        }
+        Capability cap = null;
+        try
+        {
+            cap = new Capability();
+        } catch(NamespaceException e)
+        {
+            fail("Unable to create the capabilities " + e);
+        }
+        
+        ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
+        String hostname;
+        int port;
+        Authority auth;
+        TransportProtocol trans;
+        hostname = "omii003-vm01.cnaf.infn.it";
+        port = 2811;
+        auth = new Authority(hostname, port);
+        trans = new TransportProtocol(Protocol.GSIFTP, auth);
+        poolMembers.add(new PoolMember(0, trans));
+        
+        try
+        {
+            cap.addProtocolPoolBySchema(Protocol.GSIFTP, new ProtocolPool(BalancingStrategyType.SMART_RR,
+                                                                          poolMembers));
+        } catch(NamespaceException e)
+        {
+            fail("Unable to add protocol pool to capabilities: NamespaceException " + e.getMessage());
+        }
+        cap.addTransportProtocolByScheme(Protocol.GSIFTP, trans);
+        cap.addTransportProtocol(trans);
+        
+        hostname = "omii003-vm01.cnaf.infn.it";
+        port = 8088;
+        auth = new Authority(hostname, port);
+        trans = new TransportProtocol(Protocol.FILE, auth);
+        cap.addTransportProtocolByScheme(Protocol.FILE, trans);
+        cap.addTransportProtocol(trans);
+        
+        vfs.setCapabilities(cap);
+        MappingRule winnerRule = null;
+        String relativeStFN = "mamma/mia";
+        StoRIType type = null;
+        StoRIImpl s = new StoRIImpl(vfs, winnerRule, relativeStFN, type);
+        TURLPrefix pref = new TURLPrefix();
+        pref.addProtocol(Protocol.GSIFTP);
+        pref.addProtocol(Protocol.FILE);
+        for (int i = 0; i < 3; i++)
+        {
+            try
+            {
+                System.err.println("Built TURL = " + s.getTURL(pref));
+            } catch(InvalidGetTURLNullPrefixAttributeException e)
+            {
+                fail("Unable to get the turl " + e);
+            } catch(InvalidGetTURLProtocolException e)
+            {
+                fail("Unable to get the turl " + e);
+            } catch(TURLBuildingException e)
+            {
+                fail("Unable to get the turl " + e);
+            }
+        }
+    }
+    
 }
