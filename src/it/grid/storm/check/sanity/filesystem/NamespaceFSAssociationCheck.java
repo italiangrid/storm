@@ -14,6 +14,8 @@
 package it.grid.storm.check.sanity.filesystem;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -212,8 +214,16 @@ public class NamespaceFSAssociationCheck implements Check
     {
         boolean response = false;
         log.debug("Checking fs at " + fsRootPath + " as a " + fsType);
-        
-        String mountPointFSType = getMountPointFSTypeBestmatch(fsRootPath, mountPoints);
+        String canonicalpath;
+        try
+        {
+            canonicalpath = new File(fsRootPath).getCanonicalPath();
+        } catch(IOException e)
+        {
+          log.error("unable to build the canonical path for root \'" + fsRootPath + "\' . IOException : " + e.getMessage());
+          return false;
+        }
+        String mountPointFSType = getMountPointFSTypeBestmatch(canonicalpath, mountPoints);
         if(mountPointFSType != null)
         {
             log.debug("Found on a mountPoint of a \'" + mountPointFSType + "\' FS");
@@ -242,6 +252,7 @@ public class NamespaceFSAssociationCheck implements Check
      */
     private String getMountPointFSTypeBestmatch(String fsRootPath, Map<String, String> mountPoints)
     {
+        log.debug("Retrieving mout point for path " + fsRootPath);
         String fsType = null;
         int minDistance = -1;
         int pathSize = conputePathSize(fsRootPath);
