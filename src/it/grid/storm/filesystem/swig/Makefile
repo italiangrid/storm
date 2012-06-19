@@ -327,7 +327,7 @@ $(libgpfsapi_interface): \
 		gpfsapi_interface_wrap.o
 	$(LINK.cpp) -shared -o $(libgpfsapi_interface) \
 		gpfsapi_interface_wrap.o \
-		$(gpfsapi_objs)
+		$(gpfsapi_objs) $(GPFSAPI_LIBS)
 
 # use GPFS_INCLUDES for gpfsapi files
 $(gpfsapi_objs): CXXFLAGS += $(GPFSAPI_INCLUDES)
