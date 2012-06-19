@@ -296,7 +296,7 @@ fi;
 %attr(640,%{default_user},%{default_user}) %config(noreplace) %{_sysconfdir}/%{prefixname}/%{_modulename}/logging.xml
 %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/namespace-1.5.0.xsd
 %config(noreplace) %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/namespace.xml
-%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/path-authz.db
+%config(noreplace) %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/path-authz.db
 %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/storm.properties.template
 %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/used-space.ini.template
 %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/welcome.txt
