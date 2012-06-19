@@ -284,22 +284,22 @@ fi;
 %{_javadir}/%{longname}/storm-backend-server.jar
 
 %dir %attr(755,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}
-%attr(755,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_database_config.sh
+%attr(750,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_database_config.sh
 %config(noreplace) %attr(644,%{default_user},%{default_user}) %{_sysconfdir}/logrotate.d/%{longname}
-%config(noreplace) %attr(644,%{default_user},%{default_user}) %{_sysconfdir}/sysconfig/%{longname}
+%config(noreplace) %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/sysconfig/%{longname}
 %attr(755,%{default_user},%{default_user}) %{_sysconfdir}/init.d/%{longname}
 
-%{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql
-%{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_mysql_grant.sql
-%{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_mysql_tbl.sql
-%{_sysconfdir}/%{prefixname}/%{_modulename}/lcmaps.db
-%config(noreplace) %{_sysconfdir}/%{prefixname}/%{_modulename}/logging.xml
-%{_sysconfdir}/%{prefixname}/%{_modulename}/namespace-1.5.0.xsd
-%config(noreplace) %{_sysconfdir}/%{prefixname}/%{_modulename}/namespace.xml
-%{_sysconfdir}/%{prefixname}/%{_modulename}/path-authz.db
-%{_sysconfdir}/%{prefixname}/%{_modulename}/storm.properties.template
-%{_sysconfdir}/%{prefixname}/%{_modulename}/used-space.ini.template
-%{_sysconfdir}/%{prefixname}/%{_modulename}/welcome.txt
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_mysql_grant.sql
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/db/storm_mysql_tbl.sql
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/lcmaps.db
+%attr(640,%{default_user},%{default_user}) %config(noreplace) %{_sysconfdir}/%{prefixname}/%{_modulename}/logging.xml
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/namespace-1.5.0.xsd
+%config(noreplace) %attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/namespace.xml
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/path-authz.db
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/storm.properties.template
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/used-space.ini.template
+%attr(640,%{default_user},%{default_user}) %{_sysconfdir}/%{prefixname}/%{_modulename}/welcome.txt
 
 # empty directories; nonetheless include in RPM
 %dir %{_varlog}/%{prefixname}
