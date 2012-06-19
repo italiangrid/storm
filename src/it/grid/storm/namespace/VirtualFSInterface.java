@@ -74,7 +74,7 @@ public interface VirtualFSInterface {
 
     public boolean isApproachableByUser(GridUserInterface user) throws NamespaceException;
 
-    public DefaultValuesInterface getDefaultValues() throws NamespaceException;
+    public DefaultValuesInterface getDefaultValues();
 
     public CapabilityInterface getCapabilities() throws NamespaceException;
 

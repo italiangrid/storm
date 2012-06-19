@@ -27,6 +27,7 @@ import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkData;
 import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
@@ -50,10 +51,13 @@ import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -728,13 +732,31 @@ public class PtPChunk implements Delegable, Chooser {
                 fileStoRI.allotSpaceForFile(size);
             } else if ((!spaceToken.isEmpty()) && (!size.isEmpty())) {
                 PtPChunk.log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
-                fileStoRI.allotSpaceByToken(spaceToken, size);
+                if(!isExistingSpaceToken(spaceToken))
+                {
+                    chunkData.changeStatusSRM_INVALID_REQUEST("The provided Space Token does not exists");
+                    PtPChunk.log.info("PtPChunk execution failed. The space token " + spaceToken + " provided by user does not exists");
+                    return false;
+                }
+                else
+                {
+                    fileStoRI.allotSpaceByToken(spaceToken, size);    
+                }
             } else {
                 // spaceToken is NOT empty but size IS!
                 // Use of EMPTY Space Size. That means total size of Storage
                 // Space will be used!!
                 PtPChunk.log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
-                fileStoRI.allotSpaceByToken(spaceToken);
+                if(!isExistingSpaceToken(spaceToken))
+                {
+                    chunkData.changeStatusSRM_INVALID_REQUEST("The provided Space Token does not exists");
+                    PtPChunk.log.info("PtPChunk execution failed. The space token " + spaceToken + " provided by user does not exists");
+                    return false;
+                }
+                else
+                {
+                    fileStoRI.allotSpaceByToken(spaceToken);    
+                }
             }
             PtPChunk.log.debug("PtPChunk: finished ReserveSpaceStep for " + fileStoRI.getAbsolutePath());
             return true;
@@ -775,9 +797,9 @@ public class PtPChunk implements Delegable, Chooser {
             return false;
         } catch (ExpiredSpaceTokenException e) {
             // The supplied space token is expired
-            chunkData.changeStatusSRM_FAILURE("Space Token expired!");
+            chunkData.changeStatusSRM_SPACE_LIFETIME_EXPIRED("The provided Space Token has expired its lifetime");
             spacefailure = true; // gsm.expiredSpaceLifetimeChunk(chunkData);
-            PtPChunk.log.error("ERROR in PtPChunk! Space component failed! Exception follows: " + e);
+            PtPChunk.log.info("PtPChunk execution failed. ExpiredSpaceTokenException : " + e.getMessage());
             return false;
         } catch (Exception e) {
             // This could be thrown by Java from Filesystem component given that
@@ -800,6 +822,25 @@ public class PtPChunk implements Delegable, Chooser {
             // The file already exists!!!
             return false;
         }
+    }
+
+    private boolean isExistingSpaceToken(TSpaceToken spaceToken) throws Exception
+    {
+        StorageSpaceData spaceData = null;
+        try
+        {
+            spaceData = new ReservedSpaceCatalog().getStorageSpace(spaceToken);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            throw new Exception("Error retrieving Storage Area information from Token. TransferObjectDecodingException : " + e.getMessage());
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            throw new Exception("Error retrieving Storage Area information from Token. DataAccessException : " + e.getMessage());
+        }
+        return spaceData != null;
     }
 
     /**

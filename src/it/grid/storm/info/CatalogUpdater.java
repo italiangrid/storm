@@ -6,6 +6,8 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.concurrency.NamedThread;
 import it.grid.storm.concurrency.NamedThreadFactory;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -74,6 +76,7 @@ public class CatalogUpdater {
 		}
 
 		public void run() {
+            // TODO errors are not managed in this function
 		    LOG.debug("Saving info into DB... ");
 		    StorageSpaceData ssd = null;
 		    if (SpaceInfoManager.getInstance().testMode.get()) {
@@ -91,7 +94,17 @@ public class CatalogUpdater {
 		    } else {
 		        // This is not a TEST!
 		        // Retrieve SA from Catalog
-	            ssd = spaceCatalog.getStorageSpace(sT);    
+	            try
+                {
+                    ssd = spaceCatalog.getStorageSpace(sT);
+                } catch(TransferObjectDecodingException e)
+                {
+                    LOG.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                              + e.getMessage());
+                } catch(DataAccessException e)
+                {
+                    LOG.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+                }    
 		    }
 			
 

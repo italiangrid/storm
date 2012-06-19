@@ -20,6 +20,8 @@ package it.grid.storm.synchcall.command.space;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -108,8 +110,38 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
         /**
          * Get StorageSpaceData linked with the specified space Token.
          */
-        StorageSpaceData data = catalog.getStorageSpace(inputData
-                .getSpaceToken());
+        StorageSpaceData data;
+        try
+        {
+            data = catalog.getStorageSpace(inputData
+                                                .getSpaceToken());
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                    + e.getMessage());
+            failure = true;
+            explanation = "Error building space data from row DB data.";
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            returnStatus = manageStatus(statusCode, explanation);
+            outputData.setStatus(returnStatus);
+            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
+                    + "] for failed with: [status:" + returnStatus + "]");
+            return outputData;
+
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            failure = true;
+            explanation = "Error retrieving row space token data from DB.";
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            returnStatus = manageStatus(statusCode, explanation);
+            outputData.setStatus(returnStatus);
+            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
+                    + "] for failed with: [status:" + returnStatus + "]");
+            return outputData;
+        }
 
         if (data == null) {
             failure = true;

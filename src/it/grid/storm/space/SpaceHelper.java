@@ -34,6 +34,8 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSURL;
@@ -340,7 +342,7 @@ public class SpaceHelper {
         {
             //will never happen
             log.error("NamespaceException during VirtualFSInterface.getSpaceTokenDescription(). " +
-            		"This is impossible, this exception is never thrown", e);
+                    "This is impossible, this exception is never thrown", e);
             return false;
         }
         StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(SSDesc);
@@ -423,7 +425,7 @@ public class SpaceHelper {
      */
 
     public TSpaceToken createVOSA_Token(String spaceTokenAlias, TSizeInBytes totalOnLineSize, String spaceFileName) {
-
+     // TODO errors are not managed in this function
         TSpaceToken spaceToken = null;
         ArrayOfTSpaceToken tokenArray;
         ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
@@ -444,16 +446,16 @@ public class SpaceHelper {
             try {
                 sfname = PFN.make(spaceFileName);
             } catch (InvalidPFNAttributeException e1) {
-            	log.error("Error building PFN with "+spaceFileName+" : "+e1);
+                log.error("Error building PFN with "+spaceFileName+" : "+e1);
             }
 
             StorageSpaceData ssd = null;
 
             try {
                 ssd = new StorageSpaceData(storageAreaOwner, 
-                		                   TSpaceType.VOSPACE, 
-                		                   spaceTokenAlias, 
-                		                   totalOnLineSize,
+                                           TSpaceType.VOSPACE, 
+                                           spaceTokenAlias, 
+                                           totalOnLineSize,
                                            totalOnLineSize, 
                                            null, 
                                            null, 
@@ -474,9 +476,15 @@ public class SpaceHelper {
                 log.error("Error building StorageSpaceData: "+e);
             }
 
-			spaceCatalog.addStorageSpace(ssd);
-			// Track into global set to remove obsolete SA_token
-			ReservedSpaceCatalog.addSpaceToken(spaceToken);
+            try
+            {
+                spaceCatalog.addStorageSpace(ssd);
+            } catch(DataAccessException e)
+            {
+                log.error("Error storing StorageSpaceData on the DB: "+e);
+            }
+            // Track into global set to remove obsolete SA_token
+            ReservedSpaceCatalog.addSpaceToken(spaceToken);
 
         } else {
             /*
@@ -490,8 +498,19 @@ public class SpaceHelper {
 
             boolean equal = false;
             spaceToken = tokenArray.getTSpaceToken(0);
-            StorageSpaceData catalog_ssd = spaceCatalog.getStorageSpace(spaceToken);
-
+            StorageSpaceData catalog_ssd = null;
+            try
+            {
+                catalog_ssd = spaceCatalog.getStorageSpace(spaceToken);
+            } catch(TransferObjectDecodingException e)
+            {
+                log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                        + e.getMessage());
+            } catch(DataAccessException e)
+            {
+                log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            }
+            
             if (catalog_ssd != null) {
 
                 if (catalog_ssd.getOwner().getDn().equals(storageAreaOwner.getDn())

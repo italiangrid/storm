@@ -258,7 +258,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
      * getStorageSpaceByToken
      * 
      * @param token TSpaceToken
-     * @return StorageSpace
+     * @return StorageSpace , null if not row found on that token
      * @throws DataAccessException
      */
     public StorageSpaceTO getStorageSpaceByToken(String token) throws DataAccessException
@@ -279,7 +279,6 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
             if (res.first() == false)
             {
                 log.info("No rows found for query : " + query);
-                throw new DataAccessException("No storage space found for token" + token);
             }
             else
             {
@@ -508,7 +507,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
     {
         
         long freeSpace = ssTO.getFreeSize();
-        String query = helper.updateFreeSpaceByTokenQuery(ssTO.getSpaceToken(), freeSpace, ssTO.getUpdateTime());
+        String query = helper.updateFreeSpaceByTokenQuery(ssTO.getSpaceToken(), freeSpace, new Date());
         log.debug("UPDATE query = " + query);
               
         Connection conn = getConnection();

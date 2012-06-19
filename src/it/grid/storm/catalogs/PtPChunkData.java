@@ -244,6 +244,29 @@ public class PtPChunkData implements ChunkData {
             log.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SPACE_AVAILABLE! "+e);
         }
     }
+    
+    /**
+     * Method that sets the status of this request to SRM_SPACE_LIFETIME_EXPIRED;
+     * it needs the explanation String which describes the situation in greater detail;
+     * if a null is passed, then an empty String is used as explanation.
+     * 
+     * @param explanation
+     */
+    public void changeStatusSRM_SPACE_LIFETIME_EXPIRED(String explanation)
+    {
+        try
+        {
+            if (explanation == null)
+            {
+                explanation = "";
+            }
+            status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, explanation);
+        } catch(InvalidTReturnStatusAttributeException e)
+        {
+            log.error("UNEXPECTED ERROR! Unable to set SRM request status to SRM_SPACE_LIFETIME_EXPIRED! "
+                    + e);
+        }
+    }
 
     /**
      * Method that sets the status of this request to SRM_SUCCESS;

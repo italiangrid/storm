@@ -19,17 +19,14 @@ package it.grid.storm.synchcall.command.space;
 
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
-import it.grid.storm.catalogs.InvalidRetrievedDataException;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
-import it.grid.storm.catalogs.MultipleDataEntriesException;
-import it.grid.storm.catalogs.NoDataFoundException;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
+import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
@@ -39,8 +36,8 @@ import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.naming.NamespaceUtil;
-import it.grid.storm.space.IllegalSRMSpaceParameter;
-import it.grid.storm.space.SRMSpace;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -63,7 +60,6 @@ import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceOutputDataAttri
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
 
-import java.io.File;
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -86,8 +82,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     private static final boolean SUCCESS = true;
     private static final boolean FAILURE = false;
-    private static final boolean LOCALSTATUS = false;
 
+    TStatusCode statusCode = TStatusCode.EMPTY;
+    String explanation = null;
+    
     private String formatLogMessage(boolean success, GridUserInterface user,
             TSizeInBytes desSize, TSizeInBytes guarSize,
             TLifeTimeInSeconds lifetime, TRetentionPolicyInfo rpinfo,
@@ -131,15 +129,13 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     }
 
-    /**
-     * Constructor.
-     */
-    public ReserveSpaceCommand() {
+    public ReserveSpaceCommand()
+    {
         namespace = NamespaceDirector.getNamespace();
         catalog = new ReservedSpaceCatalog();
-
     }
 
+    
     /**
      * Method that provide space reservation for srmReserveSpace request.
      * 
@@ -150,665 +146,596 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
      */
     public OutputData execute(InputData indata) {
 
-        ReserveSpaceOutputData outputData = null;
         ReserveSpaceInputData data = (ReserveSpaceInputData) indata;
-        TSizeInBytes freeSpace = null;
-        TSpaceToken tok = null;
-        TReturnStatus status = null;
-        Date date = new Date();
-
-        String explanation = null;
-        TStatusCode statusCode = TStatusCode.EMPTY;
-        boolean failure = false;
-        boolean lower_space = false;
 
         log.debug("<SpaceReservationManager>:reserveSpace start.");
 
-        /**
-         * Check if SpareResInputData is a valid input parameter. Otherwise
-         * return whit error status.
-         */
-
-        if (data == null) {
-            explanation = "Invalid Parameter specified";
-            statusCode = TStatusCode.SRM_FAILURE;
-            log.error(formatLogMessage(FAILURE, null, null, null, null, null,
-                    statusCode, explanation));
+        if (!checkParameters(data))
+        {
             return manageError(statusCode, explanation);
         }
-
-        /**
-         * @todo: Verify permission by UserID. SRM_UNAUTHORIZED_ACCESS:
-         *        Requester has no permissions for the srmReserveSpace operation
-         *        (although the user you have a valid authentication
-         *        information). Please contact the site administration to
-         *        authorization info.
-         */
-
-        /**
-         * Check if GridUser in InputData is not null, otherwise return with an
-         * error message.
-         */
-
-        GridUserInterface user = data.getUser();
-        if (user == null) {
-            log.error("SpaceRes: Unable to get user credential. ");
-            statusCode = TStatusCode.SRM_AUTHENTICATION_FAILURE;
-            explanation = "Unable to get user credential!";
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
-        }
-
-        /**
-         * Check is TRetentionPolicy specified by client is REPLICA, ONLINE,
-         * otherwise return error (SRM_INVALID_REQUEST).
-         */
-
-        if (data.getRetentionPolicyInfo() != null) {
-            if (data.getRetentionPolicyInfo().getAccessLatency().equals(
-                    TAccessLatency.EMPTY)) {
-                // Set accessLatency to the default value.
-                data.getRetentionPolicyInfo().setAccessLatency(
-                        TAccessLatency.ONLINE);
-            }
-
-            if (!(data.getRetentionPolicyInfo().getAccessLatency()
-                    .equals(TAccessLatency.ONLINE))
-                    || !(data.getRetentionPolicyInfo().getRetentionPolicy()
-                            .equals(TRetentionPolicy.REPLICA))) {
-                log.debug("SpaceRes: Invalid TRetentionPolicyInfo specified:  "
-                        + data.getRetentionPolicyInfo().getAccessLatency()
-                        .toString()
-                        + ","
-                        + (data.getRetentionPolicyInfo().getRetentionPolicy()
-                                .toString()));
-                statusCode = TStatusCode.SRM_NOT_SUPPORTED;
-                explanation = "RetentionPolicy requested cannot be satisfied.";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
-            }
-        } else {
-            log.debug("SpaceRes: Invalid TRetentionPolicyInfo specified:  "
-                    + data.getRetentionPolicyInfo().getAccessLatency()
-                    .toString()
-                    + ","
-                    + (data.getRetentionPolicyInfo().getRetentionPolicy()
-                            .toString()));
-            statusCode = TStatusCode.SRM_INVALID_REQUEST;
-            explanation = "RetentionPolicy requested cannot be satisfied.";
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
-        }
-
-        /***********************************************************************
-         * Authorize the creation of Storage Space File with desiderata space
-         * 
-         * 1) There is enough free space in the file system? 2) The user is
-         * authorized to create a storage space with this size? 3) The user has
-         * permission for create storege space file (wite permission)?
-         * 
-         */
-        boolean authorize = true;
-
-        /**
-         * Verification of the free Space available in file system
-         */
-        // Obtain the PFN of the user-root directory.
+        
         String spaceFN = null;
-        try {
-            spaceFN = namespace.makeSpaceFileURI(user);
-            /**
-             * This parsing it used to eliminate each double / present.
-             */
-            // while(spaceFN.indexOf("//")!=-1) {
-            // spaceFN = spaceFN.replaceAll("//","/");
-            // }
-            log.debug(" Space FN : " + spaceFN);
-
-        } catch (NamespaceException ex) {
-            log.error("Unable to build default Space FN ", ex);
-            statusCode = TStatusCode.SRM_INVALID_REQUEST;
-            explanation = "Unable to build default Space FN \n" + ex;
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
+        try
+        {
+            spaceFN = getSpaceFN(data.getUser());
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
             return manageError(statusCode, explanation);
         }
 
         VirtualFSInterface vfs = null;
-        try {
+        try
+        {
+            vfs = getSpaceVFS(spaceFN);
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            return manageError(statusCode, explanation);
+        }
+        
+        setDefaults(data, vfs);
+        
+        String relativeSpaceFN = null;
+        try
+        {
+            relativeSpaceFN = getRelativeSpaceFilePath(vfs, spaceFN);
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            return manageError(statusCode, explanation);
+        }
+        
+        SpaceSize spaceSize = null;
+        try
+        {
+            spaceSize = computeSpaceSize(data.getDesiredSize(), data.getGuaranteedSize(), vfs);
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            return manageError(statusCode, explanation);
+        }
+
+       
+        StoRI spaceStori = null;
+        try
+        {
+            spaceStori = getSpaceStoRI(vfs, relativeSpaceFN, spaceSize.getDesiderataSpaceSize());
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            return manageError(statusCode, explanation);
+        }
+        
+        log.debug("Reserve Space File Size :" + spaceSize.getDesiderataSpaceSize().toString());
+        try
+        {
+            /*
+             * here the file is created, (note that since there is no chance to space is reserved)
+             * reclaim allocated space from gpfs, space is never allocated!)
+             * errors from here on must revert this operation
+             */
+            spaceStori.getSpace().fakeAllot();
+        } catch(ReservationException e)
+        {
+            log.debug("Space reservation fail at FS level" + e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to create Space File into filesystem. \n";
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(), data.getGuaranteedSize(),
+                                       data.getLifetime(), data.getRetentionPolicyInfo(), statusCode,
+                                       explanation));
+            return manageError(statusCode, explanation);
+        }
+        
+        try
+        {
+            setSpaceFilePermissions(spaceStori,data.getUser());
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            revertAllocation(spaceStori.getSpace());
+            return manageError(statusCode, explanation);
+        }
+        
+        TSpaceToken spaceToken = null;
+        try
+        {
+            spaceToken = registerIntoDB(data.getUser(), data.getSpaceTokenAlias(), spaceSize.getTotalSize(), spaceSize.getDesiderataSpaceSize(),
+                                        data.getLifetime(), spaceStori.getPFN());
+        } catch(Exception e)
+        {
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            revertAllocation(spaceStori.getSpace());
+            return manageError(statusCode, explanation);
+        }
+        
+        ReserveSpaceOutputData output = null;
+        try
+        {
+            output = buildOutput(spaceSize, spaceToken, data.getLifetime());
+            log.info(formatLogMessage(SUCCESS, data.getUser(), data.getDesiredSize(), data.getGuaranteedSize(),
+                                      data.getLifetime(), data.getRetentionPolicyInfo(), output.getStatus()));
+        } catch(Exception e)
+        {
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to build a valid output object ";
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(),
+                                       data.getGuaranteedSize(), data.getLifetime(),
+                                       data.getRetentionPolicyInfo(), statusCode, explanation));
+            revertAllocation(spaceStori.getSpace());
+            return manageError(statusCode, explanation);
+        }
+        return output;
+    }
+    
+    private void revertAllocation(Space space)
+    {
+        try
+        {
+            space.fakeRelease();
+        } catch(ReservationException e)
+        {
+            log.error("Error releasing space: ReservationException" + e.getMessage());
+        }
+    }
+
+    private StoRI getSpaceStoRI(VirtualFSInterface vfs, String relativeSpaceFN,
+            TSizeInBytes desiderataSpaceSize) throws Exception
+    {
+        StoRI spaceFile = null;
+        try
+        {
+            spaceFile = vfs.createSpace(relativeSpaceFN, desiderataSpaceSize.value());
+        }
+        catch (NamespaceException e)
+        {
+            log.debug("Unable to create Space File in VFS ", e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to create Space File in VFS \n" + e;
+            throw new Exception(explanation);
+        }
+        return spaceFile;
+    }
+
+    private boolean checkParameters(ReserveSpaceInputData data){
+        
+        if (data == null)
+        {
+            explanation = "Invalid Parameter specified";
+            statusCode = TStatusCode.SRM_FAILURE;
+            log.error(formatLogMessage(FAILURE, null, null, null, null, null, statusCode, explanation));
+            return false;
+        }
+
+        if (data.getUser() == null)
+        {
+            log.error("SpaceRes: Unable to get user credential. ");
+            statusCode = TStatusCode.SRM_AUTHENTICATION_FAILURE;
+            explanation = "Unable to get user credential!";
+            log.error(formatLogMessage(FAILURE, null, data.getDesiredSize(), data.getGuaranteedSize(),
+                                       data.getLifetime(), data.getRetentionPolicyInfo(), statusCode,
+                                       explanation));
+            return false;
+        }
+
+        if (data.getRetentionPolicyInfo() == null)
+        {
+            log.debug("SpaceRes: Invalid request, null TRetentionPolicyInfo specified");
+            statusCode = TStatusCode.SRM_INVALID_REQUEST;
+            explanation = "RetentionPolicy not specified.";
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(), data.getGuaranteedSize(),
+                                       data.getLifetime(), data.getRetentionPolicyInfo(), statusCode,
+                                       explanation));
+            return false;
+        }
+        
+        TAccessLatency latency = data.getRetentionPolicyInfo().getAccessLatency();
+        TRetentionPolicy retentionPolicy = data.getRetentionPolicyInfo().getRetentionPolicy();
+        if (!((latency == null || latency.equals(TAccessLatency.EMPTY) || latency.equals(TAccessLatency.ONLINE)) && (retentionPolicy == null
+                || retentionPolicy.equals(TRetentionPolicy.EMPTY) || retentionPolicy.equals(TRetentionPolicy.REPLICA))))
+        {
+            log.debug("SpaceRes: Invalid TRetentionPolicyInfo specified:  "
+                    + data.getRetentionPolicyInfo().getAccessLatency().toString() + ","
+                    + (data.getRetentionPolicyInfo().getRetentionPolicy().toString()));
+            statusCode = TStatusCode.SRM_NOT_SUPPORTED;
+            explanation = "RetentionPolicy requested cannot be satisfied.";
+            log.error(formatLogMessage(FAILURE, data.getUser(), data.getDesiredSize(), data.getGuaranteedSize(),
+                                       data.getLifetime(), data.getRetentionPolicyInfo(), statusCode,
+                                       explanation));
+            return false;
+        }
+        return true;
+    }
+    
+    
+    private String getSpaceFN(GridUserInterface user) throws Exception
+    {
+        String spaceFN = null;
+        try
+        {
+            spaceFN = namespace.makeSpaceFileURI(user);
+            log.debug(" Space FN : " + spaceFN);
+        }
+        catch (NamespaceException ex)
+        {
+            log.error("Unable to build default Space FN ", ex);
+            statusCode = TStatusCode.SRM_INVALID_REQUEST;
+            explanation = "Unable to build default Space FN \n" + ex;
+            throw new Exception(explanation);
+        }
+        return spaceFN;
+    }
+    
+    private VirtualFSInterface getSpaceVFS(String spaceFN) throws Exception{
+        
+        VirtualFSInterface vfs = null;
+        try
+        {
             vfs = namespace.resolveVFSbyAbsolutePath(spaceFN);
             log.debug("Space File belongs to VFS : " + vfs.getAliasName());
-        } catch (NamespaceException ex2) {
+        }
+        catch (NamespaceException ex2)
+        {
             log.debug("Unable to resolve VFS ", ex2);
             statusCode = TStatusCode.SRM_INVALID_REQUEST;
             explanation = "Unable to resolve VFS \n" + ex2;
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
+            throw new Exception(explanation);
         }
 
-        String relativeSpaceFN = null;
-        try {
-            log.debug("ExtraceRelativeSpace: root:" + vfs.getRootPath()
-                    + " spaceFN:" + spaceFN);
-            relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs
-                    .getRootPath(), spaceFN);
-            log.debug("relativeSpaceFN:" + relativeSpaceFN);
-        } catch (NamespaceException ex3) {
-            log.debug("Unable to retrieve the relative space file name ", ex3);
-            statusCode = TStatusCode.SRM_INVALID_REQUEST;
-            explanation = "Unable to retrieve the relative space file name \n"
-                + ex3;
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
+        return vfs;
+    }
+    
+    private void setDefaults(ReserveSpaceInputData data, VirtualFSInterface vfs)
+    {
+        if (data.getRetentionPolicyInfo().getAccessLatency() == null
+                || data.getRetentionPolicyInfo().getAccessLatency().equals(TAccessLatency.EMPTY))
+        {
+            data.getRetentionPolicyInfo().setAccessLatency(TAccessLatency.ONLINE);
         }
-
-        // ********** TLifeTime ****************/
-        TLifeTimeInSeconds lifeTime = TLifeTimeInSeconds.makeEmpty();
-        if (data.getLifetime().isEmpty()) {
+        if (data.getRetentionPolicyInfo().getRetentionPolicy() == null
+                || data.getRetentionPolicyInfo().getRetentionPolicy().equals(TRetentionPolicy.EMPTY))
+        {
+            data.getRetentionPolicyInfo().setRetentionPolicy(TRetentionPolicy.REPLICA);
+        }
+        if (data.getLifetime().isEmpty())
+        {
             log.debug("LifeTime is EMPTY. Using default value.");
-            try {
-                lifeTime = vfs.getDefaultValues().getDefaultSpaceLifetime();
-            } catch (NamespaceException e) {
-                log
-                .debug(
-                        "Error while retrieving default Default Space Lifetime",
-                        e);
-                explanation = "Error while retrieving default Lifetime Type \n"
-                    + e;
-                failure = true;
-            }
-        } else {
-            lifeTime = data.getLifetime();
-            log.debug("LifeTime: " + data.getLifetime().value());
-
+            data.setLifetime(vfs.getDefaultValues().getDefaultSpaceLifetime());
         }
-
-        // ************ RETRIEVE THE SIZEs OF SPACE ********************
+    }
+    
+    private SpaceSize computeSpaceSize(TSizeInBytes totalSize, TSizeInBytes guarSize, VirtualFSInterface vfs) throws Exception
+    {
+        
+     // ************ RETRIEVE THE SIZEs OF SPACE ********************
         TSizeInBytes desiderataSpaceSize = TSizeInBytes.makeEmpty();
-
-        TSizeInBytes totalSize = data.getDesiredSize();
-        TSizeInBytes guarSize = data.getGuaranteedSize();
 
         // Malformed request check: if totalSize and guaranteedSize are used
         // defined
         // and guaranteedSize > totalSize we consider the request as malformed
-        if ((!(totalSize.isEmpty()))
-                && (!((guarSize.isEmpty()) || guarSize.value() == 0))) {
-            if (totalSize.value() < guarSize.value()) {
+        if ((!(totalSize.isEmpty())) && (!((guarSize.isEmpty()) || guarSize.value() == 0)))
+        {
+            if (totalSize.value() < guarSize.value())
+            {
                 log.debug("Error: totalSize < guaranteedSize");
                 statusCode = TStatusCode.SRM_INVALID_REQUEST;
                 explanation = "Error: totalSize can not be greater then guaranteedSize";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
+                throw new Exception(explanation);
             }
-        } else { // Assign default values if totalSize and guaranteedSize are
-            // not defined
-            if (!(totalSize.isEmpty())) {
-                try {
-                    guarSize = vfs.getDefaultValues()
-                    .getDefaultGuaranteedSpaceSize();
-                    if (totalSize.value() < guarSize.value()) {
+        }
+        else
+        { // Assign default values if totalSize and guaranteedSize are
+          // not defined
+            if (!(totalSize.isEmpty()))
+            {
+                    guarSize = vfs.getDefaultValues().getDefaultGuaranteedSpaceSize();
+                    if (totalSize.value() < guarSize.value())
+                    {
                         guarSize = totalSize;
                     }
-                } catch (NamespaceException ex1) {
-                    guarSize = totalSize;
+            }
+            else
+            {
+                if (!((guarSize.isEmpty()) || guarSize.value() == 0))
+                {
+                        totalSize = vfs.getDefaultValues().getDefaultTotalSpaceSize();
+                        if (totalSize.value() < guarSize.value())
+                        {
+                            totalSize = guarSize;
+                            log.debug("GuaranteedSize greater than default total size!");
+                        }
                 }
-            } else if (!((guarSize.isEmpty()) || guarSize.value() == 0)) {
-                try {
-                    totalSize = vfs.getDefaultValues()
-                    .getDefaultTotalSpaceSize();
-                    if (totalSize.value() < guarSize.value()) {
+                else
+                {
+                        totalSize = vfs.getDefaultValues().getDefaultTotalSpaceSize();
+                        guarSize = vfs.getDefaultValues().getDefaultGuaranteedSpaceSize();
+                    // totalSize must be greater than guaranteedSize the following
+                    // check is to be sure
+                    // that the default parameters are correctly set.
+                    if (totalSize.value() < guarSize.value())
+                    {
                         totalSize = guarSize;
-                        log
-                        .debug("GuaranteedSize greater than default total size!");
                     }
-                } catch (NamespaceException ex1) {
-                    totalSize = guarSize;
-                }
-            } else {
-                try {
-                    totalSize = vfs.getDefaultValues()
-                    .getDefaultTotalSpaceSize();
-                } catch (NamespaceException ex1) {
-                    log
-                    .debug(
-                            "Error while retrieving default TOTAL Space Values",
-                            ex1);
-                    explanation = "Error while retrieving default TOTAL Space Values \n"
-                        + ex1;
-                    failure = true;
-                }
-                try {
-                    guarSize = vfs.getDefaultValues()
-                    .getDefaultGuaranteedSpaceSize();
-                } catch (NamespaceException ex1) {
-                    log
-                    .debug(
-                            "Error while retrieving default Guaranteed Space Values",
-                            ex1);
-                    explanation = "Error while retrieving default Guaranteed Space Values \n"
-                        + ex1;
-                    failure = true;
-                }
-                // totalSize must be greater than guaranteedSize the following
-                // check is to be sure
-                // that the default parameters are correctly set.
-                if (totalSize.value() < guarSize.value()) {
-                    totalSize = guarSize;
                 }
             }
         }
 
         log.debug("Parameter parsing end");
-
-        /**
+        /*
          * At this point either totalSize and guarSize contains significative
          * value. desiderataSpaceSize is setted to totalSize.
          */
         desiderataSpaceSize = totalSize;
-
         // This is valid because StoRM only reserve GUARANTEED space.
         guarSize = desiderataSpaceSize;
 
-        /**
-         * Check free space on file system.
-         */
-
-        try {
-            long bytesFree = vfs.getFilesystem().getFreeSpace();
-            freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
-        } catch (InvalidTSizeAttributesException e) {
-            log
-            .debug(
-                    "Error while retrieving free Space in underlying Filesystem",
-                    e);
+        TSizeInBytes freeSpace = null;
+        try
+        {
+            freeSpace = TSizeInBytes.make(vfs.getFilesystem().getFreeSpace(), SizeUnit.BYTES);
+        }
+        catch (InvalidTSizeAttributesException e)
+        {
+            log.debug("Error while retrieving free Space in underlying Filesystem", e);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-            explanation = "Error while retrieving free Space in underlying Filesystem \n"
-                + e;
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
-        } catch (NamespaceException ex) {
-            log
-            .debug(
-                    "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-                    ex);
+            explanation = "Error while retrieving free Space in underlying Filesystem \n" + e;
+            throw new Exception(explanation);
+        }
+        catch (NamespaceException ex)
+        {
+            log.debug("Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
+                      ex);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-                + ex;
-            log
-            .error(formatLogMessage(FAILURE, user, data
-                    .getDesiredSize(), data.getGuaranteedSize(), data
-                    .getLifetime(), data.getRetentionPolicyInfo(),
-                    statusCode, explanation));
-            return manageError(statusCode, explanation);
+                    + ex;
+            throw new Exception(explanation);
         }
 
         /**
          * @todo Change here, also granted SpaceSize must be considered.
          */
+        boolean lower_space = false;
         // If there is not enogh free space on storage
-        if (freeSpace.value() < desiderataSpaceSize.value()) {
-            if (freeSpace.value() < guarSize.value()) {
+        if (freeSpace.value() < desiderataSpaceSize.value())
+        {
+            if (freeSpace.value() < guarSize.value())
+            {
                 // Not enough freespace
-                log
-                .debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
+                log.debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
                 statusCode = TStatusCode.SRM_NO_FREE_SPACE;
                 explanation = "SRM has not more free space.";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
-            } else {
+                throw new Exception(explanation);
+            }
+            else
+            {
                 // Enough free space to reserve granted space asked.
                 desiderataSpaceSize = guarSize;
                 lower_space = true;
             }
         }
-
-        /***********************************************************************
-         * Verification of user permission
-         */
-        /**
-         * @todo Call out to authorization source Action : srmReserveSpace of
-         *       desiderataSize Subject : user Object : VO space
-         */
-
-        /***********************************************************************
-         * Verification of user quota
-         */
-        /**
-         * @todo - Retrieve space consumed - Retrieve space available in quoata
-         *       policy - Call out to authorization source: Action :
-         *       srmReserveSpace of desiderataSize Subject : user Object : User
-         *       space
-         */
-
-
-
-
-
-        //TOCHANGE AD CALL TO THE NEW FACTORY
-
-        if (authorize) {
-
-
-
-            //new
-
-            SRMSpace srmp = null;
-
-            try {
-                srmp = new SRMSpace(user, desiderataSpaceSize, guarSize, lifeTime, null);
-            } catch (IllegalSRMSpaceParameter e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            srmp.doReservation();
-
-            // Create SpaceFile Name finding right StoRI by UserID, Virtual
-            // Organization
-            PFN spacePFN = null;
-            try {
-                spacePFN = PFN.make(spaceFN);
-                log.debug("Space File name (PFN Form) identified: " + spacePFN);
-            } catch (InvalidPFNAttributeException ex6) {
-                log.debug("Unable to create Space File in PFN Format", ex6);
-                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                explanation = "Unable to create Space File in PFN Format \n"
-                    + ex6;
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
-            }
-
-            // Call wrapper to reserve Space.
-            log.debug("reserve Space File Size :"
-                    + desiderataSpaceSize.toString());
-
-            StoRI spaceFile = null;
-            try {
-                spaceFile = vfs.createSpace(relativeSpaceFN,
-                        desiderataSpaceSize.value());
-            } catch (NamespaceException ex4) {
-                log.debug("Unable to create Space File in VFS ", ex4);
-                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                explanation = "Unable to create Space File in VFS \n" + ex4;
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
-            }
-
-            // Create Space into FileSyste
-            try {
-                spaceFile.getSpace().allot();
-            } catch (ReservationException e) {
-                log.debug("Space reservation fail at FS level" + e);
-                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                explanation = "Unable to create Space File into filesystem. \n";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation);
-            }
-
-            // Call wrapper to set ACL on file created.
-            /** Check for JiT or AoT */
-            boolean hasJiTACL = spaceFile.hasJustInTimeACLs();
-
-            FilesystemPermission fp = FilesystemPermission.ReadWrite;
-
-            if (hasJiTACL) {
-                // JiT Case
-                log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "USER RW");
-                try {
-                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                    //TODO ACL manager
-                    LocalFile localFile = spaceFile.getLocalFile();
-                    LocalUser localUser = user.getLocalUser();
-                    if (localFile == null || localUser == null)
-                    {
-                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
-                                + " localUser " + localUser);
-                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                        explanation = "Unable to setting up the ACL ";
-                        log.error(formatLogMessage(FAILURE,
-                                                   user,
-                                                   data.getDesiredSize(),
-                                                   data.getGuaranteedSize(),
-                                                   data.getLifetime(),
-                                                   data.getRetentionPolicyInfo(),
-                                                   statusCode,
-                                                   explanation));
-                        return manageError(statusCode, explanation);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            manager.grantUserPermission(localFile,localUser, fp);
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            log.error("Unable to grant user permission on space file. IllegalArgumentException: " + e.getMessage());
-                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                            explanation = "Unable to grant group permission on space file ";
-                            return manageError(statusCode, explanation);
-                        }
-                    }
-//                    spaceFile.getLocalFile().grantUserPermission(
-//                            user.getLocalUser(), fp);
-                } catch (CannotMapUserException ex5) {
-                    log.debug("Unable to setting up the ACL ", ex5);
-                    statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                    explanation = "Unable to setting up the ACL ";
-                    log.error(formatLogMessage(FAILURE, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            statusCode, explanation));
-                    return manageError(statusCode, explanation);
-                }
-            } else {
-                // AoT Case
-                log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: "
-                        + spacePFN + "  " + "GROUP RW");
-                try
-                {
-                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                    // TODO ACL manager
-                    LocalFile localFile = spaceFile.getLocalFile();
-                    LocalUser localUser = user.getLocalUser();
-                    if (localFile == null || localUser == null)
-                    {
-                        log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
-                                + " , localUser " + localUser);
-                        statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                        explanation = "Unable to setting up the ACL ";
-                        log.error(formatLogMessage(FAILURE,
-                                                   user,
-                                                   data.getDesiredSize(),
-                                                   data.getGuaranteedSize(),
-                                                   data.getLifetime(),
-                                                   data.getRetentionPolicyInfo(),
-                                                   statusCode,
-                                                   explanation));
-                        return manageError(statusCode, explanation, 1, localFile);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            manager.grantGroupPermission(localFile, localUser, fp);
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            log.error("Unable to grant group permission on the space file. IllegalArgumentException: " + e.getMessage());
-                            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                            explanation = "Unable to setting up the ACL ";
-                            log.error(formatLogMessage(FAILURE,
-                                                       user,
-                                                       data.getDesiredSize(),
-                                                       data.getGuaranteedSize(),
-                                                       data.getLifetime(),
-                                                       data.getRetentionPolicyInfo(),
-                                                       statusCode,
-                                                       explanation));
-                            return manageError(statusCode, explanation, 1, localFile);
-                        }
-                    }
-                    // spaceFile.getLocalFile().grantGroupPermission(user.getLocalUser(), fp);
-                }
-                catch (CannotMapUserException ex5)
-                {
-                    log.debug("Unable to setting up the ACL ", ex5);
-                    statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                    explanation = "Unable to setting up the ACL ";
-                    log.error(formatLogMessage(FAILURE,
-                                               user,
-                                               data.getDesiredSize(),
-                                               data.getGuaranteedSize(),
-                                               data.getLifetime(),
-                                               data.getRetentionPolicyInfo(),
-                                               statusCode,
-                                               explanation));
-                    return manageError(statusCode, explanation, 1, spaceFile.getLocalFile());
-                }
-            }
-
-            /**
-             * Create Storage Space in StoRM domain
-             */
-            log.debug("-- Creating Storage Space Data ...");
-            StorageSpaceData spaceDt = null;
-
-            /**
-             * @todo REMOVE THIS AS SOON DB IS UPDATED!
-             */
-            TSpaceType spaceType = TSpaceType.PERMANENT;
-
-            // FIXME: storageSystemInfo is passed as NULL. To fix managing the
-            // new type ArrayOfTExtraInfo
-            try {
-                spaceDt = new StorageSpaceData(data.getUser(), spaceType, data
-                        .getSpaceTokenAlias(), totalSize, guarSize, lifeTime,
-                        null, date, spacePFN);
-                log.debug(spaceDt.toString());
-                log.debug("-- Created Storage Space Data --");
-            } catch (InvalidSpaceDataAttributesException ex7) {
-                log.debug("Unable to create Storage Space Data", ex7);
-                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                explanation = "Unable to create storage space data.";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation, 2, spaceFile
-                        .getLocalFile());
-            }
-
-            /**
-             * Add Storage Space in Catalog
-             */
-
-			catalog.addStorageSpace(spaceDt);
-
-            try {
-                tok = TSpaceToken.make(spaceDt.getSpaceToken().toString());
-            } catch (InvalidTSpaceTokenAttributesException ex10) {
-                log
-                .debug("Error creating Space Token . Critical error!"
-                        + ex10);
-                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-                explanation = "Unable to create space token.";
-                log.error(formatLogMessage(FAILURE, user,
-                        data.getDesiredSize(), data.getGuaranteedSize(), data
-                        .getLifetime(), data.getRetentionPolicyInfo(),
-                        statusCode, explanation));
-                return manageError(statusCode, explanation, 2, spaceFile
-                        .getLocalFile());
-            }
-            // }
-        }
-        if (!(failure)) {
-            try {
-                if (!lower_space) {
-                    status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-                    "Space Reservation done");
-                    log.info(formatLogMessage(SUCCESS, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            status));
-
-                } else {
-                    status = new TReturnStatus(
-                            TStatusCode.SRM_LOWER_SPACE_GRANTED,
-                            "Space Reservation done, lower space granted.");
-                    log.info(formatLogMessage(SUCCESS, user, data
-                            .getDesiredSize(), data.getGuaranteedSize(), data
-                            .getLifetime(), data.getRetentionPolicyInfo(),
-                            status));
-                }
-            } catch (InvalidTReturnStatusAttributeException ex9) {
-                log.debug("InvalidTReturnStatusAttributeException", ex9);
-            }
-        } else { // ************ FAILURE !!!
-            try {
-                status = new TReturnStatus(TStatusCode.SRM_FAILURE, explanation);
-            } catch (InvalidTReturnStatusAttributeException ex) {
-                log.debug("Error creating status!Critical error!" + ex);
-            }
-        }
-
-        try {
-            outputData = new ReserveSpaceOutputData(totalSize, guarSize,
-                    lifeTime, tok, status);
-        } catch (InvalidReserveSpaceOutputDataAttributesException ex11) {
-            log.error("Error creating Output DATA . Critical error!" + ex11);
-        }
-
-        log.error(formatLogMessage(FAILURE, user, data.getDesiredSize(), data
-                .getGuaranteedSize(), data.getLifetime(), data
-                .getRetentionPolicyInfo(), status));
-        return (outputData);
-
+        return this.new SpaceSize(desiderataSpaceSize, totalSize, lower_space);
     }
+    
+    private String getRelativeSpaceFilePath(VirtualFSInterface vfs, String spaceFN) throws Exception{
+        
+        String relativeSpaceFN = null;
+        try
+        {
+            log.debug("ExtraceRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:" + spaceFN);
+            relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(), spaceFN);
+            log.debug("relativeSpaceFN:" + relativeSpaceFN);
+        }
+        catch (NamespaceException ex3)
+        {
+            log.debug("Unable to retrieve the relative space file name ", ex3);
+            statusCode = TStatusCode.SRM_INVALID_REQUEST;
+            explanation = "Unable to retrieve the relative space file name \n" + ex3;
+            throw new Exception(explanation);
+        }
+        return relativeSpaceFN;
+    }
+    
+    private void setSpaceFilePermissions(StoRI spaceStori, GridUserInterface user) throws Exception
+    {
+        
+        FilesystemPermission fp = FilesystemPermission.ReadWrite;
 
+        AclManager manager = AclManagerFSAndHTTPS.getInstance();
+        LocalFile localFile = spaceStori.getLocalFile();
+        LocalUser localUser;
+        try
+        {
+            localUser = user.getLocalUser();
+        }
+        catch (CannotMapUserException e)
+        {
+            log.debug("Unable to setting up the ACL ", e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to setting up the ACL ";
+            throw new Exception(explanation);
+        }
+        if (localFile == null || localUser == null)
+        {
+            log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile + " , localUser "
+                    + localUser);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to setting up the ACL ";
+            throw new Exception(explanation);
+        }
+        if (spaceStori.hasJustInTimeACLs())
+        {
+            // JiT Case
+            log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: " + spaceStori.getPFN() + "  " + "USER RW");
+            try
+            {
+                manager.grantUserPermission(localFile, localUser, fp);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to grant user permission on space file. IllegalArgumentException: "
+                        + e.getMessage());
+                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                explanation = "Unable to grant group permission on space file ";
+                throw new Exception(explanation);
+            }
+        }
+        else
+        {
+            // AoT Case
+            log.debug("<SpaceResManager>:reserveSpace AddACL for FIle: " + spaceStori.getPFN() + "  " + "GROUP RW");
+            try
+            {
+                manager.grantGroupPermission(localFile, localUser, fp);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("Unable to grant group permission on the space file. IllegalArgumentException: "
+                        + e.getMessage());
+                statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+                explanation = "Unable to setting up the ACL ";
+                throw new Exception(explanation);
+            }
+        }
+    }
+    
+    private TSpaceToken registerIntoDB(GridUserInterface user, String spaceTokenAlias,
+            TSizeInBytes totalSize, TSizeInBytes desiderataSpaceSize, TLifeTimeInSeconds lifeTime, PFN pfn) throws Exception
+    {
+        log.debug("-- Creating Storage Space Data ...");
+        StorageSpaceData spaceData = null;
+        try
+        {
+            //passing null TStorageSystemInfo, is not used even when added to the DB
+            spaceData = new StorageSpaceData(user, TSpaceType.PERMANENT, spaceTokenAlias, totalSize,
+                                             desiderataSpaceSize, lifeTime, null, new Date(), pfn);
+        } catch(InvalidSpaceDataAttributesException e)
+        {
+            log.debug("Unable to create Storage Space Data", e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to create storage space data.";
+            log.error(formatLogMessage(FAILURE, user,totalSize , desiderataSpaceSize,
+                                       lifeTime, null, statusCode, explanation));
+            throw new Exception(explanation);
+        }
+
+        spaceData.setUsedSpaceSize(TSizeInBytes.make(0, SizeUnit.BYTES));
+        spaceData.setUnavailableSpaceSize(TSizeInBytes.make(0, SizeUnit.BYTES));
+        spaceData.setReservedSpaceSize(desiderataSpaceSize);
+        
+        log.debug("Created space data: " + spaceData.toString());
+        try
+        {
+            catalog.addStorageSpace(spaceData);
+        } catch(DataAccessException e)
+        {
+            log.debug("Unable to register Storage Space Data into DB", e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to register Storage Space Data into DB.";
+            log.error(formatLogMessage(FAILURE, user, totalSize,desiderataSpaceSize ,
+                                       lifeTime, null, statusCode, explanation));
+            throw new Exception(explanation);
+        }
+        
+        TSpaceToken spaceToken = null;
+        try
+        {
+            spaceToken = TSpaceToken.make(spaceData.getSpaceToken().toString());
+        } catch(InvalidTSpaceTokenAttributesException e)
+        {
+            log.debug("Error creating Space Token . Critical error!" + e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to create space token.";
+            log.error(formatLogMessage(FAILURE, user, totalSize, desiderataSpaceSize, lifeTime, null,
+                                       statusCode, explanation));
+            throw new Exception(explanation);
+        }
+        return spaceToken;
+    }
+    
+    private ReserveSpaceOutputData buildOutput(SpaceSize spaceSize, TSpaceToken spaceToken,
+            TLifeTimeInSeconds lifeTime) throws Exception
+    {
+        TReturnStatus status = null;
+        try
+        {
+            if (!spaceSize.isLowerSpace())
+            {
+                status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Space Reservation done");
+
+            }
+            else
+            {
+                status = new TReturnStatus(TStatusCode.SRM_LOWER_SPACE_GRANTED,
+                                           "Space Reservation done, lower space granted.");
+            }
+        } catch(InvalidTReturnStatusAttributeException e)
+        {
+            log.debug("InvalidTReturnStatusAttributeException", e);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to build a valid return status ";
+            throw new Exception(explanation);
+        }
+
+        ReserveSpaceOutputData outputData = null;
+        try
+        {
+            outputData = new ReserveSpaceOutputData(spaceSize.getTotalSize(),
+                                                    spaceSize.getDesiderataSpaceSize(), lifeTime, spaceToken,
+                                                    status);
+        } catch(InvalidReserveSpaceOutputDataAttributesException ex11)
+        {
+            log.error("Error creating Output DATA . Critical error!" + ex11);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Unable to build a valid return output object ";
+            throw new Exception(explanation);
+        }
+        return outputData;
+    }
+    
+    private class SpaceSize{
+        
+        private final TSizeInBytes desiderataSpaceSize;
+        private final TSizeInBytes totalSize;
+        private final boolean lowerSpace;
+        
+        public SpaceSize(TSizeInBytes desiderataSpaceSize, TSizeInBytes totalSize, boolean lowerSpace)
+        {
+            this.desiderataSpaceSize = desiderataSpaceSize;
+            this.totalSize = totalSize;
+            this.lowerSpace = lowerSpace;
+        }
+        
+        protected TSizeInBytes getDesiderataSpaceSize()
+        {
+            return desiderataSpaceSize;
+        }
+        
+        protected TSizeInBytes getTotalSize()
+        {
+            return totalSize;
+        }
+        
+        protected boolean isLowerSpace()
+        {
+            return lowerSpace;
+        }
+    }
+    
     /**
      * Method that reset an already done reservation to the original status.
      * 
@@ -822,7 +749,25 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         String explanation = null;
         TStatusCode statusCode = TStatusCode.EMPTY;
 
-        StorageSpaceData sdata = catalog.getStorageSpace(token);
+        StorageSpaceData sdata;
+        try
+        {
+            sdata = catalog.getStorageSpace(token);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error building space data from row DB data\n" + e;
+            return manageErrorStatus(statusCode, explanation);
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error retrieving row space token data from DB\n" + e;
+            return manageErrorStatus(statusCode, explanation);
+        }
+        
         // Check if it a VO_SA_Token, in that case do nothing
         if (sdata.getSpaceType().equals(TSpaceType.VOSPACE)) {
             return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Abort file done.");
@@ -1023,7 +968,16 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         sdata.setUsedSpaceSize(desiderataSpaceSize);
 
         // UpdateData into the ReserveSpaceCatalog
-        catalog.setFreeSize(sdata);
+        try
+        {
+            catalog.updateStorageSpaceFreeSpace(sdata);
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to persist the space reservation into the DB. DataAccessException: " + e.getMessage());
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error persisting space token data into the DB\n" + e.getMessage();
+            return manageErrorStatus(statusCode, explanation);
+        }
 
         return manageErrorStatus(TStatusCode.SRM_SUCCESS,
         "Successfull creation.");
@@ -1043,7 +997,24 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         String explanation = null;
         TStatusCode statusCode = TStatusCode.EMPTY;
 
-        StorageSpaceData sdata = catalog.getStorageSpace(token);
+        StorageSpaceData sdata;
+        try
+        {
+            sdata = catalog.getStorageSpace(token);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error building space data from row DB data\n" + e;
+            return manageErrorStatus(statusCode, explanation);
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error retrieving row space token data from DB\n" + e;
+            return manageErrorStatus(statusCode, explanation);
+        }
         GridUserInterface user = sdata.getOwner();
         PFN spacePFN = sdata.getSpaceFileName();
 
@@ -1089,8 +1060,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
         // ************ RETRIEVE THE SIZEs OF SPACE from DB********************
         TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
-        TSizeInBytes totalSize = sdata.getTotalSpaceSize();
-        TSizeInBytes guarSize = sdata.getReservedSpaceSize();
         TSizeInBytes availableSize = sdata.getAvailableSpaceSize();
 
         log.debug("available Size : " + availableSize.value());
@@ -1111,37 +1080,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
          * Check free space on file system.
          */
 
-        TSizeInBytes freeSpace;
-        try {
-            long bytesFree = vfs.getFilesystem().getFreeSpace();
-            freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
-        } catch (InvalidTSizeAttributesException e) {
-            log
-            .debug(
-                    "Error while retrieving free Space in underlying Filesystem",
-                    e);
-            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-            explanation = "Error while retrieving free Space in underlying Filesystem \n"
-                + e;
-            return manageErrorStatus(statusCode, explanation);
-        } catch (NamespaceException ex) {
-            log
-            .debug(
-                    "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-                    ex);
-            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-            explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-                + ex;
-            return manageErrorStatus(statusCode, explanation);
-        }
+        //michele: what this code should do?
+//        TSizeInBytes freeSpace;
+//        try {
+//            long bytesFree = vfs.getFilesystem().getFreeSpace();
+//            freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
+//        } catch (InvalidTSizeAttributesException e) {
+//            log
+//            .debug(
+//                    "Error while retrieving free Space in underlying Filesystem",
+//                    e);
+//            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+//            explanation = "Error while retrieving free Space in underlying Filesystem \n"
+//                + e;
+//            return manageErrorStatus(statusCode, explanation);
+//        } catch (NamespaceException ex) {
+//            log
+//            .debug(
+//                    "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
+//                    ex);
+//            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+//            explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
+//                + ex;
+//            return manageErrorStatus(statusCode, explanation);
+//        }
 
         /*
          * Start with the reservation
          */
-        boolean authorize = true;
-
-        if (authorize) {
-
             // Call wrapper to reserve Space.
             log.debug("reserve Space File Size :"
                     + desiderataSpaceSize.toString());
@@ -1172,6 +1138,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                 spaceFile.getSpace().allot();
             } catch (ReservationException e) {
                 log.debug("Space reservation fail at FS level" + e);
+                revertOldSpaceFileDeletion(localFile);
                 statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                 explanation = "Unable to create Space File into filesystem. \n";
                 return manageErrorStatus(statusCode, explanation);
@@ -1196,6 +1163,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                     {
                         log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
                                 + " , localUser " + localUser);
+                        revertOldSpaceFileDeletion(localFile);
                         statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                         explanation = "Unable to setting up the ACL ";
                         return manageErrorStatus(statusCode, explanation);
@@ -1209,6 +1177,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                         catch (IllegalArgumentException e)
                         {
                             log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            revertOldSpaceFileDeletion(localFile);
                             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                             explanation = "Unable to grant group permission on space file ";
                             return manageErrorStatus(statusCode, explanation);
@@ -1218,6 +1187,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 //                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
+                    revertOldSpaceFileDeletion(localFile);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     explanation = "Unable to setting up the ACL ";
                     return manageErrorStatus(statusCode, explanation);
@@ -1235,6 +1205,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                     {
                         log.warn("Unable to setting up the ACL. Null value/s : LocalFile " + localFile
                                 + " , localUser " + localUser);
+                        revertOldSpaceFileDeletion(localFile);
                         statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                         explanation = "Unable to setting up the ACL ";
                         return manageErrorStatus(statusCode, explanation);
@@ -1248,6 +1219,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
                         catch (IllegalArgumentException e)
                         {
                             log.error("Unable to grant group permission on space file. IllegalArgumentException: " + e.getMessage());
+                            revertOldSpaceFileDeletion(localFile);
                             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                             explanation = "Unable to grant group permission on space file ";
                             return manageErrorStatus(statusCode, explanation);
@@ -1257,13 +1229,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 //                            user.getLocalUser(), fp);
                 } catch (CannotMapUserException ex5) {
                     log.debug("Unable to setting up the ACL ", ex5);
+                    revertOldSpaceFileDeletion(localFile);
                     statusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     explanation = "Unable to setting up the ACL ";
                     return manageErrorStatus(statusCode, explanation);
                 }
             }
-
-        }
 
         /*
          * Update data into DB
@@ -1281,18 +1252,34 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         try {
             availableSize = TSizeInBytes.make(sdata.getAvailableSpaceSize().value()
                     + sizeToAdd.value(), SizeUnit.BYTES);
-        } catch (InvalidTSizeAttributesException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        } catch (InvalidTSizeAttributesException e) {
+            log.error("Unable to compute new available space size. InvalidTSizeAttributesException: " + e.getMessage());
+            revertOldSpaceFileDeletion(localFile);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error computing new available space size\n" + e.getMessage();
+            return manageErrorStatus(statusCode, explanation);
         }
         // Update the free bytes!
         sdata.forceAvailableSpaceSize(availableSize);
 
         // UpdateData into the ReserveSpaceCatalog
-        catalog.setFreeSize(sdata);
+        try
+        {
+            catalog.updateStorageSpaceFreeSpace(sdata);
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to persist the space reservation into the DB. DataAccessException: " + e.getMessage());
+            revertOldSpaceFileDeletion(localFile);
+            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+            explanation = "Error persisting space token data into the DB\n" + e.getMessage();
+            return manageErrorStatus(statusCode, explanation);
+        }
+        return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Successfull creation.");
+    }
 
-        return manageErrorStatus(TStatusCode.SRM_SUCCESS,
-        "Successfull creation.");
+    private void revertOldSpaceFileDeletion(LocalFile localFile)
+    {
+        // TODO Implement this method
     }
 
     /**
@@ -1306,63 +1293,32 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
      * @return outputData SpaceResOutputData
      */
 
-    private ReserveSpaceOutputData manageError(TStatusCode statusCode,
-            String explanation) {
+    private ReserveSpaceOutputData manageError(TStatusCode statusCode, String explanation)
+    {
         TReturnStatus status = null;
-        try {
+        try
+        {
             status = new TReturnStatus(statusCode, explanation);
-        } catch (InvalidTReturnStatusAttributeException ex1) {
+        }
+        catch (InvalidTReturnStatusAttributeException ex1)
+        {
             log.warn("SpaceManger: Error creating returnStatus " + ex1);
         }
 
         return new ReserveSpaceOutputData(status);
     }
 
-    private TReturnStatus manageErrorStatus(TStatusCode statusCode,
-            String explanation) {
+    private TReturnStatus manageErrorStatus(TStatusCode statusCode, String explanation)
+    {
         TReturnStatus status = null;
-        try {
+        try
+        {
             status = new TReturnStatus(statusCode, explanation);
-        } catch (InvalidTReturnStatusAttributeException ex1) {
+        }
+        catch (InvalidTReturnStatusAttributeException ex1)
+        {
             log.warn("SpaceManger: Error creating returnStatus " + ex1);
         }
         return status;
     }
-
-    /**
-     * This function is use to create updata data in case of variuos kind of
-     * error. This function hadle also rollback cases.
-     * 
-     * @param statusCode
-     *            TStatusCode
-     * @param explanation
-     *            String
-     * @param rollbackLevel
-     *            int
-     * @return outputData SpaceResOutputData
-     */
-
-    private ReserveSpaceOutputData manageError(TStatusCode statusCode,
-            String explanation, int rollbackLevel, LocalFile spaceFile) {
-
-        if (rollbackLevel == 1) {
-            /**
-             * @todo Error putting ACL. Remove Space File?
-             */
-            File physicalSpaceFile = new File(spaceFile.getPath());
-            physicalSpaceFile.delete();
-
-        }
-        if (rollbackLevel == 2) {
-            /**
-             * @todo Error adding data into Persistence. Remove Space File?
-             */
-            File physicalSpaceFile = new File(spaceFile.getPath());
-            physicalSpaceFile.delete();
-
-        }
-
-        return manageError(statusCode, explanation);
-    }
-
 }

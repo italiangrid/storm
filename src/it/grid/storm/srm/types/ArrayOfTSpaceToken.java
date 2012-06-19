@@ -89,6 +89,11 @@ public class ArrayOfTSpaceToken implements Serializable {
     public TSpaceToken getTSpaceToken(int i) {
         return (TSpaceToken) tokenList.get(i);
 	}
+    
+    public TSpaceToken[] getTSpaceTokenArray() {
+        TSpaceToken[] array = new TSpaceToken[0];
+        return tokenList.toArray(array);
+    }
 
 
     public void addTSpaceToken(TSpaceToken token) {

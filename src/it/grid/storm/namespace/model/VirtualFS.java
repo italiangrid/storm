@@ -46,6 +46,8 @@ import it.grid.storm.namespace.StoRIImpl;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -440,7 +442,7 @@ public class VirtualFS implements VirtualFSInterface {
         return ss;
     }
 
-    public DefaultValuesInterface getDefaultValues() throws NamespaceException {
+    public DefaultValuesInterface getDefaultValues(){
         return this.defValue;
     }
 
@@ -500,10 +502,23 @@ public class VirtualFS implements VirtualFSInterface {
      *
      */
 
-    private Boolean isVOSAToken(TSpaceToken token) {
+    private Boolean isVOSAToken(TSpaceToken token) throws NamespaceException{
         ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
-        StorageSpaceData ssd = catalog.getStorageSpace(token);
+        StorageSpaceData ssd = null;
+        try
+        {
+            ssd = catalog.getStorageSpace(token);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area space information. TransferObjectDecodingException : " + e.getMessage());
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to get StorageSpaceTO from the DB. DataAccessException: " + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area space information. DataAccessException : " + e.getMessage());
+        }
 
         if ((ssd!=null) && (ssd.getSpaceType().equals(TSpaceType.VOSPACE))) {
             return true;
@@ -586,7 +601,20 @@ public class VirtualFS implements VirtualFSInterface {
 
 
         //Use of Reserve Space Manager
-        StorageSpaceData spaceData = getSpaceByToken(token);
+        StorageSpaceData spaceData = null;
+        try
+        {
+            spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area information from Token. TransferObjectDecodingException : " + e.getMessage());
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area information from Token. DataAccessException : " + e.getMessage());
+        }
 
         if (spaceData == null) {
             throw new NamespaceException("No Storage Space stored with this token :" + token);
@@ -725,17 +753,31 @@ public class VirtualFS implements VirtualFSInterface {
             log.debug("Invalid size created.");
         }
 
-
-
-
-
         //Use of Reserve Space Manager
-        StorageSpaceData spaceData = getSpaceByToken(token);
-
-        if (spaceData == null) {
-            throw new ExpiredSpaceTokenException("No Storage Space stored with this token :" + token);
+        StorageSpaceData spaceData = null;
+        try
+        {
+            spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
+        } catch(TransferObjectDecodingException e)
+        {
+            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                      + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area information from Token. TransferObjectDecodingException : " + e.getMessage());
+        } catch(DataAccessException e)
+        {
+            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            throw new NamespaceException("Error retrieving Storage Area information from Token. DataAccessException : " + e.getMessage());
         }
 
+        if (spaceData == null) {
+            throw new NamespaceException("No Storage Space stored with this token :" + token);
+        }
+
+        //      Check here if Space Reservation is expired
+        if (spaceData.isExpired()) {
+            throw new ExpiredSpaceTokenException("Space Token Expired :" + token);
+        }
+        
         /**
          * First of all, Check if it's default or not
          */
@@ -777,7 +819,7 @@ public class VirtualFS implements VirtualFSInterface {
             //Add control if it is default?
 
             if (spaceData.isExpired()) {
-                throw new NamespaceException("Space Token Expired :" + token);
+                throw new ExpiredSpaceTokenException("Space Token Expired :" + token);
             }
 
 
@@ -1107,13 +1149,24 @@ public class VirtualFS implements VirtualFSInterface {
         return space;
     }
 
-    public StorageSpaceData getSpaceByToken(TSpaceToken token) throws NamespaceException {
-
-        //Retrieve Storage Space from Persistence
-        ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
-        StorageSpaceData spaceData = catalog.getStorageSpace(token);
-        return spaceData;
-    }
+//    public StorageSpaceData getSpaceByToken(TSpaceToken token) throws NamespaceException {
+//
+//        StorageSpaceData spaceData = null;
+//        try
+//        {
+//            spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
+//        } catch(TransferObjectDecodingException e)
+//        {
+//            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+//                      + e.getMessage());
+//            throw new NamespaceException("Error retrieving Storage Area information from Token. TransferObjectDecodingException : " + e.getMessage());
+//        } catch(DataAccessException e)
+//        {
+//            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+//            throw new NamespaceException("Error retrieving Storage Area information from Token. DataAccessException : " + e.getMessage());
+//        }
+//        return spaceData;
+//    }
 
     public StorageSpaceData getSpaceByAlias(String desc) throws NamespaceException {
 

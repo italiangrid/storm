@@ -119,7 +119,7 @@ public class GridUserManager {
         fqans[0] = FQAN.makeVoFQAN(vo);
         try
         {
-            userFactory.createGridUser(dn, fqans); 
+            gridUser = userFactory.createGridUser(dn, fqans); 
         }
         catch (IllegalArgumentException e)
         {

@@ -31,6 +31,7 @@
 
 package it.grid.storm.filesystem;
 
+import java.io.IOException;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.common.types.SizeUnit;
@@ -95,6 +96,44 @@ public class Space {
      */
     public void allot() throws ReservationException {
         ss.reserveSpace(spaceFile.getPath(),guaranteedSize.value());
+    }
+    
+    /**
+     * Method that just creates the space file but not allocates memory. In case of
+     * any problem, a ReservationException is thrown
+     */
+    public void fakeAllot() throws ReservationException
+    {
+        java.io.File localFile = new java.io.File(spaceFile.getPath());
+        try
+        {
+            localFile.createNewFile();
+        } catch(IOException e)
+        {
+            throw new ReservationException("IO exception while creating local File named : "
+                    + spaceFile.getPath() + " : " + e.getMessage());
+        } catch(SecurityException e)
+        {
+            throw new ReservationException("Security exception while creating local File named : "
+                    + spaceFile.getPath() + " : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Method that just removes the space file but not deallocates memory. In case of
+     * any problem, a ReservationException is thrown
+     */
+    public void fakeRelease() throws ReservationException
+    {
+        java.io.File localFile = new java.io.File(spaceFile.getPath());
+        try
+        {
+            localFile.delete();
+        } catch(SecurityException e)
+        {
+            throw new ReservationException("Security exception while deleteing local File named : "
+                    + spaceFile.getPath() + " : " + e.getMessage());
+        }
     }
 
     /**

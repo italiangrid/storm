@@ -28,13 +28,10 @@ import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.StorageSpaceTO;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.space.StorageSpaceNotInitializedException;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
-import it.grid.storm.srm.types.InvalidTMetaDataSpaceAttributeException;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
-import it.grid.storm.srm.types.TMetaDataSpace;
 import it.grid.storm.srm.types.TSpaceToken;
 
 import java.io.File;
@@ -119,48 +116,38 @@ public class ReservedSpaceCatalog {
     * - StorageSpace is selected by SpaceToken
     * 
     * @param spaceToken TSpaceToken
-    * @return StorageSpaceData
-    * @return null if no-one SS exists with the specified spaceToken 
+    * @return StorageSpaceData, null if no-one SS exists with the specified spaceToken 
+     * @throws DataAccessException 
     */
-   public StorageSpaceData getStorageSpace(TSpaceToken spaceToken) {
+    public StorageSpaceData getStorageSpace(TSpaceToken spaceToken) throws TransferObjectDecodingException,
+            DataAccessException
+    {
 
-       StorageSpaceData result = null; //new StorageSpaceData();
-       log.debug("Retrieve Storage Space start... ");
+        StorageSpaceData result = null;
+        ssDAO = daoFactory.getStorageSpaceDAO();
+        log.debug("Storage Space DAO retrieved.");
+        StorageSpaceTO ssTO = ssDAO.getStorageSpaceByToken(spaceToken.getValue());
+        log.debug("Storage Space retrieved by Token. ");
+        if (ssTO != null)
+        {
+            try
+            {
+                result = new StorageSpaceData(ssTO);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("Error building StorageSpaceData from StorageSpaceTO IllegalArgumentException: "
+                        + e.getLocalizedMessage());
+                throw new TransferObjectDecodingException("Unable to build StorageSpaceData "
+                        + "from StorageSpaceTO");
+            }
+        }
+        else
+        {
+            log.info("Unable to build StorageSpaceData. No StorageSpaceTO built from the DB");
+        }
+        return result;
+    }
 
-       StorageSpaceTO ssTO = null;
-
-       // Retrieve the Data Access Object from the factory
-       try {
-           ssDAO = daoFactory.getStorageSpaceDAO();
-           log.debug("Storage Space DAO retrieved.");
-       }
-       catch (DataAccessException daEx) {
-           log.error("Error while retrieving StorageSpaceDAO.", daEx);
-       }
-
-       //Get StorageSpaceTO form persistence
-       try {
-           ssTO = ssDAO.getStorageSpaceByToken(spaceToken.getValue());
-           log.debug("Storage Space retrieved by Token. ");
-           //Build the result
-           if (ssTO != null) {
-                try
-                {
-                    result = new StorageSpaceData(ssTO);
-                }
-                catch (IllegalArgumentException e)
-                {
-                    log.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: " + e.getLocalizedMessage());
-                }
-           }
-       }
-       catch (DataAccessException daEx) {
-           log.error("Error while retrieving StorageSpace", daEx);
-       }
-
-       return result;
-   }
-    
     /**
      * Create a new StorageSpace entry into the DB.
      * It is used for 
@@ -172,30 +159,16 @@ public class ReservedSpaceCatalog {
      * @throws InvalidRetrievedDataException
      * @throws MultipleDataEntriesException
      */
-    public void addStorageSpace(StorageSpaceData ssd) {
+    public void addStorageSpace(StorageSpaceData ssd) throws DataAccessException {
 
         log.debug("ADD StorageSpace Start...");
-        // Build StorageSpaceTO from SpaceData
         StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
         log.debug("Storage Space TO Created");
-
-        // Retrieve the Data Access Object from the factory
-        try {
-            ssDAO = daoFactory.getStorageSpaceDAO();
-            log.debug("Storage Space DAO retrieved.");
-        }
-        catch (DataAccessException daEx) {
-            log.error("Error while retrieving StorageSpaceDAO.", daEx);
-        }
-
-        // Add the row to the persistence..
-        try {
-            ssDAO.addStorageSpace(ssTO);
-            log.debug("StorageSpaceTO inserted in Persistence");
-        }
-        catch (DataAccessException daEx) {
-            log.error("Error while inserting new row in StorageSpace", daEx);
-        }
+        ssTO.setUpdateTime(new Date());
+        ssDAO = daoFactory.getStorageSpaceDAO();
+        log.debug("Storage Space DAO retrieved.");
+        ssDAO.addStorageSpace(ssTO);
+        log.debug("StorageSpaceTO inserted in Persistence");
     }
 
 
@@ -217,17 +190,6 @@ public class ReservedSpaceCatalog {
      */
     public void updateStorageSpace(StorageSpaceData ssd, Date updateTime) {
 
-        log.debug("UPDATE StorageSpace Start...");
-        // Build StorageSpaceTO from SpaceData
-        StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
-        log.debug("Storage Space TO Created");
-        
-        if(updateTime == null)
-        {
-            // The update time of the information is now
-            ssTO.setUpdateTime(new Date());
-        }
-        // Retrieve the Data Access Object from the factory
         try {
             ssDAO = daoFactory.getStorageSpaceDAO();
             ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
@@ -236,7 +198,18 @@ public class ReservedSpaceCatalog {
             ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.", daEx);
         }
 
-        // Update the row in the persistence..
+        StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
+        log.debug("Storage Space TO Created");
+        
+        if (updateTime == null)
+        {
+            // The update time of the information is now
+            ssTO.setUpdateTime(new Date());
+        }
+        else
+        {
+            ssTO.setUpdateTime(updateTime);
+        }   
         try {
             ssDAO.updateStorageSpace(ssTO);
             ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
@@ -249,54 +222,29 @@ public class ReservedSpaceCatalog {
     
     /**
      * @param ssd
-     * @throws NoDataFoundException
-     * @throws InvalidRetrievedDataException
-     * @throws MultipleDataEntriesException
      */
-    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd) throws NoDataFoundException,
-                                                                 InvalidRetrievedDataException,
-                                                                 MultipleDataEntriesException
+    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd) throws DataAccessException
     {
-        updateStorageSpaceFreeSpace(ssd, null);
-    }
-    
-    /**
-     * Update StorageSpace.
-     * This method is used to update the StorageSpace into the ReserveSpace Catalog.
-     * The update operation take place after a AbortRequest for a PrepareToPut operation
-     * done with the spaceToken.(With or without the size specified).
-     */
-    public void updateStorageSpaceFreeSpace(StorageSpaceData ssd, Date updateTime) throws NoDataFoundException, InvalidRetrievedDataException,
-    MultipleDataEntriesException {
-
-        log.debug("UPDATE StorageSpace Start...");
-        // Build StorageSpaceTO from SpaceData
-        StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
-        log.debug("Storage Space TO Created");
-        if(updateTime == null)
-        {
-            // The update time of the information is now
-            ssTO.setUpdateTime(new Date());
-        }
-
-        // Retrieve the Data Access Object from the factory
-        try {
+//        try
+//        {
             ssDAO = daoFactory.getStorageSpaceDAO();
             ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
-        }
-        catch (DataAccessException daEx) {
-            ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.", daEx);
-        }
-
-        // Update the row in the persistence..
-        try {
+//        } catch(DataAccessException e)
+//        {
+//            ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.", e);
+//            return;
+//        }
+        StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
+        log.debug("Storage Space TO Created");
+        ssTO.setUpdateTime(new Date());
+//        try
+//        {
             ssDAO.updateStorageSpaceFreeSpace(ssTO);
             ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
-        }
-        catch (DataAccessException daEx) {
-            ReservedSpaceCatalog.log.error("Error while inserting new row in StorageSpace", daEx);
-        }
-
+//        } catch(DataAccessException e)
+//        {
+//            ReservedSpaceCatalog.log.error("Error while inserting new row in StorageSpace", e);
+//        }
     }
 
     /**
@@ -330,6 +278,10 @@ public class ReservedSpaceCatalog {
         {
             // The update time of the information is now
             ssTO.setUpdateTime(new Date());
+        }
+        else
+        {
+            ssTO.setUpdateTime(updateTime);
         }
 
         // Retrieve the Data Access Object from the factory
@@ -497,44 +449,6 @@ public class ReservedSpaceCatalog {
         return result;
     }
 
-
-
-    /**
-     *
-     * @param spaceToken TSpaceToken
-     * @param usedSpace TSizeInBytes
-     */
-    public void setFreeSize(final StorageSpaceData ssData) {
-
-        ReservedSpaceCatalog.log.debug("Retrieve StorageSpace Start...");
-        // Build StorageSpaceTO from SpaceData
-        StorageSpaceTO ssTO = new StorageSpaceTO(ssData);
-        ReservedSpaceCatalog.log.debug("Storage Space TO Created");
-
-        // Retrieve the Data Access Object from the factory
-        try {
-            ssDAO = daoFactory.getStorageSpaceDAO();
-            log.debug("Storage Space DAO retrieved.");
-        }
-        catch (DataAccessException daEx) {
-            log.debug("Error while retrieving StorageSpaceDAO.", daEx);
-        }
-
-        String alias = ssTO.getAlias();
-        // Add the row to the persistence..
-        try {
-        	log.debug("Updating '"+alias+"' Storage Space.");
-            ssDAO.updateStorageSpaceFreeSpace(ssTO);
-            log.debug("StorageSpaceTO inserted in Persistence");
-        }
-        catch (DataAccessException daEx) {
-            log.error("Error while updating  in StorageSpace", daEx);
-        }
-
-    }
-
-
-
     /**
      *
      * @param user VomsGridUser
@@ -683,54 +597,6 @@ public class ReservedSpaceCatalog {
             ReservedSpaceCatalog.log.error("Generic Error while retrieving StorageSpace", e);
         }
         return result;
-    }
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Method used to retrieve information returned by "srmGetSpaceMetadata" call
-     *
-     * @param spaceToken TSpaceToken
-     * @return TMetaDataSpace
-     */
-    public TMetaDataSpace getMetaDataSRMSpace(TSpaceToken spaceToken) throws StorageSpaceNotInitializedException{
-
-        TMetaDataSpace metaData = null;
-        StorageSpaceData spaceData = getStorageSpace(spaceToken);
-        
-        if (spaceData != null) 
-        {
-            if(!spaceData.isInitialized())
-            {
-                log.warn("Unable to create a valid TMetaDataSpace for storage space token \'" + spaceToken
-                        + "\', the space is not initialized");
-                throw new StorageSpaceNotInitializedException("Unable to create a valid TMetaDataSpace for storage space token \'" + spaceToken
-                        + "\', the space is not initialized");
-            }
-            //Convert Space Data in TMetaDataSpace
-            try {
-                metaData = new TMetaDataSpace(spaceData);
-            }
-            catch (InvalidTMetaDataSpaceAttributeException e) {
-                log.error("getMetaDataSpace: Retrieved invalid Space token from DB",e);
-            }
-            catch (InvalidTSizeAttributesException e) {
-                log.error("ReservedSpaceCatalog Exception!",e);
-            }
-        }
-        else {
-            log.warn("getMetaDataSpace: unable to retrieve SpaceData for token: "+spaceToken);
-            throw new StorageSpaceNotInitializedException("Unable to create a valid TMetaDataSpace for storage space token \'" + spaceToken
-                                                          + "\', the space is not initialized");
-        }
-        return metaData;
     }
 
     //************************ CHECH BELOW METHODS ***************************

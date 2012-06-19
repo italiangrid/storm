@@ -37,6 +37,8 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.ExitCode;
 import it.grid.storm.space.StorageSpaceData;
@@ -570,10 +572,22 @@ public class SpaceInfoManager {
      * @param tasksToSubmit
      */
     private void setFakeUsedSpace(Collection<BgDUTask> tasksToSubmit) {
+     // TODO errors are not managed in this function
         ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
         for (BgDUTask task : tasksToSubmit ) {
             TSpaceToken sToken = task.getSpaceToken();
-            StorageSpaceData ssd = spaceCatalog.getStorageSpace(sToken);
+            StorageSpaceData ssd = null;
+            try
+            {
+                ssd = spaceCatalog.getStorageSpace(sToken);
+            } catch(TransferObjectDecodingException e)
+            {
+                LOG.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+                          + e.getMessage());
+            } catch(DataAccessException e)
+            {
+                LOG.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
+            }
             TSizeInBytes totalSize = ssd.getTotalSpaceSize();
             TSizeInBytes fakeUsed = TSizeInBytes.makeEmpty();
             try {
