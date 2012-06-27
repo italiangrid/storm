@@ -300,8 +300,6 @@
 			<xs:enumeration value="round-robin"/>
 			<xs:enumeration value="random"/>
 			<xs:enumeration value="weight"/>
-			<xs:enumeration value="metric-1"/>
-			<xs:enumeration value="metric-2"/>
 			<xs:enumeration value="smart-rr"/>
 		</xs:restriction>
 	</xs:simpleType>

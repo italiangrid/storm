@@ -9,9 +9,7 @@ public enum BalancingStrategyType
     RANDOM("random", Weighted.NOWEIGHT),
     ROUNDROBIN("round-robin", Weighted.NOWEIGHT),
     WEIGHT("weight", Weighted.WEIGHTED),
-    SMART_RR("smart-rr", Weighted.NOWEIGHT),
-    METRIC1("metric-1", Weighted.NOWEIGHT),
-    METRIC2("metric-2", Weighted.NOWEIGHT);
+    SMART_RR("smart-rr", Weighted.NOWEIGHT);
 
     private enum Weighted
     {
