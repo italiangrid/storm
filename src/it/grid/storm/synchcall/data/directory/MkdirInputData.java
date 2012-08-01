@@ -21,7 +21,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidMkdirInputAttributeException;
 
 /**
@@ -98,4 +97,15 @@ public class MkdirInputData extends AbstractInputData {
        return this.storageSystemInfo;
    }
 
+   @Override
+   public Boolean hasPrincipal()
+   {
+       return Boolean.TRUE;
+   }
+
+   @Override
+   public String getPrincipal()
+   {
+       return this.auth.getDn();
+   }
 }

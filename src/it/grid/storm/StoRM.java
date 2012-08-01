@@ -31,6 +31,7 @@ import it.grid.storm.logging.StoRMLoggers;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
+import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 import java.io.IOException;
@@ -138,8 +139,14 @@ public class StoRM {
         
         //
         picker = new AdvancedPicker();
-        // this.xmlrpcServer = new SynchCallServer();
-        xmlrpcServer = new XMLRPCHttpServer();
+        try
+        {
+            xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort());
+        } catch(StoRMXmlRpcException e)
+        {
+            log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: " + e.getMessage());
+            throw new RuntimeException("Unable to create the XML-RPC Server");
+        }
         
         //Execute checks
         CheckManager checkManager = new SimpleCheckManager();
@@ -193,7 +200,7 @@ public class StoRM {
      * @throws Exception 
      */
     synchronized public void startXmlRpcServer() throws Exception {
-        xmlrpcServer.createServer();
+        xmlrpcServer.start();
         this.isXmlrpcServerRunning = true;
     }
 
@@ -201,7 +208,7 @@ public class StoRM {
      * Method used to stop xmlrpcServer.
      */
     synchronized public void stopXmlRpcServer() {
-        xmlrpcServer.stopServer();
+        xmlrpcServer.stop();
         this.isXmlrpcServerRunning = false;
     }
     

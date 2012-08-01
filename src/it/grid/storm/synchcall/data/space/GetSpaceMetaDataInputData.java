@@ -114,4 +114,16 @@ public class GetSpaceMetaDataInputData extends AbstractInputData implements Seri
     {
 	return tokenArray.getTSpaceToken(index);
     }
+
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
 }

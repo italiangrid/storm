@@ -19,7 +19,7 @@ package it.grid.storm.synchcall.data;
 
 import java.util.Map;
 
-public class AbstractInputData implements InputData {
+public abstract class AbstractInputData implements InputData {
 
     private static final String sepBegin="(";
     private static final String sepEnd=")";  
@@ -37,6 +37,4 @@ public class AbstractInputData implements InputData {
         }
         return sb.append("]").toString();
 	}
-
-	
 }

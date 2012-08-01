@@ -21,7 +21,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidReleaseFilesInputAttributeException;
 
 public class ReleaseFilesInputData extends AbstractInputData
@@ -86,6 +85,18 @@ public class ReleaseFilesInputData extends AbstractInputData
     public void setDoRemove(Boolean doRemove)
     {
         this.doRemove = doRemove;
+    }
+    
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
     }
     
 }

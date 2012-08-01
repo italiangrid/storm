@@ -15,22 +15,37 @@
  *  limitations under the License.
  */
 
-package it.grid.storm.common;
-
+package it.grid.storm.xmlrpc;
 
 /**
- * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008 
- * Company: INFN-CNAF and ICTP/EGRID project
- *
- * @author lucamag
- * @date May 28, 2008
+ * @author Michele Dibenedetto
  *
  */
+public class StoRMXmlRpcException extends Exception
+{
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
-public enum OperationType {
-    UNDEF,
-    PTG,PTP,COPY,BOL,
-    AF, AR, EFL, GSM, GST, LS, 
-    MKD, MV, PNG, PD, RF, RESSP, RELSP, RM, RMD}
+    public StoRMXmlRpcException()
+    {
+    }
+
+    public StoRMXmlRpcException(String message)
+    {
+        super(message);
+    }
+
+    public StoRMXmlRpcException(Throwable cause)
+    {
+        super(cause);
+    }
+
+    public StoRMXmlRpcException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+
+}

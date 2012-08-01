@@ -41,9 +41,9 @@ public interface SynchcallDispatcher {
      * @param type Type of the SRM request to execute.
      * @param inputData InputDaata contining input information.
      * @return outputData OutputData containing outputData.
+     * @throws IllegalArgumentException
      */
-
     public abstract OutputData processRequest(OperationType type,
-            InputData inputData);
+            InputData inputData) throws IllegalArgumentException ;
 
 }

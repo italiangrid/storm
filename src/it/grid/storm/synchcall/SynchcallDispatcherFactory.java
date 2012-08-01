@@ -34,9 +34,6 @@ public class SynchcallDispatcherFactory {
     
     public static SynchcallDispatcher getDispatcher() {
         
-        // TODO READ CONFIGURATION AND RETURN THE CORRECT DISPATCHER
-        
         return new SimpleSynchcallDispatcher();
     }
-
 }

@@ -28,247 +28,130 @@
 
 package it.grid.storm.xmlrpc;
 
-import it.grid.storm.config.Configuration;
-
 import java.io.IOException;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
-import org.apache.xmlrpc.server.XmlRpcStreamServer;
 import org.apache.xmlrpc.webserver.WebServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XMLRPCHttpServer {
+public final class XMLRPCHttpServer {
+    
     /**
      * Logger
      */
     private static final Logger log = LoggerFactory.getLogger(XMLRPCHttpServer.class);
-    private int port = 8080; //Port for xmlRpc Server
-//    private int _secure_port = 8081; //Default port for SecureXmlRpc Server
-//    private List<String> fe_hostname_array; //FE machines hostname array. In case of distributed FE-BE installation
-//    private List<String> fe_IP_array; //FE machines IPs array. Needed in case of distributed FE-BE installation with dynamic DNS.
-    private Configuration config = Configuration.getInstance();;
-    private WebServer webServer = null;
-    private boolean isRunning = false;
-    public XMLRPCHttpServer() {
+    
+    private final static int DEFAULT_PORT = 8080;
+    
+    private final static int DEFAULT_THREAD_NUM = 100;
+    
+    /**
+     * The web server running the XML-RPC server
+     */
+    private final WebServer webServer;
+    
+    /**
+     * True if a web server has been started
+     */
+    private boolean running = false;
+
+    /**
+     * @param port
+     * @param maxThreadNum
+     * @throws XmlRpcException
+     */
+    public XMLRPCHttpServer(int port , int maxThreadNum) throws StoRMXmlRpcException {
+        this.webServer = buildWebServer(port, maxThreadNum);
     };
 
+    /**
+     * @param port
+     * @throws XmlRpcException
+     */
+    public XMLRPCHttpServer(int port) throws StoRMXmlRpcException {
+        this(port, DEFAULT_THREAD_NUM);
+    };
+    
+    /**
+     * @throws XmlRpcException 
+     * 
+     */
+    public XMLRPCHttpServer() throws StoRMXmlRpcException {
+        this(DEFAULT_PORT);
+    };
+
+    
+    private WebServer buildWebServer(int port , int maxThreadNum) throws StoRMXmlRpcException
+    {
+        WebServer server = new WebServer(port);
+        server.getXmlRpcServer().setMaxThreads(maxThreadNum);
+        PropertyHandlerMapping phm = new PropertyHandlerMapping();
+        try
+        {
+            phm.addHandler("synchcall", XMLRPCMethods.class);
+        } catch(XmlRpcException e)
+        {
+            log.error("Unable to create synchcall PropertyHandlerMapping on XMLRPCMethods class . XmlRpcException" + e.getMessage());
+            throw new StoRMXmlRpcException("Unable to initialize the XmlRpcServer");
+        }
+        server.getXmlRpcServer().setHandlerMapping(phm);
+        
+        /* IP filtering is disabled because dynamic DNS for the FE machine.
+         * Where a dynamic DNS is used to load balancing on the FE machines,
+         * the hostname IP lookup above cannot be used.
+         * In that case the configuration properties files must contains
+         * the set of the specific IPs for the frontend machines.
+         * In that way, the xmlrpc server can be configured to
+         * accept request from each particulare FE machine.
+         * 
+        HostLookup hl = new HostLookup();
+        for(String hostname : Configuration.getInstance().getListOfMachineNames())
+        {
+            try {
+                String IP = hl.lookup(hostname);
+                log.info("[xmlrpc server] Accepting requests from " + IP + " (" + hostname + ")");
+                server.getXmlRpcServer().acceptClient(IP);
+            }
+            catch (UnknownHostException ex) {
+                log.warn("Synchserver: IP for hostname: " + hostname + " cannot be resolved.");
+            }
+        }
+         */
+        return server;
+    }
 
     /* (non-Javadoc)
      * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#createServer()
      */
-    public synchronized void createServer() throws Exception{
-
-            //
-            // WebServer is a sample http server
-            // Used to provide xmlRpcServer on http
-            // XmlRpc serve is multithreded, one thred for each
-            // Connection requested.
-            // Default MAX_NUMBER of thread is 100, but can be changed.
-            //
-
-            if(! (isRunning && this.port == config.getXmlRpcServerPort()))
+    public synchronized void start() throws StoRMXmlRpcException
+    {
+        if (!running)
+        {
+            log.info("[xmlrpc server] Starting server on port: " + webServer.getPort());
+            try
             {
-                /*
-                 * server already running on the same port, do nothing
-                 */
-                /*
-                 *  close running server if any 
-                 */
-                this.stopServer();
-                
-                port = config.getXmlRpcServerPort();
-    
-                //Invoke me as <http://localhost:port/RPC2>
-                log.info("[xmlrpc server] Starting server on port: " + port);
-                this.webServer = new WebServer(port);
-                XmlRpcStreamServer xmlRpcServer = this.webServer.getXmlRpcServer();
-                //Add Client Filtering
-                log.info("[xmlrpc server] IP requests filtering disabled.");
-                //xmlrpcWebServer.setParanoid(true);
-    
-                //By default the localhost interface is enabled.
-                //Accept Client only from loopback inerface
-    //            log.info("[xmlrpc server] Accepting requests from: 127.0.0.1");
-                //xmlrpcWebServer.acceptClient("127.0.0.1");
-    
-                //Get List of machine names that host a FE service
-                //for this StoRM instance
-    
-                /* IP filtering is disabled
-                 * 
-                List<String> fe_hostname_array = config.getListOfMachineNames();
-                //For each host name set the IP as authorized
-                HostLookup hl = new HostLookup();
-    //            for (Iterator it = fe_hostname_array.iterator(); it.hasNext(); ) {
-                for(String hostname : fe_hostname_array)
-                {
-    //                String hostname = (String) it.next();
-                    try {
-                        String IP = hl.lookup(hostname);
-    //                    log.info("[xmlrpc server] Accepting requests from " + IP + " (" + hostname + ")");
-                        //xmlrpcWebServer.acceptClient(IP);
-                    }
-                    catch (UnknownHostException ex) {
-                        log.warn("Synchserver: IP for hostname: " + hostname + " cannot be resolved.");
-                    }
-                }
-                 *
-                 */
-                
-                /**
-                 * Dynamic DNS for the FE machine.
-                 * Where a dynamic DNS is used to load balancing on the FE machines,
-                 * the hostname IP lookup above cannot be used.
-                 * In that case the configuration properties files must contains
-                 * the set of the specific IPs for the frontend machines.
-                 * In that way, the xmlrpc server can be configured to
-                 * accept request from each particulare FE machine.
-                 */
-    
-                /* IP filtering is disabled
-                 * 
-                List<String> fe_IP_array = config.getListOfMachineIPs();
-                //For each host name set the IP as authorized
-    //            for (Iterator it = fe_IP_array.iterator(); it.hasNext(); ) {
-                for(String IP : fe_IP_array)
-                {
-    //                String IP = (String) it.next();
-    //                log.info("[xmlrpc server] Accepting requests from " + IP);
-                    //xmlrpcWebServer.acceptClient(IP);
-                }
-                 *
-                 */
-                
-                PropertyHandlerMapping phm = new PropertyHandlerMapping();
-    
-                //use reflection for (dynamic) mapping
-                //DynamicHandlerMapping dhm = new DynamicHandlerMapping(new  TypeConverterFactoryImpl(), true);
-    
-                //xmlrpcWebServer.getXmlRpcServer().setMaxThreads(arg0);
-    
-                // Add handler
-                try
-                {
-                    phm.addHandler("synchcall", XMLRPCMethods.class);
-                }
-                catch (XmlRpcException e)
-                {
-                    log.error("xmlrpcServer synchcall handler creation failure. XmlRpcException" + e.getMessage());
-                    throw new Exception("Unable to create the xmlRPC server. XmlRpcException: " + e.getMessage());
-                }
-    
-                //Set the number of thread to use
-                //xmlrpcWebServer.
-                xmlRpcServer.setHandlerMapping(phm);
-    
-                //Set Number of thread
-                //Get from configuration FILE
-                int num_thread = config.getMaxXMLRPCThread();
-                xmlRpcServer.setMaxThreads(num_thread);
-    
-                // Starting xmlrpc server
-                try
-                {
-                    this.webServer.start();
-                }
-                catch (IOException e)
-                {
-                    log.error("xmlrpcServer web server start failure. IOException" + e.getMessage());
-                    throw new Exception("Unable to create the xmlRPC server. IOException: " + e.getMessage());
-                }
-                isRunning = true;
-                //Insecure...
-                log.info("[xmlrpc server] Server running...");
-    
-                //
-                // Secure WebServer is a WebServer with SSL support.
-                // As server certificate can be used the host certificate.
-                // (or can be requestes a service certifcate, but is not necessary...)
-                //
-    
-                //TODO SECURE SERVER
-                //Default port for secure version is 80443
-                //Get port number from configuration file
-                /*			_secure_port = config.getSecureXmlRpcServerPort();
-           log.debug("Starting Secure Server server on port: "+_secure_port);
-           SecureWebServer xmlrpcServer_secure = new SecureWebServer(_secure_port);
-    
-           //Debug Print for Secure Server Attributes
-    
-           log.debug("Working Directory:"+System.getProperty("user.dir"));
-           log.debug("getKeyManagerType(): "+SecurityTool.getKeyManagerType());
-           log.debug("getKeyStore(): "+SecurityTool.getKeyStore());
-           SecurityTool.setKeyStore("fake_cert");
-           //Setting path fpor the host cert
-           //SecurityTool.setKeyStore("hostcert");
-    
-           log.debug("After Setting: getKeyStore(): "+SecurityTool.getKeyStore());
-    
-           log.debug("getKeyStorePassword(): "+SecurityTool.getKeyStorePassword() );
-           SecurityTool.setKeyStorePassword("fake_cert");
-    
-    
-           log.debug("After Setting getKeyStorePassword(): "+SecurityTool.getKeyStorePassword() );
-    
-    
-           log.debug("getKeyStoreType(): "+SecurityTool.getKeyStoreType() );
-           log.debug("getProtocolHandlerPackages(): "+SecurityTool.getProtocolHandlerPackages());
-           log.debug("getSecurityProtocol(): "+SecurityTool.getSecurityProtocol() );
-           log.debug("getSecurityProviderClass(): "+SecurityTool.getSecurityProviderClass());
-    
-           log.debug("getTrustStore() : "+SecurityTool.getTrustStore() );
-           //SecurityTool.setTrustStore("");
-           log.debug("After Setting:getTrustStore() : "+SecurityTool.getTrustStore() );
-    
-           log.debug("getTrustStorePassword() : "+SecurityTool.getTrustStorePassword() );
-           //SecurityTool.setTrustStorePassword("ciccio");
-           log.debug("After Setting:getTrustStorePassword() : "+SecurityTool.getTrustStorePassword());
-    
-           log.debug("getTrustStoreType() : "+SecurityTool.getTrustStoreType() );
-    
-    
-    
-           //
-           // Adding handler on SecureServer
-           //
-    
-           xmlrpcServer_secure.addHandler("synchcall", new SynchCallServer());
-           //Starting secure Server
-           xmlrpcServer_secure.start();
-           log.debug("server secure running...");
-    
-                 */
-    
+                this.webServer.start();
+            } catch(IOException e)
+            {
+                log.error("xmlrpcServer web server start failure. IOException" + e.getMessage());
+                throw new StoRMXmlRpcException("Unable to create the xmlRPC server. IOException: " + e.getMessage());
+            }
+            running = true;
+            log.info("[xmlrpc server] Server running...");
         }
     }
     
     /**
      * 
      */
-    public synchronized void stopServer() {
-        if(this.webServer != null)
+    public synchronized void stop()
+    {
+        if (this.webServer != null)
         {
             this.webServer.shutdown();
         }
-        isRunning = false;
+        running = false;
     }
-
-    /* (non-Javadoc)
-     * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#logExecution(it.grid.storm.health.OperationType, java.lang.String, long, long, boolean)
-     */
-    /**
-  public void logExecution(OperationType opType, String dn, long startTime, long duration, boolean successResult) {
-    BookKeeper bk = HealthDirector.getHealthMonitor().getBookKeeper();
-    LogEvent event = new LogEvent(opType, dn, startTime, duration, successResult);
-    bk.addLogEvent(event);
-  }
-
-  public static void main(String[] args) {
-    XMLRPCHttpServer s = new XMLRPCHttpServer();
-    s.createServer();
-  }
-
-     **/
 }

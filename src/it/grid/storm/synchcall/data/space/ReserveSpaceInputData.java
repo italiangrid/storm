@@ -219,4 +219,16 @@ public class ReserveSpaceInputData extends AbstractInputData implements Serializ
     //        System.out.println(" TStorageSystemInfo:" + storageInfo);
     }
 
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
+
 }

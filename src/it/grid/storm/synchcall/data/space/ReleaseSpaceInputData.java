@@ -85,4 +85,16 @@ public class ReleaseSpaceInputData extends AbstractInputData {
        return forceFileRelease;
     }
 
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.gUser.getDn();
+    }
+
 }

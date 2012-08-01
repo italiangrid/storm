@@ -108,4 +108,16 @@ public class ExtendFileLifeTimeInputData extends AbstractInputData
     {
         this.newPinLifetime = newPinLifetime;
     }
+    
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
 }

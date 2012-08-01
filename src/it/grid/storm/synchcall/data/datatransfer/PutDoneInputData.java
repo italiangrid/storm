@@ -81,4 +81,16 @@ public class PutDoneInputData extends AbstractInputData
     {
         this.arrayOfSURLs = arrayOfSURLs;
     }
+    
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
 }

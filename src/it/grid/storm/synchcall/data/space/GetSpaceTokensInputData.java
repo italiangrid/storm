@@ -80,4 +80,16 @@ public class GetSpaceTokensInputData extends AbstractInputData
     {
         this.spaceTokenAlias = spaceTokenAlias;
     }
+
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
 }

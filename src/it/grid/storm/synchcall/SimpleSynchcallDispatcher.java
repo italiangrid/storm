@@ -43,7 +43,7 @@ public class SimpleSynchcallDispatcher implements SynchcallDispatcher {
      * @see it.grid.storm.synchcall.SynchcallDispatcher#processRequest(it.grid.storm.health.OperationType, it.grid.storm.synchcall.data.InputData)
      */
 
-    public OutputData processRequest(OperationType type, InputData inputData) {
+    public OutputData processRequest(OperationType type, InputData inputData) throws IllegalArgumentException {
         
         Command cmd = CommandFactory.getCommand(type);
         return cmd.execute(inputData);

@@ -131,4 +131,16 @@ public class AbortGeneralInputData extends AbstractInputData
         return type;
     }
 
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
+    }
+
 }

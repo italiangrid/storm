@@ -31,7 +31,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidRmInputAttributeException;
 
 public class RmInputData extends AbstractInputData
@@ -82,6 +81,18 @@ public class RmInputData extends AbstractInputData
     public GridUserInterface getUser()
     {
         return this.auth;
+    }
+    
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
     }
 
 }

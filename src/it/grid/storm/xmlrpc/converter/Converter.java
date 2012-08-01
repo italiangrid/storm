@@ -19,6 +19,7 @@ package it.grid.storm.xmlrpc.converter;
 
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public interface Converter {
      * of an xmlrpc Rm v2.1 call. Rm Input Data can be used to invoke mkdir
      * method of DirectoryFunctionsManager
      */
-    public abstract InputData convertToInputData(Map inputParam);
+    public abstract InputData convertToInputData(Map inputParam) throws StoRMXmlRpcException;
 
     public abstract Map convertFromOutputData(OutputData outputData);
 

@@ -29,7 +29,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidRmdirInputAttributeException;
 
 public class RmdirInputData extends AbstractInputData {
@@ -115,5 +114,17 @@ public class RmdirInputData extends AbstractInputData {
     public void setStorageSystemInfo(ArrayOfTExtraInfo storageSystemInfo)
     {
         this.storageSystemInfo = storageSystemInfo;
+    }
+    
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.auth.getDn();
     }
 }

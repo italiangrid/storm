@@ -88,4 +88,15 @@ public class PingInputData extends AbstractInputData
       return "";
     }
 
+    @Override
+    public Boolean hasPrincipal()
+    {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public String getPrincipal()
+    {
+        return this.requestor.getDn();
+    }
 }

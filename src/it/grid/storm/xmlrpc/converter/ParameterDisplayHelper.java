@@ -17,55 +17,40 @@
 
 package it.grid.storm.xmlrpc.converter;
 
-import it.grid.storm.griduser.FQAN;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-
-
 
 public class ParameterDisplayHelper {
 
     private static final String sepBegin="(";
     private static final String sepEnd=")";  
     private static final String arrow="->";
-	
-	public static String display(Map<?,?> map) {
+
+    public static String display(Map<?, ?> map)
+    {
         StringBuilder sb = new StringBuilder("[");
-        for (Object mapKey : map.keySet()) {
+        for (Object mapKey : map.keySet())
+        {
             String mapKeyStr = mapKey.toString();
             sb.append(sepBegin).append(mapKeyStr);
-            if ((mapKeyStr.equals("userFQANS"))||(mapKeyStr.equals(ArrayOfSURLs.ARRAYOFSURLS))) {
+            if ((mapKeyStr.equals("userFQANS")) || (mapKeyStr.equals(ArrayOfSURLs.ARRAYOFSURLS)))
+            {
                 sb.append(arrow).append("[");
-                Object[] mapKeyValues = (Object[])map.get(mapKey);
-                for (int i = 0; i < mapKeyValues.length-1; i++) {
+                Object[] mapKeyValues = (Object[]) map.get(mapKey);
+                for (int i = 0; i < mapKeyValues.length - 1; i++)
+                {
                     sb.append(mapKeyValues[i].toString()).append(",");
                 }
-                sb.append(mapKeyValues[mapKeyValues.length-1]).append("]");
-                
-            } else {
-                String mapKeyValue = "'"+(map.get(mapKey)).toString()+"'";
+                sb.append(mapKeyValues[mapKeyValues.length - 1]).append("]");
+
+            }
+            else
+            {
+                String mapKeyValue = "'" + (map.get(mapKey)).toString() + "'";
                 sb.append(arrow).append(mapKeyValue).append("]");
             }
         }
-            
-/*            sb.append(sepBegin).append(mapKey.toString());
-              
-            if (key.equals("userFQANS")) {
-                String value = (String)map.get(key);
-            	List<String> keyValues = Arrays.asList((String[])  );
-            	sb.append(arrow).append(Arrays.toString(keyValues.toArray())); 
-            	
-            } else  {
-            	List<Object> keyValues = Arrays.asList(()map.get(key) );
-                sb.append(arrow).append(Arrays.toString(keyValues.toArray())); 
-            } else {
-            	String keyValue = map.get(key).toString();
-            	sb.append("=").append(keyValue);
-            }
-            sb.append(sepEnd);
-*/       
+
         return sb.append("]").toString();
 	}
 	
