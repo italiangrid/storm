@@ -24,8 +24,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +48,12 @@ public class GlobalStatusManager {
 
     private static Logger log = LoggerFactory.getLogger(GlobalStatusManager.class);
     private TRequestToken rt = null;
-    private Map<Long, Object> chunks = new HashMap<Long, Object>(); // HashMap containing handles to all chunks!
+    /**
+     * LinkedList containing identifiers of all chunks
+     */
+    private LinkedList<Long> chunks = new LinkedList<Long>();
     private boolean finished = false; // boolean true if all chunks of the request have been added to the map
     private InternalState internal = InternalState.IN_PROGRESS;
-    private Object mock = new Object(); // private mock object that will be put repeatedly in Map!
 
     public GlobalStatusManager(TRequestToken rt) throws InvalidOverallRequestAttributeException {
         if (rt == null) {
@@ -65,13 +66,24 @@ public class GlobalStatusManager {
      * Method that tells this OverallRequest to consider the state of the supplied ChunkData, when computing the global
      * state. If finishedAdding method has already been invoked, this method has no effect.
      */
-    synchronized public void addChunk(ChunkData c) {
-        log.debug("GlobalStatusManager: asked to add chunkData " + c.primaryKey());
-        if ((!finished) && (c != null)) {
-            chunks.put(new Long(c.primaryKey()), mock);
-            log.debug("GlobalStatusManager: chunkData added.");
-        } else {
-            log.debug("GlobalStatusManager: chunkData NOT added because either it is null or finishedAdding has already been invoked!");
+    synchronized public void addChunk(ChunkData c)
+    {
+        log.debug("GlobalStatusManager: asked to add chunkData " + c.getIdentifier());
+        if ((!finished) && (c != null))
+        {
+            if (chunks.contains(new Long(c.getIdentifier())))
+            {
+                log.warn("GlobalStatusManager: chunkData NOT added because of another chunkData already added with the same identifier");
+            }
+            else
+            {
+                chunks.add(new Long(c.getIdentifier()));
+                log.debug("GlobalStatusManager: chunkData added.");
+            }
+        }
+        else
+        {
+            log.warn("GlobalStatusManager: chunkData NOT added because either it is null or finishedAdding has already been invoked!");
         }
     }
 
@@ -106,7 +118,7 @@ public class GlobalStatusManager {
         
         log.debug("GlobalStatusManager: received successfulChunk signal for " + c);
         
-        if ((c != null) && (!chunks.isEmpty()) && (chunks.remove(new Long(c.primaryKey())) != null)) {
+        if (c != null && !chunks.isEmpty() && chunks.remove(new Long(c.getIdentifier()))) {
             
             // manage state transition: c was indeed there
             if (finished && (chunks.isEmpty())) {
@@ -194,7 +206,7 @@ public class GlobalStatusManager {
      */
     synchronized public void failedChunk(ChunkData c) {
         log.debug("GlobalStatusManager: received failedChunk signal for " + c);
-        if ((c != null) && (!chunks.isEmpty()) && (chunks.remove(new Long(c.primaryKey())) != null)) {
+        if ((c != null) && (!chunks.isEmpty()) && chunks.remove(new Long(c.getIdentifier()))) {
             // manage state transition: c was indeed there
             if (finished && (chunks.isEmpty())) {
                 // no other chunk will be added to request, and none is left: this was the last one to be processed!
@@ -274,7 +286,7 @@ public class GlobalStatusManager {
      */
     synchronized public void expiredSpaceLifetimeChunk(ChunkData c) {
         log.debug("GlobalStatusManager: received expiredSpaceLifetimeChunk signal for " + c);
-        if ((c != null) && (!chunks.isEmpty()) && (chunks.remove(new Long(c.primaryKey())) != null)) {
+        if ((c != null) && (!chunks.isEmpty()) && chunks.remove(new Long(c.getIdentifier()))) {
             // manage state transition: c was indeed there
             if (finished && (chunks.isEmpty())) {
                 // no other chunk will be added to request, and none is left: this was the last one to be processed!

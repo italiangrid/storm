@@ -74,21 +74,21 @@ public class CopyChunkCatalog
      * Beware that the only fields updated into persistence are the StatusCode and
      * the errorString.
      */
-	synchronized public void update(CopyChunkData cd) {
+	synchronized public void update(CopyPersistentChunkData cd) {
 
 		CopyChunkDataTO to = new CopyChunkDataTO();
 		/* primary key needed by DAO Object */
-		to.setPrimaryKey(cd.primaryKey());
-		to.setLifeTime(FileLifetimeConverter.getInstance().toDB(cd.lifetime().value()));
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
-		to.setErrString(cd.status().getExplanation());
-		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.fileStorageType()));
-		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.overwriteOption()));
+		to.setPrimaryKey(cd.getPrimaryKey());
+		to.setLifeTime(FileLifetimeConverter.getInstance().toDB(cd.getLifetime().value()));
+		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
+		to.setErrString(cd.getStatus().getExplanation());
+		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.getFileStorageType()));
+		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.getOverwriteOption()));
 		// TODO MICHELE USER_SURL fill new fields
-		to.setNormalizedSourceStFN(cd.fromSURL().normalizedStFN());
-		to.setSourceSurlUniqueID(new Integer(cd.fromSURL().uniqueId()));
-		to.setNormalizedTargetStFN(cd.toSURL().normalizedStFN());
-		to.setTargetSurlUniqueID(new Integer(cd.toSURL().uniqueId()));
+		to.setNormalizedSourceStFN(cd.getSURL().normalizedStFN());
+		to.setSourceSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
+		to.setNormalizedTargetStFN(cd.getDestinationSURL().normalizedStFN());
+		to.setTargetSurlUniqueID(new Integer(cd.getDestinationSURL().uniqueId()));
 		
 		dao.update(to);
 	}
@@ -105,11 +105,11 @@ public class CopyChunkCatalog
      * If there are no chunks to process then an empty Collection is returned,
      * and a messagge gets logged.
      */
-	synchronized public Collection<CopyChunkData> lookup(TRequestToken rt) {
+	synchronized public Collection<CopyPersistentChunkData> lookup(TRequestToken rt) {
 		
 		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(rt);
 		log.debug("COPY CHUNK CATALOG: retrieved data " + chunkDataTOs);
-		ArrayList<CopyChunkData> list = new ArrayList<CopyChunkData>();
+		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
 		if(chunkDataTOs.isEmpty())
 		{
 			log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
@@ -117,7 +117,7 @@ public class CopyChunkCatalog
 		}
 		else
 		{
-			CopyChunkData chunk;
+			CopyPersistentChunkData chunk;
 			for(CopyChunkDataTO chunkTO : chunkDataTOs)
 			{
 				chunk = makeOne(chunkTO, rt);
@@ -149,7 +149,7 @@ public class CopyChunkCatalog
      * @param rt
      * @return
      */
-	private CopyChunkData makeOne(CopyChunkDataTO chunkDataTO, TRequestToken rt) {
+	private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkDataTO, TRequestToken rt) {
 
 		StringBuffer errorSb = new StringBuffer();
 		// fromSURL
@@ -268,14 +268,14 @@ public class CopyChunkCatalog
 			}
 		}
 		// make CopyChunkData
-		CopyChunkData aux = null;
+		CopyPersistentChunkData aux = null;
 		try
 		{
 			aux =
-				  new CopyChunkData(rt, fromSURL, toSURL, lifeTime, fileStorageType, spaceToken,
+				  new CopyPersistentChunkData(rt, fromSURL, toSURL, lifeTime, fileStorageType, spaceToken,
 					  globalOverwriteOption, status);
 			aux.setPrimaryKey(chunkDataTO.primaryKey());
-		} catch(InvalidCopyChunkDataAttributesException e)
+		} catch(InvalidSurlRequestDataAttributesException e)
 		{
 			dao.signalMalformedCopyChunk(chunkDataTO);
 			log.warn("COPY CHUNK CATALOG! Retrieved malformed Copy"
@@ -315,7 +315,7 @@ public class CopyChunkCatalog
 	 * @throws InvalidReducedCopyChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedCopyChunkDataTO completeTO(CopyChunkDataTO chunkTO, final CopyChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
+	private ReducedCopyChunkDataTO completeTO(CopyChunkDataTO chunkTO, final CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
 		ReducedCopyChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
 		return reducedChunkTO;
@@ -329,10 +329,10 @@ public class CopyChunkCatalog
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedCopyChunkData reduce(CopyChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
+	private ReducedCopyChunkData reduce(CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
 
-		ReducedCopyChunkData reducedChunk = new ReducedCopyChunkData(chunk.fromSURL(), chunk.toSURL(), chunk.status());
-		reducedChunk.setPrimaryKey(chunk.primaryKey());
+		ReducedCopyChunkData reducedChunk = new ReducedCopyChunkData(chunk.getSURL(), chunk.getDestinationSURL(), chunk.getStatus());
+		reducedChunk.setPrimaryKey(chunk.getPrimaryKey());
 		return reducedChunk;
 	}
 

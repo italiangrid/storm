@@ -102,6 +102,35 @@ public class LogEvent implements Delayed {
 
         HealthDirector.LOGGER.debug("Event TTL (milliSec): "+timeToLive);
     }
+    
+    /**
+     * Constructor for SYNCHRONOUS Event with surl
+     *
+     * @param opType OperationType
+     * @param userDN String
+     * @param startTime long
+     * @param duration long
+     * @param successResult boolean
+     */
+    public LogEvent(OperationType opType, String userDN, String surl, long startTime, long duration, boolean successResult) {
+        this.opType = opType;
+        this.userDN = userDN;
+        this.surl = surl;
+        this.startTime = startTime;
+        //Store the duration in MicroSeconds (10^-6 sec)
+        this.duration = TimeUnit.MICROSECONDS.convert(duration, TimeUnit.NANOSECONDS);
+        this.requestToken = "SYNCH";
+        Date date = new Date(startTime) ;
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
+        this.startTimeStr = formatter.format(date);
+        this.successResult = successResult;
+
+        this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
+        this.deathTime = System.currentTimeMillis() + (timeToLive * LogEvent.THOUSAND);
+        this.birthTime = System.currentTimeMillis();
+
+        HealthDirector.LOGGER.debug("Event TTL (milliSec): "+timeToLive);
+    }
 
 
     public OperationType getOperationType() {

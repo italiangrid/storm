@@ -19,7 +19,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.BoLChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.ReducedBoLChunkData;
 import it.grid.storm.catalogs.ReducedChunkData;
 import it.grid.storm.catalogs.ReducedPtGChunkData;
@@ -317,7 +317,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                         continue;
                     }
 
-                    if (chunk instanceof PtGChunkData) {
+                    if (chunk instanceof PtGData) {
 
                         if (!dbCatalogPtG.isSRM_FILE_PINNED(chunk.fromSURL())) {
                             if (!dbCatalogBoL.isSRM_FILE_PINNED(chunk.fromSURL())) {

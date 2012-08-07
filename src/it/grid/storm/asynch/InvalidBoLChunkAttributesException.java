@@ -17,7 +17,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.BoLChunkData;
+import it.grid.storm.catalogs.BoLPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 
@@ -43,7 +43,7 @@ public class InvalidBoLChunkAttributesException extends Exception {
      * GlobalStatusManager that caused the exception to be thrown.
      */
     public InvalidBoLChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd,
-            BoLChunkData chunkData, GlobalStatusManager gsm) {
+            BoLPersistentChunkData chunkData, GlobalStatusManager gsm) {
         nullGu = (gu == null);
         nullRsd = (rsd == null);
         nullChunkData = (chunkData == null);

@@ -18,8 +18,9 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.BoLChunkCatalog;
-import it.grid.storm.catalogs.BoLChunkData;
-import it.grid.storm.catalogs.InvalidBoLChunkDataAttributesException;
+import it.grid.storm.catalogs.BoLPersistentChunkData;
+import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
+import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
@@ -134,7 +135,7 @@ public final class BoLFeeder implements Delegable {
 
 		log.debug("BoLFeeder: pre-processing " + rsd.requestToken());
 		// Get all parts in request
-		Collection<BoLChunkData> chunks = BoLChunkCatalog.getInstance().lookup(rsd.requestToken());
+		Collection<BoLPersistentChunkData> chunks = BoLChunkCatalog.getInstance().lookup(rsd.requestToken());
 		if(chunks.isEmpty())
 		{
 			log.warn("ATTENTION in BoLFeeder! This SRM BoL request contained nothing to process! "
@@ -152,14 +153,14 @@ public final class BoLFeeder implements Delegable {
     /**
      * Private method that handles the Collection of chunks associated with the srm command!
      */
-	private void manageChunks(Collection<BoLChunkData> chunks) {
+	private void manageChunks(Collection<BoLPersistentChunkData> chunks) {
 
 		log.debug("BoLFeeder - number of chunks in request: " + chunks.size());
-		for(BoLChunkData chunkData : chunks)
+		for(BoLPersistentChunkData chunkData : chunks)
 		{
 			/* add chunk for global status consideration */
 			gsm.addChunk(chunkData);
-			if(TSURL.isValid(chunkData.getFromSURL()))
+			if(TSURL.isValid(chunkData.getSURL()))
 			{
 				/*
 				 * fromSURL corresponds to This installation of StoRM: go on
@@ -203,7 +204,7 @@ public final class BoLFeeder implements Delegable {
     /**
      * Private method that handles the case of dirOption NOT set!
      */
-	private void manageNotDirectory(BoLChunkData auxChunkData) {
+	private void manageNotDirectory(BoLPersistentChunkData auxChunkData) {
 
 		log.debug("BoLFeeder - scheduling... ");
 		auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmBringOnLine chunk is being processed!");
@@ -212,9 +213,9 @@ public final class BoLFeeder implements Delegable {
 		{
 			/* hand it to scheduler! */
 			SchedulerFacade.getInstance().chunkScheduler().schedule(
-				new BoLChunk(gu, rsd, auxChunkData, gsm));
+				new BoLPersistentChunk(gu, rsd, auxChunkData, gsm));
 			log.debug("BoLFeeder - chunk scheduled.");
-		} catch(InvalidBoLChunkAttributesException e)
+		} catch(InvalidRequestAttributesException e)
 		{
 			/*
 			 * for some reason gu, rsd or auxChunkData may be null! This should
@@ -247,7 +248,7 @@ public final class BoLFeeder implements Delegable {
     /**
      * Private method that handles the case of a BoLChunkData having dirOption set!
      */
-	private void manageIsDirectory(BoLChunkData chunkData) {
+	private void manageIsDirectory(BoLPersistentChunkData chunkData) {
 
 		log.debug("BoLFeeder - pre-processing Directory chunk...");
 		chunkData.changeStatusSRM_REQUEST_INPROGRESS("srmBringOnLine chunk is being processed!");
@@ -258,7 +259,7 @@ public final class BoLFeeder implements Delegable {
             StoRI stori = null;
             try
             {
-                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getFromSURL(), gu);
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getSURL(), gu);
             }
             catch (IllegalArgumentException e)
             {
@@ -278,14 +279,14 @@ public final class BoLFeeder implements Delegable {
     			log.debug("BoLFeeder - Number of children in parent: " + storiChildren.size());
     			
     			TDirOption notDir = new TDirOption(false, false, 0);
-    			BoLChunkData childData;
+    			BoLPersistentChunkData childData;
     			for(StoRI storiChild : storiChildren)
     			{
     				try
     				{
-    					childData = new BoLChunkData(chunkData.getRequestToken(), storiChild
+    					childData = new BoLPersistentChunkData(chunkData.getRequestToken(), storiChild
     									.getSURL(), chunkData.getLifeTime(), notDir, chunkData
-    									.getDesiredProtocols(), chunkData.getFileSize(),
+    									.getTransferProtocols(), chunkData.getFileSize(),
     									chunkData.getStatus(), chunkData.getTransferURL(),
     									chunkData.getDeferredStartTime());
     					
@@ -297,7 +298,7 @@ public final class BoLFeeder implements Delegable {
     					gsm.addChunk(childData);
     					
     					manageNotDirectory(childData);
-    				} catch(InvalidBoLChunkDataAttributesException e)
+    				} catch(InvalidSurlRequestDataAttributesException e)
     				{
     					/*
     					 * For some reason it was not possible to create a

@@ -31,9 +31,10 @@ import it.grid.storm.srm.types.TStatusCode;
 
 public class InvalidTReturnStatusAttributeException extends Exception {
 
+    private static final long serialVersionUID = 7879809688892494891L;
     private boolean nullTStatusCode;
 
-    public InvalidTReturnStatusAttributeException(TStatusCode s,String expl) {
+    public InvalidTReturnStatusAttributeException(TStatusCode s) {
         nullTStatusCode = s==null;
     }
 

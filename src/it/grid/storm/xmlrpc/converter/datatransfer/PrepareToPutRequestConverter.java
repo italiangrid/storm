@@ -18,9 +18,11 @@
 package it.grid.storm.xmlrpc.converter.datatransfer;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -74,10 +76,18 @@ public class PrepareToPutRequestConverter implements Converter
             throw new IllegalArgumentException("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
                     + "\'");
         }
+        TURLPrefix transferProtocols = TURLPrefix.decode(inputParam, TURLPrefix.PNAME_TURL_PREFIX);
+        if (transferProtocols == null)
+        {
+            log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
+                    + "\' Unable to build PrepareToPutInputData");
+            throw new IllegalArgumentException("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
+                    + "\'");
+        }
         PrepareToPutInputData inputData;
         try
         {
-            inputData = new PrepareToPutInputData(user, surl);
+            inputData = new PrepareToPutInputData(user, surl, transferProtocols);
         } catch(IllegalArgumentException e)
         {
             log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
@@ -122,28 +132,27 @@ public class PrepareToPutRequestConverter implements Converter
     }
 
     @Override
-    public Map convertFromOutputData(OutputData outputData)
+    public Map convertFromOutputData(OutputData outputData) throws IllegalArgumentException
     {
         log.debug("Creation of XMLRPC Output Structure");
-        Map outputParam = new HashMap();
+        Hashtable outputParam = new Hashtable();
+        if(!(outputData instanceof PrepareToPutOutputData))
+        {
+            log.error("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
+            throw new IllegalArgumentException("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
+        }
         PrepareToPutOutputData ptpOutputData = (PrepareToPutOutputData) outputData;
         TSURL surl = ptpOutputData.getSurl();
         TTURL turl = ptpOutputData.getTurl();
         TReturnStatus status = ptpOutputData.getStatus();
-        
-
-//        /* (1) returnStatus */
-//        TReturnStatus returnStatus = outputData.getReturnStatus();
-//        if (returnStatus != null) {
-//            returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-//        }
-//
-//        /* (2) arrayOfFileStatuses */
-//        ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData. getArrayOfFileStatuses();
-//        if (arrayOfFileStatuses != null) {
-//            arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
-//        }
-
+        if(surl == null || turl == null || status == null)
+        {
+            log.error("Unable to build a valid output map. Missing mandatory values from PrepareToPutOutputData: " + ptpOutputData.toString());
+            throw new IllegalArgumentException("Unable to build a valid output map from PrepareToPutOutputData");
+        }
+        surl.encode(outputParam, TSURL.PNAME_SURL);
+        turl.encode(outputParam, TTURL.PNAME_TURL);
+        status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
         log.debug("Built output Map: " + outputParam.toString());
         return outputParam;
     }

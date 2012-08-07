@@ -23,6 +23,7 @@ import it.grid.storm.health.HealthDirector;
 import it.grid.storm.health.LogEvent;
 import it.grid.storm.synchcall.SynchcallDispatcher;
 import it.grid.storm.synchcall.SynchcallDispatcherFactory;
+import it.grid.storm.synchcall.command.datatransfer.CommandException;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -85,6 +86,10 @@ public class XMLRPCExecutor {
         {
             log.error("Unable to process the request. Error from the SynchcallDispatcher. IllegalArgumentException: " + e.getMessage());
             throw new StoRMXmlRpcException("Unable to process the request. IllegalArgumentException: " + e.getMessage());
+        } catch(CommandException e)
+        {
+            log.error("Unable to execute the request. Error from the SynchcallDispatcher. CommandException: " + e.getMessage());
+            throw new StoRMXmlRpcException("Unable to process the request. CommandException: " + e.getMessage());
         }
         Map outputParam = converter.convertFromOutputData(outputData);
         duration = System.nanoTime() - duration;

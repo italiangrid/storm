@@ -18,6 +18,8 @@
 package it.grid.storm.common.types;
 
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import it.grid.storm.namespace.model.Protocol;
 
 /**
@@ -26,11 +28,17 @@ import it.grid.storm.namespace.model.Protocol;
  */
 public class TURLPrefix  {
 
+    private static Logger log = LoggerFactory.getLogger(TURLPrefix.class);
+    public static final String PNAME_TURL_PREFIX = "turlPrefix";
 	private ArrayList<Protocol> desiredProtocols;
 
 	public TURLPrefix() {
 		this.desiredProtocols = new ArrayList<Protocol>();
 	}
+	
+	public TURLPrefix(Collection<Protocol> protocols) {
+        this.desiredProtocols = new ArrayList<Protocol>(protocols);
+    }
 
     /**
      * Method used to add a TransferProtocol to this holding structure.
@@ -70,6 +78,49 @@ public class TURLPrefix  {
             sb.append(" ");
         }
         return sb.toString();
+    }
+
+    /**
+     * @param inputParam
+     * @param memberName
+     * @return
+     */
+    public static TURLPrefix decode(Map inputParam, String memberName)
+    {
+        TURLPrefix decodedTurlPrefix = null;
+        if (inputParam.containsKey(memberName))
+        {
+            if(inputParam.get(memberName) != null)
+            {
+                Object[] valueArray = null;
+                if(inputParam.get(memberName).getClass().isArray())
+                {
+                    valueArray = (Object[]) inputParam.get(memberName);       
+                }
+                else
+                {
+                    valueArray = new Object[]{inputParam.get(memberName)};
+                }
+                LinkedList<Protocol> protocols = new LinkedList<Protocol>();
+                for(Object value : valueArray)
+                {
+                    Protocol protocol = Protocol.getProtocol(value.toString());
+                    if(protocol.equals(Protocol.UNKNOWN))
+                    {
+                        log.warn("Unable to decode protocol " + value.toString() + " . Unknown protocol");
+                    }
+                    else
+                    {
+                        protocols.add(protocol);    
+                    }
+                }
+                if(protocols.size() > 0)
+                {
+                    decodedTurlPrefix = new TURLPrefix(protocols);                    
+                }
+            }
+        }
+        return decodedTurlPrefix;
     }
 
 

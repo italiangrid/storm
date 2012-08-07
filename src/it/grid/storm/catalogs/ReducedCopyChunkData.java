@@ -27,7 +27,7 @@ import it.grid.storm.srm.types.TSURL;
  *
  * @author  Michele Dibenedetto
  */
-public class ReducedCopyChunkData implements ChunkData {
+public class ReducedCopyChunkData{
 
     /* long representing the primary key for the persistence layer! */
     private long primaryKey = -1;

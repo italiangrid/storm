@@ -200,7 +200,8 @@ public class ChunkScheduler implements Scheduler, Streets {
         log.debug("Chunk (declared PTG) "+chunk.getName()+" entered into PTG-street");
 
         //Build a generic Chunk Task
-        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_GET);
+//        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_GET);
+        ChunkTask chunkTask = new ChunkTask(chunk);
         try {
             ptg_workers.submit(chunkTask);
             log.debug("PtG Worker Pool SIZE = "+getStatus(Scheduler.PtG_WorkerPoolType).getPoolSize());
@@ -217,7 +218,8 @@ public class ChunkScheduler implements Scheduler, Streets {
         log.debug("Chunk (declared PTP) "+chunk.getName()+" entered into PTP-street");
 
         //Build a generic Chunk Task
-        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_PUT);
+//        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_PUT);
+        ChunkTask chunkTask = new ChunkTask(chunk);
         try {
             ptp_workers.submit(chunkTask);
             log.debug("PtP Worker Pool SIZE = "+getStatus(Scheduler.PtP_WorkerPoolType).getPoolSize());
@@ -235,7 +237,8 @@ public class ChunkScheduler implements Scheduler, Streets {
         log.debug("Chunk (declared COPY) "+chunk.getName()+" entered into COPY-street");
 
         //Build a generic Chunk Task
-        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.COPY);
+//        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.COPY);
+        ChunkTask chunkTask = new ChunkTask(chunk);
         try {
             copy_workers.submit(chunkTask);
             log.debug("Copy Worker Pool SIZE = "+getStatus(Scheduler.Copy_WorkerPoolType).getPoolSize());
@@ -250,7 +253,8 @@ public class ChunkScheduler implements Scheduler, Streets {
         log.debug("Chunk (declared BOL) " + chunk.getName() + " entered into BOL-street");
 
         //Build a generic Chunk Task
-        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.BOL);
+//        ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.BOL);
+        ChunkTask chunkTask = new ChunkTask(chunk);
         try {
             bol_workers.submit(chunkTask);
             log.debug("BoL Worker Pool SIZE = " + getStatus(Scheduler.BoL_WorkerPoolType).getPoolSize());

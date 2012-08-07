@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.data.datatransfer;
 
+import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
@@ -32,6 +33,7 @@ public class PrepareToPutInputData extends AbstractInputData
 
     private final GridUserInterface user;
     private final TSURL surl;
+    private final TURLPrefix transferProtocols;
     private TOverwriteMode overwriteMode;
     private TSizeInBytes fileSize;
     
@@ -44,15 +46,16 @@ public class PrepareToPutInputData extends AbstractInputData
         throw new IllegalAccessError("No arguments constructor is forbidden");
     }
     
-    public PrepareToPutInputData(GridUserInterface user, TSURL surl) throws IllegalArgumentException
+    public PrepareToPutInputData(GridUserInterface user, TSURL surl, TURLPrefix transferProtocols) throws IllegalArgumentException
     {
-        if(user == null || surl == null)
+        if(user == null || surl == null || transferProtocols == null)
         {
             throw new IllegalArgumentException("Unable to create PrepareToPutInputData. Received nul parameters: user = "
-                                                       + user + " , surl = " + surl);
+                                                       + user + " , surl = " + surl + " , transferProtocols = " + transferProtocols);
         }
         this.surl = surl;
         this.user = user;
+        this.transferProtocols = transferProtocols;
     }
     
     @Override
@@ -113,6 +116,14 @@ public class PrepareToPutInputData extends AbstractInputData
     public TSURL getSurl()
     {
         return surl;
+    }
+
+    /**
+     * @return the transferProtocols
+     */
+    public TURLPrefix getTransferProtocols()
+    {
+        return transferProtocols;
     }
 
 }

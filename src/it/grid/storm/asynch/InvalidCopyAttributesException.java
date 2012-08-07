@@ -17,8 +17,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.CopyChunkData;
+import it.grid.storm.catalogs.CopyData;
 import it.grid.storm.griduser.GridUserInterface;
 
 
@@ -31,28 +30,35 @@ import it.grid.storm.griduser.GridUserInterface;
  * @version: 2.0
  * @date:    September, 2005
  */
-public class InvalidCopyChunkAttributesException extends Exception {
+public class InvalidCopyAttributesException extends InvalidRequestAttributesException {
 
-    private boolean nullGu = true; //true if GridUser is null
-    private boolean nullRsd = true; //true if RequestSummaryData is null
-    private boolean nullChunkData = true; //true if CopyChunkData is null
-    private boolean negativeN = true; //true if counter is negative
-    private boolean nullGlobalStatusManager = true;
+    private static final long serialVersionUID = -4447773252958307986L;
+    protected boolean negativeN = true;
 
     /**
      * Constructor that requires the GridUser, RequestSummaryData and
      * CopyChunkData, as well as the int counter, that caused the exception
      * to be thrown.
      */
-    public InvalidCopyChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd, CopyChunkData chunkData, int n, GlobalStatusManager gsm) {
-        nullGu = (gu==null);
-        nullRsd = (rsd==null);
-        nullChunkData = (chunkData==null);
+    public InvalidCopyAttributesException(GridUserInterface gu, CopyData chunkData, int n) {
+        super(gu, chunkData);
         negativeN = (n<0);
-        nullGlobalStatusManager = (gsm==null);
     }
 
-    public String toString() {
-        return "Invalid attributes when creating CopyChunk: nullGridUser="+nullGu+", nullRequestSummaryData="+nullRsd+", nullCopyChunkData="+nullChunkData+", negativeN="+negativeN+", nullGlobalStatusManager="+nullGlobalStatusManager;
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("InvalidCopyAttributesException [negativeN=");
+        builder.append(negativeN);
+        builder.append(", nullGu=");
+        builder.append(nullGu);
+        builder.append(", nullChunkData=");
+        builder.append(nullChunkData);
+        builder.append("]");
+        return builder.toString();
     }
 }

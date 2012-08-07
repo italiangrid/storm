@@ -34,7 +34,6 @@ import it.grid.storm.synchcall.command.space.GetSpaceMetaDataCommand;
 import it.grid.storm.synchcall.command.space.GetSpaceTokensCommand;
 import it.grid.storm.synchcall.command.space.ReleaseSpaceCommand;
 import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
-import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 
 /**
  * This class is part of the StoRM project.

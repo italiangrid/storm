@@ -25,7 +25,7 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.config.Configuration;
@@ -124,15 +124,15 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                 PtGAbortExecutor.log.debug("srmAbortFiles: PTGAbortExecutor: Checking SURL[" + i + "]: " + surl.toString());
 
                 // auxChunkData stores information about a single item (SURL) in the catalog
-                PtGChunkData auxChunkData = null;
+                PtGPersistentChunkData auxChunkData = null;
 
                 /* Search SURL[i] (specified in the request) inside the catalog */
                 Iterator j = chunks.iterator();
                 boolean surlFound = false;
 
                 while ((j.hasNext())&&!surlFound) {
-                    auxChunkData = (PtGChunkData) j.next();
-                    if (surl.equals(auxChunkData.fromSURL())) {
+                    auxChunkData = (PtGPersistentChunkData) j.next();
+                    if (surl.equals(auxChunkData.getSURL())) {
                         surlFound = true;
                     }
                 }
@@ -195,33 +195,30 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             counter++;
 
             // auxChunkData stores information about a single item (SURL) in the catalog
-            PtGChunkData auxChunkData = null;
+            PtGPersistentChunkData auxChunkData = null;
 
             //This new Collection is used to avoid the ConcurrentModification exception
             //on the chsunks Collection
 
-            Collection listOfChunk = new ArrayList();
+            ArrayList<PtGPersistentChunkData> listOfChunk = new ArrayList<PtGPersistentChunkData>();
             listOfChunk.addAll(chunks);
-            Iterator j = listOfChunk.iterator();
             int numOfSurl=0;
-            while((j.hasNext())) {
+            for(PtGPersistentChunkData currentData: listOfChunk)
+            {
                 numOfSurl++;
-                auxChunkData = (PtGChunkData) j.next();
-
                 /*
                  * This refresStatus operation refresh only the chunk status.
                  * TODO The entire CHUNK must be updated to prevent override of evenutally modified field.
                  */
-
                 PtGAbortExecutor.log.debug("srmAbortRequest: PtGAbortExecutor: refresh chunk...");
-                auxChunkData = getCatalog.refreshStatus(auxChunkData);
+                auxChunkData = getCatalog.refreshStatus(currentData);
                 PtGAbortExecutor.log.debug("srmAbortRequest: PtGAbortExecutor: refresh done.");
                 /*
                  * Check if any chunk have a status different from SRM_REQUEST_INPROGESS.
                  * That means the request execution is finished, and the rollback start.
                  */
 
-                if (!(auxChunkData.status().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS ))) {
+                if (!(auxChunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS ))) {
                     /*
                      * If an EXECUTED CHUNK is found, then it is ABORTED.
                      */
@@ -237,10 +234,10 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                      * check here if the chunk has already been aborted frome the picker.
                      * In such case, the manageAuthorizedAbort is not needed
                      */
-                    if((auxChunkData.status().getStatusCode().equals(TStatusCode.SRM_ABORTED))) {
+                    if((auxChunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_ABORTED))) {
                         //The AdvancedPicker have already aborted the chunk.
                         PtGAbortExecutor.log.debug("PtGAbortExecutor: CHUNK already aborted!");
-                        surlReturnStatus.setSurl(auxChunkData.fromSURL());
+                        surlReturnStatus.setSurl(auxChunkData.getSURL());
                         surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,"File request successfully aborted."));
                     } else {
                         //Chunk not ABORTED. We have to work...
@@ -252,9 +249,9 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     chunks.remove(auxChunkData);
 
                     if((surlReturnStatus.getStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS))) {
-                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+listOfChunk.size()+" [SURL:"+auxChunkData.fromSURL()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
+                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+listOfChunk.size()+" [SURL:"+auxChunkData.getSURL()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
                     } else {
-                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+listOfChunk.size()+" [SURL:"+auxChunkData.fromSURL()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
+                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+listOfChunk.size()+" [SURL:"+auxChunkData.getSURL()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
                         errorCount++;
                     }
                     //Add returnStatus
@@ -354,7 +351,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
      * @return returnStatus TSURLReturnStatus
      */
 
-    private TSURLReturnStatus manageAuthorizedAbort(PtGChunkData chunkData) {
+    private TSURLReturnStatus manageAuthorizedAbort(PtGPersistentChunkData chunkData) {
 
         /* Query the DB to update the Chunk status */
         PtGChunkCatalog getCatalog = PtGChunkCatalog.getInstance();
@@ -366,8 +363,8 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
         TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 
         //Check also for the SRM_QUEUED status, in case Phase 1 or Phase2
-        if((chunkData.status().getStatusCode().equals(TStatusCode.SRM_FILE_PINNED))||
-                (chunkData.status().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)) ) { //some other status || ???  )
+        if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_FILE_PINNED))||
+                (chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)) ) { //some other status || ???  )
             // Valid Status
 
             //Manage Rollback
@@ -385,19 +382,19 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             chunkData.changeStatusSRM_ABORTED("Request aborted.");
             getCatalog.update(chunkData);
 
-            surlReturnStatus.setSurl(chunkData.fromSURL());
+            surlReturnStatus.setSurl(chunkData.getSURL());
             surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,"File request successfully aborted."));
             return surlReturnStatus;
 
         } else {
             //The Chunk is in a SRM_Status from wich an Abort operation is not possible! (SRM_FAILURE or SRM_SUCCESS)
-            surlReturnStatus.setSurl(chunkData.fromSURL());
+            surlReturnStatus.setSurl(chunkData.getSURL());
 
             //Create different case that depends on the CHUNK status!
 
-            if((chunkData.status().getStatusCode().equals(TStatusCode.SRM_FILE_LIFETIME_EXPIRED))) {
+            if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_FILE_LIFETIME_EXPIRED))) {
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,"Request is in a final status. Abort not allowed."));
-            } else if((chunkData.status().getStatusCode().equals(TStatusCode.SRM_RELEASED))) {
+            } else if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_RELEASED))) {
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,"Request is in a final status. Abort not allowed."));
             } else {
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,"Abort request not executed."));

@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -425,4 +426,24 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
         }
     }
 
+    public void setFakeRequestToken()
+    {
+        String FAKE_PREFIX = "FAKE-";
+        try
+        {
+            this.setRequestToken(new TRequestToken(FAKE_PREFIX.concat(UUID.randomUUID().toString().substring(FAKE_PREFIX.length()))));
+        } catch(InvalidTRequestTokenAttributesException e)
+        {
+            //never thrown
+            log.error("Unexpected InvalidTRequestTokenAttributesException: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSetFakeRequestToken()
+    {
+        TapeRecallTO to = new TapeRecallTO();
+        to.setFakeRequestToken();
+    }
+    
 }

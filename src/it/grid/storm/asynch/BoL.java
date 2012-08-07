@@ -20,11 +20,9 @@ package it.grid.storm.asynch;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.BoLChunkCatalog;
-import it.grid.storm.catalogs.BoLChunkData;
-import it.grid.storm.catalogs.ChunkData;
+import it.grid.storm.catalogs.BoLPersistentChunkData;
+import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -91,20 +89,16 @@ import org.slf4j.LoggerFactory;
  * @date Aug 2009
  * @version 1.0
  */
-public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
+public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
-    private static Logger log = LoggerFactory.getLogger(BoLChunk.class);
+    private static Logger log = LoggerFactory.getLogger(BoL.class);
 
     /** GridUser that made the request */
-    private GridUserInterface gu = null;
-    /** RequestSummaryData containing all the statistics for the originating srmBringOnLineRequest */
-    private RequestSummaryData rsd = null;
+    protected GridUserInterface gu = null;
     /** BoLChunkData that holds the specific info for this chunk */
-    private BoLChunkData chunkData = null;
-    /** manager for global status computation */
-    private GlobalStatusManager gsm = null;
+    protected BoLPersistentChunkData requestData = null;
     /** boolean that indicates a chunk failure */
-    private boolean failure = false;
+    protected boolean failure = false;
 
     /**
      * variables used to backup values in case the request is suspended waiting for the file to be recalled from the
@@ -116,18 +110,12 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
      * Constructor requiring the GridUser, the RequestSummaryData and the BoLChunkData about this chunk. If the supplied
      * attributes are null, an InvalidBoLChunkAttributesException is thrown.
      */
-    public BoLChunk(GridUserInterface gu, RequestSummaryData rsd, BoLChunkData chunkData,
-            GlobalStatusManager gsm) throws InvalidBoLChunkAttributesException {
-
-        boolean ok = (gu != null) && (rsd != null) && (chunkData != null) && (gsm != null);
-        if (!ok) {
-            throw new InvalidBoLChunkAttributesException(gu, rsd, chunkData, gsm);
+    public BoL(GridUserInterface gu, BoLPersistentChunkData chunkData) throws InvalidRequestAttributesException {
+        if (gu == null || chunkData == null) {
+            throw new InvalidRequestAttributesException(gu, chunkData);
         }
-
         this.gu = gu;
-        this.rsd = rsd;
-        this.chunkData = chunkData;
-        this.gsm = gsm;
+        this.requestData = chunkData;
     }
 
     /**
@@ -140,7 +128,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
     /* (non-Javadoc)
      * @see it.grid.storm.asynch.SuspendedChunk#completeRequest(it.grid.storm.tape.recalltable.model.RecallTaskStatus)
      */
-    public void completeRequest(TapeRecallStatus recallStatus){
+    public Boolean completeRequest(TapeRecallStatus recallStatus){
 
         boolean requestSuccessfull = false;
         if (recallStatus == TapeRecallStatus.SUCCESS)
@@ -149,7 +137,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
             {
                 if (bupLocalFile.isOnDisk())
                 {
-                    chunkData.changeStatusSRM_SUCCESS("File recalled from tape");
+                    requestData.changeStatusSRM_SUCCESS("File recalled from tape");
                     requestSuccessfull = true;
                 }
                 else
@@ -157,41 +145,28 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                     log.error("File "
                             + bupLocalFile.getAbsolutePath()
                             + " not found on the disk, but it was reported to be successfully recalled from tape");
-                    chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                    requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
                 }
             }
             catch (FSException e)
             {
                 log.error("Unable to determine if file " + bupLocalFile.getAbsolutePath()
                         + " is on disk . FSException : " + e.getMessage());
-                chunkData.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
+                requestData.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
             }
         }
         else
         {
             if (recallStatus == TapeRecallStatus.ABORTED)
             {
-                chunkData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+                requestData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
             }
             else
             {
-                chunkData.changeStatusSRM_FAILURE("Error recalling file from tape");
+                requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
             }
         }
-        BoLChunkCatalog.getInstance().update(chunkData);
-
-        if (requestSuccessfull)
-        {
-            gsm.successfulChunk(chunkData);
-            log.info("Completed BoL request (" + rsd.requestToken()
-                    + "), file successfully recalled from tape: " + chunkData.getFromSURL().toString());
-        }
-        else
-        {
-            gsm.failedChunk(chunkData);
-            log.error("BoL request (" + chunkData.getRequestToken() + "), file not recalled from tape: "
-                    + chunkData.getFromSURL().toString());
-        }
+        return requestSuccessfull;
     }
 
     /**
@@ -199,12 +174,11 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
      */
     public void doIt() {
 
-        log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + chunkData.getFromSURL()
-                + "; for requestToken: " + rsd.requestToken());
+        log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
 
-        if (PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(chunkData.getFromSURL())) {
+        if (PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL())) {
 
-            chunkData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
+            requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
             failure = true;
             log.debug("ATTENTION in BoLChunk! BoLChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
 
@@ -215,14 +189,14 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                 try
                 {
                 fileStoRI = NamespaceDirector.getNamespace()
-                                                   .resolveStoRIbySURL(chunkData.getFromSURL(), gu);
+                                                   .resolveStoRIbySURL(requestData.getSURL(), gu);
                 } catch(IllegalArgumentException e)
                 {
                     failure = true;
-                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-                            + chunkData.getFromSURL());
+                    requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                            + requestData.getSURL());
                     log.error("Unable to get StoRI for surl "
-                              + chunkData.getFromSURL() + " IllegalArgumentException: " + e.getMessage());
+                              + requestData.getSURL() + " IllegalArgumentException: " + e.getMessage());
                 }
                 if(!failure)
                 {
@@ -236,9 +210,9 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
     
                     } else {
                         failure = true;
-                        chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
-                                + chunkData.getFromSURL() + " in Storage Area: " + token);
-                        log.debug("Read access to " + chunkData.getFromSURL() + " in Storage Area: " + token
+                        requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
+                                + requestData.getSURL() + " in Storage Area: " + token);
+                        log.debug("Read access to " + requestData.getSURL() + " in Storage Area: " + token
                                 + " denied!");
                     }
                 }
@@ -246,34 +220,20 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                 // The Supplied SURL does not contain a root that could be identified by the StoRI factory
                 // as referring to a VO being managed by StoRM... that is SURLs begining with such root
                 // are not handled by this SToRM!
-                chunkData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
+                requestData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
                 failure = true;
                 log.debug("ATTENTION in BoLChunk! BoLChunk received request for a SURL whose root is not recognised by StoRI! "
                         + e);
             }
         }
 
-        BoLChunkCatalog.getInstance().update(chunkData); // update status in persistence!!!
-
-        /*
-         * If the status is still SRM_REQUEST_INPROGRESS means that the file is on the tape and it's being recalled. The
-         * status will be changed to SRM_FILE_PINNED by the function that updates the TapeRecall table putting a SUCCESS
-         * in the corresponding row (and the file will have been recalled).
-         */
-        if (chunkData.getStatus().getStatusCode() != TStatusCode.SRM_REQUEST_INPROGRESS) {
-            if (failure) {
-                gsm.failedChunk(chunkData);
-            } else {
-                gsm.successfulChunk(chunkData); // update global status!!!
-            }
-        }
         log.info("Finished handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: "
-                + chunkData.getFromSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
-                + chunkData.getStatus());
+                + requestData.getSURL() + "; result is: "
+                + requestData.getStatus());
     }
 
-    public ChunkData getChunkData() {
-        return chunkData;
+    public RequestData getRequestData() {
+        return requestData;
     }
 
     /**
@@ -281,15 +241,12 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
      * and the SURL that was asked for.
      */
     public String getName() {
-        return "BoLChunk of request " + rsd.requestToken() + " for SURL " + chunkData.getFromSURL();
+        return "BoLChunk for SURL " + requestData.getSURL();
     }
 
-    public String getRequestToken() {
-        return rsd.requestToken().toString();
-    }
 
     public String getSURL() {
-        return chunkData.getFromSURL().toString();
+        return requestData.getSURL().toString();
     }
 
     public String getUserDN() {
@@ -298,9 +255,9 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
     public boolean isResultSuccess() {
         boolean result = false;
-        TStatusCode statusCode = chunkData.getStatus().getStatusCode();
+        TStatusCode statusCode = requestData.getStatus().getStatusCode();
         if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))
-                || chunkData.getStatus().isSRM_SUCCESS()) {
+                || requestData.getStatus().isSRM_SUCCESS()) {
             result = true;
         }
         return result;
@@ -321,7 +278,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
             if ((!localFile.exists()) || (localFile.isDirectory())) {
                 // File does not exist, or it is a directory! Fail request with
                 // SRM_INVALID_PATH!
-                chunkData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
+                requestData.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
                 failure = true;
                 log.debug("BoLChunk: the requested file either does not exist, or it is a directory!");
 
@@ -331,20 +288,20 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
 
                     // Compute the Expiration Time in seconds
                     //Add the deferred start time to the expiration date
-                    long expDate = (System.currentTimeMillis() / 1000 + (chunkData.getLifeTime().value() + chunkData.getDeferredStartTime()));
+                    long expDate = (System.currentTimeMillis() / 1000 + (requestData.getLifeTime().value() + requestData.getDeferredStartTime()));
                     StormEA.setPinned(localFile.getAbsolutePath(), expDate);
 
                     // set group permission for tape quota management
                     fileStoRI.setGroupTapeRead();
-                    chunkData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
+                    requestData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
                     if (isStoriOndisk(fileStoRI)) {
 
-                        chunkData.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
+                        requestData.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
 
                     } else {
 
-                        chunkData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
+                        requestData.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
 
                         String voName = null;
                         if (gu instanceof AbstractGridUser)
@@ -364,7 +321,7 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
                         backupData(localFile);
                     }
                 } else {
-                    chunkData.changeStatusSRM_NOT_SUPPORTED("Tape not supported for this filesystem");
+                    requestData.changeStatusSRM_NOT_SUPPORTED("Tape not supported for this filesystem");
                 }
 
             }
@@ -372,12 +329,12 @@ public class BoLChunk implements Delegable, Chooser, SuspendedChunk {
             // The check for existence of the File failed because there is a SecurityManager installed that
             // denies read privileges for that File! Perhaps the local system administrator of StoRM set
             // up Java policies that contrast policies described by the PolicyCollector! There is a conflict here!
-            chunkData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
+            requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
             failure = true;
             log.error("ATTENTION in BoLChunk! BoLChunk received a SecurityException from Java SecurityManager; StoRM cannot check-existence or check-if-directory for: "
                     + localFile.toString() + "; exception: " + e);
         } catch (Exception e) {
-            chunkData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
+            requestData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
             failure = true;
             log.error("ERROR in BoLChunk! StoRM process got an unexpected error! " + e);
         }

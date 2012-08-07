@@ -109,11 +109,11 @@ public class BoLChunkCatalog
 	 * If there are no chunks to process then an empty Collection is returned,
 	 * and a message gets logged.
 	 */
-	synchronized public Collection<BoLChunkData> lookup(TRequestToken rt) {
+	synchronized public Collection<BoLPersistentChunkData> lookup(TRequestToken rt) {
 		
 		Collection<BoLChunkDataTO> chunkCollection = dao.find(rt);
 		log.debug("BoL CHUNK CATALOG: retrieved data " + chunkCollection);
-		List<BoLChunkData> list = new ArrayList<BoLChunkData>();
+		List<BoLPersistentChunkData> list = new ArrayList<BoLPersistentChunkData>();
 
 		if(chunkCollection.isEmpty())
 		{
@@ -125,7 +125,7 @@ public class BoLChunkCatalog
 			// TODO MICHELE USER_SURL here I can update all requests that has
 			// not the new fields set alltogether in a bunch, adding a method to
 			// the DAO for this purpose
-			BoLChunkData chunk;
+			BoLPersistentChunkData chunk;
 			for(BoLChunkDataTO chunkTO : chunkCollection)
 			{
 				chunk = makeOne(chunkTO, rt);
@@ -158,7 +158,7 @@ public class BoLChunkCatalog
 	 * @param rt
 	 * @return
 	 */
-	private BoLChunkData makeOne(BoLChunkDataTO auxTO, TRequestToken rt) {
+	private BoLPersistentChunkData makeOne(BoLChunkDataTO auxTO, TRequestToken rt) {
 
 		StringBuffer errorSb = new StringBuffer();
 		// TODO MICHELE USER_SURL here we go from the string representation of
@@ -258,14 +258,14 @@ public class BoLChunkCatalog
 		 */
 		TTURL transferURL = TTURL.makeEmpty();
 		// make BoLChunkData
-		BoLChunkData aux = null;
+		BoLPersistentChunkData aux = null;
 		try
 		{
 			aux =
-				  new BoLChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
+				  new BoLPersistentChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
 					  status, transferURL, auxTO.getDeferredStartTime());
 			aux.setPrimaryKey(auxTO.getPrimaryKey());
-		} catch(InvalidBoLChunkDataAttributesException e)
+		} catch(InvalidSurlRequestDataAttributesException e)
 		{
 			dao.signalMalformedBoLChunk(auxTO);
 			log.warn("BoL CHUNK CATALOG! Retrieved malformed BoL "
@@ -304,7 +304,7 @@ public class BoLChunkCatalog
 	 * @throws InvalidReducedBoLChunkDataAttributesException
 	 */
 	// TODO MICHELE USER_SURL new method
-	private ReducedBoLChunkDataTO completeTO(BoLChunkDataTO chunkTO, final BoLChunkData chunk)
+	private ReducedBoLChunkDataTO completeTO(BoLChunkDataTO chunkTO, final BoLPersistentChunkData chunk)
 			throws InvalidReducedBoLChunkDataAttributesException {
 
 		ReducedBoLChunkDataTO reducedChunkTO = this.reduce(chunkTO);
@@ -321,13 +321,13 @@ public class BoLChunkCatalog
 	 * @throws InvalidReducedBoLChunkDataAttributesException
 	 */
 	// TODO MICHELE USER_SURL new method
-	private ReducedBoLChunkData reduce(BoLChunkData chunk)
+	private ReducedBoLChunkData reduce(BoLPersistentChunkData chunk)
 			throws InvalidReducedBoLChunkDataAttributesException {
 
 		ReducedBoLChunkData reducedChunk =
-										   new ReducedBoLChunkData(chunk.getFromSURL(), chunk
+										   new ReducedBoLChunkData(chunk.getSURL(), chunk
 											   .getStatus());
-		reducedChunk.setPrimaryKey(chunk.primaryKey());
+		reducedChunk.setPrimaryKey(chunk.getPrimaryKey());
 		return reducedChunk;
 	}
 
@@ -385,18 +385,18 @@ public class BoLChunkCatalog
 	 * Only fileSize, StatusCode, errString and transferURL are updated.
 	 * Likewise for the request pinLifetime.
 	 */
-	synchronized public void update(BoLChunkData cd) {
+	synchronized public void update(BoLPersistentChunkData cd) {
 			
 		BoLChunkDataTO to = new BoLChunkDataTO();
 		/* Primary key needed by DAO Object */
-		to.setPrimaryKey(cd.primaryKey());
+		to.setPrimaryKey(cd.getPrimaryKey());
 		to.setFileSize(cd.getFileSize().value());
 		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
 		to.setErrString(cd.getStatus().getExplanation());
 		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getLifeTime().value()));
 		// TODO MICHELE USER_SURL fill new fields
-		to.setNormalizedStFN(cd.getFromSURL().normalizedStFN());
-		to.setSurlUniqueID(new Integer(cd.getFromSURL().uniqueId()));
+		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 
 		dao.update(to);
 	}
@@ -406,20 +406,20 @@ public class BoLChunkCatalog
 	 * synch the ChunkData information with the database status.
 	 * 
 	 * @param auxTO
-	 * @param BoLChunkData
+	 * @param BoLPersistentChunkData
 	 *            inputChunk
 	 * @return BoLChunkData outputChunk
 	 */
-	synchronized public BoLChunkData refreshStatus(BoLChunkData inputChunk) {
+	synchronized public BoLPersistentChunkData refreshStatus(BoLPersistentChunkData inputChunk) {
 		/* Currently not used*/
 		// Call the dao refresh method to synch with the db status
-		BoLChunkDataTO auxTO = dao.refresh(inputChunk.primaryKey());
+		BoLChunkDataTO auxTO = dao.refresh(inputChunk.getPrimaryKey());
 
 		log.debug("BoL CHUNK CATALOG: retrieved data " + auxTO);
 		if(auxTO == null)
 		{
 			log.warn("BoL CHUNK CATALOG! Empty TO found in persistence for specified request: "
-				+ inputChunk.primaryKey());
+				+ inputChunk.getPrimaryKey());
 		}
 		else
 		{
@@ -623,15 +623,15 @@ public class BoLChunkCatalog
 	 * In case of any error the operation does not proceed, but no Exception is
 	 * thrown! Proper messages get logged by underlaying DAO.
 	 */
-	synchronized public void addChild(BoLChunkData chunkData) {
+	synchronized public void addChild(BoLPersistentChunkData chunkData) {
 		
 		BoLChunkDataTO to = new BoLChunkDataTO();
 		// needed for now to find ID of request! Must be changed soon!
 		to.setRequestToken(chunkData.getRequestToken().toString()); 
-		to.setFromSURL(chunkData.getFromSURL().toString());
+		to.setFromSURL(chunkData.getSURL().toString());
         //TODO MICHELE USER_SURL fill new fields
-        to.setNormalizedStFN(chunkData.getFromSURL().normalizedStFN());
-        to.setSurlUniqueID(new Integer(chunkData.getFromSURL().uniqueId()));
+        to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
 		to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
 		to.setDirOption(chunkData.getDirOption().isDirectory());
@@ -662,20 +662,20 @@ public class BoLChunkCatalog
 	 * In case of any error the operation does not proceed, but no Exception is
 	 * thrown! The underlaying DAO logs proper error messages.
 	 */
-	synchronized public void add(BoLChunkData chunkData, GridUserInterface gu) {
+	synchronized public void add(BoLPersistentChunkData chunkData, GridUserInterface gu) {
 		/* Currently NOT used*/
 		BoLChunkDataTO to = new BoLChunkDataTO();
 		to.setRequestToken(chunkData.getRequestToken().toString());
-		to.setFromSURL(chunkData.getFromSURL().toString());
+		to.setFromSURL(chunkData.getSURL().toString());
 		//TODO MICHELE USER_SURL fill new fields
-        to.setNormalizedStFN(chunkData.getFromSURL().normalizedStFN());
-        to.setSurlUniqueID(new Integer(chunkData.getFromSURL().uniqueId()));
+        to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
 		to.setLifeTime(new Long(chunkData.getLifeTime().value()).intValue());
 		to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
 		to.setDirOption(chunkData.getDirOption().isDirectory());
 		to.setNumLevel(chunkData.getDirOption().getNumLevel());
-		to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.getDesiredProtocols()));
+		to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.getTransferProtocols()));
 		to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
 		to.setErrString(chunkData.getStatus().getExplanation());
 		to.setDeferredStartTime(chunkData.getDeferredStartTime());

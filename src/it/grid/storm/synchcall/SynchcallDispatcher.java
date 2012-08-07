@@ -18,6 +18,7 @@
 package it.grid.storm.synchcall;
 
 import it.grid.storm.common.OperationType;
+import it.grid.storm.synchcall.command.datatransfer.CommandException;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 
@@ -44,6 +45,6 @@ public interface SynchcallDispatcher {
      * @throws IllegalArgumentException
      */
     public abstract OutputData processRequest(OperationType type,
-            InputData inputData) throws IllegalArgumentException ;
+            InputData inputData) throws IllegalArgumentException, CommandException ;
 
 }

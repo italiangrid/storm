@@ -17,6 +17,7 @@
 
 package it.grid.storm.srm.types;
 
+import java.util.Map;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.InvalidTFNAttributesException;
 import it.grid.storm.common.types.PFN;
@@ -41,6 +42,8 @@ public class TTURL {
     private TFN tfn;
     private boolean empty = true; //boolean true if this is an empty object
 
+    public static final String PNAME_TURL = "turl";
+    
     private TTURL(TransferProtocol tp, TFN tfn, boolean empty) {
         this.tp = tp;
         this.tfn = tfn;
@@ -140,6 +143,13 @@ public class TTURL {
             return TFN.makeEmpty();
         }
         return tfn;
+    }
+    
+    /**
+     * Encode TTURL for xmlrpc communication.
+     */
+    public void encode(Map<String,String> param, String name) {
+        param.put(name, toString());
     }
 
 

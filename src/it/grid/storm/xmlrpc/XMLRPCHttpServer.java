@@ -63,6 +63,7 @@ public final class XMLRPCHttpServer {
      * @throws XmlRpcException
      */
     public XMLRPCHttpServer(int port , int maxThreadNum) throws StoRMXmlRpcException {
+        log.info("[xmlrpc server] Creating server on port: " + port + " using at most " + maxThreadNum + " threads");
         this.webServer = buildWebServer(port, maxThreadNum);
     };
 
@@ -129,7 +130,7 @@ public final class XMLRPCHttpServer {
     {
         if (!running)
         {
-            log.info("[xmlrpc server] Starting server on port: " + webServer.getPort());
+            log.info("[xmlrpc server] Starting server...");
             try
             {
                 this.webServer.start();

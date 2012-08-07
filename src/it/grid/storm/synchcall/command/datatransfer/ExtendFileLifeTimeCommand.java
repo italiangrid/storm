@@ -18,7 +18,7 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.CopyChunkCatalog;
-import it.grid.storm.catalogs.CopyChunkData;
+import it.grid.storm.catalogs.CopyPersistentChunkData;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtGChunkData;
@@ -589,8 +589,8 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
             Collection chunkList = copyCatalog.lookup(requestToken);
             Iterator chunk = chunkList.iterator();
             while (chunk.hasNext()) {
-                CopyChunkData aux = (CopyChunkData) chunk.next();
-                SURLData surlData = new SURLData(aux.toSURL(), aux.status().getStatusCode());
+                CopyPersistentChunkData aux = (CopyPersistentChunkData) chunk.next();
+                SURLData surlData = new SURLData(aux.getDestinationSURL(), aux.getStatus().getStatusCode());
                 listOfSURLsInfo.add(surlData);
             }
         }

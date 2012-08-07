@@ -33,18 +33,20 @@ import java.util.Map;
 public class TReturnStatus implements Serializable
 {
     private TStatusCode  statusCode   = null;          //TStatusCode.SRM_CUSTOM_STATUS;??
-    private String       explanation;
-
+    private String       explanation = null;
+    private static final String UNDEFINED_EXPLANATION = "undefined";
+    
+    
     public static final String PNAME_RETURNSTATUS = "returnStatus";
     public static final String PNAME_STATUS       = "status";
 
     /**
      * Default constructor that makes a TReturnStatus with SRM_CUSTOM_STATUS, and
      * explanation String "undefined".
+     * @throws InvalidTReturnStatusAttributeException 
      */
-    public TReturnStatus() {
-        this.statusCode = TStatusCode.SRM_CUSTOM_STATUS;
-        this.explanation = "undefined";
+    public TReturnStatus() throws InvalidTReturnStatusAttributeException {
+        this(TStatusCode.SRM_CUSTOM_STATUS);
     }
 
     
@@ -61,13 +63,25 @@ public class TReturnStatus implements Serializable
     /**
      * Can be Explanation String a null value?
      */
-    public TReturnStatus(TStatusCode statusCode, String explanation) throws InvalidTReturnStatusAttributeException {
-        if (statusCode == null)
-            throw new InvalidTReturnStatusAttributeException(statusCode, explanation);
-        this.statusCode = statusCode;
-        this.explanation = explanation;
+    public TReturnStatus(TStatusCode statusCode, String explanation)
+        throws InvalidTReturnStatusAttributeException
+    {
+        this(statusCode);
+        if (explanation != null)
+        {
+            this.explanation = explanation;
+        }
     }
 
+    public TReturnStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException
+    {
+        if (statusCode == null)
+        {
+            throw new InvalidTReturnStatusAttributeException(statusCode);
+        }
+        this.statusCode = statusCode;
+        this.explanation = UNDEFINED_EXPLANATION;
+    }
 
     /**
      * Returns the status code
@@ -102,13 +116,15 @@ public class TReturnStatus implements Serializable
     public void encode(Map outputParam, String name)
     {
         //      Return STATUS OF REQUEST
-        Map globalStatus = new HashMap();
-        String globalSCode = this.getStatusCode().getValue();
-        String member_globalSCode = new String("statusCode");
-        globalStatus.put(member_globalSCode, globalSCode);
-        String g_explanation = this.getExplanation();
-        String member_g_expl = new String("explanation");
-        globalStatus.put(member_g_expl, g_explanation);
+        HashMap<String,String> globalStatus = new HashMap<String,String>();
+//        String globalSCode = this.getStatusCode().getValue();
+//        String member_globalSCode = new String("statusCode");
+//        globalStatus.put(member_globalSCode, globalSCode);
+//        String g_explanation = this.getExplanation();
+//        String member_g_expl = new String("explanation");
+//        globalStatus.put(member_g_expl, g_explanation);
+        globalStatus.put("statusCode", this.getStatusCode().getValue());
+        globalStatus.put("explanation", this.getExplanation());
 
         //Insert TReturnStatus struct into global Output structure
         outputParam.put(name, globalStatus);

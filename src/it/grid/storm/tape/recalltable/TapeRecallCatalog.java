@@ -20,10 +20,12 @@
  */
 package it.grid.storm.tape.recalltable;
 
-import it.grid.storm.asynch.SuspendedChunk;
-import it.grid.storm.catalogs.BoLChunkData;
-import it.grid.storm.catalogs.ChunkData;
-import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.asynch.Suspendedable;
+import it.grid.storm.catalogs.BoLPersistentChunkData;
+import it.grid.storm.catalogs.PersistentChunkData;
+import it.grid.storm.catalogs.RequestData;
+import it.grid.storm.catalogs.PtGData;
+import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -49,7 +51,7 @@ public class TapeRecallCatalog {
     private static final Logger log = LoggerFactory.getLogger(TapeRecallCatalog.class);
     private final TapeRecallDAO tapeRecallDAO;
 
-    private static ConcurrentHashMap<UUID, Collection<SuspendedChunk>> recallBuckets = new ConcurrentHashMap<UUID, Collection<SuspendedChunk>>();
+    private static ConcurrentHashMap<UUID, Collection<Suspendedable>> recallBuckets = new ConcurrentHashMap<UUID, Collection<Suspendedable>>();
     
     /**
      * Default constructor
@@ -313,9 +315,9 @@ public class TapeRecallCatalog {
      * @return the id of the recall task in charge of recall the file
      * @throws DataAccessException
      */
-    public UUID insertTask(SuspendedChunk chunk, String voName, String absoluteFileName) throws DataAccessException {
+    public UUID insertTask(Suspendedable chunk, String voName, String absoluteFileName) throws DataAccessException {
 
-        TapeRecallTO task = getTaskFromChunk(chunk.getChunkData());
+        TapeRecallTO task = getTaskFromChunk(chunk.getRequestData());
         task.setFileName(absoluteFileName);
         task.setVoName(voName);
 
@@ -328,7 +330,7 @@ public class TapeRecallCatalog {
             /*
              * Add to the map this task, if a task for the same group is available, add the tqask to its bucket
              */
-            Collection<SuspendedChunk> chunkBucket = recallBuckets.get(groupTaskId);
+            Collection<Suspendedable> chunkBucket = recallBuckets.get(groupTaskId);
             if(chunkBucket != null)
             {
                 //add to the bucket
@@ -337,7 +339,7 @@ public class TapeRecallCatalog {
             else
             {
               //create a new bucket
-                chunkBucket = new ConcurrentLinkedQueue<SuspendedChunk>();
+                chunkBucket = new ConcurrentLinkedQueue<Suspendedable>();
                 chunkBucket.add(chunk);
                 recallBuckets.put(groupTaskId, chunkBucket);
             }
@@ -375,29 +377,26 @@ public class TapeRecallCatalog {
      * @return
      * @throws DataAccessException 
      */
-    private TapeRecallTO getTaskFromChunk(ChunkData chunkData) throws DataAccessException {
+    private TapeRecallTO getTaskFromChunk(RequestData chunkData) throws DataAccessException {
 
         TapeRecallTO task = new TapeRecallTO();
 
         Date currentDate = new Date();
         task.setInsertionInstant(currentDate);
 
-        if (chunkData instanceof PtGChunkData) {
+        if (chunkData instanceof PtGData) {
 
-            PtGChunkData ptgChunk = (PtGChunkData) chunkData;
+            PtGData ptgChunk = (PtGData) chunkData;
 
             task.setRequestType(TapeRecallTO.PTG_REQUEST);
-            task.setRequestToken(ptgChunk.requestToken());
-            
             task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
             task.setDeferredRecallInstant(currentDate);
 
-        } else if (chunkData instanceof BoLChunkData) {
+        } else if (chunkData instanceof BoLPersistentChunkData) {
 
-            BoLChunkData bolChunk = (BoLChunkData) chunkData;
+            BoLPersistentChunkData bolChunk = (BoLPersistentChunkData) chunkData;
 
             task.setRequestType(TapeRecallTO.BOL_REQUEST);
-            task.setRequestToken(bolChunk.getRequestToken());
             task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
             Date deferredStartDate = new Date(currentDate.getTime()
@@ -407,6 +406,14 @@ public class TapeRecallCatalog {
         } else {
             throw new DataAccessException("Unable to build a TapeRecallTO because unknown chunk type.");
         }
+        if (chunkData instanceof PersistentChunkData)
+        {
+            task.setRequestToken(((PersistentChunkData)chunkData).getRequestToken());                
+        }
+        else
+        {
+            task.setFakeRequestToken();
+        }
         return task;
     }
     
@@ -415,7 +422,7 @@ public class TapeRecallCatalog {
         //critical section
         //begin
         boolean updated;
-        Collection<SuspendedChunk> chunkBucket = null;
+        Collection<Suspendedable> chunkBucket = null;
         synchronized (this)
         {
             updated = tapeRecallDAO.setGroupTaskStatus(groupTaskId, recallTaskStatus.getStatusId(), timestamp);
@@ -451,14 +458,14 @@ public class TapeRecallCatalog {
      * @param recallTaskStatus
      * @throws IllegalArgumentException
      */
-    private void updateChuncksStatus(Collection<SuspendedChunk> chunkBucket, TapeRecallStatus recallTaskStatus) throws IllegalArgumentException
+    private void updateChuncksStatus(Collection<Suspendedable> chunkBucket, TapeRecallStatus recallTaskStatus) throws IllegalArgumentException
     {
         if(chunkBucket == null || chunkBucket.isEmpty() || recallTaskStatus == null)
         {
             log.error("Unable to perform the final status update. Provided invalid arguments");
             throw new IllegalArgumentException("Unable to perform the final status update. Provided invalid arguments");   
         }
-        for (SuspendedChunk chunk : chunkBucket)
+        for (Suspendedable chunk : chunkBucket)
         {
             chunk.completeRequest(recallTaskStatus);
         }

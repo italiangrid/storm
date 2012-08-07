@@ -18,7 +18,7 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.CopyChunkCatalog;
-import it.grid.storm.catalogs.CopyChunkData;
+import it.grid.storm.catalogs.CopyPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
@@ -101,7 +101,7 @@ public final class CopyFeeder implements Delegable {
 
 		log.debug("CopyFeeder: pre-processing " + rsd.requestToken());
 		/* Get all parts in request */
-		Collection<CopyChunkData> chunks =
+		Collection<CopyPersistentChunkData> chunks =
 										   CopyChunkCatalog.getInstance()
 											   .lookup(rsd.requestToken());
 		if(chunks.isEmpty())
@@ -122,11 +122,11 @@ public final class CopyFeeder implements Delegable {
      * Private method that handles the Collection of chunks associated with
      * the srm command!
      */
-    private void manageChunks(Collection<CopyChunkData> chunksData) {
+    private void manageChunks(Collection<CopyPersistentChunkData> chunksData) {
 
 		log.debug("CopyFeeder: number of chunks in request " + chunksData.size());
 		int counter = 0; // counter of the number of chunk retrieved
-		for(CopyChunkData chunkData : chunksData)
+		for(CopyPersistentChunkData chunkData : chunksData)
 		{
 			/* Add chunk for global status consideration */
 			gsm.addChunk(chunkData);
@@ -142,7 +142,7 @@ public final class CopyFeeder implements Delegable {
     /**
      * Private method that handles the chunk!
      */
-	private void manage(CopyChunkData chunkData, int counter) {
+	private void manage(CopyPersistentChunkData chunkData, int counter) {
 
 		log.debug("CopyFeeder: scheduling chunk... ");
 		try
@@ -150,8 +150,8 @@ public final class CopyFeeder implements Delegable {
 			/* change status of this chunk to being processed! */
 			chunkData.changeStatusSRM_REQUEST_INPROGRESS("srmCopy chunk is being processed!");
 			CopyChunkCatalog.getInstance().update(chunkData);
-			boolean validFromSurl = TSURL.isValid(chunkData.fromSURL());
-			boolean validToSurl = TSURL.isValid(chunkData.toSURL());
+			boolean validFromSurl = TSURL.isValid(chunkData.getSURL());
+			boolean validToSurl = TSURL.isValid(chunkData.getDestinationSURL());
 			if(validFromSurl)
 			{
 				if(validToSurl)
@@ -169,7 +169,7 @@ public final class CopyFeeder implements Delegable {
 					log.debug("Chunk: " + chunkData);
 
 					SchedulerFacade.getInstance().chunkScheduler().schedule(
-						new PushCopyChunk(gu, rsd, chunkData, counter, gsm));
+						new PushCopyPersistentChunk(gu, rsd, chunkData, counter, gsm));
 
 					log.info("CopyFeeder: chunk scheduled.");
 				}
@@ -185,7 +185,7 @@ public final class CopyFeeder implements Delegable {
 					log.debug("Chunk: " + chunkData);
 
 					SchedulerFacade.getInstance().chunkScheduler().schedule(
-						new PushCopyChunk(gu, rsd, chunkData, counter, gsm));
+						new PushCopyPersistentChunk(gu, rsd, chunkData, counter, gsm));
 
 					log.info("CopyFeeder: chunk scheduled.");
 				}
@@ -238,7 +238,7 @@ public final class CopyFeeder implements Delegable {
 					gsm.failedChunk(chunkData);
 				}
 			}
-		} catch(InvalidCopyChunkAttributesException e)
+		} catch(InvalidCopyAttributesException e)
 		{
 			/*
 			 * for some reason gu, rsd or auxChunkData may be null! This should

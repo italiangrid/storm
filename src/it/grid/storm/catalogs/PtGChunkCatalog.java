@@ -98,19 +98,19 @@ public class PtGChunkCatalog {
      * Only fileSize, StatusCode, errString and transferURL are updated. Likewise
      * for the request pinLifetime.
      */
-	synchronized public void update(PtGChunkData cd) {
+	synchronized public void update(PtGPersistentChunkData cd) {
 
 		PtGChunkDataTO to = new PtGChunkDataTO();
 		/* Primary key needed by DAO Object */
-		to.setPrimaryKey(cd.primaryKey());
-		to.setFileSize(cd.fileSize().value());
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
-		to.setErrString(cd.status().getExplanation());
-		to.setTurl(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
+		to.setPrimaryKey(cd.getPrimaryKey());
+		to.setFileSize(cd.getFileSize().value());
+		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
+		to.setErrString(cd.getStatus().getExplanation());
+		to.setTurl(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
 		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
 		// TODO MICHELE USER_SURL fill new fields
-		to.setNormalizedStFN(cd.fromSURL().normalizedStFN());
-		to.setSurlUniqueID(new Integer(cd.fromSURL().uniqueId()));
+		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 
 		// TODO MICHELE USER_SURL checked : OK
 		dao.update(to);
@@ -126,17 +126,17 @@ public class PtGChunkCatalog {
      * @param PtGChunkData inputChunk
      * @return PtGChunkData outputChunk
      */
-	synchronized public PtGChunkData refreshStatus(PtGChunkData inputChunk) {
+	synchronized public PtGPersistentChunkData refreshStatus(PtGPersistentChunkData inputChunk) {
 
 		//TODO MICHELE USER_SURL checked : OK
 		// Call the dao refresh method to synch with the db status
-		PtGChunkDataTO chunkDataTO = dao.refresh(inputChunk.primaryKey());
+		PtGChunkDataTO chunkDataTO = dao.refresh(inputChunk.getPrimaryKey());
 
 		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTO);
 		if(chunkDataTO == null)
 		{
 			log.warn("PtG CHUNK CATALOG! Empty TO found in persistence for specified request: "
-				+ inputChunk.primaryKey());
+				+ inputChunk.getPrimaryKey());
 		}
 		else
 		{
@@ -188,12 +188,12 @@ public class PtGChunkCatalog {
      * If there are no chunks to process then an empty Collection is returned,
      * and a messagge gets logged.
      */
-	synchronized public Collection<PtGChunkData> lookup(TRequestToken rt) {
+	synchronized public Collection<PtGPersistentChunkData> lookup(TRequestToken rt) {
 
 		//TODO MICHELE USER_SURL checked : OK
 		Collection<PtGChunkDataTO> chunkTOs = dao.find(rt);
 		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkTOs);
-		ArrayList<PtGChunkData> list = new ArrayList<PtGChunkData>();
+		ArrayList<PtGPersistentChunkData> list = new ArrayList<PtGPersistentChunkData>();
 		if(chunkTOs.isEmpty())
 		{
 			log.warn("PtG CHUNK CATALOG! No chunks found in persistence for specified request: "
@@ -202,7 +202,7 @@ public class PtGChunkCatalog {
 		else
 		{
 			//TODO MICHELE USER_SURL here I can update all requests that has not the new fields set alltogether in a bunch, adding a method to the DAO for this purpose
-			PtGChunkData chunk;
+		    PtGPersistentChunkData chunk;
 			for(PtGChunkDataTO chunkTO : chunkTOs)
 			{
 				chunk = makeOne(chunkTO, rt);
@@ -233,7 +233,7 @@ public class PtGChunkCatalog {
      * @param rt
      * @return
      */
-    private PtGChunkData makeOne(PtGChunkDataTO chunkDataTO, TRequestToken rt) {
+    private PtGPersistentChunkData makeOne(PtGChunkDataTO chunkDataTO, TRequestToken rt) {
     	
         StringBuffer errorSb = new StringBuffer();
         //TODO MICHELE USER_SURL here we go from the string representation of the surl on the db to the TSURL object
@@ -329,20 +329,20 @@ public class PtGChunkCatalog {
 		 */
 		TTURL transferURL = TTURL.makeEmpty();
 		// make PtGChunkData
-		PtGChunkData aux = null;
+		PtGPersistentChunkData aux = null;
 		try
 		{
-			aux = new PtGChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
+			aux = new PtGPersistentChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
 					  status, transferURL);
 			aux.setPrimaryKey(chunkDataTO.primaryKey());
-		} catch(InvalidPtGChunkDataAttributesException e)
+		} catch(InvalidSurlRequestDataAttributesException e)
 		{
 			dao.signalMalformedPtGChunk(chunkDataTO);
 			log.warn("PtG CHUNK CATALOG! Retrieved malformed"
 				+ " PtG chunk data from persistence. Dropping chunk from request " + rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
-		}
+		} 
 		// end...
 		return aux;
 	}
@@ -373,7 +373,7 @@ public class PtGChunkCatalog {
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedPtGChunkDataTO completeTO(PtGChunkDataTO chunkTO, final PtGChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
+	private ReducedPtGChunkDataTO completeTO(PtGChunkDataTO chunkTO, final PtGPersistentChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
 		ReducedPtGChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
 		return reducedChunkTO;
@@ -387,10 +387,10 @@ public class PtGChunkCatalog {
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedPtGChunkData reduce(PtGChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
+	private ReducedPtGChunkData reduce(PtGPersistentChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
 
-		ReducedPtGChunkData reducedChunk = new ReducedPtGChunkData(chunk.fromSURL(),chunk.status());
-		reducedChunk.setPrimaryKey(chunk.primaryKey());
+		ReducedPtGChunkData reducedChunk = new ReducedPtGChunkData(chunk.getSURL(),chunk.getStatus());
+		reducedChunk.setPrimaryKey(chunk.getPrimaryKey());
 		return reducedChunk;
 	}
 
@@ -614,21 +614,21 @@ public class PtGChunkCatalog {
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! Proper messages get logged by underlaying DAO.
      */
-    synchronized public void addChild(PtGChunkData chunkData) {
+    synchronized public void addChild(PtGPersistentChunkData chunkData) {
     	
         PtGChunkDataTO to = new PtGChunkDataTO();
         /* needed for now to find ID of request! Must be changed soon! */
-        to.setRequestToken(chunkData.requestToken().toString()); 
-        to.setFromSURL(chunkData.fromSURL().toString());
+        to.setRequestToken(chunkData.getRequestToken().toString()); 
+        to.setFromSURL(chunkData.getSURL().toString());
         //TODO MICHELE USER_SURL fill new fields
-        to.setNormalizedStFN(chunkData.fromSURL().normalizedStFN());
-        to.setSurlUniqueID(new Integer(chunkData.fromSURL().uniqueId()));
+        to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
-        to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
-        to.setDirOption(chunkData.dirOption().isDirectory());
-        to.setNumLevel(chunkData.dirOption().getNumLevel());
-        to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
-        to.setErrString(chunkData.status().getExplanation());
+        to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
+        to.setDirOption(chunkData.getDirOption().isDirectory());
+        to.setNumLevel(chunkData.getDirOption().getNumLevel());
+        to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
+        to.setErrString(chunkData.getStatus().getExplanation());
         
         //TODO MICHELE USER_SURL checked : OK
         /* add the entry and update the Primary Key field! */
@@ -652,22 +652,22 @@ public class PtGChunkCatalog {
      * In case of any error the operation does not proceed, but no Exception is
      * thrown! The underlaying DAO logs proper error messagges.
      */
-    synchronized public void add(PtGChunkData chunkData, GridUserInterface gu) {
+    synchronized public void add(PtGPersistentChunkData chunkData, GridUserInterface gu) {
     	
         PtGChunkDataTO to = new PtGChunkDataTO();
-        to.setRequestToken(chunkData.requestToken().toString());
-        to.setFromSURL(chunkData.fromSURL().toString());
+        to.setRequestToken(chunkData.getRequestToken().toString());
+        to.setFromSURL(chunkData.getSURL().toString());
         //TODO MICHELE USER_SURL fill new fields
-        to.setNormalizedStFN(chunkData.fromSURL().normalizedStFN());
-        to.setSurlUniqueID(new Integer(chunkData.fromSURL().uniqueId()));
+        to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+        to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
         to.setLifeTime(new Long(chunkData.getPinLifeTime().value()).intValue() );
-        to.setAllLevelRecursive(chunkData.dirOption().isAllLevelRecursive());
-        to.setDirOption(chunkData.dirOption().isDirectory());
-        to.setNumLevel(chunkData.dirOption().getNumLevel());
-        to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.desiredProtocols()));
-        to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.status().getStatusCode()));
-        to.setErrString(chunkData.status().getExplanation());
+        to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
+        to.setDirOption(chunkData.getDirOption().isDirectory());
+        to.setNumLevel(chunkData.getDirOption().getNumLevel());
+        to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.getTransferProtocols()));
+        to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
+        to.setErrString(chunkData.getStatus().getExplanation());
         
         //TODO MICHELE USER_SURL checked : OK
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!

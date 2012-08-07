@@ -18,7 +18,7 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPChunkData;
+import it.grid.storm.catalogs.PtPPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
@@ -100,7 +100,7 @@ public final class PtPFeeder implements Delegable {
 
 		log.debug("PtPFeeder: pre-processing " + rsd.requestToken());
 		/* Get all parts in request */
-		Collection<PtPChunkData> chunks = PtPChunkCatalog.getInstance().lookup(rsd.requestToken());
+		Collection<PtPPersistentChunkData> chunks = PtPChunkCatalog.getInstance().lookup(rsd.requestToken());
 		if(chunks.isEmpty())
 		{
 			log.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing to process! "
@@ -120,15 +120,15 @@ public final class PtPFeeder implements Delegable {
      * the srm command!
 	 * @param chunksData
 	 */
-	private void manageChunks(Collection<PtPChunkData> chunksData) {
+	private void manageChunks(Collection<PtPPersistentChunkData> chunksData) {
 
 		log.debug("PtPFeeder: number of chunks in request " + chunksData.size());
 		/* chunk currently being processed */
-		for(PtPChunkData chunkData : chunksData)
+		for(PtPPersistentChunkData chunkData : chunksData)
 		{
 			/* add chunk for global status consideration */
 			gsm.addChunk(chunkData);
-			if(TSURL.isValid(chunkData.toSURL()))
+			if(TSURL.isValid(chunkData.getSURL()))
 			{
 				manage(chunkData);
 			}
@@ -163,7 +163,7 @@ public final class PtPFeeder implements Delegable {
 	 * 
 	 * @param auxChunkData
 	 */
-	private void manage(PtPChunkData auxChunkData) {
+	private void manage(PtPPersistentChunkData auxChunkData) {
 
 		log.debug("PtPFeeder - scheduling... ");
 		try
@@ -176,14 +176,10 @@ public final class PtPFeeder implements Delegable {
 			
 			/* hand it to scheduler! */
 			SchedulerFacade.getInstance().chunkScheduler().schedule(
-				new PtPChunk(gu, rsd, auxChunkData, gsm));
+				new PtPPersistentChunk(gu, rsd, auxChunkData, gsm));
 			log.debug("PtPFeeder - chunk scheduled.");
-		} catch(InvalidPtPChunkAttributesException e)
+		} catch(InvalidPersistentRequestAttributesException e)
 		{
-			/*
-			 * for some reason gu, or, rsd, or auxChunkData may be null! This
-			 * should not be so!
-			 */
 			log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n" + e);
 			
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
@@ -191,18 +187,27 @@ public final class PtPFeeder implements Delegable {
 			
 			PtPChunkCatalog.getInstance().update(auxChunkData);
 			gsm.failedChunk(auxChunkData);
-		} catch(SchedulerException e)
-		{
-			/* Internal error of scheduler! */
-			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
-			
-			auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
-				+ "error prevented this chunk from being processed!");
-			
-			PtPChunkCatalog.getInstance().update(auxChunkData);
-			gsm.failedChunk(auxChunkData);
-		}
-	}
+		} catch(InvalidRequestAttributesException e)
+        {
+            log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n" + e);
+            
+            auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
+                + " does not allow this chunk to be processed!");
+            
+            PtPChunkCatalog.getInstance().update(auxChunkData);
+            gsm.failedChunk(auxChunkData);
+        } catch(SchedulerException e)
+        {
+            /* Internal error of scheduler! */
+            log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n" + e);
+
+            auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
+                    + "error prevented this chunk from being processed!");
+
+            PtPChunkCatalog.getInstance().update(auxChunkData);
+            gsm.failedChunk(auxChunkData);
+        }
+    }
 
     /**
      * Method used by chunk scheduler for internal logging; it returns the request

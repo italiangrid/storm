@@ -17,9 +17,10 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.InvalidPtGChunkDataAttributesException;
+import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
+import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGChunkData;
+import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
@@ -142,7 +143,7 @@ public final class PtGFeeder implements Delegable {
 
 		log.debug("PtGFeeder: pre-processing " + rsd.requestToken());
 		// Get all parts in request
-		Collection<PtGChunkData> chunks = PtGChunkCatalog.getInstance().lookup(rsd.requestToken());
+		Collection<PtGPersistentChunkData> chunks = PtGChunkCatalog.getInstance().lookup(rsd.requestToken());
 		if(chunks.isEmpty())
 		{
 			log.warn("ATTENTION in PtGFeeder! This SRM PtG request contained nothing to process! "
@@ -161,20 +162,20 @@ public final class PtGFeeder implements Delegable {
      * Private method that handles the Collection of chunks associated with
      * the srm command!
 	 */
-	private void manageChunks(Collection<PtGChunkData> chunks) {
+	private void manageChunks(Collection<PtGPersistentChunkData> chunks) {
 
 		log.debug("PtGFeeder - number of chunks in request: " + chunks.size());
-		for(PtGChunkData chunkData : chunks)
+		for(PtGPersistentChunkData chunkData : chunks)
 		{
 			gsm.addChunk(chunkData); // add chunk for global status
 			// consideration
-			if(TSURL.isValid(chunkData.fromSURL()))
+			if(TSURL.isValid(chunkData.getSURL()))
 			{
 				/*
 				 * fromSURL corresponds to This installation of StoRM: go on
 				 * with processing!
 				 */
-				if(chunkData.dirOption().isDirectory())
+				if(chunkData.getDirOption().isDirectory())
 				{
 					/* expand the directory and manage the children! */
 					manageIsDirectory(chunkData);
@@ -216,7 +217,7 @@ public final class PtGFeeder implements Delegable {
      * Private method that handles the case of dirOption NOT set!
      * @param auxChunkData
      */
-	private void manageNotDirectory(PtGChunkData auxChunkData) {
+	private void manageNotDirectory(PtGPersistentChunkData auxChunkData) {
 
 		log.debug("PtGFeeder - scheduling... ");
 		/* change status of this chunk to being processed! */
@@ -227,14 +228,10 @@ public final class PtGFeeder implements Delegable {
 		{
 			/* hand it to scheduler! */
 			SchedulerFacade.getInstance().chunkScheduler().schedule(
-				new PtGChunk(gu, rsd, auxChunkData, gsm));
+				new PtGPersistentChunk(gu, rsd, auxChunkData, gsm));
 			log.debug("PtGFeeder - chunk scheduled.");
-		} catch(InvalidPtGChunkAttributesException e)
+		} catch(InvalidPersistentRequestAttributesException e)
 		{
-			/*
-			 * for some reason gu, rsd or auxChunkData may be null! This should
-			 * not be so!
-			 */
 			log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n" + e);
 			log.error("Request: " + rsd.requestToken());
 			log.error("Chunk: " + auxChunkData);
@@ -244,6 +241,17 @@ public final class PtGFeeder implements Delegable {
 			
 			PtGChunkCatalog.getInstance().update(auxChunkData);
 			gsm.failedChunk(auxChunkData);
+		} catch(InvalidRequestAttributesException e)
+		{
+		    log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n" + e);
+            log.error("Request: " + rsd.requestToken());
+            log.error("Chunk: " + auxChunkData);
+            
+            auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does"
+                + " not allow this chunk to be processed!");
+            
+            PtGChunkCatalog.getInstance().update(auxChunkData);
+            gsm.failedChunk(auxChunkData);
 		} catch(SchedulerException e)
 		{
 			/* Internal error of scheduler! */
@@ -265,7 +273,7 @@ public final class PtGFeeder implements Delegable {
      * dirOption set!
      * @param chunkData
      */
-	private void manageIsDirectory(PtGChunkData chunkData) {
+	private void manageIsDirectory(PtGPersistentChunkData chunkData) {
 
 		log.debug("PtGFeeder - pre-processing Directory chunk...");
 		/* Change status of this chunk to being processed! */
@@ -279,7 +287,7 @@ public final class PtGFeeder implements Delegable {
 		    StoRI stori = null;
 		    try
             {
-                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.fromSURL(), gu);
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getSURL(), gu);
             }
             catch (IllegalArgumentException e)
             {
@@ -294,7 +302,7 @@ public final class PtGFeeder implements Delegable {
     			/* Collection of children! */
     			//TODO MICHELE here if the recursion on directory is supported substiture the following withe the commented one
     			Collection<StoRI> storiChildren = stori.getChildren(chunkData
-    				  .dirOption());
+    				  .getDirOption());
     //			Collection<StoRI> storiChildren = stori.generateChildrenNoFolders(chunkData
     //												  .dirOption());
     			
@@ -309,15 +317,15 @@ public final class PtGFeeder implements Delegable {
     			// (auxChunkData.dirOption().getNumLevel()-1)) : 0 ) :0));
     			TDirOption notDir = new TDirOption(false, false, 0);
     			
-    			PtGChunkData childData;
+    			PtGPersistentChunkData childData;
     			for(StoRI storiChild : storiChildren)
     			{
     				try
     				{
-    					childData = new PtGChunkData(chunkData.requestToken(), storiChild.getSURL(),
+    					childData = new PtGPersistentChunkData(chunkData.getRequestToken(), storiChild.getSURL(),
     									chunkData.getPinLifeTime(), notDir, chunkData
-    										.desiredProtocols(), chunkData.fileSize(), chunkData
-    										.status(), chunkData.transferURL());
+    										.getTransferProtocols(), chunkData.getFileSize(), chunkData
+    										.getStatus(), chunkData.getTransferURL());
     					/* fill in new db row and set the PrimaryKey of ChildData! */
     					PtGChunkCatalog.getInstance().addChild(childData);
     					log.debug("PtGFeeder - added child data: " + childData);
@@ -326,15 +334,10 @@ public final class PtGFeeder implements Delegable {
     					gsm.addChunk(childData);
     					/* manage chunk */
     					manageNotDirectory(childData);
-    				} catch(InvalidPtGChunkDataAttributesException e)
+    				} catch(InvalidSurlRequestDataAttributesException e)
     				{
-    					/*
-    					 * For some reason it was not possible to create a
-    					 * PtGChunkData: it is a program bug!!! It should not
-    					 * occur!!! Log it and skip to the next one!
-    					 */
     					log.error("ERROR in PtGFeeder! While expanding recursive request,"
-    						+ " it was not possible to create a new PtGChunkData! " + e);
+    						+ " it was not possible to create a new PtGPersistentChunkData! " + e);
     				}
     			}
     			log.debug("PtGFeeder - expansion completed.");

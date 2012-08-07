@@ -20,6 +20,7 @@ package it.grid.storm.synchcall;
 import it.grid.storm.common.OperationType;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandFactory;
+import it.grid.storm.synchcall.command.datatransfer.CommandException;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 
@@ -43,12 +44,10 @@ public class SimpleSynchcallDispatcher implements SynchcallDispatcher {
      * @see it.grid.storm.synchcall.SynchcallDispatcher#processRequest(it.grid.storm.health.OperationType, it.grid.storm.synchcall.data.InputData)
      */
 
-    public OutputData processRequest(OperationType type, InputData inputData) throws IllegalArgumentException {
+    public OutputData processRequest(OperationType type, InputData inputData) throws IllegalArgumentException, CommandException {
         
         Command cmd = CommandFactory.getCommand(type);
         return cmd.execute(inputData);
-    
-        
     }
 
 }

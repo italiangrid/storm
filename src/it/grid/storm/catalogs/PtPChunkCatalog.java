@@ -111,21 +111,21 @@ public class PtPChunkCatalog {
     /**
      * Method used to update into Persistence a retrieved PtPChunkData.
      */
-	synchronized public void update(PtPChunkData cd) {
+	synchronized public void update(PtPPersistentChunkData cd) {
 		
 		PtPChunkDataTO to = new PtPChunkDataTO();
 		/* rimary key needed by DAO Object */
-		to.setPrimaryKey(cd.primaryKey());
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.status().getStatusCode()));
-		to.setErrString(cd.status().getExplanation());
-		to.setTransferURL(TURLConverter.getInstance().toDB(cd.transferURL().toString()));
+		to.setPrimaryKey(cd.getPrimaryKey());
+		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
+		to.setErrString(cd.getStatus().getExplanation());
+		to.setTransferURL(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
 		to.setPinLifetime(PinLifetimeConverter.getInstance().toDB(cd.pinLifetime().value()));
 		to.setFileLifetime(FileLifetimeConverter.getInstance().toDB(cd.fileLifetime().value()));
 		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.fileStorageType()));
 		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.overwriteOption()));
 		// TODO MICHELE USER_SURL fill new fields
-		to.setNormalizedStFN(cd.toSURL().normalizedStFN());
-		to.setSurlUniqueID(new Integer(cd.toSURL().uniqueId()));
+		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 		
 		dao.update(to);
 	}
@@ -134,19 +134,19 @@ public class PtPChunkCatalog {
      * Method that synchronizes the supplied PtPChunkData with the information present in Persistence. BE WARNED: a new
      * object is returned, and the original PtPChunkData is left untouched! null is returned in case of any error.
      */
-	synchronized public PtPChunkData refreshStatus(PtPChunkData inputChunk) {
+	synchronized public PtPPersistentChunkData refreshStatus(PtPPersistentChunkData inputChunk) {
 		
-		PtPChunkDataTO auxTO = dao.refresh(inputChunk.primaryKey());
+		PtPChunkDataTO auxTO = dao.refresh(inputChunk.getPrimaryKey());
 		log.debug("PtP CHUNK CATALOG refreshStatus: retrieved data " + auxTO);
 		if(auxTO == null)
 		{
 			log.warn("PtP CHUNK CATALOG! Empty TO found in persistence for specified request: "
-				+ inputChunk.primaryKey());
+				+ inputChunk.getPrimaryKey());
 			return null;
 		}
 		else
 		{
-			return makeOne(auxTO, inputChunk.requestToken());
+			return makeOne(auxTO, inputChunk.getRequestToken());
 		}
 	}
 	
@@ -159,11 +159,11 @@ public class PtPChunkCatalog {
      * status are NOT returned! This is imporant because this method is intended to be used by the Feeders to fetch all
      * chunks in the request, and aborted chunks should not be picked up for processing!
      */
-	synchronized public Collection<PtPChunkData> lookup(final TRequestToken rt) {
+	synchronized public Collection<PtPPersistentChunkData> lookup(final TRequestToken rt) {
 		
 		Collection<PtPChunkDataTO> chunkTOs = dao.find(rt);
 		log.debug("PtPChunkCatalog: retrieved data " + chunkTOs);
-		ArrayList<PtPChunkData> list = new ArrayList<PtPChunkData>();
+		ArrayList<PtPPersistentChunkData> list = new ArrayList<PtPPersistentChunkData>();
 		if(chunkTOs.isEmpty())
 		{
 			log.warn("PtP CHUNK CATALOG! No chunks found in persistence for specified request: "
@@ -171,7 +171,7 @@ public class PtPChunkCatalog {
 		}
 		else
 		{
-			PtPChunkData chunk;
+		    PtPPersistentChunkData chunk;
 			for(PtPChunkDataTO chunkTO : chunkTOs)
 			{
 				chunk = makeOne(chunkTO, rt);
@@ -199,7 +199,7 @@ public class PtPChunkCatalog {
      * Private method used to create a PtPChunkData object, from a PtPChunkDataTO and TRequestToken. If a chunk cannot
      * be created, an error messagge gets logged and an attempt is made to signal in the DB that the chunk is malformed.
      */
-	private PtPChunkData makeOne(PtPChunkDataTO auxTO, TRequestToken rt) {
+	private PtPPersistentChunkData makeOne(PtPChunkDataTO auxTO, TRequestToken rt) {
 
 		StringBuffer errorSb = new StringBuffer();
 		// toSURL
@@ -370,21 +370,42 @@ public class PtPChunkCatalog {
 		 */
 		TTURL transferURL = TTURL.makeEmpty();
 		// make PtPChunkData
-		PtPChunkData aux = null;
+		PtPPersistentChunkData aux = null;
 		try
 		{
-			aux = new PtPChunkData(rt, toSURL, pinLifetime, fileLifetime, fileStorageType,
+			aux = new PtPPersistentChunkData(rt, toSURL, pinLifetime, fileLifetime, fileStorageType,
 					  spaceToken, expectedFileSize, transferProtocols, overwriteOption, status,
 					  transferURL);
 			aux.setPrimaryKey(auxTO.primaryKey());
-		} catch(InvalidPtPChunkDataAttributesException e)
+		} catch(InvalidPtPPersistentChunkDataAttributesException e)
 		{
 			dao.signalMalformedPtPChunk(auxTO);
 			log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
 				+ " from persistence. Dropping chunk from request: " + rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
-		}
+		} catch(InvalidPtPDataAttributesException e)
+        {
+		    dao.signalMalformedPtPChunk(auxTO);
+            log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
+                + " from persistence. Dropping chunk from request: " + rt);
+            log.warn(e.getMessage(), e);
+            log.warn(errorSb.toString());
+        } catch(InvalidFileTransferDataAttributesException e)
+        {
+            dao.signalMalformedPtPChunk(auxTO);
+            log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
+                + " from persistence. Dropping chunk from request: " + rt);
+            log.warn(e.getMessage(), e);
+            log.warn(errorSb.toString());
+        } catch(InvalidSurlRequestDataAttributesException e)
+        {
+            dao.signalMalformedPtPChunk(auxTO);
+            log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
+                + " from persistence. Dropping chunk from request: " + rt);
+            log.warn(e.getMessage(), e);
+            log.warn(errorSb.toString());
+        }
 		// end...
 		return aux;
 	}
@@ -415,7 +436,7 @@ public class PtPChunkCatalog {
 	 * @throws InvalidReducedPtPChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedPtPChunkDataTO completeTO(PtPChunkDataTO chunkTO, final PtPChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
+	private ReducedPtPChunkDataTO completeTO(PtPChunkDataTO chunkTO, final PtPPersistentChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
 		ReducedPtPChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
 		return reducedChunkTO;
@@ -429,10 +450,10 @@ public class PtPChunkCatalog {
 	 * @throws InvalidReducedPtPChunkDataAttributesException
 	 */
 	//TODO MICHELE USER_SURL new method
-	private ReducedPtPChunkData reduce(PtPChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
+	private ReducedPtPChunkData reduce(PtPPersistentChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
 
-		ReducedPtPChunkData reducedChunk = new ReducedPtPChunkData(chunk.toSURL(), chunk.status(), chunk.fileStorageType(), chunk.fileLifetime());
-		reducedChunk.setPrimaryKey(chunk.primaryKey());
+		ReducedPtPChunkData reducedChunk = new ReducedPtPChunkData(chunk.getSURL(), chunk.getStatus(), chunk.fileStorageType(), chunk.fileLifetime());
+		reducedChunk.setPrimaryKey(chunk.getPrimaryKey());
 		return reducedChunk;
 	}
 
