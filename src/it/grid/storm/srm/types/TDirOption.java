@@ -47,6 +47,17 @@ public class  TDirOption {
 			throw new InvalidTDirOptionAttributesException(allLevel, -1);
 	}
 
+	private TDirOption(boolean isDirectory)
+	{
+	    this.isASourceDirectory = isDirectory;
+	    this.allLevelRecursive = false;
+	}
+	
+	public static TDirOption makeNotDirectory()
+	{
+	    TDirOption builtInstance = new TDirOption(false);
+	    return builtInstance;
+	}
 
     /**
      * Constructor that requires boolean isDirectory, boolean allLevel, int

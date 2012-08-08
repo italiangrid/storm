@@ -25,7 +25,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
@@ -912,10 +911,13 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         return success;
     }
 
-    public RequestData getRequestData() {
+    /* (non-Javadoc)
+     * @see it.grid.storm.asynch.Suspendedable#getRequestData()
+     */
+    public PtGData getRequestData()
+    {
         return requestData;
-        }
-        
+    }
 
     public String getSURL() {
         return requestData.getSURL().toString();

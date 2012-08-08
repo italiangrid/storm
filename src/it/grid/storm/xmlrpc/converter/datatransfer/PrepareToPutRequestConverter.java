@@ -17,77 +17,34 @@
 
 package it.grid.storm.xmlrpc.converter.datatransfer;
 
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
-import it.grid.storm.synchcall.data.datatransfer.PrepareToPutOutputData;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
-import it.grid.storm.xmlrpc.converter.Converter;
 
 /**
  * @author Michele Dibenedetto
  *
  */
-public class PrepareToPutRequestConverter implements Converter
+public class PrepareToPutRequestConverter extends FileTransferRequestInputConverter 
 {
-    private static final String USER_DN_PARAMETER_NAME = "userDN";
-    private static final String OVERWRITE_MODE_PARAMETER_NAME = "overwriteMode";
-    private static final Logger log = LoggerFactory.getLogger(PrepareToPutRequestConverter.class);
-    
+    static final String OVERWRITE_MODE_PARAMETER_NAME = "overwriteMode";
+    static final Logger log = LoggerFactory.getLogger(PrepareToPutRequestConverter.class);
+
     @Override
     public InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
-        TSURL surl = null;
-        try
-        {
-            surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
-        } catch(InvalidTSURLAttributesException e)
-        {
-            log.error("Unable to decode \'" + TSURL.PNAME_SURL
-                    + "\' parameter as TSURL. InvalidTSURLAttributesException: " + e.getMessage());
-            throw new IllegalArgumentException("Unable to decode \'" + TSURL.PNAME_SURL
-                    + "\' parameter as TSURL");
-        }
-        if (surl == null)
-        {
-            log.error("Missing mandatory parameter \'" + TSURL.PNAME_SURL
-                    + "\' Unable to build PrepareToPutInputData");
-            throw new IllegalArgumentException("Missing mandatory parameter \'" + TSURL.PNAME_SURL + "\'");
-        }
-        GridUserInterface user = GridUserManager.decode(inputParam);
-        if (user == null)
-        {
-            log.error("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
-                    + "\' Unable to build PrepareToPutInputData");
-            throw new IllegalArgumentException("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
-                    + "\'");
-        }
-        TURLPrefix transferProtocols = TURLPrefix.decode(inputParam, TURLPrefix.PNAME_TURL_PREFIX);
-        if (transferProtocols == null)
-        {
-            log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
-                    + "\' Unable to build PrepareToPutInputData");
-            throw new IllegalArgumentException("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
-                    + "\'");
-        }
+        FileTransferInputData ftInputData = (FileTransferInputData) super.convertToInputData(inputParam);
         PrepareToPutInputData inputData;
         try
         {
-            inputData = new PrepareToPutInputData(user, surl, transferProtocols);
+            inputData = new PrepareToPutInputData(ftInputData);
         } catch(IllegalArgumentException e)
         {
             log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
@@ -105,7 +62,7 @@ public class PrepareToPutRequestConverter implements Converter
                 log.warn("Unable to use the received \'" + TSizeInBytes.PNAME_SIZE + "\', interpreted as an empty value");
             }
         }
-
+    
         String overwriteModeString = (String) inputParam.get(OVERWRITE_MODE_PARAMETER_NAME);
         if (overwriteModeString != null)
         {
@@ -127,34 +84,19 @@ public class PrepareToPutRequestConverter implements Converter
                 log.warn("Unable to use the received \'" + OVERWRITE_MODE_PARAMETER_NAME + "\', interpreted as an empty value");
             }
         }
+        TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_FILELIFETIME);
+        if (desiredFileLifetime != null)
+        {
+            if(!desiredFileLifetime.isEmpty())
+            {
+                inputData.setDesiredFileLifetime(desiredFileLifetime);                
+            }
+            else
+            {
+                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_FILELIFETIME + "\', interpreted as an empty value");
+            }
+        }
         log.debug("PrepareToPutInputData Created!");
         return inputData;
     }
-
-    @Override
-    public Map convertFromOutputData(OutputData outputData) throws IllegalArgumentException
-    {
-        log.debug("Creation of XMLRPC Output Structure");
-        Hashtable outputParam = new Hashtable();
-        if(!(outputData instanceof PrepareToPutOutputData))
-        {
-            log.error("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
-            throw new IllegalArgumentException("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
-        }
-        PrepareToPutOutputData ptpOutputData = (PrepareToPutOutputData) outputData;
-        TSURL surl = ptpOutputData.getSurl();
-        TTURL turl = ptpOutputData.getTurl();
-        TReturnStatus status = ptpOutputData.getStatus();
-        if(surl == null || turl == null || status == null)
-        {
-            log.error("Unable to build a valid output map. Missing mandatory values from PrepareToPutOutputData: " + ptpOutputData.toString());
-            throw new IllegalArgumentException("Unable to build a valid output map from PrepareToPutOutputData");
-        }
-        surl.encode(outputParam, TSURL.PNAME_SURL);
-        turl.encode(outputParam, TTURL.PNAME_TURL);
-        status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        log.debug("Built output Map: " + outputParam.toString());
-        return outputParam;
-    }
-
 }

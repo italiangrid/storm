@@ -27,7 +27,7 @@ import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
-import it.grid.storm.synchcall.data.datatransfer.PrepareToPutOutputData;
+import it.grid.storm.synchcall.data.datatransfer.FileTransferOutputData;
 
 /**
  * @author Michele Dibenedetto
@@ -59,7 +59,7 @@ public class PrepareToPutRequestCommand implements Command
         ptpTask.run();
         try
         {
-            return new PrepareToPutOutputData(request.getRequestData().getSURL(), request.getRequestData()
+            return new FileTransferOutputData(request.getRequestData().getSURL(), request.getRequestData()
                                                                                          .getTransferURL(),
                                               request.getRequestData().getStatus());
         } catch(IllegalArgumentException e)

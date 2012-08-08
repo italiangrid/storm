@@ -26,18 +26,18 @@ import it.grid.storm.synchcall.data.OutputData;
  * @author Michele Dibenedetto
  *
  */
-public class PrepareToPutOutputData implements OutputData 
+public class FileTransferOutputData implements OutputData 
 {
 
     private final TSURL surl;
     private final TTURL turl;
     private final TReturnStatus status;
 
-    public PrepareToPutOutputData(TSURL surl, TTURL turl, TReturnStatus status) throws IllegalArgumentException
+    public FileTransferOutputData(TSURL surl, TTURL turl, TReturnStatus status) throws IllegalArgumentException
     {
         if(surl == null || turl == null || status == null)
         {
-            throw new IllegalArgumentException("Unable to create PrepareToPutOutputData. Received null arguments: "
+            throw new IllegalArgumentException("Unable to create FileTransferOutputData. Received null arguments: "
                                                + "surl = " + surl + " , turl = " + turl + " , status = " + status);
         }
         this.surl = surl;

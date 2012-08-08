@@ -48,10 +48,10 @@ public class PtPBuilder
     public static PtP build(PrepareToPutInputData inputData) throws BuilderException
     {
         TSURL toSURL = inputData.getSurl();
-        TLifeTimeInSeconds pinLifetime = TLifeTimeInSeconds.makeInfinite();
-        TLifeTimeInSeconds fileLifetime= TLifeTimeInSeconds.makeInfinite();
+        TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
+        TLifeTimeInSeconds fileLifetime = inputData.getDesiredFileLifetime();
         TFileStorageType fileStorageType = TFileStorageType.getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
-        TSpaceToken spaceToken = TSpaceToken.makeEmpty();
+        TSpaceToken spaceToken = inputData.getTargetSpaceToken();
         TSizeInBytes expectedFileSize = inputData.getFileSize();
         TURLPrefix transferProtocols = inputData.getTransferProtocols();
         TOverwriteMode overwriteOption = TOverwriteMode.ALWAYS;

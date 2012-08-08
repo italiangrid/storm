@@ -18,58 +18,50 @@
 package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.synchcall.data.AbstractInputData;
 
 /**
  * @author Michele Dibenedetto
  *
  */
-public class PrepareToPutInputData extends AbstractInputData
+public class PrepareToPutInputData extends FileTransferInputData
 {
 
-    private final GridUserInterface user;
-    private final TSURL surl;
-    private final TURLPrefix transferProtocols;
     private TOverwriteMode overwriteMode;
     private TSizeInBytes fileSize;
+    private TLifeTimeInSeconds desiredFileLifetime;
+
+    public PrepareToPutInputData(FileTransferInputData inputData)
+    {
+        this(inputData.getUser(), inputData.getSurl(), inputData.getTransferProtocols());
+    }
     
     /**
-     * Forbidden
+     * @param user
+     * @param surl
+     * @param transferProtocols
+     * @throws IllegalArgumentException
+     * @throws IllegalStateException
      */
-    @SuppressWarnings("unused")
-    private PrepareToPutInputData() 
+    public PrepareToPutInputData(GridUserInterface user, TSURL surl, TURLPrefix transferProtocols) throws IllegalArgumentException, IllegalStateException
     {
-        throw new IllegalAccessError("No arguments constructor is forbidden");
-    }
-    
-    public PrepareToPutInputData(GridUserInterface user, TSURL surl, TURLPrefix transferProtocols) throws IllegalArgumentException
-    {
-        if(user == null || surl == null || transferProtocols == null)
+        super(user, surl, transferProtocols);
+        try
         {
-            throw new IllegalArgumentException("Unable to create PrepareToPutInputData. Received nul parameters: user = "
-                                                       + user + " , surl = " + surl + " , transferProtocols = " + transferProtocols);
+            this.desiredFileLifetime = TLifeTimeInSeconds.make(Configuration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
+        } catch(InvalidTLifeTimeAttributeException e)
+        {
+           throw new IllegalStateException("Unexpected InvalidTLifeTimeAttributeException: " + e);
         }
-        this.surl = surl;
-        this.user = user;
-        this.transferProtocols = transferProtocols;
     }
     
-    @Override
-    public Boolean hasPrincipal()
-    {
-        return Boolean.TRUE;
-    }
-
-    @Override
-    public String getPrincipal()
-    {
-        return user.getDn();
-    }
-
     /**
      * @return the overwriteMode
      */
@@ -103,27 +95,18 @@ public class PrepareToPutInputData extends AbstractInputData
     }
 
     /**
-     * @return the user
+     * @param desiredFileLifetime
      */
-    public GridUserInterface getUser()
+    public void setDesiredFileLifetime(TLifeTimeInSeconds desiredFileLifetime)
     {
-        return user;
+        this.desiredFileLifetime = desiredFileLifetime;
     }
 
     /**
-     * @return the surl
+     * @return
      */
-    public TSURL getSurl()
+    public TLifeTimeInSeconds getDesiredFileLifetime()
     {
-        return surl;
+        return desiredFileLifetime;
     }
-
-    /**
-     * @return the transferProtocols
-     */
-    public TURLPrefix getTransferProtocols()
-    {
-        return transferProtocols;
-    }
-
 }

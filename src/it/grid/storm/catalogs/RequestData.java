@@ -19,7 +19,6 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TTURL;
 
 /**
  * Class that represents a generic chunk. It provides only one method which is the
@@ -41,8 +40,6 @@ public interface RequestData {
 
     public abstract void changeStatusSRM_INVALID_PATH(String explanation);
 
-    //public abstract void changeStatusSRM_DUPLICATION_ERROR(String explanation);
-
     public abstract void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation);
 
     public abstract void changeStatusSRM_INVALID_REQUEST(String explanation);
@@ -56,8 +53,6 @@ public interface RequestData {
     public abstract void changeStatusSRM_SUCCESS(String explanation);
 
     public abstract void changeStatusSRM_SPACE_LIFETIME_EXPIRED(String explanation);
-
-    //public abstract void changeStatusSRM_SPACE_AVAILABLE(String explanation);
 
     public abstract void changeStatusSRM_REQUEST_INPROGRESS(String explanation);
 
