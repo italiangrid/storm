@@ -438,12 +438,4 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
             log.error("Unexpected InvalidTRequestTokenAttributesException: " + e.getMessage());
         }
     }
-
-    @Test
-    public void testSetFakeRequestToken()
-    {
-        TapeRecallTO to = new TapeRecallTO();
-        to.setFakeRequestToken();
-    }
-    
 }

@@ -464,9 +464,6 @@ test.junit.dir
 		
 		<!-- Smart Round Robin -->
 		<include name="netty-3.5.0.Final.jar"/>
-	    
-	    <!-- junit -->
-	    <include name="junit-4.8.1.jar"/>
 	</fileset>
 
 	<fileset id="src.jars.build"
