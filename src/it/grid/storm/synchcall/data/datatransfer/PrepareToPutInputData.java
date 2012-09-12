@@ -38,10 +38,10 @@ public class PrepareToPutInputData extends FileTransferInputData
     private TSizeInBytes fileSize;
     private TLifeTimeInSeconds desiredFileLifetime;
 
-    public PrepareToPutInputData(FileTransferInputData inputData)
-    {
-        this(inputData.getUser(), inputData.getSurl(), inputData.getTransferProtocols());
-    }
+//    public PrepareToPutInputData(FileTransferInputData inputData)
+//    {
+//        this(inputData.getUser(), inputData.getSurl(), inputData.getTransferProtocols());
+//    }
     
     /**
      * @param user
@@ -60,6 +60,12 @@ public class PrepareToPutInputData extends FileTransferInputData
         {
            throw new IllegalStateException("Unexpected InvalidTLifeTimeAttributeException: " + e);
         }
+    }
+    
+    public PrepareToPutInputData(GridUserInterface user, TSURL surl, TURLPrefix transferProtocols, TLifeTimeInSeconds desiredFileLifetime) throws IllegalArgumentException, IllegalStateException
+    {
+        this(user, surl, transferProtocols);
+        this.desiredFileLifetime = desiredFileLifetime;
     }
     
     /**

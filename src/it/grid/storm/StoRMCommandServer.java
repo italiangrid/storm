@@ -249,14 +249,18 @@ public class StoRMCommandServer {
                             }
                             break;
                         case SHUTDOWN:
-                            shutdownInProgress = true;
-                            log.info("StoRM: Backend shutdown...");
-                            log.info("StoRM: stopping Backend services...");
-                            stopServices();
-                            response = REQUEST_SUCCESS_RESPONSE;
-                            sendOutputAndClose(response, out, in, socket);
-                            log.info("StoRM: Backend shutdown complete.");
-                            System.exit(0);
+                            if(!shutdownInProgress)
+                            {
+                                shutdownInProgress = true;
+                                log.info("StoRM: Backend shutdown...");
+                                log.info("StoRM: stopping Backend services...");
+                                stopServices();
+                                response = REQUEST_SUCCESS_RESPONSE;
+                                sendOutputAndClose(response, out, in, socket);
+                                log.info("StoRM: Backend shutdown complete.");
+                                System.exit(0);    
+                            }
+                            log.info("StoRM: Backend shutdown already in progress");
                             break;
                         case STATUS:
                                 switch (getCurrentStatus())

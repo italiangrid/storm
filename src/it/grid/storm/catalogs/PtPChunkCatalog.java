@@ -21,6 +21,7 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -40,6 +41,7 @@ import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -94,8 +96,12 @@ public class PtPChunkCatalog {
                     log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
                             + "No data could be translated from persitence for PtP Chunks with ID " + ids);
                 }
-                
-                PutDoneCommand.executePutDone(reduced, null, null, null);
+                ArrayList<TSURL> surls = new ArrayList<TSURL>(reduced.size());
+                for(ReducedPtPChunkData data : reduced)
+                {
+                    surls.add(data.toSURL());
+                }
+                PutDoneCommand.executePutDone(surls, null, null, null);
             }
         };
         transiter.scheduleAtFixedRate(transitTask, delay, period);
@@ -128,6 +134,7 @@ public class PtPChunkCatalog {
 		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 		
 		dao.update(to);
+		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
 	/**
@@ -146,7 +153,9 @@ public class PtPChunkCatalog {
 		}
 		else
 		{
-			return makeOne(auxTO, inputChunk.getRequestToken());
+		    PtPPersistentChunkData data = makeOne(auxTO, inputChunk.getRequestToken());
+		    SurlStatusStore.getInstance().storeSurlStatus(data.getSURL(), data.getStatus().getStatusCode());
+			return data;
 		}
 	}
 	
@@ -178,6 +187,7 @@ public class PtPChunkCatalog {
 				if(chunk != null)
 				{
 					list.add(chunk);
+					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try
@@ -527,6 +537,7 @@ public class PtPChunkCatalog {
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
+					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -566,6 +577,7 @@ public class PtPChunkCatalog {
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
+					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -668,7 +680,8 @@ public class PtPChunkCatalog {
      */
 	synchronized public boolean isSRM_SPACE_AVAILABLE(TSURL surl) {
 		
-		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
+//		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
+	    return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
 	/**
@@ -689,23 +702,34 @@ public class PtPChunkCatalog {
      * proper error messages get logged.
      */
 	synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(
-			Collection<ReducedPtPChunkData> chunks) {
+//			Collection<ReducedPtPChunkData> chunks) {
+	    TRequestToken token, List<TSURL> surls){
 		
-		if(chunks == null || chunks.size() == 0)
+		if(token == null || surls == null || surls.size() == 0)
 		{
 			return;
 		}
-		long[] primaryKeys = new long[chunks.size()];
-		int index = 0;
-		for(ReducedPtPChunkData chunkData : chunks)
+		Collection<ReducedPtPChunkDataTO> tos = dao.findReduced(token.getValue());
+		LinkedList<Long> primaryKeys = new LinkedList<Long>();
+		for(ReducedPtPChunkDataTO to : tos)
 		{
-			if(chunkData != null)
-			{
-				primaryKeys[index] = chunkData.primaryKey();
-				index++;
-			}
+		    for(TSURL surl : surls)
+		    {
+		        if(to.toSURL().equals(surl))
+		        {
+		            primaryKeys.add(to.primaryKey());
+		            break;
+		        }
+		    }
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(primaryKeys);
+		for(TSURL surl : surls)
+        {
+            if(surl != null)
+            {
+                SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_SUCCESS);
+            }
+        }
 	}
 
     /**
@@ -728,5 +752,6 @@ public class PtPChunkCatalog {
 			explanation = "";
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl.uniqueId(), surl.toString(), explanation);
+		SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_ABORTED);
 	}
 }

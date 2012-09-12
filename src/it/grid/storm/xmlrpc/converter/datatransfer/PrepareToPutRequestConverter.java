@@ -20,11 +20,13 @@ package it.grid.storm.xmlrpc.converter.datatransfer;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 
@@ -40,27 +42,44 @@ public class PrepareToPutRequestConverter extends FileTransferRequestInputConver
     @Override
     public InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
-        FileTransferInputData ftInputData = (FileTransferInputData) super.convertToInputData(inputParam);
+        TSURL surl = decodeSURL(inputParam);
+        GridUserInterface user = decodeUser(inputParam);
+        TURLPrefix transferProtocols = decodeTransferProtocols(inputParam);
+        
+        TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_FILELIFETIME);
+        
         PrepareToPutInputData inputData;
-        try
+        if (desiredFileLifetime != null && !desiredFileLifetime.isEmpty())
         {
-            inputData = new PrepareToPutInputData(ftInputData);
-        } catch(IllegalArgumentException e)
-        {
-            log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
-            throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
+            try
+            {
+                inputData = new PrepareToPutInputData(user, surl, transferProtocols, desiredFileLifetime);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
+                throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
+            }
+            
         }
+        else
+        {
+            try
+            {
+                inputData = new PrepareToPutInputData(user, surl, transferProtocols);
+            } catch(IllegalArgumentException e)
+            {
+                log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
+                throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
+            }
+            
+        }
+        
+        inputData.setDesiredPinLifetime(decodeDesiredPinLifetime(inputParam));
+        inputData.setTargetSpaceToken(decodeTargetSpaceToken(inputParam));
         TSizeInBytes fileSize = TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_SIZE);
         if (fileSize != null)
         {
-            if(!fileSize.isEmpty())
-            {
-                inputData.setFileSize(fileSize);                
-            }
-            else
-            {
-                log.warn("Unable to use the received \'" + TSizeInBytes.PNAME_SIZE + "\', interpreted as an empty value");
-            }
+            inputData.setFileSize(fileSize);                
         }
     
         String overwriteModeString = (String) inputParam.get(OVERWRITE_MODE_PARAMETER_NAME);
@@ -82,18 +101,6 @@ public class PrepareToPutRequestConverter extends FileTransferRequestInputConver
             else
             {
                 log.warn("Unable to use the received \'" + OVERWRITE_MODE_PARAMETER_NAME + "\', interpreted as an empty value");
-            }
-        }
-        TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_FILELIFETIME);
-        if (desiredFileLifetime != null)
-        {
-            if(!desiredFileLifetime.isEmpty())
-            {
-                inputData.setDesiredFileLifetime(desiredFileLifetime);                
-            }
-            else
-            {
-                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_FILELIFETIME + "\', interpreted as an empty value");
             }
         }
         log.debug("PrepareToPutInputData Created!");

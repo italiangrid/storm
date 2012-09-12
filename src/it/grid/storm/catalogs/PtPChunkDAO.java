@@ -712,7 +712,7 @@ public class PtPChunkDAO {
      * primary key of each chunk is required. This is needed when the client invokes srmPutDone() In case of any error
      * nothing happens and no exception is thrown, but proper messagges get logged.
      */
-	public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(long[] ids) {
+	public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(List<Long> ids) {
 
 	    if(!checkConnection())
         {
@@ -897,24 +897,24 @@ public class PtPChunkDAO {
 	}
 
 
-    /**
-     * Method that returns a String containing all IDs.
-     */
-	private String makeWhereString(long[] rowids) {
-
-		StringBuffer sb = new StringBuffer("(");
-		int n = rowids.length;
-		for(int i = 0; i < n; i++)
-		{
-			sb.append(rowids[i]);
-			if(i < (n - 1))
-			{
-				sb.append(",");
-			}
-		}
-		sb.append(")");
-		return sb.toString();
-	}
+//    /**
+//     * Method that returns a String containing all IDs.
+//     */
+//	private String makeWhereString(long[] rowids) {
+//
+//		StringBuffer sb = new StringBuffer("(");
+//		int n = rowids.length;
+//		for(int i = 0; i < n; i++)
+//		{
+//			sb.append(rowids[i]);
+//			if(i < (n - 1))
+//			{
+//				sb.append(",");
+//			}
+//		}
+//		sb.append(")");
+//		return sb.toString();
+//	}
 
     /**
      * Auxiliary method that sets up the conenction to the DB.

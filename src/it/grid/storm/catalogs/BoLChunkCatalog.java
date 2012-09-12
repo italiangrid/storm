@@ -22,6 +22,7 @@ import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -132,6 +133,7 @@ public class BoLChunkCatalog
 				if(chunk != null)
 				{
 					list.add(chunk);
+					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try
@@ -399,6 +401,7 @@ public class BoLChunkCatalog
 		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 
 		dao.update(to);
+        SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
 	/**
@@ -443,6 +446,7 @@ public class BoLChunkCatalog
 				}
 			}
 			inputChunk.setStatus(status);
+			SurlStatusStore.getInstance().storeSurlStatus(inputChunk.getSURL(), status.getStatusCode());
 		}
 		return inputChunk;
 	}
@@ -477,6 +481,7 @@ public class BoLChunkCatalog
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
+					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -531,6 +536,7 @@ public class BoLChunkCatalog
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
+					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -642,6 +648,7 @@ public class BoLChunkCatalog
 		
 		/*  add the entry and update the Primary Key field */
 		dao.addChild(to);
+		SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
         /* set the assigned PrimaryKey! */
 		chunkData.setPrimaryKey(to.getPrimaryKey()); 
 	}
@@ -682,6 +689,7 @@ public class BoLChunkCatalog
 		
 		/* add the entry and update the Primary Key field! */
 		dao.addNew(to, gu.getDn());
+		SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
         /* set the assigned PrimaryKey! */
 		chunkData.setPrimaryKey(to.getPrimaryKey()); 
 	}
@@ -695,7 +703,8 @@ public class BoLChunkCatalog
 	 */
 	synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
 		
-		return (dao.numberInSRM_SUCCESS(surl.uniqueId()) > 0);
+//		return (dao.numberInSRM_SUCCESS(surl.uniqueId()) > 0);
+		return TStatusCode.SRM_SUCCESS.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
 	/**
@@ -718,6 +727,7 @@ public class BoLChunkCatalog
 		{
 			if(chunkData != null)
 			{
+			    SurlStatusStore.getInstance().storeSurlStatus(chunkData.fromSURL(), chunkData.status().getStatusCode());
 				primaryKeys[index] = chunkData.primaryKey();
 				index++;
 			}
@@ -746,6 +756,7 @@ public class BoLChunkCatalog
 			explanation = "";
 		}
 		dao.transitSRM_SUCCESStoSRM_ABORTED(surl.uniqueId(), surl.toString(), explanation);
+		SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
 		// PinnedFilesCatalog.getInstance().removeAllJit(surl);
 		// PinnedfilesCatalog.getInstance().removeVolatile(surl);
 	}
@@ -757,6 +768,10 @@ public class BoLChunkCatalog
 	 */
 	synchronized public void transitExpiredSRM_SUCCESS() {
 		//OK
-		dao.transitExpiredSRM_SUCCESS();
+	    List<TSURL> expiredSurls = dao.transitExpiredSRM_SUCCESS();
+	    for (TSURL surl : expiredSurls)
+        {
+            SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_RELEASED);
+        }
 	}
 }

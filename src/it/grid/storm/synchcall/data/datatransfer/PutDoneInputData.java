@@ -29,7 +29,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidPutDoneInputAttributeException;
 
 public class PutDoneInputData extends AbstractInputData
@@ -43,10 +42,10 @@ public class PutDoneInputData extends AbstractInputData
     public PutDoneInputData(GridUserInterface auth, TRequestToken reqToken, ArrayOfSURLs surlArray)
                     throws InvalidPutDoneInputAttributeException
     {
-        boolean ok = (!(surlArray == null));
-        if (!ok)
-            throw new InvalidPutDoneInputAttributeException(surlArray);
-
+        if (surlArray == null)
+        {
+            throw new InvalidPutDoneInputAttributeException(surlArray);            
+        }
         this.auth = auth;
         this.reqToken = reqToken;
         this.arrayOfSURLs = surlArray;

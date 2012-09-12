@@ -31,6 +31,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -108,10 +110,10 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
      * @param localUser the local user associate to the Grid user (<code>null</code> when called from the purge thread
      *            of PtPChunkCatalog)
      */
-    public static void executePutDone(List<ReducedPtPChunkData> spaceAvailableSURLs,
+    public static void executePutDone(List<TSURL> spaceAvailableSURLs,
             ArrayOfTSURLReturnStatus arrayOfFileStatus, GridUserInterface user, LocalUser localUser) {
 
-        VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
+//        VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
 
         // Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone. To execute this
         // operation
@@ -124,13 +126,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
         for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 
-            ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
-
-            if (chunkData == null) {
+//            ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
+            TSURL surl = spaceAvailableSURLs.get(i);
+//            if (chunkData == null) {
+            if (surl == null) {
                 continue;
             }
 
-            TSURL surl = chunkData.toSURL();
+//            TSURL surl = chunkData.toSURL();
 
             if (user == null) {
 
@@ -138,13 +141,15 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
                 if (goOnWithPutDone) {
                     log.info("Executing implicit PutDone for SURL: "
-                            + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+//                            + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+                             + surl.getSURLString());
                 } else {
                     continue;
                 }
 
             } else {
-                log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+//                log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
+                log.info("Executing PutDone for SURL: " + surl.getSURLString());
             }
 
             StoRI stori = null;
@@ -166,11 +171,11 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 }
 
                 // 1- if the SURL is volatile create an entry in the Volatile table
-                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
-                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
-                                                        Calendar.getInstance(),
-                                                        chunkData.fileLifetime());
-                }
+//                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
+//                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
+//                                                        Calendar.getInstance(),
+//                                                        chunkData.fileLifetime());
+//                }
 
                 // 2- JiTs must me removed from the TURL;
                 if (stori.hasJustInTimeACLs()) {
@@ -184,7 +189,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                     }
 
                     if (localUser == null) {
-                        volatileAndJiTCatalog.expirePutJiTs(stori.getPFN(), localUser);
+                        VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(), localUser);
                     } else {
                         VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
                     }
@@ -239,18 +244,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                 continue;
             }
         }
-
-        // 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(spaceAvailableSURLs);
-
-        /* Unlock the SURLs */
-        for (ReducedPtPChunkData chunk : spaceAvailableSURLs) {
-            if (chunk != null) {
-                unlockSurl(chunk.toSURL());
-            }
-        }
-        
-        log.trace("Number of SURLs locked: " + lockedSurls.size());
     }
 
     /**
@@ -267,8 +260,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         requestFailure = false;
         if (inputData == null) {
             requestFailure = true;
-        } else if (inputData.getRequestToken() == null) {
-            requestFailure = true;
+            //a request without token is assumed to be a synchronous one
+//        } else if (inputData.getRequestToken() == null) {
+//            requestFailure = true;
         } else if (inputData.getArrayOfSURLs() == null) {
             requestFailure = true;
         } else if (inputData.getArrayOfSURLs().size() < 1) {
@@ -346,8 +340,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
          * spaceAvailableSURLs will contain all the SURLs that must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS,
          * i.e. the not-null elements.
          */
-        List<ReducedPtPChunkData> spaceAvailableSURLs = new ArrayList<ReducedPtPChunkData>(listOfSURLs.size());
-
+        List<TSURL> spaceAvailableSURLs = new ArrayList<TSURL>(listOfSURLs.size());
         if (!findCandidateSURLs(requestToken,
                                 outputData,
                                 user,
@@ -359,6 +352,32 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         executePutDone(spaceAvailableSURLs, arrayOfFileStatus, user, lUser);
 
+     // The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
+        if(requestToken != null)
+        {
+            PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(requestToken, spaceAvailableSURLs);    
+        }
+        else
+        {
+            for(TSURL surl : spaceAvailableSURLs)
+            {
+                if(surl != null)
+                {
+                    SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_SUCCESS);
+                }
+            }
+        }
+        
+
+        /* Unlock the SURLs */
+        for (TSURL surl : spaceAvailableSURLs) {
+            if (surl != null) {
+                unlockSurl(surl);
+            }
+        }
+        
+        log.trace("Number of SURLs locked: " + lockedSurls.size());
+        
         /* Set the request status */
         try {
             if (requestAborted) {
@@ -415,149 +434,390 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
      * @return
      */
     private boolean findCandidateSURLs(TRequestToken requestToken, PutDoneOutputData outputData,
-            GridUserInterface user, List<TSURL> inputSURLs, List<ReducedPtPChunkData> spaceAvailableSURLs,
+            GridUserInterface user, List<TSURL> inputSURLs, List<TSURL> spaceAvailableSURLs,
             ArrayOfTSURLReturnStatus arrayOfFileStatus) {
 
-        log.debug(funcName + "requestToken=" + requestToken.toString());
-
-        /* Query the DB to find all the SURLs associated to the request token */
-        Collection<ReducedPtPChunkData> chunks = PtPChunkCatalog.getInstance()
-                                                                .lookupReducedPtPChunkData(requestToken);
-
-        if (chunks.isEmpty()) { // No SURLs found
-            log.debug(funcName + "Invalid request token");
-
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
-            } catch (InvalidTReturnStatusAttributeException ex) {
-                // Nothing to do, it will never be thrown
-                log.debug(funcName + "dataTransferManger: Error creating returnStatus " + ex);
-            }
-
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
-
-            StringBuffer sb = new StringBuffer();
-            for (TSURL surl : inputSURLs) {
-                sb.append(surl.toString() + " ");
-            }
-
-            log.error("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
-                    + sb.toString() + "]failed with [status: " + globalStatus + "]");
-
-            return false;
+        if(requestToken != null)
+        {
+            log.debug(funcName + " requestToken=" + requestToken);    
         }
-
-        /*
-         * Select the SURLs to execute a PutDone on (the following for loop). Each requested SURL must be found in the
-         * catalog (as a SURL associated with the specified request token), otherwise the return status of the missing
-         * SURL indicates the error.
-         */
-
-        requestFailure = true;
-        requestSuccess = true;
-        requestAborted = true;
-
-        /*
-         * ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for loop the two boolean
-         * variables "requestFailure" and "requestSuccess" are correctly set.
-         */
-        for (int i = 0; i < inputSURLs.size(); i++) {
-
-            TSURL surl = inputSURLs.get(i);
-            log.debug(funcName + "Checking SURL[" + i + "]: " + surl.toString());
-
-            // Search SURL[i] (specified in the request) inside the catalog
-            ReducedPtPChunkData auxChunkData = null;
-            for (ReducedPtPChunkData chunk : chunks) {
-                if (surl.equals(chunk.toSURL())) {
-                    auxChunkData = chunk;
-                    break;
+        else
+        {
+            log.debug(funcName + " for a synchronous PTP");
+        }
+        
+        if (requestToken != null)
+        {
+            /* Query the DB to find all the SURLs associated to the request token */
+            Collection<ReducedPtPChunkData> chunks = PtPChunkCatalog.getInstance()
+                                                                    .lookupReducedPtPChunkData(requestToken);
+            if (chunks.isEmpty())
+            { // No SURLs found
+                log.debug(funcName + " Invalid request token");
+                try
+                {
+                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+                } catch(InvalidTReturnStatusAttributeException ex)
+                {
+                    // Nothing to do, it will never be thrown
+                    log.debug(funcName + "dataTransferManger: Error creating returnStatus " + ex);
                 }
+
+                outputData.setReturnStatus(globalStatus);
+                outputData.setArrayOfFileStatuses(null);
+
+                StringBuffer sb = new StringBuffer();
+                for (TSURL surl : inputSURLs)
+                {
+                    sb.append(surl.toString() + " ");
+                }
+
+                log.error("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
+                        + sb.toString() + "]failed with [status: " + globalStatus + "]");
+
+                return false;
             }
 
-            // Execute the PutDone on SURL[i]
-            TReturnStatus surlReturnStatus = null;
-            boolean surlIsSpaceAvailable = false;
-            try {
-                if (auxChunkData != null) { // SURL found, select it for PutDone
-                    log.debug(funcName + "SURL[" + i + "] found!");
-                    surlReturnStatus = auxChunkData.status();
+            /*
+             * Select the SURLs to execute a PutDone on (the following for loop). Each requested SURL must be
+             * found in the
+             * catalog (as a SURL associated with the specified request token), otherwise the return status of
+             * the missing
+             * SURL indicates the error.
+             */
 
-                    if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_SPACE_AVAILABLE) {
+            requestFailure = true;
+            requestSuccess = true;
+            requestAborted = true;
 
-                        boolean goOnWithPutDone = lockSurl(surl);
+            /*
+             * ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for loop the
+             * two boolean
+             * variables "requestFailure" and "requestSuccess" are correctly set.
+             */
+            TReturnStatus status = null;
+            boolean found;
+            for(TSURL surl : inputSURLs)
+            {
 
-                        if (goOnWithPutDone) {
-                            surlReturnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
-                            // Select the SURL, the DB will be updated at once after
-                            spaceAvailableSURLs.add(auxChunkData);
-                            surlIsSpaceAvailable = true;
-                            requestFailure = false;
-                            requestAborted = false;
-                        } else { // there is an active PutDone on this SURL
-                            surlReturnStatus = anotherPutDoneActiveReturnStatus;
-                            requestSuccess = false;
-                            requestAborted = false;
+                log.debug(funcName + "Checking SURL " + surl);
+
+                // Search SURL[i] (specified in the request) inside the catalog
+//                ReducedPtPChunkData auxChunkData = null;
+                found = false;
+                for (ReducedPtPChunkData chunk : chunks)
+                {
+                    if (surl.equals(chunk.toSURL()))
+                    {
+//                        auxChunkData = chunk;
+                        status = chunk.status();
+                        found = true;
+                        break;
+                    }
+                }
+
+//                TReturnStatus surlReturnStatus = null;
+                boolean surlIsSpaceAvailable = false;
+//                try
+//                {
+//                    if (auxChunkData != null)
+                    if(found)
+                    { // SURL found, select it for PutDone
+                        log.debug(funcName + "SURL \'" + surl + "\' found!");
+//                        surlReturnStatus = auxChunkData.status();
+
+                        if (status.getStatusCode() == TStatusCode.SRM_SPACE_AVAILABLE)
+                        {
+
+                            boolean goOnWithPutDone = lockSurl(surl);
+
+                            if (goOnWithPutDone)
+                            {
+                                try
+                                {
+                                    status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+                                } catch(InvalidTReturnStatusAttributeException e)
+                                {
+                                    //never thrown
+                                }
+                                // Select the SURL, the DB will be updated at once after
+                                spaceAvailableSURLs.add(surl);
+                                surlIsSpaceAvailable = true;
+                                requestFailure = false;
+                                requestAborted = false;
+                            }
+                            else
+                            { // there is an active PutDone on this SURL
+                                status = anotherPutDoneActiveReturnStatus;
+                                requestSuccess = false;
+                                requestAborted = false;
+                            }
+
                         }
+                        else
+                        {
+                            if (status.getStatusCode() == TStatusCode.SRM_SUCCESS)
+                            {
+                                try
+                                {
+                                    status = new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR, "");
+                                } catch(InvalidTReturnStatusAttributeException e)
+                                {
+                                    //never thrown
+                                }
+                                requestSuccess = false;
+                                requestAborted = false;
 
-                    } else if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_SUCCESS) {
-                        surlReturnStatus = new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR, "");
-                        requestSuccess = false;
-                        requestAborted = false;
+                            }
+                            else
+                            {
+                                if (status.getStatusCode() == TStatusCode.SRM_ABORTED)
+                                {
+                                    try
+                                    {
+                                        status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                             "PtP status for this SURL is SRM_ABORTED");
+                                    } catch(InvalidTReturnStatusAttributeException e)
+                                    {
+                                        //never thrown
+                                    }
+                                    requestSuccess = false;
 
-                    } else if (surlReturnStatus.getStatusCode() == TStatusCode.SRM_ABORTED) {
-                        surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                                                             "PtP status for this SURL is SRM_ABORTED");
-                        requestSuccess = false;
-
-                    } else {
-                        surlReturnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-                                                             "Check StatusOfPutRequest for more information");
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        status = new TReturnStatus(TStatusCode.SRM_FAILURE,
+                                                                             "Check StatusOfPutRequest for more information");
+                                    } catch(InvalidTReturnStatusAttributeException e)
+                                    {
+                                        //never thrown
+                                    }
+                                    requestSuccess = false;
+                                    requestAborted = false;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    { // SURL not found, set the corresponding return status value
+                        log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
+                        try
+                        {
+                            status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                 "SURL does not refer to an existing file for the specified request token");
+                        } catch(InvalidTReturnStatusAttributeException e)
+                        {
+                            //never thrown
+                        }
                         requestSuccess = false;
                         requestAborted = false;
                     }
-                } else { // SURL not found, set the corresponding return status value
-                    log.debug(funcName + "SURL[" + i + "] NOT found in the DB!");
-                    surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-                                                         "SURL does not refer to an existing file for the specified request token");
-                    requestSuccess = false;
-                    requestAborted = false;
+                    
+//                }
+//                catch(InvalidTReturnStatusAttributeException e)
+//                {
+//                    // Nothing to do, it will never be thrown
+//                    surlReturnStatus = null;
+//                    log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
+//                }
+                if (!surlIsSpaceAvailable)
+                { // Keep 1:1 match with arrayOfFileStatus
+                    spaceAvailableSURLs.add(null);
                 }
-            } catch (InvalidTReturnStatusAttributeException e) {
-                // Nothing to do, it will never be thrown
-                surlReturnStatus = null;
-                log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
-            }
-            if (!surlIsSpaceAvailable) { // Keep 1:1 match with arrayOfFileStatus
-                spaceAvailableSURLs.add(null);
-            }
 
-            /* Add the TSURLReturnStatus of SURL[i] to arrayOfFileStatus */
-            try {
-                if (surlReturnStatus == null) {
-                    surlReturnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
-                                                         "Internal error: try again...");
-                }
-                TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, surlReturnStatus);
+                /* Add the TSURLReturnStatus of SURL[i] to arrayOfFileStatus */
+                try
+                {
+                    if (status == null)
+                    {
+                        status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                             "Internal error: try again...");
+                    }
+                    TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
 
-                if (surlReturnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-                    log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
-                            + surl + "] successfully done with: [status:" + surlReturnStatus + "]");
-                } else {
-                    log.warn("srmPutDone: <" + user + "> Request for [token:" + requestToken + "] for [SURL:"
-                            + surl + "] failed with: [status:" + surlReturnStatus + "]");
+                    if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+                    {
+                        log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                                + "] for [SURL:" + surl + "] successfully done with: [status:"
+                                + status + "]");
+                    }
+                    else
+                    {
+                        log.warn("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                                + "] for [SURL:" + surl + "] failed with: [status:" + status + "]");
+                    }
+                    arrayOfFileStatus.addTSurlReturnStatus(surlRetStatus);
+                } catch(InvalidTReturnStatusAttributeException e1)
+                {
+                    // Nothing to do, it will never be thrown
+                    log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e1);
+                } catch(InvalidTSURLReturnStatusAttributeException e2)
+                {
+                    // Nothing to do, it will never be thrown
+                    log.debug(funcName + "Error InvalidTSURLReturnStatusAttributeException" + e2);
                 }
-                arrayOfFileStatus.addTSurlReturnStatus(surlRetStatus);
-            } catch (InvalidTReturnStatusAttributeException e1) {
-                // Nothing to do, it will never be thrown
-                log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e1);
-            } catch (InvalidTSURLReturnStatusAttributeException e2) {
-                // Nothing to do, it will never be thrown
-                log.debug(funcName + "Error InvalidTSURLReturnStatusAttributeException" + e2);
             }
         }
+        else
+        {
+            
 
+            requestFailure = true;
+            requestSuccess = true;
+            requestAborted = true;
+
+            /*
+             * ArrayOfSURLs is a mandatory parameter, therefore "num_SURLs" is > 0 and inside the for loop the
+             * two boolean
+             * variables "requestFailure" and "requestSuccess" are correctly set.
+             */
+            TReturnStatus status = null;
+            for(TSURL surl : inputSURLs)
+            {
+                TStatusCode statusCode = SurlStatusStore.getInstance().getSurlStatus(surl);
+
+                log.debug(funcName + "Checking SURL " + surl);
+
+                boolean surlIsSpaceAvailable = false;
+                if (statusCode != null)
+                { 
+//                    status = new TReturnStatus(statusCode, "");
+                    if (statusCode == TStatusCode.SRM_SPACE_AVAILABLE)
+                    {
+
+                            boolean goOnWithPutDone = lockSurl(surl);
+
+                            if (goOnWithPutDone)
+                            {
+                                try
+                                {
+                                    status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+                                } catch(InvalidTReturnStatusAttributeException e)
+                                {
+                                    //never thrown
+                                };
+                                // Select the SURL, the DB will be updated at once after
+                                spaceAvailableSURLs.add(surl);
+                                surlIsSpaceAvailable = true;
+                                requestFailure = false;
+                                requestAborted = false;
+                            }
+                            else
+                            { // there is an active PutDone on this SURL
+                                status = anotherPutDoneActiveReturnStatus;
+                                requestSuccess = false;
+                                requestAborted = false;
+                            }
+
+                        }
+                        else
+                        {
+                            if (statusCode == TStatusCode.SRM_SUCCESS)
+                            {
+                                try
+                                {
+                                    status = new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR, "");
+                                } catch(InvalidTReturnStatusAttributeException e)
+                                {
+                                    //never thrown
+                                }
+                                requestSuccess = false;
+                                requestAborted = false;
+
+                            }
+                            else
+                            {
+                                if (statusCode == TStatusCode.SRM_ABORTED)
+                                {
+                                    try
+                                    {
+                                        status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                             "PtP status for this SURL is SRM_ABORTED");
+                                    } catch(InvalidTReturnStatusAttributeException e)
+                                    {
+                                        //never thrown
+                                    }
+                                    requestSuccess = false;
+
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        status = new TReturnStatus(TStatusCode.SRM_FAILURE,
+                                                                             "Check StatusOfPutRequest for more information");
+                                    } catch(InvalidTReturnStatusAttributeException e)
+                                    {
+                                        //never thrown
+                                    }
+                                    requestSuccess = false;
+                                    requestAborted = false;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    { // SURL not found, set the corresponding return status value
+                        log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
+                        try
+                        {
+                            status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                 "SURL does not refer to an existing file for the specified request token");
+                        } catch(InvalidTReturnStatusAttributeException e)
+                        {
+                            //never thrown
+                        }
+                        requestSuccess = false;
+                        requestAborted = false;
+                    }
+                    
+//                }
+//                catch(InvalidTReturnStatusAttributeException e)
+//                {
+//                    // Nothing to do, it will never be thrown
+//                    surlReturnStatus = null;
+//                    log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e);
+//                }
+                if (!surlIsSpaceAvailable)
+                { // Keep 1:1 match with arrayOfFileStatus
+                    spaceAvailableSURLs.add(null);
+                }
+
+                /* Add the TSURLReturnStatus of SURL[i] to arrayOfFileStatus */
+                try
+                {
+                    if (status == null)
+                    {
+                        status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                             "Internal error: try again...");
+                    }
+                    TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
+
+                    if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+                    {
+                        log.info("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                                + "] for [SURL:" + surl + "] successfully done with: [status:"
+                                + status + "]");
+                    }
+                    else
+                    {
+                        log.warn("srmPutDone: <" + user + "> Request for [token:" + requestToken
+                                + "] for [SURL:" + surl + "] failed with: [status:" + status + "]");
+                    }
+                    arrayOfFileStatus.addTSurlReturnStatus(surlRetStatus);
+                } catch(InvalidTReturnStatusAttributeException e1)
+                {
+                    // Nothing to do, it will never be thrown
+                    log.debug(funcName + "Error InvalidTReturnStatusAttributeException" + e1);
+                } catch(InvalidTSURLReturnStatusAttributeException e2)
+                {
+                    // Nothing to do, it will never be thrown
+                    log.debug(funcName + "Error InvalidTSURLReturnStatusAttributeException" + e2);
+                }
+            }
+        }
         return true;
     }
 

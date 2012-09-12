@@ -19,6 +19,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -91,6 +92,7 @@ public class CopyChunkCatalog
 		to.setTargetSurlUniqueID(new Integer(cd.getDestinationSURL().uniqueId()));
 		
 		dao.update(to);
+		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
     /**
@@ -124,6 +126,7 @@ public class CopyChunkCatalog
 				if(chunk != null)
 				{
 					list.add(chunk);
+					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try

@@ -52,24 +52,14 @@ public abstract class FileTransferRequestInputConverter implements Converter
     @Override
     public InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
-        TSURL surl = null;
-        try
-        {
-            surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
-        } catch(InvalidTSURLAttributesException e)
-        {
-            log.error("Unable to decode \'" + TSURL.PNAME_SURL
-                    + "\' parameter as TSURL. InvalidTSURLAttributesException: " + e.getMessage());
-            throw new IllegalArgumentException("Unable to decode \'" + TSURL.PNAME_SURL
-                    + "\' parameter as TSURL");
-        }
+        TSURL surl = decodeSURL(inputParam);
         if (surl == null)
         {
             log.error("Missing mandatory parameter \'" + TSURL.PNAME_SURL
                     + "\' Unable to build FileTransferInputData");
             throw new IllegalArgumentException("Missing mandatory parameter \'" + TSURL.PNAME_SURL + "\'");
         }
-        GridUserInterface user = GridUserManager.decode(inputParam);
+        GridUserInterface user = decodeUser(inputParam);
         if (user == null)
         {
             log.error("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
@@ -77,7 +67,7 @@ public abstract class FileTransferRequestInputConverter implements Converter
             throw new IllegalArgumentException("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
                     + "\'");
         }
-        TURLPrefix transferProtocols = TURLPrefix.decode(inputParam, TURLPrefix.PNAME_TURL_PREFIX);
+        TURLPrefix transferProtocols = decodeTransferProtocols(inputParam);
         if (transferProtocols == null)
         {
             log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
@@ -94,32 +84,62 @@ public abstract class FileTransferRequestInputConverter implements Converter
             log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
             throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
         }
-        TLifeTimeInSeconds desiredPinLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
+        TLifeTimeInSeconds desiredPinLifetime = decodeDesiredPinLifetime(inputParam);
         if (desiredPinLifetime != null)
         {
-            if(!desiredPinLifetime.isEmpty())
-            {
-                inputData.setDesiredPinLifetime(desiredPinLifetime);                
-            }
-            else
-            {
-                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_PINLIFETIME + "\', interpreted as an empty value");
-            }
+            inputData.setDesiredPinLifetime(desiredPinLifetime);                
         }
-        TSpaceToken targetSpaceToken = TSpaceToken.decode(inputParam, TSpaceToken.PNAME_SPACETOKEN);
-        if (desiredPinLifetime != null)
+        TSpaceToken targetSpaceToken = decodeTargetSpaceToken(inputParam);
+        if (targetSpaceToken != null)
         {
-            if(!desiredPinLifetime.isEmpty())
-            {
-                inputData.setTargetSpaceToken(targetSpaceToken);                
-            }
-            else
-            {
-                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_PINLIFETIME + "\', interpreted as an empty value");
-            }
+            inputData.setTargetSpaceToken(targetSpaceToken);                
         }
         log.debug("FileTransferInputData Created!");
         return inputData;
+    }
+    
+    protected TSpaceToken decodeTargetSpaceToken(Map inputParam)
+    {
+        return TSpaceToken.decode(inputParam, TSpaceToken.PNAME_SPACETOKEN);
+    }
+
+    protected TLifeTimeInSeconds decodeDesiredPinLifetime(Map inputParam)
+    {
+        return TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
+    }
+
+    protected TURLPrefix decodeTransferProtocols(Map inputParam) throws IllegalArgumentException
+    {
+        TURLPrefix transferProtocols = TURLPrefix.decode(inputParam, TURLPrefix.PNAME_TURL_PREFIX);
+        if (transferProtocols == null)
+        {
+            log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
+                    + "\' Unable to build FileTransferInputData");
+            throw new IllegalArgumentException("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
+                    + "\'");
+        }
+        return transferProtocols;
+    }
+
+    protected GridUserInterface decodeUser(Map inputParam)
+    {
+        return GridUserManager.decode(inputParam);
+    }
+
+    protected TSURL decodeSURL(Map inputParam) throws IllegalArgumentException
+    {
+        TSURL surl = null;
+        try
+        {
+            surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
+        } catch(InvalidTSURLAttributesException e)
+        {
+            log.error("Unable to decode \'" + TSURL.PNAME_SURL
+                    + "\' parameter as TSURL. InvalidTSURLAttributesException: " + e.getMessage());
+            throw new IllegalArgumentException("Unable to decode \'" + TSURL.PNAME_SURL
+                    + "\' parameter as TSURL");
+        }
+        return surl;
     }
 
     @Override

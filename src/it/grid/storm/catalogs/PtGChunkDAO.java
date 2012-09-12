@@ -904,15 +904,16 @@ public class PtGChunkDAO {
      * Method that updates all expired requests in SRM_FILE_PINNED state, into SRM_RELEASED.
      * 
      * This is needed when the client forgets to invoke srmReleaseFiles().
+     * @return 
      */
-    public synchronized void transitExpiredSRM_FILE_PINNED() {
+    public synchronized List<TSURL> transitExpiredSRM_FILE_PINNED() {
 
         // TODO: put a limit on the queries.....
     	//TODO MICHELE USER_SURL moved the checks for surl requests from the surl tring to the surl unique ID
         if(!checkConnection())
         {
             log.error("PTG CHUNK DAO: transitExpiredSRM_FILE_PINNED - unable to get a valid connection!");
-            return;
+            return new ArrayList<TSURL>();
         }
         HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
         String str = null;
@@ -955,12 +956,12 @@ public class PtGChunkDAO {
             if (expiredSurlMap.isEmpty()) {
                 commit(con);
                 log.trace("PtGChunkDAO! No chunk of PtG request was transited from SRM_FILE_PINNED to SRM_RELEASED.");
-                return;
+                return new ArrayList<TSURL>();
             }
         } catch (SQLException e) {
             log.error("PtGChunkDAO! SQLException." + e);
             rollback(con);
-            return;
+            return new ArrayList<TSURL>();
         } finally {
             close(statement);
         }
@@ -1003,7 +1004,7 @@ public class PtGChunkDAO {
             log.error("PtGChunkDAO! Unable to transit expired SRM_FILE_PINNED chunks of PtG requests, to SRM_RELEASED! "
                     + e);
             rollback(con);
-            return;
+            return new ArrayList<TSURL>();
         } finally {
             close(preparedStatement);
         }
@@ -1089,16 +1090,26 @@ public class PtGChunkDAO {
             close(statement);
         }
 
+        ArrayList<TSURL> expiredSurlList = new ArrayList<TSURL>();
         /* Remove the Extended Attribute pinned if there is not a valid surl on it */
-		for(Entry<String, Integer> surl : expiredSurlMap.entrySet())
+        TSURL surl;
+		for(Entry<String, Integer> surlEntry : expiredSurlMap.entrySet())
 		{
-			if(!pinnedSurlSet.contains(surl.getValue()))
+			if(!pinnedSurlSet.contains(surlEntry.getValue()))
 			{
-				StoRI stori;
+			    try
+			    {
+			        surl = TSURL.makeFromStringValidate(surlEntry.getKey());
+			    }catch(InvalidTSURLAttributesException e)
+                {
+                    log.error("Invalid SURL, cannot release the pin (Extended Attribute): "
+                        + surlEntry.getKey());
+                    continue;
+                }
+			    expiredSurlList.add(surl);
 				try
 				{
-					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-								TSURL.makeFromStringValidate(surl.getKey()));
+				    StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 
 					if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
 					{
@@ -1107,16 +1118,12 @@ public class PtGChunkDAO {
 				} catch(NamespaceException e)
 				{
 					log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-						+ surl.getKey());
+						+ surlEntry.getKey());
 					continue;
-				} catch(InvalidTSURLAttributesException e)
-				{
-					log.error("Invalid SURL, cannot release the pin (Extended Attribute): "
-						+ surl.getKey());
-					continue;
-				}
+				} 
 			}
 		}
+		return expiredSurlList;
     }
 
     /**

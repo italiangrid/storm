@@ -54,6 +54,7 @@ import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -342,6 +343,14 @@ public class PtP implements Delegable, Chooser, Request
                         {
                             // URGENT!!!
                             // roll back! ok3, ok2 and ok1
+                        }
+                        else
+                        {
+                            if (requestData.fileStorageType() == TFileStorageType.VOLATILE) {
+                                VolatileAndJiTCatalog.getInstance().trackVolatile(fileStoRI.getPFN(),
+                                                                    Calendar.getInstance(),
+                                                                    requestData.fileLifetime());
+                            }
                         }
                     }
                     else

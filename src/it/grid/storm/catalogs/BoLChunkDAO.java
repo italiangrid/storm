@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
@@ -850,16 +851,17 @@ public class BoLChunkDAO {
     /**
      * Method that updates all expired requests in SRM_SUCCESS state, into SRM_RELEASED. This is needed when the client
      * forgets to invoke srmReleaseFiles().
+     * @return 
      */
     //TODO MICHELE USER_SURL debug
-    public synchronized void transitExpiredSRM_SUCCESS() {
+    public synchronized List<TSURL> transitExpiredSRM_SUCCESS() {
 
         // TODO: put a limit on the queries.....
     	//TODO MICHELE USER_SURL moved the checks for surl requests from the surl tring to the surl unique ID
         if(!checkConnection())
         {
             log.error("BoL CHUNK DAO: transitExpiredSRM_SUCCESS - unable to get a valid connection!");
-            return;
+            return new ArrayList<TSURL>();
         }
         HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
         String str = null;
@@ -902,12 +904,12 @@ public class BoLChunkDAO {
             if (expiredSurlMap.isEmpty()) {
                 commit(con);
                 log.trace("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
-                return;
+                return new ArrayList<TSURL>();
             }
         } catch (SQLException e) {
             log.error("BoLChunkDAO! SQLException." + e);
             rollback(con);
-            return;
+            return new ArrayList<TSURL>();
         } finally {
             close(statement);
         }
@@ -950,7 +952,7 @@ public class BoLChunkDAO {
             log.error("BoLChunkDAO! Unable to transit expired SRM_SUCCESS chunks of BoL requests, to SRM_RELEASED! "
                     + e);
             rollback(con);
-            return;
+            return new ArrayList<TSURL>();
         } finally {
             close(preparedStatement);
         }
@@ -1029,15 +1031,25 @@ public class BoLChunkDAO {
         }
 
         /* Remove the Extended Attribute pinned if there is not a valid surl on it */
-        for(Entry<String, Integer> surl : expiredSurlMap.entrySet())
+        ArrayList<TSURL> expiredSurlList = new ArrayList<TSURL>();
+        TSURL surl;
+        for(Entry<String, Integer> surlEntry : expiredSurlMap.entrySet())
 		{
-			if(!pinnedSurlSet.contains(surl.getValue()))
+			if(!pinnedSurlSet.contains(surlEntry.getValue()))
 			{
-				StoRI stori;
+			    try
+                {
+                    surl = TSURL.makeFromStringValidate(surlEntry.getKey());
+                }catch(InvalidTSURLAttributesException e)
+                {
+                    log.error("Invalid SURL, cannot release the pin (Extended Attribute): "
+                        + surlEntry.getKey());
+                    continue;
+                }
+                expiredSurlList.add(surl);
 				try
 				{
-					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-								TSURL.makeFromStringValidate(surl.getKey()));
+				    StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 
 					if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
 					{
@@ -1046,16 +1058,12 @@ public class BoLChunkDAO {
 				} catch(NamespaceException e)
 				{
 					log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-						+ surl.getKey());
-					continue;
-				} catch(InvalidTSURLAttributesException e)
-				{
-					log.error("Invalid SURL, cannot release the pin (Extended Attribute): " 
-						+ surl.getKey());
+						+ surlEntry.getKey());
 					continue;
 				}
 			}
 		}
+        return expiredSurlList;
     }
 
     /**
