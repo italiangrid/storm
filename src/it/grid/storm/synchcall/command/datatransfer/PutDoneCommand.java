@@ -170,12 +170,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
                     }
                 }
 
-                // 1- if the SURL is volatile create an entry in the Volatile table
-//                if (chunkData.fileStorageType() == TFileStorageType.VOLATILE) {
-//                    volatileAndJiTCatalog.trackVolatile(stori.getPFN(),
-//                                                        Calendar.getInstance(),
-//                                                        chunkData.fileLifetime());
-//                }
+                // 1- if the SURL is volatile update the entry in the Volatile table
+                if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
+                    try
+                    {
+                        VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
+                                                            Calendar.getInstance());
+                    } catch(Exception e)
+                    {
+                        //impossible because of the "exists" check
+                    }
+                }
 
                 // 2- JiTs must me removed from the TURL;
                 if (stori.hasJustInTimeACLs()) {

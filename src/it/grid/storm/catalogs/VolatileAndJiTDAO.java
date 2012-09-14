@@ -626,6 +626,34 @@ public class VolatileAndJiTDAO {
             close(stmt);
         }
     }
+    
+    public void updateVolatile(String fileName, long fileStart)
+    {
+        if(!checkConnection())
+        {
+            log.error("VolatileAndJiTDAO. updateVolatile:  unable to get a valid connection!");
+            return;
+        }
+        String sql = "UPDATE volatile "+
+        "SET start=FROM_UNIXTIME(?) "+
+        "WHERE file=?";
+        PreparedStatement stmt = null;
+        try {
+            stmt = con.prepareStatement(sql);
+            logWarnings(con.getWarnings());
+            stmt.setLong(1,fileStart);
+            logWarnings(stmt.getWarnings());
+            stmt.setString(2,fileName);
+            logWarnings(stmt.getWarnings());
+            log.debug("VolatileAndJiTDAO. updateVolatile: "+stmt.toString());
+            int n = stmt.executeUpdate();
+            log.debug("VolatileAndJiTDAO. "+n+" volatile entries updated.");
+        } catch (SQLException e) {
+            log.error("VolatileAndJiTDAO! Error in updateVolatile: "+e);
+        } finally {
+            close(stmt);
+        }
+    }
 
     /**
      * Method used to find out the starting time and lifetime, expressed as long,
@@ -822,5 +850,4 @@ public class VolatileAndJiTDAO {
             }
         }
     }
-
 }

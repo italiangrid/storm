@@ -422,6 +422,43 @@ public class VolatileAndJiTCatalog {
         }
     }
 
+    synchronized public void setStartTime(PFN pfn, Calendar start) throws Exception
+    {
+        if (pfn == null || start == null)
+        {
+            log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="
+                    + pfn + " start=" + start);
+        }
+        else
+        {
+            String fileName = pfn.getValue();
+            long fileStart = start.getTimeInMillis() / 1000; // seconds needed and not milliseconds!
+            int n = dao.numberVolatile(fileName);
+            if (n == -1)
+            {
+                log.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "
+                        + pfn + "! Volatile entry NOT processed!");
+            }
+            else
+            {
+                if (n == 0)
+                {
+                    throw new Exception("Unable to update row volatile for pfn \'" + pfn
+                            + "\' , not on the database!");
+                }
+                else
+                {
+                    dao.updateVolatile(fileName, fileStart);
+                    if (n > 1)
+                    {
+                        log.warn("VolatileAndJiT CATALOG: More than one entry found for " + fileName
+                                + "; the catalogue could be corrupt!");
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * Method that returns a List whose first element is a Calendar with the starting date and time of the lifetime of
      * the supplied PFN, and whose second element is the TLifeTime the system is keeping the PFN. If no entry is found
@@ -516,5 +553,4 @@ public class VolatileAndJiTCatalog {
         }
         return sb.toString();
     }
-
 }
