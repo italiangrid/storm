@@ -41,20 +41,14 @@ public class LSInputData extends AbstractInputData
 {
     private GridUserInterface auth = null;
     private ArrayOfSURLs surlArray = null;
-    private ArrayOfTExtraInfo storageSystemInfo = null;
-    private TFileStorageType fileStorageType = null;
     private Boolean fullDetailedList;
     private Boolean allLevelRecursive;
     private Integer numOfLevels;
     private Integer offset;
     private Integer count;
+    private final boolean storageTypeSpecified;
 
-    public LSInputData()
-    {
-
-    }
-
-    public LSInputData(GridUserInterface auth, ArrayOfSURLs surlArray, ArrayOfTExtraInfo storageSystemInfo, TFileStorageType fileStorageType, Boolean fullDetList, //TSURLInfo[] surlArray,
+    public LSInputData(GridUserInterface auth, ArrayOfSURLs surlArray, TFileStorageType fileStorageType, Boolean fullDetList, //TSURLInfo[] surlArray,
                     Boolean allLev, Integer numOfLev, Integer offset, Integer count) throws InvalidLSInputDataAttributeException
     {
         boolean ok = (!(surlArray == null));
@@ -63,8 +57,7 @@ public class LSInputData extends AbstractInputData
 
         this.auth = auth;
         this.surlArray = surlArray;
-        this.storageSystemInfo = storageSystemInfo;
-        this.fileStorageType = fileStorageType;
+        this.storageTypeSpecified = (fileStorageType != null && !fileStorageType.equals(TFileStorageType.EMPTY));
         this.fullDetailedList = fullDetList;
         this.allLevelRecursive = allLev;
         this.numOfLevels = numOfLev;
@@ -109,38 +102,12 @@ public class LSInputData extends AbstractInputData
     }
 
     /**
-     * Method that returns ArrayOfTExtraInfo specify in SRM request.
-     */
-    public ArrayOfTExtraInfo getStorageSystemInfo()
-    {
-        return storageSystemInfo;
-    }
-
-    /**
-     * Set method for TExtraInfo array
-     * @param i_array
-     */
-    public void setStorageSystemInfo(ArrayOfTExtraInfo i_array)
-    {
-        this.storageSystemInfo = i_array;
-    }
-
-    /**
      * Get method for TFileStorageType
      * @return
      */
-    public TFileStorageType getTFileStorageType()
+    public boolean getStorageTypeSpecified()
     {
-        return this.fileStorageType;
-    }
-
-    /**
-     * Set method for TFileStorageType
-     * @param ftype
-     */
-    public void setTFileStorageType(TFileStorageType ftype)
-    {
-        this.fileStorageType = ftype;
+        return this.storageTypeSpecified;
     }
 
     /**

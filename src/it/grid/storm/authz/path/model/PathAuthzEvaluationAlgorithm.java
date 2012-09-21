@@ -18,34 +18,29 @@
 package it.grid.storm.authz.path.model;
 
 import it.grid.storm.authz.AuthzDecision;
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.common.types.StFN;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import org.slf4j.Logger;
 
 /**
  * @author zappi
  */
 public abstract class PathAuthzEvaluationAlgorithm {
 
-    protected final Logger log = AuthzDirector.getLogger();
-    protected ArrayList<PathACE> pathACL = new ArrayList<PathACE>();
-
-    public PathAuthzEvaluationAlgorithm() {
+    public static PathAuthzEvaluationAlgorithm instance = null;
+    
+    public static PathAuthzEvaluationAlgorithm getInstance() throws Exception
+    {
+        if(instance == null)
+        {
+            throw new Exception("Unable to provide the instance, my comcrete subclass as not provided any");
+        }
+        return instance;
     }
-
-    public void setACL(List<PathACE> acl) {
-        pathACL = new ArrayList<PathACE>(acl);
-    }
-
-    public int getACLLength() {
-        return pathACL.size();
-    }
-
-    public abstract AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation);
+    
+    public abstract AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation, List<PathACE> acl);
+    
+    public abstract AuthzDecision evaluate(String subject, StFN fileName, PathOperation pathOperation, List<PathACE> acl);
 
     /**
      * @return

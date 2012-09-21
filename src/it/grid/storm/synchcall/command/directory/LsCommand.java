@@ -156,21 +156,14 @@ public class LsCommand extends DirectoryCommand implements Command {
         }
 
         /***************** Check for DEFAULT parameters not specified in input Data **************/
-        @SuppressWarnings("unused")
-        ArrayOfTExtraInfo storageSystemInfo = inputData.getStorageSystemInfo();
-        // Default value for "storageSystemInfo" does not exists.
-
-        TFileStorageType fileStorageType = inputData.getTFileStorageType();
-        // Default value for "fileStorageType" does not exists.
 
         /**
          * Filtering result by storageType is not supported by StoRM. According to SRM specific if fileStorageType is
          * specified return SRM_NOT_SUPPORTED
          */
-        if (!(fileStorageType.equals(TFileStorageType.EMPTY))) {
+        if (inputData.getStorageTypeSpecified()) {
             log.info("srmLs: <" + guser
-                    + "> Request for [SURL:] failed since not supported filtering by FileStorageType:"
-                    + fileStorageType.toString());
+                    + "> Request for [SURL:] failed since not supported filtering by FileStorageType");
             try {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, "Filtering result by fileStorageType not supported.");
                 log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
@@ -342,7 +335,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                             manageAuthorizedLS(guser,
                                                stori,
                                                details,
-                                               fileStorageType,
                                                allLevelRecursive,
                                                numOfLevels,
                                                fullDetailedList,
@@ -485,7 +477,7 @@ public class LsCommand extends DirectoryCommand implements Command {
      */
 
     private int manageAuthorizedLS(GridUserInterface guser, StoRI stori, ArrayOfTMetaDataPathDetail rootArray,
-            TFileStorageType type, boolean allLevelRecursive, int numOfLevels, boolean fullDetailedList,
+             boolean allLevelRecursive, int numOfLevels, boolean fullDetailedList,
             int errorCount, int count_maxEntries, int offset, MutableInt numberOfResults, int currentLevel,
             MutableInt numberOfIterations) {
 
@@ -576,7 +568,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                         manageAuthorizedLS(guser,
                                            item,
                                            currentMetaDataArray,
-                                           type,
                                            allLevelRecursive,
                                            numOfLevels,
                                            fullDetailedList,

@@ -35,14 +35,13 @@ public class RmdirInputData extends AbstractInputData {
     
     private GridUserInterface auth = null;
     private TSURL surl = null;
-    private ArrayOfTExtraInfo storageSystemInfo = null;
     private Boolean recursive;
 
     public RmdirInputData()
     {
     }
 
-    public RmdirInputData(GridUserInterface auth, TSURL surl, ArrayOfTExtraInfo storageSystemInfo, Boolean recursive)
+    public RmdirInputData(GridUserInterface auth, TSURL surl, Boolean recursive)
                     throws InvalidRmdirInputAttributeException
     {
         boolean ok = (surl != null);
@@ -50,7 +49,6 @@ public class RmdirInputData extends AbstractInputData {
 
         this.auth = auth;
         this.surl = surl;
-        this.storageSystemInfo = storageSystemInfo;
         this.recursive = recursive;
     }
 
@@ -100,22 +98,6 @@ public class RmdirInputData extends AbstractInputData {
         this.recursive = flag;
     }
 
-    /**
-     * Get RecursiveFlag
-     */
-    public ArrayOfTExtraInfo getStorageSystemInfo()
-    {
-        return storageSystemInfo;
-    }
-
-    /**
-     * Set RecursiveFlag
-     */
-    public void setStorageSystemInfo(ArrayOfTExtraInfo storageSystemInfo)
-    {
-        this.storageSystemInfo = storageSystemInfo;
-    }
-    
     @Override
     public Boolean hasPrincipal()
     {

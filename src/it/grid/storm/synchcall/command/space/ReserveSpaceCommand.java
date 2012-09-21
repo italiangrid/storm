@@ -346,6 +346,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         
         TAccessLatency latency = data.getRetentionPolicyInfo().getAccessLatency();
         TRetentionPolicy retentionPolicy = data.getRetentionPolicyInfo().getRetentionPolicy();
+//      latency != Empty,Online --> fail
+//      retentionPolicy != Empty,REPLICA  --> fail
         if (!((latency == null || latency.equals(TAccessLatency.EMPTY) || latency.equals(TAccessLatency.ONLINE)) && (retentionPolicy == null
                 || retentionPolicy.equals(TRetentionPolicy.EMPTY) || retentionPolicy.equals(TRetentionPolicy.REPLICA))))
         {

@@ -94,10 +94,6 @@ public class LsConverter implements Converter
         guser = GridUserManager.decode(inputParam);
         //guser = VomsGridUser.decode(inputParam);
 
-        /* (1) authorizationID (never used) */
-        String member_authID = new String("authorizationID");
-        String authID = (String) inputParam.get(member_authID);
-
         /* (2) anyURI[] arrayOfSURLs */
         ArrayOfSURLs surlArray = null;
         try {
@@ -107,16 +103,6 @@ public class LsConverter implements Converter
             surlArray = null;
         }
 
-        /* (3) TExtraInfo[] storageSystemInfo */
-        ArrayOfTExtraInfo infoArray = null;
-        try {
-            infoArray = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        } catch (InvalidArrayOfTExtraInfoAttributeException e1) {
-            log.debug("SrmLs: Empty infoArray found!");
-            infoArray = null;
-        }
-
-        /* (4) FileStorageType */
         TFileStorageType fileStorageType = TFileStorageType.decode(inputParam, TFileStorageType.PNAME_FILESTORAGETYPE);
         log.debug("fileType: " + fileStorageType);
 
@@ -142,7 +128,7 @@ public class LsConverter implements Converter
 
         // Creation of input structure used for Directory Manager invokation
         try {
-            inputData = new LSInputData(guser, surlArray, infoArray, fileStorageType, fullDL, allLR, numOL, offset, count);
+            inputData = new LSInputData(guser, surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);
         } catch (InvalidLSInputDataAttributeException e) {
             log.debug("SrmLs: Error Creating LSInputData! " + e);
         }

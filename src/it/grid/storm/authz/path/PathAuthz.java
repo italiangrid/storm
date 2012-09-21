@@ -24,7 +24,7 @@ import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.PathAuthzInterface;
 import it.grid.storm.authz.path.conf.PathAuthzDB;
-import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
+import it.grid.storm.authz.path.model.PathOperation;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -40,27 +40,12 @@ import org.slf4j.Logger;
 public class PathAuthz implements PathAuthzInterface {
 
     private final Logger log = AuthzDirector.getLogger();
-    private PathAuthzDB pathAuthzDB = PathAuthzDB.makeEmpty();
-    private PathAuthzEvaluationAlgorithm authz;
+    private final PathAuthzDB pathAuthzDB;
 
     public PathAuthz(PathAuthzDB pathAuthzDB) {
         this.pathAuthzDB = pathAuthzDB;
-        authz = pathAuthzDB.getAuthorizationAlgorithm();
-        authz.setACL(pathAuthzDB.getACL());
     }
 
-    public void setAuthzDB(PathAuthzDB pathAuthzDB) {
-        this.pathAuthzDB = pathAuthzDB;
-        authz = pathAuthzDB.getAuthorizationAlgorithm();
-        authz.setACL(pathAuthzDB.getACL());
-    }
-
-    public void refresh() {
-        authz = pathAuthzDB.getAuthorizationAlgorithm();
-        authz.setACL(pathAuthzDB.getACL());
-        // Eventually, clear the cache
-        // @todo
-    }
 
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StoRI stori) {
         return authorize(guser, pathOperation, stori.getStFN()); 
@@ -68,48 +53,32 @@ public class PathAuthz implements PathAuthzInterface {
     
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StFN fileStFN) {
 
-        AuthzDecision result = AuthzDecision.INDETERMINATE;
-
-        // Retrieve the local group of Requestor
         String groupName = null;
         try {
-            int localGroup = guser.getLocalUser().getPrimaryGid();
-            groupName = LocalGroups.getGroupName(localGroup);
+            groupName = LocalGroups.getGroupName(guser.getLocalUser().getPrimaryGid());
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
-            groupName = "unknown";
+            return AuthzDecision.INDETERMINATE;
         }
-
         log.debug("<PathAuthz> Compute authorization for groupName:'" + groupName + "', filename:'" + fileStFN
                 + "', pathOperation:'" + pathOperation + "'");
+        return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
+    }
+    
+    public AuthzDecision authorize(GridUserInterface guser, PathOperation pathOperation, StFN fileStFN) {
 
-        result = authz.evaluate(groupName, fileStFN, pathOperation);
-
-        log.info("<PathAuthz>: " + groupName + " is " + result + " to perform " + pathOperation + " on " + fileStFN);
-        return result;
-
+        String groupName = null;
+        try {
+            groupName = LocalGroups.getGroupName(guser.getLocalUser().getPrimaryGid());
+        } catch (CannotMapUserException e) {
+            log.error("Unable to retrieve the local group for '" + guser + "'");
+            return AuthzDecision.INDETERMINATE;
+        }
+        log.debug("<PathAuthz> Compute authorization for groupName:'" + groupName + "', filename:'" + fileStFN
+                + "', pathOperation:'" + pathOperation + "'");
+        return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
     }
 
-    /**
-     * Method used to test
-     * 
-     * @param groupName
-     * @param pathOperation
-     * @param filename
-     * @return
-     */
-    public AuthzDecision authorizeTest(String groupName, SRMFileRequest pathOperation, StFN filename) {
-
-        AuthzDecision result = AuthzDecision.INDETERMINATE;
-        // log.debug("Path Authz DB: " + pathAuthzDB);
-        result = authz.evaluate(groupName, filename, pathOperation);
-
-        return result;
-
-    }
-
-    /*
-     */
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StoRI storiSource,
             StoRI storiDest) {
 
@@ -132,8 +101,8 @@ public class PathAuthz implements PathAuthzInterface {
 
         switch (pathOperation) {
             case CPfrom:
-                AuthzDecision fromDec = authz.evaluate(groupName, sourceFileName, SRMFileRequest.CPfrom);
-                AuthzDecision toDec = authz.evaluate(groupName, destFileName, SRMFileRequest.CPto);
+                AuthzDecision fromDec = pathAuthzDB.evaluate(groupName, sourceFileName, SRMFileRequest.CPfrom);
+                AuthzDecision toDec = pathAuthzDB.evaluate(groupName, destFileName, SRMFileRequest.CPto);
                 if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
                     result = AuthzDecision.PERMIT;
                 } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
@@ -143,8 +112,8 @@ public class PathAuthz implements PathAuthzInterface {
                 }
                 break;
             case CPto:
-                fromDec = authz.evaluate(groupName, sourceFileName, SRMFileRequest.CPfrom);
-                toDec = authz.evaluate(groupName, destFileName, SRMFileRequest.CPto);
+                fromDec = pathAuthzDB.evaluate(groupName, sourceFileName, SRMFileRequest.CPfrom);
+                toDec = pathAuthzDB.evaluate(groupName, destFileName, SRMFileRequest.CPto);
                 if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
                     result = AuthzDecision.PERMIT;
                 } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
@@ -154,8 +123,8 @@ public class PathAuthz implements PathAuthzInterface {
                 }
                 break;
             case MV_dest:
-                fromDec = authz.evaluate(groupName, sourceFileName, SRMFileRequest.MV_source);
-                toDec = authz.evaluate(groupName, destFileName, SRMFileRequest.MV_dest);
+                fromDec = pathAuthzDB.evaluate(groupName, sourceFileName, SRMFileRequest.MV_source);
+                toDec = pathAuthzDB.evaluate(groupName, destFileName, SRMFileRequest.MV_dest);
                 if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
                     result = AuthzDecision.PERMIT;
                 } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
@@ -165,8 +134,8 @@ public class PathAuthz implements PathAuthzInterface {
                 }
                 break;
             case MV_source:
-                fromDec = authz.evaluate(groupName, sourceFileName, SRMFileRequest.MV_source);
-                toDec = authz.evaluate(groupName, destFileName, SRMFileRequest.MV_dest);
+                fromDec = pathAuthzDB.evaluate(groupName, sourceFileName, SRMFileRequest.MV_source);
+                toDec = pathAuthzDB.evaluate(groupName, destFileName, SRMFileRequest.MV_dest);
                 if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
                     result = AuthzDecision.PERMIT;
                 } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {

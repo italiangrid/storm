@@ -74,20 +74,10 @@ public class RmConverter implements Converter {
         log.debug("RmConverter: Input Structure toString: "
                 + ParameterDisplayHelper.display(inputParam));
 
-        /* Creationd of RmInputData, INPUT STRUCTURE for */
-        /* DirectoryFuncionsManager ! */
         RmInputData inputData = null;
 
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        // Inutile
-        String member_authID = new String("authorizationID");
-        String authID = (String) inputParam.get(member_authID);
-
-        // TSURL ARRAY
         ArrayOfSURLs surlArray = null;
         try {
             surlArray = ArrayOfSURLs.decode(inputParam,
@@ -97,20 +87,8 @@ public class RmConverter implements Converter {
             e1.printStackTrace();
         }
 
-        // Creation of surlInfoArray
-        ArrayOfTExtraInfo infoArray = null;
         try {
-            infoArray = ArrayOfTExtraInfo.decode(inputParam,
-                    ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        } catch (InvalidArrayOfTExtraInfoAttributeException e1) {
-            // TODO Auto-generated catch block
-            log.debug("RmConverter: storageSystemInfo not specified.");
-            // e1.printStackTrace();
-        }
-
-        // Creation of RmInputData structure
-        try {
-            inputData = new RmInputData(guser, surlArray, infoArray);
+            inputData = new RmInputData(guser, surlArray);
 
         } catch (InvalidRmInputAttributeException e) {
             log.debug("Invalid RmInputData Creation!" + e);

@@ -23,6 +23,7 @@ import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.SAAuthzType;
@@ -58,7 +59,7 @@ public interface VirtualFSInterface {
 
     public StoRI getRoot() throws NamespaceException;
 
-    public String getAliasName() throws NamespaceException;
+    public String getAliasName();
 
     public Class getFSDriver() throws NamespaceException;
 
@@ -72,7 +73,7 @@ public interface VirtualFSInterface {
 
    // public String getStorageAreaAuthz() throws NamespaceException;
 
-    public boolean isApproachableByUser(GridUserInterface user) throws NamespaceException;
+    public boolean isApproachableByUser(GridUserInterface user);
 
     public DefaultValuesInterface getDefaultValues();
 
@@ -81,6 +82,8 @@ public interface VirtualFSInterface {
     public PropertyInterface getProperties() throws NamespaceException;
 
     public List<MappingRule> getMappingRules() throws NamespaceException;
+    
+    public List<ApproachableRule> getApproachableRules() throws NamespaceException;
 
     /**************************************************
      *    Methods used to retrieve the Status of VFS

@@ -18,6 +18,7 @@
 package it.grid.storm.authz.path.model;
 
 import it.grid.storm.authz.AuthzDecision;
+import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 
@@ -26,64 +27,26 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Collections;
+import org.slf4j.Logger;
 
 /**
  * @author zappi
  */
 public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
-    /**
-     * 
-     */
-    public PathAuthzAlgBestMatch() {
-        super();
-        log.debug("Path Authorization Algorithm : Best Match evaluator");
-    }
-
-    /**
-     * @param subjectGroup
-     * @return List<PathACE> : the list contains all the ACE compatible with the requestor subject
-     */
-    private List<PathACE> getCompatibleACE(String subjectGroup) {
-        log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
-        ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
-        if ((pathACL != null) && (!(pathACL.isEmpty()))) {
-            for (PathACE pathACE : pathACL) {
-                if (pathACE.subjectMatch(subjectGroup)) {
-                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' match with subject='" + subjectGroup
-                            + "'");
-                    compatibleACE.add(pathACE);
-                } else {
-                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' DOESN'T match with subject='"
-                            + subjectGroup + "'");
-                }
-            }
-        } else {
-            log.debug("<BestMatch>-compatibleACE: ACL db is empty");
+    public static PathAuthzEvaluationAlgorithm getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new PathAuthzAlgBestMatch();
         }
-        return compatibleACE;
+        return instance;
     }
+    
+    private PathAuthzAlgBestMatch() {}
 
-    /**
-     * @param fileName
-     * @param compatibleACE
-     * @return null if there are not ACE.
-     */
-    private List<OrderedACE> getOrderedACEs(StFN fileName, List<PathACE> compatibleACE) {
-        ArrayList<OrderedACE> bestACEs = new ArrayList<OrderedACE>();
-        int distance = 0;
-        for (PathACE pathAce : compatibleACE) {
-            // Compute distance from Resource target (fileName) and Resource into ACE
-            StFN aceStFN = pathAce.getStorageFileName();
-            distance = NamespaceUtil.computeDistanceFromPath(aceStFN.getValue(), fileName.getValue());
-            bestACEs.add(new OrderedACE(pathAce, distance));
-
-        } // End of cycle
-        // Sort the BestACE in base of distance
-        Collections.sort(bestACEs);
-        return bestACEs;
-    }
-
+    protected static final Logger log = AuthzDirector.getLogger();
+    
     @Override
     public String getDescription() {
         String description = "< Best Match Path Authorization Algorithm >";
@@ -94,25 +57,16 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
      * 
      */
     @Override
-    public AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation) {
+    public AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation, List<PathACE> acl) {
         AuthzDecision result = AuthzDecision.INDETERMINATE;
 
-        // Retrieve the list of compatible ACE
-        List<PathACE> compACE = getCompatibleACE(subject);
-        // if noone ACE is compatible with the requestor subject
+        List<PathACE> compACE = getCompatibleACE(subject, acl);
         if ((compACE == null) || (compACE.isEmpty())) {
             return AuthzDecision.NOT_APPLICABLE;
         }
 
-        // Retrieve the best ACE within compatible ones.
         List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
         log.debug("There are '" + orderedACEs.size() + "' ACEs regarding the subject '" + subject + "'");
-        // Print the ACE to evaluate
-        int count = 0;
-        for (OrderedACE oAce : orderedACEs) {
-            log.debug("ACE[" + count + "]=" + oAce.ace + " Distance:" + oAce.distance);
-            count++;
-        }
 
         // Retrieve the list of Path Operation needed to authorize the SRM request
         PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
@@ -122,17 +76,23 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
         String explanation = "Operations to authorize to '" + subject + "' are :" + ops + "\n";
         // Check iterativly every needed Path Operation
-        for (PathOperation op : ops) {
+        for (PathOperation op : ops)
+        {
             explanation += " op('" + op + "') is ";
-            for (OrderedACE oAce : orderedACEs) {
-                if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
-                    if (oAce.ace.isPermitAce()) {
+            for (OrderedACE oAce : orderedACEs)
+            {
+                if (oAce.ace.getPathAccessMask().containsPathOperation(op))
+                {
+                    if (oAce.ace.isPermitAce())
+                    {
                         // Path Operation is PERMIT
                         explanation += "PERMIT, thanks to ACE: '" + oAce + "'\n";
                         log.trace("Path Operation '" + op + "' is PERMIT");
                         decision.put(op, AuthzDecision.PERMIT);
                         break;
-                    } else {
+                    }
+                    else
+                    {
                         // Path Operation is DENY
                         explanation += "DENY, thanks to ACE: '" + oAce + "'\n";
                         log.trace("Path Operation '" + op + "' is DENY");
@@ -141,7 +101,8 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
                     }
                 }
             }
-            if (!(decision.containsKey(op))) {
+            if (!(decision.containsKey(op)))
+            {
                 decision.put(op, AuthzDecision.INDETERMINATE);
             }
         }
@@ -163,8 +124,94 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         return result;
 
     }
+    
+    public AuthzDecision evaluate(String subject, StFN fileName, PathOperation op, List<PathACE> acl) {
 
-    // =========================================
+        // Retrieve the list of compatible ACE
+        List<PathACE> compACE = getCompatibleACE(subject, acl);
+        // if noone ACE is compatible with the requestor subject
+        if ((compACE == null) || (compACE.isEmpty())) {
+            return AuthzDecision.NOT_APPLICABLE;
+        }
+
+        // Retrieve the best ACE within compatible ones.
+        List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
+        log.debug("There are '" + orderedACEs.size() + "' ACEs regarding the subject '" + subject + "'");
+
+        log.trace("<Best-Match> Operation to authorize to '" + subject + "' is : " + op);
+
+        for (OrderedACE oAce : orderedACEs)
+        {
+            if (oAce.ace.getPathAccessMask().containsPathOperation(op))
+            {
+                if (oAce.ace.isPermitAce())
+                {
+                    log.trace("Path Operation '" + op + "' is PERMIT");
+                    return AuthzDecision.PERMIT;
+                }
+                else
+                {
+                    log.trace("Path Operation '" + op + "' is DENY");
+                    return AuthzDecision.DENY;
+                }
+            }
+        }
+        return AuthzDecision.INDETERMINATE;
+    }
+
+    /**
+     * @param subjectGroup
+     * @return List<PathACE> : the list contains all the ACE compatible with the requestor subject
+     */
+    private List<PathACE> getCompatibleACE(String subjectGroup, List<PathACE> acl)
+    {
+        log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
+        ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
+        if ((acl != null) && (!(acl.isEmpty())))
+        {
+            for (PathACE pathACE : acl)
+            {
+                if (pathACE.subjectMatch(subjectGroup))
+                {
+                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' match with subject='"
+                            + subjectGroup + "'");
+                    compatibleACE.add(pathACE);
+                }
+                else
+                {
+                    log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE + "' DOESN'T match with subject='"
+                            + subjectGroup + "'");
+                }
+            }
+        }
+        else
+        {
+            log.debug("<BestMatch>-compatibleACE: ACL db is empty");
+        }
+        return compatibleACE;
+    }
+
+    /**
+     * @param fileName
+     * @param compatibleACE
+     * @return null if there are not ACE.
+     */
+    private List<OrderedACE> getOrderedACEs(StFN fileName, List<PathACE> compatibleACE)
+    {
+        ArrayList<OrderedACE> bestACEs = new ArrayList<OrderedACE>();
+        int distance = 0;
+        for (PathACE pathAce : compatibleACE)
+        {
+            // Compute distance from Resource target (fileName) and Resource into ACE
+            StFN aceStFN = pathAce.getStorageFileName();
+            distance = NamespaceUtil.computeDistanceFromPath(aceStFN.getValue(), fileName.getValue());
+            bestACEs.add(new OrderedACE(pathAce, distance));
+
+        } // End of cycle
+          // Sort the BestACE in base of distance
+        Collections.sort(bestACEs);
+        return bestACEs;
+    }
 
     /**
      * @author ritz

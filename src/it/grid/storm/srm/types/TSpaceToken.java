@@ -57,34 +57,12 @@ public class TSpaceToken implements Serializable {
     }
 
     /**
-     * Factory method that requires a String; if it is null, an
-     * InvalidTSpaceTokenAttributeException is thrown.
-     */
-    public static TSpaceToken makeFromPFN(PFN PFNToken) throws InvalidTSpaceTokenAttributesException {
-        if (PFNToken==null) throw new InvalidTSpaceTokenAttributesException();
-        return new TSpaceToken(PFNToken.getValue(),false);
-    }
-
-    /**
      * Factory method that returns an Empty TSpaceToken
      */
     public static TSpaceToken makeEmpty() {
         if (emptyToken!=null) return emptyToken;
         emptyToken = new TSpaceToken("",true);
         return emptyToken;
-    }
-
-
-    /**
-     * Retrieve an unique Space Token
-     *
-     * @return TSpaceToken
-     */
-    public static TSpaceToken makeGUID_Token() throws InvalidTSpaceTokenAttributesException {
-      TSpaceToken result = null;
-      String guid = (new it.grid.storm.common.GUID()).toString();
-      result = result.make(guid);
-      return result;
     }
 
 

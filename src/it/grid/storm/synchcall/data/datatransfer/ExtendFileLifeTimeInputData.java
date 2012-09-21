@@ -23,7 +23,6 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 
 /**
  *

@@ -50,16 +50,14 @@ public class ReserveSpaceInputData extends AbstractInputData implements Serializ
     private TSizeInBytes         spaceDesired             = TSizeInBytes.makeEmpty();
     private TSizeInBytes         spaceGuaranteed          = TSizeInBytes.makeEmpty();
     private TLifeTimeInSeconds   spaceLifetime            = null;
-    private ArrayOfTSizeInBytes  arrayOfExpectedFileSizes = null;
     private ArrayOfTExtraInfo    storageSystemInfo        = null;
-    private TTransferParameters  transferParameters       = null;
 
     public ReserveSpaceInputData() {}
 
     public ReserveSpaceInputData(GridUserInterface auth, String spaceTokenAlias,
             TRetentionPolicyInfo retentionPolicyInfo, TSizeInBytes spaceDesired, TSizeInBytes spaceGuaranteed,
-            TLifeTimeInSeconds spaceLifetime, ArrayOfTSizeInBytes arrayOfExpectedFileSizes,
-            ArrayOfTExtraInfo storageSystemInfo, TTransferParameters transferParameters)
+            TLifeTimeInSeconds spaceLifetime,
+            ArrayOfTExtraInfo storageSystemInfo)
             throws InvalidReserveSpaceInputDataAttributesException
     {
         boolean ok = (auth != null) && (spaceDesired != null);
@@ -69,13 +67,10 @@ public class ReserveSpaceInputData extends AbstractInputData implements Serializ
 
         this.auth = auth;
         this.spaceTokenAlias = spaceTokenAlias;
-        this.retentionPolicyInfo = retentionPolicyInfo;
         this.spaceDesired = spaceDesired;
         this.spaceGuaranteed = spaceGuaranteed;
         this.spaceLifetime = spaceLifetime;
-        this.arrayOfExpectedFileSizes = arrayOfExpectedFileSizes;
         this.storageSystemInfo = storageSystemInfo;
-        this.transferParameters = transferParameters;
     }
 
     /**
@@ -170,19 +165,6 @@ public class ReserveSpaceInputData extends AbstractInputData implements Serializ
     }
 
     /**
-     * Method that return arrayOfExpectedFileSizes
-     */
-    public ArrayOfTSizeInBytes getArrayOfExpectedFileSizes()
-    {
-        return arrayOfExpectedFileSizes;
-    }
-
-    public void setArrayOfExpectedFileSizes(ArrayOfTSizeInBytes arrayOfExpectedFileSizes)
-    {
-        this.arrayOfExpectedFileSizes = arrayOfExpectedFileSizes;
-    }
-
-    /**
      * Method that return storageSystemInfo
      */
     public ArrayOfTExtraInfo getStorageSystemInfo()
@@ -193,19 +175,6 @@ public class ReserveSpaceInputData extends AbstractInputData implements Serializ
     public void setStorageSystemInfo(ArrayOfTExtraInfo storageSystemInfo)
     {
         this.storageSystemInfo = storageSystemInfo;
-    }
-
-    /**
-     * Method that return transferParameters
-     */
-    public TTransferParameters getTransferParameters()
-    {
-        return transferParameters;
-    }
-
-    public void setTransferParameters(TTransferParameters transferParameters)
-    {
-        this.transferParameters = transferParameters;
     }
 
     public void print()

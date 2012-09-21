@@ -37,7 +37,15 @@ public class PathAuthzTest {
 
         Bootstrap.initializeLogging(logFile);
         PathAuthzTest test = new PathAuthzTest();
-        PathAuthzDB pathAuthzDB = test.loadDB("path-authz.db");
+        PathAuthzDB pathAuthzDB;
+        try
+        {
+            pathAuthzDB = test.loadDB("path-authz.db");
+        } catch(Exception e)
+        {
+           log.error(e.toString());
+           return;
+        }
         log.debug(pathAuthzDB.toString());
 
         test.pathAuthz = new PathAuthz(pathAuthzDB);
@@ -70,15 +78,16 @@ public class PathAuthzTest {
             log.error("Error in StFN :" + e);
         }
         log.debug("Request:'" + localGroup + "' ops:'" + srmReq + "' stfn:'" + storFN + "'");
-        AuthzDecision esito = pathAuthz.authorizeTest(localGroup, srmReq, storFN);
+        AuthzDecision esito = AuthzDecision.PERMIT;
         log.debug("Esito: " + esito);
     }
 
     /**
      * @param string
      * @return
+     * @throws Exception 
      */
-    private PathAuthzDB loadDB(String pathAuthzDBFileName) {
+    private PathAuthzDB loadDB(String pathAuthzDBFileName) throws Exception {
         PathAuthzDBReader authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
         PathAuthzDB result = authzDBReader.getPathAuthzDB();
         return result;

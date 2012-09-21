@@ -73,9 +73,6 @@ public class ReleaseSpaceConverter implements Converter {
         ReleaseSpaceInputData inputData = null;
 
         // Member name definition for inputParam struct , from SRM V2.1
-        String member_authID = new String("authorizationID");
-        String member_token = new String("spaceToken");
-        String member_sysInfo = new String("storageSystemInfo");
         String member_force = new String("forceFileRelease");
 
         // String member_DN = new String("authorizationID");
@@ -85,9 +82,6 @@ public class ReleaseSpaceConverter implements Converter {
         GridUserInterface guser = null;
         guser = GridUserManager.decode(inputParam);
         //guser = VomsGridUser.decode(inputParam);
-
-        /* (1) authorizationID (never used) */
-        String authID = (String) inputParam.get(member_authID);
 
         /* (2) spaceToken */
         TSpaceToken spaceToken = TSpaceToken.decode(inputParam,TSpaceToken.PNAME_SPACETOKEN);
@@ -107,15 +101,6 @@ public class ReleaseSpaceConverter implements Converter {
     	}
          */
 
-        /* (3) StorageSystemInfo */
-        ArrayOfTExtraInfo storageSystemInfo;
-        try {
-            storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        }
-        catch (InvalidArrayOfTExtraInfoAttributeException e) {
-            storageSystemInfo = null;
-        }
-
         /* (4) ForceFileRelease */
         Boolean force = (Boolean)inputParam.get(member_force);
         if (force == null) {
@@ -124,7 +109,7 @@ public class ReleaseSpaceConverter implements Converter {
 
         /* Creation of ReleaseSpaceInputStructure */
         try {
-            inputData = new ReleaseSpaceInputData(guser, spaceToken, storageSystemInfo, force.booleanValue());
+            inputData = new ReleaseSpaceInputData(guser, spaceToken, force.booleanValue());
         }
         catch (InvalidReleaseSpaceAttributesException e) {
             log.error("Error Creating inputData for ReleaseSpace"+e);

@@ -18,13 +18,10 @@
 package it.grid.storm.synchcall.data.space;
 
 
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.exception.InvalidReleaseSpaceAttributesException;
 import it.grid.storm.griduser.GridUserInterface;
-//import it.grid.storm.griduser.VomsGridUser;
 
 /**
  * This class represents the SpaceReservationData associated with the SRM request, that is
@@ -44,10 +41,9 @@ public class ReleaseSpaceInputData extends AbstractInputData {
 
     private GridUserInterface gUser = null;
     private TSpaceToken spaceToken = null;
-    private ArrayOfTExtraInfo storageInfo = null;
     private boolean forceFileRelease = false;
 
-    public ReleaseSpaceInputData(GridUserInterface auth, TSpaceToken spaceToken, ArrayOfTExtraInfo storageInfo,
+    public ReleaseSpaceInputData(GridUserInterface auth, TSpaceToken spaceToken, /*ArrayOfTExtraInfo storageInfo,*/
 			    boolean forceFileRelease) throws InvalidReleaseSpaceAttributesException
     {
 
@@ -57,7 +53,6 @@ public class ReleaseSpaceInputData extends AbstractInputData {
     	}
     	this.gUser = auth;
     	this.spaceToken = spaceToken;
-    	this.storageInfo = storageInfo;
     	this.forceFileRelease = forceFileRelease;
 
     }

@@ -31,6 +31,7 @@ import it.grid.storm.logging.StoRMLoggers;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
+import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
@@ -120,12 +121,17 @@ public class StoRM {
         boolean testingMode = false; // True if you wants testing namespace
         NamespaceDirector.initializeDirector(verboseMode, testingMode);
 
-        // Hearthbeat
         HealthDirector.initializeDirector(false);
 
-        // Path Authz Initialization
         String pathAuthzDBFileName = configurationDir + "path-authz.db";
-        Bootstrap.initializePathAuthz(pathAuthzDBFileName);
+        try
+        {
+            Bootstrap.initializePathAuthz(pathAuthzDBFileName);
+        } catch(BootstrapException e)
+        {
+            log.error("Unable to initialize the Path Authorization manager. BootstrapException: " + e.getMessage());
+            throw new RuntimeException("Unable to initialize the Path Authorization manager");
+        }
 
         // Initialize Used Space
         Bootstrap.initializeUsedSpace();

@@ -221,17 +221,12 @@ public class PathACE {
      */
 
     public boolean subjectMatch(String subjectGroup) {
-        boolean result = false;
         Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
-        if (allGroupsMatcher.matches()) {
-            result = true;
+        if (allGroupsMatcher.matches() || localGroupName.equals(subjectGroup)) {
             log.debug("ACE (" + toString() + ") matches with the requestor '" + subjectGroup + "'");
-        } else if (localGroupName.equals(subjectGroup)) {
-            result = true;
-            log.debug("ACE (" + toString() + ") matches with subject '" + subjectGroup + "'");
-        }
-        // log.debug("ACE.localGroupName=" + localGroupName + " matches with '" + subjectGroup + "' = " + result);
-        return result;
+            return true;
+        } 
+        return false;
     }
 
     /**

@@ -712,23 +712,25 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         int numOfAppRules = parserUtil.getNumberOfApproachRule();
 
         verboseLog("Number of APP Rule : " + numOfAppRules);
-        String ruleName;
-        String dn;
-        String vo_name;
+        String ruleName, dn, vo_name, relPath;
         List appFS;
-        String relPath;
         ApproachableRule appRule;
-        for (int i = 0; i < numOfAppRules; i++) {
+        for (int i = 0; i < numOfAppRules; i++) 
+        {
             ruleName = parserUtil.getApproachRuleName(i);
             verboseLog(" APP rule nr:" + i + " is named : " + ruleName);
             dn = parserUtil.getAppRule_SubjectDN(ruleName);
             vo_name = parserUtil.getAppRule_SubjectVO(ruleName);
             appFS = parserUtil.getAppRule_AppFS(ruleName);
             relPath = parserUtil.getAppRule_RelativePath(ruleName);
-            SubjectRules subjectRules = null;
-            subjectRules = new SubjectRules(dn, vo_name);
+            SubjectRules subjectRules = new SubjectRules(dn, vo_name);
             appRule = new ApproachableRule(ruleName, subjectRules, relPath);
-            appRule.setApproachableVFSList(appFS);
+            if (vfss.containsKey(appFS)) {
+                verboseLog("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' exists.");
+                ((VirtualFS) vfss.get(appFS)).addApproachableRule(appRule);
+            } else {
+                log.error("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' DOES NOT EXISTS.");
+            }
             apprules.put(ruleName, appRule);
         }
     }

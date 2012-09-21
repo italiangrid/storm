@@ -139,7 +139,6 @@ public class ApproachableRule implements Comparable{
     {
         boolean response = false;
         String dnString = gUser.getDn();
-        GridUserInterface gridUser = null;
         DistinguishedName dn = new DistinguishedName(dnString);
         boolean dnMatch = dnMatchingRule.match(dn);
         if (dnMatch)

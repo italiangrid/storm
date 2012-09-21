@@ -38,7 +38,6 @@ import it.grid.storm.srm.types.TRetentionPolicyInfo;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TTransferParameters;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceInputDataAttributesException;
@@ -103,8 +102,6 @@ public class ReserveSpaceConverter implements Converter {
         /* (6) desiredLifetimeOfReservedSpace */
         TLifeTimeInSeconds desiredLifetimeOfReservedSpace = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_DESIREDLIFETIMEOFRESERVEDSPACE);
 
-        /* (7) arrayOfExpectedFileSizes */
-        ArrayOfTSizeInBytes arrayOfExpectedFileSizes = ArrayOfTSizeInBytes.decode(inputParam, ArrayOfTSizeInBytes.PNAME_arrayOfExpectedFileSizes);
 
         /* (8) storageSystemInfo */
         ArrayOfTExtraInfo storageSystemInfo;
@@ -115,14 +112,10 @@ public class ReserveSpaceConverter implements Converter {
             storageSystemInfo = null;
         }
 
-        /* (9) transferParameters */
-        TTransferParameters transferParameters = TTransferParameters.decode(inputParam, TTransferParameters.PNAME_transferParameters);
-
         /* Creation of SpaceResInputData */
         try {
             inputData = new ReserveSpaceInputData(guser, spaceAlias, retentionPolicyInfo, desiredSizeOfTotalSpace,
-                    desiredSizeOfGuaranteedSpace, desiredLifetimeOfReservedSpace,
-                    arrayOfExpectedFileSizes, storageSystemInfo, transferParameters);
+                    desiredSizeOfGuaranteedSpace, desiredLifetimeOfReservedSpace, storageSystemInfo);
         }
         catch (InvalidReserveSpaceInputDataAttributesException e) {
             log.debug("Error Creating inputData for SpaceReservationManager: " + e);

@@ -41,12 +41,11 @@ import it.grid.storm.synchcall.data.exception.InvalidMkdirInputAttributeExceptio
 public class MkdirInputData extends AbstractInputData {
     private GridUserInterface auth = null;
     private TSURL surl = null;
-    private ArrayOfTExtraInfo storageSystemInfo = null;
 
     public MkdirInputData() {
     }
 
-    public MkdirInputData(GridUserInterface auth, TSURL surl, ArrayOfTExtraInfo extraInfoArray)
+    public MkdirInputData(GridUserInterface auth, TSURL surl)
             throws InvalidMkdirInputAttributeException 
     {
         boolean ok = (!(surl == null));
@@ -83,20 +82,6 @@ public class MkdirInputData extends AbstractInputData {
         return this.auth;
     }
     
-    /**
-    * Set storageSystemInfo
-    */
-   public void setStorageSystemInfo(ArrayOfTExtraInfo storageSystemInfo) {
-       this.storageSystemInfo = storageSystemInfo;
-   }
-
-   /**
-    * get storageSystemInfo
-    */
-   public ArrayOfTExtraInfo getStorageSystemInfo() {
-       return this.storageSystemInfo;
-   }
-
    @Override
    public Boolean hasPrincipal()
    {

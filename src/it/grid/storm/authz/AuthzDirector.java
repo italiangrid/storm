@@ -21,10 +21,7 @@ import it.grid.storm.authz.path.PathAuthz;
 import it.grid.storm.authz.path.conf.PathAuthzDB;
 import it.grid.storm.authz.path.conf.PathAuthzDBReader;
 import it.grid.storm.authz.sa.SpaceDBAuthz;
-import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.authz.sa.test.MockSpaceAuthz;
-import it.grid.storm.config.ConfigReader;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -191,11 +188,17 @@ public class AuthzDirector {
      * 
      * @param pathAuthz2
      */
-    public static void initializePathAuthz(String pathAuthzDBFileName) {
-        PathAuthzDBReader authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
-        PathAuthzDB pathAuthzDB = authzDBReader.getPathAuthzDB();
-        PathAuthz pathAuthz = new PathAuthz(pathAuthzDB);
-        AuthzDirector.pathAuthz = pathAuthz;
+    public static void initializePathAuthz(String pathAuthzDBFileName) throws DirectorException{
+        PathAuthzDBReader authzDBReader;
+        try
+        {
+            authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
+        } catch(Exception e)
+        {
+           log.error("Unable to build a PathAuthzDBReader : " + e);
+           throw new DirectorException("Unable to build a PathAuthzDBReader");
+        }
+        AuthzDirector.pathAuthz = new PathAuthz(authzDBReader.getPathAuthzDB());
     }
 
     /**

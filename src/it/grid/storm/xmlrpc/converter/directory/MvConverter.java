@@ -74,14 +74,7 @@ public class MvConverter implements Converter
 
         InputData inputData = null;
 
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        /* (1) authorizationID (never used) */
-        String member_authID = new String("authorizationID");
-        String authID = (String) inputParam.get(member_authID);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) fromSURL*/
         TSURL fromSURL = null;
@@ -99,17 +92,9 @@ public class MvConverter implements Converter
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
 
-        /* (4) TExtraInfoArray */
-        ArrayOfTExtraInfo storageSystemInfo = null;
-        try {
-            storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        } catch (InvalidArrayOfTExtraInfoAttributeException e1) {
-            log.debug("SrmMv: Error Creating ExtraInfo:" + e1.toString());
-        }
-
         try {
             log.debug("SrmMv: Input data creation...");
-            inputData = new MvInputData(guser, fromSURL, toSURL, storageSystemInfo);
+            inputData = new MvInputData(guser, fromSURL, toSURL);
             log.debug("Mv input data created.");
 
         } catch (InvalidMvInputAttributeException e) {

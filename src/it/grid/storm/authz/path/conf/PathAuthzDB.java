@@ -1,18 +1,14 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -20,148 +16,93 @@
  */
 package it.grid.storm.authz.path.conf;
 
-import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.AuthzException;
+
+import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.authz.path.model.PathAuthzAlgBestMatch;
 import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
-
-import java.util.ArrayList;
+import it.grid.storm.authz.path.model.PathOperation;
+import it.grid.storm.authz.path.model.SRMFileRequest;
+import it.grid.storm.common.types.StFN;
+import java.util.LinkedList;
 import java.util.List;
-
-import org.slf4j.Logger;
 
 /**
  * @author zappi
  */
-public class PathAuthzDB {
+public class PathAuthzDB
+{
 
-    public final static String UNDEF = "undef-PathAuthzDB";
+    public final static String MOCK_ID = "mock-PathAuthzDB";
 
-    private final Logger log = AuthzDirector.getLogger();
+    private final PathAuthzEvaluationAlgorithm DEFAULT_ALGORITHM = PathAuthzAlgBestMatch.getInstance();
 
-    private final static String DEFAULT_ALGORITHM = PathAuthzAlgBestMatch.class.getName();
+    private final String pathAuthzDBID;
+    private final PathAuthzEvaluationAlgorithm evaluationAlg;
+    private final LinkedList<PathACE> authzDB = new LinkedList<PathACE>();
 
-    private String pathAuthzDBID = "not-defined";
-    private String authzAlgorithm = null;
-    private PathAuthzEvaluationAlgorithm evaluationAlg = null;
-    private final List<PathACE> authzDB = new ArrayList<PathACE>();
-
-    // =========== CONSTRUCTORs ============
-
-    /**
-     * @return
-     */
-    public static PathAuthzDB makeEmpty() {
-        PathAuthzDB result = new PathAuthzDB();
-        result.setPathAuthzDBID("default-PathAuthzDB");
-        result.setPathAuthzEvaluationAlgorithm(new PathAuthzAlgBestMatch());
-        result.addPathACE(PathACE.PERMIT_ALL);
-        return result;
-    }
-
-    /**
-     * @param string
-     */
-    void setPathAuthzDBID(String pathAuthzDBID) {
+    public PathAuthzDB(String pathAuthzDBID, PathAuthzEvaluationAlgorithm algorithm, List<PathACE> aces)
+    {
         this.pathAuthzDBID = pathAuthzDBID;
+        this.evaluationAlg = algorithm;
+        this.authzDB.addAll(aces);
+    }
 
+    public PathAuthzDB(String pathAuthzDBID, List<PathACE> aces)
+    {
+        this.pathAuthzDBID = pathAuthzDBID;
+        this.evaluationAlg = DEFAULT_ALGORITHM;
+        this.authzDB.addAll(aces);
     }
 
     /**
-     * Empty constructor. Use it only if there is a file DB
+     * Empty constructor. Use it only if there is not
      */
-    public PathAuthzDB() {
-        pathAuthzDBID = UNDEF;
+    public PathAuthzDB()
+    {
+        this.pathAuthzDBID = MOCK_ID;
+        this.evaluationAlg = DEFAULT_ALGORITHM;
+        this.authzDB.add(PathACE.PERMIT_ALL);
     }
 
-    /**
-     * @param authzClassName
-     * @throws AuthzException
-     */
-    void setPathAuthzEvaluationAlgorithm(String authzClassName) throws AuthzException {
-        authzAlgorithm = authzClassName;
-        Class<?> authzAlgClass = null;
-        try {
-            authzAlgClass = Class.forName(authzClassName);
-        } catch (ClassNotFoundException e) {
-            log.error("Unable to load the Path Authz Algorithm Class '" + authzClassName + "'\n" + e);
-            // Manage the exceptional case (Use the default Algorithm)
-            setDefaultPathAuthzEvaluationAlgorithm();
-        }
-        if (authzAlgClass != null) {
-            Object authzAlgInstance = null;
-            try {
-                authzAlgInstance = authzAlgClass.newInstance();
-                if (authzAlgInstance instanceof PathAuthzEvaluationAlgorithm) {
-                    // ** SET the Algorithm **
-                    evaluationAlg = (PathAuthzEvaluationAlgorithm) authzAlgInstance;
-                    log.debug("Found a valid Path Authz Evaluation Algorithm.");
-                    log.debug(" It implements the algorithm : " + evaluationAlg.getDescription());
-                } else {
-                    log.error("The Class '" + authzClassName + "' is not a valid Path Authz Evaluation Algorithm class");
-                    // Manage the exceptional case (Use the default Algorithm)
-                    setDefaultPathAuthzEvaluationAlgorithm();
-                }
-            } catch (InstantiationException e) {
-                log.error("Unable to instantiate the Path Authz Algorithm Class '" + authzClassName + "'; "
-                        + e.getMessage());
-                // Manage the exceptional case (Use the default Algorithm)
-                setDefaultPathAuthzEvaluationAlgorithm();
-            } catch (IllegalAccessException e) {
-                log.error("Unable to instantiate the Path Authz Algorithm Class '" + authzClassName + "'; "
-                        + e.getMessage());
-                // Manage the exceptional case (Use the default Algorithm)
-                setDefaultPathAuthzEvaluationAlgorithm();
-            }
-        }
-    }
-
-    private void setDefaultPathAuthzEvaluationAlgorithm() {
-        try {
-            setPathAuthzEvaluationAlgorithm(DEFAULT_ALGORITHM);
-        } catch (AuthzException e) {
-            log.error("Unable to instantiate the DEFAULT algortihm :" + DEFAULT_ALGORITHM);
-        }
-    }
-
-    public void setPathAuthzEvaluationAlgorithm(PathAuthzEvaluationAlgorithm evAlg) {
-        evaluationAlg = evAlg;
-    }
-
-    public void addPathACE(PathACE pathAce) {
+    public void addPathACE(PathACE pathAce)
+    {
         authzDB.add(pathAce);
     }
 
-    // ============= INFORMATIONALs ========
-
-    public PathAuthzEvaluationAlgorithm getAuthorizationAlgorithm() {
-        return evaluationAlg;
-    }
-
-    public int getACLSize() {
-        return authzDB.size();
-    }
-
-    public List<PathACE> getACL() {
+    public List<PathACE> getACL()
+    {
         return authzDB;
     }
 
-    public String getPathAuthzDBID() {
+    public String getPathAuthzDBID()
+    {
         return pathAuthzDBID;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         String result = "=== Path Authorizaton DataBase === \n";
         result += "path-authz.db Name: '" + pathAuthzDBID + "'\n";
-        result += PathACE.ALGORITHM + "=" + authzAlgorithm + "\n \n";
+        result += PathACE.ALGORITHM + "=" + this.evaluationAlg.getClass() + "\n \n";
         int count = 0;
-        for (PathACE ace : authzDB) {
+        for (PathACE ace : authzDB)
+        {
             result += "ace[" + count + "]: " + ace.toString() + "\n";
             count++;
         }
         return result;
+    }
+
+    public AuthzDecision evaluate(String groupName, StFN fileStFN, SRMFileRequest pathOperation)
+    {
+       return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
+    }
+
+    public AuthzDecision evaluate(String groupName, StFN fileStFN, PathOperation pathOperation)
+    {
+        return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
     }
 
 }

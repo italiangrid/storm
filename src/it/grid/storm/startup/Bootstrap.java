@@ -21,6 +21,7 @@
 package it.grid.storm.startup;
 
 import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.DirectorException;
 import it.grid.storm.https.HTTPPluginManager;
 import it.grid.storm.https.HTTPSPluginInterface;
 import it.grid.storm.info.SpaceInfoManager;
@@ -53,8 +54,15 @@ public class Bootstrap {
         reloadTasks.scheduleAtFixedRate(reloadTask, refreshPeriod, refreshPeriod);
     }
 
-    public static void initializePathAuthz(String pathAuthzDBFileName) {
-        AuthzDirector.initializePathAuthz(pathAuthzDBFileName);
+    public static void initializePathAuthz(String pathAuthzDBFileName) throws BootstrapException {
+        try
+        {
+            AuthzDirector.initializePathAuthz(pathAuthzDBFileName);
+        } catch(DirectorException e)
+        {
+            log.error("Unable to initialize the AuthzDirector : " + e);
+            throw new BootstrapException("Unable to initialize the AuthzDirector");
+        }
     }
 
     public static void initializeUsedSpace() {

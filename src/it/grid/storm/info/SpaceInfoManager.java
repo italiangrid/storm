@@ -361,7 +361,8 @@ public class SpaceInfoManager {
             try {
                 PFN spaceFN = PFN.make(pathNorm);
                 LOG.trace("PFN : "+spaceFN);
-                ssd.setSpaceToken(TSpaceToken.makeGUID_Token());
+                ssd.setSpaceToken(TSpaceToken.make(new it.grid.storm.common.GUID().toString()));
+                
                 ssd.setSpaceFileName(spaceFN);
                 toAnalyze.add(ssd);
             } catch (InvalidTSpaceTokenAttributesException e) {

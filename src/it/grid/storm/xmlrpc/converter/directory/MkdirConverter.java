@@ -75,11 +75,6 @@ public class MkdirConverter implements Converter
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
         guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        /* (1) authorizationID (never used) */
-        String member_authID = new String("authorizationID");
-        String authID = (String) inputParam.get(member_authID);
 
         /* (2) directoryPath */
         TSURL surl = null;
@@ -89,17 +84,8 @@ public class MkdirConverter implements Converter
             log.debug("SrmMkdir: ErrorCreating surl: " + e1.toString());
         }
 
-        /* TExtraInfoArray */
-        ArrayOfTExtraInfo extraInfoArray = null;
         try {
-            extraInfoArray = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        } catch (InvalidArrayOfTExtraInfoAttributeException e1) {
-            log.debug("SrmMkdir: Error Creating ExtraInfo:" + e1.toString());
-        }
-
-        // Creation of MkdirInputData
-        try {
-            inputData = new MkdirInputData(guser, surl, extraInfoArray);
+            inputData = new MkdirInputData(guser, surl);
         } catch (InvalidMkdirInputAttributeException e) {
             log.debug("SrmMkdir: Invalid Mkdir data creation!" + e);
         }

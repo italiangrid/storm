@@ -473,12 +473,8 @@ public class Namespace implements NamespaceInterface {
                 if (enclosed) { //Found a compatible Mapping rule
                     distance = d;
                     vfsWinner = table.get(vfs_root);
-                    try {
-                        vfsNameWinner = vfsWinner.getAliasName();
-                        vfs_root_winner = vfs_root;
-                    } catch (NamespaceException ex) {
-                        log.error("Unable to retrieve VFS name.");
-                    }
+                    vfsNameWinner = vfsWinner.getAliasName();
+                    vfs_root_winner = vfs_root;
                     log.debug("Partial winner is " + vfs_root_winner + " (VFS :'" + vfsNameWinner + "'");
                     found = true;
                 }

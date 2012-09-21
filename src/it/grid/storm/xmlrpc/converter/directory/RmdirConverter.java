@@ -79,11 +79,6 @@ public class RmdirConverter implements Converter {
         /* Creation of VomsGridUser */
         GridUserInterface guser = null;
         guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        /* (1) authorizationID (never used) */
-        String member_authID = new String("authorizationID");
-        String authID = (String) inputParam.get(member_authID);
 
         /* (2) directoryPath */
         TSURL surl = null;
@@ -93,21 +88,13 @@ public class RmdirConverter implements Converter {
             log.debug("srmRm: ErrorCreating surl: " + e1.toString());
         }
 
-        /* (3) TExtraInfoArray */
-        ArrayOfTExtraInfo storageSystemInfo = null;
-        try {
-            storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-        } catch (InvalidArrayOfTExtraInfoAttributeException e1) {
-            log.debug("srmRm: Error Creating ExtraInfo:" + e1.toString());
-        }
-
         /* (4) recursive */
         String member_recursive = new String("recursive");
         Boolean recursive = (Boolean) inputParam.get(member_recursive);
 
         try {
             log.debug("srmRm: Rmdir input data creation...");
-            inputData = new RmdirInputData(guser, surl, storageSystemInfo, recursive);
+            inputData = new RmdirInputData(guser, surl, recursive);
             log.debug("srmRm: Rmdir input data created.");
 
         } catch (InvalidRmdirInputAttributeException e) {

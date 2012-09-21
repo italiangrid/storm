@@ -863,15 +863,12 @@ implements StoRI {
         return authority;
     }
 
-    private String getVFSName() {
+    private String getVFSName()
+    {
         String result = "UNDEF";
-        if (vfs != null) {
-            try {
-                result = vfs.getAliasName();
-            }
-            catch (NamespaceException ex) {
-                log.error("Unable to retrieve the VFS name!!", ex);
-            }
+        if (vfs != null)
+        {
+            result = vfs.getAliasName();
         }
         return result;
     }

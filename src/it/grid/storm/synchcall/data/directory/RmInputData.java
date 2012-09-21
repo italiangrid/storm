@@ -25,11 +25,9 @@
  */
 package it.grid.storm.synchcall.data.directory;
 
-import java.util.Vector;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.synchcall.data.AbstractInputData;
 import it.grid.storm.synchcall.data.exception.InvalidRmInputAttributeException;
 
@@ -37,20 +35,18 @@ public class RmInputData extends AbstractInputData
 {
     private GridUserInterface auth = null;
     ArrayOfSURLs surlarray = null;
-    ArrayOfTExtraInfo infoarray = null;
 
     public RmInputData()
     {
     }
 
-    public RmInputData(GridUserInterface auth, ArrayOfSURLs surlArray, ArrayOfTExtraInfo infoArray) throws InvalidRmInputAttributeException
+    public RmInputData(GridUserInterface auth, ArrayOfSURLs surlArray) throws InvalidRmInputAttributeException
     {
         boolean ok = (!(surlArray == null));
         if (!ok) throw new InvalidRmInputAttributeException(surlArray);
         
         this.auth = auth;
         this.surlarray = surlArray;
-        this.infoarray = infoArray;
     }
 
     /**

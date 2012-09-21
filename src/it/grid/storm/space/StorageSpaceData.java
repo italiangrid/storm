@@ -113,7 +113,7 @@ public class StorageSpaceData {
         this.owner = guOwner;
         this.spaceType = spaceType;
         try {
-            this.spaceToken = TSpaceToken.makeGUID_Token();
+            this.spaceToken = TSpaceToken.make(new it.grid.storm.common.GUID().toString());
         }
         catch (InvalidTSpaceTokenAttributesException ex) {
             log.error("Exception occurred while trying to generate a Token with GUID", ex);

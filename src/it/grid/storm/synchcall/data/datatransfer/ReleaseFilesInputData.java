@@ -28,7 +28,7 @@ public class ReleaseFilesInputData extends AbstractInputData
     private GridUserInterface auth = null;
     private TRequestToken requestToken = null;
     private ArrayOfSURLs arrayOfSURLs = null;
-    private Boolean doRemove = null;
+    private Boolean doRemove = null; //not used
 
     public ReleaseFilesInputData()
     {

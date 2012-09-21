@@ -38,12 +38,11 @@ public class MvInputData extends AbstractInputData {
     private GridUserInterface auth = null;
     private TSURL fromSURL = null;
     private TSURL toSURL = null;
-    private ArrayOfTExtraInfo storageSystemInfo = null;
 
     public MvInputData() {
     }
 
-    public MvInputData(GridUserInterface auth, TSURL fromSURL, TSURL toSURL, ArrayOfTExtraInfo extraInfoArray)
+    public MvInputData(GridUserInterface auth, TSURL fromSURL, TSURL toSURL)
             throws InvalidMvInputAttributeException 
     {
         boolean ok = (fromSURL != null)&&(toSURL != null);
@@ -85,20 +84,6 @@ public class MvInputData extends AbstractInputData {
         return this.auth;
     }
     
-    /**
-    * Set storageSystemInfo
-    */
-   public void setStorageSystemInfo(ArrayOfTExtraInfo storageSystemInfo) {
-       this.storageSystemInfo = storageSystemInfo;
-   }
-
-   /**
-    * get storageSystemInfo
-    */
-   public ArrayOfTExtraInfo getStorageSystemInfo() {
-       return this.storageSystemInfo;
-   }
-
    @Override
    public Boolean hasPrincipal()
    {
