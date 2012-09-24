@@ -34,12 +34,12 @@ import com.sun.jersey.server.impl.ResponseBuilderImpl;
 /**
  * @author Michele Dibenedetto
  */
-@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
-public class VirtualFSResource
+@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_0)
+public class VirtualFSResourceCompat_1_0
 {
 
 
-    private static final Logger log = LoggerFactory.getLogger(VirtualFSResource.class);
+    private static final Logger log = LoggerFactory.getLogger(VirtualFSResourceCompat_1_0.class);
 
     /**
      * @return
@@ -109,19 +109,6 @@ public class VirtualFSResource
                 vfsEncoded += Constants.VFS_STFN_ROOT_SEPARATOR;
             }
             vfsEncoded += mappingRule.getStFNRoot();
-        }
-        Iterator<Protocol> protocolsIterator = vfs.getCapabilities().getAllManagedProtocols().iterator();
-        if(protocolsIterator.hasNext())
-        {
-            vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
-        }
-        while (protocolsIterator.hasNext())
-        {
-            vfsEncoded += protocolsIterator.next().getSchema();
-            if(protocolsIterator.hasNext())
-            {
-                vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
-            }
         }
         return vfsEncoded;
     }

@@ -103,6 +103,24 @@ public class AuthorizationResource
      * @throws WebApplicationException
      */
     @GET
+    @Path("/" + Constants.PREPARE_TO_PUT_OVERWRITE_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
+    @Produces("text/plain")
+    public String evaluateVomsGridUserPTPOverwritePermission(@PathParam("filePath") String filePath,
+            @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS) throws WebApplicationException
+    {
+        log.info("Serving prepareToPut Overwrite operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
+        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite).toString();
+    }
+    
+    /**
+     * @param filePath
+     * @param DN
+     * @param FQANS
+     * @return
+     * @throws WebApplicationException
+     */
+    @GET
     @Path("/" + Constants.PREPARE_TO_GET_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
     @Produces("text/plain")
     public String evaluateVomsGridUserPTGPermission(@PathParam("filePath") String filePath,

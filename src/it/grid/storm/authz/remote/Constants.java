@@ -34,6 +34,8 @@ public class Constants
 
     public static final String PREPARE_TO_PUT_OPERATION = "ptp";
     
+    public static final String PREPARE_TO_PUT_OVERWRITE_OPERATION = "ptpOverwrite";
+    
     public static final String RM_OPERATION = "rm";
     
     public static final String LS_OPERATION = "ls";
