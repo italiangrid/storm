@@ -105,4 +105,9 @@ public class PathAuthzDB
         return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
     }
 
+    public AuthzDecision evaluateAnonymous(StFN fileStFN, PathOperation pathOperation)
+    {
+        return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
+    }
+
 }

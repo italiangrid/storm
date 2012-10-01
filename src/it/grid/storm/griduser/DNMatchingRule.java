@@ -45,18 +45,51 @@ import java.util.Iterator;
  * <p>Company: INFN-CNAF</p>
  *
  * @author R.Zappi
- * @version 1.0
+ * @version 1.1
  */
 public class DNMatchingRule {
 
+    private enum DNFields
+    {
+        COUNTRY("C"),
+        ORGANIZATION("O"),
+        ORGANIZATIONALUNIT("OU"),
+        LOCALITY("L"),
+        COMMONNAME("CN"),
+        DOMAINCOMPONENT("DC"),
+        UNKNOWN("");
+        private final String code;
+
+        private DNFields(String code) throws IllegalArgumentException
+        {
+            if(code == null)
+            {
+                throw new IllegalArgumentException("Received null code argument");
+            }
+            this.code = code;
+        }
+        
+        public static DNFields fromString(String code)
+        {
+            for(DNFields field : DNFields.values())
+            {
+                if(field.code.equals(code))
+                {
+                    return field;
+                }
+            }
+            return UNKNOWN;
+        }
+    }
+    
     private static final String ADMIT_ALL = ".*";
 
-    private String countryPatternString = null;
-    private String organizationPatternString = null;
-    private String organizationalUnitPatternString = null;
-    private String localityPatternString = null;
-    private String commonNamePatternString = null;
-    private String domainComponentPatternString = null;
+    private String countryPatternString;
+    private String organizationPatternString;
+    private String organizationalUnitPatternString;
+    private String localityPatternString;
+    private String commonNamePatternString;
+    private String domainComponentPatternString;
 
     private Pattern countryPattern = null;
     private Pattern organizationPattern = null;
@@ -65,47 +98,69 @@ public class DNMatchingRule {
     private Pattern commonNamePattern = null;
     private Pattern domainComponentPattern = null;
 
-   public DNMatchingRule() {
-     init("*", "*", "*", "*", "*", "*");
-   }
+    public static DNMatchingRule buildMatchAllDNMatchingRule()
+    {
+        return new DNMatchingRule(ADMIT_ALL, ADMIT_ALL, ADMIT_ALL, ADMIT_ALL, ADMIT_ALL, ADMIT_ALL);
+    }
 
     /**
      * Constructor with implicit Pattern String
      *
      * @param regularExpressionRule String
      */
-    public DNMatchingRule(String regularExpressionRule) {
-        if ( (regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
-            init("*", "*", "*", "*", "*", "*");
+    public DNMatchingRule(String regularExpressionRule)
+    {
+        if ((regularExpressionRule == null) || regularExpressionRule.trim().equals("*")
+                || (regularExpressionRule.trim().equals(".*")))
+        {
+            this.countryPatternString = ADMIT_ALL;
+            this.organizationPatternString = ADMIT_ALL;
+            this.organizationalUnitPatternString = ADMIT_ALL;
+            this.localityPatternString = ADMIT_ALL;
+            this.commonNamePatternString = ADMIT_ALL;
+            this.domainComponentPatternString = ADMIT_ALL;
         }
-        else {
-            //Split the rule into the attribute rules
+        else
+        {
+            // Split the rule into the attribute rules
             String[] rules = regularExpressionRule.split("/");
-            if (rules != null) {
+            if (rules != null)
+            {
                 int length = rules.length;
-                for (int i = 0; i < length; i++) {
-                    if (rules[i].startsWith("C=")) {
-                        countryPatternString = rules[i].substring(2, rules[i].length());
+                for (int i = 0; i < length; i++)
+                {
+                    int separatorIndex = rules[i].indexOf('=');
+                    if(separatorIndex < 0)
+                    {
+                        continue;
                     }
-                    if (rules[i].startsWith("O=")) {
-                        organizationPatternString = rules[i].substring(2, rules[i].length());
+                    switch (DNFields.fromString(rules[i].substring(0, separatorIndex)))
+                    {
+                        case COUNTRY:
+                            countryPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        case ORGANIZATION:
+                            organizationPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        case ORGANIZATIONALUNIT:
+                            organizationalUnitPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        case LOCALITY:
+                            localityPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        case COMMONNAME:
+                            commonNamePatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        case DOMAINCOMPONENT:
+                            domainComponentPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            break;
+                        default:
+                            break;
                     }
-                    if (rules[i].startsWith("OU=")) {
-                        organizationalUnitPatternString = rules[i].substring(3, rules[i].length());
-                    }
-                    if (rules[i].startsWith("L=")) {
-                        localityPatternString = rules[i].substring(2, rules[i].length());
-                    }
-                    if (rules[i].startsWith("CN=")) {
-                        commonNamePatternString = rules[i].substring(3, rules[i].length());
-                    }
-                    if (rules[i].startsWith("DC=")) {
-                        domainComponentPatternString = rules[i].substring(3, rules[i].length());
-                    }
-
                 }
             }
-            else {
+            else
+            {
                 countryPatternString = ADMIT_ALL;
                 organizationPatternString = ADMIT_ALL;
                 organizationalUnitPatternString = ADMIT_ALL;
@@ -113,13 +168,85 @@ public class DNMatchingRule {
                 commonNamePatternString = ADMIT_ALL;
                 domainComponentPatternString = ADMIT_ALL;
             }
-            init(countryPatternString,
-                 organizationPatternString,
-                 organizationalUnitPatternString,
-                 localityPatternString,
-                 commonNamePatternString,
-                 domainComponentPatternString);
         }
+        initPatterns();
+    }
+
+    /**
+     * private method used to initialize everything
+     *
+     * @param countryPatternString String
+     * @param organizationPatternString String
+     * @param organizationalUnitPatternString String
+     * @param localityPatternString String
+     * @param commonNameString String
+     */
+    private void initPatterns() {
+
+        //C country
+        if (isMatchAll(countryPatternString))
+        {
+            countryPattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            countryPattern = Pattern.compile(this.countryPatternString);
+        }
+
+        //O organization
+        if (isMatchAll(organizationPatternString))
+        {
+            organizationPattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            organizationPattern = Pattern.compile(this.organizationPatternString);
+        }
+
+        //OU organizationalUnit
+        if (isMatchAll(organizationalUnitPatternString))
+        {
+            organizationalUnitPattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            organizationalUnitPattern = Pattern.compile(this.organizationalUnitPatternString);
+        }
+
+        //L locality
+        if (isMatchAll(localityPatternString))
+        {
+            localityPattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            localityPattern = Pattern.compile(this.localityPatternString);
+        }
+
+        // CN Common Name
+        if (isMatchAll(commonNamePatternString))
+        {
+            commonNamePattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            commonNamePattern = Pattern.compile(this.commonNamePatternString);
+        }
+
+        // DC Domain Component
+        if (isMatchAll(domainComponentPatternString))
+        {
+            domainComponentPattern = Pattern.compile(ADMIT_ALL);
+        }
+        else
+        {
+            domainComponentPattern = Pattern.compile(this.domainComponentPatternString);
+        }
+    }
+
+    private static boolean isMatchAll(String pattern)
+    {
+        return pattern == null || pattern.trim().equals("*") || pattern.trim().equals(".*");
     }
 
     /**
@@ -137,110 +264,22 @@ public class DNMatchingRule {
                           String localityPatternString,
                           String commonNamePatternString,
                           String domainComponentPatternString) {
-        init(countryPatternString,
-             organizationPatternString,
-             organizationalUnitPatternString,
-             localityPatternString,
-             commonNamePatternString,
-             domainComponentPatternString);
-    }
-
-    /**
-     * private method used to initialize everything
-     *
-     * @param countryPatternString String
-     * @param organizationPatternString String
-     * @param organizationalUnitPatternString String
-     * @param localityPatternString String
-     * @param commonNameString String
-     */
-    private void init(String countryPatternString,
-                      String organizationPatternString,
-                      String organizationalUnitPatternString,
-                      String localityPatternString,
-                      String commonNamePatternString,
-                      String domainComponentPatternString) {
-
         this.countryPatternString = countryPatternString;
         this.organizationPatternString = organizationPatternString;
         this.organizationalUnitPatternString = organizationalUnitPatternString;
         this.localityPatternString = localityPatternString;
         this.commonNamePatternString = commonNamePatternString;
         this.domainComponentPatternString = domainComponentPatternString;
-
-        //C country
-        if (countryPatternString != null) {
-            if (countryPatternString.equals("*")) {
-                this.countryPatternString = ".*";
-            }
-            countryPattern = Pattern.compile(this.countryPatternString);
-        }
-        else {
-            countryPatternString = ADMIT_ALL;
-            countryPattern = Pattern.compile(ADMIT_ALL);
-        }
-
-        //O organization
-        if (organizationPatternString != null) {
-            if (organizationPatternString.equals("*")) {
-                this.organizationPatternString = ".*";
-            }
-            organizationPattern = Pattern.compile(this.organizationPatternString);
-        }
-        else {
-            organizationPatternString = ADMIT_ALL;
-            organizationPattern = Pattern.compile(ADMIT_ALL);
-        }
-
-        //OU organizationalUnit
-        if (organizationalUnitPatternString != null) {
-            if (organizationalUnitPatternString.equals("*")) {
-                this.organizationalUnitPatternString = ".*";
-            }
-            organizationalUnitPattern = Pattern.compile(this.organizationalUnitPatternString);
-        }
-        else {
-            organizationalUnitPatternString = ADMIT_ALL;
-            organizationalUnitPattern = Pattern.compile(ADMIT_ALL);
-        }
-
-        //L locality
-        if (localityPatternString != null) {
-            if (localityPatternString.equals("*")) {
-                this.localityPatternString = ".*";
-            }
-            localityPattern = Pattern.compile(this.localityPatternString);
-        }
-        else {
-            localityPatternString = ADMIT_ALL;
-            localityPattern = Pattern.compile(ADMIT_ALL);
-        }
-
-        // CN Common Name
-        if (commonNamePatternString != null) {
-            if (commonNamePatternString.equals("*")) {
-                this.commonNamePatternString = ".*";
-            }
-            commonNamePattern = Pattern.compile(this.commonNamePatternString);
-        }
-        else {
-            commonNamePatternString = ADMIT_ALL;
-            commonNamePattern = Pattern.compile(ADMIT_ALL);
-        }
-
-        // DC Domain Component
-        if (domainComponentPatternString != null) {
-            if (domainComponentPatternString.equals("*")) {
-                this.domainComponentPatternString = ".*";
-            }
-            domainComponentPattern = Pattern.compile(this.domainComponentPatternString);
-        }
-        else {
-            domainComponentPatternString = ADMIT_ALL;
-            domainComponentPattern = Pattern.compile(ADMIT_ALL);
-        }
-
+        initPatterns();
     }
+
+    public boolean isMatchAll()
+    {
+        return isMatchAll(countryPatternString) && isMatchAll(organizationPatternString)
+                && isMatchAll(organizationalUnitPatternString) && isMatchAll(localityPatternString)
+                && isMatchAll(commonNamePatternString) && isMatchAll(domainComponentPatternString);
+    }
+
 
     /**
      *
@@ -249,7 +288,15 @@ public class DNMatchingRule {
      *
      * @todo Implement performance. After first false exit with false!
      */
-    public boolean match(DistinguishedName principalDN) {
+    public boolean match(DistinguishedName principalDN) throws IllegalArgumentException {
+        if(principalDN == null)
+        {
+            throw new IllegalArgumentException("Unable to perform rule matching. Received null argument: principalDN=" + principalDN);
+        }
+        if (this.isMatchAll())
+        {
+            return true;            
+        }
         boolean result = false;
         boolean countryMatch = false;
         boolean organizationMatch = false;

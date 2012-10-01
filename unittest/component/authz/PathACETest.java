@@ -3,7 +3,6 @@
  */
 package component.authz;
 
-import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.startup.Bootstrap;
@@ -35,13 +34,7 @@ public class PathACETest {
      */
     public static void main(String[] args) {
         initLogging();
-        PathACE pathAce = new PathACE();
-        try {
-            pathAce.setLocalGroupName("@ALL@");
-        } catch (AuthzException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        PathACE pathAce = PathACE.PERMIT_ALL;
         log.debug("PathACE : " + pathAce);
         pathAce.subjectMatch("ciccio");
     }

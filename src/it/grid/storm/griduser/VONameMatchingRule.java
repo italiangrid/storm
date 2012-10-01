@@ -37,7 +37,7 @@ public class VONameMatchingRule {
 
     private static final String ADMIT_ALL = ".*";
 
-    private String voNameString = null;
+    private final String voNameString;
     private Pattern voNamePattern = null;
 
     /**
@@ -45,12 +45,22 @@ public class VONameMatchingRule {
      *
      * @param regularExpressionRule String
      */
-    public VONameMatchingRule(String regularExpressionRule) {
-        if ( (regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
-            init("*");
-        } else {
-            init(regularExpressionRule);
+    public VONameMatchingRule(String regularExpressionRule)
+    {
+        if ((regularExpressionRule == null) || (regularExpressionRule.equals("*")))
+        {
+            voNameString = ADMIT_ALL;
         }
+        else
+        {
+            voNameString = regularExpressionRule;
+        }
+        initPattern();
+    }
+    
+    public static VONameMatchingRule buildMatchAllVONameMatchingRule()
+    {
+        return new VONameMatchingRule(ADMIT_ALL);
     }
 
     /**
@@ -58,20 +68,22 @@ public class VONameMatchingRule {
      *
      * @param regularExpressionRule String
      */
-    private void init(String voNameString) {
-        this.voNameString = voNameString;
+    private void initPattern() {
 
         //VOName
-        if (voNameString != null) {
-            if (voNameString.equals("*")) {
-                this.voNameString = ".*";
-            }
-            voNamePattern = Pattern.compile(this.voNameString);
-        }
-        else {
-            voNameString = ADMIT_ALL;
+        if (isMatchAll(voNameString))
+        {
             voNamePattern = Pattern.compile(ADMIT_ALL);
         }
+        else
+        {
+            voNamePattern = Pattern.compile(voNameString);
+        }
+    }
+
+    private static boolean isMatchAll(String pattern)
+    {
+        return pattern == null || pattern.trim().equals("*") || pattern.trim().equals(".*");
     }
 
     /**
@@ -80,7 +92,8 @@ public class VONameMatchingRule {
      * @param voName String
      * @return boolean
      */
-    public boolean match(String voName) {
+    public boolean match(String voName)
+    {
         boolean result = false;
         CharSequence voNameSequence = voName.subSequence(0, voName.length());
         Matcher voNameMatcher = voNamePattern.matcher(voNameSequence);
@@ -88,11 +101,16 @@ public class VONameMatchingRule {
         return result;
     }
 
-    public String toString() {
+    public String toString()
+    {
         StringBuffer result = new StringBuffer();
         result.append(" VONAME=" + voNameString);
         return result.toString();
     }
 
+    public boolean isMatchAll()
+    {
+        return isMatchAll(voNameString);
+    }
 
 }

@@ -59,9 +59,16 @@ public class TRequestToken implements Serializable
         return new TRequestToken(requestToken);
     }
 
-    public static TRequestToken getRandom() throws InvalidTRequestTokenAttributesException {
+    public static TRequestToken getRandom(){
         UUID token = UUID.randomUUID();
-        return new TRequestToken(token.toString());
+        try
+        {
+            return new TRequestToken(token.toString());
+        } catch(InvalidTRequestTokenAttributesException e)
+        {
+            //never thrown
+            throw new IllegalStateException("Unexpected InvalidTRequestTokenAttributesException", e);
+        }
     }
     
     

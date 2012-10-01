@@ -247,7 +247,7 @@ public class ApproachRuleTest {
             log.debug("Considering APP-RULE-NAME '"+appRule.getRuleName()+"'");
             log.debug("Considering APP-RULE : "+appRule.getSubjectRules().getDNMatchingRule());
             log.debug("Considering APP-RULE : "+appRule.getSubjectRules().getVONameMatchingRule());
-            log.debug("Considering APP-RULE : only VOMS = "+appRule.getSubjectRules().isVomsCertRequired());
+            log.debug("Considering APP-RULE : only VOMS = "+appRule.getSubjectRules().getVONameMatchingRule().isMatchAll());
             if (appRule.match(fakeGU)) {
 
                 log.debug("G.User ["+fakeGU.getDn()+"] CAN APPROACH this VFS :"+appRule.getApproachableVFS());

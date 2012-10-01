@@ -69,11 +69,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
         TapeRecallTO result = new TapeRecallTO();
         result.setFileName("/root/" + voName + "/test/" + Math.round(Math.random() * 1000));
-        try {
-            result.setRequestToken(TRequestToken.getRandom());
-        } catch (InvalidTRequestTokenAttributesException e) {
-            log.warn("unable to create a random Request Token");
-        }
+        result.setRequestToken(TRequestToken.getRandom());
         if(Math.random() % 2 == 0)
         {
             result.setRequestType(BOL_REQUEST);

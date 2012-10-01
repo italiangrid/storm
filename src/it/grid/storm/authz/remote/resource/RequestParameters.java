@@ -16,73 +16,119 @@ class RequestParameters
     private final String DNDecoded, FQANSDecoded, filePathDecoded;
     private final boolean hasVomsExtension;
 
+    
+    RequestParameters(String filePath) throws WebApplicationException
+    {
+        log.debug("Building RequestParameters from filePath =" + filePath);
+        
+        filePathDecoded = decodeAndCheckFilePath(filePath);
+        hasVomsExtension = false;
+        FQANSDecoded = null;
+        DNDecoded = null;
+    }
+    
     RequestParameters(String filePath, String DN) throws WebApplicationException
     {
-        log.info("Serving prepareToPut operation authorization on file '" + filePath + "\'");
-
-        try
-        {
-            filePathDecoded = URLDecoder.decode(filePath, Constants.ENCODING_SCHEME);
-            DNDecoded = URLDecoder.decode(DN, Constants.ENCODING_SCHEME);
-        } catch(UnsupportedEncodingException e)
-        {
-            log.error("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.BAD_REQUEST);
-            responseBuilder.entity("Unable to decode paramethesr, unsupported encoding \'"
-                    + Constants.ENCODING_SCHEME + "\'");
-            throw new WebApplicationException(responseBuilder.build());
-        }
-        log.debug("Decoded filePath = " + filePathDecoded);
-        log.debug("Decoded DN = " + DNDecoded);
-
-        if (filePathDecoded == null || filePathDecoded.trim().equals("") || DNDecoded == null
-                || DNDecoded.trim().equals(""))
-        {
-            log.error("Unable to evaluate permissions. Some parameters are missing : DN " + DNDecoded
-                    + " filePath " + filePathDecoded);
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.BAD_REQUEST);
-            responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
-            throw new WebApplicationException(responseBuilder.build());
-        }
+        log.debug("Building RequestParameters from filePath =" + filePath + " , DN=" + DN);
+        
+        filePathDecoded = decodeAndCheckFilePath(filePath);
+        DNDecoded = decodeAndCheckDN(DN);
         hasVomsExtension = false;
         FQANSDecoded = null;
     }
     
     RequestParameters(String filePath, String DN, String FQANS) throws WebApplicationException
     {
-        log.info("Serving prepareToPut operation authorization on file '" + filePath + "\'");
-
+        log.debug("Building RequestParameters from filePath =" + filePath + " , DN=" + DN + " , FQANS=" + FQANS);
+        
+        filePathDecoded = decodeAndCheckFilePath(filePath);
+        DNDecoded = decodeAndCheckDN(DN);
+        FQANSDecoded = decodeAndCheckFQANS(FQANS);
+        hasVomsExtension = true;
+    }
+    
+    private static String decodeAndCheckFilePath(String filePath) throws WebApplicationException
+    {
+        String filePathDecoded;
         try
         {
             filePathDecoded = URLDecoder.decode(filePath, Constants.ENCODING_SCHEME);
-            DNDecoded = URLDecoder.decode(DN, Constants.ENCODING_SCHEME);
-            FQANSDecoded = URLDecoder.decode(FQANS, Constants.ENCODING_SCHEME);
-        }
-        catch (UnsupportedEncodingException e)
+        } catch(UnsupportedEncodingException e)
         {
-            log.error("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
+            log.error("Unable to decode filePath parameter. UnsupportedEncodingException : " + e.getMessage());
             ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(Response.Status.BAD_REQUEST);
-            responseBuilder.entity("Unable to decode paramethesr, unsupported encoding \'" + Constants.ENCODING_SCHEME + "\'");
+            responseBuilder.entity("Unable to decode filePath paramether, unsupported encoding \'"
+                    + Constants.ENCODING_SCHEME + "\'");
             throw new WebApplicationException(responseBuilder.build());
         }
         log.debug("Decoded filePath = " + filePathDecoded);
-        log.debug("Decoded DN = " + DNDecoded);
-        log.debug("Decoded FQANS = " + FQANSDecoded);
-        
-        if (filePathDecoded == null || filePathDecoded.trim().equals("") || DNDecoded == null || DNDecoded.trim().equals("")
-                || FQANSDecoded == null || FQANSDecoded.trim().equals(""))
+
+        if (filePathDecoded == null || filePathDecoded.trim().equals(""))
         {
-            log.error("Unable to evaluate permissions. Some parameters are missing : DN " + DNDecoded
-                    + " FQANS " + FQANSDecoded + " filePath " + filePathDecoded);
+            log.error("Unable to evaluate permissions. Some parameters are missing : filePath " + filePathDecoded);
             ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(Response.Status.BAD_REQUEST);
             responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
             throw new WebApplicationException(responseBuilder.build());
         }
-        hasVomsExtension = true;
+        return filePathDecoded;
+    }
+    
+    private static String decodeAndCheckDN(String DN) throws WebApplicationException
+    {
+        String DNDecoded;
+        try
+        {
+            DNDecoded = URLDecoder.decode(DN, Constants.ENCODING_SCHEME);
+        } catch(UnsupportedEncodingException e)
+        {
+            log.error("Unable to decode DN parameter. UnsupportedEncodingException : " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to decode DN paramether, unsupported encoding \'"
+                    + Constants.ENCODING_SCHEME + "\'");
+            throw new WebApplicationException(responseBuilder.build());
+        }
+        log.debug("Decoded DN = " + DNDecoded);
+
+        if (DNDecoded == null || DNDecoded.trim().equals(""))
+        {
+            log.error("Unable to evaluate permissions. Some parameters are missing : DN " + DNDecoded);
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
+            throw new WebApplicationException(responseBuilder.build());
+        }
+        return DNDecoded;
+    }
+    
+    private static String decodeAndCheckFQANS(String FQANS) throws WebApplicationException
+    {
+        String FQANSDecoded;
+        try
+        {
+            FQANSDecoded = URLDecoder.decode(FQANS, Constants.ENCODING_SCHEME);
+        } catch(UnsupportedEncodingException e)
+        {
+            log.error("Unable to decode FQANS parameter. UnsupportedEncodingException : " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to decode FQANS paramether, unsupported encoding \'"
+                    + Constants.ENCODING_SCHEME + "\'");
+            throw new WebApplicationException(responseBuilder.build());
+        }
+        log.debug("Decoded FQANS = " + FQANSDecoded);
+
+        if ( FQANSDecoded == null ||  FQANSDecoded.trim().equals(""))
+        {
+            log.error("Unable to evaluate permissions. Some parameters are missing : FQANS " + FQANS);
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
+            throw new WebApplicationException(responseBuilder.build());
+        }
+        return FQANSDecoded;
     }
 
     /**

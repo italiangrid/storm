@@ -20,6 +20,7 @@ package it.grid.storm.authz.path.model;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.common.types.StFN;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -46,5 +47,8 @@ public abstract class PathAuthzEvaluationAlgorithm {
      * @return
      */
     public abstract String getDescription();
+
+    public abstract AuthzDecision evaluateAnonymous(StFN fileStFN, PathOperation pathOperation,
+            LinkedList<PathACE> authzDB);
 
 }

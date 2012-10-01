@@ -713,7 +713,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
         verboseLog("Number of APP Rule : " + numOfAppRules);
         String ruleName, dn, vo_name, relPath;
-        List appFS;
+        List<String> appFSList;
         ApproachableRule appRule;
         for (int i = 0; i < numOfAppRules; i++) 
         {
@@ -721,15 +721,18 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
             verboseLog(" APP rule nr:" + i + " is named : " + ruleName);
             dn = parserUtil.getAppRule_SubjectDN(ruleName);
             vo_name = parserUtil.getAppRule_SubjectVO(ruleName);
-            appFS = parserUtil.getAppRule_AppFS(ruleName);
+            appFSList = parserUtil.getAppRule_AppFS(ruleName);
             relPath = parserUtil.getAppRule_RelativePath(ruleName);
             SubjectRules subjectRules = new SubjectRules(dn, vo_name);
             appRule = new ApproachableRule(ruleName, subjectRules, relPath);
-            if (vfss.containsKey(appFS)) {
-                verboseLog("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' exists.");
-                ((VirtualFS) vfss.get(appFS)).addApproachableRule(appRule);
-            } else {
-                log.error("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' DOES NOT EXISTS.");
+            for(String appFS : appFSList)
+            {
+                if (vfss.containsKey(appFS)) {
+                    verboseLog("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' exists.");
+                    ((VirtualFS) vfss.get(appFS)).addApproachableRule(appRule);
+                } else {
+                    log.error("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' DOES NOT EXISTS.");
+                }    
             }
             apprules.put(ruleName, appRule);
         }

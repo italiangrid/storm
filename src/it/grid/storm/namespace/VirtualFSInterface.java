@@ -176,5 +176,7 @@ public interface VirtualFSInterface {
 
     public BalancingStrategy<? extends Node> getProtocolBalancingStrategy(Protocol protocol);
 
+    public boolean isApproachableByAnonymous();
+
 
 }

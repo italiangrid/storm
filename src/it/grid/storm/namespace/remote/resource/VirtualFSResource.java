@@ -113,7 +113,9 @@ public class VirtualFSResource
         Iterator<Protocol> protocolsIterator = vfs.getCapabilities().getAllManagedProtocols().iterator();
         if(protocolsIterator.hasNext())
         {
+            vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
             vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
+            vfsEncoded += Constants.VFS_FIELD_MATCHER;
         }
         while (protocolsIterator.hasNext())
         {

@@ -24,6 +24,7 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.util.Collections;
@@ -152,6 +153,39 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
                 else
                 {
                     log.trace("Path Operation '" + op + "' is DENY");
+                    return AuthzDecision.DENY;
+                }
+            }
+        }
+        return AuthzDecision.INDETERMINATE;
+    }
+    
+    @Override
+    public AuthzDecision evaluateAnonymous(StFN fileName, PathOperation pathOperation,
+            LinkedList<PathACE> authzDB)
+    {
+        if ((authzDB == null) || (authzDB.isEmpty())) {
+            return AuthzDecision.NOT_APPLICABLE;
+        }
+
+        // Retrieve the best ACE within compatible ones.
+        List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
+        log.debug("There are '" + orderedACEs.size() + "' ACEs regarding file '" + fileName + "'");
+
+        log.trace("<Best-Match> Operation that needs anonymous authorization is : " + pathOperation);
+
+        for (OrderedACE oAce : orderedACEs)
+        {
+            if (oAce.ace.isAllGroupsACE() && oAce.ace.getPathAccessMask().containsPathOperation(pathOperation))
+            {
+                if (oAce.ace.isPermitAce())
+                {
+                    log.trace("Path Operation '" + pathOperation + "' is PERMIT");
+                    return AuthzDecision.PERMIT;
+                }
+                else
+                {
+                    log.trace("Path Operation '" + pathOperation + "' is DENY");
                     return AuthzDecision.DENY;
                 }
             }

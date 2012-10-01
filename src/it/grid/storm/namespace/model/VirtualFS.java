@@ -486,6 +486,19 @@ public class VirtualFS implements VirtualFSInterface {
         }
         return false;
     }
+    
+    @Override
+    public boolean isApproachableByAnonymous()
+    {
+        for (ApproachableRule approachableRule : this.approachableRules)
+        {
+            if (approachableRule.isAdmitAll())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public StoRI createFile(String relativePath) throws NamespaceException {
         /**
@@ -1256,7 +1269,4 @@ public class VirtualFS implements VirtualFSInterface {
             throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
         }
     }
-
-
-
 }

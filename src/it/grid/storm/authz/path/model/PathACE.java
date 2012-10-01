@@ -47,11 +47,12 @@ public class PathACE {
     private static final boolean PERMIT_ACE = true;
     public static final String ALGORITHM = "algorithm"; // property key used to define the algorithm
 
-    public static final PathACE PERMIT_ALL =
-            new PathACE(PathACE.ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT, PathACE.PERMIT_ACE);
+    public static final PathACE PERMIT_ALL = buildPermitAllPathACE();
+
     public static final String COMMENT = "#";
 
-    private String localGroupName;
+
+    private final String localGroupName;
     private StFN storageFileName;
     private PathAccessMask pathAccessMask;
     private boolean isPermitACE;
@@ -60,8 +61,9 @@ public class PathACE {
 
     /**
      * Quite similar to clone
+     * @throws AuthzException 
      */
-    public static PathACE build(PathACE other) {
+    public static PathACE build(PathACE other) throws AuthzException {
         PathACE result =
                 new PathACE(other.localGroupName,
                             other.getStorageFileName(),
@@ -70,20 +72,44 @@ public class PathACE {
         return result;
     }
 
-    public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask, boolean permitACE) {
-        localGroupName = localGroup;
+    private static PathACE buildPermitAllPathACE() throws IllegalStateException
+    {
+        try
+        {
+            return new PathACE(PathACE.ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT, PathACE.PERMIT_ACE);
+        } catch(AuthzException e)
+        {
+            //never thrown
+            throw new IllegalStateException("Unexpected AuthzException: " + e);
+        }
+    }
+
+    public PathACE(String localGroup, StFN stfn, PathAccessMask accessMask, boolean permitACE) throws AuthzException
+    {
         storageFileName = stfn;
         pathAccessMask = accessMask;
         isPermitACE = permitACE;
+        if (allGroupsPattern.matcher(localGroup).matches())
+        {
+            localGroupName = PathACE.ALL_GROUPS;
+        }
+        else
+        {
+            if (LocalGroups.isGroupDefined(localGroup))
+            {
+                localGroupName = localGroup;
+            }
+            else
+            {
+                throw new AuthzException("The local group :'" + localGroup + "' is not defined");
+            }
+        }
     }
-
-    public PathACE() {
-
-		localGroupName = null;
-		storageFileName = StFN.makeEmpty();
-		pathAccessMask = PathAccessMask.DEFAULT;
-		isPermitACE = PathACE.PERMIT_ACE;
-	}
+    
+    public boolean isAllGroupsACE()
+    {
+        return localGroupName.equals(PathACE.ALL_GROUPS);
+    }
 
     /**
      * @param pathACEString
@@ -93,18 +119,12 @@ public class PathACE {
     public static PathACE buildFromString(String pathACEString)
 			throws AuthzException {
 
-		PathACE result = new PathACE();
-		String[] fieldsRough = pathACEString.split(PathACE.FIELD_SEP, -1);
-		// Remove empty fields
-		ArrayList<String> fields = new ArrayList<String>();
-		for(String element : fieldsRough)
-		{
-			if(element.length() > 0)
-			{
-				fields.add(element);
-			}
-		}
-		if(fields.size() < 4)
+        String localGroupName;
+        StFN stfn;
+        PathAccessMask pAccessMask = new PathAccessMask();
+        boolean permit;
+		String[] fields = pathACEString.split(PathACE.FIELD_SEP, -1);
+		if(fields.length < 4)
 		{
 			throw new AuthzException("Error while parsing the Path ACE '" + pathACEString
 				+ "'");
@@ -112,81 +132,54 @@ public class PathACE {
 		else
 		{
 			// Setting the Local Group Name
-			result.setLocalGroupName(fields.get(0));
+			localGroupName = fields[0];
 			try
 			{
             	/* Checks if the path string represents a valid URI */
-                URI.create(fields.get(1));
+                URI.create(fields[1]);
 			} catch(IllegalArgumentException uriEx)
 			{
 				throw new AuthzException(
 					"Error (IllegalArgumentException )while parsing the StFN '"
-						+ fields.get(1) + "' in Path ACE. Is not a valid URI");
+						+ fields[1] + "' in Path ACE. Is not a valid URI");
 			} catch(NullPointerException npe)
 			{
 				throw new AuthzException(
 					"Error (NullPointerException )while parsing the StFN '"
-						+ fields.get(1) + "' in Path ACE.");
+						+ fields[1] + "' in Path ACE.");
 			}
 			// Setting the StFN
 			try
 			{
-				StFN stfn = StFN.make(fields.get(1));
-				result.setStorageFileName(stfn);
+				stfn = StFN.make(fields[1]);
 			} catch(InvalidStFNAttributeException e)
 			{
-				throw new AuthzException("Error while parsing the StFN '" + fields.get(1)
+				throw new AuthzException("Error while parsing the StFN '" + fields[1]
 					+ "' in Path ACE ");
 			}
 
 			// Setting the Permission Mask
-			PathAccessMask pAccessMask = new PathAccessMask();
-			for(int i = 0; i < fields.get(2).length(); i++)
+			for(int i = 0; i < fields[2].length(); i++)
 			{
 				PathOperation pathOper =
-										 PathOperation.getSpaceOperation(fields.get(2)
+										 PathOperation.getSpaceOperation(fields[2]
 											 .charAt(i));
 				pAccessMask.addPathOperation(pathOper);
 			}
-			result.setPathAccessMask(pAccessMask);
 
 			// Check if the ACE is DENY or PERMIT
 			// ** IMP ** : permit is the default
-			if(fields.get(3).toLowerCase().equals("deny"))
+			if(fields[3].toLowerCase().equals("deny"))
 			{
-				result.setIsPermitType(false);
+			    permit = false;
 			}
 			else
 			{
-				result.setIsPermitType(true);
+			    permit = true;
 			}
 		}
-		return result;
+		return new PathACE(localGroupName, stfn, pAccessMask, permit);
 	}
-
-    public void setLocalGroupName(String localGroup)
-			throws AuthzException {
-
-		// Check if the GroupName is a special case
-		Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroup);
-		if(allGroupsMatcher.matches())
-		{
-			localGroupName = PathACE.ALL_GROUPS;
-		}
-		// Check if the GroupName exists in the configuration
-		else
-		{
-			if(LocalGroups.isGroupDefined(localGroup))
-			{
-				localGroupName = localGroup;
-			}
-			else
-			{
-				throw new AuthzException("The local group :'" + localGroup
-					+ "' is not defined");
-			}
-		}
-    }
 
     public void setStorageFileName(StFN stfn) {
         storageFileName = stfn;

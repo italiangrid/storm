@@ -27,7 +27,7 @@ public class SubjectPatternOld {
   private DNMatchingRule dnMR = null;
   private EGEEFQANPattern fqanMR = null;
 
-  private static DNMatchingRule DEFAULT_DN_PATTERN = new DNMatchingRule();
+  private static DNMatchingRule DEFAULT_DN_PATTERN = DNMatchingRule.buildMatchAllDNMatchingRule();
 
   public SubjectPatternOld(String dnPattern, String fqanPattern) throws AuthzDBReaderException {
     this.dnPatternStr = dnPattern;

@@ -46,23 +46,16 @@ public class ApproachableRule implements Comparable{
 
     private Logger log = NamespaceDirector.getLogger();
 
-    private String ruleName = null;
-    private SubjectRules subjectRules = null;
-    private DNMatchingRule dnMatchingRule = null;
-    private VONameMatchingRule voNameMatchingRule = null;
-
-    private boolean vomsCertRequired = false;
+    private final String ruleName;
+    private final SubjectRules subjectRules;
 
     private String relativePath = null;
-    private Vector appFS = new Vector();
+    private Vector<String> appFS = new Vector<String>();
 
 
     public ApproachableRule(String rulename, SubjectRules subjectRules, String relativePath) throws NamespaceException {
         this.ruleName = rulename;
         this.subjectRules = subjectRules;
-        dnMatchingRule = subjectRules.getDNMatchingRule();
-        voNameMatchingRule = subjectRules.getVONameMatchingRule();
-        vomsCertRequired = subjectRules.isVomsCertRequired();
         /**
          *     @todo : Check if relative Path is a path well formed.
          */
@@ -75,16 +68,15 @@ public class ApproachableRule implements Comparable{
          *     @todo : Check if relative Path is a path well formed.
          */
         this.relativePath = relativePath;
+        this.subjectRules = null;
+    }
+    
+    
+    public boolean isAdmitAll()
+    {
+        return subjectRules.getDNMatchingRule().isMatchAll() && subjectRules.getVONameMatchingRule().isMatchAll();
     }
 
-
-    public void setSubject(String dn, String vo_name) {
-        this.subjectRules = new SubjectRules(dn, vo_name);
-    }
-
-    public void setSubject(String dn) {
-        this.subjectRules = new SubjectRules(dn);
-    }
 
     public void addApproachableVFS(String vfsName) {
         this.appFS.add(vfsName);
@@ -137,54 +129,60 @@ public class ApproachableRule implements Comparable{
      */
     public boolean match(GridUserInterface gUser)
     {
-        boolean response = false;
-        String dnString = gUser.getDn();
-        DistinguishedName dn = new DistinguishedName(dnString);
-        boolean dnMatch = dnMatchingRule.match(dn);
-        if (dnMatch)
-        { // DN Match.
-            // ---- Check if VOMS Attributes are required ----
-            if (!vomsCertRequired)
+        return matchDN(gUser.getDn()) && matchVoms(gUser);
+    }
+
+    private boolean matchVoms(GridUserInterface gUser)
+    {
+        // ---- Check if VOMS Attributes are required ----
+        if (!subjectRules.getVONameMatchingRule().isMatchAll())
+        {
+            return true;
+        }
+        // VOMS Attribute required.
+        if (gUser instanceof AbstractGridUser && ((AbstractGridUser)gUser).hasVoms())
+        {
+            log.debug("Grid User Requestor   : " + ((AbstractGridUser) gUser).toString());
+            if (subjectRules.getVONameMatchingRule().match(((AbstractGridUser) gUser).getVO().getValue()))
             {
-                response = true; // VOMS Attributes aren't required.
-            }
-            else
-            {
-                // VOMS Attribute required.
-                // ---- Check if gUSER is a USER with VOMS Attributes ----
-                if (gUser instanceof AbstractGridUser && ((AbstractGridUser)gUser).hasVoms())
-                {
-                    AbstractGridUser absGridUser = (AbstractGridUser) gUser;
-                    log.debug("Grid User Requestor   : " + absGridUser.toString());
-                    boolean voNameMatch = voNameMatchingRule.match(absGridUser.getVO().getValue());
-                    if (voNameMatch)
-                    {
-                        response = true;
-                    }
-                }
+                return true;
             }
         }
-        return response;
+        return false;
+    }
+
+    private boolean matchDN(String dnString)
+    {
+        if(dnString == null)
+        {
+            return subjectRules.getDNMatchingRule().isMatchAll();
+        }
+        DistinguishedName dn = new DistinguishedName(dnString);
+        return subjectRules.getDNMatchingRule().match(dn);
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
         sb.append(sep + "  --- APPROACHABLE RULE NAME ---" + sep);
         sb.append("   Approachable Rule Name : " + this.ruleName + sep);
-        sb.append("     SUBJECT - dn         : " + this.getSubjectRules().getDNRule() + sep);
-        if (this.getSubjectRules().isVomsCertRequired()) {
+        sb.append("     SUBJECT - dn         : " + this.getSubjectRules().getDNMatchingRule() + sep);
+        if (!this.getSubjectRules().getVONameMatchingRule().isMatchAll())
+        {
             sb.append("     -- VOMS cert IS MANDATORY!" + sep);
-            sb.append("       -- SUBJECT - vo_name    : " + this.getSubjectRules().getVONameRule() + sep);
-        } else {
+            sb.append("       -- SUBJECT - vo_name    : " + this.getSubjectRules().getVONameMatchingRule()
+                    + sep);
+        }
+        else
+        {
             sb.append("     -- VOMS cert is not mandatory" + sep);
         }
         sb.append("     Relative-Path for Space : " + this.getSpaceRelativePath() + sep);
         sb.append("     Approachable VFS        : " + this.appFS + sep);
         return sb.toString();
     }
-
 
     public int compareTo( Object o ) {
         int result = 1;
@@ -195,28 +193,105 @@ public class ApproachableRule implements Comparable{
         return result;
     }
 
-
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
-    public boolean equals( Object o) {
-        boolean result = false;
-        if ( o instanceof ApproachableRule ) {
-            ApproachableRule other = ( ApproachableRule ) o;
-            if ( other.getRuleName().equals( this.getRuleName() ) ) {
-                result = true;
-            }
-        }
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((appFS == null) ? 0 : appFS.hashCode());
+        result = prime * result + ((log == null) ? 0 : log.hashCode());
+        result = prime * result + ((relativePath == null) ? 0 : relativePath.hashCode());
+        result = prime * result + ((ruleName == null) ? 0 : ruleName.hashCode());
+        result = prime * result + ((subjectRules == null) ? 0 : subjectRules.hashCode());
         return result;
     }
 
-    
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
-    public int hashCode() {
-    	int result = 17;
-    	result = 31 * result + (ruleName!=null?ruleName.hashCode():0);
-    	result = 31 * result + (subjectRules!=null?subjectRules.hashCode():0);
-    	result = 31 * result + (dnMatchingRule!=null?dnMatchingRule.hashCode():0);
-    	result = 31 * result + (voNameMatchingRule!=null?voNameMatchingRule.hashCode():0);
-    	return result;
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        ApproachableRule other = (ApproachableRule) obj;
+        if (appFS == null)
+        {
+            if (other.appFS != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!appFS.equals(other.appFS))
+            {
+                return false;
+            }
+        if (log == null)
+        {
+            if (other.log != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!log.equals(other.log))
+            {
+                return false;
+            }
+        if (relativePath == null)
+        {
+            if (other.relativePath != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!relativePath.equals(other.relativePath))
+            {
+                return false;
+            }
+        if (ruleName == null)
+        {
+            if (other.ruleName != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!ruleName.equals(other.ruleName))
+            {
+                return false;
+            }
+        if (subjectRules == null)
+        {
+            if (other.subjectRules != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!subjectRules.equals(other.subjectRules))
+            {
+                return false;
+            }
+        return true;
     }
+
+
+    
 
 }
