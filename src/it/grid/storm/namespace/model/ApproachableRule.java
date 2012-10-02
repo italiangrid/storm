@@ -24,9 +24,10 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 import org.slf4j.Logger;
 
@@ -50,7 +51,7 @@ public class ApproachableRule implements Comparable{
     private final SubjectRules subjectRules;
 
     private String relativePath = null;
-    private Vector<String> appFS = new Vector<String>();
+    private LinkedList<VirtualFSInterface> appFS = new LinkedList<VirtualFSInterface>();
 
 
     public ApproachableRule(String rulename, SubjectRules subjectRules, String relativePath) throws NamespaceException {
@@ -78,20 +79,13 @@ public class ApproachableRule implements Comparable{
     }
 
 
-    public void addApproachableVFS(String vfsName) {
-        this.appFS.add(vfsName);
+    public void addApproachableVFS(VirtualFSInterface vfs)
+    {
+        this.appFS.add(vfs);
     }
 
-    /**
-     * setApproachableVFSList
-     *
-     * @param appFS List
-     */
-    public void setApproachableVFSList(List appFS) {
-        this.appFS = new Vector(appFS);
-    }
 
-    public List getApproachableVFS() {
+    public List<VirtualFSInterface> getApproachableVFS() {
         return this.appFS;
     }
 
@@ -135,7 +129,7 @@ public class ApproachableRule implements Comparable{
     private boolean matchVoms(GridUserInterface gUser)
     {
         // ---- Check if VOMS Attributes are required ----
-        if (!subjectRules.getVONameMatchingRule().isMatchAll())
+        if (subjectRules.getVONameMatchingRule().isMatchAll())
         {
             return true;
         }
@@ -290,8 +284,5 @@ public class ApproachableRule implements Comparable{
             }
         return true;
     }
-
-
-    
 
 }

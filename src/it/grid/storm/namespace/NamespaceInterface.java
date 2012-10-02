@@ -123,8 +123,7 @@ public interface NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl, HashSet vfsNamesApproachable) throws NamespaceException;
-
+    public StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException;
 
     /**
      *
@@ -149,7 +148,7 @@ public interface NamespaceInterface {
      * @return VirtualFSInterface
      * @throws NamespaceException
      */
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, HashSet vfsNamesApproachable) throws NamespaceException;
+    public VirtualFSInterface resolveVFSbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException;
 
     /**
      *
@@ -353,9 +352,7 @@ public interface NamespaceInterface {
      */
     public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException;
 
-    public MappingRule getWinnerRule(String stfnPath, HashSet vfsNameApproachable);
-
-    public Set getListOfVFSName(GridUserInterface gUser);
+    public MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable);
 
     public String getNamespaceVersion() throws NamespaceException;
  

@@ -43,9 +43,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -134,9 +134,9 @@ public class Namespace implements NamespaceInterface {
             log.error("Received null parameters: surl= " + surl + " user=" + user);
             throw new IllegalArgumentException("Received null parameters");
         }
-        HashSet vfsNamesApproachable = (HashSet) getListOfVFSName(user);
+        List<VirtualFSInterface> vfsApproachable =  getListOfVFS(user);
 
-        return resolveStoRIbySURL(surl, vfsNamesApproachable);
+        return resolveStoRIbySURL(surl, vfsApproachable);
     }
 
     /**
@@ -152,20 +152,20 @@ public class Namespace implements NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl, HashSet vfsNamesApproachable) throws NamespaceException {
+    public StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException {
         StFN stfn = surl.sfn().stfn();
         String stfnStr = stfn.toString();
         String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-        MappingRule winnerRule = getWinnerRule(stfnPath, vfsNamesApproachable);
+        MappingRule winnerRule = getWinnerRule(stfnPath, vfsApproachable);
         if (winnerRule == null) { //No winner rule found.
             //Last chance thinking stfnStr as stfnPath
-            winnerRule = getWinnerRule(stfnStr, vfsNamesApproachable);
+            winnerRule = getWinnerRule(stfnStr, vfsApproachable);
             if (winnerRule == null) {
                 throw new NamespaceException("Malformed SURL Exception", new MalformedSURLException(surl));
             }
         }
         log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS());
+        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
         if (vfs == null) {
             throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
         }
@@ -207,7 +207,7 @@ public class Namespace implements NamespaceInterface {
             }
         }
         log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS());
+        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
         if (vfs == null) {
             throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
         }
@@ -225,17 +225,17 @@ public class Namespace implements NamespaceInterface {
 
     public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws NamespaceException {
 
-        HashSet vfsNamesApproachable = (HashSet) getListOfVFSName(user);
-        return resolveVFSbySURL(surl, vfsNamesApproachable);
+        List<VirtualFSInterface> vfsApproachable = getListOfVFS(user);
+        return resolveVFSbySURL(surl, vfsApproachable);
     }
 
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, HashSet vfsNamesApproachable) throws NamespaceException {
+    public VirtualFSInterface resolveVFSbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException {
         StFN stfn = surl.sfn().stfn();
         String stfnStr = stfn.toString();
         String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-        MappingRule winnerRule = getWinnerRule(stfnPath, vfsNamesApproachable);
+        MappingRule winnerRule = getWinnerRule(stfnPath, vfsApproachable);
         log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS());
+        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
         if (vfs == null) {
             throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
         }
@@ -416,38 +416,30 @@ public class Namespace implements NamespaceInterface {
      * @param stfnPath String
      * @return MappingRule
      */
-    public MappingRule getWinnerRule(String stfnPath, HashSet vfsNameApproachable) {
-        //log.debug("[getWinnerRule] StFN Path string = "+stfnPath);
-        Vector rules = new Vector(parser.getMappingRules().values());
-        MappingRule winnerRule = null;
-        String stfnRule;
-        MappingRule rule;
-        int distance = Integer.MAX_VALUE;
-        for (int i = 0; i < rules.size(); i++) {
-            rule = (MappingRule) rules.elementAt(i);
+    public MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable)
+    {
 
-            //Check if the selected Rule holds a VFS belonging to the set of VFS
-            //approachable by the requestor
-            String mappedVFS = rule.getMappedFS();
-            log.debug("### Rules : '" + mappedVFS + "'  Length:" + mappedVFS.length());
-            log.debug("VFS Approachable set : " + vfsNameApproachable);
-            log.debug("Contained? = " + vfsNameApproachable.contains(mappedVFS));
-            if (vfsNameApproachable.contains(mappedVFS)) {
-                //VFS compatibile
-                stfnRule = rule.getStFNRoot();
-                int d = NamespaceUtil.computeDistanceFromPath(stfnRule, stfnPath);
-                //log.debug("[getWinnerRule] Evaluating with sftnRule = "+stfnRule+" | Distance = "+d);
-                if (d < distance) {
-                    //Check if the rule is compatible
-                    //  log.debug("[getWinnerRule] Updating the winner Rule with "+rule);
-                    boolean enclosed = NamespaceUtil.isEnclosed(stfnRule, stfnPath);
-                    if (enclosed) { //Found a compatible Mapping rule
+        Vector<MappingRule> rules = new Vector(parser.getMappingRules().values());
+        MappingRule winnerRule = null;
+        String stfnRoot;
+        int distance = Integer.MAX_VALUE;
+        for (MappingRule rule : rules)
+        {
+            VirtualFSInterface mappedVFS = rule.getMappedFS();
+            if (vfsApproachable.contains(mappedVFS))
+            {
+                stfnRoot = rule.getStFNRoot();
+                int d = NamespaceUtil.computeDistanceFromPath(stfnRoot, stfnPath);
+                if (d < distance)
+                {
+                    // Check if the rule is compatible
+                    // log.debug("[getWinnerRule] Updating the winner Rule with "+rule);
+                    if (NamespaceUtil.isEnclosed(stfnRoot, stfnPath))
+                    {
                         distance = d;
                         winnerRule = rule;
                     }
                 }
-            } else {
-                // VFS incompatible
             }
         }
         return winnerRule;
@@ -636,19 +628,18 @@ public class Namespace implements NamespaceInterface {
      * @param gUser GridUserInterface
      * @return Set
      */
-    public Set getListOfVFSName(GridUserInterface gUser) {
+    public List<VirtualFSInterface> getListOfVFS(GridUserInterface gUser) {
         Hashtable apprules = new Hashtable(parser.getApproachableRules());
-        Enumeration enumer = apprules.elements();
-        ApproachableRule appRule;
-
-        HashSet approachVFSNames = new HashSet();
-        for (; enumer.hasMoreElements();) {
-            appRule = (ApproachableRule) enumer.nextElement();
-            if (appRule.match(gUser)) {
-                approachVFSNames.addAll(appRule.getApproachableVFS());
+        LinkedList<VirtualFSInterface> approachVFS = new LinkedList<VirtualFSInterface>();
+        for (Object appRule : apprules.values())
+        {
+            if (((ApproachableRule) appRule).match(gUser))
+            {
+                approachVFS.addAll(((ApproachableRule) appRule).getApproachableVFS());
             }
+
         }
-        return approachVFSNames;
+        return approachVFS;
     }
 
     /******************************************
@@ -676,14 +667,14 @@ public class Namespace implements NamespaceInterface {
         // Array of all stfnRoots
         ArrayList<String> stfnRoots = new ArrayList<String>();
         // List of VFS approachable
-        HashSet<String> listVFS = (HashSet<String>) getListOfVFSName(user);
+        List<VirtualFSInterface> listVFS = getListOfVFS(user);
         // List of Mapping Rule
         Hashtable<String, MappingRule> rules = new Hashtable<String, MappingRule>(parser.getMappingRules());
 
         // Retrieve the list of stfnRoot approachable
         String stfnRoot;
         for (Map.Entry<String, MappingRule> rule : rules.entrySet()) {
-            String mappedFS = rule.getValue().getMappedFS();
+            VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
             if (listVFS.contains(mappedFS)) { // retrieve stfnRoot
                 stfnRoot = rule.getValue().getStFNRoot();
                 stfnRoots.add(stfnRoot);
@@ -710,5 +701,4 @@ public class Namespace implements NamespaceInterface {
         }
         return result;
     }
-
 }

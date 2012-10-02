@@ -17,6 +17,8 @@
 
 package it.grid.storm.namespace.model;
 
+import it.grid.storm.namespace.VirtualFSInterface;
+
 /**
  * <p>Title: </p>
  *
@@ -31,21 +33,22 @@ package it.grid.storm.namespace.model;
  */
 public class MappingRule {
 
-    private String ruleName = null;
-    private String stfn_root = null;
-    private String mapped_fs = null;
+    private final String ruleName;
+    private final String stfnRoot;
+    private final VirtualFSInterface mappedFS;
 
     /**
      * Constructor
      *
      * @param ruleName String
      * @param stfn_root String
+     * @param vfs 
      * @param mapped_fs String
      */
-    public MappingRule(String ruleName, String stfn_root, String mapped_fs) {
+    public MappingRule(String ruleName, String stfn_root/*, String mapped_fs*/, VirtualFSInterface vfs) {
         this.ruleName = ruleName;
-        this.stfn_root = stfn_root;
-        this.mapped_fs = mapped_fs;
+        this.stfnRoot = stfn_root;
+        this.mappedFS = vfs;
     }
 
     public String getRuleName() {
@@ -53,19 +56,20 @@ public class MappingRule {
     }
 
     public String getStFNRoot() {
-        return this.stfn_root;
+        return this.stfnRoot;
     }
 
-    public String getMappedFS() {
-        return this.mapped_fs;
+    public VirtualFSInterface getMappedFS()
+    {
+        return this.mappedFS;
     }
-
+    
     public String toString() {
         StringBuffer sb = new StringBuffer();
         String sep = System.getProperty("line.separator");
         sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
-        sb.append("      StFN-Root            : " + this.stfn_root + sep);
-        sb.append("      VFS-Name             : " + this.mapped_fs + sep);
+        sb.append("      StFN-Root            : " + this.stfnRoot + sep);
+        sb.append("      mapped-FS             : " + this.mappedFS + sep);
         return sb.toString();
     }
 

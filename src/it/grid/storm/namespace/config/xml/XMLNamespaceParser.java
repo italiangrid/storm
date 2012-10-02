@@ -681,28 +681,27 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
     private void buildMapRules() throws NamespaceException {
         int numOfMapRules = parserUtil.getNumberOfMappingRule();
-        String ruleName;
-        String stfnRoot;
-        String mappedFS;
+        String ruleName, stfnRoot, mappedFS;
         MappingRule mapRule;
-        VirtualFS vfs;
-        boolean vfsExists = false;
 
-        for (int i = 0; i < numOfMapRules; i++) {
+        for (int i = 0; i < numOfMapRules; i++)
+        {
             ruleName = parserUtil.getMapRuleName(i);
-            stfnRoot = parserUtil.getMapRule_StFNRoot(ruleName);
             mappedFS = parserUtil.getMapRule_mappedFS(ruleName);
-            mapRule = new MappingRule(ruleName, stfnRoot, mappedFS);
-            //Adding mapping rule to VFS within vfss;
-            vfsExists = vfss.containsKey(mappedFS);
-            if (vfsExists) {
+            // Adding mapping rule to VFS within vfss;
+            if (vfss.containsKey(mappedFS))
+            {
                 verboseLog("VFS '" + mappedFS + "' pointed by RULE : '" + ruleName + "' exists.");
-                vfs = (VirtualFS) vfss.get(mappedFS);
-                vfs.addMappingRule(mapRule);
-            } else {
+                stfnRoot = parserUtil.getMapRule_StFNRoot(ruleName);
+                VirtualFSInterface vfs = (VirtualFSInterface) vfss.get(mappedFS);
+                mapRule = new MappingRule(ruleName, stfnRoot, vfs/* , mappedFS */);
+                ((VirtualFS) vfs).addMappingRule(mapRule);
+                maprules.put(ruleName, mapRule);
+            }
+            else
+            {
                 log.error("VFS '" + mappedFS + "' pointed by RULE : '" + ruleName + "' DOES NOT EXISTS.");
             }
-            maprules.put(ruleName, mapRule);
         }
     }
 
@@ -729,7 +728,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
             {
                 if (vfss.containsKey(appFS)) {
                     verboseLog("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' exists.");
-                    ((VirtualFS) vfss.get(appFS)).addApproachableRule(appRule);
+                    VirtualFSInterface vfs = vfss.get(appFS);
+                    ((VirtualFS)vfs).addApproachableRule(appRule);
+                    appRule.addApproachableVFS(vfs);
                 } else {
                     log.error("VFS '" + appFS + "' pointed by RULE : '" + ruleName + "' DOES NOT EXISTS.");
                 }    

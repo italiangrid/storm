@@ -185,7 +185,7 @@ public class NamespaceCheck {
             boolean check = false;
             while (scan.hasNext()) {
                 rule = scan.next();
-                mappedVFS = rule.getMappedFS();
+                mappedVFS = rule.getMappedFS().getAliasName();
                 //log.debug("Map rule "+rule.getRuleName()+" maps to VFS named = '"+mappedVFS+"'");
                 check = vfss.containsKey(mappedVFS);
                 if (!check) {
