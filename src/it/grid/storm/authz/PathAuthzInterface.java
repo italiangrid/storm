@@ -33,6 +33,8 @@ public interface PathAuthzInterface {
 
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest srmPathOp, StoRI storiSource, StoRI storiDest);
 
-    public AuthzDecision authorizeAnonymous(PathOperation request, StFN fileStFN);
+    public AuthzDecision authorizeAnonymous(PathOperation pathOperation, StFN fileStFN);
+    
+    public AuthzDecision authorizeAnonymous(SRMFileRequest srmPathOp, StFN fileStFN);
 
 }

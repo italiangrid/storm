@@ -91,7 +91,32 @@ class PermissionEvaluator
         return evaluateDecision(decision);
     }
     
-    public static Object evaluateAnonymousPermission(String filePathDecoded, PathOperation request)
+    static Object evaluateAnonymousPermission(String filePathDecoded, PathOperation request)
+    {
+        VirtualFSInterface fileVFS;
+        try
+        {
+            fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+        } catch(NamespaceException e)
+        {
+            log.error("Unable to determine a VFS that maps the requested file path \'" + filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+          ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+          responseBuilder.status(Response.Status.NOT_FOUND);
+          responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
+          throw new WebApplicationException(responseBuilder.build());
+        }
+        if(!fileVFS.isApproachableByAnonymous())
+        {
+            log.debug("The requeste Storage Area \'" + fileVFS.getAliasName() + "\' is not appoachable by anonymous users");
+            return new Boolean(false);    
+        }
+        StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
+        AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(request, fileStFN);
+        
+        return evaluateDecision(decision);
+    }
+    
+    static Object evaluateAnonymousPermission(String filePathDecoded, SRMFileRequest request)
     {
         VirtualFSInterface fileVFS;
         try

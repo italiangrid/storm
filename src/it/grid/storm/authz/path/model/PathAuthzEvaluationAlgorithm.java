@@ -51,4 +51,7 @@ public abstract class PathAuthzEvaluationAlgorithm {
     public abstract AuthzDecision evaluateAnonymous(StFN fileStFN, PathOperation pathOperation,
             LinkedList<PathACE> authzDB);
 
+    public abstract AuthzDecision evaluateAnonymous(StFN fileStFN, SRMFileRequest pathOperation,
+            LinkedList<PathACE> authzDB);
+
 }

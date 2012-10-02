@@ -110,4 +110,9 @@ public class PathAuthzDB
         return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
     }
 
+    public AuthzDecision evaluateAnonymous(StFN fileStFN, SRMFileRequest pathOperation)
+    {
+        return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
+    }
+
 }

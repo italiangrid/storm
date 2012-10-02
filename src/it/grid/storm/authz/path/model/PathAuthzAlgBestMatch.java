@@ -192,6 +192,52 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         }
         return AuthzDecision.INDETERMINATE;
     }
+    
+    @Override
+    public AuthzDecision evaluateAnonymous(StFN fileName, SRMFileRequest pathOperation,
+            LinkedList<PathACE> authzDB)
+    {
+        if ((authzDB == null) || (authzDB.isEmpty())) {
+            return AuthzDecision.NOT_APPLICABLE;
+        }
+
+        // Retrieve the best ACE within compatible ones.
+        List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
+        log.debug("There are '" + orderedACEs.size() + "' ACEs regarding file '" + fileName + "'");
+
+        log.trace("<Best-Match> Operation that needs anonymous authorization is : " + pathOperation);
+        PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
+        ArrayList<PathOperation> ops = new ArrayList<PathOperation>(requestedOps.getPathOperations());
+        HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
+        for (PathOperation op : ops)
+        {
+            for (OrderedACE oAce : orderedACEs)
+            {
+                if (oAce.ace.isAllGroupsACE() && oAce.ace.getPathAccessMask().containsPathOperation(op))
+                {
+                    if (oAce.ace.isPermitAce())
+                    {
+                        log.trace("Path Operation '" + pathOperation + "' is PERMIT");
+                        decision.put(op, AuthzDecision.PERMIT);
+                    }
+                    else
+                    {
+                        log.trace("Path Operation '" + pathOperation + "' is DENY");
+                        decision.put(op, AuthzDecision.DENY);
+                    }
+                }
+            }
+        }
+        AuthzDecision result;
+        if (decision.containsValue(AuthzDecision.DENY)) {
+            result = AuthzDecision.DENY;
+        } else if (decision.containsValue(AuthzDecision.INDETERMINATE)) {
+            result = AuthzDecision.INDETERMINATE;
+        } else {
+            result = AuthzDecision.PERMIT;
+        }
+        return result;
+    }
 
     /**
      * @param subjectGroup
@@ -292,5 +338,4 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
         }
 
     }
-
 }

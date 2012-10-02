@@ -88,6 +88,15 @@ public class PathAuthz implements PathAuthzInterface {
         return pathAuthzDB.evaluateAnonymous(fileStFN, pathOperation);
     }
     
+
+    @Override
+    public AuthzDecision authorizeAnonymous(SRMFileRequest srmPathOp, StFN fileStFN)
+    {
+        log.debug("<PathAuthz> Compute authorization for anonymous user on filename:'" + fileStFN
+                  + "', SRMFileRequest:'" + srmPathOp + "'");
+          return pathAuthzDB.evaluateAnonymous(fileStFN, srmPathOp);
+    }
+    
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StoRI storiSource,
             StoRI storiDest) {
 

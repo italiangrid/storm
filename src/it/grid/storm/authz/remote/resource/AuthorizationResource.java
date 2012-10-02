@@ -515,7 +515,7 @@ public class AuthorizationResource
         log.info("Serving write operation authorization on file '" + filePath + "\'");
         
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
     }
     
     /**
@@ -533,7 +533,7 @@ public class AuthorizationResource
         log.info("Serving prepareToPut operation authorization on file '" + filePath + "\'");
         
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.PTP).toString();
 
     }
 
@@ -551,7 +551,7 @@ public class AuthorizationResource
     {
         log.info("Serving prepareToGet operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTG).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.PTG).toString();
     }
     
     /**
@@ -571,11 +571,11 @@ public class AuthorizationResource
         File file = new File(parameters.getFilePathDecoded());
         if(file.isDirectory())
         {
-            return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.RMD).toString();    
+            return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.RMD).toString();    
         }
         else
         {
-            return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.RM).toString();
+            return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.RM).toString();
         }
         
     }
@@ -594,7 +594,7 @@ public class AuthorizationResource
     {
         log.info("Serving ls operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.LS).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.LS).toString();
     }
     
     /**
@@ -611,7 +611,7 @@ public class AuthorizationResource
     {
         log.info("Serving mkdir operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.MD).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MD).toString();
     }
     
     /**
@@ -628,7 +628,7 @@ public class AuthorizationResource
     {
         log.info("Serving cpFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.CPfrom).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.CPfrom).toString();
     }
     
     /**
@@ -645,7 +645,7 @@ public class AuthorizationResource
     {
         log.info("Serving cpTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.CPto).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.CPto).toString();
     }
     
     /**
@@ -662,7 +662,7 @@ public class AuthorizationResource
     {
         log.info("Serving mvFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.MV_source).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MV_source).toString();
     }
     
     /**
@@ -679,6 +679,6 @@ public class AuthorizationResource
     {
         log.info("Serving mvTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.MV_dest).toString();
+        return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MV_dest).toString();
     }
 }
