@@ -211,9 +211,9 @@ public class NamespaceCheck {
             boolean check = false;
             while (scan.hasNext()) {
                 ApproachableRule rule = scan.next();
-                ArrayList<String> approachVFSs = new ArrayList<String>(rule.getApproachableVFS());
-                for (String aVfs : approachVFSs) {
-                    check = vfss.containsKey(aVfs);
+                ArrayList<VirtualFSInterface> approachVFSs = new ArrayList<VirtualFSInterface>(rule.getApproachableVFS());
+                for (VirtualFSInterface aVfs : approachVFSs) {
+                    check = vfss.containsKey(aVfs.getAliasName());
                     if (!check) {
                         log.error("ERROR in NAMESPACE - APP RULE '" + rule.getRuleName() + "' point a UNKNOWN VFS '"
                                 + aVfs + "'!");
