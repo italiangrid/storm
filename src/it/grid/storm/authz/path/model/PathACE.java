@@ -28,6 +28,7 @@ import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -124,7 +125,15 @@ public class PathACE {
         PathAccessMask pAccessMask = new PathAccessMask();
         boolean permit;
 		String[] fields = pathACEString.split(PathACE.FIELD_SEP, -1);
-		if(fields.length < 4)
+		LinkedList<String> notemptyFields = new LinkedList<String>(); 
+		for(String field : fields)
+		{
+		    if(!field.trim().isEmpty())
+		    {
+		        notemptyFields.add(field);
+		    }
+		}
+		if(notemptyFields.size() < 4)
 		{
 			throw new AuthzException("Error while parsing the Path ACE '" + pathACEString
 				+ "'");
@@ -132,44 +141,44 @@ public class PathACE {
 		else
 		{
 			// Setting the Local Group Name
-			localGroupName = fields[0];
+			localGroupName = notemptyFields.get(0);
 			try
 			{
             	/* Checks if the path string represents a valid URI */
-                URI.create(fields[1]);
+                URI.create(notemptyFields.get(1));
 			} catch(IllegalArgumentException uriEx)
 			{
 				throw new AuthzException(
 					"Error (IllegalArgumentException )while parsing the StFN '"
-						+ fields[1] + "' in Path ACE. Is not a valid URI");
+						+ notemptyFields.get(1) + "' in Path ACE. Is not a valid URI");
 			} catch(NullPointerException npe)
 			{
 				throw new AuthzException(
 					"Error (NullPointerException )while parsing the StFN '"
-						+ fields[1] + "' in Path ACE.");
+						+ notemptyFields.get(1) + "' in Path ACE.");
 			}
 			// Setting the StFN
 			try
 			{
-				stfn = StFN.make(fields[1]);
+				stfn = StFN.make(notemptyFields.get(1));
 			} catch(InvalidStFNAttributeException e)
 			{
-				throw new AuthzException("Error while parsing the StFN '" + fields[1]
+				throw new AuthzException("Error while parsing the StFN '" + notemptyFields.get(1)
 					+ "' in Path ACE ");
 			}
 
 			// Setting the Permission Mask
-			for(int i = 0; i < fields[2].length(); i++)
+			for(int i = 0; i < notemptyFields.get(2).length(); i++)
 			{
 				PathOperation pathOper =
-										 PathOperation.getSpaceOperation(fields[2]
+										 PathOperation.getSpaceOperation(notemptyFields.get(2)
 											 .charAt(i));
 				pAccessMask.addPathOperation(pathOper);
 			}
 
 			// Check if the ACE is DENY or PERMIT
 			// ** IMP ** : permit is the default
-			if(fields[3].toLowerCase().equals("deny"))
+			if(notemptyFields.get(3).toLowerCase().equals("deny"))
 			{
 			    permit = false;
 			}
