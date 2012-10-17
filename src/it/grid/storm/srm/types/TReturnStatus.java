@@ -27,15 +27,22 @@
 package it.grid.storm.srm.types;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TReturnStatus implements Serializable
 {
-    private TStatusCode  statusCode   = null;          //TStatusCode.SRM_CUSTOM_STATUS;??
-    private String       explanation = null;
-    private static final String UNDEFINED_EXPLANATION = "undefined";
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4550845540710062810L;
     
+    private TStatusCode  statusCode   = null;
+    private String       explanation = null;
+    private Long lastUpdateTIme = null;
+    
+    private static final String UNDEFINED_EXPLANATION = "undefined";
     
     public static final String PNAME_RETURNSTATUS = "returnStatus";
     public static final String PNAME_STATUS       = "status";
@@ -48,16 +55,22 @@ public class TReturnStatus implements Serializable
     public TReturnStatus() throws InvalidTReturnStatusAttributeException {
         this(TStatusCode.SRM_CUSTOM_STATUS);
     }
-
     
-    public static TReturnStatus getInitialValue() {
-    	TReturnStatus result = null;
-    	try {
-    		result = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS, "Initial status..");
-		} catch (InvalidTReturnStatusAttributeException e) {
-           //Never Happen!!
-		}
-		return result;
+    public TReturnStatus(TReturnStatus original) throws InvalidTReturnStatusAttributeException  {
+        this(original.statusCode, original.explanation);
+    }
+
+    public TReturnStatus clone()
+    {
+        try
+        {
+            return new TReturnStatus(this);
+        } catch(InvalidTReturnStatusAttributeException e)
+        {
+           //never thrown
+            throw new IllegalStateException("unexpected InvalidTReturnStatusAttributeException "
+                    + "in TReturnStatus: " + e.getMessage());
+        }
     }
     
     /**
@@ -81,6 +94,19 @@ public class TReturnStatus implements Serializable
         }
         this.statusCode = statusCode;
         this.explanation = UNDEFINED_EXPLANATION;
+        updated();
+    }
+    
+   
+
+    public static TReturnStatus getInitialValue() {
+        TReturnStatus result = null;
+        try {
+            result = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS, "Initial status..");
+        } catch (InvalidTReturnStatusAttributeException e) {
+           //Never Happen!!
+        }
+        return result;
     }
 
     /**
@@ -93,12 +119,27 @@ public class TReturnStatus implements Serializable
     }
 
     /**
+     * @param statusCode the statusCode to set
+     */
+    public void setStatusCode(TStatusCode statusCode)
+    {
+        if (statusCode == null)
+        {
+            throw new IllegalArgumentException("Cannot set the status code, received null argument: statusCode=" + statusCode);
+        }
+        this.statusCode = statusCode;
+        updated();
+    }
+
+
+    /**
      * Set explanation string
      * @param expl String
      */
     public void setExplanation(String explanationString)
     {
-        explanation = explanationString;
+        explanation = (explanationString == null ? "" : explanationString);
+        updated();
     }
 
     /**
@@ -108,6 +149,19 @@ public class TReturnStatus implements Serializable
     public String getExplanation()
     {
         return explanation;
+    }
+    
+    /**
+     * @return the lastUpdateTIme
+     */
+    public Long getLastUpdateTIme()
+    {
+        return lastUpdateTIme;
+    }
+
+    private void updated()
+    {
+        this.lastUpdateTIme = Calendar.getInstance().getTimeInMillis(); 
     }
 
     /**

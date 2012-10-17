@@ -13,7 +13,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestData;
+import it.grid.storm.catalogs.PersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 
@@ -48,7 +48,7 @@ public class InvalidPersistentRequestAttributesException extends InvalidRequestA
      * PtPChunkData and OverallRequest, that caused the exception to be thrown.
      */
     public InvalidPersistentRequestAttributesException(GridUserInterface gu, RequestSummaryData rsd,
-            RequestData chunkData, GlobalStatusManager gsm)
+            PersistentChunkData chunkData, GlobalStatusManager gsm)
     {
         super(gu, chunkData);
         nullRsd = (rsd == null);

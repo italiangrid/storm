@@ -39,7 +39,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidPutDoneInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 
 import java.util.HashMap;
@@ -89,7 +88,7 @@ public class PutDoneConverter implements Converter
         PutDoneInputData inputData = null;
         try {
             inputData = new PutDoneInputData(guser, requestToken, arrayOfSURLs);
-        } catch (InvalidPutDoneInputAttributeException e) {
+        } catch (IllegalArgumentException e) {
             log.debug("Invalid PutDoneInputData Creation!" + e);
         }
 

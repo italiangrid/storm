@@ -14,6 +14,7 @@
 package it.grid.storm.asynch;
 
 
+import it.grid.storm.SurlStatusManager;
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
@@ -21,7 +22,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
@@ -770,7 +770,7 @@ public class PtP implements Delegable, Chooser, Request
                 return false;
             }
             else
-                if ((!successful) && PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
+                if (!successful && TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlsStatus(requestData.getSURL())))//PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
                 {
                     // atomic operation of creation of file if non existent, failed:
                     // so the file

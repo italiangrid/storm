@@ -59,7 +59,7 @@ public class PrepareToGetRequestCommand implements Command
         {
             return new PrepareToGetOutputData(request.getRequestData().getSURL(), request.getRequestData()
                                                                                          .getTransferURL(),
-                                              request.getRequestData().getStatus(),request.getRequestData().getFileSize(), request.getRequestData().getPinLifeTime());
+                                              request.getRequestData().getStatus(), request.getRequestData().getGeneratedRequestToken(), request.getRequestData().getFileSize(), request.getRequestData().getPinLifeTime());
         } catch(IllegalArgumentException e)
         {
             log.error("Unable to create PrepareToPutOutputData. IllegalArgumentException: " + e.getMessage());

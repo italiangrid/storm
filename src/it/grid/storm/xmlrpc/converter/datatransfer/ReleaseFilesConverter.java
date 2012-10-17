@@ -81,12 +81,8 @@ public class ReleaseFilesConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        /* (4) boolean doRemove */
-        String member_doRemove = new String("doRemove");
-        Boolean doRemove = (Boolean) inputParam.get(member_doRemove);
-
         try {
-            inputData = new ReleaseFilesInputData(guser, requestToken, arrayOfSURLs, doRemove);
+            inputData = new ReleaseFilesInputData(guser, requestToken, arrayOfSURLs/*, doRemove*/);
         } catch (InvalidReleaseFilesInputAttributeException e) {
             log.debug("Invalid ReleaseFilesInputData Creation!" + e);
         }

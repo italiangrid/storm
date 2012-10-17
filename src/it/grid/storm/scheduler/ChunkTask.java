@@ -129,9 +129,9 @@ public class ChunkTask extends Task {
         {
             this.userDN = ((Request)todo).getUserDN();
             this.surl = ((Request)todo).getSURL();
-            if(todo instanceof RequestChunk)
+            if(todo instanceof PersistentRequestChunk)
             {
-                this.requestToken = ((RequestChunk)todo).getRequestToken();
+                this.requestToken = ((PersistentRequestChunk)todo).getRequestToken();
             }
             else
             {

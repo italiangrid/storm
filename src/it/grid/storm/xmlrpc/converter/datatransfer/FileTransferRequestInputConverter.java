@@ -27,11 +27,11 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferOutputData;
@@ -50,7 +50,7 @@ public abstract class FileTransferRequestInputConverter implements Converter
 
 
     @Override
-    public InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException
+    public FileTransferInputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
         TSURL surl = decodeSURL(inputParam);
         if (surl == null)
@@ -98,17 +98,52 @@ public abstract class FileTransferRequestInputConverter implements Converter
         return inputData;
     }
     
-    protected TSpaceToken decodeTargetSpaceToken(Map inputParam)
+    @Override
+    public Map<String,Object> convertFromOutputData(OutputData outputData) throws IllegalArgumentException
+    {
+        if(outputData == null)
+        {
+            log.error("Unable to build an output map. Null argument: outputData= " + outputData);
+            throw new IllegalArgumentException("Unable to build a valid output map, null argument");
+        }
+        if(!(outputData instanceof FileTransferOutputData))
+        {
+            log.error("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
+            throw new IllegalArgumentException("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
+        }
+        FileTransferOutputData ftOutputData = (FileTransferOutputData) outputData;
+        TSURL surl = ftOutputData.getSurl();
+        TTURL turl = ftOutputData.getTurl();
+        TReturnStatus status = ftOutputData.getStatus();
+        TRequestToken requestToken = ftOutputData.getRequestToken();
+        if (surl == null || surl.isEmpty() || surl.getSURLString().trim().isEmpty() || turl == null
+                || turl.isEmpty() || turl.tfn().isEmpty() || status == null || requestToken == null
+                || requestToken.getValue() == null || requestToken.getValue().isEmpty())
+        {
+            log.error("Unable to build a valid output map. Missing mandatory values from FileTransferOutputData: "
+                    + ftOutputData.toString());
+            throw new IllegalArgumentException("Unable to build a valid output map from FileTransferOutputData");
+        }
+        Hashtable<String,Object> outputParam = new Hashtable<String,Object>();
+        surl.encode(outputParam, TSURL.PNAME_SURL);
+        turl.encode(outputParam, TTURL.PNAME_TURL);
+        status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+        outputParam.put(TRequestToken.PNAME_REQUESTOKEN, requestToken);
+        log.debug("Built output Map: " + outputParam.toString());
+        return outputParam;
+    }
+    
+    protected TSpaceToken decodeTargetSpaceToken(Map<String,Object> inputParam)
     {
         return TSpaceToken.decode(inputParam, TSpaceToken.PNAME_SPACETOKEN);
     }
 
-    protected TLifeTimeInSeconds decodeDesiredPinLifetime(Map inputParam)
+    protected TLifeTimeInSeconds decodeDesiredPinLifetime(Map<String,Object> inputParam)
     {
         return TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
     }
 
-    protected TURLPrefix decodeTransferProtocols(Map inputParam) throws IllegalArgumentException
+    protected TURLPrefix decodeTransferProtocols(Map<String,Object> inputParam) throws IllegalArgumentException
     {
         TURLPrefix transferProtocols = TURLPrefix.decode(inputParam, TURLPrefix.PNAME_TURL_PREFIX);
         if (transferProtocols == null)
@@ -121,12 +156,12 @@ public abstract class FileTransferRequestInputConverter implements Converter
         return transferProtocols;
     }
 
-    protected GridUserInterface decodeUser(Map inputParam)
+    protected GridUserInterface decodeUser(Map<String,Object> inputParam)
     {
         return GridUserManager.decode(inputParam);
     }
 
-    protected TSURL decodeSURL(Map inputParam) throws IllegalArgumentException
+    protected TSURL decodeSURL(Map<String,Object> inputParam) throws IllegalArgumentException
     {
         TSURL surl = null;
         try
@@ -140,32 +175,6 @@ public abstract class FileTransferRequestInputConverter implements Converter
                     + "\' parameter as TSURL");
         }
         return surl;
-    }
-
-    @Override
-    public Map convertFromOutputData(OutputData outputData) throws IllegalArgumentException
-    {
-        log.debug("Creation of XMLRPC Output Structure");
-        if(!(outputData instanceof FileTransferOutputData))
-        {
-            log.error("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
-            throw new IllegalArgumentException("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
-        }
-        FileTransferOutputData ftOutputData = (FileTransferOutputData) outputData;
-        TSURL surl = ftOutputData.getSurl();
-        TTURL turl = ftOutputData.getTurl();
-        TReturnStatus status = ftOutputData.getStatus();
-        if(surl == null || turl == null || status == null)
-        {
-            log.error("Unable to build a valid output map. Missing mandatory values from FileTransferOutputData: " + ftOutputData.toString());
-            throw new IllegalArgumentException("Unable to build a valid output map from FileTransferOutputData");
-        }
-        Hashtable outputParam = new Hashtable();
-        surl.encode(outputParam, TSURL.PNAME_SURL);
-        turl.encode(outputParam, TTURL.PNAME_TURL);
-        status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        log.debug("Built output Map: " + outputParam.toString());
-        return outputParam;
     }
 
 }

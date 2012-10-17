@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * @date    September, 2005
  * @version 2.0
  */
-public class CopyData extends SurlRequestData {
+public class CopyData extends SurlMultyOperationRequestData{
     private static final Logger log = LoggerFactory.getLogger(CopyData.class);
 
     /**

@@ -70,7 +70,7 @@ public abstract class SurlRequestData implements RequestData
      * Method used to set the Status associated to this chunk.
      * If status is null, then nothing gets set!
      */
-    public final void setStatus(TReturnStatus newstat)
+    public void setStatus(TReturnStatus newstat)
     {
         if (newstat != null)
         {
@@ -78,7 +78,7 @@ public abstract class SurlRequestData implements RequestData
         }
     }
     
-    protected final void setStatus(TStatusCode statusCode, String explanation)
+    protected void setStatus(TStatusCode statusCode, String explanation)
     {
         try {
             if (explanation==null) {

@@ -21,7 +21,7 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.SurlStatusStore;
+//import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -101,7 +101,7 @@ public class PtPChunkCatalog {
                 {
                     surls.add(data.toSURL());
                 }
-                PutDoneCommand.executePutDone(surls, null, null, null);
+                PutDoneCommand.executePutDone(surls, null, null);
             }
         };
         transiter.scheduleAtFixedRate(transitTask, delay, period);
@@ -129,12 +129,12 @@ public class PtPChunkCatalog {
 		to.setFileLifetime(FileLifetimeConverter.getInstance().toDB(cd.fileLifetime().value()));
 		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.fileStorageType()));
 		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.overwriteOption()));
-		// TODO MICHELE USER_SURL fill new fields
 		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
 		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 		
 		dao.update(to);
-		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
+		// TODO MICHELE SURL STORE
+//		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
 	/**
@@ -154,7 +154,8 @@ public class PtPChunkCatalog {
 		else
 		{
 		    PtPPersistentChunkData data = makeOne(auxTO, inputChunk.getRequestToken());
-		    SurlStatusStore.getInstance().storeSurlStatus(data.getSURL(), data.getStatus().getStatusCode());
+		 // TODO MICHELE SURL STORE
+//		    SurlStatusStore.getInstance().storeSurlStatus(data.getSURL(), data.getStatus().getStatusCode());
 			return data;
 		}
 	}
@@ -187,7 +188,8 @@ public class PtPChunkCatalog {
 				if(chunk != null)
 				{
 					list.add(chunk);
-					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try
@@ -427,7 +429,6 @@ public class PtPChunkCatalog {
 	 * @param chunkTO
 	 * @param chunk
 	 */
-	//TODO MICHELE USER_SURL new method
 	private void completeTO(ReducedPtPChunkDataTO chunkTO, final ReducedPtPChunkData chunk) {
 		
 		chunkTO.setNormalizedStFN(chunk.toSURL().normalizedStFN());
@@ -445,7 +446,6 @@ public class PtPChunkCatalog {
 	 * @return
 	 * @throws InvalidReducedPtPChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtPChunkDataTO completeTO(PtPChunkDataTO chunkTO, final PtPPersistentChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
 		ReducedPtPChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
@@ -459,7 +459,6 @@ public class PtPChunkCatalog {
 	 * @return
 	 * @throws InvalidReducedPtPChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtPChunkData reduce(PtPPersistentChunkData chunk) throws InvalidReducedPtPChunkDataAttributesException {
 
 		ReducedPtPChunkData reducedChunk = new ReducedPtPChunkData(chunk.getSURL(), chunk.getStatus(), chunk.fileStorageType(), chunk.fileLifetime());
@@ -473,7 +472,6 @@ public class PtPChunkCatalog {
 	 * @param chunkTO
 	 * @return
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtPChunkDataTO reduce(PtPChunkDataTO chunkTO) {
 
 		ReducedPtPChunkDataTO reducedChunkTO = new ReducedPtPChunkDataTO();
@@ -493,7 +491,6 @@ public class PtPChunkCatalog {
      * @param chunkTO
      * @return
      */
-	//TODO MICHELE USER_SURL new method
     private boolean isComplete(PtPChunkDataTO chunkTO) {
     	return (chunkTO.normalizedStFN() != null) && (chunkTO.surlUniqueID() != null); 
 	}
@@ -505,7 +502,6 @@ public class PtPChunkCatalog {
      * @param reducedChunkTO
      * @return
      */
-  //TODO MICHELE USER_SURL new method
     private boolean isComplete(ReducedPtPChunkDataTO reducedChunkTO) {
 
     	return (reducedChunkTO.normalizedStFN() != null) && (reducedChunkTO.surlUniqueID() != null);
@@ -521,34 +517,69 @@ public class PtPChunkCatalog {
      */
 	synchronized public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(TRequestToken rt) {
 		
-		Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt.getValue());
-		log.debug("PtP CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
-		ArrayList<ReducedPtPChunkData> list = new ArrayList<ReducedPtPChunkData>();
-		if(reducedChunkDataTOs.isEmpty())
-		{
-			log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " + rt);
-		}
-		else
-		{
-			ReducedPtPChunkData reducedChunkData;
-			for(ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
-			{
-				reducedChunkData = makeOneReduced(reducedChunkDataTO);
-				if(reducedChunkData != null)
-				{
-					list.add(reducedChunkData);
-					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
-					if(!this.isComplete(reducedChunkDataTO))
-					{
-						this.completeTO(reducedChunkDataTO, reducedChunkData);
-						dao.updateIncomplete(reducedChunkDataTO);
-					}
-				}
-			}
-			log.debug("PtP CHUNK CATALOG: returning " + list);
-		}
-		return list;
+	    return lookupReducedPtPChunkData(rt, new ArrayList<TSURL>(0));
+//		Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt.getValue(), null);
+//		log.debug("PtP CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
+//		ArrayList<ReducedPtPChunkData> list = new ArrayList<ReducedPtPChunkData>();
+//		if(reducedChunkDataTOs.isEmpty())
+//		{
+//			log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " + rt);
+//		}
+//		else
+//		{
+//			ReducedPtPChunkData reducedChunkData;
+//			for(ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
+//			{
+//				reducedChunkData = makeOneReduced(reducedChunkDataTO);
+//				if(reducedChunkData != null)
+//				{
+//					list.add(reducedChunkData);
+//					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
+//					if(!this.isComplete(reducedChunkDataTO))
+//					{
+//						this.completeTO(reducedChunkDataTO, reducedChunkData);
+//						dao.updateIncomplete(reducedChunkDataTO);
+//					}
+//				}
+//			}
+//			log.debug("PtP CHUNK CATALOG: returning " + list);
+//		}
+//		return list;
 	}
+	
+    public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(TRequestToken requestToken,
+            List<TSURL> surls)
+    {
+        Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao.findReduced(requestToken.getValue(), surls);
+        log.debug("PtP CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
+        ArrayList<ReducedPtPChunkData> list = new ArrayList<ReducedPtPChunkData>();
+        if (reducedChunkDataTOs.isEmpty())
+        {
+            log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " + requestToken);
+        }
+        else
+        {
+            ReducedPtPChunkData reducedChunkData;
+            for (ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
+            {
+                reducedChunkData = makeOneReduced(reducedChunkDataTO);
+                if (reducedChunkData != null)
+                {
+                    list.add(reducedChunkData);
+                 // TODO MICHELE SURL STORE
+//                    SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(),
+//                                                                  reducedChunkData.status().getStatusCode());
+                    if (!this.isComplete(reducedChunkDataTO))
+                    {
+                        this.completeTO(reducedChunkDataTO, reducedChunkData);
+                        dao.updateIncomplete(reducedChunkDataTO);
+                    }
+                }
+            }
+            log.debug("PtP CHUNK CATALOG: returning " + list);
+        }
+        return list;
+    }
 
     /**
      * Method that returns a Collection of ReducedPtPChunkData Objects corresponding to each of the IDs else {
@@ -577,7 +608,8 @@ public class PtPChunkCatalog {
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
-					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -680,8 +712,9 @@ public class PtPChunkCatalog {
      */
 	synchronized public boolean isSRM_SPACE_AVAILABLE(TSURL surl) {
 		
-//		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
-	    return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
+		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
+		// TODO MICHELE SURL STORE
+//	    return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
 	/**
@@ -709,7 +742,7 @@ public class PtPChunkCatalog {
 		{
 			return;
 		}
-		Collection<ReducedPtPChunkDataTO> tos = dao.findReduced(token.getValue());
+		Collection<ReducedPtPChunkDataTO> tos = dao.findReduced(token.getValue(), null);
 		LinkedList<Long> primaryKeys = new LinkedList<Long>();
 		for(ReducedPtPChunkDataTO to : tos)
 		{
@@ -723,13 +756,14 @@ public class PtPChunkCatalog {
 		    }
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(primaryKeys);
-		for(TSURL surl : surls)
-        {
-            if(surl != null)
-            {
-                SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_SUCCESS);
-            }
-        }
+		// TODO MICHELE SURL STORE
+//		for(TSURL surl : surls)
+//        {
+//            if(surl != null)
+//            {
+//                SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_SUCCESS);
+//            }
+//        }
 	}
 
     /**
@@ -752,6 +786,8 @@ public class PtPChunkCatalog {
 			explanation = "";
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl.uniqueId(), surl.toString(), explanation);
-		SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_ABORTED);
+		// TODO MICHELE SURL STORE
+//		SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_ABORTED);
 	}
+
 }

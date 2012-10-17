@@ -26,7 +26,6 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 
@@ -40,7 +39,7 @@ public class PrepareToPutRequestConverter extends FileTransferRequestInputConver
     static final Logger log = LoggerFactory.getLogger(PrepareToPutRequestConverter.class);
 
     @Override
-    public InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException
+    public PrepareToPutInputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
         TSURL surl = decodeSURL(inputParam);
         GridUserInterface user = decodeUser(inputParam);

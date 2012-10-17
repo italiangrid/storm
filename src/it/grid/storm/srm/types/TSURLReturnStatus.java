@@ -27,10 +27,8 @@
 package it.grid.storm.srm.types;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 
 
@@ -87,4 +85,80 @@ public class TSURLReturnStatus {
                 outputVector.add(surlRetStatusParam);
                 
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("TSURLReturnStatus [surl=");
+        builder.append(surl);
+        builder.append(", returnStatus=");
+        builder.append(returnStatus);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((returnStatus == null) ? 0 : returnStatus.hashCode());
+        result = prime * result + ((surl == null) ? 0 : surl.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        TSURLReturnStatus other = (TSURLReturnStatus) obj;
+        if (returnStatus == null)
+        {
+            if (other.returnStatus != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!returnStatus.equals(other.returnStatus))
+            {
+                return false;
+            }
+        if (surl == null)
+        {
+            if (other.surl != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!surl.equals(other.surl))
+            {
+                return false;
+            }
+        return true;
+    }
+    
+    
 }

@@ -44,8 +44,8 @@ public interface Converter {
      * of an xmlrpc Rm v2.1 call. Rm Input Data can be used to invoke mkdir
      * method of DirectoryFunctionsManager
      */
-    public abstract InputData convertToInputData(Map inputParam) throws IllegalArgumentException, StoRMXmlRpcException;
+    public abstract InputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException;
 
-    public abstract Map convertFromOutputData(OutputData outputData) throws IllegalArgumentException;
+    public abstract Map<String,Object> convertFromOutputData(OutputData outputData) throws IllegalArgumentException;
 
 }

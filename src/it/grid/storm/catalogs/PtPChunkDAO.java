@@ -19,6 +19,7 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
 import java.sql.Connection;
@@ -423,7 +424,7 @@ public class PtPChunkDAO {
      * Method that returns a Collection of ReducedPtPChunkDataTO associated to the given TRequestToken expressed as
      * String.
      */
-	public Collection<ReducedPtPChunkDataTO> findReduced(String reqtoken) {
+	public Collection<ReducedPtPChunkDataTO> findReduced(String reqtoken, List<TSURL> surls) {
 
 	    if(!checkConnection())
         {
@@ -432,6 +433,7 @@ public class PtPChunkDAO {
         }
 		PreparedStatement find = null;
 		ResultSet rs = null;
+		boolean addInClause = surls != null && !surls.isEmpty();
 		try
 		{
 			// get reduced chunks
@@ -440,13 +442,32 @@ public class PtPChunkDAO {
 							 + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
 							 + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
 							 + "WHERE rq.r_token=?";
+			if(addInClause)
+	        {
+	            str += " AND rp.targetSURL_uniqueID IN (?)";
+	        }
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 			
 			List<ReducedPtPChunkDataTO> list = new ArrayList<ReducedPtPChunkDataTO>();
 			find.setString(1, reqtoken);
 			logWarnings(find.getWarnings());
-			
+			if(addInClause)
+	        {
+			    String surlUniqueIdSequence = "";
+			    Iterator<TSURL> iterator = surls.iterator();
+			    while(iterator.hasNext())
+			    {
+			        TSURL surl = iterator.next();
+			        surlUniqueIdSequence += " " + surl.uniqueId() + " ";
+			        if(iterator.hasNext())
+			        {
+			            surlUniqueIdSequence += ",";
+			        }
+			    }
+			    find.setString(2,"");
+	        }
+			logWarnings(find.getWarnings());
 			log.trace("PtP CHUNK DAO! findReduced with request token; " + find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());

@@ -268,13 +268,13 @@ public class ApproachRuleTest {
     }
 
 
-    private void appRulesNamespace() {
-        FakeGridUser fakeGU = null;
-        fakeGU = new FakeGridUser("/C=UK/O=eScience/OU=Bristol/L=IS/CN=jon wakelin", "ciccio");
-        //fakeGU = new FakeGridUser("C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Luca Magnoni,Email=aaa@ssrq","ciccio");
-        HashSet approachVFSs = (HashSet)namespace.getListOfVFSName(fakeGU);
-        log.debug("APP VFSs : "+approachVFSs);
-    }
+//    private void appRulesNamespace() {
+//        FakeGridUser fakeGU = null;
+//        fakeGU = new FakeGridUser("/C=UK/O=eScience/OU=Bristol/L=IS/CN=jon wakelin", "ciccio");
+//        //fakeGU = new FakeGridUser("C=IT,O=INFN,OU=Personal Certificate,L=CNAF,CN=Luca Magnoni,Email=aaa@ssrq","ciccio");
+//        HashSet approachVFSs = (HashSet)namespace.getListOfVFSName(fakeGU);
+//        log.debug("APP VFSs : "+approachVFSs);
+//    }
 
     private void testContains() {
         HashSet test = new HashSet();

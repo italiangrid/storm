@@ -29,22 +29,20 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.exception.InvalidPutDoneInputAttributeException;
 
 public class PutDoneInputData extends AbstractInputData
 {
-    private GridUserInterface auth = null;
-    private TRequestToken reqToken = null;
-    private ArrayOfSURLs arrayOfSURLs = null;
-
-    public PutDoneInputData() {}
+    private final GridUserInterface auth;
+    private final TRequestToken reqToken;
+    private final ArrayOfSURLs arrayOfSURLs;
 
     public PutDoneInputData(GridUserInterface auth, TRequestToken reqToken, ArrayOfSURLs surlArray)
-                    throws InvalidPutDoneInputAttributeException
+                    throws IllegalArgumentException
     {
-        if (surlArray == null)
+        if (auth == null || surlArray == null || reqToken == null)
         {
-            throw new InvalidPutDoneInputAttributeException(surlArray);            
+            throw new IllegalArgumentException("Unable to create the object, invalid arguments: auth=" + auth
+                    + " reqToken=" + reqToken + " surlArray=" + surlArray);
         }
         this.auth = auth;
         this.reqToken = reqToken;
@@ -56,29 +54,14 @@ public class PutDoneInputData extends AbstractInputData
         return reqToken;
     }
 
-    public void setRequestToken(TRequestToken reqToken)
-    {
-        this.reqToken = reqToken;
-    }
-
     public GridUserInterface getUser()
     {
         return this.auth;
     }
 
-    public void setUser(GridUserInterface user)
-    {
-        this.auth = user;
-    }
-    
     public ArrayOfSURLs getArrayOfSURLs()
     {
         return arrayOfSURLs;
-    }
-
-    public void setArrayOfSURLs(ArrayOfSURLs arrayOfSURLs)
-    {
-        this.arrayOfSURLs = arrayOfSURLs;
     }
     
     @Override

@@ -19,7 +19,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.namespace.SurlStatusStore;
+//import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -85,14 +85,14 @@ public class CopyChunkCatalog
 		to.setErrString(cd.getStatus().getExplanation());
 		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.getFileStorageType()));
 		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.getOverwriteOption()));
-		// TODO MICHELE USER_SURL fill new fields
 		to.setNormalizedSourceStFN(cd.getSURL().normalizedStFN());
 		to.setSourceSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 		to.setNormalizedTargetStFN(cd.getDestinationSURL().normalizedStFN());
 		to.setTargetSurlUniqueID(new Integer(cd.getDestinationSURL().uniqueId()));
 		
 		dao.update(to);
-		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
+		// TODO MICHELE SURL STORE
+//		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
     /**
@@ -126,7 +126,8 @@ public class CopyChunkCatalog
 				if(chunk != null)
 				{
 					list.add(chunk);
-					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try
@@ -297,7 +298,6 @@ public class CopyChunkCatalog
 	 * @param chunkTO
 	 * @param chunk
 	 */
-	//TODO MICHELE USER_SURL new method
 	private void completeTO(ReducedCopyChunkDataTO chunkTO, final ReducedCopyChunkData chunk) {
 		
 		chunkTO.setNormalizedSourceStFN(chunk.fromSURL().normalizedStFN());
@@ -317,7 +317,6 @@ public class CopyChunkCatalog
 	 * @return
 	 * @throws InvalidReducedCopyChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedCopyChunkDataTO completeTO(CopyChunkDataTO chunkTO, final CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
 		ReducedCopyChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
@@ -331,7 +330,6 @@ public class CopyChunkCatalog
 	 * @return
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedCopyChunkData reduce(CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
 
 		ReducedCopyChunkData reducedChunk = new ReducedCopyChunkData(chunk.getSURL(), chunk.getDestinationSURL(), chunk.getStatus());
@@ -345,7 +343,6 @@ public class CopyChunkCatalog
 	 * @param chunkTO
 	 * @return
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedCopyChunkDataTO reduce(CopyChunkDataTO chunkTO) {
 
 		ReducedCopyChunkDataTO reducedChunkTO = new ReducedCopyChunkDataTO();
@@ -368,7 +365,6 @@ public class CopyChunkCatalog
      * @param chunkTO
      * @return
      */
-	//TODO MICHELE USER_SURL new method
 	private boolean isComplete(CopyChunkDataTO chunkTO) {
 
 		return (chunkTO.normalizedSourceStFN() != null)
@@ -383,7 +379,6 @@ public class CopyChunkCatalog
      * @param reducedChunkTO
      * @return
      */
-  //TODO MICHELE USER_SURL new method
     @SuppressWarnings("unused")
 	private boolean isComplete(ReducedCopyChunkDataTO reducedChunkTO) {
 

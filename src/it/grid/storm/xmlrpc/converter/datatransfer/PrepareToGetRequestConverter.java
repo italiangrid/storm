@@ -76,19 +76,17 @@ public class PrepareToGetRequestConverter extends FileTransferRequestInputConver
 //    }
 
     @Override
-    public Map convertFromOutputData(OutputData outputData)
+    public Map<String,Object> convertFromOutputData(OutputData outputData)
     {
         if(!(outputData instanceof PrepareToGetOutputData))
         {
             log.error("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
             throw new IllegalArgumentException("Unable to convert from OutputData. Wrong OutputData type: \'" + outputData.getClass().getName() + "\'");
         }
-        Map outputParam = super.convertFromOutputData(outputData);
+        Map<String,Object> outputParam = super.convertFromOutputData(outputData);
         PrepareToGetOutputData ptgOutputData = (PrepareToGetOutputData) outputData;
-        TSizeInBytes fileSize = ptgOutputData.getFileSize();
-        TLifeTimeInSeconds remainingPinTime = ptgOutputData.getRemainingPinTime();
-        fileSize.encode(outputParam, TSizeInBytes.PNAME_SIZE);
-        remainingPinTime.encode(outputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
+        ptgOutputData.getFileSize().encode(outputParam, TSizeInBytes.PNAME_SIZE);
+        ptgOutputData.getRemainingPinTime().encode(outputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
         log.debug("Built output Map: " + outputParam.toString());
         return outputParam;
     }

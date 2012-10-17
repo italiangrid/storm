@@ -94,23 +94,50 @@ public class TRequestToken implements Serializable
         return token;
     }
 
-    public boolean equals(Object o)
-    {
-        if (o == this)
-            return true;
-        if (!(o instanceof TRequestToken))
-            return false;
-        TRequestToken st = (TRequestToken) o;
-        return token.equals(st.token);
-    }
-
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
     public int hashCode()
     {
-        int hash = 17;
-        return 37 * hash + token.hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((token == null) ? 0 : token.hashCode());
+        return result;
     }
 
-
-
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        TRequestToken other = (TRequestToken) obj;
+        if (token == null)
+        {
+            if (other.token != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!token.equals(other.token))
+            {
+                return false;
+            }
+        return true;
+    }
 
 }

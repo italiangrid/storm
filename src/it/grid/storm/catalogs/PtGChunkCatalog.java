@@ -22,7 +22,7 @@ import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.SurlStatusStore;
+//import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -110,18 +110,16 @@ public class PtGChunkCatalog {
 		to.setErrString(cd.getStatus().getExplanation());
 		to.setTurl(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
 		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
-		// TODO MICHELE USER_SURL fill new fields
 		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
 		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 
-		// TODO MICHELE USER_SURL checked : OK
 		dao.update(to);
-		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
+		// TODO MICHELE SURL STORE
+//		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
 	}
 
     /**
      * Refresh method.
-     * TODO
      * THIS IS A WORK IN PROGRESS!!!!
      * This method have to synch the ChunkData information with the
      * database status intended as the status code and the TURL
@@ -131,8 +129,6 @@ public class PtGChunkCatalog {
      */
 	synchronized public PtGPersistentChunkData refreshStatus(PtGPersistentChunkData inputChunk) {
 
-		//TODO MICHELE USER_SURL checked : OK
-		// Call the dao refresh method to synch with the db status
 		PtGChunkDataTO chunkDataTO = dao.refresh(inputChunk.getPrimaryKey());
 
 		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTO);
@@ -163,8 +159,8 @@ public class PtGChunkCatalog {
 				}
 			}
 			inputChunk.setStatus(status);
-			SurlStatusStore.getInstance().storeSurlStatus(inputChunk.getSURL(), status.getStatusCode());
-			// TTURL
+			// TODO MICHELE SURL STORE
+//			SurlStatusStore.getInstance().storeSurlStatus(inputChunk.getSURL(), status.getStatusCode());
 			TTURL turl = null;
 			try
 			{
@@ -193,7 +189,6 @@ public class PtGChunkCatalog {
      */
 	synchronized public Collection<PtGPersistentChunkData> lookup(TRequestToken rt) {
 
-		//TODO MICHELE USER_SURL checked : OK
 		Collection<PtGChunkDataTO> chunkTOs = dao.find(rt);
 		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkTOs);
 		ArrayList<PtGPersistentChunkData> list = new ArrayList<PtGPersistentChunkData>();
@@ -212,7 +207,8 @@ public class PtGChunkCatalog {
 				if(chunk != null)
 				{
 					list.add(chunk);
-					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
 					if(!this.isComplete(chunkTO))
 					{
 						try
@@ -240,8 +236,6 @@ public class PtGChunkCatalog {
     private PtGPersistentChunkData makeOne(PtGChunkDataTO chunkDataTO, TRequestToken rt) {
     	
         StringBuffer errorSb = new StringBuffer();
-        //TODO MICHELE USER_SURL here we go from the string representation of the surl on the db to the TSURL object
-        //fromSURL
 		TSURL fromSURL = null;
 		try
 		{
@@ -358,7 +352,6 @@ public class PtGChunkCatalog {
 	 * @param chunkTO
 	 * @param chunk
 	 */
-	//TODO MICHELE USER_SURL new method
 	private void completeTO(ReducedPtGChunkDataTO chunkTO, final ReducedPtGChunkData chunk) {
 		
 		chunkTO.setNormalizedStFN(chunk.fromSURL().normalizedStFN());
@@ -376,7 +369,6 @@ public class PtGChunkCatalog {
 	 * @return
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtGChunkDataTO completeTO(PtGChunkDataTO chunkTO, final PtGPersistentChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
 		ReducedPtGChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
@@ -390,7 +382,6 @@ public class PtGChunkCatalog {
 	 * @return
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtGChunkData reduce(PtGPersistentChunkData chunk) throws InvalidReducedPtGChunkDataAttributesException {
 
 		ReducedPtGChunkData reducedChunk = new ReducedPtGChunkData(chunk.getSURL(),chunk.getStatus());
@@ -404,7 +395,6 @@ public class PtGChunkCatalog {
 	 * @param chunkTO
 	 * @return
 	 */
-	//TODO MICHELE USER_SURL new method
 	private ReducedPtGChunkDataTO reduce(PtGChunkDataTO chunkTO) {
 
 		ReducedPtGChunkDataTO reducedChunkTO = new ReducedPtGChunkDataTO();
@@ -424,7 +414,6 @@ public class PtGChunkCatalog {
      * @param chunkTO
      * @return
      */
-	//TODO MICHELE USER_SURL new method
     private boolean isComplete(PtGChunkDataTO chunkTO) {
     	return (chunkTO.normalizedStFN() != null) && (chunkTO.surlUniqueID() != null); 
 	}
@@ -436,7 +425,6 @@ public class PtGChunkCatalog {
      * @param reducedChunkTO
      * @return
      */
-  //TODO MICHELE USER_SURL new method
     private boolean isComplete(ReducedPtGChunkDataTO reducedChunkTO) {
 
     	return (reducedChunkTO.normalizedStFN() != null) && (reducedChunkTO.surlUniqueID() != null);
@@ -455,7 +443,6 @@ public class PtGChunkCatalog {
      */
 	synchronized public Collection<ReducedChunkData> lookupReducedPtGChunkData(TRequestToken rt) {
 
-		//TODO MICHELE USER_SURL checked : OK
 		Collection<ReducedPtGChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt.getValue());
 		log.debug("PtG CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
 		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
@@ -472,7 +459,8 @@ public class PtGChunkCatalog {
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
-					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -509,7 +497,6 @@ public class PtGChunkCatalog {
 			surls[index] = tsurl.rawSurl();
 			index++;
 		}
-		//TODO MICHELE USER_SURL checked : OK
 		Collection<ReducedPtGChunkDataTO> chunkDataTOCollection =
 															  dao.findReduced(gu.getDn(),
 																  surlsUniqueIDs, surls);
@@ -529,7 +516,8 @@ public class PtGChunkCatalog {
 				if(reducedChunkData != null)
 				{
 					list.add(reducedChunkData);
-					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
+					// TODO MICHELE SURL STORE
+//					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
 					if(!this.isComplete(reducedChunkDataTO))
 					{
 						this.completeTO(reducedChunkDataTO, reducedChunkData);
@@ -626,7 +614,6 @@ public class PtGChunkCatalog {
         /* needed for now to find ID of request! Must be changed soon! */
         to.setRequestToken(chunkData.getRequestToken().toString()); 
         to.setFromSURL(chunkData.getSURL().toString());
-        //TODO MICHELE USER_SURL fill new fields
         to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
         to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
@@ -636,10 +623,10 @@ public class PtGChunkCatalog {
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
         to.setErrString(chunkData.getStatus().getExplanation());
         
-        //TODO MICHELE USER_SURL checked : OK
         /* add the entry and update the Primary Key field! */
         dao.addChild(to);
-        SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
+     // TODO MICHELE SURL STORE
+//        SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
         /* set the assigned PrimaryKey! */
         chunkData.setPrimaryKey(to.primaryKey()); 
     }
@@ -664,7 +651,6 @@ public class PtGChunkCatalog {
         PtGChunkDataTO to = new PtGChunkDataTO();
         to.setRequestToken(chunkData.getRequestToken().toString());
         to.setFromSURL(chunkData.getSURL().toString());
-        //TODO MICHELE USER_SURL fill new fields
         to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
         to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
         
@@ -676,9 +662,9 @@ public class PtGChunkCatalog {
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
         to.setErrString(chunkData.getStatus().getExplanation());
         
-        //TODO MICHELE USER_SURL checked : OK
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!
-        SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
+     // TODO MICHELE SURL STORE
+//        SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(), chunkData.getStatus().getStatusCode());
         chunkData.setPrimaryKey(to.primaryKey()); //set the assigned PrimaryKey!
     }
 
@@ -690,12 +676,11 @@ public class PtGChunkCatalog {
      * case true is returned. In case none are found or there is any problem,
      * false is returned. This method is intended to be used by srmMv.
      */
-    //TODO MICHELE USER_SURL refactored
 	synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
 
-		//TODO MICHELE USER_SURL checked : OK
-//		return (dao.numberInSRM_FILE_PINNED(surl.uniqueId()) > 0);
-		return TStatusCode.SRM_FILE_PINNED.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
+		return (dao.numberInSRM_FILE_PINNED(surl.uniqueId()) > 0);
+		// TODO MICHELE SURL STORE
+//		return TStatusCode.SRM_FILE_PINNED.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
     /**
@@ -703,7 +688,6 @@ public class PtGChunkCatalog {
      * SRM_RELEASED. Chunks in any other starting state are not transited. In case of any error nothing is
      * done, but proper error messages get logged by the underlaying DAO.
      */
-	  //TODO MICHELE USER_SURL refactored
 	synchronized public void transitSRM_FILE_PINNEDtoSRM_RELEASED(
 			Collection<ReducedPtGChunkData> chunks, TRequestToken token) {
 
@@ -722,13 +706,13 @@ public class PtGChunkCatalog {
 			}
 			
 		}
-		//TODO MICHELE USER_SURL checked : OK (not of interest)
 		dao.transitSRM_FILE_PINNEDtoSRM_RELEASED(primaryKeys, token);
 		for(ReducedPtGChunkData chunkData : chunks)
         {
             if(chunkData != null)
             {
-                SurlStatusStore.getInstance().storeSurlStatus(chunkData.fromSURL(), chunkData.status().getStatusCode());
+             // TODO MICHELE SURL STORE
+//                SurlStatusStore.getInstance().storeSurlStatus(chunkData.fromSURL(), chunkData.status().getStatusCode());
                 primaryKeys[index] = chunkData.primaryKey();
                 index++;    
             }
@@ -754,9 +738,9 @@ public class PtGChunkCatalog {
 		{
 			explanation = "";
 		}
-        //TODO MICHELE USER_SURL checked : OK
         dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.uniqueId(), surl.rawSurl(), explanation);
-        SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
+     // TODO MICHELE SURL STORE
+//        SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
         //PinnedFilesCatalog.getInstance().removeAllJit(surl);
         //PinnedfilesCatalog.getInstance().removeVolatile(surl);
     }
@@ -769,10 +753,11 @@ public class PtGChunkCatalog {
     synchronized public void transitExpiredSRM_FILE_PINNED() {
     	
         List<TSURL> expiredSurls = dao.transitExpiredSRM_FILE_PINNED();
-        for (TSURL surl : expiredSurls)
-        {
-            SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_RELEASED);
-        }
+     // TODO MICHELE SURL STORE
+//        for (TSURL surl : expiredSurls)
+//        {
+//            SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_RELEASED);
+//        }
     }
 }
 

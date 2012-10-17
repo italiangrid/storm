@@ -25,7 +25,6 @@ import it.grid.storm.catalogs.BoLPersistentChunkData;
 import it.grid.storm.catalogs.PersistentChunkData;
 import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.catalogs.PtGData;
-import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;

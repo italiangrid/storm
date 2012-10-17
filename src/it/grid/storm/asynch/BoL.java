@@ -21,7 +21,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
@@ -232,7 +231,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
                 + requestData.getStatus());
     }
 
-    public RequestData getRequestData() {
+    public BoLPersistentChunkData getRequestData() {
         return requestData;
     }
 

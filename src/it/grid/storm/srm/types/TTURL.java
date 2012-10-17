@@ -148,7 +148,7 @@ public class TTURL {
     /**
      * Encode TTURL for xmlrpc communication.
      */
-    public void encode(Map<String,String> param, String name) {
+    public void encode(Map<String,Object> param, String name) {
         param.put(name, toString());
     }
 

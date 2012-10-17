@@ -28,7 +28,7 @@ import it.grid.storm.srm.types.TTURL;
  *
  */
 
-public abstract class FileTransferData extends SurlRequestData
+public abstract class FileTransferData extends SurlMultyOperationRequestData
 {
 
     protected TURLPrefix transferProtocols;

@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.data.datatransfer;
 
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TTURL;
@@ -32,10 +33,11 @@ public class FileTransferOutputData implements OutputData
     private final TSURL surl;
     private final TTURL turl;
     private final TReturnStatus status;
+    private final TRequestToken requestToken;
 
-    public FileTransferOutputData(TSURL surl, TTURL turl, TReturnStatus status) throws IllegalArgumentException
+    public FileTransferOutputData(TSURL surl, TTURL turl, TReturnStatus status, TRequestToken requestToken) throws IllegalArgumentException
     {
-        if(surl == null || turl == null || status == null)
+        if(surl == null || turl == null || status == null || requestToken == null)
         {
             throw new IllegalArgumentException("Unable to create FileTransferOutputData. Received null arguments: "
                                                + "surl = " + surl + " , turl = " + turl + " , status = " + status);
@@ -43,6 +45,7 @@ public class FileTransferOutputData implements OutputData
         this.surl = surl;
         this.turl = turl;
         this.status = status;
+        this.requestToken = requestToken;
     }
     
     @Override
@@ -67,5 +70,10 @@ public class FileTransferOutputData implements OutputData
     {
         return this.status;
         
+    }
+
+    public TRequestToken getRequestToken()
+    {
+        return this.requestToken;
     }
 }

@@ -17,7 +17,6 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
 import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGPersistentChunkData;

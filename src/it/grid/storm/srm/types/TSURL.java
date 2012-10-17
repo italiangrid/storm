@@ -125,8 +125,8 @@ public class TSURL {
      * Method that create a TSURL from structure received from FE.
      * @throws InvalidTSURLAttributesException
      */
-    public static TSURL decode(Map<String, String> inputParam, String name) throws InvalidTSURLAttributesException {
-        String surlstring = inputParam.get(name);
+    public static TSURL decode(Map<String, Object> inputParam, String name) throws InvalidTSURLAttributesException {
+        String surlstring = (String) inputParam.get(name);
         return TSURL.makeFromStringWellFormed(surlstring);
     }
 
@@ -404,7 +404,7 @@ public class TSURL {
 	/**
      * Encode TSURL for FE communication.
      */
-    public void encode(Map<String,String> param, String name) {
+    public void encode(Map<String,Object> param, String name) {
         param.put(name, toString());
     }
 

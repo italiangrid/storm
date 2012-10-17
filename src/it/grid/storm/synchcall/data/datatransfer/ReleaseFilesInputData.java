@@ -28,14 +28,12 @@ public class ReleaseFilesInputData extends AbstractInputData
     private GridUserInterface auth = null;
     private TRequestToken requestToken = null;
     private ArrayOfSURLs arrayOfSURLs = null;
-    private Boolean doRemove = null; //not used
 
     public ReleaseFilesInputData()
     {
     }
 
-    public ReleaseFilesInputData(GridUserInterface auth, TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs,
-                    Boolean doRemove) throws InvalidReleaseFilesInputAttributeException
+    public ReleaseFilesInputData(GridUserInterface auth, TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs) throws InvalidReleaseFilesInputAttributeException
     {
         boolean ok = !((arrayOfSURLs == null) && (requestToken == null));
         if (!ok)
@@ -44,7 +42,6 @@ public class ReleaseFilesInputData extends AbstractInputData
         this.auth = auth;
         this.requestToken = requestToken;
         this.arrayOfSURLs = arrayOfSURLs;
-        this.doRemove = doRemove;
     }
 
     public GridUserInterface getUser()
@@ -75,16 +72,6 @@ public class ReleaseFilesInputData extends AbstractInputData
     public void setArrayOfSURLs(ArrayOfSURLs arrayOfSURLs)
     {
         this.arrayOfSURLs = arrayOfSURLs;
-    }
-    
-    public Boolean getDoRemove()
-    {
-        return doRemove;
-    }
-
-    public void setDoRemove(Boolean doRemove)
-    {
-        this.doRemove = doRemove;
     }
     
     @Override

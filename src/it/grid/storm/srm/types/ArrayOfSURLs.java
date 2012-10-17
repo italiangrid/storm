@@ -42,19 +42,20 @@ public class ArrayOfSURLs implements Serializable {
     /**
      * Constructor that requires a String. If it is null, then an InvalidArrayOfTExtraInfoAttributeException is thrown.
      */
-    public ArrayOfSURLs(TSURL[] surlArray) throws InvalidArrayOfSURLsAttributeException {
+    public ArrayOfSURLs(TSURL[] surlArray) throws IllegalArgumentException {
 
         if (surlArray == null)
-            throw new InvalidArrayOfSURLsAttributeException(null);
-        // FIXME this.tokenArray = tokenArray;
-        // surlList = Arrays.asList(surlArray);
+        {
+            throw new IllegalArgumentException("Unable to create the object, null arguments: surlArray=" + surlArray);            
+        }
+        surlList = new ArrayList<TSURL>(Arrays.asList(surlArray));
     }
 
     public ArrayOfSURLs() {
         surlList = new ArrayList<TSURL>();
     }
 
-    public List<TSURL> getArrayList() {
+    public ArrayList<TSURL> getArrayList() {
         return surlList;
     }
 

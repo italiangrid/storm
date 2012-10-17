@@ -61,7 +61,7 @@ public class PrepareToPutRequestCommand implements Command
         {
             return new FileTransferOutputData(request.getRequestData().getSURL(), request.getRequestData()
                                                                                          .getTransferURL(),
-                                              request.getRequestData().getStatus());
+                                              request.getRequestData().getStatus(), request.getRequestData().getGeneratedRequestToken());
         } catch(IllegalArgumentException e)
         {
             log.error("Unable to create PrepareToPutOutputData. IllegalArgumentException: " + e.getMessage());

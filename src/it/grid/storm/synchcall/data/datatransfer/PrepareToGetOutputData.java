@@ -15,6 +15,7 @@ package it.grid.storm.synchcall.data.datatransfer;
 
 
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -29,10 +30,10 @@ public class PrepareToGetOutputData extends FileTransferOutputData
     private final TSizeInBytes fileSize;
     private final TLifeTimeInSeconds remainingPinTime;
 
-    public PrepareToGetOutputData(TSURL surl, TTURL turl, TReturnStatus status, TSizeInBytes fileSize,
+    public PrepareToGetOutputData(TSURL surl, TTURL turl, TReturnStatus status, TRequestToken requestToken, TSizeInBytes fileSize,
             TLifeTimeInSeconds remainingPinTime) throws IllegalArgumentException
     {
-        super(surl, turl, status);
+        super(surl, turl, status, requestToken);
         if (fileSize == null || remainingPinTime == null)
         {
             throw new IllegalArgumentException(
