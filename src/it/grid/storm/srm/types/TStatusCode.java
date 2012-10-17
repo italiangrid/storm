@@ -182,7 +182,7 @@ public enum TStatusCode /*implements Serializable*/ {
         {
             return !finalStatus;
         }
-        return !this.equals(statusCode) || !this.incompatibleStatuses.contains(statusCode);
+        return !this.equals(statusCode) && !this.incompatibleStatuses.contains(statusCode);
     }
 
 //    public String toString() {
