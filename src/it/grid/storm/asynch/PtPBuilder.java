@@ -58,7 +58,7 @@ public class PtPBuilder
         TReturnStatus status;
         try
         {
-            status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,"Synchronous request created");
+            status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,"Synchronous request created");
         } catch(InvalidTReturnStatusAttributeException e)
         {
             log.error("Unable to build TReturnStatus. InvalidTReturnStatusAttributeException: " + e.getMessage());

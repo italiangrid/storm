@@ -182,6 +182,7 @@ public class PtP implements Delegable, Chooser, Request
             printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
             return;
         }
+        requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");
         StoRI fileStoRI = null;
         try
         {

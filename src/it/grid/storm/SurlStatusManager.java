@@ -11,6 +11,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,9 @@ public class SurlStatusManager
         {
             throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
         }
-        LinkedList<TReturnStatus> nonFinalStatuses = filterOutFinalStatuses(statuses);
+        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
+        removeStartingStatus(nonFinalStatuses);
+        
         if(nonFinalStatuses.isEmpty())
         {
             return extractMostRecentStatus(statuses);
@@ -125,8 +128,20 @@ public class SurlStatusManager
         }
     }
 
-    
-    private static LinkedList<TReturnStatus> filterOutFinalStatuses(Collection<TReturnStatus> statuses)
+    private static void removeStartingStatus(List<TReturnStatus> statuses)
+    {
+        Iterator<TReturnStatus> iterator = statuses.iterator();
+        while(iterator.hasNext())
+        {
+            TReturnStatus status = iterator.next();
+            if(!status.getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
+            {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static LinkedList<TReturnStatus> extractNonFinalStatuses(Collection<TReturnStatus> statuses)
     {
         LinkedList<TReturnStatus> filteredStatuses = new LinkedList<TReturnStatus>();
         for(TReturnStatus status : statuses)
