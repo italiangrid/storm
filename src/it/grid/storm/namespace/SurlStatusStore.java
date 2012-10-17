@@ -340,6 +340,21 @@ public class SurlStatusStore
         return statuses;
     }
     
+    public Map<TRequestToken, TReturnStatus> getSurlStatuses(TSURL surl) throws IllegalArgumentException, UnknownSurlException
+    {
+        if (surl == null)
+        {
+            throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl);
+        }
+        log.debug("Retrieving status-token for surl " + surl);
+        Map<TRequestToken, TReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl.uniqueId());
+        if(tokensStatusMap == null)
+        {
+            throw new UnknownSurlException("Surl " + surl + " is not stored");
+        }
+        return tokensStatusMap;
+    }
+    
     private void checkToken(TRequestToken requestToken) throws UnknownTokenException
     {
         if(!tokenSurlStatusStore.containsKey(requestToken))

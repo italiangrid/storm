@@ -56,6 +56,9 @@ import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
@@ -64,6 +67,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,108 +174,90 @@ public class PtP implements Delegable, Chooser, Request
     public void doIt()
     {
         PtP.log.info("Handling PtP chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
-        LocalFile localFile = null;
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        {
+            failure = true;
+            requestData.changeStatusSRM_FILE_BUSY("The surl " + requestData.getSURL() + " is currently busy");
+            log.error("Unable to perform the PTG request, surl busy");
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
+        }
+        StoRI fileStoRI = null;
         try
         {
-            StoRI fileStoRI = null;
-            try
-            {
-                fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
-            } catch(IllegalArgumentException e)
-            {
-                failure = true;
-                requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-                        + requestData.getSURL());
-                log.error("Unable to get StoRI for surl " + requestData.getSURL()
-                        + " IllegalArgumentException: " + e.getMessage());
-            }
-            if (!failure)
-            {
-                localFile = fileStoRI.getLocalFile();
-                boolean exists = localFile.exists();
-                if (!exists)
-                {
-                    manageNotExistentFile(fileStoRI); // overwrite option is
-                    // irrelevant!!!
-                }
-                else
-                    if (requestData.overwriteOption() == TOverwriteMode.ALWAYS)
-                    {
-                        manageOverwriteExistingFile(fileStoRI);
-                    }
-                    else
-                        if (requestData.overwriteOption() == TOverwriteMode.WHENFILESAREDIFFERENT)
-                        {
-                            manageOverwriteExistingFile(fileStoRI);
-                        }
-                        else
-                            if (requestData.overwriteOption() == TOverwriteMode.NEVER)
-                            {
-                                // File exists but Overwrite set to NEVER!!!
-                                requestData.changeStatusSRM_DUPLICATION_ERROR("Cannot srmPut file because it already exists!");
-                                failure = true; // gsm.failedChunk(chunkData);
-                            }
-                            else
-                            {
-                                // unexpected overwrite option!!!
-                                requestData.changeStatusSRM_FAILURE("Unexpected overwrite option! Processing failed!");
-                                failure = true; // gsm.failedChunk(chunkData);
-                                PtP.log.error("UNEXPECTED ERROR in PtPChunk! The specified overwrite option is unknown!");
-                                PtP.log.error("Received Overwrite Option: " + requestData.overwriteOption());
-                            }
-            }
-        } catch(SecurityException e)
+            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
+        } catch(IllegalArgumentException e)
         {
-            // The check for existence of the File failed because there is a
-            // SecurityManager installed that
-            // denies read privileges for that File! Perhaps the local system
-            // administrator of StoRM set
-            // up Java policies that contrast policies described by the
-            // PolicyCollector! There is a conflict here!
-            requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
-            failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ATTENTION in PtPChunk! PtPChunk received a SecurityException from Java SecurityManager: StoRM cannot check for the existence of file: "
-                    + localFile.toString() + "; exception: " + e);
+            failure = true;
+            requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                    + requestData.getSURL());
+            log.error("Unable to get StoRI for surl " + requestData.getSURL()
+                    + " IllegalArgumentException: " + e.getMessage());
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
         } catch(NamespaceException e)
         {
-            // The Supplied SURL does not contain a root that could be
-            // identified by the StoRI factory
-            // as referring to a VO being managed by StoRM... that is SURLs
-            // begining with such root
-            // are not handled by this SToRM!
             requestData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
-            failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.debug("ATTENTION in PtPChunk! PtPChunk received request for a SURL whose root is not recognised by StoRI!"); // info
-        } catch(Exception e)
+            failure = true;
+            PtP.log.debug("ATTENTION in PtPChunk! PtPChunk received request for a SURL whose root is not recognised by StoRI!");
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
+        } 
+        boolean exists = false;
+        try
         {
-            // There could be unexpected runtime errors given the fact that we
-            // have an ACL enabled filesystem!
-            // I do not know the behaviour of Java File class!!!
-            requestData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
-            failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk - doIt() method! StoRM process got an unexpected error! " + e);
-            PtP.log.error("Complete error stack trace follows: ");
-            StackTraceElement[] ste = e.getStackTrace();
-            if (ste != null)
+            exists = fileStoRI.getLocalFile().exists();
+        }catch(SecurityException e)
+        {
+            requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
+            failure = true;
+            PtP.log.error("ATTENTION in PtPChunk! PtPChunk received a SecurityException from Java SecurityManager: StoRM cannot check for the existence of file: "
+                    + fileStoRI.getLocalFile().toString() + "; exception: " + e);
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
+        } 
+        if (!exists)
+        {
+            manageNotExistentFile(fileStoRI);
+        }
+        else
+        {
+            if (requestData.overwriteOption() == TOverwriteMode.ALWAYS
+                    || requestData.overwriteOption() == TOverwriteMode.WHENFILESAREDIFFERENT)
             {
-                for (StackTraceElement element : ste)
+                manageOverwriteExistingFile(fileStoRI);
+            }
+            else
+            {
+                if (requestData.overwriteOption() == TOverwriteMode.NEVER)
                 {
-                    PtP.log.error(element.toString());
+                    requestData.changeStatusSRM_DUPLICATION_ERROR("Cannot srmPut file because it already exists!");
+                    failure = true; 
+                }
+                else
+                {
+                    // unexpected overwrite option!!!
+                    requestData.changeStatusSRM_FAILURE("Unexpected overwrite option! Processing failed!");
+                    failure = true; 
+                    PtP.log.error("UNEXPECTED ERROR in PtPChunk! The specified overwrite option is unknown!");
+                    PtP.log.error("Received Overwrite Option: " + requestData.overwriteOption());
                 }
             }
         }
-        // update statistics! It is the same for both normal completion and
-        // exception throwing!
-// PtPChunkCatalog.getInstance().update(chunkData);
-// if (failure) {
-// gsm.failedChunk(chunkData);
-// } else if (spacefailure) {
-// gsm.expiredSpaceLifetimeChunk(chunkData);
-// } else {
-// gsm.successfulChunk(chunkData);
-// }
-        PtP.log.info("Finished handling PtP chunk for user DN: " + gu.getDn() + "; for SURL: "
-                + requestData.getSURL() + "; result is: " + requestData.getStatus());
+        printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+    }
+
+    private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)
+    {
+        Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager.getSurlCurrentStatuses(surl);
+        statuses.remove(requestToken);
+        return TStatusCode.SRM_SPACE_AVAILABLE.isCompatibleWith(statuses.values());
+    }
+
+    private void printOutcome(String dn, TSURL surl, TReturnStatus status)
+    {
+        PtP.log.info("Finished handling PtP chunk for user DN: " + dn + "; for SURL: "
+                     + surl + "; result is: " + status);
     }
 
     /**
@@ -281,24 +267,24 @@ public class PtP implements Delegable, Chooser, Request
      */
     private void manageNotExistentFile(StoRI fileStoRI)
     {
-        // check for create+write policies
-        AuthzDecision createAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTP, fileStoRI);
-
-        // AuthorizationDecision writeAD =
-        // AuthorizationCollector.getInstance().canWriteFile(gu,fileStoRI);
-        if (createAuthz.equals(AuthzDecision.PERMIT))
+        AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTP, fileStoRI);
+        if(decision == null)
         {
-            managePermit(fileStoRI);
+            manageAnomaly(decision);
+            return;
         }
-        else
-            if (createAuthz.equals(AuthzDecision.DENY))
-            {
+        switch (decision)
+        {
+            case PERMIT:
+                managePermit(fileStoRI);
+                break;
+            case DENY:
                 manageDeny();
-            }
-            else
-            {
-                manageAnomaly(createAuthz);
-            }
+                break;
+            default:
+                manageAnomaly(decision);
+                break;
+        }
     }
 
     /**
@@ -307,118 +293,111 @@ public class PtP implements Delegable, Chooser, Request
     private void managePermit(StoRI fileStoRI)
     {
 
-        /**
-         * From version 1.4 Add the control for Storage Area using the new authz for space component.
-         */
-
-        SpaceHelper sp = new SpaceHelper();
-        TSpaceToken token = sp.getTokenFromStoRI(PtP.log, fileStoRI);
-
-        /**
-         * @FIXME The SpaceAuth have do be built without get the token, but using the StoRI-
-         */
-
+        TSpaceToken token = new SpaceHelper().getTokenFromStoRI(PtP.log, fileStoRI);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-        if (spaceAuth.authorize(gu, SRMSpaceRequest.PTP))
+        if (!spaceAuth.authorize(gu, SRMSpaceRequest.PTP))
         {
-
-            try
-            {
-                TTURL auxTURL = fileStoRI.getTURL(requestData.getTransferProtocols());
-                LocalUser localUser = gu.getLocalUser();
-
-                // set right permissions to traverse to file
-                boolean ok1 = managePermitTraverseStep(fileStoRI, localUser);
-                if (ok1)
-                {
-                    // Use any reserved space which implies the existence of a
-                    // file!
-                    boolean ok2 = managePermitReserveSpaceStep(fileStoRI);
-                    if (ok2)
-                    {
-                        // set right permission on file!
-                        boolean ok3 = managePermitSetFileStep(fileStoRI, localUser, auxTURL);
-                        if (!ok3)
-                        {
-                            // URGENT!!!
-                            // roll back! ok3, ok2 and ok1
-                        }
-                        else
-                        {
-                            if (requestData.fileStorageType() == TFileStorageType.VOLATILE) {
-                                VolatileAndJiTCatalog.getInstance().trackVolatile(fileStoRI.getPFN(),
-                                                                    Calendar.getInstance(),
-                                                                    requestData.fileLifetime());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // URGENT!!!
-                        // roll back! ok2 and ok1
-                    }
-                }
-                else
-                {
-                    // URGENT!!!
-                    // roll back ok1!
-                }
-            } catch(CannotMapUserException e)
-            {
-                // While setting up the ACL, the local mapping of the grid
-                // credentials failed!
-                requestData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
-                failure = true; // gsm.failedChunk(chunkData);
-                PtP.log.error("ERROR in PtPChunk! There was a failure in mapping " + gu.getDn()
-                        + " to a local user! Error returned: " + e);
-            } catch(InvalidGetTURLNullPrefixAttributeException e)
-            {
-                // Handle null TURL prefix! This is a programming error: it
-                // should not occur!
-                requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
-                failure = true; // gsm.failedChunk(chunkData);
-                PtP.log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "
-                        + e);
-            } catch(InvalidGetTURLProtocolException e)
-            {
-                // Handle null TURL prefix! This is a programming error: it
-                // should not occur!
-                requestData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
-                failure = true; // gsm.failedChunk(chunkData);
-                PtP.log.error("ERROR in PtPChunk! No valid transfer protocol found.");
-
-            } catch(Error e)
-            {
-                // This is a temporary measure to catch an arror occurring
-                // because of the use of deprecated
-                // method in VomsGridUser! It happens in exceptional conditions:
-                // when a user is mapped to
-                // a specific account instead of a pool account, and the
-                // VomsGridUser class handles the situation
-                // through a deprecated getEnv method!
-                requestData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
-                failure = true; // gsm.failedChunk(chunkData);
-                PtP.log.error("ERROR in PtPChunk! There was a failure in mapping " + gu.getDn()
-                        + " to a local user! Error returned: " + e);
-
-            } catch(TURLBuildingException e)
-            {
-                requestData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
-                failure = true; // gsm.failedChunk(chunkData);
-                PtP.log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException "
-                        + e);
-            }
-
-        }
-        else
-        { /* Not Authorized for the storage area */
+            /* Not Authorized for the storage area */
 
             requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access for " + requestData.getSURL()
                     + " in Storage Area: " + token + " denied!");
             failure = true; // gsm.failedChunk(chunkData);
             PtP.log.debug("Create/Write access for " + requestData.getSURL() + " in Storage Area: " + token
                     + " denied!"); // info
+            return;
+        }
+        TTURL auxTURL;
+        try
+        {
+            auxTURL = fileStoRI.getTURL(requestData.getTransferProtocols());
+        }
+        catch(InvalidGetTURLNullPrefixAttributeException e)
+        {
+            // Handle null TURL prefix! This is a programming error: it
+            // should not occur!
+            requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
+            failure = true; // gsm.failedChunk(chunkData);
+            PtP.log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "
+                    + e);
+            return;
+        } catch(InvalidGetTURLProtocolException e)
+        {
+            // Handle null TURL prefix! This is a programming error: it
+            // should not occur!
+            requestData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
+            failure = true; // gsm.failedChunk(chunkData);
+            PtP.log.error("ERROR in PtPChunk! No valid transfer protocol found.");
+            return;
+        } catch(TURLBuildingException e)
+        {
+            requestData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
+            failure = true; // gsm.failedChunk(chunkData);
+            PtP.log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException "
+                    + e);
+            return;
+        }
+        LocalUser localUser;
+        try
+        {
+            localUser = gu.getLocalUser();  
+        } catch(CannotMapUserException e)
+        {
+            // While setting up the ACL, the local mapping of the grid
+            // credentials failed!
+            requestData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+            failure = true; // gsm.failedChunk(chunkData);
+            PtP.log.error("ERROR in PtPChunk! There was a failure in mapping " + gu.getDn()
+                    + " to a local user! Error returned: " + e);
+            return;
+        } catch(Error e)
+        {
+            // This is a temporary measure to catch an arror occurring
+            // because of the use of deprecated
+            // method in VomsGridUser! It happens in exceptional conditions:
+            // when a user is mapped to
+            // a specific account instead of a pool account, and the
+            // VomsGridUser class handles the situation
+            // through a deprecated getEnv method!
+            requestData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
+            failure = true; // gsm.failedChunk(chunkData);
+            PtP.log.error("ERROR in PtPChunk! There was a failure in mapping " + gu.getDn()
+                    + " to a local user! Error returned: " + e);
+            return;
+        } 
+
+        // set right permissions to traverse to file
+        if (managePermitTraverseStep(fileStoRI, localUser))
+        {
+            // Use any reserved space which implies the existence of a
+            // file!
+            if (managePermitReserveSpaceStep(fileStoRI))
+            {
+                // set right permission on file!
+                if (!managePermitSetFileStep(fileStoRI, localUser, auxTURL))
+                {
+                    // URGENT!!!
+                    // roll back! ok3, ok2 and ok1
+                }
+                else
+                {
+                    if (requestData.fileStorageType() == TFileStorageType.VOLATILE) {
+                        VolatileAndJiTCatalog.getInstance().trackVolatile(fileStoRI.getPFN(),
+                                                            Calendar.getInstance(),
+                                                            requestData.fileLifetime());
+                    }
+                }
+            }
+            else
+            {
+                // URGENT!!!
+                // roll back! ok2 and ok1
+            }
+        }
+        else
+        {
+            // URGENT!!!
+            // roll back ok1!
         }
     }
 
@@ -1182,31 +1161,38 @@ public class PtP implements Delegable, Chooser, Request
      */
     private void manageAnomaly(AuthzDecision decision)
     {
-        if (decision.equals(AuthzDecision.NOT_APPLICABLE))
+
+        if(decision == null)
         {
-            // Missing policy
-            requestData.changeStatusSRM_FAILURE("Missing Policy! Access rights cannot be established!");
-            failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("PtPChunk: PolicyCollector warned of missing policies for the supplied SURL!");
-            PtP.log.error("Requested SURL: " + requestData.getSURL());
+            requestData.changeStatusSRM_FAILURE("Null policy! internal error");
+            failure = true; 
+            PtP.log.error("PtPChunk: Null policy! internal error!");
+            return;
         }
-        else
-            if (decision.equals(AuthzDecision.INDETERMINATE))
-            {
+        switch (decision)
+        {
+            case NOT_APPLICABLE:
+                // Missing policy
+                requestData.changeStatusSRM_FAILURE("Missing Policy! Access rights cannot be established!");
+                failure = true; 
+                PtP.log.error("PtPChunk: PolicyCollector warned of missing policies for the supplied SURL!");
+                PtP.log.error("Requested SURL: " + requestData.getSURL());
+                break;
+            case INDETERMINATE:
                 // PolicyCollector error
                 requestData.changeStatusSRM_FAILURE("PolicyCollector error! Access rights cannot be established!");
-                failure = true; // gsm.failedChunk(chunkData);
+                failure = true; 
                 PtP.log.error("PtPChunk: PolicyCollector encountered internal problems!");
                 PtP.log.error("Requested SURL: " + requestData.getSURL());
-            }
-            else
-            {
+                break;
+            default:
                 // Unexpected policy!
                 requestData.changeStatusSRM_FAILURE("Unexpected Policy! StoRM does not know what to do!");
-                failure = true; // gsm.failedChunk(chunkData);
+                failure = true; 
                 PtP.log.error("PtPChunk: unexpected policy returned by PolicyCollector for the supplied SURL!");
                 PtP.log.error("Requested SURL: " + requestData.getSURL());
-            }
+                break;
+        }
     }
 
     /**

@@ -26,7 +26,10 @@
 
 package it.grid.storm.srm.types;
 
-//import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 
 public enum TStatusCode /*implements Serializable*/ {
 
@@ -59,7 +62,7 @@ public enum TStatusCode /*implements Serializable*/ {
     SRM_RELEASED,
     SRM_FILE_PINNED(false),
     SRM_FILE_IN_CACHE(false),
-    SRM_SPACE_AVAILABLE(false),
+    SRM_SPACE_AVAILABLE(false, new TStatusCode[]{SRM_REQUEST_INPROGRESS,SRM_REQUEST_SUSPENDED,SRM_FILE_PINNED}),
     SRM_LOWER_SPACE_GRANTED,
     SRM_DONE,
     SRM_PARTIAL_SUCCESS,
@@ -72,14 +75,27 @@ public enum TStatusCode /*implements Serializable*/ {
     
     private final boolean finalStatus;
 
-    private TStatusCode(boolean isFinal)
+    private final List<TStatusCode> incompatibleStatuses;
+    
+    private TStatusCode(boolean isFinal, TStatusCode[] incompatibleStatuses)
     {
         this.finalStatus = isFinal;
+        this.incompatibleStatuses = Arrays.asList(incompatibleStatuses);
+    }
+    
+    private TStatusCode(TStatusCode[] incompatibleStatuses)
+    {
+        this(true, incompatibleStatuses);
+    }
+    
+    private TStatusCode(boolean isFinal)
+    {
+        this(isFinal,new TStatusCode[0]);
     }
     
     private TStatusCode()
     {
-        this.finalStatus = true;
+        this(true);
     }
     
     
@@ -146,6 +162,27 @@ public enum TStatusCode /*implements Serializable*/ {
     public boolean isFinalStatus()throws IllegalArgumentException
     {
         return finalStatus;
+    }
+
+    public boolean isCompatibleWith(Collection<TReturnStatus> statuses)
+    {
+        for(TReturnStatus status : statuses)
+        {
+            if(!this.isCompatibleWith(status.getStatusCode()))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isCompatibleWith(TStatusCode statusCode)
+    {
+        if(statusCode.finalStatus)
+        {
+            return !finalStatus;
+        }
+        return !this.equals(statusCode) || !this.incompatibleStatuses.contains(statusCode);
     }
 
 //    public String toString() {

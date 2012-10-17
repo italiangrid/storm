@@ -128,7 +128,7 @@ public abstract class FileTransferRequestInputConverter implements Converter
         surl.encode(outputParam, TSURL.PNAME_SURL);
         turl.encode(outputParam, TTURL.PNAME_TURL);
         status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        outputParam.put(TRequestToken.PNAME_REQUESTOKEN, requestToken);
+        outputParam.put(TRequestToken.PNAME_REQUESTOKEN, requestToken.toString());
         log.debug("Built output Map: " + outputParam.toString());
         return outputParam;
     }

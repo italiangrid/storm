@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,8 @@ public class SurlStatusManager
 {
     
     private static final Logger log = LoggerFactory.getLogger(SurlStatusManager.class);
-    private static final HashMap<TSURL, TReturnStatus> EMPTY_RESULT = new HashMap<TSURL, TReturnStatus>(0);
+    private static final HashMap<TSURL, TReturnStatus> EMPTY_SURL_RESULT = new HashMap<TSURL, TReturnStatus>(0);
+    private static final HashMap<TRequestToken, TReturnStatus> EMPTY_TOKEN_RESULT = new HashMap<TRequestToken, TReturnStatus>(0);
 
     public static void checkAndUpdateStatus(TRequestToken requestToken, List<TSURL> surls,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
@@ -70,8 +72,29 @@ public class SurlStatusManager
             } catch(UnknownTokenException e)
             {
                 log.warn("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
-                return EMPTY_RESULT;
+                return EMPTY_SURL_RESULT;
             }
+        }
+    }
+    
+    public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl) throws IllegalArgumentException
+    {
+        if(surl == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: surl="
+                    + surl);
+        }
+        try
+        {
+            return filterOutFinalStatuses(SurlStatusStore.getInstance().getSurlStatuses(surl));
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: " + e.getMessage());
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+        } catch(UnknownSurlException e)
+        {
+            log.info("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+            return EMPTY_TOKEN_RESULT;
         }
     }
     
@@ -111,6 +134,19 @@ public class SurlStatusManager
             if(!status.getStatusCode().isFinalStatus())
             {
                 filteredStatuses.add(status);
+            }
+        }
+        return filteredStatuses;
+    }
+    
+    private static HashMap<TRequestToken, TReturnStatus> filterOutFinalStatuses(Map<TRequestToken, TReturnStatus> statuses)
+    {
+        HashMap<TRequestToken, TReturnStatus> filteredStatuses = new HashMap<TRequestToken, TReturnStatus>();
+        for(Entry<TRequestToken, TReturnStatus> status : statuses.entrySet())
+        {
+            if(!status.getValue().getStatusCode().isFinalStatus())
+            {
+                filteredStatuses.put(status.getKey(), status.getValue());
             }
         }
         return filteredStatuses;

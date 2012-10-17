@@ -76,4 +76,109 @@ public class FileTransferOutputData implements OutputData
     {
         return this.requestToken;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("FileTransferOutputData [surl=");
+        builder.append(surl);
+        builder.append(", turl=");
+        builder.append(turl);
+        builder.append(", status=");
+        builder.append(status);
+        builder.append(", requestToken=");
+        builder.append(requestToken);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((requestToken == null) ? 0 : requestToken.hashCode());
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
+        result = prime * result + ((surl == null) ? 0 : surl.hashCode());
+        result = prime * result + ((turl == null) ? 0 : turl.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        FileTransferOutputData other = (FileTransferOutputData) obj;
+        if (requestToken == null)
+        {
+            if (other.requestToken != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!requestToken.equals(other.requestToken))
+            {
+                return false;
+            }
+        if (status == null)
+        {
+            if (other.status != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!status.equals(other.status))
+            {
+                return false;
+            }
+        if (surl == null)
+        {
+            if (other.surl != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!surl.equals(other.surl))
+            {
+                return false;
+            }
+        if (turl == null)
+        {
+            if (other.turl != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!turl.equals(other.turl))
+            {
+                return false;
+            }
+        return true;
+    }
+    
 }
