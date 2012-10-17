@@ -117,7 +117,7 @@ public abstract class FileTransferRequestInputConverter implements Converter
         TReturnStatus status = ftOutputData.getStatus();
         TRequestToken requestToken = ftOutputData.getRequestToken();
         if (surl == null || surl.isEmpty() || surl.getSURLString().trim().isEmpty() || turl == null
-                || turl.tfn().isEmpty() || status == null || requestToken == null
+                || status == null || requestToken == null
                 || requestToken.getValue() == null || requestToken.getValue().isEmpty())
         {
             log.error("Unable to build a valid output map. Missing mandatory values from FileTransferOutputData: "
