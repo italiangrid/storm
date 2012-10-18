@@ -50,8 +50,12 @@ public class TRequestToken implements Serializable
             throw new InvalidTRequestTokenAttributesException(requestToken);
         }
         this.token = requestToken;
-        Calendar expiration = Calendar.getInstance();
-        expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
+        Calendar expiration = null;
+        if(timestamp != null)
+        {
+            expiration = Calendar.getInstance();
+            expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
+        }
         this.expiration = expiration;
     }
 
