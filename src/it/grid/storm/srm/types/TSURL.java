@@ -408,22 +408,99 @@ public class TSURL {
         param.put(name, toString());
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (empty ? 1231 : 1237);
+        result = prime * result + ((normalizedStFN() == null) ? 0 : normalizedStFN().hashCode());
+        result = prime * result + ((rawSurl == null) ? 0 : rawSurl.hashCode());
+        result = prime * result + ((sfn() == null) ? 0 : sfn().hashCode());
+        result = prime * result + ((protocol() == null) ? 0 : protocol().hashCode());
+        result = prime * result + uniqueId();
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (!(o instanceof TSURL)) {
+        if (obj == null)
+        {
             return false;
         }
-        TSURL surlo = (TSURL) o;
-        if (empty && surlo.empty) {
-            return true;
+        if (getClass() != obj.getClass())
+        {
+            return false;
         }
-    //  TODO MICHELE USER_SURL moved equality on surlManaged verification and on stfn equality
-		return (!empty) && (!surlo.empty) && sp.equals(surlo.sp)
-			&& this.sfn.stfn().equals(surlo.sfn.stfn()) && isManaged(this, TSURL.tsurlManaged)
-			&& isManaged(surlo, TSURL.tsurlManaged);
+        TSURL other = (TSURL) obj;
+        if (empty != other.empty)
+        {
+            return false;
+        }
+        if (normalizedStFN() == null)
+        {
+            if (other.normalizedStFN() != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!normalizedStFN().equals(other.normalizedStFN()))
+            {
+                return false;
+            }
+        if (rawSurl == null)
+        {
+            if (other.rawSurl != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!rawSurl.equals(other.rawSurl))
+            {
+                return false;
+            }
+        if (sfn() == null)
+        {
+            if (other.sfn() != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!sfn().equals(other.sfn()))
+            {
+                return false;
+            }
+        if (protocol() == null)
+        {
+            if (other.protocol() != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!protocol().equals(other.protocol()))
+            {
+                return false;
+            }
+        if (uniqueId() != other.uniqueId())
+        {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -435,17 +512,6 @@ public class TSURL {
             return "";
         }
         return sp + "://" + sfn;
-    }
-
-    @Override
-    public int hashCode() {
-        if (empty) {
-            return 0;
-        }
-        int hash = 17;
-        hash = 37 * hash + sp.hashCode();
-        hash = 37 * hash + sfn.hashCode();
-        return hash;
     }
 
     public boolean isEmpty() {

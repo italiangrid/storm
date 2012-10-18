@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import java.sql.Timestamp;
+
 /**
  * Class that represents data of an asynchrnous Request, regardless of whether
  * it is a Put, Get or Copy, in the Persistence Layer: this is all raw data
@@ -33,7 +35,8 @@ public class RequestSummaryDataTO {
     private String requestToken = "";   //request token
     private String clientDN = "";       //DN that issued request
     private String vomsAttributes = ""; //String containing all VOMS attributes
-
+    private Timestamp timestamp = null;
+    
     private boolean empty=true;
 
     public boolean isEmpty() {
@@ -85,30 +88,129 @@ public class RequestSummaryDataTO {
         vomsAttributes = s;
     }
 
+    public Timestamp timestamp()
+    {
+        return timestamp;
+    }
+    
+    public void setTimestamp(Timestamp timestamp)
+    {
+        empty = false;
+        this.timestamp = timestamp;
+    }
 
 
     public String toString() {
         return id + " " + requestType + " " + requestToken + " " + " " + clientDN + " " + vomsAttributes;
     }
 
-    public boolean equals(Object o) {
-        if (o==this) return true;
-        if (!(o instanceof RequestSummaryDataTO)) return false;
-        RequestSummaryDataTO to = (RequestSummaryDataTO) o;
-        if (empty && to.empty) return true;
-        return !empty && !to.empty && (id==to.id) && requestType.equals(to.requestType) && requestToken.equals(to.requestToken) &&
-            clientDN.equals(to.clientDN) && vomsAttributes.equals(to.vomsAttributes);
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((clientDN == null) ? 0 : clientDN.hashCode());
+        result = prime * result + (empty ? 1231 : 1237);
+        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + ((requestToken == null) ? 0 : requestToken.hashCode());
+        result = prime * result + ((requestType == null) ? 0 : requestType.hashCode());
+        result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+        result = prime * result + ((vomsAttributes == null) ? 0 : vomsAttributes.hashCode());
+        return result;
     }
 
-    public int hashCode() {
-        if (empty) return 0;
-        int hash = 17;
-        hash = 37*hash + new Long(id).hashCode();
-        hash = 37*hash + requestType.hashCode();
-        hash = 37*hash + requestToken.hashCode();
-        hash = 37*hash + clientDN.hashCode();
-        hash = 37*hash + vomsAttributes.hashCode();
-        return hash;
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        RequestSummaryDataTO other = (RequestSummaryDataTO) obj;
+        if (clientDN == null)
+        {
+            if (other.clientDN != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!clientDN.equals(other.clientDN))
+            {
+                return false;
+            }
+        if (empty != other.empty)
+        {
+            return false;
+        }
+        if (id != other.id)
+        {
+            return false;
+        }
+        if (requestToken == null)
+        {
+            if (other.requestToken != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!requestToken.equals(other.requestToken))
+            {
+                return false;
+            }
+        if (requestType == null)
+        {
+            if (other.requestType != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!requestType.equals(other.requestType))
+            {
+                return false;
+            }
+        if (timestamp == null)
+        {
+            if (other.timestamp != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!timestamp.equals(other.timestamp))
+            {
+                return false;
+            }
+        if (vomsAttributes == null)
+        {
+            if (other.vomsAttributes != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!vomsAttributes.equals(other.vomsAttributes))
+            {
+                return false;
+            }
+        return true;
     }
+
      
 }

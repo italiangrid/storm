@@ -17,6 +17,7 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Calendar;
 import java.util.UUID;
 import it.grid.storm.catalogs.CopyData;
 import it.grid.storm.griduser.GridUserInterface;
@@ -83,9 +84,11 @@ public abstract class Copy implements Delegable, Chooser, Request {
      * If the supplied attributes are null or the counter is negative, an
      * InvalidCopyChunkAttributesException is thrown.
      */
-    public Copy(GridUserInterface gu, CopyData requestData, int n) throws InvalidCopyAttributesException {
-        if (gu==null || n<0 || requestData==null) {
-            throw new InvalidCopyAttributesException(gu,requestData,n);
+    public Copy(GridUserInterface gu, CopyData requestData, int n) throws InvalidCopyAttributesException
+    {
+        if (gu == null || n < 0 || requestData == null)
+        {
+            throw new InvalidCopyAttributesException(gu, requestData, n);
         }
         this.gu = gu;
         this.requestData = requestData;
@@ -94,7 +97,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
         {
             this.localrt = new TRequestToken(COPY_PREFIX.concat(UUID.randomUUID()
                                                                     .toString()
-                                                                    .substring(COPY_PREFIX.length())));
+                                                                    .substring(COPY_PREFIX.length())), Calendar.getInstance().getTime());
         } catch(InvalidTRequestTokenAttributesException e)
         {
             // never thrown

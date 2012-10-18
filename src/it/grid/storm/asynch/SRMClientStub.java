@@ -17,6 +17,7 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Calendar;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -47,7 +48,7 @@ public class SRMClientStub implements SRMClient {
      */
     public SRMPrepareToPutReply prepareToPut(GridUserInterface su, TSURL toSURL, TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken, TSizeInBytes filesize, TransferProtocol protocol, String description, TOverwriteMode overwriteOption, TLifeTimeInSeconds retryTime) throws SRMClientException {
         try {
-            return new SRMPrepareToPutReply(new TRequestToken("DUMMY REQUEST TOKEN!"));
+            return new SRMPrepareToPutReply(new TRequestToken("DUMMY REQUEST TOKEN!", Calendar.getInstance().getTime()));
         } catch (Exception e) {
             throw new SRMClientException();
         }

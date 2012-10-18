@@ -1,13 +1,13 @@
 package it.grid.storm.catalogs;
 
 import java.util.HashMap;
-import it.grid.storm.namespace.SurlStatusStore;
-import it.grid.storm.namespace.UnknownTokenException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.surl.SurlStatusStore;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 public abstract class SurlMultyOperationRequestData extends SurlRequestData implements SynchMultyOperationRequestData
 {
@@ -29,16 +29,23 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
         }
     }
     
-    private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl, TStatusCode code, String explanation)
+    private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl, TStatusCode code, String explanation) throws IllegalArgumentException
     {
+        if(surl == null || code == null)
+        {
+            throw new IllegalArgumentException("Unable to build the status, null arguments: surl=" + surl + " statusCode=" + code);
+        }
         HashMap<TSURL, TReturnStatus> surlStatusMap = new HashMap<TSURL, TReturnStatus>(1);
         surlStatusMap.put(surl, buildStatus(code, explanation));
         return surlStatusMap;
     }
 
-    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination)
-            throws IllegalStateException
+    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination)throws IllegalArgumentException, IllegalStateException
     {
+        if(statusCode == null)
+        {
+            throw new IllegalArgumentException("Unable to build the status, null arguments: statusCode=" + statusCode);
+        }
         try
         {
             return new TReturnStatus(statusCode, explaination);

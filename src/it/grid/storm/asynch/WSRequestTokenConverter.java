@@ -17,6 +17,7 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Calendar;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class WSRequestTokenConverter {
             } else {
                 auxString = stub;
             }
-            return new it.grid.storm.srm.types.TRequestToken(auxString);
+            return new it.grid.storm.srm.types.TRequestToken(auxString, Calendar.getInstance().getTime());
         } catch (InvalidTRequestTokenAttributesException e) {
             log.debug("Unexpected error in WSRequestTokenConverter! This is a programming bug! Could not translate TRequestToken from WS! "+e);
             throw new WSConversionException(e.toString());

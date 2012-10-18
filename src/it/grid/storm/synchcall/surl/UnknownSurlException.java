@@ -1,4 +1,4 @@
-package it.grid.storm.namespace;
+package it.grid.storm.synchcall.surl;
 
 public class UnknownSurlException extends Exception
 {

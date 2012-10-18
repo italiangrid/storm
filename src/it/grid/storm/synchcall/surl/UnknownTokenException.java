@@ -1,11 +1,8 @@
-package it.grid.storm.namespace;
+package it.grid.storm.synchcall.surl;
 
 public class UnknownTokenException extends Exception
 {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -9056770694204136172L;
 
     public UnknownTokenException()

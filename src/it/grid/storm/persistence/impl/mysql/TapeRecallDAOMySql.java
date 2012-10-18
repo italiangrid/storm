@@ -23,6 +23,7 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import java.sql.Connection;
@@ -30,6 +31,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -580,16 +582,20 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
         }
        
         String requestTokenStr = null;
+        Timestamp insertionInstant;
         try
         {
             requestTokenStr = res.getString(TapeRecallMySQLHelper.COL_REQUEST_TOKEN);
-            task.setRequestTokenStr(requestTokenStr);
-        }
-        catch (SQLException e)
+            insertionInstant = res.getTimestamp(TapeRecallMySQLHelper.COL_DATE);
+
+        } catch(SQLException e)
         {
             throw new DataAccessException("Unable to retrieve RequestToken String from ResultSet. " + e);
         }
-        catch (InvalidTRequestTokenAttributesException e)
+        try
+        {
+            task.setRequestToken(new TRequestToken(requestTokenStr, insertionInstant));
+        } catch(InvalidTRequestTokenAttributesException e)
         {
             throw new DataAccessException("Unable to build TRequestToken from token='" + requestTokenStr
                     + "'. " + e);

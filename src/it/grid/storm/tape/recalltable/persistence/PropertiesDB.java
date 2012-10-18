@@ -139,24 +139,24 @@ public class PropertiesDB {
     }
 
 
-    public List<TapeRecallTO> getRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
-        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(propertiesDBName));
-  
-        for (Object values : properties.values()) {
-            String v = (String)values;
-            TapeRecallTO task = TapeRecallBuilder.build(v);
-            if (task.getTaskId().equals(taskId)) {
-                result.add(task);
-            }
-        }
-        if (result.isEmpty()) {
-            log.error("Unable to retrieve the task with ID = " + taskId);
-            throw new DataAccessException("Unable to find the task with ID = " + taskId);     
-        }
-        return result;
-    }
+//    public List<TapeRecallTO> getRecallTask(UUID taskId) throws FileNotFoundException, IOException, DataAccessException {
+//        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
+//        Properties properties = new Properties();
+//        properties.load(new FileInputStream(propertiesDBName));
+//  
+//        for (Object values : properties.values()) {
+//            String v = (String)values;
+//            TapeRecallTO task = TapeRecallBuilder.build(v);
+//            if (task.getTaskId().equals(taskId)) {
+//                result.add(task);
+//            }
+//        }
+//        if (result.isEmpty()) {
+//            log.error("Unable to retrieve the task with ID = " + taskId);
+//            throw new DataAccessException("Unable to find the task with ID = " + taskId);     
+//        }
+//        return result;
+//    }
 
 
     
@@ -203,25 +203,25 @@ public class PropertiesDB {
     }
   
     
-    public LinkedHashMap<TRequestToken, TapeRecallTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
-         
-        LinkedHashMap<TRequestToken, TapeRecallTO> tasksDBmem = new LinkedHashMap<TRequestToken, TapeRecallTO>();
-        ArrayList<TapeRecallTO> tasksList = new ArrayList<TapeRecallTO>();
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(propertiesDBName));
-        Collection<Object> values = properties.values();
-        for (Object element : values) {
-            String line = (String) element;
-            TapeRecallTO task = TapeRecallBuilder.build(line);
-            tasksList.add(task);
-        }
-        TapeRecallTO[] tasksArray = tasksList.toArray(new TapeRecallTO[tasksList.size()]);
-        Arrays.sort(tasksArray);
-        // Create the ordered LinkedHashMap
-        for (TapeRecallTO element : tasksArray) {
-            tasksDBmem.put(element.getRequestToken(), element);
-        }
-        return tasksDBmem;
-    }
+//    public LinkedHashMap<TRequestToken, TapeRecallTO> getAll() throws FileNotFoundException, IOException, DataAccessException {
+//         
+//        LinkedHashMap<TRequestToken, TapeRecallTO> tasksDBmem = new LinkedHashMap<TRequestToken, TapeRecallTO>();
+//        ArrayList<TapeRecallTO> tasksList = new ArrayList<TapeRecallTO>();
+//        Properties properties = new Properties();
+//        properties.load(new FileInputStream(propertiesDBName));
+//        Collection<Object> values = properties.values();
+//        for (Object element : values) {
+//            String line = (String) element;
+//            TapeRecallTO task = TapeRecallBuilder.build(line);
+//            tasksList.add(task);
+//        }
+//        TapeRecallTO[] tasksArray = tasksList.toArray(new TapeRecallTO[tasksList.size()]);
+//        Arrays.sort(tasksArray);
+//        // Create the ordered LinkedHashMap
+//        for (TapeRecallTO element : tasksArray) {
+//            tasksDBmem.put(element.getRequestToken(), element);
+//        }
+//        return tasksDBmem;
+//    }
 
 }

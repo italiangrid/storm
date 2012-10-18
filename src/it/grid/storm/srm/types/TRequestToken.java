@@ -17,10 +17,12 @@
 
 package it.grid.storm.srm.types;
 
+import it.grid.storm.config.Configuration;
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
-
 /**
  * This class represents a Request Token
  *
@@ -29,41 +31,35 @@ import java.util.UUID;
  */
 
 
-@SuppressWarnings("serial")
 public class TRequestToken implements Serializable 
 {
+    private static final long serialVersionUID = -6926632390881024529L;
+
     public static final String PNAME_REQUESTOKEN = "requestToken";
 
-    private String token; //string representing the token!
-
-    private TRequestToken() {
-        token = "";
-    }
+    private final String token;
     
-    /**
-     * Constructor that requires a String representing the token. If it is null,
-     * then an InvalidAttributeException is thrown.
-     */
-    public TRequestToken(String token) throws InvalidTRequestTokenAttributesException
-    {
-        if (token == null)
-            throw new InvalidTRequestTokenAttributesException(token);
-        this.token = token;
-    }
-
+    private final Calendar expiration;
     
-    public static TRequestToken decode(Map inputParam, String fieldName)
-                    throws InvalidTRequestTokenAttributesException
+    private static final long REQUEST_LIFETIME = Configuration.getInstance().getExpiredRequestTime() * 1000;
+
+    public TRequestToken(String requestToken, Date timestamp) throws InvalidTRequestTokenAttributesException
     {
-        String requestToken = (String) inputParam.get(fieldName);
-        return new TRequestToken(requestToken);
+        if (requestToken == null || requestToken.trim().isEmpty())
+        {
+            throw new InvalidTRequestTokenAttributesException(requestToken);
+        }
+        this.token = requestToken;
+        Calendar expiration = Calendar.getInstance();
+        expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
+        this.expiration = expiration;
     }
 
     public static TRequestToken getRandom(){
         UUID token = UUID.randomUUID();
         try
         {
-            return new TRequestToken(token.toString());
+            return new TRequestToken(token.toString(), Calendar.getInstance().getTime());
         } catch(InvalidTRequestTokenAttributesException e)
         {
             //never thrown
@@ -71,19 +67,33 @@ public class TRequestToken implements Serializable
         }
     }
     
-    
-    public static TRequestToken buildLocalRT(String localRequestToken) {
-        TRequestToken result = new TRequestToken();
-        result.token = localRequestToken;
-        return result;
+    public boolean hasExpirationDate()
+    {
+        return expiration != null;
     }
     
-    public boolean isLocalToken() {
-        if (token.startsWith("local")) return true;
-        else return false;
+    public boolean isExpired() throws IllegalStateException
+    {
+        if(!hasExpirationDate())
+        {
+            throw new IllegalStateException("Unable to check expiration, the token han not an expiration date");
+        }
+        return expiration.before(Calendar.getInstance());
     }
     
+    /**
+     * @return the expiration
+     */
+    public Calendar getExpiration()
+    {
+        return expiration;
+    }
     
+    public void updateExpiration(Date expiration)
+    {
+        this.expiration.setTime(expiration);
+    }
+
     public String getValue()
     {
         return token;
@@ -92,6 +102,12 @@ public class TRequestToken implements Serializable
     public String toString()
     {
         return token;
+    }
+    
+    public static TRequestToken decode(Map<String,Object> inputParam, String fieldName)
+            throws InvalidTRequestTokenAttributesException
+    {
+        return new TRequestToken((String) inputParam.get(fieldName), null);
     }
 
     /* (non-Javadoc)

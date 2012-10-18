@@ -98,21 +98,21 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberInProgress(java.
      * lang.String)
      */
-    @Override
-    public int getNumberInProgress(String voName) throws DataAccessException {
-        tasks = getTasks();
-        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
-        if (!(tasks.isEmpty())) {
-            for (TapeRecallTO TapeRecallTO : tasks.values()) {
-                if (TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.IN_PROGRESS)) {
-                    if ((voName.equals(UNSPECIFIED)) || (TapeRecallTO.getVoName().equals(voName))) {
-                        result.add(TapeRecallTO);
-                    }
-                }
-            }
-        }
-        return result.size();
-    }
+//    @Override
+//    public int getNumberInProgress(String voName) throws DataAccessException {
+//        tasks = getTasks();
+//        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
+//        if (!(tasks.isEmpty())) {
+//            for (TapeRecallTO TapeRecallTO : tasks.values()) {
+//                if (TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.IN_PROGRESS)) {
+//                    if ((voName.equals(UNSPECIFIED)) || (TapeRecallTO.getVoName().equals(voName))) {
+//                        result.add(TapeRecallTO);
+//                    }
+//                }
+//            }
+//        }
+//        return result.size();
+//    }
 
 
 //    /*
@@ -178,21 +178,21 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * it.grid.storm.persistence.dao.TapeRecallDAO#getNumberQueued(java.lang
      * .String)
      */
-    @Override
-    public int getNumberQueued(String voName) throws DataAccessException {
-        tasks = getTasks();
-        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
-        if (!(tasks.isEmpty())) {
-            for (TapeRecallTO TapeRecallTO : tasks.values()) {
-                if (TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.QUEUED)) {
-                    if ((voName.equals(UNSPECIFIED)) || (TapeRecallTO.getVoName().equals(voName))) {
-                        result.add(TapeRecallTO);
-                    }
-                }
-            }
-        }
-        return result.size();
-    }
+//    @Override
+//    public int getNumberQueued(String voName) throws DataAccessException {
+//        tasks = getTasks();
+//        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
+//        if (!(tasks.isEmpty())) {
+//            for (TapeRecallTO TapeRecallTO : tasks.values()) {
+//                if (TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.QUEUED)) {
+//                    if ((voName.equals(UNSPECIFIED)) || (TapeRecallTO.getVoName().equals(voName))) {
+//                        result.add(TapeRecallTO);
+//                    }
+//                }
+//            }
+//        }
+//        return result.size();
+//    }
 
 
     @Override
@@ -302,39 +302,39 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
      * 
      * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
      */
-    @Override
-    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
-        ArrayList<TapeRecallTO> ordTasks = getOrderedTasks();
-        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
-        if (!(tasks.isEmpty())) {
-            for (TapeRecallTO TapeRecallTO : ordTasks) {
-                if ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.ERROR)) || ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.ABORTED))) || ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.SUCCESS)))) {
-                    result.add(TapeRecallTO);
-                }
-            }
-            int count = 0;
-            if (result.size() > 0) {
-                for (TapeRecallTO TapeRecallTO : result) {
-                    try {
-                        tasksDB.deleteRecallTask(TapeRecallTO.getTaskId());
-                    } catch (FileNotFoundException e) {
-                        log.error("RecallTask DB does not exists!");
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        log.error("IO Error while reading RecallTaskDB.");
-                        e.printStackTrace();
-                    }
-                    count++;
-                    if (count >= numMaxToPurge) {
-                        break;
-                    }
-                }
-                log.debug("Purged " + count + " completed tasks from RecallTable.");
-            } else {
-                log.debug("No one completed tasks to purge.");
-            }
-        }
-    }
+//    @Override
+//    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+//        ArrayList<TapeRecallTO> ordTasks = getOrderedTasks();
+//        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>();
+//        if (!(tasks.isEmpty())) {
+//            for (TapeRecallTO TapeRecallTO : ordTasks) {
+//                if ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.ERROR)) || ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.ABORTED))) || ((TapeRecallTO.getRecallStatus().equals(TapeRecallStatus.SUCCESS)))) {
+//                    result.add(TapeRecallTO);
+//                }
+//            }
+//            int count = 0;
+//            if (result.size() > 0) {
+//                for (TapeRecallTO TapeRecallTO : result) {
+//                    try {
+//                        tasksDB.deleteRecallTask(TapeRecallTO.getTaskId());
+//                    } catch (FileNotFoundException e) {
+//                        log.error("RecallTask DB does not exists!");
+//                        e.printStackTrace();
+//                    } catch (IOException e) {
+//                        log.error("IO Error while reading RecallTaskDB.");
+//                        e.printStackTrace();
+//                    }
+//                    count++;
+//                    if (count >= numMaxToPurge) {
+//                        break;
+//                    }
+//                }
+//                log.debug("Purged " + count + " completed tasks from RecallTable.");
+//            } else {
+//                log.debug("No one completed tasks to purge.");
+//            }
+//        }
+//    }
 
 
 //    /*
@@ -464,27 +464,27 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
 //    }
 
 
-    private ArrayList<TapeRecallTO> getOrderedTasks() throws DataAccessException {
-        tasks = getTasks();
-        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>(tasks.values());
-        return result;
-    }
+//    private ArrayList<TapeRecallTO> getOrderedTasks() throws DataAccessException {
+//        tasks = getTasks();
+//        ArrayList<TapeRecallTO> result = new ArrayList<TapeRecallTO>(tasks.values());
+//        return result;
+//    }
 
 
-    private LinkedHashMap<TRequestToken, TapeRecallTO> getTasks() throws DataAccessException {
-        getTasksDB();
-        LinkedHashMap<TRequestToken, TapeRecallTO> result = null;
-        try {
-            result = tasksDB.getAll();
-        } catch (FileNotFoundException e) {
-            log.error("RecallTask DB does not exists!");
-            throw new DataAccessException("RecallTask DB does not exists!");
-        } catch (IOException e) {
-            log.error("IO Error while reading RecallTaskDB.");
-            throw new DataAccessException("IO Error while reading RecallTaskDB.");
-        }
-        return result;
-    }
+//    private LinkedHashMap<TRequestToken, TapeRecallTO> getTasks() throws DataAccessException {
+//        getTasksDB();
+//        LinkedHashMap<TRequestToken, TapeRecallTO> result = null;
+//        try {
+//            result = tasksDB.getAll();
+//        } catch (FileNotFoundException e) {
+//            log.error("RecallTask DB does not exists!");
+//            throw new DataAccessException("RecallTask DB does not exists!");
+//        } catch (IOException e) {
+//            log.error("IO Error while reading RecallTaskDB.");
+//            throw new DataAccessException("IO Error while reading RecallTaskDB.");
+//        }
+//        return result;
+//    }
 
 
     private PropertiesDB getTasksDB() {
@@ -640,6 +640,30 @@ public class TapeRecallDAOProperties extends TapeRecallDAO {
     {
         // TODO Auto-generated method stub
         return false;
+    }
+
+
+    @Override
+    public int getNumberInProgress(String voName) throws DataAccessException
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+
+    @Override
+    public int getNumberQueued(String voName) throws DataAccessException
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+
+    @Override
+    public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException
+    {
+        // TODO Auto-generated method stub
+        
     }
 
 }

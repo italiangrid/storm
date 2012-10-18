@@ -157,6 +157,7 @@ public class RequestSummaryDAO {
                 aux.setRequestType(rs.getString("config_RequestTypeID"));
                 aux.setRequestToken(rs.getString("r_token"));
                 aux.setClientDN(rs.getString("client_dn"));
+                aux.setTimestamp(rs.getTimestamp("timeStamp"));
 
                 /**
                  * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on

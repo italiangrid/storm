@@ -1,10 +1,7 @@
-package it.grid.storm;
+package it.grid.storm.synchcall.surl;
 
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
-import it.grid.storm.namespace.SurlStatusStore;
-import it.grid.storm.namespace.UnknownSurlException;
-import it.grid.storm.namespace.UnknownTokenException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -87,7 +84,7 @@ public class SurlStatusManager
         }
         try
         {
-            return filterOutFinalStatuses(SurlStatusStore.getInstance().getSurlStatuses(surl));
+            return filterOutFinalStatuses(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl));
         } catch(IllegalArgumentException e)
         {
             log.error("Unexpected IllegalArgumentException during surl statuses retrieving: " + e.getMessage());
@@ -105,7 +102,7 @@ public class SurlStatusManager
         {
             throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl);
         }
-        List<TReturnStatus> statuses = SurlStatusStore.getInstance().getSurlsStatuses(surl);
+        List<TReturnStatus> statuses = SurlStatusStore.getInstance().getSurlStatuses(surl);
         if(statuses.isEmpty())
         {
             throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
@@ -167,7 +164,7 @@ public class SurlStatusManager
         return filteredStatuses;
     }
     
-    public static TReturnStatus extractMostRecentStatus(List<TReturnStatus> statuses)
+    private static TReturnStatus extractMostRecentStatus(List<TReturnStatus> statuses)
     {
         TReturnStatus min = null;
         for (TReturnStatus status : statuses)

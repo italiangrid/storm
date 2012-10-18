@@ -17,7 +17,6 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
-import it.grid.storm.SurlStatusManager;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.Configuration;
@@ -30,7 +29,6 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnknownTokenException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -47,6 +45,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -315,8 +315,12 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
     }
 
-    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination) throws IllegalStateException
+    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination) throws IllegalArgumentException, IllegalStateException
     {
+        if(statusCode == null)
+        {
+            throw new IllegalArgumentException("Unable to build the status, null arguments: statusCode=" + statusCode);
+        }
         try
         {
             return new TReturnStatus(statusCode, explaination);
@@ -499,14 +503,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
                     boolean checksumComputed = localFile.setChecksum();
                     if (!checksumComputed) {
-                        if (arrayOfFileStatus != null) {
-                            arrayOfFileStatus.getTSURLReturnStatus(i)
-                                             .getStatus()
-                                             .setExplanation("Warning: failed to compute the checksum "
-                                                     + "(checksum computation is enabled in the server)");
-                        } else {
+//                        if (arrayOfFileStatus != null) {
+//                            arrayOfFileStatus.getTSURLReturnStatus(i)
+//                                             .getStatus()
+//                                             .setExplanation("Warning: failed to compute the checksum "
+//                                                     + "(checksum computation is enabled in the server)");
+//                        } else {
                             log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
-                        }
+//                        }
                     } else {
                         log.debug("Checksum set to SURL:" + surl.toString());
                     }

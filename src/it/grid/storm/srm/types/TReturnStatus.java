@@ -33,9 +33,6 @@ import java.util.Map;
 
 public class TReturnStatus implements Serializable
 {
-    /**
-     * 
-     */
     private static final long serialVersionUID = -4550845540710062810L;
     
     private TStatusCode  statusCode   = null;
@@ -60,6 +57,26 @@ public class TReturnStatus implements Serializable
         this(original.statusCode, original.explanation);
     }
 
+    public TReturnStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException
+    {
+        this(statusCode, UNDEFINED_EXPLANATION);
+    }
+    /**
+     * Can be Explanation String a null value?
+     */
+    public TReturnStatus(TStatusCode statusCode, String explanation)
+        throws InvalidTReturnStatusAttributeException
+    {
+        if (statusCode == null)
+        {
+            throw new InvalidTReturnStatusAttributeException(statusCode);
+        }
+        this.statusCode = statusCode;
+        this.explanation = explanation;
+        updated();
+    }
+
+    
     public TReturnStatus clone()
     {
         try
@@ -72,32 +89,6 @@ public class TReturnStatus implements Serializable
                     + "in TReturnStatus: " + e.getMessage());
         }
     }
-    
-    /**
-     * Can be Explanation String a null value?
-     */
-    public TReturnStatus(TStatusCode statusCode, String explanation)
-        throws InvalidTReturnStatusAttributeException
-    {
-        this(statusCode);
-        if (explanation != null)
-        {
-            this.explanation = explanation;
-        }
-    }
-
-    public TReturnStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException
-    {
-        if (statusCode == null)
-        {
-            throw new InvalidTReturnStatusAttributeException(statusCode);
-        }
-        this.statusCode = statusCode;
-        this.explanation = UNDEFINED_EXPLANATION;
-        updated();
-    }
-    
-   
 
     public static TReturnStatus getInitialValue() {
         TReturnStatus result = null;
@@ -121,7 +112,7 @@ public class TReturnStatus implements Serializable
     /**
      * @param statusCode the statusCode to set
      */
-    public void setStatusCode(TStatusCode statusCode)
+    protected void setStatusCode(TStatusCode statusCode)
     {
         if (statusCode == null)
         {
@@ -136,7 +127,7 @@ public class TReturnStatus implements Serializable
      * Set explanation string
      * @param expl String
      */
-    public void setExplanation(String explanationString)
+    protected void setExplanation(String explanationString)
     {
         explanation = (explanationString == null ? "" : explanationString);
         updated();

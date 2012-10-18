@@ -174,7 +174,7 @@ public class RequestSummaryCatalog {
         // TRequestToken
         TRequestToken auxrtoken = null;
         try {
-            auxrtoken = new TRequestToken(auxTO.requestToken());
+            auxrtoken = new TRequestToken(auxTO.requestToken(), auxTO.timestamp());
         } catch (InvalidTRequestTokenAttributesException e) {
             sb.append(e);
             sb.append("\n");

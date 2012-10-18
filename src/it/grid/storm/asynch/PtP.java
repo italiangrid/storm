@@ -14,7 +14,6 @@
 package it.grid.storm.asynch;
 
 
-import it.grid.storm.SurlStatusManager;
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
@@ -63,6 +62,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;

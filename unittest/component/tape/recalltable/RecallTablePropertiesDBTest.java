@@ -29,67 +29,67 @@ public class RecallTablePropertiesDBTest {
     private static final Logger log = LoggerFactory.getLogger(RecallTablePropertiesDBTest.class);
 
 
-    public static void main(String[] args) {
-        RecallTablePropertiesDBTest testDB = new RecallTablePropertiesDBTest();
-        testDB.createTasks(3);
-        // testDB.showDB();
-        try {
-            testDB.numberOfTasks();
-        }
-        catch (DataAccessException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            testDB.takeoverNTasks(2);
-            // testDB.showDB();
-            testDB.numberOfTasks();
-            testDB.showDB();
-            testDB.printTaskList(testDB.getInProgressTask());
-            testDB.completedTasks(1);
-            // testDB.showDB();
-            testDB.numberOfTasks();
-            testDB.purgeCatalog(2);
-            testDB.numberOfTasks();
-        }
-        catch (DataAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args) {
+//        RecallTablePropertiesDBTest testDB = new RecallTablePropertiesDBTest();
+//        testDB.createTasks(3);
+//        // testDB.showDB();
+//        try {
+//            testDB.numberOfTasks();
+//        }
+//        catch (DataAccessException e1) {
+//            // TODO Auto-generated catch block
+//            e1.printStackTrace();
+//        }
+//        try {
+//            Thread.sleep(1000);
+//        }
+//        catch (InterruptedException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        try {
+//            testDB.takeoverNTasks(2);
+//            // testDB.showDB();
+//            testDB.numberOfTasks();
+//            testDB.showDB();
+//            testDB.printTaskList(testDB.getInProgressTask());
+//            testDB.completedTasks(1);
+//            // testDB.showDB();
+//            testDB.numberOfTasks();
+//            testDB.purgeCatalog(2);
+//            testDB.numberOfTasks();
+//        }
+//        catch (DataAccessException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//    }
 
 
     /**
      * 
      */
-    private void showDB() {
-        PropertiesDB tasksDB = new PropertiesDB(true);
-        try {
-            ArrayList<TapeRecallTO> allTasks = new ArrayList<TapeRecallTO>(tasksDB.getAll().values());
-            for (TapeRecallTO TapeRecallTO : allTasks) {
-                log.debug(TapeRecallTO.toString());
-            }
-        }
-        catch (FileNotFoundException e) {
-            log.error("RecallTask DB does not exists!");
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            log.error("IO Error while reading RecallTaskDB.");
-            e.printStackTrace();
-        }
-        catch (DataAccessException de) {
-            log.error("Data Access Error");
-            de.printStackTrace();
-        }
-    }
+//    private void showDB() {
+//        PropertiesDB tasksDB = new PropertiesDB(true);
+//        try {
+//            ArrayList<TapeRecallTO> allTasks = new ArrayList<TapeRecallTO>(tasksDB.getAll().values());
+//            for (TapeRecallTO TapeRecallTO : allTasks) {
+//                log.debug(TapeRecallTO.toString());
+//            }
+//        }
+//        catch (FileNotFoundException e) {
+//            log.error("RecallTask DB does not exists!");
+//            e.printStackTrace();
+//        }
+//        catch (IOException e) {
+//            log.error("IO Error while reading RecallTaskDB.");
+//            e.printStackTrace();
+//        }
+//        catch (DataAccessException de) {
+//            log.error("Data Access Error");
+//            de.printStackTrace();
+//        }
+//    }
 
 
     private void numberOfTasks() throws DataAccessException {

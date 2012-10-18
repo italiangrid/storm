@@ -269,7 +269,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                             catch (IllegalArgumentException e)
                             {
                                 log.error("Unable to grant group permission on the created folder. IllegalArgumentException: " + e.getMessage());
-                                returnStatus.setExplanation(returnStatus.getExplanation() + "NOTE: Unable to grant group permission on the created folder");
+//                                returnStatus.setExplanation(returnStatus.getExplanation() + "NOTE: Unable to grant group permission on the created folder");
                             }
 //                            file.grantGroupPermission(u, fp);
                             //TODO ACL manager

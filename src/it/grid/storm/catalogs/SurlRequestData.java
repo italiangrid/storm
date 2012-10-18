@@ -37,7 +37,7 @@ public abstract class SurlRequestData implements RequestData
     public SurlRequestData(TSURL toSURL,
             TReturnStatus status) throws InvalidSurlRequestDataAttributesException
     {
-        if (toSURL == null || status == null)
+        if (toSURL == null || status == null || status.getStatusCode() == null)
         {
             throw new InvalidSurlRequestDataAttributesException(toSURL,
                                                                       status);

@@ -204,11 +204,6 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
     public void setRequestToken(TRequestToken requestToken) {
         this.requestToken = requestToken;
     }
-
-    public void setRequestTokenStr(String requestToken) throws InvalidTRequestTokenAttributesException {
-        TRequestToken rToken = new TRequestToken(requestToken);
-        setRequestToken(rToken);
-    }
     
     public void setRequestType(String requestType) {
         this.requestType = requestType;
@@ -426,7 +421,10 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
         String FAKE_PREFIX = "FAKE-";
         try
         {
-            this.setRequestToken(new TRequestToken(FAKE_PREFIX.concat(UUID.randomUUID().toString().substring(FAKE_PREFIX.length()))));
+            this.setRequestToken(new TRequestToken(FAKE_PREFIX.concat(UUID.randomUUID()
+                                                                          .toString()
+                                                                          .substring(FAKE_PREFIX.length())),
+                                                   Calendar.getInstance().getTime()));
         } catch(InvalidTRequestTokenAttributesException e)
         {
             //never thrown
