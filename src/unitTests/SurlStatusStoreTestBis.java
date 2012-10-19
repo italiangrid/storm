@@ -1,6 +1,7 @@
 package unitTests;
 
 import static org.junit.Assert.*;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,7 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 public class SurlStatusStoreTestBis
 {

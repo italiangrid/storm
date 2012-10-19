@@ -21,7 +21,6 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
-//import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -41,6 +40,7 @@ import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +49,6 @@ import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Class that represents StoRMs PtPChunkCatalog: it collects PtPChunkData and provides methods for looking up a

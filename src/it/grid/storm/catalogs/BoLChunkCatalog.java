@@ -39,6 +39,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
@@ -46,7 +47,6 @@ import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Class that represents StoRMs BoLChunkCatalog: it collects BoLChunkData and
