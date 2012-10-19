@@ -2,6 +2,7 @@ package unitTests;
 
 import static org.junit.Assert.*;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -400,7 +401,7 @@ public class SurlStatusStoreTestBis
         TSURL incompatibleStatusSurl = buildSurl(incompatibleStatusSurlString);
         instance.store(TRequestToken.getRandom(), buildSurlStatusMap(incompatibleStatusSurl, TStatusCode.SRM_REQUEST_INPROGRESS));
         instance.store(TRequestToken.getRandom(), buildSurlStatusMap(incompatibleStatusSurl, TStatusCode.SRM_SPACE_AVAILABLE));
-        List<TReturnStatus> statuses = instance.getSurlStatuses(incompatibleStatusSurl);
+        Collection<TReturnStatus> statuses = instance.getSurlStatuses(incompatibleStatusSurl);
         assertNotNull("Statuses should not be null", statuses);
         for(TReturnStatus status : statuses)
         {

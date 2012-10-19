@@ -16,6 +16,7 @@ package it.grid.storm.asynch;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.acl.AclManager;
@@ -53,10 +54,14 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -117,6 +122,14 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
 
         log.info("Handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
             + requestData.getSURL());
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        {
+            failure = true;
+            requestData.changeStatusSRM_FILE_BUSY("The surl " + requestData.getSURL() + " is currently busy");
+            log.error("Unable to perform the PTG request, surl busy");
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
+        }
         if(PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
         {
             /* fail request with SRM_FILE_BUSY */
@@ -183,12 +196,22 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                     + " request for a SURL whose root is not recognised by StoRI! " + e);
             }
         }
-        
-        log.info("Finished handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
-            + requestData.getSURL() + "; result is: "
-            + requestData.getStatus());
+        printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
     }
     
+    
+    private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)
+    {
+        Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager.getSurlCurrentStatuses(surl);
+        statuses.remove(requestToken);
+        return TStatusCode.SRM_FILE_PINNED.isCompatibleWith(statuses.values());
+    }
+    
+    private void printOutcome(String dn, TSURL surl, TReturnStatus status)
+    {
+        log.info("Finished handling PtG chunk for user DN: " + dn + "; for SURL: "
+                     + surl + "; result is: " + status);
+    }
      /**
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      * 

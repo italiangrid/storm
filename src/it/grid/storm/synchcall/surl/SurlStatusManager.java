@@ -1,8 +1,19 @@
 package it.grid.storm.synchcall.surl;
 
+import it.grid.storm.catalogs.BoLChunkCatalog;
+import it.grid.storm.catalogs.BoLPersistentChunkData;
+import it.grid.storm.catalogs.CopyChunkCatalog;
+import it.grid.storm.catalogs.CopyPersistentChunkData;
+import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.catalogs.PtPPersistentChunkData;
+import it.grid.storm.catalogs.ReducedBoLChunkData;
+import it.grid.storm.catalogs.ReducedChunkData;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
@@ -21,7 +32,84 @@ public class SurlStatusManager
     
     private static final Logger log = LoggerFactory.getLogger(SurlStatusManager.class);
     private static final HashMap<TSURL, TReturnStatus> EMPTY_SURL_RESULT = new HashMap<TSURL, TReturnStatus>(0);
-    private static final HashMap<TRequestToken, TReturnStatus> EMPTY_TOKEN_RESULT = new HashMap<TRequestToken, TReturnStatus>(0);
+//    private static final HashMap<TRequestToken, TReturnStatus> EMPTY_TOKEN_RESULT = new HashMap<TRequestToken, TReturnStatus>(0);
+
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws IllegalArgumentException
+    {
+        if(requestToken == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken);
+        }
+        
+        TRequestType requestType = isPersisted(requestToken);
+        if(!requestType.isEmpty())
+        {
+            return getPersistentSurlsStatuses(requestType, requestToken);
+        }
+        else
+        {
+            try
+            {
+                return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
+            } catch(UnknownTokenException e)
+            {
+                log.warn("Unable to get Token. UnknownTokenException: " + e.getMessage());
+                return EMPTY_SURL_RESULT;
+            }
+        }
+        
+    }
+    
+    private static Map<TSURL, TReturnStatus> getPersistentSurlsStatuses(TRequestType requestType,
+            TRequestToken requestToken)
+    {
+        Map<TSURL, TReturnStatus> surlsStatuses;
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                Collection<ReducedChunkData> ptgChunksData = PtGChunkCatalog.getInstance()
+                                                                            .lookupReducedPtGChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptgChunksData.size());
+                for (ReducedChunkData chunkData : ptgChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case PREPARE_TO_PUT:
+                Collection<ReducedPtPChunkData> ptpChunksData = PtPChunkCatalog.getInstance()
+                                                                               .lookupReducedPtPChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptpChunksData.size());
+                for (ReducedPtPChunkData chunkData : ptpChunksData)
+                {
+                    surlsStatuses.put(chunkData.toSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case COPY:
+                Collection<CopyPersistentChunkData> copyChunksData = CopyChunkCatalog.getInstance()
+                                                                                     .lookup(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(copyChunksData.size());
+                for (CopyPersistentChunkData chunkData : copyChunksData)
+                {
+                    surlsStatuses.put(chunkData.getSURL(), chunkData.getStatus());
+                    surlsStatuses.put(chunkData.getDestinationSURL(), chunkData.getStatus());
+                }
+                return surlsStatuses;
+            case BRING_ON_LINE:
+                Collection<ReducedBoLChunkData> bolChunksData = BoLChunkCatalog.getInstance()
+                                                                               .lookupReducedBoLChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(bolChunksData.size());
+                for (ReducedChunkData chunkData : bolChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case EMPTY:
+                return new HashMap<TSURL, TReturnStatus>();
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
 
     public static void checkAndUpdateStatus(TRequestToken requestToken, List<TSURL> surls,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
@@ -33,17 +121,38 @@ public class SurlStatusManager
                     + "null arguments: requestToken=" + requestToken + " surls=" + surls
                     + " expectedStatusCode=" + expectedStatusCode + " newStatusCode=" + newStatusCode);
         }
-        if(isPersisted(requestToken))
+        TRequestType requestType = isPersisted(requestToken);
+        if(!requestType.isEmpty())
         {
-            PtPChunkCatalog.getInstance().transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(requestToken, surls);    
+            checkAndUpdatePersistentStatus(requestType, requestToken, surls, expectedStatusCode, newStatusCode);
         }
         else
         {
             SurlStatusStore.getInstance().checkAndUpdate(requestToken, surls, expectedStatusCode, newStatusCode);
         }
     }
+    
+    public static void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode, String explanation) throws IllegalArgumentException, UnknownTokenException
+    {
+        if (requestToken == null || surl == null
+                || statusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: requestToken=" + requestToken + " surl=" + surl
+                    + " statusCode=" + statusCode + " explanation=" + explanation);
+        }
+        TRequestType requestType = isPersisted(requestToken);
+        if(!requestType.isEmpty())
+        {
+            updatePersistentStatus(requestType, requestToken, surl, statusCode, explanation);
+        }
+        else
+        {
+            SurlStatusStore.getInstance().update(requestToken, surl, statusCode, explanation);
+        }
+    }
 
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, List<TSURL> surls) throws IllegalArgumentException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls) throws IllegalArgumentException
     {
         if(requestToken == null || surls == null || surls.isEmpty())
         {
@@ -51,16 +160,10 @@ public class SurlStatusManager
                     + requestToken + " surls=" + surls);
         }
         
-        if(isPersisted(requestToken))
+        TRequestType requestType = isPersisted(requestToken);
+        if(!requestType.isEmpty())
         {
-            Collection<ReducedPtPChunkData> chunksData = PtPChunkCatalog.getInstance()
-            .lookupReducedPtPChunkData(requestToken, surls);
-            Map<TSURL, TReturnStatus> surlsStatuses = new HashMap<TSURL,TReturnStatus>(chunksData.size()); 
-            for(ReducedPtPChunkData chunkData : chunksData)
-            {
-                surlsStatuses.put(chunkData.toSURL(), chunkData.status());
-            }
-            return surlsStatuses;
+            return getPersistentSurlsStatuses(requestType, requestToken, surls);
         }
         else
         {
@@ -75,25 +178,180 @@ public class SurlStatusManager
         }
     }
     
-    public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl) throws IllegalArgumentException
+    public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl)
+            throws IllegalArgumentException
     {
-        if(surl == null)
+        if (surl == null)
         {
-            throw new IllegalArgumentException("unable to get the statuses, null arguments: surl="
-                    + surl);
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: surl=" + surl);
         }
+        Map<TRequestToken, TReturnStatus> persistentTokensStatusMap = getSurlPerPersistentTokenStatuses(surl);
         try
         {
-            return filterOutFinalStatuses(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl));
-        } catch(IllegalArgumentException e)
-        {
-            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: " + e.getMessage());
-            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+            persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl));
         } catch(UnknownSurlException e)
         {
             log.info("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
-            return EMPTY_TOKEN_RESULT;
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: "
+                    + e);
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
         }
+
+        return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
+    private static void updatePersistentStatus(TRequestType requestType, TRequestToken requestToken,
+            TSURL surl, TStatusCode statusCode, String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                PtGChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case COPY:
+                //TODO if needed do it
+//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                //TODO if needed do it
+//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static void checkAndUpdatePersistentStatus(TRequestType requestType, TRequestToken requestToken,
+            List<TSURL> surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                PtGChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, surls, expectedStatusCode, newStatusCode);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, surls, expectedStatusCode, newStatusCode);
+                break;
+            case COPY:
+                CopyChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, surls, expectedStatusCode, newStatusCode);
+                break;
+            case BRING_ON_LINE:
+                BoLChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, surls, expectedStatusCode, newStatusCode);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static Map<TSURL, TReturnStatus> getPersistentSurlsStatuses(TRequestType requestType,
+            TRequestToken requestToken, Collection<TSURL> surls) throws IllegalArgumentException
+    {
+        Map<TSURL, TReturnStatus> surlsStatuses;
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                Collection<ReducedChunkData> ptgChunksData = PtGChunkCatalog.getInstance().lookupReducedPtGChunkData(requestToken, surls);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptgChunksData.size());
+                for (ReducedChunkData chunkData : ptgChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case PREPARE_TO_PUT:
+                Collection<ReducedPtPChunkData> ptpChunksData = PtPChunkCatalog.getInstance().lookupReducedPtPChunkData(requestToken, surls);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptpChunksData.size());
+                for (ReducedPtPChunkData chunkData : ptpChunksData)
+                {
+                    surlsStatuses.put(chunkData.toSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case COPY:
+                Collection<CopyPersistentChunkData> copyChunksData = CopyChunkCatalog.getInstance().lookupCopyChunkData(requestToken, surls);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(copyChunksData.size());
+                for (CopyPersistentChunkData chunkData : copyChunksData)
+                {
+                    surlsStatuses.put(chunkData.getSURL(), chunkData.getStatus());
+                    surlsStatuses.put(chunkData.getDestinationSURL(), chunkData.getStatus());
+                }
+                return surlsStatuses;
+            case BRING_ON_LINE:
+                Collection<ReducedBoLChunkData> bolChunksData = BoLChunkCatalog.getInstance().lookupReducedBoLChunkData(requestToken, surls);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(bolChunksData.size());
+                for (ReducedChunkData chunkData : bolChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case EMPTY:
+                return new HashMap<TSURL, TReturnStatus>();
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        tokenStatusMap.putAll(buildPtGTokenStatusMap(PtGChunkCatalog.getInstance().lookupPtGChunkData(surl)));
+        tokenStatusMap.putAll(buildPtPTokenStatusMap(PtPChunkCatalog.getInstance().lookupPtPChunkData(surl)));
+        tokenStatusMap.putAll(buildCopyTokenStatusMap(CopyChunkCatalog.getInstance().lookupCopyChunkData(surl)));
+        tokenStatusMap.putAll(buildBoLTokenStatusMap(BoLChunkCatalog.getInstance().lookupBoLChunkData(surl)));
+        return tokenStatusMap;
+    }
+
+  
+    
+    private static Map<TRequestToken, TReturnStatus> buildPtGTokenStatusMap(
+            Collection<PtGPersistentChunkData> chunksData)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        for(PtGPersistentChunkData chunkData : chunksData)
+        {
+            tokenStatusMap.put(chunkData.getRequestToken(), chunkData.getStatus());
+        }
+        return tokenStatusMap;
+    }
+
+    private static Map<TRequestToken, TReturnStatus> buildPtPTokenStatusMap(
+            Collection<PtPPersistentChunkData> chunksData)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        for (PtPPersistentChunkData chunkData : chunksData)
+        {
+            tokenStatusMap.put(chunkData.getRequestToken(), chunkData.getStatus());
+        }
+        return tokenStatusMap;
+    }
+
+    private static Map<TRequestToken, TReturnStatus> buildCopyTokenStatusMap(
+            Collection<CopyPersistentChunkData> chunksData)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        for (CopyPersistentChunkData chunkData : chunksData)
+        {
+            tokenStatusMap.put(chunkData.getRequestToken(), chunkData.getStatus());
+        }
+        return tokenStatusMap;
+    }
+
+    private static Map<TRequestToken, TReturnStatus> buildBoLTokenStatusMap(
+            Collection<BoLPersistentChunkData> chunksData)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        for (BoLPersistentChunkData chunkData : chunksData)
+        {
+            tokenStatusMap.put(chunkData.getRequestToken(), chunkData.getStatus());
+        }
+        return tokenStatusMap;
     }
     
     public static TReturnStatus getSurlsStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
@@ -102,7 +360,7 @@ public class SurlStatusManager
         {
             throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl);
         }
-        List<TReturnStatus> statuses = SurlStatusStore.getInstance().getSurlStatuses(surl);
+        Collection<TReturnStatus> statuses = SurlStatusStore.getInstance().getSurlStatuses(surl);
         if(statuses.isEmpty())
         {
             throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
@@ -164,7 +422,7 @@ public class SurlStatusManager
         return filteredStatuses;
     }
     
-    private static TReturnStatus extractMostRecentStatus(List<TReturnStatus> statuses)
+    private static TReturnStatus extractMostRecentStatus(Collection<TReturnStatus> statuses)
     {
         TReturnStatus min = null;
         for (TReturnStatus status : statuses)
@@ -177,14 +435,13 @@ public class SurlStatusManager
         return min;
     }
 
-    private static boolean isPersisted(TRequestToken requestToken) throws IllegalArgumentException
+    private static TRequestType isPersisted(TRequestToken requestToken) throws IllegalArgumentException
     {
         if(requestToken == null)
         {
             throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
                     + requestToken);
         }
-        return false;
+        return RequestSummaryCatalog.getInstance().typeOf(requestToken);
     }
-
 }

@@ -30,6 +30,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -288,6 +289,7 @@ public class CopyChunkDAO {
 				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
 				chunkDataTO.setFileStorageType(rs.getString("rq.config_FileStorageTypeID"));
 				chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
@@ -323,6 +325,84 @@ public class CopyChunkDAO {
 		}
 		
 	}
+	
+	public Collection<CopyChunkDataTO> find(TRequestToken requestToken, int[] surlUniqueIDs,  String[] surls) {
+
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<CopyChunkDataTO>();
+        }
+        String strToken = requestToken.toString();
+        String str = null;
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try
+        {
+            //TODO MICHELE USER_SURL get new fields
+            /* get chunks of the request */
+            str =
+                  "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels " 
+                      + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
+                      + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
+                      + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
+                      + "WHERE rq.r_token=? AND rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rc.sourceSURL IN " + makeSurlString(surls);
+            
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            ArrayList<CopyChunkDataTO> list = new ArrayList<CopyChunkDataTO>();
+            find.setString(1, strToken);
+            logWarnings(find.getWarnings());
+            
+            log.debug("COPY CHUNK DAO: find method; " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            
+            CopyChunkDataTO chunkDataTO;
+            while(rs.next())
+            {
+                chunkDataTO = new CopyChunkDataTO();
+                chunkDataTO.setRequestToken(strToken);
+                chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
+                chunkDataTO.setFileStorageType(rs.getString("rq.config_FileStorageTypeID"));
+                chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+                chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
+                chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedSourceStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
+                }
+                
+                chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedTargetStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
+                uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
+                }
+
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch(SQLException e)
+        {
+            log.error("COPY CHUNK DAO: " + e);
+            /* return empty Collection! */
+            return new ArrayList<CopyChunkDataTO>();
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+        
+    }
 
 	/**
      * Method used in extraordinary situations to signal that data retrieved from
@@ -478,4 +558,160 @@ public class CopyChunkDAO {
     		}
         }
 	}
+
+    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    {
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
+            return;
+        }
+        String str = "UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
+                + "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) " + "SET sc.statusCode=? "
+                + "WHERE sc.statusCode=? AND rq.r_token='" + requestToken.toString()
+                + "' AND rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rc.sourceSURL IN " + makeSurlString(surls);
+        PreparedStatement stmt = null;
+        try
+        {
+            stmt = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            log.trace("COPY CHUNK DAO - updateStatusOnMatchingStatus: "
+                + stmt.toString());
+            int count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+            if(count == 0)
+            {
+                log.trace("COPY CHUNK DAO! No chunk of COPY request was"
+                    + " updated from " + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+            else
+            {
+                log.info("COPY CHUNK DAO! " + count + " chunks of COPY requests were updated from "
+                        + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+        } catch(SQLException e)
+        {
+            log.error("COPY CHUNK DAO! Unable to updated from " + expectedStatusCode + " to " + newStatusCode
+                    + " !" + e);
+        } finally
+        {
+            close(stmt);
+        }
+    }
+    
+    /**
+     * Method that returns a String containing all Surl's IDs.
+     */
+    private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
+
+        StringBuffer sb = new StringBuffer("(");
+        for(int i = 0; i < surlUniqueIDs.length; i++)
+        {
+            if(i > 0)
+            {
+                sb.append(",");
+            }
+            sb.append(surlUniqueIDs[i]);
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    
+    /**
+     * Method that returns a String containing all Surls.
+     */
+    private String makeSurlString(String[] surls) {
+
+        StringBuffer sb = new StringBuffer("(");
+        int n = surls.length;
+        for(int i = 0; i < n; i++)
+        {
+            sb.append("'");
+            sb.append(surls[i]);
+            sb.append("'");
+            if(i < (n - 1))
+            {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    {
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try
+        {
+            String str = "SELECT rq.r_token, rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, "
+                    + "rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, "
+                    + "rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, "
+                    + "d.allLevelRecursive, d.numOfLevels "
+                    + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
+                    + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
+                    + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
+                    + "WHERE rp.targetSURL_uniqueID IN "
+                    + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                    + " OR rp.targetSURL IN " + makeSurlString(surlsArray);
+            
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            List<CopyChunkDataTO> list = new ArrayList<CopyChunkDataTO>();
+            
+            log.trace("COPY CHUNK DAO - find method: " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            CopyChunkDataTO chunkDataTO = null;
+            while(rs.next())
+            {
+                chunkDataTO = new CopyChunkDataTO();
+                chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
+                chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
+                chunkDataTO.setFileStorageType(rs.getString("rq.config_FileStorageTypeID"));
+                chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+                chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
+                chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedSourceStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
+                }
+                
+                chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedTargetStFN(rs.getString("rc.normalized_sourceSURL_StFN"));
+                uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
+                }
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch(SQLException e)
+        {
+            log.error("COPY CHUNK DAO: " + e);
+            /* return empty Collection! */
+            return new ArrayList<CopyChunkDataTO>();
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+    }
 }

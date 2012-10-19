@@ -19,6 +19,8 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.common.types.TURLPrefix;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import it.grid.storm.namespace.model.Protocol;
 
@@ -57,6 +59,7 @@ public class PtGChunkDataTO {
     private int status; //initialised in constructor
     private String errString = " ";
     private String turl = " ";
+    private Timestamp timeStamp;
 
     public PtGChunkDataTO() {
         TURLPrefix protocolPreferences = new TURLPrefix();
@@ -86,6 +89,16 @@ public class PtGChunkDataTO {
         requestToken = s;
     }
 
+    public Timestamp timeStamp()
+    {
+        return timeStamp;
+    }
+    
+    public void setTimeStamp(Timestamp timeStamp)
+    {
+        this.timeStamp = timeStamp;
+    }
+    
     public String fromSURL() {
         return fromSURL;
     }
@@ -230,4 +243,5 @@ public class PtGChunkDataTO {
 		sb.append(turl);
 		return sb.toString();
 	}
+   
 }

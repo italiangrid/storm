@@ -4,36 +4,77 @@ package it.grid.storm.synchcall.surl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
+/**
+ * @author Michele Dibenedetto
+ *
+ */
 public class SurlStatusStore
 {
 
     private static final Logger log = LoggerFactory.getLogger(SurlStatusStore.class);
 
-    private HashMap<Integer, Map<TRequestToken, ModifiableReturnStatus>> surlTokenStatusStore = new HashMap<Integer, Map<TRequestToken, ModifiableReturnStatus>>();
+    private HashMap<TSURL, Map<TRequestToken, ModifiableReturnStatus>> surlTokenStatusStore = new HashMap<TSURL, Map<TRequestToken, ModifiableReturnStatus>>();
 
-    private HashMap<TRequestToken, Map<Integer, ModifiableReturnStatus>> tokenSurlStatusStore = new HashMap<TRequestToken, Map<Integer, ModifiableReturnStatus>>();
+    private HashMap<TRequestToken, Map<TSURL, ModifiableReturnStatus>> tokenSurlStatusStore = new HashMap<TRequestToken, Map<TSURL, ModifiableReturnStatus>>();
 
     private ConcurrentSkipListMap<Long, TRequestToken> expirationTokenRegistry = new ConcurrentSkipListMap<Long, TRequestToken>();
 
     private static final SurlStatusStore instance = new SurlStatusStore();
 
+    private final Timer clock;
+    private final TimerTask clockTask;
+    
     private SurlStatusStore()
     {
+        if (Configuration.getInstance().getExpiredRequestPurging())
+        {
+            clock = new Timer();
+            clockTask = new TimerTask()
+                {
+                    @Override
+                    public void run()
+                    {
+                        for(TRequestToken token : getExpiredTokens())
+                        {
+                            try
+                            {
+                                cleanToken(token);
+                            } catch(UnknownTokenException e)
+                            {
+                                throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
+                                                                + e.getMessage());
+                            }
+                        }
+                    }
+                };
+            clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000,
+                                      Configuration.getInstance().getRequestPurgerPeriod() * 1000);
+        }
+        else
+        {
+            clock = null;
+            clockTask = null;
+        }
     };
 
     public static SurlStatusStore getInstance()
@@ -103,7 +144,7 @@ public class SurlStatusStore
         }
         log.debug("Storing token " + requestToken);
 
-        Map<Integer, ModifiableReturnStatus> surlStatusMap = new HashMap<Integer, ModifiableReturnStatus>(
+        Map<TSURL, ModifiableReturnStatus> surlStatusMap = new HashMap<TSURL, ModifiableReturnStatus>(
                                                                                                           surlStatuses.size());
         for (Entry<TSURL, TReturnStatus> surlStatus : surlStatuses.entrySet())
         {
@@ -117,13 +158,12 @@ public class SurlStatusStore
             {
                 throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException: " + e);
             }
-            Integer surlUid = surlStatus.getKey().uniqueId();
-            surlStatusMap.put(surlUid, status);
-            Map<TRequestToken, ModifiableReturnStatus> map = surlTokenStatusStore.get(surlUid);
+            surlStatusMap.put(surlStatus.getKey(), status);
+            Map<TRequestToken, ModifiableReturnStatus> map = surlTokenStatusStore.get(surlStatus.getKey());
             if (map == null)
             {
                 map = new HashMap<TRequestToken, ModifiableReturnStatus>(1);
-                surlTokenStatusStore.put(surlUid, map);
+                surlTokenStatusStore.put(surlStatus.getKey(), map);
             }
             map.put(requestToken, status);
         }
@@ -183,8 +223,8 @@ public class SurlStatusStore
         }
         log.debug("Updating token " + requestToken + " for surls " + surls + " with status " + newStatusCode
                 + " " + explanation);
-        checkToken(requestToken);
-        Map<Integer, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+        checkCleanToken(requestToken);
+        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
         for (TSURL surl : surls)
         {
             if (surl == null)
@@ -192,7 +232,7 @@ public class SurlStatusStore
                 log.warn("Unexpected null element in input surls list : " + surls);
                 continue;
             }
-            ModifiableReturnStatus status = surlStatusMap.get(surl.uniqueId());
+            ModifiableReturnStatus status = surlStatusMap.get(surl);
             if (status == null)
             {
                 log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
@@ -245,8 +285,8 @@ public class SurlStatusStore
         }
         log.debug("Checking and pdating token " + requestToken + " for surls " + surls + " where status is "
                 + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
-        checkToken(requestToken);
-        Map<Integer, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+        checkCleanToken(requestToken);
+        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
         for (TSURL surl : surls)
         {
             if (surl == null)
@@ -254,7 +294,7 @@ public class SurlStatusStore
                 log.warn("Unexpected null element in input surls list : " + surls);
                 continue;
             }
-            ModifiableReturnStatus status = surlStatusMap.get(surl.uniqueId());
+            ModifiableReturnStatus status = surlStatusMap.get(surl);
             if (status == null)
             {
                 log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
@@ -275,6 +315,37 @@ public class SurlStatusStore
         }
     }
     
+    public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws UnknownTokenException, IllegalArgumentException
+    {
+        if (requestToken == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken);
+        }
+        log.debug("Retrieving statuses of surls for token " + requestToken);
+        checkCleanToken(requestToken);
+//        HashMap<TSURL, TReturnStatus> builtSurlStatusMap = new HashMap<TSURL, TReturnStatus>(surls.size());
+        return (Map<TSURL, TReturnStatus>) ((HashMap<TSURL, ModifiableReturnStatus>)this.tokenSurlStatusStore.get(requestToken)).clone();
+//        for (TSURL surl : surls)
+//        {
+//            if (surl == null)
+//            {
+//                log.warn("Unexpected null element in input surls list");
+//                continue;
+//            }
+//            TReturnStatus status = surlStatusMap.get(surl);
+//            if (status == null)
+//            {
+//                log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
+//            }
+//            else
+//            {
+//                builtSurlStatusMap.put(surl, status);
+//            }
+//        }
+//        return builtSurlStatusMap;
+    }
+    
     public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, TSURL surl)
             throws UnknownTokenException, IllegalArgumentException
     {
@@ -285,13 +356,7 @@ public class SurlStatusStore
         return getSurlsStatus(requestToken, Arrays.asList(new TSURL[] { surl }));
     }
 
-    /**
-     * @param requestToken
-     * @param surls
-     * @return
-     * @throws UnknownTokenException
-     */
-    public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, List<TSURL> surls)
+    public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls)
             throws UnknownTokenException, IllegalArgumentException
     {
         if (requestToken == null || surls == null || surls.isEmpty())
@@ -300,9 +365,9 @@ public class SurlStatusStore
                     + requestToken + " surls=" + surls);
         }
         log.debug("Retrieving statuses of surls " + surls + " for token " + requestToken);
-        checkToken(requestToken);
+        checkCleanToken(requestToken);
         HashMap<TSURL, TReturnStatus> builtSurlStatusMap = new HashMap<TSURL, TReturnStatus>(surls.size());
-        Map<Integer, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
         for (TSURL surl : surls)
         {
             if (surl == null)
@@ -310,7 +375,7 @@ public class SurlStatusStore
                 log.warn("Unexpected null element in input surls list");
                 continue;
             }
-            TReturnStatus status = surlStatusMap.get(surl.uniqueId());
+            TReturnStatus status = surlStatusMap.get(surl);
             if (status == null)
             {
                 log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
@@ -323,7 +388,7 @@ public class SurlStatusStore
         return builtSurlStatusMap;
     }
 
-    public List<TReturnStatus> getSurlStatuses(TSURL surl) throws UnknownSurlException,
+    public Collection<TReturnStatus> getSurlStatuses(TSURL surl) throws UnknownSurlException,
             IllegalArgumentException
     {
         if (surl == null)
@@ -336,7 +401,8 @@ public class SurlStatusStore
         {
             throw new UnknownSurlException("Surl " + surl + " is not stored");
         }
-        return new ArrayList<TReturnStatus>(tokensStatusMap.values());
+//        return new ArrayList<TReturnStatus>(new HashSet<TReturnStatus>(tokensStatusMap.values()));
+        return new HashSet<TReturnStatus>(tokensStatusMap.values());
     }
 
     public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
@@ -347,7 +413,7 @@ public class SurlStatusStore
             throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl);
         }
         log.debug("Retrieving status-token for surl " + surl);
-        Map<TRequestToken, ModifiableReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl.uniqueId());
+        Map<TRequestToken, ModifiableReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl);
         if (tokensStatusMap == null)
         {
             throw new UnknownSurlException("Surl " + surl + " is not stored");
@@ -360,7 +426,14 @@ public class SurlStatusStore
             if (tokenStatus.getKey().hasExpirationDate() && tokenStatus.getKey().isExpired())
             {
                 iterator.remove();
-                cleanToken(tokenStatus.getKey());
+                try
+                {
+                    cleanToken(tokenStatus.getKey());
+                } catch(UnknownTokenException e)
+                {
+                    throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
+                                                    + e.getMessage());
+                }
             }
         }
         if (tokensStatusMap.isEmpty())
@@ -376,39 +449,82 @@ public class SurlStatusStore
                                                                                     .getTimeInMillis(), true)
                                                                    .values());
     }
-
-    private void cleanToken(TRequestToken token)
-    {
-        Map<Integer, ModifiableReturnStatus> surlStatuses = this.tokenSurlStatusStore.remove(token);
-        expirationTokenRegistry.remove(token.getExpiration().getTimeInMillis());
-        for (Integer surlUid : surlStatuses.keySet())
-        {
-            Map<TRequestToken, ModifiableReturnStatus> tokenStatuses = this.surlTokenStatusStore.get(surlUid);
-            if (tokenStatuses == null)
-            {
-                throw new IllegalStateException("Inconsistent Surl Statu Store. Surl uid " + surlUid
-                        + " not found in surlTokenStatusStore");
-            }
-            tokenStatuses.remove(token);
-            if (tokenStatuses.isEmpty())
-            {
-                this.surlTokenStatusStore.remove(surlUid);
-            }
-        }
-    }
-
-    private void checkToken(TRequestToken requestToken) throws UnknownTokenException
+    
+    private void checkToken(TRequestToken requestToken) throws UnknownTokenException, ExpiredTokenException
     {
         if (!tokenSurlStatusStore.containsKey(requestToken))
         {
             log.warn("Token \'" + requestToken + "\' is not stored");
             throw new UnknownTokenException("Provided token \'" + requestToken + "\'is not stored");
         }
+        if(requestToken.hasExpirationDate() && requestToken.isExpired())
+        {
+            log.warn("Token \'" + requestToken + "\' is expired");
+            throw new ExpiredTokenException("Provided token \'" + requestToken + "\'is expired");
+        }
+    }
+    
+    private void checkCleanToken(TRequestToken requestToken) throws UnknownTokenException
+    {
+        try
+        {
+            checkToken(requestToken);
+        } catch(ExpiredTokenException e)
+        {
+            try
+            {
+                cleanToken(requestToken);
+            } catch(UnknownTokenException e1)
+            {
+                throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
+                        + e1.getMessage());
+            }
+        }
+    }
+
+    private void cleanToken(TRequestToken token) throws UnknownTokenException
+    {
+        expirationTokenRegistry.remove(getStoredTokenExpiration(token));    
+        Map<TSURL, ModifiableReturnStatus> surlStatuses = this.tokenSurlStatusStore.remove(token);
+        for (TSURL surl : surlStatuses.keySet())
+        {
+            Map<TRequestToken, ModifiableReturnStatus> tokenStatuses = this.surlTokenStatusStore.get(surl);
+            if (tokenStatuses == null)
+            {
+                throw new IllegalStateException("Inconsistent Surl Status Store. Surl uid " + surl
+                        + " not found in surlTokenStatusStore");
+            }
+            tokenStatuses.remove(token);
+            if (tokenStatuses.isEmpty())
+            {
+                this.surlTokenStatusStore.remove(surl);
+            }
+        }
+    }
+
+    private long getStoredTokenExpiration(TRequestToken token) throws UnknownTokenException
+    {
+        ArrayList<TRequestToken> tokenList = new ArrayList<TRequestToken>(this.tokenSurlStatusStore.keySet());
+        int index = tokenList.indexOf(token);
+        if(index >= 0)
+        {
+            TRequestToken storedToken = tokenList.get(index);
+            if(!storedToken.hasExpirationDate())
+            {
+                throw new IllegalStateException("Unexpected stored token with no expiration date");
+            }
+            return storedToken.getExpiration().getTimeInMillis();
+        }
+        else
+        {
+            throw new UnknownTokenException("Token " + token + " not stored in tokenSurlStatusStore");    
+        }
+        
     }
 
     public void checkIntegrity() throws Exception
     {
-        for (Entry<Integer, Map<TRequestToken, ModifiableReturnStatus>> surlTokenStatus : surlTokenStatusStore.entrySet())
+        for (Entry<TSURL, Map<TRequestToken, ModifiableReturnStatus>> surlTokenStatus : surlTokenStatusStore.entrySet())
         {
             if(surlTokenStatus.getValue() == null || surlTokenStatus.getValue().isEmpty())
             {
@@ -423,7 +539,7 @@ public class SurlStatusStore
                     throw new Exception("Integrity violation: Null status in surlTokenStatusStore for surl "
                             + surlTokenStatus.getKey() + " token " + tokenSurlStatus.getKey());
                 }
-                Map<Integer, ModifiableReturnStatus> surlStatus = tokenSurlStatusStore.get(tokenSurlStatus.getKey());
+                Map<TSURL, ModifiableReturnStatus> surlStatus = tokenSurlStatusStore.get(tokenSurlStatus.getKey());
                 if (surlStatus == null)
                 {
                     throw new Exception("Integrity violation: Null surlStatus map in tokenSurlStatusStore for token " + tokenSurlStatus.getKey() + " surl "
@@ -449,7 +565,7 @@ public class SurlStatusStore
                 }
             }
         }
-        for (Entry<TRequestToken, Map<Integer, ModifiableReturnStatus>> tokenSurlStatus : tokenSurlStatusStore.entrySet())
+        for (Entry<TRequestToken, Map<TSURL, ModifiableReturnStatus>> tokenSurlStatus : tokenSurlStatusStore.entrySet())
         {
             if(tokenSurlStatus.getValue() == null || tokenSurlStatus.getValue().isEmpty())
             {
@@ -470,7 +586,7 @@ public class SurlStatusStore
                             + expirationToken + " and token " + tokenSurlStatus.getKey());
                 }
             }
-            for (Entry<Integer, ModifiableReturnStatus> surlTokenStatus : tokenSurlStatus.getValue()
+            for (Entry<TSURL, ModifiableReturnStatus> surlTokenStatus : tokenSurlStatus.getValue()
                                                                                          .entrySet())
             {
                 if (surlTokenStatus.getValue() == null)
@@ -507,6 +623,11 @@ public class SurlStatusStore
         }
         for (Entry<Long, TRequestToken> surlexpirationToken : expirationTokenRegistry.entrySet())
         {
+            if(!surlexpirationToken.getValue().hasExpirationDate())
+            {
+                throw new Exception("Integrity violation: stored token " + surlexpirationToken.getValue() 
+                                    + " in expirationTokenRegistry has no expiration ");
+            }
             if (surlexpirationToken.getKey() != surlexpirationToken.getValue()
                                                                    .getExpiration()
                                                                    .getTimeInMillis())
@@ -521,5 +642,6 @@ public class SurlStatusStore
             }
         }
     }
+    
 
 }

@@ -576,7 +576,7 @@ public class BoLChunkDAO {
 
             //TODO MICHELE USER_SURL get new fields
             // get chunks of the request
-            str = "SELECT sb.statusCode, rq.pinLifetime, rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
+            str = "SELECT sb.statusCode, rq.timeStamp, rq.pinLifetime, rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
                     + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
                     + "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
@@ -602,6 +602,7 @@ public class BoLChunkDAO {
 				chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
 				chunkDataTO.setDeferredStartTime(rs.getInt("rq.deferredStartTime"));
 				chunkDataTO.setRequestToken(strToken);
+				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
 				// TODO MICHELE USER_SURL fill new fields
@@ -693,6 +694,68 @@ public class BoLChunkDAO {
 			close(find);
 		}
 	}
+	
+	/**
+     * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and whose SURLs are
+     * contained in the supplied array of Strings.
+     */
+    public synchronized Collection<ReducedBoLChunkDataTO> findReduced(TRequestToken requestToken,
+        int[] surlUniqueIDs,  String[] surls) {
+        
+        if(!checkConnection())
+        {
+            log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
+            return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+        }
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try 
+        {
+            // TODO MICHELE USER_SURL get new fields and select on the uniqueID and on the fromSurl 
+            //TODO MICHELE USER_SURL when the uniqueID and normalized surl will be made on the FrontEnd remove the String[] surls parameter
+            /* NOTE: we search also on the fromSurl because otherwise we lost all request_Bol that have not the uniqueID set because are not yet been used by anybody */
+            // get reduced chunks
+            String str = "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
+                             + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
+                             + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
+                             + "WHERE rq.r_token=? AND rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rb.sourceSURL IN " + makeSurlString(surls);
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            ArrayList<ReducedBoLChunkDataTO> list = new ArrayList<ReducedBoLChunkDataTO>();
+            find.setString(1, requestToken.getValue());
+            logWarnings(find.getWarnings());
+            
+            log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            
+            ReducedBoLChunkDataTO chunkDataTO = null;
+            while (rs.next()) {
+                chunkDataTO = new ReducedBoLChunkDataTO();
+                chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
+             // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSurlUniqueID(uniqueID);                  
+                }
+
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch (SQLException e) {
+            log.error("BoL CHUNK DAO: " + e);
+            return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+    }
 
     /**
      * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and whose SURLs are
@@ -1469,4 +1532,117 @@ public class BoLChunkDAO {
     		}
 	    }
 	}
+
+    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    {
+        if(!checkConnection())
+        {
+            log.error("BOL CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
+            return;
+        }
+        String str = "UPDATE "
+                + "status_BoL sb JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
+                + "SET sb.statusCode=? " + "WHERE sb.statusCode=? AND rq.r_token='" + requestToken.toString()
+                + "' AND rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rb.sourceSURL IN " + makeSurlString(surls);
+        PreparedStatement stmt = null;
+        try
+        {
+            stmt = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            log.trace("BOL CHUNK DAO - updateStatusOnMatchingStatus: "
+                + stmt.toString());
+            int count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+            if(count == 0)
+            {
+                log.trace("BOL CHUNK DAO! No chunk of BOL request was"
+                    + " updated from " + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+            else
+            {
+                log.info("BOL CHUNK DAO! " + count + " chunks of BOL requests were updated from "
+                        + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+        } catch(SQLException e)
+        {
+            log.error("BOL CHUNK DAO! Unable to updated from " + expectedStatusCode + " to " + newStatusCode
+                    + " !" + e);
+        } finally
+        {
+            close(stmt);
+        }
+    }
+
+    public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    {
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try
+        {
+            //TODO MICHELE USER_SURL get new fields
+            // get chunks of the request
+            String str = "SELECT rq.ID, rq.r_token, sb.statusCode, rq.timeStamp, rq.pinLifetime, "
+                    + "rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, "
+                    + "rb.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
+                    + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
+                    + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
+                    + "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
+                    + "WHERE rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                    + " OR rb.sourceSURL IN " + makeSurlString(surlsArray);
+
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            List<BoLChunkDataTO> list = new ArrayList<BoLChunkDataTO>();
+            
+            log.trace("BOL CHUNK DAO - find method: " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            BoLChunkDataTO chunkDataTO = null;
+            while(rs.next())
+            {
+                
+                chunkDataTO = new BoLChunkDataTO();
+                chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
+                chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
+                chunkDataTO.setDeferredStartTime(rs.getInt("rq.deferredStartTime"));
+                chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
+                chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+
+                chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+                }
+                
+                chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
+                chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
+                chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));
+                chunkDataTO.setProtocolList(PtPChunkDAO.getInstance().findProtocols(rs.getLong("rq.ID")));
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch(SQLException e)
+        {
+            log.error("BOL CHUNK DAO: " + e);
+            /* return empty Collection! */
+            return new ArrayList<BoLChunkDataTO>();
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+    }
 }

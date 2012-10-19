@@ -25,6 +25,7 @@ import it.grid.storm.griduser.GridUserInterface;
 //import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -46,6 +47,7 @@ import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Class that represents StoRMs PtGChunkCatalog: it collects PtGChunkData and
@@ -442,7 +444,6 @@ public class PtGChunkCatalog {
      * a message gets logged.
      */
 	synchronized public Collection<ReducedChunkData> lookupReducedPtGChunkData(TRequestToken rt) {
-
 		Collection<ReducedPtGChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt.getValue());
 		log.debug("PtG CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
 		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
@@ -472,16 +473,95 @@ public class PtGChunkCatalog {
 		}
 		return list;
 	}
+	
+    public Collection<ReducedChunkData> lookupReducedPtGChunkData(TRequestToken requestToken,
+                                                                  Collection<TSURL> surls)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<ReducedPtGChunkDataTO> chunkDataTOCollection = dao.findReduced(requestToken,
+                                                                                  surlsUniqueIDs, surlsArray);
+        log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+        return buildReducedChunkDataList(chunkDataTOCollection);
+    }
+    
+    public Collection<PtGPersistentChunkData> lookupPtGChunkData(TSURL surl)
+    {
+        return lookupPtGChunkData(Arrays.asList(new TSURL[]{surl}));
+    }
+    
+    public Collection<PtGPersistentChunkData> lookupPtGChunkData(List<TSURL> surls)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<PtGChunkDataTO> chunkDataTOCollection = dao.find(surlsUniqueIDs, surlsArray);
+        log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+        return buildChunkDataList(chunkDataTOCollection);
+    }
+
+    private Collection<PtGPersistentChunkData> buildChunkDataList(
+            Collection<PtGChunkDataTO> chunkDataTOCollection)
+    {
+        ArrayList<PtGPersistentChunkData> list = new ArrayList<PtGPersistentChunkData>();
+        // TODO MICHELE USER_SURL here I can update all requests that has not the new fields set alltogether
+// in a bunch, adding a method to the DAO for this purpose
+        PtGPersistentChunkData chunk;
+        for (PtGChunkDataTO chunkTO : chunkDataTOCollection)
+        {
+            chunk = makeOne(chunkTO);
+            if (chunk != null)
+            {
+                list.add(chunk);
+                // TODO MICHELE SURL STORE
+// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+                if (!this.isComplete(chunkTO))
+                {
+                    try
+                    {
+                        dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+                    } catch(InvalidReducedPtGChunkDataAttributesException e)
+                    {
+                        log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+                                + e);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    private PtGPersistentChunkData makeOne(PtGChunkDataTO chunkTO)
+    {
+        try
+        {
+            return makeOne(chunkTO, new TRequestToken(chunkTO.requestToken(), chunkTO.timeStamp()));
+        } catch(InvalidTRequestTokenAttributesException e)
+        {
+            throw new IllegalStateException("Unexpected InvalidTRequestTokenAttributesException in TRequestToken: " + e);
+        }
+    }
 
     /**
      * Method that returns a Collection of ReducedPtGChunkData Objects matching
      * the supplied GridUser and Collection of TSURLs.
-     *
      * If any of the data retrieved for a given chunk is not well formed and so
      * does not allow a ReducedPtGChunkData Object to be created, then that chunk
      * is dropped and gets logged, while processing continues with the next one.
      * All valid chunks get returned: the others get dropped.
-     *
      * If there are no chunks associated to the given GridUser and Collection of
      * TSURLs, then an empty Collection is returned and a message gets logged.
      */
@@ -501,36 +581,62 @@ public class PtGChunkCatalog {
 															  dao.findReduced(gu.getDn(),
 																  surlsUniqueIDs, surls);
 		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
-		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
-		if(chunkDataTOCollection.isEmpty())
-		{
-			log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + gu + " "
-				+ chunkDataTOCollection);
-		}
-		else
-		{
-			ReducedPtGChunkData reducedChunkData;
-			for(ReducedPtGChunkDataTO reducedChunkDataTO : chunkDataTOCollection)
-			{
-				reducedChunkData = makeOneReduced(reducedChunkDataTO);
-				if(reducedChunkData != null)
-				{
-					list.add(reducedChunkData);
-					// TODO MICHELE SURL STORE
-//					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
-					if(!this.isComplete(reducedChunkDataTO))
-					{
-						this.completeTO(reducedChunkDataTO, reducedChunkData);
-						dao.updateIncomplete(reducedChunkDataTO);
-					}
-				}
-			}
-			log.debug("PtG CHUNK CATALOG: returning " + list);
-		}
-		return list;
+		return buildReducedChunkDataList(chunkDataTOCollection);
+//		ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
+//		if(chunkDataTOCollection.isEmpty())
+//		{
+//			log.debug("PtG CHUNK CATALOG! No chunks found in persistence for " + gu + " "
+//				+ chunkDataTOCollection);
+//		}
+//		else
+//		{
+//			ReducedPtGChunkData reducedChunkData;
+//			for(ReducedPtGChunkDataTO reducedChunkDataTO : chunkDataTOCollection)
+//			{
+//				reducedChunkData = makeOneReduced(reducedChunkDataTO);
+//				if(reducedChunkData != null)
+//				{
+//					list.add(reducedChunkData);
+//					// TODO MICHELE SURL STORE
+////					SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(), reducedChunkData.status().getStatusCode());
+//					if(!this.isComplete(reducedChunkDataTO))
+//					{
+//						this.completeTO(reducedChunkDataTO, reducedChunkData);
+//						dao.updateIncomplete(reducedChunkDataTO);
+//					}
+//				}
+//			}
+//			log.debug("PtG CHUNK CATALOG: returning " + list);
+//		}
+//		return list;
 	}
 
-	/**
+    private Collection<ReducedChunkData> buildReducedChunkDataList(
+            Collection<ReducedPtGChunkDataTO> chunkDataTOCollection)
+    {
+        ArrayList<ReducedChunkData> list = new ArrayList<ReducedChunkData>();
+        ReducedPtGChunkData reducedChunkData;
+        for (ReducedPtGChunkDataTO reducedChunkDataTO : chunkDataTOCollection)
+        {
+            reducedChunkData = makeOneReduced(reducedChunkDataTO);
+            if (reducedChunkData != null)
+            {
+                list.add(reducedChunkData);
+                // TODO MICHELE SURL STORE
+// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(),
+// reducedChunkData.status().getStatusCode());
+                if (!this.isComplete(reducedChunkDataTO))
+                {
+                    this.completeTO(reducedChunkDataTO, reducedChunkData);
+                    dao.updateIncomplete(reducedChunkDataTO);
+                }
+            }
+        }
+        log.debug("PtG CHUNK CATALOG: returning " + list);
+        return list;
+    }
+
+    /**
      * 
      * 
      * @param reducedChunkDataTO
@@ -732,18 +838,18 @@ public class PtGChunkCatalog {
      * Beware, that the chunks may be part of requests that have finished, or that
      * still have not finished because other chunks are being processed.
      */
-    synchronized public void transitSRM_FILE_PINNEDtoSRM_ABORTED(TSURL surl,String explanation) {
-    	/* Actually (BE 1.5.4-0) not used*/
-		if(explanation == null)
-		{
-			explanation = "";
-		}
-        dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.uniqueId(), surl.rawSurl(), explanation);
-     // TODO MICHELE SURL STORE
-//        SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
-        //PinnedFilesCatalog.getInstance().removeAllJit(surl);
-        //PinnedfilesCatalog.getInstance().removeVolatile(surl);
-    }
+//    synchronized public void transitSRM_FILE_PINNEDtoSRM_ABORTED(TSURL surl,String explanation) {
+//    	/* Actually (BE 1.5.4-0) not used*/
+//		if(explanation == null)
+//		{
+//			explanation = "";
+//		}
+//        dao.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl.uniqueId(), surl.rawSurl(), explanation);
+//     // TODO MICHELE SURL STORE
+////        SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
+//        //PinnedFilesCatalog.getInstance().removeAllJit(surl);
+//        //PinnedfilesCatalog.getInstance().removeVolatile(surl);
+//    }
 
     /**
      * Method used to force transition to SRM_RELEASED from SRM_FILE_PINNED,
@@ -759,5 +865,29 @@ public class PtGChunkCatalog {
 //            SurlStatusStore.getInstance().storeSurlStatus(surl, TStatusCode.SRM_RELEASED);
 //        }
     }
+    
+    public void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode,
+            String explanation)
+    {
+        dao.updateStatus(requestToken, new int[]{surl.uniqueId()}, new String[]{surl.rawSurl()},
+                         statusCode, explanation);
+    }
+
+    public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    {
+        int[] surlsUniqueIDs = new int[surlList.size()];
+        String[] surls = new String[surlList.size()];
+        int index = 0;
+        for(TSURL tsurl : surlList)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surls[index] = tsurl.rawSurl();
+            index++;
+        }
+        dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
+                                         expectedStatusCode, newStatusCode);
+    }
+    
 }
 

@@ -26,9 +26,8 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedList;
 
 
 public enum TStatusCode /*implements Serializable*/ {
@@ -62,35 +61,37 @@ public enum TStatusCode /*implements Serializable*/ {
     SRM_RELEASED,
     SRM_FILE_PINNED(false),
     SRM_FILE_IN_CACHE(false),
-    SRM_SPACE_AVAILABLE(false, new TStatusCode[]{SRM_REQUEST_INPROGRESS,SRM_REQUEST_SUSPENDED,SRM_FILE_PINNED}),
+    SRM_FILE_BUSY,
+    SRM_SPACE_AVAILABLE(false),
     SRM_LOWER_SPACE_GRANTED,
     SRM_DONE,
     SRM_PARTIAL_SUCCESS,
     SRM_REQUEST_TIMED_OUT,
     SRM_LAST_COPY,
-    SRM_FILE_BUSY,
     SRM_FILE_LOST,
     SRM_FILE_UNAVAILABLE,
     SRM_CUSTOM_STATUS(false);
     
+    static{
+        SRM_FILE_PINNED.addIncompatibleStatus(SRM_REQUEST_SUSPENDED);
+        SRM_FILE_PINNED.addIncompatibleStatus(SRM_SPACE_AVAILABLE);
+        SRM_FILE_PINNED.addIncompatibleStatus(SRM_FILE_BUSY);
+        SRM_SPACE_AVAILABLE.addIncompatibleStatus(SRM_REQUEST_SUSPENDED);
+        SRM_SPACE_AVAILABLE.addIncompatibleStatus(SRM_FILE_PINNED);
+        SRM_SPACE_AVAILABLE.addIncompatibleStatus(SRM_FILE_BUSY);
+    }
     private final boolean finalStatus;
 
-    private final List<TStatusCode> incompatibleStatuses;
-    
-    private TStatusCode(boolean isFinal, TStatusCode[] incompatibleStatuses)
-    {
-        this.finalStatus = isFinal;
-        this.incompatibleStatuses = Arrays.asList(incompatibleStatuses);
-    }
-    
-    private TStatusCode(TStatusCode[] incompatibleStatuses)
-    {
-        this(true, incompatibleStatuses);
-    }
+    private final LinkedList<TStatusCode> incompatibleStatuses = new LinkedList<TStatusCode>();
     
     private TStatusCode(boolean isFinal)
     {
-        this(isFinal,new TStatusCode[0]);
+        this.finalStatus = isFinal;
+    }
+    
+    private void addIncompatibleStatus(TStatusCode incompatibleStatus)
+    {
+        incompatibleStatuses.add(incompatibleStatus);
     }
     
     private TStatusCode()

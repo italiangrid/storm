@@ -21,6 +21,7 @@ import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TStatusCode;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -55,6 +56,7 @@ public class BoLChunkDataTO {
     private int status; // initialised in constructor
     private String errString = " ";
     private int deferredStartTime = -1;
+    private Timestamp timeStamp = null;
 
     public BoLChunkDataTO() {
         TURLPrefix protocolPreferences = new TURLPrefix();
@@ -109,6 +111,11 @@ public class BoLChunkDataTO {
     public String getRequestToken() {
         return requestToken;
     }
+    
+    public Timestamp getTimeStamp()
+    {
+        return timeStamp;
+    }
 
     public int getStatus() {
         return status;
@@ -160,6 +167,11 @@ public class BoLChunkDataTO {
         requestToken = s;
     }
 
+    public void setTimeStamp(Timestamp timeStamp)
+    {
+        this.timeStamp = timeStamp;
+    }
+    
     public void setStatus(int n) {
         status = n;
     }

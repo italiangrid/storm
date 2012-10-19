@@ -17,6 +17,7 @@
 
 package it.grid.storm.catalogs;
 
+import java.sql.Timestamp;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TStatusCode;
@@ -54,6 +55,7 @@ public class CopyChunkDataTO
     private String overwriteOption = null; //initialised in constructor 
     private int status; //initialised in constructor
     private String errString = " ";
+    private Timestamp timeStamp = null;
 
     public CopyChunkDataTO() {
         fileStorageType = FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE);
@@ -75,6 +77,16 @@ public class CopyChunkDataTO
 
     public void setRequestToken(String s) {
         requestToken = s;
+    }
+    
+    public Timestamp timeStamp()
+    {
+        return timeStamp;
+    }
+    
+    public void setTimeStamp(Timestamp timeStamp)
+    {
+        this.timeStamp = timeStamp;
     }
 
     public String fromSURL() {

@@ -618,7 +618,7 @@ public class PtGChunkDAO {
 
             //TODO MICHELE USER_SURL get new fields
             //get chunks of the request
-            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
+            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
                     + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
@@ -653,6 +653,7 @@ public class PtGChunkDAO {
 					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
 				}
 
+				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
 				chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
 				chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
@@ -734,7 +735,64 @@ public class PtGChunkDAO {
 			close(rs);
 			close(find);
 		}
-	}
+    }
+
+    public Collection<ReducedPtGChunkDataTO> findReduced(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surlsArray)
+    {
+        if(!checkConnection())
+        {
+            log.error("PTG CHUNK DAO: findReduced - unable to get a valid connection!");
+            return new ArrayList<ReducedPtGChunkDataTO>();
+        }
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try
+        {
+            String str = "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
+                             + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
+                             + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
+                             + "WHERE rq.r_token=? AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rg.sourceSURL IN " + makeSurlString(surlsArray);
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
+            find.setString(1, requestToken.getValue());
+            logWarnings(find.getWarnings());
+            
+            log.trace("PtG CHUNK DAO! findReduced with griduser+surlarray; " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            
+            ReducedPtGChunkDataTO chunkDataTO = null;
+            while(rs.next())
+            {
+                chunkDataTO = new ReducedPtGChunkDataTO();
+                chunkDataTO.setStatus(rs.getInt("sg.statusCode"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rg.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rg.sourceSURL"));
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedStFN(rs.getString("rg.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rg.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSurlUniqueID(uniqueID);                  
+                }
+
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch(SQLException e)
+        {
+            log.error("PTG CHUNK DAO: " + e);
+            /* Return empty Collection! */
+            return new ArrayList<ReducedPtGChunkDataTO>();
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+    }
 
     /**
      * Method that returns a Collection of ReducedPtGChunkDataTO associated to the given griduser, and whose
@@ -1133,60 +1191,60 @@ public class PtGChunkDAO {
      * Beware, that the chunks may be part of requests that have finished, or that still have not finished
      * because other chunks are still being processed.
      */
-	public synchronized void transitSRM_FILE_PINNEDtoSRM_ABORTED(int surlUniqueID, String surl,
-			String explanation) {
-	    if(!checkConnection())
-        {
-            log.error("PTG CHUNK DAO: transitSRM_FILE_PINNEDtoSRM_ABORTED - unable to get a valid connection!");
-            return;
-        }
-        //TODO MICHELE USER_SURL use the unique ID to perform the select on the request_Get table (removed a bug)
-        //TODO MICHELE USER_SURL when the uniqueID and normalized surl is provided by the FrontEnd remove the String surl parameter
-        String str = "UPDATE "
-                + "status_Get sg JOIN request_Get rg ON sg.request_GetID=rg.ID "
-                + "SET sg.statusCode=?, sg.explanation=?, sg.transferURL=NULL "
-                + "WHERE sg.statusCode=? AND (rg.sourceSURL_uniqueID=? OR rg.sourceSURL=?)";
-        PreparedStatement stmt = null;
-        try 
-        {
-            stmt = con.prepareStatement(str);
-            logWarnings(con.getWarnings());
-            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
-            logWarnings(stmt.getWarnings());
-            
-            stmt.setString(2, explanation);
-            logWarnings(stmt.getWarnings());
-            
-            stmt.setInt(3, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-            logWarnings(stmt.getWarnings());
-            
-            stmt.setInt(4, surlUniqueID);
-            logWarnings(stmt.getWarnings());
-            
-            stmt.setString(5, surl);
-            logWarnings(stmt.getWarnings());
-            
-            log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_ABORTED: " + stmt.toString());
-            int count = stmt.executeUpdate();
-            logWarnings(stmt.getWarnings());
-			if(count > 0)
-			{
-				log.info("PtG CHUNK DAO! " + count
-					+ " chunks were transited from SRM_FILE_PINNED to SRM_ABORTED.");
-			}
-			else
-			{
-				log.trace("PtG CHUNK DAO! No chunks were transited"
-					+ " from SRM_FILE_PINNED to SRM_ABORTED.");
-			}
-		} catch(SQLException e)
-		{
-			log.error("PtG CHUNK DAO! Unable to transitSRM_FILE_PINNEDtoSRM_ABORTED! " + e);
-		} finally
-		{
-			close(stmt);
-		}
-    }
+//	public synchronized void transitSRM_FILE_PINNEDtoSRM_ABORTED(int surlUniqueID, String surl,
+//			String explanation) {
+//	    if(!checkConnection())
+//        {
+//            log.error("PTG CHUNK DAO: transitSRM_FILE_PINNEDtoSRM_ABORTED - unable to get a valid connection!");
+//            return;
+//        }
+//        //TODO MICHELE USER_SURL use the unique ID to perform the select on the request_Get table (removed a bug)
+//        //TODO MICHELE USER_SURL when the uniqueID and normalized surl is provided by the FrontEnd remove the String surl parameter
+//        String str = "UPDATE "
+//                + "status_Get sg JOIN request_Get rg ON sg.request_GetID=rg.ID "
+//                + "SET sg.statusCode=?, sg.explanation=?, sg.transferURL=NULL "
+//                + "WHERE sg.statusCode=? AND (rg.sourceSURL_uniqueID=? OR rg.sourceSURL=?)";
+//        PreparedStatement stmt = null;
+//        try 
+//        {
+//            stmt = con.prepareStatement(str);
+//            logWarnings(con.getWarnings());
+//            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+//            logWarnings(stmt.getWarnings());
+//            
+//            stmt.setString(2, explanation);
+//            logWarnings(stmt.getWarnings());
+//            
+//            stmt.setInt(3, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+//            logWarnings(stmt.getWarnings());
+//            
+//            stmt.setInt(4, surlUniqueID);
+//            logWarnings(stmt.getWarnings());
+//            
+//            stmt.setString(5, surl);
+//            logWarnings(stmt.getWarnings());
+//            
+//            log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_ABORTED: " + stmt.toString());
+//            int count = stmt.executeUpdate();
+//            logWarnings(stmt.getWarnings());
+//			if(count > 0)
+//			{
+//				log.info("PtG CHUNK DAO! " + count
+//					+ " chunks were transited from SRM_FILE_PINNED to SRM_ABORTED.");
+//			}
+//			else
+//			{
+//				log.trace("PtG CHUNK DAO! No chunks were transited"
+//					+ " from SRM_FILE_PINNED to SRM_ABORTED.");
+//			}
+//		} catch(SQLException e)
+//		{
+//			log.error("PtG CHUNK DAO! Unable to transitSRM_FILE_PINNEDtoSRM_ABORTED! " + e);
+//		} finally
+//		{
+//			close(stmt);
+//		}
+//    }
 
     /**
      * Method that updates all chunks in SRM_FILE_PINNED state, into SRM_RELEASED. An array of long
@@ -1308,6 +1366,101 @@ public class PtGChunkDAO {
 				close(stmt);
 			}
 		}
+    }
+    
+    public void updateStatus(TRequestToken requestToken, int[] surlUniqueIDs, String[] surls, TStatusCode statusCode,
+            String explanation)
+    {
+        if(!checkConnection())
+        {
+            log.error("PTG CHUNK DAO: updateStatus - unable to get a valid connection!");
+            return;
+        }
+        String str = "UPDATE "
+                + "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+                + "SET sg.statusCode=? , sg.explanation=? " + "WHERE rq.r_token='" + requestToken.toString()
+                + "' AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs)
+                + " OR rg.sourceSURL IN " + makeSurlString(surls);
+        PreparedStatement stmt = null;
+        try
+        {
+            stmt = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(statusCode));
+            logWarnings(stmt.getWarnings());
+            
+            stmt.setString(2, (explanation != null ? explanation : ""));
+            logWarnings(stmt.getWarnings());
+            
+            log.trace("PtG CHUNK DAO - updateStatus: "
+                + stmt.toString());
+            int count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+            if(count == 0)
+            {
+                log.trace("PtG CHUNK DAO! No chunk of PtG request was"
+                    + " updated to " + statusCode + ".");
+            }
+            else
+            {
+                log.info("PtG CHUNK DAO! " + count + " chunks of PtG requests were updated to " + statusCode + ".");
+            }
+        } catch(SQLException e)
+        {
+            log.error("PtG CHUNK DAO! Unable to updated to " + statusCode
+                    + " !" + e);
+        } finally
+        {
+            close(stmt);
+        }
+    }
+    
+    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs, String[] surls,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    {
+        if(!checkConnection())
+        {
+            log.error("PTG CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
+            return;
+        }
+        String str = "UPDATE "
+                + "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+                + "SET sg.statusCode=? " + "WHERE sg.statusCode=? AND rq.r_token='" + requestToken.toString()
+                + "' AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs)
+                + " OR rg.sourceSURL IN " + makeSurlString(surls);
+        PreparedStatement stmt = null;
+        try
+        {
+            stmt = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            stmt.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+            logWarnings(stmt.getWarnings());
+            
+            log.trace("PtG CHUNK DAO - updateStatusOnMatchingStatus: "
+                + stmt.toString());
+            int count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+            if(count == 0)
+            {
+                log.trace("PtG CHUNK DAO! No chunk of PtG request was"
+                    + " updated from " + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+            else
+            {
+                log.info("PtG CHUNK DAO! " + count + " chunks of PtG requests were updated from "
+                        + expectedStatusCode + " to " + newStatusCode + ".");
+            }
+        } catch(SQLException e)
+        {
+            log.error("PtG CHUNK DAO! Unable to updated from " + expectedStatusCode + " to " + newStatusCode
+                    + " !" + e);
+        } finally
+        {
+            close(stmt);
+        }
     }
 
 	/**
@@ -1539,4 +1692,68 @@ public class PtGChunkDAO {
         	}
         }
 	}
+
+    public Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    {
+        PreparedStatement find = null;
+        ResultSet rs = null;
+        try
+        {
+            //TODO MICHELE USER_SURL get new fields
+            // get chunks of the request
+            String str = "SELECT rq.ID, rq.r_token, sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, "
+                    + "rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, "
+                    + "d.isSourceADirectory, d.allLevelRecursive,  d.numOfLevels "
+                    + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
+                    + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
+                    + "WHERE rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                    + " OR rg.sourceSURL IN " + makeSurlString(surlsArray);
+
+            find = con.prepareStatement(str);
+            logWarnings(con.getWarnings());
+            
+            List<PtGChunkDataTO> list = new ArrayList<PtGChunkDataTO>();
+            
+            log.trace("PTG CHUNK DAO - find method: " + find.toString());
+            rs = find.executeQuery();
+            logWarnings(find.getWarnings());
+            PtGChunkDataTO chunkDataTO = null;
+            while(rs.next())
+            {
+                
+                chunkDataTO = new PtGChunkDataTO();
+                chunkDataTO.setStatus(rs.getInt("sg.statusCode"));
+                chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
+                chunkDataTO.setPrimaryKey(rs.getLong("rg.ID"));
+                chunkDataTO.setFromSURL(rs.getString("rg.sourceSURL"));
+
+                // TODO MICHELE USER_SURL fill new fields
+                chunkDataTO.setNormalizedStFN(rs.getString("rg.normalized_sourceSURL_StFN"));
+                int uniqueID = rs.getInt("rg.sourceSURL_uniqueID");
+                if(!rs.wasNull())
+                {
+                    chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+                }
+
+                chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
+                chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
+                chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
+                chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
+                chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));
+                chunkDataTO.setProtocolList(PtPChunkDAO.getInstance().findProtocols(rs.getLong("rq.ID")));
+                list.add(chunkDataTO);
+            }
+            return list;
+        } catch(SQLException e)
+        {
+            log.error("PTG CHUNK DAO: " + e);
+            /* return empty Collection! */
+            return new ArrayList<PtGChunkDataTO>();
+        } finally
+        {
+            close(rs);
+            close(find);
+        }
+    }
+    
 }

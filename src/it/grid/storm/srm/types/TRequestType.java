@@ -17,9 +17,6 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.Map;
-import java.util.HashMap;
-
 /**
  * This class represents the ReqType of an SRM request. It is a simple application of
  * the TypeSafe Enum Pattern.
@@ -28,47 +25,59 @@ import java.util.HashMap;
  * @date    March 18th, 2005
  * @version 3.0
  */
-public class TRequestType {
-    private String reqType = null; //string representing the SRM RequestType
-    private static Map m = new HashMap();
+//public class TRequestType {
+public enum TRequestType {
+    
+//    private static HashMap<String, TRequestType> m = new HashMap<String, TRequestType>(5);
+//
+//    public static TRequestType PREPARE_TO_GET = new TRequestType("PrepareToGet") {
+//        public int hashCode() {
+//            return 1;
+//        }
+//    };
+//
+//    public static TRequestType PREPARE_TO_PUT = new TRequestType("PrepareToPut") {
+//        public int hashCode() {
+//            return 2;
+//        }
+//    };
+//
+//    public static TRequestType COPY = new	TRequestType("Copy") {
+//        public int hashCode() {
+//            return 3;
+//        }
+//    };
+//
+//    public static TRequestType BRING_ON_LINE = new TRequestType("BringOnLine") {
+//        public int hashCode() {
+//            return 4;
+//        }
+//    };
+//
+//    public static TRequestType EMPTY = new TRequestType("Empty") {
+//        public int hashCode() {
+//            return 0;
+//        }
+//    };
+//
+//    private TRequestType(String reqType) {
+//        this.reqType = reqType;
+//        m.put(reqType,this);
+//    }
 
-    public static TRequestType PREPARE_TO_GET = new TRequestType("PrepareToGet") {
-        public int hashCode() {
-            return 1;
-        }
-    };
-
-    public static TRequestType PREPARE_TO_PUT = new TRequestType("PrepareToPut") {
-        public int hashCode() {
-            return 2;
-        }
-    };
-
-    public static TRequestType COPY = new	TRequestType("Copy") {
-        public int hashCode() {
-            return 3;
-        }
-    };
-
-    public static TRequestType BRING_ON_LINE = new TRequestType("BringOnLine") {
-        public int hashCode() {
-            return 4;
-        }
-    };
-
-    public static TRequestType EMPTY = new TRequestType("Empty") {
-        public int hashCode() {
-            return 0;
-        }
-    };
-
-    private TRequestType(String reqType) {
-        this.reqType = reqType;
-        m.put(reqType,this);
+    
+    PREPARE_TO_GET("PrepareToGet"), PREPARE_TO_PUT("PrepareToPut"), COPY("Copy"), BRING_ON_LINE("BringOnLine"), 
+    EMPTY("Empty"), UNKNOWN("Unknown");
+    
+    private final String value;
+    
+    private TRequestType(String value)
+    {
+        this.value = value;
     }
-
-	public  String getValue() {
-		return reqType;
+    
+	public String getValue() {
+		return value;
 	}
 
     /**
@@ -77,15 +86,23 @@ public class TRequestType {
      * the given String, an IllegalArgumentException is thrown.
      */
 	public static TRequestType getTRequestType(String type) throws IllegalArgumentException {
-        TRequestType aux = (TRequestType) m.get(type);
-        if (aux==null) throw new IllegalArgumentException();
-        return aux;
+	    for(TRequestType requestType : TRequestType.values())
+	    {
+	        if(requestType.getValue().equals(type))
+	        {
+	            return requestType;
+	        }
+	    }
+        return UNKNOWN;
 	}
 
-
+	 public boolean isEmpty()
+    {
+        return this.equals(EMPTY);
+    }
 
     public String toString() {
-        return reqType;
+        return value;
     }
 
 /*    public static void main(String[] args) {

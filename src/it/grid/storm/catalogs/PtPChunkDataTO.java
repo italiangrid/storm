@@ -24,6 +24,7 @@ import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TStatusCode;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -62,6 +63,7 @@ public class PtPChunkDataTO {
     private int status; //initialised in constructor
     private String errString = " ";
     private String turl = " ";
+    private Timestamp timeStamp = null;
 
     /**
      * Constructr that initialises PtPChunkDataTO with correct SRM 2.2 default
@@ -94,6 +96,16 @@ public class PtPChunkDataTO {
 
     public void setRequestToken(String s) {
         requestToken = s;
+    }
+    
+    public Timestamp timeStamp()
+    {
+        return timeStamp;
+    }
+    
+    public void setTimeStamp(Timestamp timeStamp)
+    {
+        this.timeStamp  = timeStamp;
     }
 
     public String toSURL() {
@@ -258,4 +270,5 @@ public class PtPChunkDataTO {
 		sb.append(turl);
 		return sb.toString();
     }
+
 }

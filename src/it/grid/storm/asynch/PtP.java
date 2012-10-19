@@ -178,7 +178,7 @@ public class PtP implements Delegable, Chooser, Request
         {//should return SRM_DUPLICATION_ERROR if file overwrite disabled instead of SRM_FILE_BUSY
             failure = true;
             requestData.changeStatusSRM_FILE_BUSY("The surl " + requestData.getSURL() + " is currently busy");
-            log.error("Unable to perform the PTG request, surl busy");
+            log.info("Unable to perform the PTP request, surl busy");
             printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
             return;
         }

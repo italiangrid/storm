@@ -21,6 +21,7 @@ package it.grid.storm.catalogs;
 import it.grid.storm.common.types.TimeUnit;
 //import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
@@ -35,9 +36,11 @@ import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Class that represents StoRMs CopyChunkCatalog: it collects CopyChunkData and
@@ -111,41 +114,150 @@ public class CopyChunkCatalog
 		
 		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(rt);
 		log.debug("COPY CHUNK CATALOG: retrieved data " + chunkDataTOs);
-		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
-		if(chunkDataTOs.isEmpty())
-		{
-			log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
-				+ rt);
-		}
-		else
-		{
-			CopyPersistentChunkData chunk;
-			for(CopyChunkDataTO chunkTO : chunkDataTOs)
-			{
-				chunk = makeOne(chunkTO, rt);
-				if(chunk != null)
-				{
-					list.add(chunk);
-					// TODO MICHELE SURL STORE
-//					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
-					if(!this.isComplete(chunkTO))
-					{
-						try
-						{
-							dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-						} catch(InvalidReducedCopyChunkDataAttributesException e)
-						{
-							log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: " + e);
-						}
-					}
-				}
-			}
-		}
-		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
-		return list;
+		return buildChunkDataList(chunkDataTOs, rt);
+//		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
+//		if(chunkDataTOs.isEmpty())
+//		{
+//			log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
+//				+ rt);
+//		}
+//		else
+//		{
+//			CopyPersistentChunkData chunk;
+//			for(CopyChunkDataTO chunkTO : chunkDataTOs)
+//			{
+//				chunk = makeOne(chunkTO, rt);
+//				if(chunk != null)
+//				{
+//					list.add(chunk);
+//					// TODO MICHELE SURL STORE
+////					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+//					if(!this.isComplete(chunkTO))
+//					{
+//						try
+//						{
+//							dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+//						} catch(InvalidReducedCopyChunkDataAttributesException e)
+//						{
+//							log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: " + e);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+//		return list;
 	}
 
+    private Collection<CopyPersistentChunkData> buildChunkDataList(Collection<CopyChunkDataTO> chunkDataTOs,
+            TRequestToken rt)
+    {
+        ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
+        CopyPersistentChunkData chunk;
+        for (CopyChunkDataTO chunkTO : chunkDataTOs)
+        {
+            chunk = makeOne(chunkTO, rt);
+            if (chunk != null)
+            {
+                list.add(chunk);
+                // TODO MICHELE SURL STORE
+// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
+                if (!this.isComplete(chunkTO))
+                {
+                    try
+                    {
+                        dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+                    } catch(InvalidReducedCopyChunkDataAttributesException e)
+                    {
+                        log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+                                + e);
+                    }
+                }
+            }
+        }
+        log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+        return list;
+    }
+    
+    private Collection<CopyPersistentChunkData> buildChunkDataList(Collection<CopyChunkDataTO> chunkDataTOs)
+    {
+        ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
+        CopyPersistentChunkData chunk;
+        for (CopyChunkDataTO chunkTO : chunkDataTOs)
+        {
+            chunk = makeOne(chunkTO);
+            if (chunk != null)
+            {
+                list.add(chunk);
+                // TODO MICHELE SURL STORE
+                // SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
+// chunk.getStatus().getStatusCode());
+                if (!this.isComplete(chunkTO))
+                {
+                    try
+                    {
+                        dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+                    } catch(InvalidReducedCopyChunkDataAttributesException e)
+                    {
+                        log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+                                + e);
+                    }
+                }
+            }
+        }
+        log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+        return list;
+    }
 
+    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TRequestToken requestToken,
+                                                                   Collection<TSURL> surls)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(requestToken, surlsUniqueIDs,
+                                                                                  surlsArray);
+        return buildChunkDataList(chunkDataTOs, requestToken);
+    }
+    
+    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl)
+    {
+        return lookupCopyChunkData(Arrays.asList(new TSURL[]{surl}));
+    }
+
+
+    public Collection<CopyPersistentChunkData> lookupCopyChunkData(List<TSURL> surls)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs, surlsArray);
+        return buildChunkDataList(chunkDataTOs);
+    }
+
+    private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkTO)
+    {
+        try
+        {
+            return makeOne(chunkTO, new TRequestToken(chunkTO.requestToken(), chunkTO.timeStamp()));
+        } catch(InvalidTRequestTokenAttributesException e)
+        {
+            throw new IllegalStateException("Unexpected InvalidTRequestTokenAttributesException in TRequestToken: " + e);
+        }
+    }
+    
     /**
      * Generates a CopyChunkData from the received CopyChunkDataTO
      * 
@@ -385,6 +497,21 @@ public class CopyChunkCatalog
     	return (reducedChunkTO.normalizedSourceStFN() != null) && (reducedChunkTO.sourceSurlUniqueID() != null
     			&& reducedChunkTO.normalizedTargetStFN() != null) && (reducedChunkTO.targetSurlUniqueID() != null);
 	}
-    
+
+    public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    {
+        int[] surlsUniqueIDs = new int[surlList.size()];
+        String[] surls = new String[surlList.size()];
+        int index = 0;
+        for(TSURL tsurl : surlList)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surls[index] = tsurl.rawSurl();
+            index++;
+        }
+        dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
+                                         expectedStatusCode, newStatusCode);
+    }
 }
 
