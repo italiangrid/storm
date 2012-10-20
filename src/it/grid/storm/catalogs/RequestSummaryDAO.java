@@ -136,7 +136,7 @@ public class RequestSummaryDAO {
             logWarnings(con.getWarnings());
             // String query =
             // "SELECT ID, config_RequestTypeID, r_token, client_dn FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
-            String query = "SELECT ID, config_RequestTypeID, r_token, client_dn, proxy FROM request_queue WHERE status="
+            String query = "SELECT ID, config_RequestTypeID, r_token, timeStamp, client_dn, proxy FROM request_queue WHERE status="
                     + StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)
                     + " LIMIT "
                     + howMuch;
