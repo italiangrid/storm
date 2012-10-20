@@ -1532,20 +1532,69 @@ public class BoLChunkDAO {
     		}
 	    }
 	}
-
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
-            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+	
+	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
     {
+	    if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: requestToken=" + requestToken + " explanation=" + explanation);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, null, null, expectedStatusCode, newStatusCode,
+                                       explanation, true, false, true);
+    }
+	
+	public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
+    {
+        if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
+                || surls == null || surlsUniqueIDs.length == 0 || surls.length == 0
+                || surlsUniqueIDs.length != surls.length)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: requestToken=" + requestToken + "surlsUniqueIDs=" + surlsUniqueIDs
+                    + " surls=" + surls);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls, expectedStatusCode,
+                                       newStatusCode, null, true, true, false);
+    }
+
+    public void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
+            boolean withRequestToken, boolean withSurls, boolean withExplanation)
+            throws IllegalArgumentException
+    {
+        if ((withRequestToken && requestToken == null) || (withExplanation && explanation == null)
+                || (withSurls && (surlUniqueIDs == null || surls == null)))
+        {
+            throw new IllegalArgumentException("Unable to perform the doUpdateStatusOnMatchingStatus, "
+                    + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
+                    + requestToken + " withSurls=" + withSurls + " surlUniqueIDs=" + surlUniqueIDs
+                    + " surls=" + surls + " withExplaination=" + withExplanation + " explanation="
+                    + explanation);
+        }
         if(!checkConnection())
         {
             log.error("BOL CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
             return;
         }
-        String str = "UPDATE "
-                + "status_BoL sb JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
-                + "SET sb.statusCode=? " + "WHERE sb.statusCode=? AND rq.r_token='" + requestToken.toString()
-                + "' AND rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rb.sourceSURL IN " + makeSurlString(surls);
+        String str = "UPDATE status_BoL sb JOIN (request_BoL rb, request_queue rq) " +
+        		"ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
+                + "SET sb.statusCode=? ";
+        if (withExplanation)
+        {
+            str += " , " + buildExpainationSet(explanation);
+        }       
+        str += " WHERE sb.statusCode=? ";
+        if (withRequestToken)
+        {
+            str += " AND " + buildTokenWhereClause(requestToken);
+        }
+        if(withSurls)
+        {
+            str += " AND " + buildSurlsWhereClause(surlUniqueIDs, surls);    
+        }
         PreparedStatement stmt = null;
         try
         {
@@ -1644,5 +1693,21 @@ public class BoLChunkDAO {
             close(rs);
             close(find);
         }
+    }
+    
+    private String buildExpainationSet(String explanation)
+    {
+        return " sb.explanation='" + explanation + "' "  ;
+    }
+
+    private String buildTokenWhereClause(TRequestToken requestToken)
+    {
+        return " rq.r_token='" + requestToken.toString() + "' ";
+    }
+    
+    private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
+    {
+        return " rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rb.sourceSURL IN " + makeSurlString(surls);
     }
 }

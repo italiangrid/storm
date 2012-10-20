@@ -17,11 +17,11 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Map;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -36,9 +36,13 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -175,13 +179,23 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
         log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
 
-        if (PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL())) {
-
-            requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        {
             failure = true;
-            log.debug("ATTENTION in BoLChunk! BoLChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
-
-        } else {
+            requestData.changeStatusSRM_FILE_BUSY("Requested file is"
+                                                  + " busy (in an incompatible state with BOL)");
+            log.info("Unable to perform the BOL request, surl busy");
+            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            return;
+        }
+//        if (PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL())) {
+//
+//            requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
+//            failure = true;
+//            log.debug("ATTENTION in BoLChunk! BoLChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
+//
+//        }
+        else {
             try {
 
                 StoRI fileStoRI = null;
@@ -203,11 +217,12 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
                     TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
                     SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
     
-                    if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
-    
+                    if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL))
+                    {
                         manageIsPermit(fileStoRI);
-    
-                    } else {
+                    }
+                    else
+                    {
                         failure = true;
                         requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
                                 + requestData.getSURL() + " in Storage Area: " + token);
@@ -225,10 +240,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
                         + e);
             }
         }
-
-        log.info("Finished handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: "
-                + requestData.getSURL() + "; result is: "
-                + requestData.getStatus());
+        printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
     }
 
     public BoLPersistentChunkData getRequestData() {
@@ -360,5 +372,18 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
         }
         
         return result;
+    }
+    
+    private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)
+    {
+        Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager.getSurlCurrentStatuses(surl);
+        statuses.remove(requestToken);
+        return TStatusCode.SRM_FILE_PINNED.isCompatibleWith(statuses.values());
+    }
+    
+    private void printOutcome(String dn, TSURL surl, TReturnStatus status)
+    {
+        log.info("Finished handling BoL chunk for user DN: " + dn + "; for SURL: "
+                     + surl + "; result is: " + status);
     }
 }

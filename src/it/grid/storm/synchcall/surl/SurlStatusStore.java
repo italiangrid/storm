@@ -400,6 +400,41 @@ public class SurlStatusStore
         }
     }
     
+    public void checkAndUpdate(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation) throws UnknownTokenException
+    {
+        if (requestToken == null || expectedStatusCode == null
+                || newStatusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: requestToken=" + requestToken
+                    + " expectedStatusCode=" + expectedStatusCode + " newStatusCode=" + newStatusCode
+                    + " explanation=" + explanation);
+        }
+        log.debug("Checking and updating token " + requestToken + " for surls where status is "
+                + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
+        checkCleanToken(requestToken);
+        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+        for (Entry<TSURL, ModifiableReturnStatus> surlStatus : surlStatusMap.entrySet())
+        {
+            if (surlStatus == null)
+            {
+                log.warn("Unexpected null element surlStatus for token : " + requestToken);
+                continue;
+            }
+            if (surlStatus.getValue().getStatusCode().equals(expectedStatusCode))
+            {
+                surlStatus.getValue().setStatusCode(newStatusCode);
+                surlStatus.getValue().setExplanation(explanation);
+            }
+            else
+            {
+                log.debug("Surl status not updated, current status \'" + surlStatus.getValue().getStatusCode()
+                        + "\' doesn't match expected status \'" + expectedStatusCode + "\'");
+            }
+        }
+    }
+    
     public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws UnknownTokenException, IllegalArgumentException
     {
         if (requestToken == null)

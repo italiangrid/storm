@@ -50,6 +50,7 @@ import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,7 +117,23 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         
         //Get the CHunk collection
 //        Collection<PtPPersistentChunkData> chunks = putCatalog.lookup(inputData.getRequestToken());
-        Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(token);
+        Map<TSURL, TReturnStatus> surlStatusMap;
+        try
+        {
+            surlStatusMap = SurlStatusManager.getSurlsStatus(token);
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: " + e);
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+        } catch(UnknownTokenException e)
+        {
+            PtPAbortExecutor.log.debug("PtPAbortExecutor: Request - Invalid request token");
+            globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            return outputData;
+        }
         
 //      if(chunks.isEmpty()) { // No Chunk found
       if(surlStatusMap.isEmpty()) {
@@ -336,7 +353,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                 //while(index<start+1000)
                 //    index = System.currentTimeMillis();
                 // } catch (InterruptedException e) {
-                //     // TODO Auto-generated catch block
                 //     e.printStackTrace();
                 // }
 
@@ -351,7 +367,22 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
                 PtPAbortExecutor.log.debug("PtPAbortExecutor: Wake up! It's time to work...");
                 log.debug("srmAbortRequest: PtPAbortExecutor: refresh surl status");
-                surlStatusMap = SurlStatusManager.getSurlsStatus(token, surlStatusMap.keySet());
+                try
+                {
+                    surlStatusMap = SurlStatusManager.getSurlsStatus(token, surlStatusMap.keySet());
+                } catch(IllegalArgumentException e)
+                {
+                    log.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: " + e);
+                    throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+                } catch(UnknownTokenException e)
+                {
+                    PtPAbortExecutor.log.debug("PtPAbortExecutor: Request - Invalid request token, probably it is expired");
+                    globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Expired request token");
+                    outputData.setReturnStatus(globalStatus);
+                    outputData.setArrayOfFileStatuses(null);
+                    PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+                    return outputData;
+                }
                 log.debug("srmAbortRequest: PtPAbortExecutor: refresh done.");
             }
 
@@ -380,9 +411,8 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         } else {
             globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,"Abort request completed.");
             if((inputData.getType() == AbortGeneralInputData.ABORT_REQUEST)) {
-                RequestSummaryCatalog cat = RequestSummaryCatalog.getInstance();
                 TReturnStatus requestStatus = manageStatus(TStatusCode.SRM_ABORTED, "Request Aborted.");
-                cat.updateGlobalStatus(inputData.getRequestToken(), requestStatus);
+                RequestSummaryCatalog.getInstance().updateGlobalStatus(inputData.getRequestToken(), requestStatus);
             }
         }
         //Set output data

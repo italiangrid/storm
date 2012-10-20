@@ -143,7 +143,15 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         } catch(RequestUnknownException e)
         {
             log.info("No surls status available. RequestUnknownException: " + e.getMessage());
-            globalStatus = getTReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "No surls status available. RequestUnknownException");
+            globalStatus = getTReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token and surls");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            printRequestOutcome(globalStatus, inputData);
+            return outputData;
+        } catch(UnknownTokenException e)
+        {
+            log.info("No surls status available. UnknownTokenException: " + e.getMessage());
+            globalStatus = getTReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
@@ -281,7 +289,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
 
     private Map<TSURL, TReturnStatus> getSurlsStatus(GridUserInterface user, TRequestToken requestToken,
-            ArrayOfSURLs arrayOfSURLs) throws RequestUnknownException, IllegalArgumentException
+            ArrayOfSURLs arrayOfSURLs) throws RequestUnknownException, IllegalArgumentException, UnknownTokenException
     {
         if ((requestToken == null) && (arrayOfSURLs == null))
         {

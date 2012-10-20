@@ -872,6 +872,13 @@ public class PtGChunkCatalog {
         dao.updateStatus(requestToken, new int[]{surl.uniqueId()}, new String[]{surl.rawSurl()},
                          statusCode, explanation);
     }
+    
+    public void updateFromPreviousStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
+    {
+        dao.updateStatusOnMatchingStatus(requestToken,
+                                         expectedStatusCode, newStatusCode, explanation);
+    }
 
     public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode)

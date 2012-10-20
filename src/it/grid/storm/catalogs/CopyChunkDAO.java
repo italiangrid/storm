@@ -559,19 +559,68 @@ public class CopyChunkDAO {
         }
 	}
 
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
-            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
     {
+        if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: requestToken=" + requestToken + " explanation=" + explanation);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, null, null, expectedStatusCode, newStatusCode,
+                                       explanation, true, false, true);
+    }
+    
+    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
+    {
+        if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
+                || surls == null || surlsUniqueIDs.length == 0 || surls.length == 0
+                || surlsUniqueIDs.length != surls.length)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: requestToken=" + requestToken + "surlsUniqueIDs=" + surlsUniqueIDs
+                    + " surls=" + surls);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls, expectedStatusCode,
+                                       newStatusCode, null, true, true, false);
+    }
+    
+    public void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
+            boolean withRequestToken, boolean withSurls, boolean withExplanation)
+            throws IllegalArgumentException
+    {
+        if ((withRequestToken && requestToken == null) || (withExplanation && explanation == null)
+                || (withSurls && (surlUniqueIDs == null || surls == null)))
+        {
+            throw new IllegalArgumentException("Unable to perform the doUpdateStatusOnMatchingStatus, "
+                    + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
+                    + requestToken + " withSurls=" + withSurls + " surlUniqueIDs=" + surlUniqueIDs
+                    + " surls=" + surls + " withExplaination=" + withExplanation + " explanation="
+                    + explanation);
+        }
         if(!checkConnection())
         {
             log.error("COPY CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
             return;
         }
         String str = "UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
-                + "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) " + "SET sc.statusCode=? "
-                + "WHERE sc.statusCode=? AND rq.r_token='" + requestToken.toString()
-                + "' AND rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rc.sourceSURL IN " + makeSurlString(surls);
+                + "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) " + 
+                "SET sc.statusCode=? ";
+        if (withExplanation)
+        {
+            str += " , " + buildExpainationSet(explanation);
+        }       
+        str += " WHERE sc.statusCode=? ";
+        if (withRequestToken)
+        {
+            str += " AND " + buildTokenWhereClause(requestToken);
+        }
+        if(withSurls)
+        {
+            str += " AND " + buildSurlsWhereClause(surlUniqueIDs, surls);    
+        }
         PreparedStatement stmt = null;
         try
         {
@@ -714,4 +763,21 @@ public class CopyChunkDAO {
             close(find);
         }
     }
+    
+    private String buildExpainationSet(String explanation)
+    {
+        return " sc.explanation='" + explanation + "' "  ;
+    }
+
+    private String buildTokenWhereClause(TRequestToken requestToken)
+    {
+        return " rq.r_token='" + requestToken.toString() + "' ";
+    }
+    
+    private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
+    {
+        return " rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rc.sourceSURL IN " + makeSurlString(surls);
+    }
+
 }

@@ -17,9 +17,6 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
-import it.grid.storm.catalogs.CopyChunkCatalog;
-import it.grid.storm.catalogs.CopyPersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
@@ -33,7 +30,6 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLLifetimeReturnStatusAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLLifetimeReturnStatus;
@@ -46,10 +42,9 @@ import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -177,11 +172,23 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                                                     inputData.getRequestToken());
         } else {
             log.debug(funcName + "Extending PIN lifetime...");
-            globalStatus = manageExtendPinLifetime(inputData.getRequestToken(),
-                                                   inputData.getNewPinLifetime(),
-                                                   inputData.getArrayOfSURLs(),
-                                                   user,
-                                                   arrayOfFileStatus);
+            try
+            {
+                globalStatus = manageExtendPinLifetime(inputData.getRequestToken(),
+                                                       inputData.getNewPinLifetime(),
+                                                       inputData.getArrayOfSURLs(),
+                                                       user,
+                                                       arrayOfFileStatus);
+            } catch(IllegalArgumentException e)
+            {
+                log.error(funcName + "Unexpected IllegalArgumentException: " + e.getMessage());
+                globalStatus = buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
+                outputData.setReturnStatus(globalStatus);
+                outputData.setArrayOfFileStatuses(null);
+                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <> Request for [token:] [SURL:] failed with [status: "
+                                                    + globalStatus + "]");
+                return outputData;
+            }
         }
 
         outputData.setReturnStatus(globalStatus);
@@ -362,23 +369,27 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
      * @param guser VomsGridUser.
      * @param details ArrayOfTSURLLifetimeReturnStatus.
      * @return TReturnStatus. The request status.
+     * @throws UnknownTokenException 
+     * @throws IllegalArgumentException 
      */
     private TReturnStatus manageExtendPinLifetime(TRequestToken requestToken,
             TLifeTimeInSeconds newPINLifetime, ArrayOfSURLs arrayOfSURLS, GridUserInterface guser,
-            ArrayOfTSURLLifetimeReturnStatus details) {
+            ArrayOfTSURLLifetimeReturnStatus details) throws IllegalArgumentException {
         if (details == null) {
             ExtendFileLifeTimeCommand.log.debug("Function manageExtendSURLLifetime, class ExtendFileLifeTimeExecutor: parameter details is NULL");
         }
         TReturnStatus globalStatus = null;
-        List requestSURLsList = getListOfSURLsInTheRequest(requestToken);
-        if (requestSURLsList.isEmpty()) {
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
-            } catch (InvalidTReturnStatusAttributeException e) {
-                // Nothing to do, it will never be thrown
-                ExtendFileLifeTimeCommand.log.debug("BUG: Unexpected TReturnStatus exception" + e);
-            }
-            return globalStatus;
+        List requestSURLsList;
+        try
+        {
+            requestSURLsList = getListOfSURLsInTheRequest(requestToken);
+        } catch(UnknownTokenException e4)
+        {
+            return buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+        }
+        if (requestSURLsList.isEmpty())
+        {
+            return buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
         }
         // Once we have the list of SURLs belonging to the request, we must check that the SURLs
         // given by the user are consistent, that the resulting lifetime could be lower than
@@ -568,13 +579,15 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
      * 
      * @param requestToken TRequestToken
      * @return List<SURLData>
+     * @throws UnknownTokenException 
+     * @throws IllegalArgumentException 
      */
-    private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken) {
+    private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException {
         List<SURLData> listOfSURLsInfo = new LinkedList<SURLData>();
-        RequestSummaryCatalog rsCatalog = RequestSummaryCatalog.getInstance();
-        TRequestType requestType = rsCatalog.typeOf(requestToken);
+//        RequestSummaryCatalog rsCatalog = RequestSummaryCatalog.getInstance();
+//        TRequestType requestType = rsCatalog.typeOf(requestToken);
 
-        if (requestType == TRequestType.PREPARE_TO_GET) {
+//        if (requestType == TRequestType.PREPARE_TO_GET) {
             Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
             if(!(surlStatusMap == null || surlStatusMap.isEmpty()))
             {
@@ -583,32 +596,57 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                     listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
                 }
             }
-        } else if (requestType == TRequestType.PREPARE_TO_PUT) 
-        {
-            Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
-            if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
-            {
-                for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
-                {
-                    listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
-                }
-            }
+//        } else if (requestType == TRequestType.PREPARE_TO_PUT) 
+//        {
+//            Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
+//            if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
+//            {
+//                for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
+//                {
+//                    listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
+//                }
+//            }
                 
-        } 
-        else if (requestType == TRequestType.COPY) {
-            CopyChunkCatalog copyCatalog = CopyChunkCatalog.getInstance();
-            Collection chunkList = copyCatalog.lookup(requestToken);
-            Iterator chunk = chunkList.iterator();
-            while (chunk.hasNext()) {
-                CopyPersistentChunkData aux = (CopyPersistentChunkData) chunk.next();
-                SURLData surlData = new SURLData(aux.getDestinationSURL(), aux.getStatus().getStatusCode());
-                listOfSURLsInfo.add(surlData);
-            }
-        }
+//        } 
+//        else if (requestType == TRequestType.COPY) {
+//            CopyChunkCatalog copyCatalog = CopyChunkCatalog.getInstance();
+//            Collection chunkList = copyCatalog.lookup(requestToken);
+//            Iterator chunk = chunkList.iterator();
+//            while (chunk.hasNext()) {
+//                CopyPersistentChunkData aux = (CopyPersistentChunkData) chunk.next();
+//                SURLData surlData = new SURLData(aux.getDestinationSURL(), aux.getStatus().getStatusCode());
+//                listOfSURLsInfo.add(surlData);
+//            }
+//            Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
+//            if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
+//            {
+//                for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
+//                {
+//                    listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
+//                }
+//            }
+//        }
 
         return listOfSURLsInfo;
     }
 
+    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination) throws IllegalArgumentException, IllegalStateException
+    {
+        if(statusCode == null)
+        {
+            throw new IllegalArgumentException("Unable to build the status, null arguments: statusCode=" + statusCode);
+        }
+        try
+        {
+            return new TReturnStatus(statusCode, explaination);
+        } catch(InvalidTReturnStatusAttributeException e1)
+        {
+            // Never thrown
+            throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException " +
+                    "in building TReturnStatus: " + e1.getMessage());
+        }
+    }
+    
     private class SURLData {
         public TSURL surl;
         public TStatusCode statusCode;

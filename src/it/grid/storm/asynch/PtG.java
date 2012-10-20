@@ -27,7 +27,6 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGData;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
@@ -125,20 +124,21 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
         {
             failure = true;
-            requestData.changeStatusSRM_FILE_BUSY("The surl " + requestData.getSURL() + " is currently busy");
-            log.error("Unable to perform the PTG request, surl busy");
+            requestData.changeStatusSRM_FILE_BUSY("Requested file is"
+                                                  + " busy (in an incompatible state with PTG)");
+            log.info("Unable to perform the PTG request, surl busy");
             printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
             return;
         }
-        if(PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
-        {
-            /* fail request with SRM_FILE_BUSY */
-            requestData.changeStatusSRM_FILE_BUSY("Requested file is"
-                + " still in SRM_SPACE_AVAILABLE state!");
-            failure = true;
-            log.debug("ATTENTION in PtGChunk! PtGChunk received r"
-                + "equest for SURL that is still in SRM_SPACE_AVAILABLE state!");
-        }
+//        if(PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
+//        {
+//            /* fail request with SRM_FILE_BUSY */
+//            requestData.changeStatusSRM_FILE_BUSY("Requested file is"
+//                + " still in SRM_SPACE_AVAILABLE state!");
+//            failure = true;
+//            log.debug("ATTENTION in PtGChunk! PtGChunk received r"
+//                + "equest for SURL that is still in SRM_SPACE_AVAILABLE state!");
+//        }
         else
         {
             /* proceed normally! */

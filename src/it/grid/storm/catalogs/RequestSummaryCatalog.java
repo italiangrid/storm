@@ -27,6 +27,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 import java.io.ByteArrayOutputStream;
@@ -331,6 +332,12 @@ public class RequestSummaryCatalog {
         dao.updateGlobalStatus(rt.toString(),
                                StatusCodeConverter.getInstance().toDB(status.getStatusCode()),
                                status.getExplanation());
+    }
+    
+    public void updateFromPreviousGlobalStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
+    {
+       dao.updateGlobalStatusOnMatchingGlobalStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
     }
 
     /**

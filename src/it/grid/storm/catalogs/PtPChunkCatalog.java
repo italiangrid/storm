@@ -896,6 +896,12 @@ public class PtPChunkCatalog {
                          statusCode, explanation);
     }
 	
+    public void updateFromPreviousStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
+    {
+        dao.updateStatusOnMatchingStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
+    }
+
     public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode)
     {

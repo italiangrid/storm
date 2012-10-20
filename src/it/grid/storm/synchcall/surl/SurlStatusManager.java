@@ -34,7 +34,7 @@ public class SurlStatusManager
     private static final HashMap<TSURL, TReturnStatus> EMPTY_SURL_RESULT = new HashMap<TSURL, TReturnStatus>(0);
 //    private static final HashMap<TRequestToken, TReturnStatus> EMPTY_TOKEN_RESULT = new HashMap<TRequestToken, TReturnStatus>(0);
 
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws IllegalArgumentException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException
     {
         if(requestToken == null)
         {
@@ -49,14 +49,14 @@ public class SurlStatusManager
         }
         else
         {
-            try
-            {
+//            try
+//            {
                 return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
-            } catch(UnknownTokenException e)
-            {
-                log.warn("Unable to get Token. UnknownTokenException: " + e.getMessage());
-                return EMPTY_SURL_RESULT;
-            }
+//            } catch(UnknownTokenException e)
+//            {
+//                log.warn("Unable to get Token. UnknownTokenException: " + e.getMessage());
+//                return EMPTY_SURL_RESULT;
+//            }
         }
         
     }
@@ -110,6 +110,27 @@ public class SurlStatusManager
                 throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
         }
     }
+    
+    public static void checkAndUpdateStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation) throws UnknownTokenException
+    {
+        if (requestToken == null || expectedStatusCode == null
+                || newStatusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: requestToken=" + requestToken + " expectedStatusCode="
+                    + expectedStatusCode + " newStatusCode=" + newStatusCode + " explanation=" + explanation);
+        }
+        TRequestType requestType = isPersisted(requestToken);
+        if(!requestType.isEmpty())
+        {
+            checkAndUpdatePersistentStatus(requestType, requestToken, expectedStatusCode, newStatusCode, explanation);
+        }
+        else
+        {
+            SurlStatusStore.getInstance().checkAndUpdate(requestToken, expectedStatusCode, newStatusCode, explanation);
+        }
+    }
 
     public static void checkAndUpdateStatus(TRequestToken requestToken, List<TSURL> surls,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
@@ -152,7 +173,8 @@ public class SurlStatusManager
         }
     }
     
-    public static void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode, String explanation) throws IllegalArgumentException, UnknownTokenException
+    public static void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode,
+            String explanation) throws IllegalArgumentException, UnknownTokenException
     {
         if (requestToken == null || surl == null
                 || statusCode == null || explanation == null)
@@ -192,61 +214,10 @@ public class SurlStatusManager
         }
     }
     
-    private static void checkAndUpdatePersistentStatus(TRequestType requestType, TSURL surl,
-            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
-    {
-        switch (requestType)
-        {
-            case PREPARE_TO_GET:
-              //TODO if needed do it
-//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
-                break;
-            case PREPARE_TO_PUT:
-                PtPChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
-                break;
-            case COPY:
-                //TODO if needed do it
-//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
-                break;
-            case BRING_ON_LINE:
-                //TODO if needed do it
-//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
-                break;
-            case EMPTY:
-                break;
-            default:
-                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
-        }
-    }
     
-    private static void updatePersistentStatus(TRequestType requestType, TSURL surl, TStatusCode statusCode,
-            String explanation)
-    {
-        switch (requestType)
-        {
-            case PREPARE_TO_GET:
-              //TODO if needed do it
-//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
-                break;
-            case PREPARE_TO_PUT:
-                PtPChunkCatalog.getInstance().updateStatus(surl, statusCode, explanation);
-                break;
-            case COPY:
-                //TODO if needed do it
-//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
-                break;
-            case BRING_ON_LINE:
-                //TODO if needed do it
-//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
-                break;
-            case EMPTY:
-                break;
-            default:
-                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
-        }
-    }
 
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls) throws IllegalArgumentException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls)
+            throws IllegalArgumentException, UnknownTokenException
     {
         if(requestToken == null || surls == null || surls.isEmpty())
         {
@@ -261,14 +232,14 @@ public class SurlStatusManager
         }
         else
         {
-            try
-            {
+//            try
+//            {
                 return SurlStatusStore.getInstance().getSurlsStatus(requestToken, surls);
-            } catch(UnknownTokenException e)
-            {
-                log.warn("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
-                return EMPTY_SURL_RESULT;
-            }
+//            } catch(UnknownTokenException e)
+//            {
+//                log.warn("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+//                return EMPTY_SURL_RESULT;
+//            }
         }
     }
     
@@ -343,6 +314,84 @@ public class SurlStatusManager
             case BRING_ON_LINE:
                 //TODO if needed do it
 //                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static void updatePersistentStatus(TRequestType requestType, TSURL surl, TStatusCode statusCode,
+            String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+              //TODO if needed do it
+//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateStatus(surl, statusCode, explanation);
+                break;
+            case COPY:
+                //TODO if needed do it
+//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                //TODO if needed do it
+//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static void checkAndUpdatePersistentStatus(TRequestType requestType, TSURL surl,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+              //TODO if needed do it
+//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case COPY:
+                //TODO if needed do it
+//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                //TODO if needed do it
+//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static void checkAndUpdatePersistentStatus(TRequestType requestType, TRequestToken requestToken,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                PtGChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case COPY:
+                CopyChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                BoLChunkCatalog.getInstance().updateFromPreviousStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
                 break;
             case EMPTY:
                 break;

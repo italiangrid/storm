@@ -18,6 +18,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TStatusCode;
 
@@ -470,6 +471,37 @@ public class RequestSummaryDAO {
             update.setString(3, rt);
             logWarnings(update.getWarnings());
             log.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
+            update.executeUpdate();
+            logWarnings(update.getWarnings());
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO: " + e);
+        } finally {
+            close(update);
+        }
+    }
+    
+    public void updateGlobalStatusOnMatchingGlobalStatus(TRequestToken requestToken,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+    {
+        if(!checkConnection())
+        {
+            log.error("REQUEST SUMMARY DAO - updateGlobalStatusOnMatchingGlobalStatus: " +
+            		"unable to get a valid connection!");
+            return;
+        }
+        PreparedStatement update = null;
+        try {
+            update = con.prepareStatement("UPDATE request_queue SET status=?, errstring=? WHERE r_token=? AND status=?");
+            logWarnings(con.getWarnings());
+            update.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+            logWarnings(update.getWarnings());
+            update.setString(2, explanation);
+            logWarnings(update.getWarnings());
+            update.setString(3, requestToken.toString());
+            logWarnings(update.getWarnings());
+            update.setInt(4, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+            logWarnings(update.getWarnings());
+            log.trace("REQUEST SUMMARY DAO - updateGlobalStatusOnMatchingGlobalStatus: executing " + update);
             update.executeUpdate();
             logWarnings(update.getWarnings());
         } catch (SQLException e) {

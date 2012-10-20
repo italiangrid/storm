@@ -19,10 +19,10 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.asynch.AdvancedPicker;
-import it.grid.storm.asynch.SchedulerFacade;
+//import it.grid.storm.asynch.SchedulerFacade;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.scheduler.Scheduler;
+//import it.grid.storm.scheduler.Scheduler;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -41,6 +41,8 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +65,8 @@ import org.slf4j.LoggerFactory;
 public class AbortRequestCommand extends DataTransferCommand implements Command
 {
     private static final Logger log = LoggerFactory.getLogger(AbortRequestCommand.class);
-    private RequestSummaryCatalog summaryCat = null;
-    private Scheduler scheduler = null;
+//    private RequestSummaryCatalog summaryCat = null;
+//    private Scheduler scheduler = null;
     private AdvancedPicker advancedPicker = null;
     private AbortExecutorInterface executor = null;
 
@@ -119,19 +121,19 @@ public class AbortRequestCommand extends DataTransferCommand implements Command
 
     public OutputData execute(InputData data)
     {
-        summaryCat = RequestSummaryCatalog.getInstance();
-        scheduler = SchedulerFacade.getInstance().crusherScheduler();
+//        summaryCat = RequestSummaryCatalog.getInstance();
+//        scheduler = SchedulerFacade.getInstance().crusherScheduler();
         advancedPicker = new AdvancedPicker();
         AbortRequestOutputData outputData = new AbortRequestOutputData();
         AbortRequestInputData inputData = (AbortRequestInputData)data;
 
 
-        boolean requestFailure, requestSuccess;
+//        boolean requestFailure, requestSuccess;
         //Risultato Parziale
         boolean res = false;
         //Risultato Finale
-        boolean done = false;
-        boolean found = false;
+//        boolean done = false;
+//        boolean found = false;
 
         TReturnStatus globalStatus = null;
         ArrayOfTSURLReturnStatus arrayOfTSURLReturnStatus = null;
@@ -140,21 +142,17 @@ public class AbortRequestCommand extends DataTransferCommand implements Command
 
         /******************** Check for malformed request: missing mandatory input parameters ****************/
 
-        requestFailure = false;
-        if (inputData == null) {
-            requestFailure = true;
-        } else if (inputData.getRequestToken() == null) {
-            requestFailure = true;
-        } else if((inputData.getType() == AbortGeneralInputData.ABORT_FILES)&&(inputData.getArrayOfSURLs() == null)) {
-            requestFailure = true;
-        }
-
-        if (requestFailure) {
+//        requestFailure = false;
+        if (inputData == null || inputData.getRequestToken() == null
+                || (inputData.getType() == AbortGeneralInputData.ABORT_FILES)
+                && (inputData.getArrayOfSURLs() == null))
+        {
             AbortRequestCommand.log.debug("SrmAbortRequest: Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            AbortRequestCommand.log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "+globalStatus+"]");
+            AbortRequestCommand.log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "
+                    + globalStatus + "]");
             return outputData;
         }
 
@@ -242,7 +240,27 @@ public class AbortRequestCommand extends DataTransferCommand implements Command
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
             //TODO REMOVE THIS COMMENT!
-            summaryCat.abortRequest(inputData.getRequestToken());
+//            summaryCat.abortRequest(inputData.getRequestToken());
+            try
+            {
+                SurlStatusManager.checkAndUpdateStatus(inputData.getRequestToken(),
+                                                       TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
+                                                       "User aborted request!");
+            } catch(UnknownTokenException e)
+            {
+                log.debug("Unable to update surls status on token " + requestToken
+                        + " .UnknownTokenException: " + e.getMessage());
+                globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+                outputData.setArrayOfFileStatuses(null);
+                log.info("srmAbortRequest: <" + user + "> Request for [token:" + inputData.getRequestToken()
+                        + "] failed with [status: " + globalStatus + "]");
+            }
+            
+            RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(inputData.getRequestToken(),
+                                                                   TStatusCode.SRM_REQUEST_QUEUED,
+                                                                   TStatusCode.SRM_ABORTED,
+                                                                   "User aborted request!");
+
             res = false;
 
         } else if(inputData.getType() == AbortGeneralInputData.ABORT_FILES) {
@@ -372,8 +390,8 @@ public class AbortRequestCommand extends DataTransferCommand implements Command
          * @todo
          */
 
-        TRequestType rtype = null;
-        rtype = summaryCat.typeOf(requestToken);
+//      TRequestType rtype = summaryCat.typeOf(requestToken);
+        TRequestType rtype = SurlStatusManager.isPersisted(requestToken);
 
         if (rtype==TRequestType.PREPARE_TO_GET) {
             executor = new PtGAbortExecutor();

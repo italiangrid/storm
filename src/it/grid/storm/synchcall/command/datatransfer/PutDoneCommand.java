@@ -150,6 +150,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData, user);
             return outputData;
+        } catch(UnknownTokenException e)
+        {
+            log.info(funcName + "Invalid request token. UnknownTokenException: " + e.getMessage());
+            globalStatus = buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            printRequestOutcome(globalStatus, inputData, user);
+            return outputData;
         }
         
         LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
@@ -333,7 +341,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
     
     private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken, GridUserInterface user,
-            List<TSURL> inputSURLs) throws IllegalArgumentException, RequestUnknownException
+            List<TSURL> inputSURLs) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException
     {
 
         ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(inputSURLs.size());

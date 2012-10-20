@@ -1084,40 +1084,59 @@ public class PtPChunkDAO {
             close(stmt);
         }
     }
-
-    public void updateStatusOnMatchingStatus(int[] surlsUniqueIDs, String[] surls,
-            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+	
+	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
     {
-        if (explanation == null)
+	    if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
         {
             throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
-                    + "invalid arguments: explanation=" + explanation);
+                    + "invalid arguments: requestToken=" + requestToken + " explanation=" + explanation);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, null, null, expectedStatusCode, newStatusCode,
+                                       explanation, true, false, true);
+    }
+
+    public void updateStatusOnMatchingStatus(int[] surlsUniqueIDs, String[] surls,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation) throws IllegalArgumentException
+    {
+        if (surlsUniqueIDs == null || surls == null || explanation == null || surlsUniqueIDs.length == 0
+                || surls.length == 0 || surlsUniqueIDs.length != surls.length)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surls=" + surls
+                    + " explanation=" + explanation);
         }
         doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls, expectedStatusCode, newStatusCode,
-                                       explanation, true, true);
+                                       explanation, false, true, true);
     }
 
     public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
     {
-        if (requestToken == null || requestToken.getValue().trim().isEmpty())
+        if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
+                || surls == null || surlsUniqueIDs.length == 0 || surls.length == 0
+                || surlsUniqueIDs.length != surls.length)
         {
             throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
-                    + "invalid arguments: requestToken=" + requestToken);
+                    + "invalid arguments: requestToken=" + requestToken + "surlsUniqueIDs=" + surlsUniqueIDs
+                    + " surls=" + surls);
         }
         doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls, expectedStatusCode,
-                                       newStatusCode, null, true, false);
+                                       newStatusCode, null, true, true, false);
     }
 
     private void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
-            boolean withRequestToken, boolean withExplanation) throws IllegalArgumentException
+            boolean withRequestToken, boolean withSurls, boolean withExplanation) throws IllegalArgumentException
     {
-    if((withRequestToken && requestToken == null) || (withExplanation && explanation == null))
+        if ((withRequestToken && requestToken == null) || (withExplanation && explanation == null)
+                || (withSurls && (surlsUniqueIDs == null || surls == null)))
         {
             throw new IllegalArgumentException("Unable to perform the doUpdateStatusOnMatchingStatus, "
                     + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
-                    + requestToken + " withExplaination=" + withExplanation + " explanation="
+                    + requestToken + " withSurls=" + withSurls + " surlsUniqueIDs=" + surlsUniqueIDs
+                    + " surls=" + surls + " withExplaination=" + withExplanation + " explanation="
                     + explanation);
         }
         if(!checkConnection())
@@ -1137,8 +1156,11 @@ public class PtPChunkDAO {
         {
             str += " AND " + buildTokenWhereClause(requestToken);
         }
-        str += " AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surls);                		
+        if(withSurls)
+        {
+            str += " AND " + buildSurlsWhereClause(surlsUniqueIDs, surls);    
+        }
+                        		
         PreparedStatement stmt = null;
         try
         {
@@ -1174,45 +1196,7 @@ public class PtPChunkDAO {
         }
     }
     
-    /**
-     * Method that returns a String containing all Surl's IDs.
-     */
-    private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
-
-        StringBuffer sb = new StringBuffer("(");
-        for(int i = 0; i < surlUniqueIDs.length; i++)
-        {
-            if(i > 0)
-            {
-                sb.append(",");
-            }
-            sb.append(surlUniqueIDs[i]);
-        }
-        sb.append(")");
-        return sb.toString();
-    }
-
     
-    /**
-     * Method that returns a String containing all Surls.
-     */
-    private String makeSurlString(String[] surls) {
-
-        StringBuffer sb = new StringBuffer("(");
-        int n = surls.length;
-        for(int i = 0; i < n; i++)
-        {
-            sb.append("'");
-            sb.append(surls[i]);
-            sb.append("'");
-            if(i < (n - 1))
-            {
-                sb.append(",");
-            }
-        }
-        sb.append(")");
-        return sb.toString();
-    }
 
     public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
     {
@@ -1320,14 +1304,59 @@ public class PtPChunkDAO {
         }
     }
     
-    private String buildTokenWhereClause(TRequestToken requestToken)
-    {
-        return " rq.r_token='" + requestToken.toString() + "' ";
-    }
-    
     private String buildExpainationSet(String explanation)
     {
         return " sp.explanation='" + explanation + "' "  ;
     }
 
+    private String buildTokenWhereClause(TRequestToken requestToken)
+    {
+        return " rq.r_token='" + requestToken.toString() + "' ";
+    }
+    
+    private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
+    {
+        return " rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rp.targetSURL IN " + makeSurlString(surls);
+    }
+    
+    /**
+     * Method that returns a String containing all Surl's IDs.
+     */
+    private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
+
+        StringBuffer sb = new StringBuffer("(");
+        for(int i = 0; i < surlUniqueIDs.length; i++)
+        {
+            if(i > 0)
+            {
+                sb.append(",");
+            }
+            sb.append(surlUniqueIDs[i]);
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    
+    /**
+     * Method that returns a String containing all Surls.
+     */
+    private String makeSurlString(String[] surls) {
+
+        StringBuffer sb = new StringBuffer("(");
+        int n = surls.length;
+        for(int i = 0; i < n; i++)
+        {
+            sb.append("'");
+            sb.append(surls[i]);
+            sb.append("'");
+            if(i < (n - 1))
+            {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 }
