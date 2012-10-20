@@ -19,10 +19,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.CopyPersistentChunkData;
-import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.ReducedPtGChunkData;
-import it.grid.storm.catalogs.ReducedPtPChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.filesystem.LocalFile;
@@ -48,11 +44,15 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -339,9 +339,17 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
 	 */
     private boolean isStoRISURLBusy(StoRI element) {
 
-        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(element.getSURL());
-        return busyStatus;
+        try
+        {
+            return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlsStatus(element.getSURL()));
+        } catch(IllegalArgumentException e)
+        {
+           throw new IllegalStateException("unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: " + e);
+        } catch(UnknownSurlException e)
+        {
+            log.debug("Surl " + element.getSURL() + " not stored, surl is not busy");
+            return false;
+        }
 	}
     
     /**
@@ -561,30 +569,33 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
      * @param requestToken TRequestToken
      * @return List<SURLData>
      */
-    private List getListOfSURLsInTheRequest(TRequestToken requestToken) {
-        List listOfSURLsInfo = new LinkedList();
+    private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken) {
+        List<SURLData> listOfSURLsInfo = new LinkedList<SURLData>();
         RequestSummaryCatalog rsCatalog = RequestSummaryCatalog.getInstance();
         TRequestType requestType = rsCatalog.typeOf(requestToken);
 
         if (requestType == TRequestType.PREPARE_TO_GET) {
-            PtGChunkCatalog ptgCatalog = PtGChunkCatalog.getInstance();
-            Collection chunkList = ptgCatalog.lookupReducedPtGChunkData(requestToken);
-            Iterator chunk = chunkList.iterator();
-            while (chunk.hasNext()) {
-                ReducedPtGChunkData aux = (ReducedPtGChunkData) chunk.next();
-                SURLData surlData = new SURLData(aux.fromSURL(), aux.status().getStatusCode());
-                listOfSURLsInfo.add(surlData);
+            Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
+            if(!(surlStatusMap == null || surlStatusMap.isEmpty()))
+            {
+                for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
+                {
+                    listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
+                }
             }
-        } else if (requestType == TRequestType.PREPARE_TO_PUT) {
-            PtPChunkCatalog ptpCatalog = PtPChunkCatalog.getInstance();
-            Collection chunkList = ptpCatalog.lookupReducedPtPChunkData(requestToken);
-            Iterator chunk = chunkList.iterator();
-            while (chunk.hasNext()) {
-                ReducedPtPChunkData aux = (ReducedPtPChunkData) chunk.next();
-                SURLData surlData = new SURLData(aux.toSURL(), aux.status().getStatusCode());
-                listOfSURLsInfo.add(surlData);
+        } else if (requestType == TRequestType.PREPARE_TO_PUT) 
+        {
+            Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager.getSurlsStatus(requestToken);
+            if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
+            {
+                for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
+                {
+                    listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus.getValue().getStatusCode()));    
+                }
             }
-        } else if (requestType == TRequestType.COPY) {
+                
+        } 
+        else if (requestType == TRequestType.COPY) {
             CopyChunkCatalog copyCatalog = CopyChunkCatalog.getInstance();
             Collection chunkList = copyCatalog.lookup(requestToken);
             Iterator chunk = chunkList.iterator();

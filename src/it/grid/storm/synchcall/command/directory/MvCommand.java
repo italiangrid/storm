@@ -24,8 +24,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -48,6 +46,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project This
@@ -60,13 +60,9 @@ import it.grid.storm.synchcall.data.directory.MvOutputData;
 public class MvCommand extends DirectoryCommand implements Command {
 
     private final NamespaceInterface namespace;
-    private final PtPChunkCatalog putCatalog;
-    private final PtGChunkCatalog getCatalog;
 
     public MvCommand() {
         namespace = NamespaceDirector.getNamespace();
-        putCatalog = PtPChunkCatalog.getInstance();
-        getCatalog = PtGChunkCatalog.getInstance();
 
     }
 
@@ -477,7 +473,20 @@ public class MvCommand extends DirectoryCommand implements Command {
              * Check if there is an active SrmPrepareToPut on the source SURL. In that case SrmMv() fails with
              * SRM_FILE_BUSY.
              */
-            if (putCatalog.isSRM_SPACE_AVAILABLE(fromStori.getSURL())) {
+            TReturnStatus surlStatus = null;
+            try
+            {
+                surlStatus = SurlStatusManager.getSurlsStatus(fromStori.getSURL());
+            } catch(IllegalArgumentException e)
+            {
+                throw new IllegalStateException("Unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: " + e);
+            } catch(UnknownSurlException e)
+            {
+                log.debug("Surl " + fromStori.getSURL()
+                        + " not stored, surl is not busy. UnknownSurlException: " + e.getMessage());
+            }
+            if(TStatusCode.SRM_SPACE_AVAILABLE.equals(surlStatus))
+            {
                 // There is an active PrepareToPut!
                 log.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
                 explanation = "There is an active SrmPrepareToPut on from SURL.";
@@ -492,7 +501,10 @@ public class MvCommand extends DirectoryCommand implements Command {
              * Check if there is an active SrmPrepareToGet on the source SURL. In that case SrmMv() fails with
              * SRM_FILE_BUSY.
              */
-            if (getCatalog.isSRM_FILE_PINNED(fromStori.getSURL())) {
+           
+//            if (getCatalog.isSRM_FILE_PINNED(fromStori.getSURL())) {
+            if(TStatusCode.SRM_FILE_BUSY.equals(surlStatus))
+            {
                 // There is an active PrepareToGet!
                 log.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
                 explanation = "There is an active SrmPrepareToGet on from SURL";

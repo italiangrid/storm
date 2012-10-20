@@ -890,6 +890,12 @@ public class PtPChunkCatalog {
 	                     statusCode, explanation);
     }
 	
+	public void updateStatus(TSURL surl, TStatusCode statusCode, String explanation)
+    {
+	    dao.updateStatus(new int[]{surl.uniqueId()}, new String[]{surl.rawSurl()},
+                         statusCode, explanation);
+    }
+	
     public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode)
     {
@@ -904,6 +910,13 @@ public class PtPChunkCatalog {
         }
         dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
                                          expectedStatusCode, newStatusCode);
+    }
+
+    public void updateFromPreviousStatus(TSURL surl, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
+    {
+        dao.updateStatusOnMatchingStatus(new int[]{surl.uniqueId()}, new String[]{surl.rawSurl()},
+                                         expectedStatusCode, newStatusCode, explanation);
     }
 
 }

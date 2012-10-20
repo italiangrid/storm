@@ -20,7 +20,6 @@ package it.grid.storm.synchcall.command.directory;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.SRMFileRequest;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.common.SRMConstants;
@@ -40,7 +39,6 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -71,6 +69,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -736,9 +736,17 @@ public class LsCommand extends DirectoryCommand implements Command {
 	 */
     private boolean isStoRISURLBusy(StoRI element) {
 
-        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-        boolean busyStatus = putCatalog.isSRM_SPACE_AVAILABLE(element.getSURL());
-        return busyStatus;
+        try
+        {
+            return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlsStatus(element.getSURL()));
+        } catch(IllegalArgumentException e)
+        {
+           throw new IllegalStateException("unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: " + e);
+        } catch(UnknownSurlException e)
+        {
+            log.debug("Surl " + element.getSURL() + " not stored, surl is not busy");
+            return false;
+        }
 	}
 
 	/**

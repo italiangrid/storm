@@ -132,6 +132,26 @@ public class SurlStatusManager
         }
     }
     
+    public static void checkAndUpdateStatus(TRequestType requestType, TSURL surl,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+    {
+        if (requestType == null || surl == null || expectedStatusCode == null
+                || newStatusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: requestType=" + requestType + " surl=" + surl
+                    + " expectedStatusCode=" + expectedStatusCode + " newStatusCode=" + newStatusCode + " explanation=" + explanation);
+        }
+        if(!requestType.isEmpty())
+        {
+            checkAndUpdatePersistentStatus(requestType, surl, expectedStatusCode, newStatusCode, explanation);
+        }
+        else
+        {
+            SurlStatusStore.getInstance().checkAndUpdate(surl, expectedStatusCode, newStatusCode, explanation);
+        }
+    }
+    
     public static void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode, String explanation) throws IllegalArgumentException, UnknownTokenException
     {
         if (requestToken == null || surl == null
@@ -149,6 +169,80 @@ public class SurlStatusManager
         else
         {
             SurlStatusStore.getInstance().update(requestToken, surl, statusCode, explanation);
+        }
+    }
+    
+    public static void updateStatus(TRequestType requestType, TSURL surl, TStatusCode statusCode,
+            String explanation)
+    {
+        if (requestType == null || surl == null
+                || statusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: requestType=" + requestType + " surl=" + surl
+                    + " statusCode=" + statusCode + " explanation=" + explanation);
+        }
+        if(!requestType.isEmpty())
+        {
+            updatePersistentStatus(requestType, surl, statusCode, explanation);
+        }
+        else
+        {
+            SurlStatusStore.getInstance().update(surl, statusCode, explanation);
+        }
+    }
+    
+    private static void checkAndUpdatePersistentStatus(TRequestType requestType, TSURL surl,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+              //TODO if needed do it
+//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case COPY:
+                //TODO if needed do it
+//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                //TODO if needed do it
+//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
+        }
+    }
+    
+    private static void updatePersistentStatus(TRequestType requestType, TSURL surl, TStatusCode statusCode,
+            String explanation)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+              //TODO if needed do it
+//                PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);
+                break;
+            case PREPARE_TO_PUT:
+                PtPChunkCatalog.getInstance().updateStatus(surl, statusCode, explanation);
+                break;
+            case COPY:
+                //TODO if needed do it
+//                CopyChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case BRING_ON_LINE:
+                //TODO if needed do it
+//                BoLChunkCatalog.getInstance().updateStatus(requestToken, surl, statusCode, explanation);
+                break;
+            case EMPTY:
+                break;
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
         }
     }
 
@@ -200,6 +294,35 @@ public class SurlStatusManager
         }
 
         return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
+    public static TReturnStatus getSurlsStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
+    {
+        if (surl == null)
+        {
+            throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl);
+        }
+        
+        Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl).values();
+        if(statuses.isEmpty())
+        {
+            throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
+        }
+        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
+        removeStartingStatus(nonFinalStatuses);
+        if(nonFinalStatuses.isEmpty())
+        {
+            return extractMostRecentStatus(statuses);
+        }
+        if(nonFinalStatuses.size() > 1)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
+            return extractMostRecentStatus(nonFinalStatuses);
+        }
+        else
+        {
+            return nonFinalStatuses.getFirst();
+        }
     }
     
     private static void updatePersistentStatus(TRequestType requestType, TRequestToken requestToken,
@@ -354,35 +477,6 @@ public class SurlStatusManager
         return tokenStatusMap;
     }
     
-    public static TReturnStatus getSurlsStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
-    {
-        if (surl == null)
-        {
-            throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl);
-        }
-        Collection<TReturnStatus> statuses = SurlStatusStore.getInstance().getSurlStatuses(surl);
-        if(statuses.isEmpty())
-        {
-            throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
-        }
-        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
-        removeStartingStatus(nonFinalStatuses);
-        
-        if(nonFinalStatuses.isEmpty())
-        {
-            return extractMostRecentStatus(statuses);
-        }
-        if(nonFinalStatuses.size() > 1)
-        {
-            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
-            return extractMostRecentStatus(nonFinalStatuses);
-        }
-        else
-        {
-            return nonFinalStatuses.getFirst();
-        }
-    }
-
     private static void removeStartingStatus(List<TReturnStatus> statuses)
     {
         Iterator<TReturnStatus> iterator = statuses.iterator();
@@ -435,7 +529,7 @@ public class SurlStatusManager
         return min;
     }
 
-    private static TRequestType isPersisted(TRequestToken requestToken) throws IllegalArgumentException
+    public static TRequestType isPersisted(TRequestToken requestToken) throws IllegalArgumentException
     {
         if(requestToken == null)
         {

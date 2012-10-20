@@ -1003,18 +1003,56 @@ public class PtPChunkDAO {
         }
 	}
 	
-	public void updateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
-            String explanation)
+	public void updateStatus(int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode, String explanation) throws IllegalArgumentException
     {
+	    if (explanation == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatus, "
+                    + "invalid arguments: explanation=" + explanation);
+        }
+	    doUpdateStatus(null, surlsUniqueIDs, surls, statusCode,
+	                   explanation, false, true);
+    }
+	
+	public void updateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
+            String explanation) throws IllegalArgumentException
+    {
+        if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatus, "
+                    + "invalid arguments: requestToken=" + requestToken + " explanation=" + explanation);
+        }
+	    doUpdateStatus(requestToken, surlsUniqueIDs, surls, statusCode,
+                       explanation, true, true);
+    }
+	
+	private void doUpdateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
+            String explanation, boolean withRequestToken, boolean withExplaination) throws IllegalArgumentException
+    {
+	    if((withRequestToken && requestToken == null) || (withExplaination && explanation == null))
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatus, "
+                    + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
+                    + requestToken + " withExplaination=" + withExplaination + " explaination="
+                    + explanation);
+        }
 	    if(!checkConnection())
         {
             log.error("PTP CHUNK DAO: updateStatus - unable to get a valid connection!");
             return;
         }
-        String str = "UPDATE "
-                + "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
-                + "SET sp.statusCode=? , sp.explanation=? " + "WHERE rq.r_token='" + requestToken.toString()
-                + "' AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+        String str = "UPDATE status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND "
+                + "rp.request_queueID=rq.ID " + "SET sp.statusCode=? ";
+        if (withExplaination)
+        {
+            str += " , " + buildExpainationSet(explanation);
+        }       
+        str += " WHERE ";
+        if (withRequestToken)
+        {
+            str += buildTokenWhereClause(requestToken);
+        }
+        str += " AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
                 + " OR rp.targetSURL IN " + makeSurlString(surls);
         PreparedStatement stmt = null;
         try
@@ -1022,9 +1060,6 @@ public class PtPChunkDAO {
             stmt = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             stmt.setInt(1, StatusCodeConverter.getInstance().toDB(statusCode));
-            logWarnings(stmt.getWarnings());
-            
-            stmt.setString(2, (explanation != null ? explanation : ""));
             logWarnings(stmt.getWarnings());
             
             log.trace("PTP CHUNK DAO - updateStatus: "
@@ -1050,9 +1085,41 @@ public class PtPChunkDAO {
         }
     }
 
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
-            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+    public void updateStatusOnMatchingStatus(int[] surlsUniqueIDs, String[] surls,
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
     {
+        if (explanation == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: explanation=" + explanation);
+        }
+        doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls, expectedStatusCode, newStatusCode,
+                                       explanation, true, true);
+    }
+
+    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
+    {
+        if (requestToken == null || requestToken.getValue().trim().isEmpty())
+        {
+            throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
+                    + "invalid arguments: requestToken=" + requestToken);
+        }
+        doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls, expectedStatusCode,
+                                       newStatusCode, null, true, false);
+    }
+
+    private void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+            String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
+            boolean withRequestToken, boolean withExplanation) throws IllegalArgumentException
+    {
+    if((withRequestToken && requestToken == null) || (withExplanation && explanation == null))
+        {
+            throw new IllegalArgumentException("Unable to perform the doUpdateStatusOnMatchingStatus, "
+                    + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
+                    + requestToken + " withExplaination=" + withExplanation + " explanation="
+                    + explanation);
+        }
         if(!checkConnection())
         {
             log.error("PTP CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
@@ -1060,9 +1127,18 @@ public class PtPChunkDAO {
         }
         String str = "UPDATE "
                 + "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
-                + "SET sp.statusCode=? " + "WHERE sp.statusCode=? AND rq.r_token='" + requestToken.toString()
-                + "' AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surls);
+                + "SET sp.statusCode=? ";
+        if (withExplanation)
+        {
+            str += " , " + buildExpainationSet(explanation);
+        }       
+        str += " WHERE sp.statusCode=? ";
+        if (withRequestToken)
+        {
+            str += " AND " + buildTokenWhereClause(requestToken);
+        }
+        str += " AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rp.targetSURL IN " + makeSurlString(surls);                		
         PreparedStatement stmt = null;
         try
         {
@@ -1244,4 +1320,14 @@ public class PtPChunkDAO {
         }
     }
     
+    private String buildTokenWhereClause(TRequestToken requestToken)
+    {
+        return " rq.r_token='" + requestToken.toString() + "' ";
+    }
+    
+    private String buildExpainationSet(String explanation)
+    {
+        return " sp.explanation='" + explanation + "' "  ;
+    }
+
 }

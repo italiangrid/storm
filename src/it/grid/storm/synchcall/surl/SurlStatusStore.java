@@ -264,6 +264,91 @@ public class SurlStatusStore
         surlList.add(surl);
         checkAndUpdate(requestToken, surlList, expectedStatusCode, newStatusCode, explanation);
     }
+    
+    public void update(TSURL surl, TStatusCode statusCode, String explanation)
+    {
+        if (surl == null)
+        {
+            throw new IllegalArgumentException("unable to update the status, " + "null arguments: surl="
+                    + surl);
+        }
+        ArrayList<TSURL> surlList = new ArrayList<TSURL>(1);
+        surlList.add(surl);
+        update(surlList, statusCode, explanation);
+    }
+    
+    private void update(ArrayList<TSURL> surls, TStatusCode statusCode,
+            String explanation)
+    {
+        if (surls == null || surls.isEmpty()
+                || statusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to update the statuses, "
+                    + "null arguments: surls=" + surls
+                    + " statusCode=" + statusCode
+                    + " explanation=" + explanation);
+        }
+        log.debug("Updating surls " + surls + " with status " + statusCode + " " + explanation);
+        for (TSURL surl : surls)
+        {
+            if (surl == null)
+            {
+                log.warn("Unexpected null element in input surls list : " + surls);
+                continue;
+            }
+            Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
+            for(ModifiableReturnStatus status : tokenStatusMap.values())
+            {
+                status.setStatusCode(statusCode);
+                status.setExplanation(explanation);
+            }
+        }
+    }
+    
+    public void checkAndUpdate(TSURL surl, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
+            throws IllegalArgumentException
+    {
+        if (surl == null)
+        {
+            throw new IllegalArgumentException("unable to update the status, " + "null arguments: surl="
+                    + surl);
+        }
+        ArrayList<TSURL> surlList = new ArrayList<TSURL>(1);
+        surlList.add(surl);
+        checkAndUpdate(surlList, expectedStatusCode, newStatusCode, explanation);
+    }
+
+    private void checkAndUpdate(ArrayList<TSURL> surls, TStatusCode expectedStatusCode,
+            TStatusCode newStatusCode, String explanation)
+    {
+        if (surls == null || surls.isEmpty() || expectedStatusCode == null
+                || newStatusCode == null || explanation == null)
+        {
+            throw new IllegalArgumentException("unable to check and update the statuses, "
+                    + "null arguments: surls=" + surls
+                    + " expectedStatusCode=" + expectedStatusCode + " newStatusCode=" + newStatusCode
+                    + " explanation=" + explanation);
+        }
+        log.debug("Checking and updating surls " + surls + " where status is "
+                + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
+        for (TSURL surl : surls)
+        {
+            if (surl == null)
+            {
+                log.warn("Unexpected null element in input surls list : " + surls);
+                continue;
+            }
+            Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
+            for(ModifiableReturnStatus status : tokenStatusMap.values())
+            {
+                if(expectedStatusCode.equals(status.getStatusCode()))
+                {
+                    status.setStatusCode(newStatusCode);
+                    status.setExplanation(explanation);
+                }
+            }
+        }
+    }
 
     public void checkAndUpdate(TRequestToken requestToken, List<TSURL> surls, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
@@ -283,7 +368,7 @@ public class SurlStatusStore
                     + " expectedStatusCode=" + expectedStatusCode + " newStatusCode=" + newStatusCode
                     + " explanation=" + explanation);
         }
-        log.debug("Checking and pdating token " + requestToken + " for surls " + surls + " where status is "
+        log.debug("Checking and updating token " + requestToken + " for surls " + surls + " where status is "
                 + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
         checkCleanToken(requestToken);
         Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
@@ -642,6 +727,5 @@ public class SurlStatusStore
             }
         }
     }
-    
 
 }

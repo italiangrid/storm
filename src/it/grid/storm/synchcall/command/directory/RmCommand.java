@@ -22,7 +22,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -36,6 +35,7 @@ import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
@@ -46,6 +46,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
+import it.grid.storm.synchcall.surl.SurlStatusManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +63,9 @@ public class RmCommand implements Command {
     private final Logger log = LoggerFactory.getLogger(RmCommand.class);
     private final String funcName = "srmRm";
     private final NamespaceInterface namespace;
-    private final PtPChunkCatalog putcatalog;
 
     public RmCommand() {
         namespace = NamespaceDirector.getNamespace();
-        putcatalog = PtPChunkCatalog.getInstance();
     }
 
     /**
@@ -389,7 +388,8 @@ public class RmCommand implements Command {
              * If there are SrmPrepareToPut active on the SURL specified change the SRM_STATUS from SRM_SPACE_AVAILABLE
              * to SRM_ABORTED
              */
-            putcatalog.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl, "File Removed by a SrmRm()");
+            SurlStatusManager.checkAndUpdateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_ABORTED, "File Removed by a SrmRm()");
+            
 
             /**
              * If there are SrmPrepareToGet active on the SURL specified change the SRM_STATUS from SRM_FILE_PINNED to
