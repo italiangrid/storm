@@ -213,7 +213,7 @@ public class SurlStatusManager
         Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl).values();
         if(statuses.isEmpty())
         {
-            throw new IllegalStateException("Unexpected empty result from getSurlsStatuses");
+            throw new UnknownSurlException("The surl is not stored");
         }
         LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
         removeStartingStatus(nonFinalStatuses);
