@@ -192,7 +192,7 @@ public class SurlStatusManager
             persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl));
         } catch(UnknownSurlException e)
         {
-            log.info("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+            log.debug("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
         } catch(IllegalArgumentException e)
         {
             log.error("Unexpected IllegalArgumentException during surl statuses retrieving: "

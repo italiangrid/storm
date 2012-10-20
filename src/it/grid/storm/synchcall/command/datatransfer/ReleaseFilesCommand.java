@@ -424,7 +424,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                 if(status != null)
                 {
 //                    surlFound = true;
-                    if(TStatusCode.SRM_FILE_PINNED.equals(status))
+                    if(TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode()))
                     {
 //                        atLeastOneReleased = true;
                         requestFailure = false;
