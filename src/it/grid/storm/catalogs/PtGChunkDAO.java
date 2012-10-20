@@ -618,7 +618,9 @@ public class PtGChunkDAO {
 
             //TODO MICHELE USER_SURL get new fields
             //get chunks of the request
-            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
+            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, rg.sourceSURL, " +
+            		"rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, d.isSourceADirectory, " +
+            		"d.allLevelRecursive, d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
                     + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
@@ -1755,6 +1757,7 @@ public class PtGChunkDAO {
                     + "d.isSourceADirectory, d.allLevelRecursive,  d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
+                    + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
                     + "WHERE rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
                     + " OR rg.sourceSURL IN " + makeSurlString(surlsArray);
 

@@ -709,9 +709,9 @@ public class CopyChunkDAO {
                     + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
                     + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
                     + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-                    + "WHERE rp.targetSURL_uniqueID IN "
+                    + "WHERE rc.sourceSURL_uniqueID IN "
                     + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rp.targetSURL IN " + makeSurlString(surlsArray);
+                    + " OR rc.sourceSURL IN " + makeSurlString(surlsArray);
             
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
