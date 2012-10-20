@@ -18,15 +18,19 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
         throws InvalidSurlRequestDataAttributesException
     {
         super(surl, status);
-        try
+        if(!(this instanceof PersistentChunkData))
         {
-            SurlStatusStore.getInstance().store(generatedRequestToken,
-                                                buildSurlStatusMap(surl, status.getStatusCode(),
-                                                                   status.getExplanation()));
-        } catch(IllegalArgumentException e)
-        {
-            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+            try
+            {
+                SurlStatusStore.getInstance().store(generatedRequestToken,
+                                                    buildSurlStatusMap(surl, status.getStatusCode(),
+                                                                       status.getExplanation()));
+            } catch(IllegalArgumentException e)
+            {
+                throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+            }
         }
+        
     }
     
     private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl, TStatusCode code, String explanation) throws IllegalArgumentException
@@ -71,27 +75,30 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
     public final void setStatus(TReturnStatus status)
     {
         super.setStatus(status);
-        try
+        if(!(this instanceof PersistentChunkData))
         {
-            if(status.getExplanation() == null)
+            try
             {
-                SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, status.getStatusCode());
-            }
-            else
+                if(status.getExplanation() == null)
+                {
+                    SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, status.getStatusCode());
+                }
+                else
+                {
+                    SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, status.getStatusCode(),
+                                                         status.getExplanation());
+                }
+            } catch(IllegalArgumentException e)
             {
-                SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, status.getStatusCode(),
-                                                     status.getExplanation());
+             // Never thrown
+                throw new IllegalStateException("Unexpected IllegalArgumentException "
+                        + "in updating status store: " + e.getMessage());
+            } catch(UnknownTokenException e)
+            {
+             // Never thrown
+                throw new IllegalStateException("Unexpected UnknownTokenException "
+                        + "in updating status store: " + e.getMessage());
             }
-        } catch(IllegalArgumentException e)
-        {
-         // Never thrown
-            throw new IllegalStateException("Unexpected IllegalArgumentException "
-                    + "in updating status store: " + e.getMessage());
-        } catch(UnknownTokenException e)
-        {
-         // Never thrown
-            throw new IllegalStateException("Unexpected UnknownTokenException "
-                    + "in updating status store: " + e.getMessage());
         }
     }
     
@@ -99,27 +106,30 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
     protected final void setStatus(TStatusCode statusCode, String explanation)
     {
         super.setStatus(statusCode, explanation);
-        try
+        if(!(this instanceof PersistentChunkData))
         {
-            if(explanation == null)
+            try
             {
-                SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, statusCode);
-            }
-            else
+                if(explanation == null)
+                {
+                    SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, statusCode);
+                }
+                else
+                {
+                    SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, statusCode,
+                                                         explanation);
+                }
+            } catch(IllegalArgumentException e)
             {
-                SurlStatusStore.getInstance().update(generatedRequestToken, this.SURL, statusCode,
-                                                     explanation);
+             // Never thrown
+                throw new IllegalStateException("Unexpected IllegalArgumentException "
+                        + "in updating status store: " + e.getMessage());
+            } catch(UnknownTokenException e)
+            {
+             // Never thrown
+                throw new IllegalStateException("Unexpected UnknownTokenException "
+                        + "in updating status store: " + e.getMessage());
             }
-        } catch(IllegalArgumentException e)
-        {
-         // Never thrown
-            throw new IllegalStateException("Unexpected IllegalArgumentException "
-                    + "in updating status store: " + e.getMessage());
-        } catch(UnknownTokenException e)
-        {
-         // Never thrown
-            throw new IllegalStateException("Unexpected UnknownTokenException "
-                    + "in updating status store: " + e.getMessage());
         }
     }
 
