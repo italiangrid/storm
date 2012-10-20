@@ -518,7 +518,7 @@ public class SurlStatusManager
         while(iterator.hasNext())
         {
             TReturnStatus status = iterator.next();
-            if(!status.getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
+            if(status.getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
             {
                 iterator.remove();
             }

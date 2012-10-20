@@ -272,14 +272,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                 {
                     if(TStatusCode.SRM_FILE_PINNED.equals(tokenStatus.getValue().getStatusCode()))
                     {
-                        SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease,
+                        SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(), surlToRelease,
                                                                TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED);
                     }
                     else
                     {
                         if(TStatusCode.SRM_SUCCESS.equals(tokenStatus.getValue().getStatusCode()))
                         {
-                            SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease,
+                            SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(), surlToRelease,
                                                                    TStatusCode.SRM_SUCCESS, TStatusCode.SRM_RELEASED);
                         }
                     }
