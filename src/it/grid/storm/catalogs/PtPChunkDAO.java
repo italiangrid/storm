@@ -467,7 +467,7 @@ public class PtPChunkDAO {
 			            surlUniqueIdSequence += ",";
 			        }
 			    }
-			    find.setString(2,"");
+			    find.setString(2,surlUniqueIdSequence);
 	        }
 			logWarnings(find.getWarnings());
 			log.trace("PtP CHUNK DAO! findReduced with request token; " + find.toString());
