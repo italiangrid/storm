@@ -49,66 +49,9 @@ public class SurlStatusManager
         }
         else
         {
-//            try
-//            {
-                return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
-//            } catch(UnknownTokenException e)
-//            {
-//                log.warn("Unable to get Token. UnknownTokenException: " + e.getMessage());
-//                return EMPTY_SURL_RESULT;
-//            }
+            return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
         }
         
-    }
-    
-    private static Map<TSURL, TReturnStatus> getPersistentSurlsStatuses(TRequestType requestType,
-            TRequestToken requestToken)
-    {
-        Map<TSURL, TReturnStatus> surlsStatuses;
-        switch (requestType)
-        {
-            case PREPARE_TO_GET:
-                Collection<ReducedChunkData> ptgChunksData = PtGChunkCatalog.getInstance()
-                                                                            .lookupReducedPtGChunkData(requestToken);
-                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptgChunksData.size());
-                for (ReducedChunkData chunkData : ptgChunksData)
-                {
-                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
-                }
-                return surlsStatuses;
-            case PREPARE_TO_PUT:
-                Collection<ReducedPtPChunkData> ptpChunksData = PtPChunkCatalog.getInstance()
-                                                                               .lookupReducedPtPChunkData(requestToken);
-                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptpChunksData.size());
-                for (ReducedPtPChunkData chunkData : ptpChunksData)
-                {
-                    surlsStatuses.put(chunkData.toSURL(), chunkData.status());
-                }
-                return surlsStatuses;
-            case COPY:
-                Collection<CopyPersistentChunkData> copyChunksData = CopyChunkCatalog.getInstance()
-                                                                                     .lookup(requestToken);
-                surlsStatuses = new HashMap<TSURL, TReturnStatus>(copyChunksData.size());
-                for (CopyPersistentChunkData chunkData : copyChunksData)
-                {
-                    surlsStatuses.put(chunkData.getSURL(), chunkData.getStatus());
-                    surlsStatuses.put(chunkData.getDestinationSURL(), chunkData.getStatus());
-                }
-                return surlsStatuses;
-            case BRING_ON_LINE:
-                Collection<ReducedBoLChunkData> bolChunksData = BoLChunkCatalog.getInstance()
-                                                                               .lookupReducedBoLChunkData(requestToken);
-                surlsStatuses = new HashMap<TSURL, TReturnStatus>(bolChunksData.size());
-                for (ReducedChunkData chunkData : bolChunksData)
-                {
-                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
-                }
-                return surlsStatuses;
-            case EMPTY:
-                return new HashMap<TSURL, TReturnStatus>();
-            default:
-                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
-        }
     }
     
     public static void checkAndUpdateStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
@@ -232,14 +175,7 @@ public class SurlStatusManager
         }
         else
         {
-//            try
-//            {
-                return SurlStatusStore.getInstance().getSurlsStatus(requestToken, surls);
-//            } catch(UnknownTokenException e)
-//            {
-//                log.warn("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
-//                return EMPTY_SURL_RESULT;
-//            }
+            return SurlStatusStore.getInstance().getSurlsStatus(requestToken, surls);
         }
     }
     
@@ -293,6 +229,56 @@ public class SurlStatusManager
         else
         {
             return nonFinalStatuses.getFirst();
+        }
+    }
+
+    private static Map<TSURL, TReturnStatus> getPersistentSurlsStatuses(TRequestType requestType,
+            TRequestToken requestToken)
+    {
+        Map<TSURL, TReturnStatus> surlsStatuses;
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                Collection<ReducedChunkData> ptgChunksData = PtGChunkCatalog.getInstance()
+                                                                            .lookupReducedPtGChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptgChunksData.size());
+                for (ReducedChunkData chunkData : ptgChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case PREPARE_TO_PUT:
+                Collection<ReducedPtPChunkData> ptpChunksData = PtPChunkCatalog.getInstance()
+                                                                               .lookupReducedPtPChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(ptpChunksData.size());
+                for (ReducedPtPChunkData chunkData : ptpChunksData)
+                {
+                    surlsStatuses.put(chunkData.toSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case COPY:
+                Collection<CopyPersistentChunkData> copyChunksData = CopyChunkCatalog.getInstance()
+                                                                                     .lookup(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(copyChunksData.size());
+                for (CopyPersistentChunkData chunkData : copyChunksData)
+                {
+                    surlsStatuses.put(chunkData.getSURL(), chunkData.getStatus());
+                    surlsStatuses.put(chunkData.getDestinationSURL(), chunkData.getStatus());
+                }
+                return surlsStatuses;
+            case BRING_ON_LINE:
+                Collection<ReducedBoLChunkData> bolChunksData = BoLChunkCatalog.getInstance()
+                                                                               .lookupReducedBoLChunkData(requestToken);
+                surlsStatuses = new HashMap<TSURL, TReturnStatus>(bolChunksData.size());
+                for (ReducedChunkData chunkData : bolChunksData)
+                {
+                    surlsStatuses.put(chunkData.fromSURL(), chunkData.status());
+                }
+                return surlsStatuses;
+            case EMPTY:
+                return new HashMap<TSURL, TReturnStatus>();
+            default:
+                throw new IllegalArgumentException("Received unknown TRequestType: " + requestType);
         }
     }
     
