@@ -50,6 +50,8 @@ public class Constants
     
     public static final String MOVE_FROM_OPERATION = "moveFrom";
     
+    public static final String MOVE_TO_OVERWRITE_OPERATION = "moveToOverwrite";
+    
     public static final String MOVE_TO_OPERATION = "moveTo";
     
     public static final String VOMS_EXTENSIONS = "voms";

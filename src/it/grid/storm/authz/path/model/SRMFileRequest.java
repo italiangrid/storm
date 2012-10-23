@@ -61,7 +61,7 @@ public enum SRMFileRequest {
         }
     }),
     
-    CPto_Overwrite("srmCopy to-overwrite", "CPto_Overwrite", new ArrayList<PathOperation>() {
+    CPto_Overwrite("srmCopy to-overwrite", "CPto_Over", new ArrayList<PathOperation>() {
         {
             add(PathOperation.WRITE_FILE);
         }
@@ -105,7 +105,13 @@ public enum SRMFileRequest {
         }
     }),
 
-    MV_dest("srmMove-dest", "MV-dest", new ArrayList<PathOperation>() {
+    MV_dest_Overwrite("srmMove-dest-overwrite", "MV-dest-Over", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.WRITE_FILE);
+        }
+    }),
+    
+    MV_dest("srmMove-dest-overwrite", "MV-dest", new ArrayList<PathOperation>() {
         {
             add(PathOperation.CREATE_FILE);
             add(PathOperation.WRITE_FILE);
@@ -124,7 +130,7 @@ public enum SRMFileRequest {
             put("srmPrepareToPut", PTP);
             put("PTG", PTG);
             put("srmPrepareToGet", PTG);
-            put("CPto_Overwrite", CPto_Overwrite);
+            put("CPto_Over", CPto_Overwrite);
             put("srmCopy to-overwrite", CPto_Overwrite);
             put("CPto", CPto);
             put("srmCopy to", CPto);
@@ -140,6 +146,8 @@ public enum SRMFileRequest {
             put("srmLs", LS);
             put("MV-source", MV_source);
             put("srmMove-source", MV_source);
+            put("MV-dest-Over", MV_dest_Overwrite);
+            put("srmMove-dest-overwrite", MV_dest_Overwrite);
             put("MV-dest", MV_dest);
             put("srmMove-dest", MV_dest);
         }
