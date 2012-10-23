@@ -46,6 +46,8 @@ public class Constants
     
     public static final String CP_TO_OPERATION = "cpTo";
     
+    public static final String CP_TO_OVERWRITE_OPERATION = "cpToOverwrite";
+    
     public static final String MOVE_FROM_OPERATION = "moveFrom";
     
     public static final String MOVE_TO_OPERATION = "moveTo";
@@ -61,6 +63,8 @@ public class Constants
     public static final String FQANS_KEY = "FQANS";
     
     public static final String FQANS_SEPARATOR = ",";
+
+    
     
     /* /RESOURCE/VERSION/path/READ_OPERATION/VOMS_EXTENSIONS/USER?DN_KEY=dn&FQANS_KEY=fquanFQANS_SEPARATORfquan
      * /RESOURCE/VERSION/path/WRITE_OPERATION/VOMS_EXTENSIONS/USER?DN_KEY=dn&FQANS_KEY=fquanFQANS_SEPARATORfquan

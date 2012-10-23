@@ -18,7 +18,6 @@
 package it.grid.storm.authz;
 
 import it.grid.storm.authz.path.PathAuthz;
-import it.grid.storm.authz.path.conf.PathAuthzDB;
 import it.grid.storm.authz.path.conf.PathAuthzDBReader;
 import it.grid.storm.authz.sa.SpaceDBAuthz;
 import it.grid.storm.authz.sa.test.MockSpaceAuthz;

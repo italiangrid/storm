@@ -60,6 +60,12 @@ public enum SRMFileRequest {
             add(PathOperation.CREATE_FILE);
         }
     }),
+    
+    CPto_Overwrite("srmCopy to-overwrite", "CPto_Overwrite", new ArrayList<PathOperation>() {
+        {
+            add(PathOperation.WRITE_FILE);
+        }
+    }),
 
     CPfrom("srmCopy from", "CPfrom", new ArrayList<PathOperation>() {
         {
@@ -118,6 +124,8 @@ public enum SRMFileRequest {
             put("srmPrepareToPut", PTP);
             put("PTG", PTG);
             put("srmPrepareToGet", PTG);
+            put("CPto_Overwrite", CPto_Overwrite);
+            put("srmCopy to-overwrite", CPto_Overwrite);
             put("CPto", CPto);
             put("srmCopy to", CPto);
             put("CPFrom", CPfrom);

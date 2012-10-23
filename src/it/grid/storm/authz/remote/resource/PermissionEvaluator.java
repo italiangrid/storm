@@ -5,8 +5,10 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.PathOperation;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.remote.Constants;
+import it.grid.storm.catalogs.OverwriteModeConverter;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
@@ -14,6 +16,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.srm.types.TOverwriteMode;
 import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.WebApplicationException;
@@ -25,6 +28,11 @@ import com.sun.jersey.server.impl.ResponseBuilderImpl;
 class PermissionEvaluator
 {
     private static final Logger log = LoggerFactory.getLogger(PermissionEvaluator.class);
+    
+    public static Boolean isOverwriteAllowed()
+    {
+        return OverwriteModeConverter.getInstance().toSTORM(Configuration.getInstance().getDefaultOverwriteMode()).equals(TOverwriteMode.ALWAYS);
+    }
     
     static Boolean evaluateVomsGridUserPermission(String DNDecoded, String FQANSDecoded,
             String filePathDecoded, PathOperation operation)
@@ -91,7 +99,7 @@ class PermissionEvaluator
         return evaluateDecision(decision);
     }
     
-    static Object evaluateAnonymousPermission(String filePathDecoded, PathOperation request)
+    static Boolean evaluateAnonymousPermission(String filePathDecoded, PathOperation request)
     {
         VirtualFSInterface fileVFS;
         try
@@ -116,7 +124,7 @@ class PermissionEvaluator
         return evaluateDecision(decision);
     }
     
-    static Object evaluateAnonymousPermission(String filePathDecoded, SRMFileRequest request)
+    static Boolean evaluateAnonymousPermission(String filePathDecoded, SRMFileRequest request)
     {
         VirtualFSInterface fileVFS;
         try
@@ -360,4 +368,5 @@ class PermissionEvaluator
         }
         return GridUserManager.makeGridUser(dn);
     }
+
 }

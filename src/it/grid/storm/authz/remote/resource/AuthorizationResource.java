@@ -110,7 +110,8 @@ public class AuthorizationResource
     {
         log.info("Serving prepareToPut Overwrite operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite).toString();
+        return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
+                           && PermissionEvaluator.isOverwriteAllowed()).toString();
     }
     
     /**
@@ -220,6 +221,25 @@ public class AuthorizationResource
      * @throws WebApplicationException
      */
     @GET
+    @Path("/" + Constants.CP_TO_OVERWRITE_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
+    @Produces("text/plain")
+    public String evaluateVomsGridUserCpToOverwritePermission(@PathParam("filePath") String filePath,
+            @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS) throws WebApplicationException
+    {
+        log.info("Serving cpTo Overwrite operation authorization on file '" + filePath);
+        RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
+        return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.CPto_Overwrite) 
+        && PermissionEvaluator.isOverwriteAllowed()).toString();
+    }
+    
+    /**
+     * @param filePath
+     * @param DN
+     * @param FQANS
+     * @return
+     * @throws WebApplicationException
+     */
+    @GET
     @Path("/" + Constants.CP_TO_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
     @Produces("text/plain")
     public String evaluateVomsGridUserCpToPermission(@PathParam("filePath") String filePath,
@@ -301,6 +321,18 @@ public class AuthorizationResource
         
         RequestParameters parameters = new RequestParameters(filePath, DN);
         return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
+    }
+    
+    @GET
+    @Path("/" + Constants.PREPARE_TO_PUT_OVERWRITE_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
+    @Produces("text/plain")
+    public String evaluateGridUserPTPOverwritePermission(@PathParam("filePath") String filePath,
+            @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException
+    {
+        log.info("Serving prepareToPut Overwrite operation authorization on file '" + filePath);
+        RequestParameters parameters = new RequestParameters(filePath, DN);
+        return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
+                           && PermissionEvaluator.isOverwriteAllowed()).toString();
     }
     
     /**
@@ -425,7 +457,24 @@ public class AuthorizationResource
     /**
      * @param filePath
      * @param DN
-     * @param FQANS
+     * @return
+     * @throws WebApplicationException
+     */
+    @GET
+    @Path("/" + Constants.CP_TO_OVERWRITE_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
+    @Produces("text/plain")
+    public String evaluateGridUserCpToOverwritePermission(@PathParam("filePath") String filePath,
+            @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException
+    {
+        log.info("Serving cpTo Overwrite operation authorization on file '" + filePath);
+        RequestParameters parameters = new RequestParameters(filePath, DN);
+        return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.CPto_Overwrite) 
+        && PermissionEvaluator.isOverwriteAllowed()).toString();
+    }
+    
+    /**
+     * @param filePath
+     * @param DN
      * @return
      * @throws WebApplicationException
      */
@@ -435,7 +484,7 @@ public class AuthorizationResource
     public String evaluateGridUserCpToPermission(@PathParam("filePath") String filePath,
             @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException
     {
-        log.info("Serving cpTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving cpTo operation authorization on file '" + filePath);
         RequestParameters parameters = new RequestParameters(filePath, DN);
         return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.CPto).toString();
     }
@@ -495,7 +544,7 @@ public class AuthorizationResource
     public String evaluateAnonymousReadPermission(@PathParam("filePath") String filePath)
             throws WebApplicationException
     {
-        log.info("Serving read operation authorization on file '" + filePath + "\'");
+        log.info("Serving Anonymous read operation authorization on file '" + filePath + "\'");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), PathOperation.READ_FILE).toString();
     }
@@ -512,10 +561,21 @@ public class AuthorizationResource
     public String evaluateAnonymousWritePermission(@PathParam("filePath") String filePath)
             throws WebApplicationException
     {
-        log.info("Serving write operation authorization on file '" + filePath + "\'");
+        log.info("Serving Anonymous write operation authorization on file '" + filePath + "\'");
         
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
+    }
+    
+    @GET
+    @Path("/" + Constants.PREPARE_TO_PUT_OVERWRITE_OPERATION)
+    @Produces("text/plain")
+    public String evaluateAnonymousPTPOverwritePermission(@PathParam("filePath") String filePath) throws WebApplicationException
+    {
+        log.info("Serving Anonymous prepareToPut Overwrite operation authorization on file '" + filePath);
+        RequestParameters parameters = new RequestParameters(filePath);
+        return new Boolean(PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
+                           && PermissionEvaluator.isOverwriteAllowed()).toString();
     }
     
     /**
@@ -530,7 +590,7 @@ public class AuthorizationResource
     public String evaluateAnonymousPTPPermission(@PathParam("filePath") String filePath)
             throws WebApplicationException
     {
-        log.info("Serving prepareToPut operation authorization on file '" + filePath + "\'");
+        log.info("Serving Anonymous prepareToPut operation authorization on file '" + filePath + "\'");
         
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.PTP).toString();
@@ -549,7 +609,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousPTGPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving prepareToGet operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous prepareToGet operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.PTG).toString();
     }
@@ -566,7 +626,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousRmPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving rm operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous rm operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         File file = new File(parameters.getFilePathDecoded());
         if(file.isDirectory())
@@ -592,7 +652,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousLsPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving ls operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous ls operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.LS).toString();
     }
@@ -609,7 +669,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving mkdir operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous mkdir operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MD).toString();
     }
@@ -626,7 +686,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousCpFromPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving cpFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous cpFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.CPfrom).toString();
     }
@@ -643,9 +703,27 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousCpToPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving cpTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous cpTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.CPto).toString();
+    }
+    
+    /**
+     * @param filePath
+     * @param DN
+     * @param FQANS
+     * @return
+     * @throws WebApplicationException
+     */
+    @GET
+    @Path("/" + Constants.CP_TO_OVERWRITE_OPERATION)
+    @Produces("text/plain")
+    public String evaluateAnonymousCpToOverwritePermission(@PathParam("filePath") String filePath) throws WebApplicationException
+    {
+        log.info("Serving Anonymous cpTo Overwrite operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        RequestParameters parameters = new RequestParameters(filePath);
+        return new Boolean(PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.CPto_Overwrite) 
+        && PermissionEvaluator.isOverwriteAllowed()).toString();
     }
     
     /**
@@ -660,7 +738,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousMvFromPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving mvFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous mvFrom operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MV_source).toString();
     }
@@ -677,7 +755,7 @@ public class AuthorizationResource
     @Produces("text/plain")
     public String evaluateAnonymousMvToPermission(@PathParam("filePath") String filePath) throws WebApplicationException
     {
-        log.info("Serving mvTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
+        log.info("Serving Anonymous mvTo operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
         RequestParameters parameters = new RequestParameters(filePath);
         return PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(), SRMFileRequest.MV_dest).toString();
     }

@@ -31,7 +31,7 @@ import it.grid.storm.config.Configuration;
  * @version: 2.0
  * @date:    June 2005
  */
-class OverwriteModeConverter {
+public class OverwriteModeConverter {
 
     private Map DBtoSTORM = new HashMap();
     private Map STORMtoDB = new HashMap();
