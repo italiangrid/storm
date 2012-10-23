@@ -38,6 +38,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
@@ -156,6 +157,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
             return outputData;
+        } catch(ExpiredTokenException e)
+        {
+            log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+            globalStatus = buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            printRequestOutcome(globalStatus, inputData);
+            return outputData;
         }
         if (surlStastuses.isEmpty())
         {
@@ -208,6 +217,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                 outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
                 return outputData;
+            } catch(ExpiredTokenException e)
+            {
+                log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+                globalStatus = buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+                outputData.setReturnStatus(globalStatus);
+                outputData.setArrayOfFileStatuses(null);
+                printRequestOutcome(globalStatus, inputData);
+                return outputData;
             }
             
             
@@ -254,7 +271,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return surlToRelease;
     }
 
-    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException
+    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if(requestToken != null)
         {
@@ -289,7 +306,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
 
     private Map<TSURL, TReturnStatus> getSurlsStatus(GridUserInterface user, TRequestToken requestToken,
-            ArrayOfSURLs arrayOfSURLs) throws RequestUnknownException, IllegalArgumentException, UnknownTokenException
+            ArrayOfSURLs arrayOfSURLs) throws RequestUnknownException, IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if ((requestToken == null) && (arrayOfSURLs == null))
         {

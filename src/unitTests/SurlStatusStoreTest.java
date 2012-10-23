@@ -9,7 +9,9 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
+import it.grid.storm.synchcall.surl.TokenDuplicationException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +54,7 @@ public class SurlStatusStoreTest
     }
     
     @Test
-    public void testStore()
+    public void testStore() throws IllegalArgumentException, TokenDuplicationException
     {
         instance.store(requestTokenNotStored, buildSurlStatusMap(surlNotStored, status));
 //        TStatusCode storedStatus = instance.getSurlStatus(surl);
@@ -60,19 +62,19 @@ public class SurlStatusStoreTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testStoreNullArgs()
+    public void testStoreNullArgs() throws TokenDuplicationException
     {
         instance.store(null, null);
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void testStoreNullArg1()
+    public void testStoreNullArg1()throws TokenDuplicationException
     {
         instance.store(null, buildSurlStatusMap(surlNotStored, status));
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void testStoreNullArg2()
+    public void testStoreNullArg2()throws TokenDuplicationException
     {
         instance.store(requestTokenNotStored, null);
     }
@@ -109,7 +111,7 @@ public class SurlStatusStoreTest
 //    }
 //    
     @Test
-    public void testGetSurlStatus() throws UnknownTokenException
+    public void testGetSurlStatus() throws UnknownTokenException, IllegalArgumentException, ExpiredTokenException
     {
         Map<TSURL, TReturnStatus> storedStatus = instance.getSurlsStatus(requestToken,
                                                                          Arrays.asList(new TSURL[] { surl }));

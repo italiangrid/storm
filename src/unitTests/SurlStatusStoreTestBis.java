@@ -17,6 +17,7 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
+import it.grid.storm.synchcall.surl.TokenDuplicationException;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import org.junit.After;
 import org.junit.Before;
@@ -389,13 +390,13 @@ public class SurlStatusStoreTestBis
     }
     
     @Test
-    public final void testStoreSurlStored()
+    public final void testStoreSurlStored() throws IllegalArgumentException, TokenDuplicationException
     {
         instance.store(TRequestToken.getRandom(), buildSurlStatusMap(storedSurl, TStatusCode.SRM_REQUEST_QUEUED));
     }
     
     @Test
-    public final void testGetSurlStatusesSurlStoredIncompatibleStatus() throws IllegalArgumentException, UnknownSurlException
+    public final void testGetSurlStatusesSurlStoredIncompatibleStatus() throws IllegalArgumentException, UnknownSurlException, TokenDuplicationException
     {
         String incompatibleStatusSurlString = "srm://omii005-vm03.cnaf.infn.it:8444/testers.eu-emi.eu/myIncompatibleStatus";
         TSURL incompatibleStatusSurl = buildSurl(incompatibleStatusSurlString);

@@ -36,6 +36,7 @@ import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -93,6 +94,14 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
             PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+token+"] successfully done with [status: "+globalStatus+"]");
+            return outputData;
+        } catch(ExpiredTokenException e)
+        {
+            log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+            globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
             return outputData;
         }
 //        if(chunks.isEmpty()) { // No Chunk found
@@ -263,7 +272,18 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     } else {
                         //Chunk not ABORTED. We have to work...
                         PtGAbortExecutor.log.debug("PtPAbortExecutor: CHUNK to abort!");
-                        surlReturnStatus = manageAuthorizedAbort(token, surlStatus.getKey(), surlStatus.getValue());
+                        try
+                        {
+                            surlReturnStatus = manageAuthorizedAbort(token, surlStatus.getKey(), surlStatus.getValue());
+                        } catch(ExpiredTokenException e)
+                        {
+                            log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+                            globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+                            outputData.setReturnStatus(globalStatus);
+                            outputData.setArrayOfFileStatuses(null);
+                            log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+                            return outputData;
+                        }
                     }
 
                     //Remove this chunks from the other to abort.
@@ -309,6 +329,14 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     outputData.setReturnStatus(globalStatus);
                     outputData.setArrayOfFileStatuses(null);
                     PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+token+"] successfully done with [status: "+globalStatus+"]");
+                    return outputData;
+                } catch(ExpiredTokenException e)
+                {
+                    log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+                    globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+                    outputData.setReturnStatus(globalStatus);
+                    outputData.setArrayOfFileStatuses(null);
+                    log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
                     return outputData;
                 }
                 log.debug("srmAbortRequest: PtGAbortExecutor: refresh done.");
@@ -388,10 +416,11 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
      * Manage the roll back needed to execute an abort request.
      * @param chunkData PtGChunkData
      * @return returnStatus TSURLReturnStatus
+     * @throws ExpiredTokenException 
      */
 
 //    private TSURLReturnStatus manageAuthorizedAbort(PtGPersistentChunkData chunkData) {
-    private TSURLReturnStatus manageAuthorizedAbort(TRequestToken token, TSURL surl, TReturnStatus status)
+    private TSURLReturnStatus manageAuthorizedAbort(TRequestToken token, TSURL surl, TReturnStatus status) throws ExpiredTokenException
     {
 
         /* Query the DB to update the Chunk status */

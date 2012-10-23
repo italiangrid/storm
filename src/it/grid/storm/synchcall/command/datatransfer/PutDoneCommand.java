@@ -45,6 +45,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -158,6 +159,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData, user);
             return outputData;
+        } catch(ExpiredTokenException e)
+        {
+            log.info(funcName + "The request is expired: ExpiredTokenException: " + e.getMessage());
+            globalStatus = buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            printRequestOutcome(globalStatus, inputData, user);
+            return outputData;
         }
         
         LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
@@ -221,6 +230,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             {
                 log.error(funcName + "Unexpected UnknownTokenException: " + e.getMessage());
                 globalStatus = buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
+                outputData.setReturnStatus(globalStatus);
+                outputData.setArrayOfFileStatuses(null);
+                printRequestOutcome(globalStatus, inputData, user);
+                return outputData;
+            } catch(ExpiredTokenException e)
+            {
+                log.info(funcName + "The request is expired: ExpiredTokenException: " + e.getMessage());
+                globalStatus = buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
                 outputData.setReturnStatus(globalStatus);
                 outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData, user);
@@ -341,7 +358,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
     
     private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken, GridUserInterface user,
-            List<TSURL> inputSURLs) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException
+            List<TSURL> inputSURLs) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException, ExpiredTokenException
     {
 
         ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(inputSURLs.size());

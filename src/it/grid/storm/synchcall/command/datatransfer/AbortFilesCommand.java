@@ -46,6 +46,7 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -217,13 +218,24 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
                                                        "User aborted request!");
             } catch(UnknownTokenException e)
             {
-                log.debug("Unable to update surls status on token " + requestToken
+                log.info("Unable to update surls status on token " + requestToken
                         + " .UnknownTokenException: " + e.getMessage());
                 globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
                 outputData.setArrayOfFileStatuses(null);
                 AbortFilesCommand.log.info("srmAbortFiles: <" + user + "> Request for [token:"
                         + inputData.getRequestToken() + "] failed with [status: " + globalStatus
                         + "]");
+                return outputData;
+            } catch(ExpiredTokenException e)
+            {
+                log.info("Unable to update surls status on token " + requestToken
+                         + " .ExpiredTokenException: " + e.getMessage());
+                 globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+                 outputData.setArrayOfFileStatuses(null);
+                 AbortFilesCommand.log.info("srmAbortFiles: <" + user + "> Request for [token:"
+                         + inputData.getRequestToken() + "] failed with [status: " + globalStatus
+                         + "]");
+                 return outputData;
             }
             RequestSummaryCatalog.getInstance()
                                  .updateFromPreviousGlobalStatus(requestToken,

@@ -1,18 +1,23 @@
 package it.grid.storm.catalogs;
 
 import java.util.HashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
+import it.grid.storm.synchcall.surl.TokenDuplicationException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 public abstract class SurlMultyOperationRequestData extends SurlRequestData implements SynchMultyOperationRequestData
 {
+    private static final Logger log = LoggerFactory.getLogger(SurlMultyOperationRequestData.class);
     
-    protected final TRequestToken generatedRequestToken = TRequestToken.getRandom();
+    private TRequestToken generatedRequestToken = TRequestToken.getRandom();
 
     public SurlMultyOperationRequestData(TSURL surl, TReturnStatus status)
         throws InvalidSurlRequestDataAttributesException
@@ -22,9 +27,19 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
         {
             try
             {
-                SurlStatusStore.getInstance().store(generatedRequestToken,
-                                                    buildSurlStatusMap(surl, status.getStatusCode(),
-                                                                       status.getExplanation()));
+                boolean notStored = true;
+                while(notStored)
+                try
+                {
+                    notStored = false;
+                    SurlStatusStore.getInstance().store(generatedRequestToken,
+                                                        buildSurlStatusMap(surl, status.getStatusCode(),
+                                                                           status.getExplanation()));
+                } catch(TokenDuplicationException e)
+                {
+                    notStored = true;
+                    generatedRequestToken = TRequestToken.getRandom();
+                }
             } catch(IllegalArgumentException e)
             {
                 throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
@@ -96,8 +111,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
             } catch(UnknownTokenException e)
             {
              // Never thrown
-                throw new IllegalStateException("Unexpected UnknownTokenException "
-                        + "in updating status store: " + e.getMessage());
+                log.warn("Received an UnknownTokenException, probably the token has expired, unable to update its status in the store : " + e.getMessage());
+            } catch(ExpiredTokenException e)
+            {
+                log.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : " + e.getMessage());
             }
         }
     }
@@ -127,8 +144,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
             } catch(UnknownTokenException e)
             {
              // Never thrown
-                throw new IllegalStateException("Unexpected UnknownTokenException "
-                        + "in updating status store: " + e.getMessage());
+                log.warn("Received an UnknownTokenException, probably the token has expired, unable to update its status in the store : " + e.getMessage());
+            } catch(ExpiredTokenException e)
+            {
+                log.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : " + e.getMessage());
             }
         }
     }

@@ -40,6 +40,7 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
@@ -386,6 +387,9 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
         } catch(UnknownTokenException e4)
         {
             return buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+        } catch(ExpiredTokenException e)
+        {
+            return buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
         }
         if (requestSURLsList.isEmpty())
         {
@@ -581,8 +585,9 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
      * @return List<SURLData>
      * @throws UnknownTokenException 
      * @throws IllegalArgumentException 
+     * @throws ExpiredTokenException 
      */
-    private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException {
+    private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException {
         List<SURLData> listOfSURLsInfo = new LinkedList<SURLData>();
 //        RequestSummaryCatalog rsCatalog = RequestSummaryCatalog.getInstance();
 //        TRequestType requestType = rsCatalog.typeOf(requestToken);

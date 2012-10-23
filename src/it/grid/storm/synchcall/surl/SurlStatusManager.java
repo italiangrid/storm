@@ -31,10 +31,10 @@ public class SurlStatusManager
 {
     
     private static final Logger log = LoggerFactory.getLogger(SurlStatusManager.class);
-    private static final HashMap<TSURL, TReturnStatus> EMPTY_SURL_RESULT = new HashMap<TSURL, TReturnStatus>(0);
+//    private static final HashMap<TSURL, TReturnStatus> EMPTY_SURL_RESULT = new HashMap<TSURL, TReturnStatus>(0);
 //    private static final HashMap<TRequestToken, TReturnStatus> EMPTY_TOKEN_RESULT = new HashMap<TRequestToken, TReturnStatus>(0);
 
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if(requestToken == null)
         {
@@ -55,7 +55,7 @@ public class SurlStatusManager
     }
     
     public static void checkAndUpdateStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
-            TStatusCode newStatusCode, String explanation) throws UnknownTokenException
+            TStatusCode newStatusCode, String explanation) throws UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || expectedStatusCode == null
                 || newStatusCode == null || explanation == null)
@@ -76,7 +76,7 @@ public class SurlStatusManager
     }
 
     public static void checkAndUpdateStatus(TRequestToken requestToken, List<TSURL> surls,
-            TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
+            TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || surls == null || surls.isEmpty() || expectedStatusCode == null
                 || newStatusCode == null)
@@ -117,7 +117,7 @@ public class SurlStatusManager
     }
     
     public static void updateStatus(TRequestToken requestToken, TSURL surl, TStatusCode statusCode,
-            String explanation) throws IllegalArgumentException, UnknownTokenException
+            String explanation) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || surl == null
                 || statusCode == null || explanation == null)
@@ -160,7 +160,7 @@ public class SurlStatusManager
     
 
     public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls)
-            throws IllegalArgumentException, UnknownTokenException
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if(requestToken == null || surls == null || surls.isEmpty())
         {

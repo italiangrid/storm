@@ -8,13 +8,15 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.config.Configuration;
@@ -41,6 +43,11 @@ public class SurlStatusStore
 
     private static final SurlStatusStore instance = new SurlStatusStore();
 
+    
+    private final ConcurrentHashMap<TSURL,ReentrantReadWriteLock> surlLockMap = new ConcurrentHashMap<TSURL,ReentrantReadWriteLock>();
+    private final ConcurrentHashMap<TRequestToken,ReentrantReadWriteLock> tokenLockMap = new ConcurrentHashMap<TRequestToken,ReentrantReadWriteLock>();
+    
+    private final ReentrantLock expirationTokenRegistryLock = new ReentrantLock(); 
     private final Timer clock;
     private final TimerTask clockTask;
     
@@ -54,8 +61,11 @@ public class SurlStatusStore
                     @Override
                     public void run()
                     {
+                        try{
+                        lockExpirationMap();  
                         for(TRequestToken token : getExpiredTokens())
                         {
+                            log.debug("Cleaning expired token " + token);
                             try
                             {
                                 cleanToken(token);
@@ -65,6 +75,8 @@ public class SurlStatusStore
                                                                 + e.getMessage());
                             }
                         }
+                        }finally{unlockExpirationMap();}
+                        
                     }
                 };
             clock.scheduleAtFixedRate(clockTask, Configuration.getInstance().getRequestPurgerDelay() * 1000,
@@ -76,124 +88,124 @@ public class SurlStatusStore
             clockTask = null;
         }
     };
-
+    
     public static SurlStatusStore getInstance()
     {
         return instance;
     }
 
-// public boolean testAndSet(TSURL surl, TStatusCode expectedStatusCode, TStatusCode newStatusCode)
-// {
-// if(true)
-// {
-// throw new IllegalStateException();
-// }
-// //da rifare!!
-// TStatusCode status = store.get(surl.uniqueId());
-// if(status != null)
-// {
-// synchronized (status)
-// {
-// if(status.equals(expectedStatusCode))
-// {
-// store.put(surl.uniqueId(), newStatusCode);
-// return true;
-// }
-// }
-// }
-// return false;
-// }
-
-// public boolean testNewAndSet(TSURL surl, TStatusCode newStatusCode)
-// {
-// try
-// {
-// writeLock.lock();
-// TStatusCode status = store.get(surl.uniqueId());
-// if (status == null)
-// {
-// store.put(surl.uniqueId(),newStatusCode);
-// return true;
-// }
-// }
-// finally
-// {
-// writeLock.unlock();
-// }
-// return false;
-// }
-
     /**
      * @param requestToken
      * @param surlStatuses
      * @throws IllegalArgumentException
+     * @throws TokenDuplicationException 
      * @throws UnknownTokenException
      */
     public void store(TRequestToken requestToken, HashMap<TSURL, TReturnStatus> surlStatuses)
-            throws IllegalArgumentException
+            throws IllegalArgumentException, TokenDuplicationException
     {
         if (requestToken == null || surlStatuses == null || surlStatuses.isEmpty())
         {
             throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
                     + requestToken + " surlStatuses=" + surlStatuses);
         }
-        if (tokenSurlStatusStore.containsKey(requestToken))
+        try
         {
-            log.warn("Token \'" + requestToken + "\' is already stored");
-            throw new IllegalArgumentException("Provided token \'" + requestToken + "\'is already stored");
+            verifyLock(requestToken);
+            if(!verifyMissingToken(requestToken))
+            {
+                throw new IllegalStateException("Token " + requestToken +" has not a lock but is registerd in the store");
+            }
+            throw new TokenDuplicationException("Token " + requestToken + " is already stored");
+        } catch(UnknownTokenException e)
+        {
         }
-        log.debug("Storing token " + requestToken);
+        
+        try
+        {
+            writeLockNew(requestToken);
+            if (tokenSurlStatusStore.containsKey(requestToken))
+            {
+                log.warn("Token \'" + requestToken + "\' is already stored");
+                throw new IllegalArgumentException("Provided token \'" + requestToken + "\'is already stored");
+            }
+            log.debug("Storing token " + requestToken);
 
-        Map<TSURL, ModifiableReturnStatus> surlStatusMap = new HashMap<TSURL, ModifiableReturnStatus>(
+            Map<TSURL, ModifiableReturnStatus> surlStatusMap = new HashMap<TSURL, ModifiableReturnStatus>(
                                                                                                           surlStatuses.size());
-        for (Entry<TSURL, TReturnStatus> surlStatus : surlStatuses.entrySet())
-        {
-            log.debug("Storing surl " + surlStatus.getKey() + " with status " + surlStatus.getValue()
-                    + " for token " + requestToken);
-            ModifiableReturnStatus status;
-            try
+            for (Entry<TSURL, TReturnStatus> surlStatus : surlStatuses.entrySet())
             {
-                status = new ModifiableReturnStatus(surlStatus.getValue());
-            } catch(InvalidTReturnStatusAttributeException e)
-            {
-                throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException: " + e);
+                log.debug("Storing surl " + surlStatus.getKey() + " with status " + surlStatus.getValue()
+                        + " for token " + requestToken);
+                ModifiableReturnStatus status;
+                try
+                {
+                    status = new ModifiableReturnStatus(surlStatus.getValue());
+                } catch(InvalidTReturnStatusAttributeException e)
+                {
+                    throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException: " + e);
+                }
+                surlStatusMap.put(surlStatus.getKey(), status);
+                // TODO deadlock danger
+                try
+                {
+                    writeLock(surlStatus.getKey());
+                    Map<TRequestToken, ModifiableReturnStatus> map = surlTokenStatusStore.get(surlStatus.getKey());
+                    if (map == null)
+                    {
+                        map = new HashMap<TRequestToken, ModifiableReturnStatus>(1);
+                        surlTokenStatusStore.put(surlStatus.getKey(), map);
+                    }
+                    map.put(requestToken, status);
+                }
+                finally
+                {
+                    writeUnlock(surlStatus.getKey());
+                }
+
             }
-            surlStatusMap.put(surlStatus.getKey(), status);
-            Map<TRequestToken, ModifiableReturnStatus> map = surlTokenStatusStore.get(surlStatus.getKey());
-            if (map == null)
-            {
-                map = new HashMap<TRequestToken, ModifiableReturnStatus>(1);
-                surlTokenStatusStore.put(surlStatus.getKey(), map);
-            }
-            map.put(requestToken, status);
+            tokenSurlStatusStore.put(requestToken, surlStatusMap);
         }
-        tokenSurlStatusStore.put(requestToken, surlStatusMap);
+        finally
+        {
+            writeUnlock(requestToken);
+        }
+
         // manage collisions
-        if(requestToken.hasExpirationDate())
+        if (requestToken.hasExpirationDate())
         {
             Long expiration = requestToken.getExpiration().getTimeInMillis();
-            boolean updated = false;
-            while (expirationTokenRegistry.containsKey(expiration))
+            try
             {
-                updated = true;
-                expiration += 1;
+                lockExpirationMap();
+                boolean updated = false;
+                while (expirationTokenRegistry.containsKey(expiration))
+                {
+                    updated = true;
+                    expiration += 1;
+                }
+                if (updated)
+                {
+                    requestToken.updateExpiration(new Date(expiration));
+                }
+                expirationTokenRegistry.put(expiration, requestToken);
             }
-            if(updated)
+            finally
             {
-                requestToken.updateExpiration(new Date(expiration));    
+                unlockExpirationMap();
             }
-            expirationTokenRegistry.put(expiration, requestToken);
+
         }
     }
-
+    
     public void update(TRequestToken requestToken, TSURL surl, TStatusCode newStatusCode)
-            throws IllegalArgumentException, UnknownTokenException
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         update(requestToken, surl, newStatusCode, "");
     }
 
     public void update(TRequestToken requestToken, TSURL surl, TStatusCode newStatusCode, String explanation)
-            throws IllegalArgumentException, UnknownTokenException
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if (surl == null)
         {
@@ -206,13 +218,13 @@ public class SurlStatusStore
     }
 
     public void update(TRequestToken requestToken, List<TSURL> surls, TStatusCode newStatusCode)
-            throws IllegalArgumentException, UnknownTokenException
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         update(requestToken, surls, newStatusCode, "");
     }
 
     public void update(TRequestToken requestToken, List<TSURL> surls, TStatusCode newStatusCode,
-            String explanation) throws IllegalArgumentException, UnknownTokenException
+            String explanation) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || surls == null || surls.isEmpty() || newStatusCode == null
                 || explanation == null)
@@ -223,37 +235,48 @@ public class SurlStatusStore
         }
         log.debug("Updating token " + requestToken + " for surls " + surls + " with status " + newStatusCode
                 + " " + explanation);
-        checkCleanToken(requestToken);
-        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
-        for (TSURL surl : surls)
+        verifyLock(requestToken);
+        try
         {
-            if (surl == null)
+            readLock(requestToken);
+            checkToken(requestToken);
+            // TODO deadlock danger
+// checkCleanToken(requestToken);
+            Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+            for (TSURL surl : surls)
             {
-                log.warn("Unexpected null element in input surls list : " + surls);
-                continue;
+                if (surl == null)
+                {
+                    log.warn("Unexpected null element in input surls list : " + surls);
+                    continue;
+                }
+                ModifiableReturnStatus status = surlStatusMap.get(surl);
+                if (status == null)
+                {
+                    log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
+                }
+                else
+                {
+                    status.setStatusCode(newStatusCode);
+                    status.setExplanation(explanation);
+                }
             }
-            ModifiableReturnStatus status = surlStatusMap.get(surl);
-            if (status == null)
-            {
-                log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
-            }
-            else
-            {
-                status.setStatusCode(newStatusCode);
-                status.setExplanation(explanation);
-            }
+        }
+        finally
+        {
+            readUnlock(requestToken);
         }
     }
 
     public void checkAndUpdate(TRequestToken requestToken, TSURL surl, TStatusCode expectedStatusCode,
-            TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
+            TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         checkAndUpdate(requestToken, surl, expectedStatusCode, newStatusCode, "");
     }
 
     public void checkAndUpdate(TRequestToken requestToken, TSURL surl, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation) throws IllegalArgumentException,
-            UnknownTokenException
+            UnknownTokenException, ExpiredTokenException
     {
         if (surl == null)
         {
@@ -296,15 +319,23 @@ public class SurlStatusStore
                 log.warn("Unexpected null element in input surls list : " + surls);
                 continue;
             }
-            Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
-            for(ModifiableReturnStatus status : tokenStatusMap.values())
+            try
             {
-                status.setStatusCode(statusCode);
-                status.setExplanation(explanation);
+                readLock(surl);
+                Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
+                for (ModifiableReturnStatus status : tokenStatusMap.values())
+                {
+                    status.setStatusCode(statusCode);
+                    status.setExplanation(explanation);
+                }
+            }
+            finally
+            {
+                readUnlock(surl);
             }
         }
     }
-    
+
     public void checkAndUpdate(TSURL surl, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
             throws IllegalArgumentException
     {
@@ -338,27 +369,32 @@ public class SurlStatusStore
                 log.warn("Unexpected null element in input surls list : " + surls);
                 continue;
             }
-            Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
-            for(ModifiableReturnStatus status : tokenStatusMap.values())
+            try
             {
-                if(expectedStatusCode.equals(status.getStatusCode()))
+                readLock(surl);
+                Map<TRequestToken, ModifiableReturnStatus> tokenStatusMap = this.surlTokenStatusStore.get(surl);
+                for (ModifiableReturnStatus status : tokenStatusMap.values())
                 {
-                    status.setStatusCode(newStatusCode);
-                    status.setExplanation(explanation);
+                    status.testAndSetStatusCodeExplanation(expectedStatusCode, newStatusCode, explanation);
                 }
             }
+            finally
+            {
+                readUnlock(surl);
+            }
+
         }
     }
 
     public void checkAndUpdate(TRequestToken requestToken, List<TSURL> surls, TStatusCode expectedStatusCode,
-            TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException
+            TStatusCode newStatusCode) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
     {
         checkAndUpdate(requestToken, surls, expectedStatusCode, newStatusCode, "");
     }
 
     public void checkAndUpdate(TRequestToken requestToken, List<TSURL> surls, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation) throws IllegalArgumentException,
-            UnknownTokenException
+            UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || surls == null || surls.isEmpty() || expectedStatusCode == null
                 || newStatusCode == null || explanation == null)
@@ -370,38 +406,45 @@ public class SurlStatusStore
         }
         log.debug("Checking and updating token " + requestToken + " for surls " + surls + " where status is "
                 + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
-        checkCleanToken(requestToken);
-        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
-        for (TSURL surl : surls)
+        verifyLock(requestToken);
+        try
         {
-            if (surl == null)
+            readLock(requestToken);
+            // TODO deadlock danger
+// checkCleanToken(requestToken);
+            checkToken(requestToken);
+            Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+            for (TSURL surl : surls)
             {
-                log.warn("Unexpected null element in input surls list : " + surls);
-                continue;
-            }
-            ModifiableReturnStatus status = surlStatusMap.get(surl);
-            if (status == null)
-            {
-                log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
-            }
-            else
-            {
-                if (status.getStatusCode().equals(expectedStatusCode))
+                if (surl == null)
                 {
-                    status.setStatusCode(newStatusCode);
-                    status.setExplanation(explanation);
+                    log.warn("Unexpected null element in input surls list : " + surls);
+                    continue;
+                }
+                ModifiableReturnStatus status = surlStatusMap.get(surl);
+                if (status == null)
+                {
+                    log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
                 }
                 else
                 {
-                    log.warn("Surl status not updated, current status \'" + status.getStatusCode()
-                            + "\' doesn't match expected status \'" + expectedStatusCode + "\'");
+                    if (!status.testAndSetStatusCodeExplanation(expectedStatusCode, newStatusCode,
+                                                                explanation))
+                    {
+                        log.debug("Surl status not updated, current status \'" + status.getStatusCode()
+                                + "\' doesn't match expected status \'" + expectedStatusCode + "\'");
+                    }
                 }
             }
+        }
+        finally
+        {
+            readUnlock(requestToken);
         }
     }
     
     public void checkAndUpdate(TRequestToken requestToken, TStatusCode expectedStatusCode,
-            TStatusCode newStatusCode, String explanation) throws UnknownTokenException
+            TStatusCode newStatusCode, String explanation) throws UnknownTokenException, ExpiredTokenException
     {
         if (requestToken == null || expectedStatusCode == null
                 || newStatusCode == null || explanation == null)
@@ -413,29 +456,38 @@ public class SurlStatusStore
         }
         log.debug("Checking and updating token " + requestToken + " for surls where status is "
                 + expectedStatusCode + " with status " + newStatusCode + " " + explanation);
-        checkCleanToken(requestToken);
-        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
-        for (Entry<TSURL, ModifiableReturnStatus> surlStatus : surlStatusMap.entrySet())
+        verifyLock(requestToken);
+        try
         {
-            if (surlStatus == null)
+            readLock(requestToken);
+            // TODO deadlock danger
+// checkCleanToken(requestToken);
+            checkToken(requestToken);
+            Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+            for (Entry<TSURL, ModifiableReturnStatus> surlStatus : surlStatusMap.entrySet())
             {
-                log.warn("Unexpected null element surlStatus for token : " + requestToken);
-                continue;
-            }
-            if (surlStatus.getValue().getStatusCode().equals(expectedStatusCode))
-            {
-                surlStatus.getValue().setStatusCode(newStatusCode);
-                surlStatus.getValue().setExplanation(explanation);
-            }
-            else
-            {
-                log.debug("Surl status not updated, current status \'" + surlStatus.getValue().getStatusCode()
-                        + "\' doesn't match expected status \'" + expectedStatusCode + "\'");
+                if (surlStatus == null)
+                {
+                    log.warn("Unexpected null element surlStatus for token : " + requestToken);
+                    continue;
+                }
+                if (!surlStatus.getValue().testAndSetStatusCodeExplanation(expectedStatusCode, newStatusCode,
+                                                                           explanation))
+                {
+                    log.debug("Surl status not updated, current status \'"
+                            + surlStatus.getValue().getStatusCode() + "\' doesn't match expected status \'"
+                            + expectedStatusCode + "\'");
+                }
             }
         }
+        finally
+        {
+            readUnlock(requestToken);
+        }
+        
     }
     
-    public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws UnknownTokenException, IllegalArgumentException
+    public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken) throws UnknownTokenException, IllegalArgumentException, ExpiredTokenException
     {
         if (requestToken == null)
         {
@@ -443,31 +495,22 @@ public class SurlStatusStore
                     + requestToken);
         }
         log.debug("Retrieving statuses of surls for token " + requestToken);
-        checkCleanToken(requestToken);
-//        HashMap<TSURL, TReturnStatus> builtSurlStatusMap = new HashMap<TSURL, TReturnStatus>(surls.size());
-        return (Map<TSURL, TReturnStatus>) ((HashMap<TSURL, ModifiableReturnStatus>)this.tokenSurlStatusStore.get(requestToken)).clone();
-//        for (TSURL surl : surls)
-//        {
-//            if (surl == null)
-//            {
-//                log.warn("Unexpected null element in input surls list");
-//                continue;
-//            }
-//            TReturnStatus status = surlStatusMap.get(surl);
-//            if (status == null)
-//            {
-//                log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
-//            }
-//            else
-//            {
-//                builtSurlStatusMap.put(surl, status);
-//            }
-//        }
-//        return builtSurlStatusMap;
+        verifyLock(requestToken);
+        try
+        {
+            readLock(requestToken);
+            checkToken(requestToken);
+            //TODO deadlock danger
+//            checkCleanToken(requestToken);
+            return (Map<TSURL, TReturnStatus>) ((HashMap<TSURL, ModifiableReturnStatus>)this.tokenSurlStatusStore.get(requestToken)).clone();    
+        } finally
+        {
+            readUnlock(requestToken);
+        }
     }
     
     public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, TSURL surl)
-            throws UnknownTokenException, IllegalArgumentException
+            throws UnknownTokenException, IllegalArgumentException, ExpiredTokenException
     {
         if (surl == null || surl.isEmpty())
         {
@@ -477,7 +520,7 @@ public class SurlStatusStore
     }
 
     public Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, Collection<TSURL> surls)
-            throws UnknownTokenException, IllegalArgumentException
+            throws UnknownTokenException, IllegalArgumentException, ExpiredTokenException
     {
         if (requestToken == null || surls == null || surls.isEmpty())
         {
@@ -485,27 +528,38 @@ public class SurlStatusStore
                     + requestToken + " surls=" + surls);
         }
         log.debug("Retrieving statuses of surls " + surls + " for token " + requestToken);
-        checkCleanToken(requestToken);
-        HashMap<TSURL, TReturnStatus> builtSurlStatusMap = new HashMap<TSURL, TReturnStatus>(surls.size());
-        Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
-        for (TSURL surl : surls)
+        verifyLock(requestToken);
+        try
         {
-            if (surl == null)
+            readLock(requestToken);
+            // TODO deadlock danger
+// checkCleanToken(requestToken);
+            checkToken(requestToken);
+            HashMap<TSURL, TReturnStatus> builtSurlStatusMap = new HashMap<TSURL, TReturnStatus>(surls.size());
+            Map<TSURL, ModifiableReturnStatus> surlStatusMap = this.tokenSurlStatusStore.get(requestToken);
+            for (TSURL surl : surls)
             {
-                log.warn("Unexpected null element in input surls list");
-                continue;
+                if (surl == null)
+                {
+                    log.warn("Unexpected null element in input surls list");
+                    continue;
+                }
+                TReturnStatus status = surlStatusMap.get(surl);
+                if (status == null)
+                {
+                    log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
+                }
+                else
+                {
+                    builtSurlStatusMap.put(surl, status);
+                }
             }
-            TReturnStatus status = surlStatusMap.get(surl);
-            if (status == null)
-            {
-                log.warn("Surl \'" + surl + "\' is not associated to token \'" + requestToken + "\'");
-            }
-            else
-            {
-                builtSurlStatusMap.put(surl, status);
-            }
+            return builtSurlStatusMap;
         }
-        return builtSurlStatusMap;
+        finally
+        {
+            readUnlock(requestToken);
+        }
     }
 
     public Collection<TReturnStatus> getSurlStatuses(TSURL surl) throws UnknownSurlException,
@@ -516,13 +570,13 @@ public class SurlStatusStore
             throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl);
         }
         log.debug("Retrieving statuses of surl " + surl);
+
         Map<TRequestToken, TReturnStatus> tokensStatusMap = getSurlPerTokenStatuses(surl);
         if (tokensStatusMap == null)
         {
             throw new UnknownSurlException("Surl " + surl + " is not stored");
         }
-//        return new ArrayList<TReturnStatus>(new HashSet<TReturnStatus>(tokensStatusMap.values()));
-        return new HashSet<TReturnStatus>(tokensStatusMap.values());
+        return new ArrayList<TReturnStatus>(new HashSet<TReturnStatus>(tokensStatusMap.values()));
     }
 
     public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
@@ -533,41 +587,63 @@ public class SurlStatusStore
             throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl);
         }
         log.debug("Retrieving status-token for surl " + surl);
-        Map<TRequestToken, ModifiableReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl);
-        if (tokensStatusMap == null)
+        try
         {
-            throw new UnknownSurlException("Surl " + surl + " is not stored");
-        }
-        Iterator<Entry<TRequestToken, ModifiableReturnStatus>> iterator = tokensStatusMap.entrySet()
-                                                                                         .iterator();
-        while (iterator.hasNext())
-        {
-            Entry<TRequestToken, ModifiableReturnStatus> tokenStatus = iterator.next();
-            if (tokenStatus.getKey().hasExpirationDate() && tokenStatus.getKey().isExpired())
+            readLock(surl);
+            Map<TRequestToken, ModifiableReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl);
+            if (tokensStatusMap == null)
             {
-                iterator.remove();
-                try
-                {
-                    cleanToken(tokenStatus.getKey());
-                } catch(UnknownTokenException e)
-                {
-                    throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
-                                                    + e.getMessage());
-                }
+                throw new UnknownSurlException("Surl " + surl + " is not stored");
             }
+        /*commented out to avoid deadlock*/
+//        Iterator<Entry<TRequestToken, ModifiableReturnStatus>> iterator = tokensStatusMap.entrySet()
+//                                                                                         .iterator();
+//        while (iterator.hasNext())
+//        {
+//            Entry<TRequestToken, ModifiableReturnStatus> tokenStatus = iterator.next();
+//            if (tokenStatus.getKey().hasExpirationDate() && tokenStatus.getKey().isExpired())
+//            {
+//                //TODO deadlock danger
+//                writeLock(surl);
+//                //TODO deadlock danger
+//                iterator.remove();
+//                try
+//                {
+//                    cleanToken(tokenStatus.getKey());
+//                } catch(UnknownTokenException e)
+//                {
+//                    throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
+//                                                    + e.getMessage());
+//                }
+//                writeunlock(surl);
+//            }
+//        }
+        
+            if (tokensStatusMap.isEmpty())
+            {
+                throw new UnknownSurlException("Surl " + surl + " is not stored");
+            }
+            return (Map<TRequestToken, TReturnStatus>) ((HashMap) tokensStatusMap).clone();
         }
-        if (tokensStatusMap.isEmpty())
+        finally
         {
-            throw new UnknownSurlException("Surl " + surl + " is not stored");
+            readUnlock(surl);
         }
-        return (Map<TRequestToken, TReturnStatus>) ((HashMap) tokensStatusMap).clone();
     }
 
     public List<TRequestToken> getExpiredTokens()
     {
-        return new ArrayList<TRequestToken>(expirationTokenRegistry.headMap(Calendar.getInstance()
-                                                                                    .getTimeInMillis(), true)
-                                                                   .values());
+        lockExpirationMap();
+        try
+        {
+            return new ArrayList<TRequestToken>(expirationTokenRegistry.headMap(Calendar.getInstance()
+                                                                                .getTimeInMillis(), true)
+                                                               .values());    
+        }finally
+        {
+            unlockExpirationMap();
+        }
+        
     }
     
     private void checkToken(TRequestToken requestToken) throws UnknownTokenException, ExpiredTokenException
@@ -584,62 +660,148 @@ public class SurlStatusStore
         }
     }
     
-    private void checkCleanToken(TRequestToken requestToken) throws UnknownTokenException
+//    private void checkCleanToken(TRequestToken requestToken) throws UnknownTokenException
+//    {
+//        writeLock(requestToken);
+//        try
+//        {
+//            checkToken(requestToken);
+//        } catch(ExpiredTokenException e)
+//        {
+//            try
+//            {
+//                //TODO deadlock danger
+//                cleanToken(requestToken);
+//            } catch(UnknownTokenException e1)
+//            {
+//                throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
+//                        + e1.getMessage());
+//            }
+//        }
+//        writeunlock(requestToken);
+//    }
+
+    private void cleanToken(TRequestToken requestToken) throws UnknownTokenException
     {
+        verifyToken(requestToken);
         try
         {
-            checkToken(requestToken);
-        } catch(ExpiredTokenException e)
+            lockExpirationMap();
+            expirationTokenRegistry.remove(getStoredTokenExpiration(requestToken));
+        }
+        finally
         {
-            try
+            unlockExpirationMap();
+        }
+        try
+        {
+            writeLock(requestToken);
+            Map<TSURL, ModifiableReturnStatus> surlStatuses = this.tokenSurlStatusStore.remove(requestToken);
+            for (TSURL surl : surlStatuses.keySet())
             {
-                cleanToken(requestToken);
-            } catch(UnknownTokenException e1)
-            {
-                throw new IllegalStateException("Unexpected UnknownTokenException in cleanToken: "
-                        + e1.getMessage());
+                try
+                {
+                    // TODO deadlock danger
+                    writeLock(surl);
+                    Map<TRequestToken, ModifiableReturnStatus> tokenStatuses = this.surlTokenStatusStore.get(surl);
+                    if (tokenStatuses == null)
+                    {
+                        throw new IllegalStateException("Inconsistent Surl Status Store. Surl uid " + surl
+                                + " not found in surlTokenStatusStore");
+                    }
+                    tokenStatuses.remove(requestToken);
+                    if (tokenStatuses.isEmpty())
+                    {
+                        this.surlTokenStatusStore.remove(surl);
+                    }
+                }
+                finally
+                {
+                    writeUnlock(surl);
+                }
             }
+        }
+        finally
+        {
+            writeUnlock(requestToken);
+        }
+
+    }
+    
+    private void verifyLock(TRequestToken requestToken) throws UnknownTokenException
+    {
+        if (!tokenLockMap.containsKey(requestToken))
+        {
+            log.debug("Token \'" + requestToken + "\' is not stored in tokenLockMap");
+            throw new UnknownTokenException("Provided token \'" + requestToken + "\' has not a lock");
         }
     }
 
-    private void cleanToken(TRequestToken token) throws UnknownTokenException
+    private void verifyToken(TRequestToken requestToken) throws UnknownTokenException
     {
-        expirationTokenRegistry.remove(getStoredTokenExpiration(token));    
-        Map<TSURL, ModifiableReturnStatus> surlStatuses = this.tokenSurlStatusStore.remove(token);
-        for (TSURL surl : surlStatuses.keySet())
+        if (!tokenSurlStatusStore.containsKey(requestToken))
         {
-            Map<TRequestToken, ModifiableReturnStatus> tokenStatuses = this.surlTokenStatusStore.get(surl);
-            if (tokenStatuses == null)
+            log.debug("Token \'" + requestToken + "\' is not stored");
+            throw new UnknownTokenException("Provided token \'" + requestToken + "\'is not stored");
+        }
+        if (!tokenLockMap.containsKey(requestToken))
+        {
+            log.warn("Token \'" + requestToken + "\' is not stored in tokenLockMap");
+            throw new IllegalStateException("Provided token \'" + requestToken + "\'is not stored in tokenLockMap");
+        }
+        try
+        {
+            if(!expirationTokenRegistry.containsKey(getStoredTokenExpiration(requestToken)))
             {
-                throw new IllegalStateException("Inconsistent Surl Status Store. Surl uid " + surl
-                        + " not found in surlTokenStatusStore");
+                log.warn("Token \'" + requestToken + "\' is not stored in expirationTokenRegistry");
+                throw new IllegalStateException("Provided token \'" + requestToken + "\'is not stored in expirationTokenRegistry");    
             }
-            tokenStatuses.remove(token);
-            if (tokenStatuses.isEmpty())
-            {
-                this.surlTokenStatusStore.remove(surl);
-            }
+        } catch(UnknownTokenException e)
+        {
+            log.warn("Token \'" + requestToken + "\' is not retrieved from getStoredTokenExpiration");
+            throw new IllegalStateException("Provided token \'" + requestToken + "\'is not retrieved from getStoredTokenExpiration");
         }
     }
-
-    private long getStoredTokenExpiration(TRequestToken token) throws UnknownTokenException
+    
+    private boolean verifyMissingToken(TRequestToken requestToken) throws IllegalArgumentException
     {
-        ArrayList<TRequestToken> tokenList = new ArrayList<TRequestToken>(this.tokenSurlStatusStore.keySet());
-        int index = tokenList.indexOf(token);
-        if(index >= 0)
+        if(requestToken == null)
         {
-            TRequestToken storedToken = tokenList.get(index);
-            if(!storedToken.hasExpirationDate())
+            throw new IllegalArgumentException("Unable to verify the token, null arguments: requestToken=" + requestToken);
+        }
+        return (!tokenSurlStatusStore.containsKey(requestToken) && 
+                !tokenLockMap.containsKey(requestToken) && 
+                (!requestToken.hasExpirationDate() || 
+                 !requestToken.equals(expirationTokenRegistry.get(requestToken.getExpiration()))));
+    }
+
+    private long getStoredTokenExpiration(TRequestToken requestToken) throws UnknownTokenException
+    {
+        verifyLock(requestToken);
+        try
+        {
+            readLock(requestToken);
+            ArrayList<TRequestToken> tokenList = new ArrayList<TRequestToken>(
+                                                                              this.tokenSurlStatusStore.keySet());
+            int index = tokenList.indexOf(requestToken);
+            if (index >= 0)
             {
-                throw new IllegalStateException("Unexpected stored token with no expiration date");
+                TRequestToken storedToken = tokenList.get(index);
+                if (!storedToken.hasExpirationDate())
+                {
+                    throw new IllegalStateException("Unexpected stored token with no expiration date");
+                }
+                return storedToken.getExpiration().getTimeInMillis();
             }
-            return storedToken.getExpiration().getTimeInMillis();
+            else
+            {
+                throw new UnknownTokenException("Token " + requestToken + " not stored in tokenSurlStatusStore");
+            }
         }
-        else
+        finally
         {
-            throw new UnknownTokenException("Token " + token + " not stored in tokenSurlStatusStore");    
+            readUnlock(requestToken);
         }
-        
     }
 
     public void checkIntegrity() throws Exception
@@ -761,6 +923,121 @@ public class SurlStatusStore
                 throw new Exception("Integrity violation: Null tokenSurlStatus map for expirationToken " + surlexpirationToken.getValue());
             }
         }
+    }
+    
+    private void writeLockNew(TRequestToken requestToken) throws IllegalArgumentException
+    {
+        if(tokenLockMap.contains(requestToken))
+        {
+            throw new IllegalArgumentException("The provided token has already a lock");
+        }
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+        tokenLockMap.put(requestToken,lock);
+        lock.writeLock().lock();
+        System.out.println("SurlStatusStore.writeLock(TOKEN) " + requestToken);
+    }
+
+    private void writeLock(TRequestToken requestToken) throws IllegalArgumentException
+    {
+        ReentrantReadWriteLock lock = tokenLockMap.get(requestToken);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided token has not a lock");
+        }
+        lock.writeLock().lock();
+        System.out.println("SurlStatusStore.writeLock(TOKEN) " + requestToken);
+    }
+    
+    private void writeUnlock(TRequestToken requestToken) throws IllegalArgumentException
+    {
+        ReentrantReadWriteLock lock = tokenLockMap.get(requestToken);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided requestToken has not a lock");
+        }
+        lock.writeLock().lock();
+        System.out.println("SurlStatusStore.writeunlock(TOKEN) " + requestToken);
+    }
+    
+    private void readLock(TRequestToken requestToken)
+    {
+        ReentrantReadWriteLock lock = tokenLockMap.get(requestToken);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided requestToken has not a lock");
+        }
+        lock.readLock().lock();
+        System.out.println("SurlStatusStore.readLock(TOKEN) " + requestToken);
+    }
+    
+    private void readUnlock(TRequestToken requestToken) throws IllegalArgumentException
+    {
+        ReentrantReadWriteLock lock = tokenLockMap.get(requestToken);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided requestToken has not a lock");
+        }
+        lock.readLock().unlock();
+        System.out.println("SurlStatusStore.readunlock(TOKEN) " + requestToken);
+    }
+    
+    
+    private void writeLock(TSURL surl)
+    {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+        ReentrantReadWriteLock storedLock = surlLockMap.putIfAbsent(surl, lock);
+        if(storedLock != null)
+        {
+            lock = storedLock;
+        }
+        lock.writeLock().lock();
+        System.out.println("SurlStatusStore.writeLock(SURL) " + surl);
+    }
+
+    private void writeUnlock(TSURL surl) throws IllegalArgumentException
+    {
+        ReentrantReadWriteLock lock = surlLockMap.get(surl);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided surl has not a lock");
+        }
+        lock.writeLock().unlock();
+        System.out.println("SurlStatusStore.writeunlock(SURL) " + surl);
+    }
+    
+    private void readLock(TSURL surl)
+    {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+        ReentrantReadWriteLock storedLock = surlLockMap.putIfAbsent(surl, lock);
+        if(storedLock != null)
+        {
+            lock = storedLock;
+        }
+        lock.readLock().lock();
+        System.out.println("SurlStatusStore.readLock(SURL) " + surl);
+    }
+    
+    private void readUnlock(TSURL surl) throws IllegalArgumentException
+    {
+        ReentrantReadWriteLock lock = surlLockMap.get(surl);
+        if(lock == null) 
+        {
+            throw new IllegalArgumentException("The provided surl has not a lock");
+        }
+        lock.readLock().unlock();
+        System.out.println("SurlStatusStore.readunlock(SURL) " + surl);
+    }
+    
+    private void unlockExpirationMap()
+    {
+        expirationTokenRegistryLock.unlock();
+        System.out.println("SurlStatusStore.unlockExpirationMap()");
+    }
+
+    private void lockExpirationMap()
+    {
+        expirationTokenRegistryLock.lock();
+        System.out.println("SurlStatusStore.lockExpirationMap()");
     }
 
 }

@@ -49,6 +49,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -129,6 +130,14 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         {
             PtPAbortExecutor.log.debug("PtPAbortExecutor: Request - Invalid request token");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+            outputData.setReturnStatus(globalStatus);
+            outputData.setArrayOfFileStatuses(null);
+            PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            return outputData;
+        } catch(ExpiredTokenException e)
+        {
+            log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+            globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
             PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
@@ -378,6 +387,14 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                 {
                     PtPAbortExecutor.log.debug("PtPAbortExecutor: Request - Invalid request token, probably it is expired");
                     globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Expired request token");
+                    outputData.setReturnStatus(globalStatus);
+                    outputData.setArrayOfFileStatuses(null);
+                    PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+                    return outputData;
+                } catch(ExpiredTokenException e)
+                {
+                    log.info("The request is expired: ExpiredTokenException: " + e.getMessage());
+                    globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
                     outputData.setReturnStatus(globalStatus);
                     outputData.setArrayOfFileStatuses(null);
                     PtPAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
