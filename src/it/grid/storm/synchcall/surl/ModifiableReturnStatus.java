@@ -1,9 +1,6 @@
 package it.grid.storm.synchcall.surl;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
@@ -41,14 +38,14 @@ class ModifiableReturnStatus extends TReturnStatus
         super.setExplanation(explanationString);
     }
     
-    public boolean testAndSetStatusCodeExplanation(TStatusCode expectedStatusCode, TStatusCode statusCode, String explanation)
+    public boolean testAndSetStatusCodeExplanation(TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation)
     {
         try
         {
         statusLock.lock();
-        if(expectedStatusCode.equals(statusCode))
+        if(expectedStatusCode.equals(super.statusCode))
         {
-            super.setStatusCode(statusCode);
+            super.setStatusCode(newStatusCode);
             super.setExplanation(explanation); 
             return true;
         }

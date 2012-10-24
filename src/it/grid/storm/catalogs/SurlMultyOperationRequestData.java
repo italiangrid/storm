@@ -11,6 +11,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
 import it.grid.storm.synchcall.surl.TokenDuplicationException;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 public abstract class SurlMultyOperationRequestData extends SurlRequestData implements SynchMultyOperationRequestData
@@ -110,11 +111,13 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
                         + "in updating status store: " + e.getMessage());
             } catch(UnknownTokenException e)
             {
-             // Never thrown
                 log.warn("Received an UnknownTokenException, probably the token has expired, unable to update its status in the store : " + e.getMessage());
             } catch(ExpiredTokenException e)
             {
                 log.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : " + e.getMessage());
+            } catch(UnknownSurlException e)
+            {
+                log.warn("Received an UnknownSurlException, probably the token has expired, unable to update its status in the store : " + e.getMessage());
             }
         }
     }
@@ -148,6 +151,9 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
             } catch(ExpiredTokenException e)
             {
                 log.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : " + e.getMessage());
+            } catch(UnknownSurlException e)
+            {
+                log.warn("Received an UnknownSurlException, probably the token has expired, unable to update its status in the store : " + e.getMessage());
             }
         }
     }

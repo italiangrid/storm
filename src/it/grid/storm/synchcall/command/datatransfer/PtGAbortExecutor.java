@@ -38,6 +38,7 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
@@ -462,6 +463,10 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             {
                 log.error("Unexpected UnknownTokenException during surl statuses update: " + e);
                 throw new IllegalStateException("Unexpected UnknownTokenException: " + e.getMessage());
+            } catch(UnknownSurlException e)
+            {
+                log.error("Unexpected UnknownSurlException during surl statuses update: " + e);
+                throw new IllegalStateException("Unexpected UnknownSurlException: " + e.getMessage());
             }
 
 // surlReturnStatus.setSurl(chunkData.getSURL());

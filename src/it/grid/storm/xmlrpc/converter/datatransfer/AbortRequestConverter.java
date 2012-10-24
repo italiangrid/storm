@@ -60,8 +60,6 @@ public class AbortRequestConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        AbortRequestInputData inputData = null;
-        String memberName;
 
 
         // Creation of VomsGridUser
@@ -69,9 +67,6 @@ public class AbortRequestConverter implements Converter
         guser = GridUserManager.decode(inputParam);
         //guser = VomsGridUser.decode(inputParam);
 
-        // (1) authorizationID (never used)
-        memberName = new String("authorizationID");
-        String authID = (String) inputParam.get(memberName);
 
         // (2) TRequestToken requestToken
         TRequestToken requestToken;
@@ -82,10 +77,10 @@ public class AbortRequestConverter implements Converter
             requestToken = null;
             log.debug("requestToken=NULL");
         }
-
-        log.debug("AbortRequestInputData Created!");
+        AbortRequestInputData inputData = null;
         try {
             inputData = new AbortRequestInputData(guser, requestToken);
+            log.debug("AbortRequestInputData Created!");
         } catch (InvalidAbortRequestInputDataAttributeException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

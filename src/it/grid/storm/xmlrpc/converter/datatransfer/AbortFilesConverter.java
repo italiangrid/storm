@@ -64,16 +64,11 @@ public class AbortFilesConverter implements Converter
     public InputData convertToInputData(Map inputParam)
     {
         AbortFilesInputData inputData = null;
-        String memberName;
 
         // Creation of VomsGridUser
         GridUserInterface guser = null;
         guser = GridUserManager.decode(inputParam);
         //guser = VomsGridUser.decode(inputParam);
-
-        // (1) authorizationID (never used)
-        memberName = new String("authorizationID");
-        String authID = (String) inputParam.get(memberName);
 
         // (2) TRequestToken requestToken
         TRequestToken requestToken;

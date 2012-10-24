@@ -51,6 +51,7 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
@@ -580,7 +581,13 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     PtPAbortExecutor.log.error("Unable to build StoRI by SURL and user", e);   
 //                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
 //                    putCatalog.update(chunkData);
-                    SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
+                    try
+                    {
+                        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
+                    } catch(UnknownSurlException e1)
+                    {
+                        PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
+                    }
                     surlReturnStatus.setSurl(surl);
                     surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Unable to build StoRI by SURL and user"));
                     return surlReturnStatus;
@@ -588,7 +595,13 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     PtPAbortExecutor.log.error("Unable to build StoRI by SURL and user", ex);
 //                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
 //                    putCatalog.update(chunkData);
-                    SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
+                    try
+                    {
+                        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
+                    } catch(UnknownSurlException e)
+                    {
+                        PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
+                    }
                     surlReturnStatus.setSurl(surl);
                     surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Unable to build StoRI by SURL and user"));
                     return surlReturnStatus;
@@ -624,7 +637,13 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                 //Something goes wrong during the update catalog operation
 //                chunkData.changeStatusSRM_ABORTED("Request aborted.");
 //                putCatalog.update(chunkData);
-                SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                try
+                {
+                    SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                } catch(UnknownSurlException e)
+                {
+                    PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
+                }
                 surlReturnStatus.setSurl(surl);
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Database Not Updated."));
                 return surlReturnStatus;
@@ -633,14 +652,26 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
             if(res) {
 //                chunkData.changeStatusSRM_ABORTED("Request Aborted");
 //                putCatalog.update(chunkData);
-                SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                try
+                {
+                    SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                } catch(UnknownSurlException e)
+                {
+                    PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
+                }
                 surlReturnStatus.setSurl(surl);
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,"File request successfully aborted."));
                 return surlReturnStatus;
             } else {
 //                chunkData.changeStatusSRM_ABORTED("Request aborted.");
 //                putCatalog.update(chunkData);
-                SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                try
+                {
+                    SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_ABORTED, "Request aborted.");
+                } catch(UnknownSurlException e)
+                {
+                    PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
+                }
                 surlReturnStatus.setSurl(surl);
                 surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"File not removed."));
                 return surlReturnStatus;

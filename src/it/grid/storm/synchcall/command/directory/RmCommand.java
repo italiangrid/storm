@@ -23,9 +23,7 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -47,6 +45,7 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
+import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,20 +129,6 @@ public class RmCommand implements Command {
         boolean globalFailure = false;
         String explanation = "done";
         TStatusCode statusCode = TStatusCode.EMPTY;
-
-        // Maps the VOMS Grid user into Local User.
-        LocalUser lUser = null;
-        try {
-            log.debug("srmRm: Trying to get user Mapping.");
-            lUser = user.getLocalUser();
-            log.debug("srmRm: User Mapping done (LocalUser gid:'" + lUser.getPrimaryGid() + "')");
-        } catch (CannotMapUserException ex) {
-            // Anybody requests will be processed!
-            log.debug("srmRm: Unable to map the user '" + user + "' in a local user.", ex);
-            globalFailure = true;
-            explanation = "Unable to map the user '" + user + "' in a local user.";
-            statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
-        }
 
         int numberOfFiles = surlArray.size();
 
@@ -261,7 +246,45 @@ public class RmCommand implements Command {
                             fileSize = localElement.getExactSize();
                         }
 
-                        returnStatus = manageAuthorizedRM(lUser, surl, stori);
+                        try
+                        {
+                            returnStatus = manageAuthorizedRM(surl, stori);
+                        } catch(IllegalArgumentException e)
+                        {
+                            log.error("srmRm: IllegalArgumentException from manageAuthorizedRM: " + e);
+                            try
+                            {
+                                globalStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                                 "IllegalArgumentException from manageAuthorizedRM: "
+                                                                         + e.getMessage());
+                                log.info("srmRm: <> Request for [SURL:+] failed with [status: "
+                                        + globalStatus.toString() + "]");
+                            } catch(InvalidTReturnStatusAttributeException ex1)
+                            {
+                                log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus "
+                                        + ex1);
+                            }
+                            outputData.setStatus(globalStatus);
+                            outputData.setSurlStatus(null);
+                            return outputData;
+                        } catch(UnknownSurlException e)
+                        {
+                            log.error("srmRm: UnknownSurlException from manageAuthorizedRM: " + e);
+                            try
+                            {
+                                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "surl " + surl
+                                        + " is unknown");
+                                log.info("srmRm: <> Request for [SURL:+] failed with [status: "
+                                        + globalStatus.toString() + "]");
+                            } catch(InvalidTReturnStatusAttributeException ex1)
+                            {
+                                log.error("srmRm: <> Request for [SURL:] failed. Error creating returnStatus "
+                                        + ex1);
+                            }
+                            outputData.setStatus(globalStatus);
+                            outputData.setSurlStatus(null);
+                            return outputData;
+                        }
                         if (returnStatus.getStatusCode() == TStatusCode.SRM_SUCCESS) {
                             globalFailure = false;
                             log.info("srmRm: <" + user + "> Removing SURL " + i + " of " + numberOfFiles
@@ -365,8 +388,10 @@ public class RmCommand implements Command {
      * @param user VomsGridUser
      * @param stori StoRI
      * @return TReturnStatus
+     * @throws UnknownSurlException 
+     * @throws IllegalArgumentException 
      */
-    private TReturnStatus manageAuthorizedRM(LocalUser lUser, TSURL surl, StoRI stori) {
+    private TReturnStatus manageAuthorizedRM(TSURL surl, StoRI stori) throws IllegalArgumentException, UnknownSurlException {
         TReturnStatus returnStatus = null;
         boolean fileRemoved;
         String explanation = "";
@@ -398,7 +423,7 @@ public class RmCommand implements Command {
             // getcatalog.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl,"File Removed
             // by a SrmRm()");
             // The file exists and it is not a directory
-            fileRemoved = removeTarget(file, lUser);
+            fileRemoved = removeTarget(file/*, lUser*/);
 
             if (!(fileRemoved)) {
                 // Deletion failed for not enough permission.
@@ -427,7 +452,7 @@ public class RmCommand implements Command {
         return returnStatus;
     }
 
-    private boolean removeTarget(LocalFile file, LocalUser lUser) {
+    private boolean removeTarget(LocalFile file/*, LocalUser lUser*/) {
         boolean result = false;
         // Check Permission
 //        FilesystemPermission groupPermission = null;

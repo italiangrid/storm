@@ -35,8 +35,8 @@ public class TReturnStatus implements Serializable
 {
     private static final long serialVersionUID = -4550845540710062810L;
     
-    private TStatusCode  statusCode   = null;
-    private String       explanation = null;
+    protected TStatusCode  statusCode   = null;
+    protected String       explanation = null;
     private Long lastUpdateTIme = null;
     
     private static final String UNDEFINED_EXPLANATION = "undefined";
@@ -54,7 +54,13 @@ public class TReturnStatus implements Serializable
     }
     
     public TReturnStatus(TReturnStatus original) throws InvalidTReturnStatusAttributeException  {
-        this(original.statusCode, original.explanation);
+        if(original == null || original.statusCode == null)
+        {
+            throw new InvalidTReturnStatusAttributeException(statusCode);
+        }
+        this.statusCode = original.statusCode;
+        this.explanation = original.explanation;
+        updated();
     }
 
     public TReturnStatus(TStatusCode statusCode) throws InvalidTReturnStatusAttributeException

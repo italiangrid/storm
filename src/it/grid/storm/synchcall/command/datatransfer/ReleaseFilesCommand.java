@@ -225,6 +225,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
                 outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
                 return outputData;
+            } catch(UnknownSurlException e)
+            {
+                log.warn("Unexpected UnknownSurlException in expireSurls: " + e);
+                globalStatus = getTReturnStatus(TStatusCode.SRM_FAILURE, "Internal error. Unexpected UnknownSurlException in expireSurls");
+                outputData.setReturnStatus(globalStatus);
+                outputData.setArrayOfFileStatuses(null);
+                printRequestOutcome(globalStatus, inputData);
+                return outputData;
             }
             
             
@@ -271,7 +279,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return surlToRelease;
     }
 
-    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
+    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException, UnknownSurlException
     {
         if(requestToken != null)
         {
