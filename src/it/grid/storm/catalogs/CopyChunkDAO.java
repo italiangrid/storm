@@ -112,7 +112,7 @@ public class CopyChunkDAO {
      * In case of any error, an error messagge gets logged but no exception is
      * thrown.
      */
-	public void update(CopyChunkDataTO to) {
+    public synchronized void update(CopyChunkDataTO to) {
 
         if(!checkConnection())
         {
@@ -181,7 +181,7 @@ public class CopyChunkDAO {
 	 * @param chunkTO
 	 */
 	//TODO MICHELE USER_SURL new method
-	public void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
+    public synchronized void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
 
         if(!checkConnection())
         {
@@ -245,7 +245,7 @@ public class CopyChunkDAO {
      *
      * NOTE! Chunks in SRM_ABORTED status are NOT returned!
      */
-	public Collection<CopyChunkDataTO> find(TRequestToken requestToken) {
+	public synchronized Collection<CopyChunkDataTO> find(TRequestToken requestToken) {
 
         if(!checkConnection())
         {
@@ -326,7 +326,7 @@ public class CopyChunkDAO {
 		
 	}
 	
-	public Collection<CopyChunkDataTO> find(TRequestToken requestToken, int[] surlUniqueIDs,  String[] surls) {
+	public synchronized Collection<CopyChunkDataTO> find(TRequestToken requestToken, int[] surlUniqueIDs,  String[] surls) {
 
         if(!checkConnection())
         {
@@ -420,7 +420,7 @@ public class CopyChunkDAO {
      * its request as being in the SRM_IN_PROGRESS state for ever. Hence the pressing
      * need to inform it of the encountered problems.
      */
-	public void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
+	public synchronized void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
 
         if(!checkConnection())
         {
@@ -559,7 +559,7 @@ public class CopyChunkDAO {
         }
 	}
 
-	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation)
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
@@ -571,7 +571,7 @@ public class CopyChunkDAO {
                                        explanation, true, false, true);
     }
     
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
@@ -586,7 +586,7 @@ public class CopyChunkDAO {
                                        newStatusCode, null, true, true, false);
     }
     
-    public void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+    public synchronized void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
             boolean withRequestToken, boolean withSurls, boolean withExplanation)
             throws IllegalArgumentException
@@ -696,7 +696,7 @@ public class CopyChunkDAO {
         return sb.toString();
     }
 
-    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
     {
         PreparedStatement find = null;
         ResultSet rs = null;

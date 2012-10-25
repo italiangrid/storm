@@ -101,7 +101,7 @@ public class PtPChunkDAO {
      * statusCode and explanation, of status_Put table get written to the DB. Likewise for the pinLifetime and
      * fileLifetime of request_queue. In case of any error, an error messagge gets logged but no exception is thrown.
      */
-	public void update(PtPChunkDataTO to) {
+    public synchronized void update(PtPChunkDataTO to) {
 
 	    if(!checkConnection())
         {
@@ -170,7 +170,7 @@ public class PtPChunkDAO {
 	 * @param chunkTO
 	 */
 	//TODO MICHELE USER_SURL new method
-	public void updateIncomplete(ReducedPtPChunkDataTO chunkTO) {
+    public synchronized void updateIncomplete(ReducedPtPChunkDataTO chunkTO) {
 
 	    if(!checkConnection())
         {
@@ -211,7 +211,7 @@ public class PtPChunkDAO {
      * during the srmAbortRequest/File operation. In case of any error, an error message gets logged but no exception
      * is thrown; a null PtPChunkDataTO is returned.
      */
-	public PtPChunkDataTO refresh(long primary_key) {
+	public synchronized PtPChunkDataTO refresh(long primary_key) {
 
 	    if(!checkConnection())
         {
@@ -325,7 +325,7 @@ public class PtPChunkDAO {
      * SRM_ABORTED status are NOT returned! This is imporant because this method is intended to be used by the Feeders
      * to fetch all chunks in the request, and aborted chunks should not be picked up for processing!
      */
-	public Collection<PtPChunkDataTO> find(TRequestToken requestToken) {
+	public synchronized Collection<PtPChunkDataTO> find(TRequestToken requestToken) {
 
 	    if(!checkConnection())
         {
@@ -426,12 +426,12 @@ public class PtPChunkDAO {
      * Method that returns a Collection of ReducedPtPChunkDataTO associated to the given TRequestToken expressed as
      * String.
      */
-	public Collection<ReducedPtPChunkDataTO> findReduced(String reqtoken, Collection<TSURL> surls) {
+	public synchronized Collection<ReducedPtPChunkDataTO> findReduced(String reqtoken, Collection<TSURL> surls) {
 
 	    if(!checkConnection())
         {
             log.error("PtP CHUNK DAO: findReduced - unable to get a valid connection!");
-            return null;
+            return new ArrayList<ReducedPtPChunkDataTO>();
         }
 		PreparedStatement find = null;
 		ResultSet rs = null;
@@ -510,14 +510,14 @@ public class PtPChunkDAO {
      * Method that returns a Collection of ReducedPtPChunkDataTO corresponding to the IDs supplied in the given List of
      * Long. If the List is null or empty, an empty collection is returned and error messagges get logged.
      */
-	public Collection<ReducedPtPChunkDataTO> findReduced(List<Long> ids) {
+	public synchronized Collection<ReducedPtPChunkDataTO> findReduced(List<Long> ids) {
 
 		if(ids != null && !ids.isEmpty())
 		{
 		    if(!checkConnection())
 	        {
 	            log.error("PtP CHUNK DAO: findReduced - unable to get a valid connection!");
-	            return null;
+	            return new ArrayList<ReducedPtPChunkDataTO>();
 	        }
 			PreparedStatement find = null;
 			ResultSet rs = null;
@@ -585,7 +585,7 @@ public class PtPChunkDAO {
      * DB. In these circumstances the client would find its request as being in the SRM_IN_PROGRESS state for ever.
      * Hence the pressing need to inform it of the encountered problems.
      */
-	public void signalMalformedPtPChunk(PtPChunkDataTO auxTO) {
+	public synchronized void signalMalformedPtPChunk(PtPChunkDataTO auxTO) {
 
 	    if(!checkConnection())
         {
@@ -624,7 +624,7 @@ public class PtPChunkDAO {
      * method is intended to be used by PtPChunkCatalog in the isSRM_SPACE_AVAILABLE method ivocation. In case of any
      * error, 0 is returned.
      */
-	public int numberInSRM_SPACE_AVAILABLE(int surlUniqueID) {
+	public synchronized int numberInSRM_SPACE_AVAILABLE(int surlUniqueID) {
 
 	    if(!checkConnection())
         {
@@ -681,12 +681,12 @@ public class PtPChunkDAO {
      * a List containing the ID of the requests that were transited. This is needed when the client forgets to invoke
      * srmPutDone().
      */
-	public List<Long> getExpiredSRM_SPACE_AVAILABLE() {
+	public synchronized List<Long> getExpiredSRM_SPACE_AVAILABLE() {
 
 	    if(!checkConnection())
         {
             log.error("PtP CHUNK DAO: getExpiredSRM_SPACE_AVAILABLE - unable to get a valid connection!");
-            return null;
+            return new ArrayList<Long>();
         }
 
 		String idsstr =
@@ -735,7 +735,7 @@ public class PtPChunkDAO {
      * primary key of each chunk is required. This is needed when the client invokes srmPutDone() In case of any error
      * nothing happens and no exception is thrown, but proper messagges get logged.
      */
-	public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(List<Long> ids) {
+	public synchronized void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(List<Long> ids) {
 
 	    if(!checkConnection())
         {
@@ -793,7 +793,7 @@ public class PtPChunkDAO {
      * part of requests that have finished, or that still have not finished because other chunks are still being
      * processed.
      */
-	public void transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(int surlUniqueID, String surl, String explanation) {
+	public synchronized void transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(int surlUniqueID, String surl, String explanation) {
 
 	    if(!checkConnection())
         {
@@ -1003,7 +1003,7 @@ public class PtPChunkDAO {
         }
 	}
 	
-	public void updateStatus(int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode, String explanation) throws IllegalArgumentException
+	public synchronized void updateStatus(int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode, String explanation) throws IllegalArgumentException
     {
 	    if (explanation == null)
         {
@@ -1014,7 +1014,7 @@ public class PtPChunkDAO {
 	                   explanation, false, true);
     }
 	
-	public void updateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
+	public synchronized void updateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
             String explanation) throws IllegalArgumentException
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
@@ -1085,7 +1085,7 @@ public class PtPChunkDAO {
         }
     }
 	
-	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation)
     {
 	    if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
@@ -1097,7 +1097,7 @@ public class PtPChunkDAO {
                                        explanation, true, false, true);
     }
 
-    public void updateStatusOnMatchingStatus(int[] surlsUniqueIDs, String[] surls,
+	public synchronized void updateStatusOnMatchingStatus(int[] surlsUniqueIDs, String[] surls,
             TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation) throws IllegalArgumentException
     {
         if (surlsUniqueIDs == null || surls == null || explanation == null || surlsUniqueIDs.length == 0
@@ -1111,7 +1111,7 @@ public class PtPChunkDAO {
                                        explanation, false, true, true);
     }
 
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
@@ -1198,8 +1198,13 @@ public class PtPChunkDAO {
     
     
 
-    public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public synchronized Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
     {
+        if(!checkConnection())
+        {
+            log.error("PtP CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<PtPChunkDataTO>();
+        }
         PreparedStatement find = null;
         ResultSet rs = null;
         try
@@ -1263,9 +1268,13 @@ public class PtPChunkDAO {
         }
     }
 
-    public List<String> findProtocols(long requestQueueId)
+    public synchronized List<String> findProtocols(long requestQueueId)
     {
-
+        if(!checkConnection())
+        {
+            log.error("PtP CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<String>();
+        }
         String str = null;
         PreparedStatement find = null;
         ResultSet rs = null;

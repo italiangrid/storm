@@ -445,7 +445,7 @@ public class BoLChunkDAO {
 	 * @param chunkTO
 	 */
 	//TODO MICHELE USER_SURL new method
-	public void updateIncomplete(ReducedBoLChunkDataTO chunkTO) {
+    public synchronized void updateIncomplete(ReducedBoLChunkDataTO chunkTO) {
 
 	    if(!checkConnection())
         {
@@ -1533,7 +1533,7 @@ public class BoLChunkDAO {
 	    }
 	}
 	
-	public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation)
     {
 	    if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
@@ -1545,7 +1545,7 @@ public class BoLChunkDAO {
                                        explanation, true, false, true);
     }
 	
-	public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+	public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
@@ -1560,7 +1560,7 @@ public class BoLChunkDAO {
                                        newStatusCode, null, true, true, false);
     }
 
-    public void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+	public synchronized void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
             boolean withRequestToken, boolean withSurls, boolean withExplanation)
             throws IllegalArgumentException
@@ -1630,8 +1630,13 @@ public class BoLChunkDAO {
         }
     }
 
-    public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public synchronized Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
     {
+        if(!checkConnection())
+        {
+            log.error("BoL CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<BoLChunkDataTO>();
+        }
         PreparedStatement find = null;
         ResultSet rs = null;
         try

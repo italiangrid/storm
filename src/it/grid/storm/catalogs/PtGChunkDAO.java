@@ -473,7 +473,7 @@ public class PtGChunkDAO {
 	 * @param chunkTO
 	 */
 	//TODO MICHELE USER_SURL new method
-	public void updateIncomplete(ReducedPtGChunkDataTO chunkTO) {
+	public synchronized void updateIncomplete(ReducedPtGChunkDataTO chunkTO) {
 
 	    if(!checkConnection())
         {
@@ -739,7 +739,7 @@ public class PtGChunkDAO {
 		}
     }
 
-    public Collection<ReducedPtGChunkDataTO> findReduced(TRequestToken requestToken, int[] surlsUniqueIDs,
+    public synchronized Collection<ReducedPtGChunkDataTO> findReduced(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surlsArray)
     {
         if(!checkConnection())
@@ -1370,7 +1370,7 @@ public class PtGChunkDAO {
 		}
     }
     
-    public void updateStatus(TRequestToken requestToken, int[] surlUniqueIDs, String[] surls, TStatusCode statusCode,
+    public synchronized void updateStatus(TRequestToken requestToken, int[] surlUniqueIDs, String[] surls, TStatusCode statusCode,
             String explanation)
     {
         if(!checkConnection())
@@ -1417,7 +1417,7 @@ public class PtGChunkDAO {
         }
     }
     
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
+    public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
             TStatusCode newStatusCode, String explanation)
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null)
@@ -1429,7 +1429,7 @@ public class PtGChunkDAO {
                                        explanation, true, false, true);
     }
     
-    public void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+    public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode) throws IllegalArgumentException
     {
         if (requestToken == null || requestToken.getValue().trim().isEmpty() || surlsUniqueIDs == null
@@ -1444,7 +1444,7 @@ public class PtGChunkDAO {
                                        newStatusCode, null, true, true, false);
     }
     
-    public void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+    public synchronized void doUpdateStatusOnMatchingStatus(TRequestToken requestToken, int[] surlUniqueIDs,
             String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation,
             boolean withRequestToken, boolean withSurls, boolean withExplanation)
             throws IllegalArgumentException
@@ -1744,8 +1744,13 @@ public class PtGChunkDAO {
         }
 	}
 
-    public Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public synchronized Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
     {
+        if(!checkConnection())
+        {
+            log.error("PTG CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<PtGChunkDataTO>();
+        }
         PreparedStatement find = null;
         ResultSet rs = null;
         try
