@@ -47,6 +47,7 @@ import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
+import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
@@ -72,7 +73,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
     static Configuration  config        = Configuration.getInstance();
     private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
-    //private static int maxLoopTimes = 100;
 
     private NamespaceInterface namespace;
 
@@ -87,12 +87,10 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         AbortGeneralOutputData outputData = new AbortGeneralOutputData();
         ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
 
-//        boolean requestFailure, requestSuccess;
         TReturnStatus globalStatus = null;
 
         PtPAbortExecutor.log.debug("srmAbortRequest: Start PtPAbortExecutor...");
 
-        ArrayOfSURLs surlArray = inputData.getArrayOfSURLs();
 
         /**
          * 0) Get all Chunk related to the specified request according with user specification (in case of AbortFiles).
@@ -112,17 +110,10 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
         /****************** Phase 0 ******************/
 
-        /* Query the DB to find all the Chunk associated to the request token */
-//        PtPChunkCatalog putCatalog = PtPChunkCatalog.getInstance();
-
-        TRequestToken token = inputData.getRequestToken();
-        
-        //Get the CHunk collection
-//        Collection<PtPPersistentChunkData> chunks = putCatalog.lookup(inputData.getRequestToken());
         Map<TSURL, TReturnStatus> surlStatusMap;
         try
         {
-            surlStatusMap = SurlStatusManager.getSurlsStatus(token);
+            surlStatusMap = SurlStatusManager.getSurlsStatus(inputData.getRequestToken());
         } catch(IllegalArgumentException e)
         {
             log.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: " + e);
@@ -145,7 +136,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
             return outputData;
         }
         
-//      if(chunks.isEmpty()) { // No Chunk found
       if(surlStatusMap.isEmpty()) {
             PtPAbortExecutor.log.debug("PtPAbortExecutor: Request - Invalid request token");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
@@ -161,9 +151,8 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
          * in input request
          */
 
-//        ArrayList newChunk = new ArrayList();
 
-        if(inputData.getType() ==  AbortGeneralInputData.ABORT_FILES) {
+        if(inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_FILES)) {
             PtPAbortExecutor.log.debug("srmAbortFiles: PtPAbortExecutor: Case of AbortFile request. Purge Chunks with SurlArray.");
 
             /**
@@ -171,8 +160,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
              * If a Surl requested is not founf, the TSURLReturnStatus related is setted to SRM_INVALID_PATH
              */
 
-//            for(int i=0;i<surlArray.size();i++){
-            ArrayList<TSURL> surlList = surlArray.getArrayList();
+            ArrayList<TSURL> surlList = extractSurlArray(inputData).getArrayList();
             surlStatusMap.keySet().retainAll(surlList);
             if(!surlStatusMap.keySet().containsAll(surlList))
             {
@@ -184,62 +172,14 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                         TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
                         surlReturnStatus.setSurl(surl);
                         surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INVALID_PATH, "SURL specified does not referes to this request token."));
-                        log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+token+"] for [SURL:"+surl+"] failed  with [status: "+surlReturnStatus.getStatus()+"]");
+                        log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surl+"] failed  with [status: "+surlReturnStatus.getStatus()+"]");
                         arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
                     }
                 }
             }
-//                TSURL surl = surlArray.getTSURL(i);
-//                PtPAbortExecutor.log.debug("srmAbortFiles: Checking SURL[" + i + "]: " + surl.toString());
-
-                // auxChunkData stores information about a single item (SURL) in the catalog
-//                PtPData auxChunkData = null;
-
-                /* Search SURL[i] (specified in the request) inside the catalog */
-//                Iterator j = chunks.iterator();
-//                boolean surlFound = false;
-//
-//                while ((j.hasNext())&&!surlFound) {
-//                    auxChunkData = (PtPData) j.next();
-//                    if (surl.equals(auxChunkData.getSURL())) {
-//                        surlFound = true;
-//                    }
-//                }
-
-//                if(!surlFound) {
-//                    /**
-//                     * Surl not found.
-//                     * Specifiy an appropriate output status and add to the global SURLStatusArray
-//                     */
-//                    PtPAbortExecutor.log.debug("srmAbortFiles: Abort: SURL NOT found, invalid Chunk!Set TSURLReturnStatus");
-//                    TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
-//                    surlReturnStatus.setSurl(surl);
-//                    surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INVALID_PATH, "SURL specified does not referes to this request token."));
-//                    PtPAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+(i+1)+" of "+surlArray.size()+" [SURL:"+surlArray.getTSURL(i)+"] failed  with [status: "+surlReturnStatus.getStatus()+"]");
-//                    arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
-//
-//                } else {
-//                    /**
-//                     * Add this chunk to the new chunk Container.
-//                     * The new Chunk container contains only the chunk to abort according on the user specification
-//                     * (using the SurlArray) parameter
-//                     */
-//                    PtPAbortExecutor.log.debug("Abort: Surl FOUND. Valid Chunk. Added to new chunk container.");
-//                    newChunk.add(auxChunkData);
-//                }
-
-//            } //for
-
-            //Substitute the old Chunks to with the "epurated" version.
-//            PtPAbortExecutor.log.debug("Abort: Old chunk size ="+chunks.size());
-//            chunks = newChunk;
-//            PtPAbortExecutor.log.debug("Abort: New chunk size ="+chunks.size());
-
-
-        }//if
+        }
 
         /********* Check here the new chunks container is not empty! ******/
-//        if(chunks.isEmpty()) { // No Chunk found
         if(surlStatusMap.isEmpty()) 
         {
             PtPAbortExecutor.log.debug("Abort Request - No surl specified associated to request token");
@@ -261,44 +201,24 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         //NumberOfFailure for globalStatus
         int errorCount = 0;
         //Total initial Size
-//        int totalSize = chunks.size();
         int totalSize = surlStatusMap.size();
 
         while((chunkAborted<totalSize)&&(counter<PtPAbortExecutor.maxLoopTimes)) {
             //Increment loop times
             counter++;
 
-            // auxChunkData stores information about a single item (SURL) in the catalog
-//            PtPPersistentChunkData auxChunkData = null;
-
-            //This new Collection is used to avoid the ConcurrentModification exception
-            //on the chsunks Collection
-
-//            ArrayList<PtPPersistentChunkData> listOfChunk = new ArrayList<PtPPersistentChunkData>();
-//            listOfChunk.addAll(chunks);
-//            Iterator<PtPPersistentChunkData> j = listOfChunk.iterator();
             Iterator<Map.Entry<TSURL, TReturnStatus>> iterator = surlStatusMap.entrySet().iterator();
             int numOfSurl=0;
-//            while((j.hasNext())) {
             while(iterator.hasNext())
             {
                 Map.Entry<TSURL, TReturnStatus> surlStatus = iterator.next();
                 numOfSurl++;
-//                auxChunkData = j.next();
-
-                /*
-                 * To GET the actual status from DB the Chunk must be updated!
-                 */
-//                PtPAbortExecutor.log.debug("PtPAbortExecutor: refresh chunk...");
-//                auxChunkData = putCatalog.refreshStatus(auxChunkData);
-//                PtPAbortExecutor.log.debug("PtPAbortExecutor: refresh done.");
 
                 /*
                  * Check if any chunk have a status different from SRM_REQUEST_INPROGESS.
                  * That means the request execution is finished, and the rollback start.
                  */
 
-//                if (!(auxChunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS ))) {
                 if (!(surlStatus.getValue().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS ))) {
                     /*
                      * If an EXECUTED CHUNK is found, then it is ABORTED.
@@ -315,7 +235,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                      * check here if the chunk has already been aborted frome the picker.
                      * In that case, the manageAbort is not needed
                      */
-//                    if((auxChunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_ABORTED))) {
                     if((surlStatus.getValue().getStatusCode().equals(TStatusCode.SRM_ABORTED))) {
                         //The AdvancedPicker have already aborted the chunk.
                         PtPAbortExecutor.log.debug("PtPAbortExecutor: CHUNK already aborted!");
@@ -324,19 +243,14 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     } else {
                         PtPAbortExecutor.log.debug("PtPAbortExecutor:CHUNK to abort.");
                         //Chunk not ABORTED. We have to work...
-//                        surlReturnStatus = manageAuthorizedAbort(auxChunkData, inputData.getUser());
-                        surlReturnStatus = manageAuthorizedAbort(token, surlStatus.getKey(), surlStatus.getValue(), inputData.getUser());
+                        surlReturnStatus = manageAuthorizedAbort(inputData.getRequestToken(), surlStatus.getKey(), surlStatus.getValue(), inputData.getUser());
                     }
 
                     //Remove this chunks from the other to abort.
-//                    chunks.remove(auxChunkData);
                     iterator.remove();
-
-
                     if((surlReturnStatus.getStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS))) {
-                        log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+token+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
+                        log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
                     } else {
-//                        PtPAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+listOfChunk.size()+" [SURL:"+auxChunkData.getSURL()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
                         log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
                         errorCount++;
                     }
@@ -352,21 +266,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
             if (chunkAborted<totalSize) {
                 PtPAbortExecutor.log.debug("PtPAbortExecutor: Wait for some time...");
-                //Be patient until some chunk finish its work...
-                //  try {
-                //Sleep 1 Second
                 PtPAbortExecutor.log.debug("Abort: I'm waiting...");
-                //this.wait(1000);
-                //Wait for 1 second
-                //long start =  System.currentTimeMillis();
-                //long index = 0;
-                //while(index<start+1000)
-                //    index = System.currentTimeMillis();
-                // } catch (InterruptedException e) {
-                //     e.printStackTrace();
-                // }
-
-
                 try {
                     long numMillisecondsToSleep = 100; // 1 seconds
                     Thread.sleep(numMillisecondsToSleep);
@@ -374,12 +274,11 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
                 }
 
-
                 PtPAbortExecutor.log.debug("PtPAbortExecutor: Wake up! It's time to work...");
                 log.debug("srmAbortRequest: PtPAbortExecutor: refresh surl status");
                 try
                 {
-                    surlStatusMap = SurlStatusManager.getSurlsStatus(token, surlStatusMap.keySet());
+                    surlStatusMap = SurlStatusManager.getSurlsStatus(inputData.getRequestToken(), surlStatusMap.keySet());
                 } catch(IllegalArgumentException e)
                 {
                     log.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: " + e);
@@ -407,28 +306,34 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         }
 
         // LoopTimes Exceeded?
-//        if(counter == PtPAbortExecutor.maxLoopTimes) {
         if(chunkAborted<totalSize) {
             //The ABORT execution is interrupted to prevent a deadlock situation
             PtPAbortExecutor.log.debug("Abort: Timeout exceeded.");
             globalStatus = manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"TimeOut for abort execution exceeded.");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-            PtPAbortExecutor.log.error("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] failed with [status: "+globalStatus+"]");
+            PtPAbortExecutor.log.error("srmAbortFiles: <"
+                    + inputData.getUser()
+                    + "> Request for [token:"
+                    + inputData.getRequestToken()
+                    + "]"
+                    + (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES) ? " for [SURL:"
+                            + extractSurlArray(inputData) + "]"
+                            : "") + " failed with [status: " + globalStatus + "]");
             return outputData;
         }
 
         if(errorCount == totalSize) {
             globalStatus = manageStatus(TStatusCode.SRM_FAILURE,"Abort failed.");
         } else if(errorCount > 0) {
-            if(inputData.getType() == AbortGeneralInputData.ABORT_REQUEST) {
+            if(inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_REQUEST)) {
                 globalStatus = manageStatus(TStatusCode.SRM_FAILURE, "Some chunks failed.");
             } else {
                 globalStatus = manageStatus(TStatusCode.SRM_PARTIAL_SUCCESS, "Some chunks failed.");
             }
         } else {
             globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,"Abort request completed.");
-            if((inputData.getType() == AbortGeneralInputData.ABORT_REQUEST)) {
+            if((inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_REQUEST))) {
                 TReturnStatus requestStatus = manageStatus(TStatusCode.SRM_ABORTED, "Request Aborted.");
                 RequestSummaryCatalog.getInstance().updateGlobalStatus(inputData.getRequestToken(), requestStatus);
             }
@@ -436,11 +341,31 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         //Set output data
         outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
         outputData.setReturnStatus(globalStatus);
-        PtPAbortExecutor.log.error("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surlArray+"] failed with [status: "+globalStatus+"]");
+        PtPAbortExecutor.log.error("srmAbortFiles: <"
+                + inputData.getUser()
+                + "> Request for [token:"
+                + inputData.getRequestToken()
+                + "]"
+                + (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES) ? " for [SURL:"
+                        + extractSurlArray(inputData) + "]" : "") + " failed with [status: " + globalStatus
+                + "]");
         return outputData;
 
     }
 
+
+    private ArrayOfSURLs extractSurlArray(AbortGeneralInputData inputData)
+    {
+        switch (inputData.getType())
+        {
+            case ABORT_REQUEST:
+                throw new IllegalStateException("Unable to get SurlArray from an ABORT_REQUEST input data");
+            case ABORT_FILES:
+                return ((AbortFilesInputData)inputData).getArrayOfSURLs();
+            default:
+                throw new IllegalStateException("Received an unknown AbortType: " + inputData.getType());
+        }
+    }
 
     /**
      *

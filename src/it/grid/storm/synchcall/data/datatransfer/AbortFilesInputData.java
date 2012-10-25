@@ -32,49 +32,18 @@ import it.grid.storm.synchcall.data.exception.InvalidAbortFilesInputDataAttribut
 
 public class AbortFilesInputData extends AbortGeneralInputData
 {
-    private GridUserInterface auth = null;
-    private TRequestToken reqToken = null;
-    private ArrayOfSURLs arrayOfSURLs = null;
+    private final ArrayOfSURLs arrayOfSURLs;
 
-    public AbortFilesInputData() {}
 
     public AbortFilesInputData(GridUserInterface auth, TRequestToken reqToken, ArrayOfSURLs surlArray)
                     throws InvalidAbortFilesInputDataAttributeException
     {
-        boolean ok = (!(surlArray == null));
-        if (!ok)
+        super(auth, reqToken, AbortType.ABORT_REQUEST);
+        if (surlArray == null)
+        {
             throw new InvalidAbortFilesInputDataAttributeException(surlArray);
-
-        this.auth = auth;
-        this.reqToken = reqToken;
+        }
         this.arrayOfSURLs = surlArray;
-    }
-    
-    public AbortFilesInputData(AbortRequestInputData requestInputData) {
-        //Create an AbortFiles data from an AbortRequest data
-        //In this case the SURLArray MUST BE null.
-        this.auth = requestInputData.getUser();
-        this.reqToken = requestInputData.getRequestToken();
-    }
-    
-    public TRequestToken getRequestToken()
-    {
-        return reqToken;
-    }
-
-    public void setRequestToken(TRequestToken reqToken)
-    {
-        this.reqToken = reqToken;
-    }
-
-    public GridUserInterface getUser()
-    {
-        return this.auth;
-    }
-
-    public void setUser(GridUserInterface user)
-    {
-        this.auth = user;
     }
     
     public ArrayOfSURLs getArrayOfSURLs()
@@ -82,8 +51,4 @@ public class AbortFilesInputData extends AbortGeneralInputData
         return arrayOfSURLs;
     }
 
-    public void setArrayOfSURLs(ArrayOfSURLs arrayOfSURLs)
-    {
-        this.arrayOfSURLs = arrayOfSURLs;
-    }
 }

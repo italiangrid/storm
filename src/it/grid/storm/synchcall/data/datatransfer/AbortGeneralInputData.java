@@ -26,115 +26,55 @@
 package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import it.grid.storm.synchcall.data.exception.InvalidAbortGeneralInputDataAttributeException;
+import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 
 public class AbortGeneralInputData extends AbstractInputData
 {
-    private static final Logger log = LoggerFactory.getLogger(AbortGeneralInputData.class);
+    private final GridUserInterface auth;
 
-    private GridUserInterface auth = null;
-    private TRequestToken reqToken = null;
-    private ArrayOfSURLs arrayOfSURLs = null;
+    private final AbortType type;
 
+    private final TRequestToken reqToken;
 
-    private int type;
-
-    public static final int ABORT_REQUEST = 0;
-    public static final int ABORT_FILES = 1;
-
-    public AbortGeneralInputData() {}
-
-    private AbortGeneralInputData(GridUserInterface auth, TRequestToken reqToken, ArrayOfSURLs surlArray, int type)
-    //throws InvalidAbortFilesInputDataAttributeException
+    public static enum AbortType{
+        ABORT_REQUEST, ABORT_FILES;
+    }
+    
+    protected AbortGeneralInputData(GridUserInterface auth, TRequestToken reqToken, AbortType type)
+        throws IllegalArgumentException
     {
-        boolean ok = true; //= (!(surlArray == null));
-        if (!ok) {
-            ;//throw new InvalidAbortFilesInputDataAttributeException(surlArray);
+        if (reqToken == null || type == null)
+        {
+            throw new IllegalArgumentException("Unable to build the object. null arguments: reqToken="
+                    + reqToken + " type=" + type);
         }
-
-        this.auth = auth;
         this.reqToken = reqToken;
-        this.arrayOfSURLs = surlArray;
+        this.auth = auth;
         this.type = type;
     }
 
-    public static AbortGeneralInputData make(AbortRequestInputData requestInputData) {
-        //Create an AbortFiles data from an AbortRequest data
-        //In this case the SURLArray MUST BE null.
-        log.debug("abortRequest: Creating general input data from abortRequest inputdata.");
-        if(requestInputData == null) {
-            return null;
-        }
-        return new AbortGeneralInputData(requestInputData.getUser(), requestInputData.getRequestToken(),
-                null, AbortGeneralInputData.ABORT_REQUEST);
-        //this.auth = requestInputData.getUser();
-        //this.reqToken = requestInputData.getRequestToken();
-        //set type
-        //this.type = AbortGeneralInputData.ABORT_REQUEST;
-    }
-
-    public static AbortGeneralInputData make(AbortFilesInputData requestInputData) {
-        //Create an AbortGeneral data from an AbortFiles data
-        //In this case the SURLArray MUST NOT BE null.
-        log.debug("abortRequest: Creating general input data from abortFiles inputdata.");
-        if (requestInputData == null) {
-            return null;
-        } else {
-            return new AbortGeneralInputData(requestInputData.getUser(), requestInputData.getRequestToken(),
-                    requestInputData.getArrayOfSURLs(), AbortGeneralInputData.ABORT_FILES);
-            //this.auth = requestInputData.getUser();
-            //this.reqToken = requestInputData.getRequestToken();
-            //this.arrayOfSURLs = requestInputData.getArrayOfSURLs();
-        }
-
-        //Set Type
-        //this.type = AbortGeneralInputData.ABORT_FILES;
-    }
-
-    public TRequestToken getRequestToken()
-    {
-        return reqToken;
-    }
-
-    public void setRequestToken(TRequestToken reqToken)
-    {
-        this.reqToken = reqToken;
-    }
 
     public GridUserInterface getUser()
     {
         return this.auth;
     }
-
-    public void setUser(GridUserInterface user)
+    
+    public TRequestToken getRequestToken()
     {
-        this.auth = user;
+        return reqToken;
     }
 
-    public ArrayOfSURLs getArrayOfSURLs()
-    {
-        return arrayOfSURLs;
-    }
-
-    public void setArrayOfSURLs(ArrayOfSURLs arrayOfSURLs)
-    {
-        this.arrayOfSURLs = arrayOfSURLs;
-    }
-
-    public int getType() {
+    public AbortType getType() {
         return type;
     }
 
     @Override
     public Boolean hasPrincipal()
     {
-        return Boolean.TRUE;
+        return this.auth != null;
     }
 
     @Override

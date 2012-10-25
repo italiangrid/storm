@@ -27,47 +27,13 @@ package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 
 public class AbortRequestInputData extends AbortGeneralInputData
 {
-    private GridUserInterface auth = null;
-    private TRequestToken reqToken = null;
-    private String authID = null;
-   
-    public AbortRequestInputData() {}
 
     public AbortRequestInputData(GridUserInterface auth, TRequestToken reqToken)
-                    throws InvalidAbortRequestInputDataAttributeException
+        throws IllegalArgumentException
     {
-        boolean ok = (!(reqToken== null));
-        if (!ok)
-            throw new InvalidAbortRequestInputDataAttributeException(reqToken);
-
-        this.auth = auth;
-        this.reqToken = reqToken;
-
+        super(auth, reqToken, AbortType.ABORT_REQUEST);
     }
-    
-    public TRequestToken getRequestToken()
-    {
-        return reqToken;
-    }
-
-    public void setRequestToken(TRequestToken reqToken)
-    {
-        this.reqToken = reqToken;
-    }
-
-    public GridUserInterface getUser()
-    {
-        return this.auth;
-    }
-
-    public void setUser(GridUserInterface user)
-    {
-        this.auth = user;
-    }
-    
 }

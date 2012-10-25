@@ -37,7 +37,6 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 
 import java.util.HashMap;
@@ -81,9 +80,8 @@ public class AbortRequestConverter implements Converter
         try {
             inputData = new AbortRequestInputData(guser, requestToken);
             log.debug("AbortRequestInputData Created!");
-        } catch (InvalidAbortRequestInputDataAttributeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            log.error("Unable to build AbortRequestInputData. IllegalArgumentException: " + e);
         }
         return inputData;
     }

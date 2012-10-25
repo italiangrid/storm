@@ -71,36 +71,6 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
      * an empty SURLArray.
      */
 
-    public AbortRequestOutputData execute(AbortRequestInputData inputData) {
-
-        AbortFilesCommand.log.debug("srmAbort: AbortExecutor input request:"+inputData);
-
-        //Create the AbortFiles input data with the null SURLArray from
-        //the AbortRequest input data.
-        AbortGeneralInputData newInputData = AbortGeneralInputData.make(inputData);
-        AbortFilesCommand.log.debug("srmAbort: abortExecutor: GeneralInputData created.");
-
-        //Call the Abort* executor
-        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute(newInputData);
-
-        //Creat a AbortRequestOutputData to send to the syncall server from
-        //the general AbortFilesOutputData
-        return AbortRequestOutputData.make(newOutData);
-    }
-
-    public AbortFilesOutputData doIt(AbortFilesInputData inputData) {
-
-        //Create the AbortFiles input data with the null SURLArray from
-        //the AbortRequest input data.
-        AbortGeneralInputData newInputData = AbortGeneralInputData.make(inputData);
-
-        //Call the Abort* executor
-        AbortGeneralOutputData newOutData = (AbortGeneralOutputData) execute (newInputData);
-
-        //Creat a AbortFilesOutputData to send to the syncall server from
-        //the general AbortGeneralOutputData
-        return AbortFilesOutputData.make(newOutData);
-    }
 
 
 
@@ -113,8 +83,6 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
     public OutputData execute(InputData data)
     {
-//        summaryCat = RequestSummaryCatalog.getInstance();
-//        scheduler = SchedulerFacade.getInstance().crusherScheduler();
         advancedPicker = new AdvancedPicker();
         AbortFilesOutputData outputData = new AbortFilesOutputData();
         AbortFilesInputData inputData = (AbortFilesInputData) data;
@@ -123,8 +91,6 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         //Risultato Parziale
         boolean res = false;
         //Risultato Finale
-//        boolean done = false;
-//        boolean found = false;
 
         TReturnStatus globalStatus = null;
         ArrayOfTSURLReturnStatus arrayOfTSURLReturnStatus = null;
@@ -133,9 +99,11 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
         /******************** Check for malformed request: missing mandatory input parameters ****************/
 
+        
+        
         if (inputData == null
                 || inputData.getRequestToken() == null
-                || (inputData.getType() == AbortGeneralInputData.ABORT_FILES && inputData.getArrayOfSURLs() == null))
+                || (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES) && inputData.getArrayOfSURLs() == null))
         {
             AbortFilesCommand.log.debug("SrmAbortRequest: Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
@@ -205,7 +173,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
          * and each chunk in SRM_ABORTED.
          */
 
-        if (inputData.getType() == AbortGeneralInputData.ABORT_REQUEST)
+        if (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_REQUEST))
         {
             // SrmAbortRequest case
             log.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
@@ -246,7 +214,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
         }
         else
         {
-            if (inputData.getType() == AbortGeneralInputData.ABORT_FILES)
+            if (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES))
             {
                 // SrmAbortFiles case
                 log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
@@ -275,7 +243,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             globalStatus = manageStatus(TStatusCode.SRM_SUCCESS, "Abort sucessfully completed.");
             outputData.setReturnStatus(globalStatus);
 
-            if (inputData.getType() == AbortGeneralInputData.ABORT_FILES)
+            if (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES))
             {
                 for (int i = 0; i < surlArray.size(); i++)
                 {
@@ -312,7 +280,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
          * to transit both global status and each chunk in SRM_ABORTED.
          */
 
-        if(inputData.getType() == AbortGeneralInputData.ABORT_REQUEST) {
+        if(inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_REQUEST)) {
             AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
@@ -320,7 +288,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             advancedPicker.abortRequest(inputData.getRequestToken());
             res = false;
 
-        } else if(inputData.getType() == AbortGeneralInputData.ABORT_FILES) {
+        } else if(inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES)) {
             AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
             //Update the request Status both for global request and for each *chunk to SRM_ABORTED.
 
@@ -342,7 +310,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
             globalStatus = manageStatus(TStatusCode.SRM_SUCCESS, "Abort sucessfully completed.");
             outputData.setReturnStatus(globalStatus);
-            if (inputData.getType() == AbortGeneralInputData.ABORT_FILES)
+            if (inputData.getType().equals(AbortGeneralInputData.AbortType.ABORT_FILES))
             {
                 for (int i = 0; i < surlArray.size(); i++)
                 {
