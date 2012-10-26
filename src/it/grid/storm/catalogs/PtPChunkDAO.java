@@ -1050,9 +1050,9 @@ public class PtPChunkDAO {
         str += " WHERE ";
         if (withRequestToken)
         {
-            str += buildTokenWhereClause(requestToken);
+            str += buildTokenWhereClause(requestToken) + " AND ";
         }
-        str += " AND rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+        str += " rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
                 + " OR rp.targetSURL IN " + makeSurlString(surls);
         PreparedStatement stmt = null;
         try
