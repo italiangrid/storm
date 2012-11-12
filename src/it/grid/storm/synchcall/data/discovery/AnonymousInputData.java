@@ -16,22 +16,21 @@ package it.grid.storm.synchcall.data.discovery;
 *  limitations under the License.
 */
 
-public class AnonymousPingInputData extends AnonymousInputData
+import it.grid.storm.synchcall.data.AbstractInputData;
+
+public abstract class AnonymousInputData extends AbstractInputData
 {
 
-    private final String authorizationID;
-
-    public AnonymousPingInputData(String authorizationID)
+    @Override
+    public Boolean hasPrincipal()
     {
-        this.authorizationID = authorizationID;            
+        return Boolean.FALSE;
     }
 
-    /**
-     * Get the authorizatioID.
-     * @return String
-     */
-    public String getAuthorizationID() {
-        return this.authorizationID;
+    @Override
+    public String getPrincipal() throws IllegalStateException
+    {
+        throw new IllegalStateException("Principal not available in this Anonymous request input data");
     }
 
 }

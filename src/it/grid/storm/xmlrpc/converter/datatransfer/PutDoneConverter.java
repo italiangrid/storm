@@ -37,6 +37,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousPutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -59,14 +60,10 @@ public class PutDoneConverter implements Converter
      * @param inputParam Hashtable containing the input data
      * @return PutDoneInputData
      */
-    public InputData convertToInputData(Map inputParam)
+    public InputData convertToInputData(Map<String,Object> inputParam)
     {
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        /* (2) TRequestToken requestToken */
         TRequestToken requestToken;
         try {
             requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
@@ -76,7 +73,6 @@ public class PutDoneConverter implements Converter
             log.debug("requestToken=NULL" + e);
         }
 
-        /* (3) anyURI[] arrayOfSURLs */
         ArrayOfSURLs arrayOfSURLs;
         try {
             arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
@@ -85,11 +81,14 @@ public class PutDoneConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        PutDoneInputData inputData = null;
-        try {
-            inputData = new PutDoneInputData(guser, requestToken, arrayOfSURLs);
-        } catch (IllegalArgumentException e) {
-            log.debug("Invalid PutDoneInputData Creation!" + e);
+        InputData inputData;
+        if(guser != null)
+        {
+            inputData = new PutDoneInputData(guser, requestToken, arrayOfSURLs);            
+        }
+        else
+        {
+            inputData = new AnonymousPutDoneInputData(requestToken, arrayOfSURLs);
         }
 
         log.debug("PutDoneInputData Created!");

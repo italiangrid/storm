@@ -102,7 +102,7 @@ public class PtPChunkCatalog {
                 {
                     surls.add(data.toSURL());
                 }
-                PutDoneCommand.executePutDone(surls, null, null);
+                PutDoneCommand.executePutDone(surls, null);
             }
         };
         transiter.scheduleAtFixedRate(transitTask, delay, period);

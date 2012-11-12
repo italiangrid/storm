@@ -135,7 +135,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         ArrayOfTSURLReturnStatus surlsStatuses;
         try
         {
-            surlsStatuses = loadSURLsStatus(requestToken, user, listOfSURLs);
+            surlsStatuses = loadSURLsStatus(requestToken, listOfSURLs);
         } catch(IllegalArgumentException e)
         {
             log.error(funcName + "Unexpected IllegalArgumentException: " + e.getMessage());
@@ -210,7 +210,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             }
             surlsStatuses.updateStatus(surlStatus, newStatus);
         }
-        executePutDone(spaceAvailableSURLs, surlsStatuses, user);
+        executePutDone(spaceAvailableSURLs, user);
         
         if(!spaceAvailableSURLs.isEmpty())
         {
@@ -366,7 +366,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
     }
     
-    private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken, GridUserInterface user,
+    private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken,
             List<TSURL> inputSURLs) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException, ExpiredTokenException
     {
 
@@ -430,8 +430,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
      * @param localUser the local user associate to the Grid user (<code>null</code> when called from the purge thread
      *            of PtPChunkCatalog)
      */
-    public static void executePutDone(List<TSURL> spaceAvailableSURLs,
-            ArrayOfTSURLReturnStatus arrayOfFileStatus, GridUserInterface user) {
+    public static void executePutDone(List<TSURL> spaceAvailableSURLs, GridUserInterface user) {
 
 //        VolatileAndJiTCatalog volatileAndJiTCatalog = VolatileAndJiTCatalog.getInstance();
 
@@ -444,10 +443,11 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         // 4- Tape stuff management.
         // 5- Update FreeSpace into DB
         // 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE to SRM_SUCCESS.
-        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
+//        for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
+        for(TSURL surl: spaceAvailableSURLs) {
 
 //            ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
-            TSURL surl = spaceAvailableSURLs.get(i);
+//            TSURL surl = spaceAvailableSURLs.get(i);
 //            if (chunkData == null) {
             if (surl == null) {
                 continue;
@@ -455,21 +455,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
 //            TSURL surl = chunkData.toSURL();
 
-            if (user == null) {
-
-
-                if (lockSurl(surl)) {
-                    log.info("Executing implicit PutDone for SURL: "
-//                            + spaceAvailableSURLs.get(i).toSURL().getSURLString());
-                             + surl.getSURLString());
-                } else {
-                    continue;
-                }
-
-            } else {
+//            if (user == null) {
+//
+//
+//                if (lockSurl(surl)) {
+//                } else {
+//                    continue;
+//                }
+//
+//            } else {
 //                log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
                 log.info("Executing PutDone for SURL: " + surl.getSURLString());
-            }
+//            }
 
             StoRI stori = null;
             // Retrieve the StoRI associate to the SURL
@@ -581,6 +578,29 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         }
     }
 
+    public static void executeImplicitPutDone(List<TSURL> spaceAvailableSURLs)
+    {
+        for (TSURL surl : spaceAvailableSURLs)
+        {
+
+            if (surl == null)
+            {
+                continue;
+            }
+
+            if (lockSurl(surl))
+            {
+                ArrayList<TSURL> elementList = new ArrayList<TSURL>(1);
+                elementList.add(surl);
+                executePutDone(elementList, null);
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    
     private static boolean lockSurl(TSURL surl) {
         synchronized (lock) {
             return lockedSurls.add(surl.getSURLString());

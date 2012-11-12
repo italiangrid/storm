@@ -28,42 +28,27 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class PutDoneInputData extends AbstractInputData
+public class PutDoneInputData extends AnonymousPutDoneInputData
 {
     private final GridUserInterface auth;
-    private final TRequestToken reqToken;
-    private final ArrayOfSURLs arrayOfSURLs;
 
     public PutDoneInputData(GridUserInterface auth, TRequestToken reqToken, ArrayOfSURLs surlArray)
                     throws IllegalArgumentException
     {
-        if (auth == null || surlArray == null || reqToken == null)
+        super(reqToken, surlArray);
+        if (auth == null)
         {
-            throw new IllegalArgumentException("Unable to create the object, invalid arguments: auth=" + auth
-                    + " reqToken=" + reqToken + " surlArray=" + surlArray);
+            throw new IllegalArgumentException("Unable to create the object, invalid arguments: auth=" + auth);
         }
         this.auth = auth;
-        this.reqToken = reqToken;
-        this.arrayOfSURLs = surlArray;
     }
     
-    public TRequestToken getRequestToken()
-    {
-        return reqToken;
-    }
-
     public GridUserInterface getUser()
     {
         return this.auth;
     }
 
-    public ArrayOfSURLs getArrayOfSURLs()
-    {
-        return arrayOfSURLs;
-    }
-    
     @Override
     public Boolean hasPrincipal()
     {

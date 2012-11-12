@@ -57,6 +57,8 @@ import java.util.Map.Entry;
 
 public class PingCommand extends DiscoveryCommand implements Command {
 
+    private static final String KEY_ELEMENT_KEY = "key=";
+
     public PingCommand() {}
 
     public OutputData execute(InputData data) {
@@ -112,10 +114,13 @@ public class PingCommand extends DiscoveryCommand implements Command {
      */
     private String getKey(String authorizationID) {
 
+        if(authorizationID == null || authorizationID.contains(KEY_ELEMENT_KEY))
+        {
+            //should return on this...
+            return "";
+        }
 		String result = authorizationID.trim();
-//		String prefix = authorizationID.substring(0, 4).toLowerCase();
-//		if(prefix.equals("key="))
-    	if(result.substring(0, 4).equalsIgnoreCase("key="))
+    	if(result.substring(0, 4).equalsIgnoreCase(KEY_ELEMENT_KEY))
 		{
 			result = result.substring(4);
 		}
