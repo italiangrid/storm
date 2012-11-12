@@ -24,6 +24,7 @@ import it.grid.storm.health.LogEvent;
 import it.grid.storm.synchcall.SynchcallDispatcher;
 import it.grid.storm.synchcall.SynchcallDispatcherFactory;
 import it.grid.storm.synchcall.command.datatransfer.CommandException;
+import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -75,7 +76,7 @@ public class XMLRPCExecutor {
         }
         else
         {
-            dn = "synch";
+            dn = DataHelper.ANONYMOUS_REQUESTOR;
         }
         log.debug("Dispatching request using SynchcallDispatcher " + dispatcher.getClass().getName());
         OutputData outputData;

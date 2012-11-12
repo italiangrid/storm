@@ -1,5 +1,22 @@
 package it.grid.storm.authz.remote.resource;
 
+/*
+*
+*  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+*/
+
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.PathOperation;
@@ -179,7 +196,7 @@ class PermissionEvaluator
         }
     }
 
-    static StFN buildStFN(String filePathDecoded, VirtualFSInterface fileVFS) throws WebApplicationException
+    private static StFN buildStFN(String filePathDecoded, VirtualFSInterface fileVFS) throws WebApplicationException
     {
         String VFSRootPath;
         String VFSStFNRoot;
@@ -278,7 +295,7 @@ class PermissionEvaluator
     }
 
 
-    static GridUserInterface buildGridUser(String DNDecoded, String[] FQANSArray)
+    private static GridUserInterface buildGridUser(String DNDecoded, String[] FQANSArray)
     {
         try
         {
@@ -309,7 +326,7 @@ class PermissionEvaluator
      * @param fQANS
      * @return
      */
-    static String[] parseFQANS(String fQANS)
+    private static String[] parseFQANS(String fQANS)
     {
         if(fQANS == null)
         {
@@ -326,7 +343,7 @@ class PermissionEvaluator
      * @return the VOMS grid user corresponding to the provided parameters. never null
      * @throws IllegalArgumentException
      */
-    static GridUserInterface loadVomsGridUser(String dn, String[] fqansStringVector) throws IllegalArgumentException
+    private static GridUserInterface loadVomsGridUser(String dn, String[] fqansStringVector) throws IllegalArgumentException
     {
         if(dn == null || fqansStringVector == null || fqansStringVector.length == 0)
         {
@@ -359,7 +376,7 @@ class PermissionEvaluator
      * @return the grid user corresponding to the provided parameter. never null
      * @throws IllegalArgumentException
      */
-    static GridUserInterface loadGridUser(String dn) throws IllegalArgumentException
+    private static GridUserInterface loadGridUser(String dn) throws IllegalArgumentException
     {
         if(dn == null)
         {

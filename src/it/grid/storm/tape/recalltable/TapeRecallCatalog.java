@@ -365,7 +365,7 @@ public class TapeRecallCatalog {
 
         if(newGroupTaskId != groupTaskId)
         {
-            log.debug("Task with taskId " + task.getTaskId() + " of request with token " + task.getRequestTokenStr() + "has benn added to an existentr group : " + groupTaskId);
+            log.debug("Task with taskId " + task.getTaskId() + " of request with token " + task.getRequestTokenStr() + " has benn added to an existentr group : " + groupTaskId);
         }
         return groupTaskId;
     }

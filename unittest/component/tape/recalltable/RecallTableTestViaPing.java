@@ -82,9 +82,7 @@ public class RecallTableTestViaPing {
      * Build input data
      */
     private static PingInputData buildInputData(FakeGridUser user, String authzId) {
-        PingInputData input = new PingInputData();
-        input.setRequestor(user);
-        input.setAuthorizationID(authzId);
+        PingInputData input = new PingInputData(user, authzId);
         return input;         
     }
     

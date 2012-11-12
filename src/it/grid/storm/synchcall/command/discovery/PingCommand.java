@@ -26,9 +26,10 @@ import it.grid.storm.srm.types.InvalidTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TExtraInfo;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.DiscoveryCommand;
+import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.discovery.PingInputData;
+import it.grid.storm.synchcall.data.discovery.AnonymousPingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
@@ -60,22 +61,18 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
     public OutputData execute(InputData data) {
         PingOutputData outputData = new PingOutputData();
-        PingInputData inputData = (PingInputData) data;
+        AnonymousPingInputData inputData = (AnonymousPingInputData) data;
 
         outputData.setVersionInfo("StoRM - SRM Version 2.2");
 
         ArrayOfTExtraInfo extraInfoArray = new ArrayOfTExtraInfo();
         TExtraInfo otherInfo = null;
 
-        // Extract KEY from AuthorizationID
         String key = getKey(inputData.getAuthorizationID());
 
-        // Refresh hashmap <KEY,VALUE>
         Properties pingValues = loadProperties();
 
-        // Search key value
-        boolean foundKey = pingValues.containsKey(key);
-        if(foundKey)
+        if(pingValues.containsKey(key))
 		{
         	for(Entry<Object, Object> entry : pingValues.entrySet())
 			{
@@ -94,16 +91,15 @@ public class PingCommand extends DiscoveryCommand implements Command {
 			}
 		}
 		else
-		{ // Catch the special cases
+		{
 			extraInfoArray = manageSpecialKey(key);
 		}
        
-        // Build the Output Data
         outputData.setExtraInfoArray(extraInfoArray);
 
-        // Building INFO Log
-        String infoLogs = "srmPing: " + "<" + inputData.getRequestor().toString() + ">" + "[AuthID:'"
-                + inputData.getAuthorizationID() + "']" + "return values: [" + extraInfoArray + "]";
+        String infoLogs = "srmPing: " + "<" + DataHelper.getRequestor(inputData).toString() + ">" + "[AuthID:'"
+        + inputData.getAuthorizationID() + "']" + "return values: [" + extraInfoArray + "]";
+        
         log.info(infoLogs);
 
         return outputData;

@@ -18,8 +18,6 @@
 package it.grid.storm.synchcall.data.discovery;
 
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.InputData;
 
 /**
  * This class is part of the StoRM project.
@@ -35,28 +33,22 @@ import it.grid.storm.synchcall.data.InputData;
  *
  */
 
-public class PingInputData extends AbstractInputData
+public class PingInputData extends AnonymousPingInputData
 {
-    private GridUserInterface requestor = null;
-    private String authorizationID = null;
 
-    public PingInputData() {
-        authorizationID = "";
-    }
-
+    protected GridUserInterface requestor = null;
+    
     public PingInputData(GridUserInterface gridUser, String authorizationID) {
+        super(authorizationID);
         this.requestor = gridUser;
-        if (authorizationID == null)
-            this.authorizationID = "";
-        else
-            this.authorizationID = authorizationID;
     }
-
+    
     /**
      * Set the Requestor
      * @param gridUser GridUserInterface
      */
-    public void setRequestor(GridUserInterface gridUser) {
+    public void setRequestor(GridUserInterface gridUser)
+    {
       this.requestor = gridUser;
     }
 
@@ -64,26 +56,11 @@ public class PingInputData extends AbstractInputData
      * Get the Requestor
      * @return GridUserInterface
      */
-    public GridUserInterface getRequestor() {
+    public GridUserInterface getRequestor()
+    {
       return this.requestor;
     }
-
-    /**
-     * Set the authorizationID.
-     * @param authorizationID String
-     */
-    public void setAuthorizationID(String authorizationID) {
-        this.authorizationID = authorizationID;
-    }
-
-    /**
-     * Get the authorizatioID.
-     * @return String
-     */
-    public String getAuthorizationID() {
-        return this.authorizationID;
-    }
-
+   
     public String toString() {
       return "";
     }

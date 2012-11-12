@@ -32,6 +32,7 @@ import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.discovery.AnonymousPingInputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -52,16 +53,19 @@ public class PingConverter implements Converter
     {
         log.debug("Ping: input converter started. InputParam ");
 
-        /* Retrieve the Requestor */
-        GridUserInterface requestor = null;
-        requestor = GridUserManager.decode(inputParam);
-        //requestor = VomsGridUser.decode(inputParam);
+        GridUserInterface requestor = GridUserManager.decode(inputParam);
 
-        /* Retrieve the String AuthorizationID */
         String authorizationID = (String) inputParam.get("authorizationID");
 
-        /* Build the InputData used by Executor */
-        PingInputData inputData = new PingInputData(requestor, authorizationID);
+        InputData inputData;
+        if(requestor != null)
+        {
+            inputData = new PingInputData(requestor, authorizationID);            
+        }
+        else
+        {
+            inputData = new AnonymousPingInputData(authorizationID);
+        }
         log.debug("Ping: input converter has finished.");
         return inputData;
     }
