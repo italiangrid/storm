@@ -94,6 +94,7 @@ public class VirtualFS implements VirtualFSInterface {
     SpaceSystem spaceSystem = null;
     Filesystem fsWrapper = null;
     List<MappingRule> mappingRules = new ArrayList<MappingRule>();
+    List<ApproachableRule> approachableRules = new ArrayList<ApproachableRule>();
     Configuration config;
     StorageClassType storageClass = null;
     TSpaceToken spaceToken;
@@ -190,6 +191,9 @@ public class VirtualFS implements VirtualFSInterface {
         mappingRules.add(mappingRule);
     }
 
+    public void addApproachableRule(ApproachableRule rule) {
+        approachableRules.add(rule);
+    }
 
     public void setSpaceToken(TSpaceToken spaceToken) {
         this.spaceToken = spaceToken;
@@ -298,6 +302,14 @@ public class VirtualFS implements VirtualFSInterface {
             throw new NamespaceException("No one MAPPING RULES bound with this VFS (" + aliasName + "). ");
         }
         return this.mappingRules;
+    }
+
+    @Override
+    public List<ApproachableRule> getApproachableRules() throws NamespaceException {
+        if (this.approachableRules.isEmpty()) {
+            throw new NamespaceException("No one APPROACHABLE RULES bound with this VFS (" + aliasName + "). ");
+        }
+        return this.approachableRules;
     }
 
     /**
@@ -463,8 +475,16 @@ public class VirtualFS implements VirtualFSInterface {
      ****************************************************************************/
 
 
-    public boolean isApproachableByUser(GridUserInterface user) throws NamespaceException {
-        return true;
+    public boolean isApproachableByUser(GridUserInterface user)
+    {
+        for (ApproachableRule approachableRule : this.approachableRules)
+        {
+            if (approachableRule.match(user))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public StoRI createFile(String relativePath) throws NamespaceException {

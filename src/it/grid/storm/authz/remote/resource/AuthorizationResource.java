@@ -279,6 +279,11 @@ public class AuthorizationResource
             VirtualFSInterface fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
             if(fileVFS != null)
             {
+                if(!fileVFS.isApproachableByUser(gu))
+                {
+                    log.debug("User\'" + gu + "\' not authorize to approach the requeste Storage Area \'" + fileVFS.getAliasName() + "\'");
+                    return new Boolean(false);    
+                }
                 VFSRootPath = fileVFS.getRootPath();
                 if(VFSRootPath == null)
                 {
