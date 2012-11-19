@@ -225,7 +225,7 @@ public class PtPChunkDAO {
 						  + "WHERE rp.ID=?)";
 
 		String refresh =
-						 "SELECT rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, rq.s_token, rq.r_token, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode, sp.transferURL "
+						 "SELECT rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, rq.s_token, rq.r_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode, sp.transferURL "
 							 + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
 							 + "ON (rq.ID=rp.request_queueID AND sp.request_PutID=rp.ID) "
 							 + "WHERE rp.ID=?";
@@ -289,6 +289,20 @@ public class PtPChunkDAO {
 				chunkDataTO.setProtocolList(protocols);
 				chunkDataTO.setStatus(rs.getInt("sp.statusCode"));
 				chunkDataTO.setTransferURL(rs.getString("sp.transferURL"));
+				chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
+
+                /**
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
+                 */
+                java.sql.Blob blob = rs.getBlob("rq.proxy");
+                if (!rs.wasNull() && blob != null)
+                {
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    chunkDataTO.setVomsAttributes(new String(bdata));
+                }
 				if(rs.next())
 				{
 					log.warn("ATTENTION in PtP CHUNK DAO! Possible DB corruption! "
@@ -364,7 +378,7 @@ public class PtPChunkDAO {
 			//TODO MICHELE USER_SURL get new fields
 			// get chunks of the request
 			str =
-				  "SELECT rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, rq.s_token, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode "
+				  "SELECT rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode "
 					  + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
 					  + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
 					  + "WHERE rq.r_token=? AND sp.statusCode<>?";
@@ -392,6 +406,20 @@ public class PtPChunkDAO {
 				chunkDataTO.setPinLifetime(rs.getInt("rq.pinLifetime"));
 				chunkDataTO.setFileLifetime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
+				chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
+
+                /**
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
+                 */
+                java.sql.Blob blob = rs.getBlob("rq.proxy");
+                if (!rs.wasNull() && blob != null)
+                {
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    chunkDataTO.setVomsAttributes(new String(bdata));
+                }
 				chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 				chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
 				
@@ -1212,7 +1240,7 @@ public class PtPChunkDAO {
             //TODO MICHELE USER_SURL get new fields
             // get chunks of the request
             String str = "SELECT rq.ID, rq.r_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, "
-                + "rq.s_token, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
+                + "rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
                 + "sp.statusCode "
                 + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
                 + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
@@ -1238,6 +1266,20 @@ public class PtPChunkDAO {
                 chunkDataTO.setPinLifetime(rs.getInt("rq.pinLifetime"));
                 chunkDataTO.setFileLifetime(rs.getInt("rq.fileLifetime"));
                 chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
+                chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
+
+                /**
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
+                 */
+                java.sql.Blob blob = rs.getBlob("rq.proxy");
+                if (!rs.wasNull() && blob != null)
+                {
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    chunkDataTO.setVomsAttributes(new String(bdata));
+                }
                 chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
                 chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
                 

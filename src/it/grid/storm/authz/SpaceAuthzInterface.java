@@ -25,6 +25,8 @@ public interface SpaceAuthzInterface {
 
     public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp);
 
+    public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp);
+    
     void setAuthzDB(AuthzDBInterface authzDB);
 
     void refresh();

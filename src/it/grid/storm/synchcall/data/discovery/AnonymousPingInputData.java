@@ -1,4 +1,6 @@
 package it.grid.storm.synchcall.data.discovery;
+
+import it.grid.storm.synchcall.data.AbstractInputData;
 /*
 *
 *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
@@ -16,7 +18,7 @@ package it.grid.storm.synchcall.data.discovery;
 *  limitations under the License.
 */
 
-public class AnonymousPingInputData extends AnonymousInputData
+public class AnonymousPingInputData extends AbstractInputData implements PingInputData
 {
 
     private final String authorizationID;
@@ -26,10 +28,10 @@ public class AnonymousPingInputData extends AnonymousInputData
         this.authorizationID = authorizationID;            
     }
 
-    /**
-     * Get the authorizatioID.
-     * @return String
+    /* (non-Javadoc)
+     * @see it.grid.storm.synchcall.data.discovery.PingInputData#getAuthorizationID()
      */
+    @Override
     public String getAuthorizationID() {
         return this.authorizationID;
     }

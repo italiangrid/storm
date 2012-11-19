@@ -1469,7 +1469,7 @@ public class Configuration {
     public String getDefaultOverwriteMode() {
         if (!cr.getConfiguration().containsKey(DEFAULT_OVERWRITE_MODE_KEY)) {
             // return default
-            return "A";
+            return "N";
         } else {
             // load from external source
             return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY);

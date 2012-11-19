@@ -9,7 +9,7 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityPutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
 import org.junit.Before;
@@ -24,7 +24,7 @@ public class PutDoneCommandTest
     public ExpectedException thrown = ExpectedException.none();
     
     private PutDoneCommand command = null;
-    private PutDoneInputData data = null;
+    private IdentityPutDoneInputData data = null;
     
     private GridUserInterface auth = new FakeGridUser("mimmo", "atlas");
     
@@ -99,7 +99,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteEmptySurls()
     {
-        data = new PutDoneInputData(auth,reqToken,new ArrayOfSURLs());
+        data = new IdentityPutDoneInputData(auth,reqToken,new ArrayOfSURLs());
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -109,7 +109,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteUnknownTokenAndSurls()
     {
-        data = new PutDoneInputData(auth,unknownReqToken,unknownSurlArray);
+        data = new IdentityPutDoneInputData(auth,unknownReqToken,unknownSurlArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -119,7 +119,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteUnknownSurls()
     {
-        data = new PutDoneInputData(auth,reqToken,unknownSurlArray);
+        data = new IdentityPutDoneInputData(auth,reqToken,unknownSurlArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -129,7 +129,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteUnknownToken()
     {
-        data = new PutDoneInputData(auth,unknownReqToken,mixedSurlArray);
+        data = new IdentityPutDoneInputData(auth,unknownReqToken,mixedSurlArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -139,7 +139,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteAlreadySuccessSurl()
     {
-        data = new PutDoneInputData(auth,reqToken,surlSuccessfulArray);
+        data = new IdentityPutDoneInputData(auth,reqToken,surlSuccessfulArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -149,7 +149,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecute()
     {
-        data = new PutDoneInputData(auth,reqToken,surlSpaceAvalableArray);
+        data = new IdentityPutDoneInputData(auth,reqToken,surlSpaceAvalableArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertTrue("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -159,7 +159,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecutePartialSuccess()
     {
-        data = new PutDoneInputData(auth,reqToken,mixedSurlArray);
+        data = new IdentityPutDoneInputData(auth,reqToken,mixedSurlArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
@@ -169,7 +169,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteAborted()
     {
-        data = new PutDoneInputData(auth,reqToken,abortedSurlArray);
+        data = new IdentityPutDoneInputData(auth,reqToken,abortedSurlArray);
         PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());

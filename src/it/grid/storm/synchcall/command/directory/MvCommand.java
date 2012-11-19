@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import java.util.Arrays;
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
@@ -27,21 +28,22 @@ import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DirectoryCommand;
+import it.grid.storm.synchcall.data.DataHelper;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MvInputData;
@@ -59,8 +61,10 @@ import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 public class MvCommand extends DirectoryCommand implements Command {
 
+    private static final String SRM_COMMAND = "SrmMv";
     private final NamespaceInterface namespace;
 
+    private static final AclManager manager = AclManagerFSAndHTTPS.getInstance();
     public MvCommand() {
         namespace = NamespaceDirector.getNamespace();
 
@@ -85,341 +89,303 @@ public class MvCommand extends DirectoryCommand implements Command {
          * operation.
          */
 
-        if ((inputData == null) || (inputData.getFromSurl() == null) || (inputData.getToSurl() == null))
+        if ((inputData == null) || (inputData.getFromSURL() == null) || (inputData.getToSURL() == null))
         {
-            outputData.setStatus(buildStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified."));
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified."));
             log.warn("srmMv: Request failed with [status: " + outputData.getStatus() + "]");
             return outputData;
         }
 
-        /**
-         * Check if GridUser in MvInputData is not null, otherwise return with an error message.
-         */
-        GridUserInterface guser = inputData.getUser();
-        if (guser == null)
-        {
-            log.info("SrmMv: Unable to get user credential.");
-            outputData.setStatus(buildStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-            "Unable to get user credential!"));
-            log.info("srmMv: Request failed with [status: "
-                     + outputData.getStatus() + "]");
-            return outputData;
-        }
-
-        // Get fromSURL and toSURL from input structure.
-        TSURL fromSURL = inputData.getFromSurl();
-        TSURL toSURL = inputData.getToSurl();
-
-        // Create StoRI from SURL
-        StoRI fromStori = null;
-
+        TSURL fromSURL = inputData.getFromSURL();
+        StoRI fromStori;
         if (!fromSURL.isEmpty())
         {
-            // Building StoRI representation of SURL within the request.
             try
             {
-                fromStori = namespace.resolveStoRIbySURL(fromSURL, guser);
+
+                if (inputData instanceof IdentityInputData)
+                {
+                    fromStori = namespace.resolveStoRIbySURL(fromSURL, ((IdentityInputData) inputData).getUser());
+                }
+                else
+                {
+                    fromStori = namespace.resolveStoRIbySURL(fromSURL);
+                }
             } catch(IllegalArgumentException e)
             {
-                log.info("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + e);
-                outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
-                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                          + "] failed with [status: " + outputData.getStatus() + "]");
+                log.warn("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]. IllegalArgumentException: " + e.getMessage());
+                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
+                printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
-            catch (NamespaceException ex)
+            catch (NamespaceException e)
             {
-                log.debug("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]" + ex);
-                outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid fromSURL specified!"));
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                        + "] failed with [status: " + outputData.getStatus() + "]");
+                log.warn("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]. NamespaceException: " + e.getMessage());
+                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid fromSURL specified!"));
+                printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
         }
         else
         {
-            outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH,"Invalid fromSURL specified!"));
-            log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                    + "] failed with [status: " + outputData.getStatus() + "]");
+            log.warn("srmMv: unable to perform the operation, empty fromSurl");
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,"Invalid fromSURL specified!"));
+            printRequestOutcome(outputData.getStatus(), inputData);
             return outputData;
         }
 
-        // Create StoRI from toSURL
-        StoRI toStori = null;
-
+        TSURL toSURL = inputData.getToSURL();
+        StoRI toStori;
         if (!toSURL.isEmpty())
         {
-            // Building StoRI representation of toSURL within the request.
             try
             {
-                toStori = namespace.resolveStoRIbySURL(toSURL, guser);
+                if (inputData instanceof IdentityInputData)
+                {
+                    toStori = namespace.resolveStoRIbySURL(toSURL, ((IdentityInputData) inputData).getUser());
+                }
+                else
+                {
+                    toStori = namespace.resolveStoRIbySURL(toSURL);
+                }
             } catch(IllegalArgumentException e)
             {
-                log.error("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]" + e);
-                outputData.setStatus(buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                          + "] failed with [status: " + outputData.getStatus() + "]");
+                log.error("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]. IllegalArgumentException: " + e.getMessage());
+                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by destination SURL"));
+                printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
-            catch (NamespaceException ex)
+            catch (NamespaceException e)
             {
-                log.debug("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]" + ex);
-                outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
-                log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                        + "] failed with [status: " + outputData.getStatus() + "]");
+                log.debug("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]. NamespaceException: " + e.getMessage());
+                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Unable to build StoRI by destination SURL"));
+                printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
         }
         else
         {
-            outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
-            log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                    + "] failed with [status: " + outputData.getStatus() + "]");
+            log.error("srmMv: unable to perform the operation, empty toSurl");
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
+            printRequestOutcome(outputData.getStatus(), inputData);
             return outputData;
         }
 
-        /**
-         * From version 1.4 Add the control for Storage Area using the new authz for space component.
-         */
-
-        SpaceHelper sp = new SpaceHelper();
-        TSpaceToken token = sp.getTokenFromStoRI(log, fromStori);
+        TSpaceToken token = new SpaceHelper().getTokenFromStoRI(log, fromStori);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-        if (!(spaceAuth.authorize(guser, SRMSpaceRequest.MV)))
+        boolean isSpaceAuthorized;
+        if (inputData instanceof IdentityInputData)
         {
-            // User not authorized to perform RM request on the storage area
+            isSpaceAuthorized = spaceAuth.authorize(((IdentityInputData) inputData).getUser(), SRMSpaceRequest.MV);
+        }
+        else
+        {
+            isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MV);
+        }
+        if (!isSpaceAuthorized)
+        {
             log.debug("srmMv: User not authorized to perform srmMv request on the storage area: " + token);
-            outputData.setStatus(buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
                                              ": User not authorized to perform srmMv request on the storage area: "
                                              + token));
+            printRequestOutcome(outputData.getStatus(), inputData);
             return outputData;
         }
 
-        // Get ACL mode from StoRI (AoT or JiT)
-
-        LocalFile fromFile = fromStori.getLocalFile();
-        LocalFile toFile = toStori.getLocalFile();
-
-        // If fromFile and toFile are the same, then return SRM_SUCCESS
-        if (fromFile.getPath().compareTo(toFile.getPath()) == 0)
+        if (fromStori.getLocalFile().getPath().compareTo(toStori.getLocalFile().getPath()) == 0)
         {
-            outputData.setStatus(buildStatus(TStatusCode.SRM_SUCCESS,
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
             "Source SURL and target SURL are the same file."));
-            log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                     + "] successfully done with [status: " + outputData.getStatus() + "]");
+            printRequestOutcome(outputData.getStatus(), inputData);
             return outputData;
         }
 
         // If toFile is a directory then append the name of the file fromFile
-        if (toFile.exists())
+        if (toStori.getLocalFile().exists())
         {
-            if (toFile.isDirectory())
+            if (toStori.getLocalFile().isDirectory())
             {
-                int lastSlash = fromFile.getPath().lastIndexOf('/');
-                String fromFileName = fromFile.getPath().substring(lastSlash + 1);
-                String toSURLString = toSURL.getSURLString();
-                if (!(toSURLString.endsWith("/")))
-                {
-                    toSURLString += "/";
-                }
-                toSURLString += fromFileName;
-                log.debug("srmMv: New toSURL: " + toSURLString);
-                StoRI toStoriFile = null;
                 try
                 {
-                    TSURL toSURLFile = TSURL.makeFromStringValidate(toSURLString);
-                    toStoriFile = namespace.resolveStoRIbySURL(toSURLFile, guser);
+                    toStori = buildDestinationStoryForFolder(toSURL, fromStori, data);
                 } catch(IllegalArgumentException e)
                 {
-                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'", e);
-                    outputData.setStatus(buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
-                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL="
-                              + toSURL + "] failed with [status: " + outputData.getStatus() + "]");
+                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL
+                            + "'. IllegalArgumentException: " + e.getMessage());
+                    outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                                   "Unable to build StoRI by SURL"));
+                    printRequestOutcome(outputData.getStatus(), inputData);
                     return outputData;
-                }
-                catch (NamespaceException ex1)
+                } catch(NamespaceException e)
                 {
-                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'", ex1);
-                    outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
-                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL="
-                            + toSURL + "] failed with [status: " + outputData.getStatus() + "]");
+                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'. NamespaceException: "
+                            + e.getMessage());
+                    outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                   "Invalid toSURL specified!"));
+                    printRequestOutcome(outputData.getStatus(), inputData);
                     return outputData;
-                }
-                catch (InvalidTSURLAttributesException ex2)
+                } catch(InvalidTSURLAttributesException e)
                 {
-                    log.error("Unable to create toSURL");
-                    outputData.setStatus(buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
-                    log.error("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL="
-                            + toSURL + "] failed with [status: " + outputData.getStatus() + "]");
+                    log.error("Unable to create toSURL. InvalidTSURLAttributesException: " + e.getMessage());
+                    outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                   "Invalid toSURL specified!"));
+                    printRequestOutcome(outputData.getStatus(), inputData);
                     return outputData;
                 }
-                toFile = toStoriFile.getLocalFile();
             }
         }
-        /**
-         * Construction of AuthZ request
-         */
-       
-        // AuthorizationDecision mvFromAuth = AuthorizationCollector.getInstance().canDelete(user, fromStori);
-        // AuthorizationDecision mvToAuth = AuthorizationCollector.getInstance().canCreateNewFile(user, toStori);
-        /**
-         * 1.5.0 Path Authorization
-         */
-        AuthzDecision mvAuthz_source =
-                AuthzDirector.getPathAuthz().authorize(guser, SRMFileRequest.MV_source, fromStori, toStori);
-        AuthzDecision mvAuthz_dest =
-                AuthzDirector.getPathAuthz().authorize(guser, SRMFileRequest.MV_dest, fromStori, toStori);
-        TReturnStatus returnStatus = null;
-        if ((mvAuthz_source.equals(AuthzDecision.PERMIT)) && (mvAuthz_dest.equals(AuthzDecision.PERMIT)))
+
+        AuthzDecision sourceDecision;
+        if (inputData instanceof IdentityInputData)
         {
-            log.debug("SrmMv: Mv authorized for " + guser + " for Source file = " + fromStori.getPFN()
+            sourceDecision = AuthzDirector.getPathAuthz()
+                                          .authorize(((IdentityInputData) inputData).getUser(),
+                                                     SRMFileRequest.MV_source, fromStori, toStori);
+        }
+        else
+        {
+            sourceDecision = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.MV_source,
+                                                                             fromStori, toStori);
+        }
+        AuthzDecision destinationDecision;
+        if (inputData instanceof IdentityInputData)
+        {
+            destinationDecision = AuthzDirector.getPathAuthz()
+                                               .authorize(((IdentityInputData) inputData).getUser(),
+                                                          SRMFileRequest.MV_dest, fromStori, toStori);
+        }
+        else
+        {
+            destinationDecision = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.MV_dest,
+                                                                                  fromStori, toStori);
+        }
+        TReturnStatus returnStatus;
+        if ((sourceDecision.equals(AuthzDecision.PERMIT)) && (destinationDecision.equals(AuthzDecision.PERMIT)))
+        {
+            log.debug("SrmMv: Mv authorized for " + DataHelper.getRequestor(inputData) + " for Source file = " + fromStori.getPFN()
                     + " to Target file =" + toStori.getPFN());
-//            returnStatus = manageAuthorizedMV(fromStori, toFile, hasJiTACL);
-            returnStatus = manageAuthorizedMV(fromStori, toFile);
-            if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+            returnStatus = manageAuthorizedMV(fromStori, toStori.getLocalFile());
+            if (returnStatus.isSRM_SUCCESS())
             {
-                log.info("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                log.info("srmMv: <" + DataHelper.getRequestor(inputData) + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] successfully done with [status: " + returnStatus + "]");
-                try
+                LocalUser user = null;
+                if (inputData instanceof IdentityInputData)
                 {
-                    setAclForHttps(fromStori, toStori, guser.getLocalUser());
+                    try
+                    {
+                        user = ((IdentityInputData) inputData).getUser().getLocalUser();
+                    } catch(CannotMapUserException e)
+                    {
+                        log.warn("srmMv: failed to get the requesting local user,unable to set user acls on the created file");
+                        returnStatus.extendExplaination("unable to set user acls on the destination file");
+                    }
                 }
-                catch (CannotMapUserException e)
+                if (user != null)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    setAcl(fromStori, toStori, user);
+                }
+                else
+                {
+                    setAcl(fromStori, toStori);
                 }
             }
             else
             {
-                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
+                log.warn("srmMv: <" + DataHelper.getRequestor(inputData) + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
                         + "] failed with [status: " + returnStatus.toString() + "]");
             }
-
         }
         else
         {
-            String errMess = "Authz failure for unknown reasons";
-            boolean srcFailure = false;
-            if (!(mvAuthz_source.equals(AuthzDecision.PERMIT)))
+            if (sourceDecision.equals(AuthzDecision.PERMIT))
             {
-                srcFailure = true;
-                errMess = "User is not authorized to read and/or delete (needed for Mv) the source file.";
+                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, 
+                                                         "User is not authorized to create and/or write the destination file");
             }
-            if (!(mvAuthz_dest.equals(AuthzDecision.PERMIT)))
+            else
             {
-                if (srcFailure)
+                if (destinationDecision.equals(AuthzDecision.PERMIT))
                 {
-                    errMess += "and User is not authorized to create and/or write (needed for Mv) the destination file.";
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, 
+                                                             "User is not authorized to read and/or delete the source file");
                 }
                 else
                 {
-                    errMess = "User is not authorized to create and/or write (needed for Mv) the destination file.";
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, 
+                                                             "User is neither authorized to read and/or delete the source file " +
+                    		"nor to create and/or write the destination file");
                 }
             }
-                returnStatus = buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, errMess);
-                log.warn("srmMv: <" + guser + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                        + "] failed with [status: " + returnStatus + "]");
         }
         outputData.setStatus(returnStatus);
+        printRequestOutcome(outputData.getStatus(), inputData);
         return outputData;
     }
 
-    private void setAclForHttps(StoRI oldFileStoRI, StoRI newFileStoRI, LocalUser localUser)
+    private StoRI buildDestinationStoryForFolder(TSURL toSURL, StoRI fromStori, InputData inputData)
+            throws IllegalArgumentException, NamespaceException, InvalidTSURLAttributesException
     {
-        LocalFile newLocalFile = newFileStoRI.getLocalFile();
-        LocalFile oldLocalFile = oldFileStoRI.getLocalFile();
-//        FilesystemPermission fp = null;
-//        boolean effective = false;
-//        try
-//        {
-//            fp = newLocalFile.getEffectiveUserPermission(localUser);
-//        }
-//        catch (CannotMapUserException e)
-//        {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-        AclManager manager = AclManagerFSAndHTTPS.getInstance();
+        StoRI toStori;
+        String toSURLString = toSURL.getSURLString();
+        if (!(toSURLString.endsWith("/")))
+        {
+            toSURLString += "/";
+        }
+        toSURLString += fromStori.getFilename();
+        log.debug("srmMv: New toSURL: " + toSURLString);
+        if (inputData instanceof IdentityInputData)
+        {
+            toStori = namespace.resolveStoRIbySURL(TSURL.makeFromStringValidate(toSURLString),
+                                                   ((IdentityInputData) inputData).getUser());
+        }
+        else
+        {
+            toStori = namespace.resolveStoRIbySURL(TSURL.makeFromStringValidate(toSURLString));
+        }
+        return toStori;
+    }
+
+    private void setAcl(StoRI oldFileStoRI, StoRI newFileStoRI)
+    {
         try
         {
-            manager.moveHttpsPermissions(oldLocalFile, newLocalFile);
+            manager.moveHttpsPermissions(oldFileStoRI.getLocalFile(), newFileStoRI.getLocalFile());
         }
         catch (IllegalArgumentException e)
         {
             log.error("Unable to move permissions from the old to the new file. IllegalArgumentException: " + e.getMessage());
         }
-        if (newFileStoRI.hasJustInTimeACLs()) {
+    }
+    
+    private void setAcl(StoRI oldFileStoRI, StoRI newFileStoRI, LocalUser localUser)
+    {
+        setAcl(oldFileStoRI, newFileStoRI);
+        if (newFileStoRI.hasJustInTimeACLs())
+        {
             // JiT
-            
-            
-            //TODO ACL manager
             try
             {
-                manager.grantHttpsUserPermission(newLocalFile,localUser, FilesystemPermission.ReadWrite);
+                manager.grantHttpsUserPermission(newFileStoRI.getLocalFile(),localUser, FilesystemPermission.ReadWrite);
             }
             catch (IllegalArgumentException e)
             {
                 log.error("Unable to grant user read and write permission on the new file. IllegalArgumentException: " + e.getMessage());
             }
-//            localFile.grantUserPermission(localUser, FilesystemPermission.ReadWrite);
-//            if (fp != null)
-//            {
-//                effective = fp.allows(FilesystemPermission.ReadWrite);
-//                if (effective) {
-                    // ACL was correctly set up! Track JiT!
-//                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(),
-//                                                                 localUser,
-//                                                                 FilesystemPermission.Read,
-//                                                                 start,
-//                                                                 chunkData.pinLifetime());
-//                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(),
-//                                                                 localUser,
-//                                                                 FilesystemPermission.Write,
-//                                                                 start,
-//                                                                 chunkData.pinLifetime());
-//                }
-//                else
-//                {
-//                    PtPChunk.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite User-ACL to be set up on"
-//                            + localFile.toString() + "!");
-//                }
-//            }
-//            else
-//            {
-//                PtPChunk.log.error("ERROR in PTP CHUNK! A ReadWrite User-ACL was set on "
-//                        + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-//                        + " but when subsequently verifying its effectivity, a null ACE was found!");
-//            }
         }
         else
         {
             // AoT
-            //TODO ACL manager
             try
             {
-                manager.grantHttpsGroupPermission(newLocalFile, localUser, FilesystemPermission.ReadWrite);
+                manager.grantHttpsGroupPermission(newFileStoRI.getLocalFile(), localUser, FilesystemPermission.ReadWrite);
             }
             catch (IllegalArgumentException e)
             {
                 log.error("Unable to grant group read and write permission on the new file. IllegalArgumentException: " + e.getMessage());
             }
-//            localFile.grantGroupPermission(localUser, FilesystemPermission.ReadWrite);
-//            fp = localFile.getEffectiveGroupPermission(localUser);
-//            if (fp != null) {
-//                effective = fp.allows(FilesystemPermission.ReadWrite);
-//                if (!effective) {
-//                    PtPChunk.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite Group-ACL to be set up on"
-//                            + localFile.toString() + "!");
-//                }
-//            } else {
-//                PtPChunk.log.error("ERROR in PTP CHUNK! ReadWrite Group-ACL was set on "
-//                        + fileStoRI.getAbsolutePath() + " for group " + localUser.toString()
-//                        + " but when subsequently verifying its effectivity, a null ACE was found!");
-//            }
         }
-        
     }
 
     /**
@@ -491,7 +457,7 @@ public class MvCommand extends DirectoryCommand implements Command {
                 log.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
                 explanation = "There is an active SrmPrepareToPut on from SURL.";
                 statusCode = TStatusCode.SRM_FILE_BUSY;
-                return buildStatus(statusCode, explanation);
+                return CommandHelper.buildStatus(statusCode, explanation);
 
             } else {
                 log.debug("srmMv: No PrepareToPut running on from SURL.");
@@ -509,7 +475,7 @@ public class MvCommand extends DirectoryCommand implements Command {
                 log.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
                 explanation = "There is an active SrmPrepareToGet on from SURL";
                 statusCode = TStatusCode.SRM_FILE_BUSY;
-                return buildStatus(statusCode, explanation);
+                return CommandHelper.buildStatus(statusCode, explanation);
             }
 
 
@@ -584,24 +550,27 @@ public class MvCommand extends DirectoryCommand implements Command {
          * @todo: Rollback of failure. } } // failure
          */
 
-        return buildStatus(statusCode, explanation);
+        return CommandHelper.buildStatus(statusCode, explanation);
     }
     
-    
-    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination)throws IllegalArgumentException, IllegalStateException
+    private void printRequestOutcome(TReturnStatus status, MvInputData inputData)
     {
-        if(statusCode == null)
+        if(inputData != null)
         {
-            throw new IllegalArgumentException("Unable to build the status, null arguments: statusCode=" + statusCode);
+            if(inputData.getFromSURL() != null && inputData.getToSURL() != null)
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData, 
+                                                  Arrays.asList(new String[]{inputData.getFromSURL().toString(),inputData.getFromSURL().toString()}));    
+            }
+            else
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+            }
         }
-        try
+        else
         {
-            return new TReturnStatus(statusCode, explaination);
-        } catch(InvalidTReturnStatusAttributeException e)
-        {
-            // Never thrown
-            throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException "
-                    + "in building TReturnStatus: " + e.getMessage());
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
         }
-}
+    }
+
 }

@@ -19,6 +19,8 @@ package it.grid.storm.asynch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import it.grid.storm.catalogs.AnonymousPtPData;
+import it.grid.storm.catalogs.IdentityPtPData;
 import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
 import it.grid.storm.catalogs.InvalidPtPDataAttributesException;
 import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
@@ -35,6 +37,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
 
 /**
@@ -68,10 +71,20 @@ public class PtPBuilder
         PtPData data;
         try
         {
-            data = new PtPData(toSURL, pinLifetime,
-                                                 fileLifetime, fileStorageType, spaceToken,
-                                                 expectedFileSize, transferProtocols, overwriteOption,
-                                                 status, transferURL);
+            if (inputData instanceof IdentityInputData)
+            {
+                data = new IdentityPtPData(((IdentityInputData)inputData).getUser(), toSURL, pinLifetime,
+                                           fileLifetime, fileStorageType, spaceToken,
+                                           expectedFileSize, transferProtocols, overwriteOption,
+                                           status, transferURL);
+            }
+            else
+            {
+                data = new AnonymousPtPData(toSURL, pinLifetime,
+                                            fileLifetime, fileStorageType, spaceToken,
+                                            expectedFileSize, transferProtocols, overwriteOption,
+                                            status, transferURL);
+            }
         } catch(InvalidPtPDataAttributesException e)
         {
             log.error("Unable to build PtPChunkData. InvalidPtPChunkDataAttributesException: " + e.getMessage());
@@ -87,7 +100,7 @@ public class PtPBuilder
         }
         try
         {
-            return new PtP(inputData.getUser(), data);
+            return new PtP(data);
         } catch(InvalidRequestAttributesException e)
         {
             log.error("Unable to build PtP. InvalidRequestAttributesException: " + e.getMessage());

@@ -24,11 +24,11 @@
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
-import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 
 public interface AbortExecutorInterface {
 
-    public AbortGeneralOutputData doIt(AbortGeneralInputData inputData);
+    public AbortGeneralOutputData doIt(AbortInputData inputData);
 
 }

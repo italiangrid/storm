@@ -463,22 +463,14 @@ private void retrieveProtocol(String fsName, int nrProt) {
 
     private void testGetTrasferProtocol(){
         VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
-        try {
             Vector prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
             log.debug(prot.toString());
-        }
-        catch (NamespaceException ex) {
-        }
 
     }
     private void testGetDefaultProtocol(){
         VirtualFSInterface vfs = parser.getVFS("cnaf-FS");
         Vector prot = null;
-        try {
             prot = new Vector(vfs.getCapabilities().getAllManagedProtocols());
-        }
-        catch (NamespaceException ex) {
-        }
         if (prot!=null) {
             log.debug(prot.firstElement().toString());
         }
@@ -560,21 +552,15 @@ private void retrieveProtocol(String fsName, int nrProt) {
 
 
     private void testIsOnlineSpaceLimited() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             PropertyInterface prop = vfs.getProperties();
             boolean result = prop.isOnlineSpaceLimited();
             log.debug("Online Limited in VFS ("+vfsName+")?" + result);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
 
     private  void testGetProtocolByID() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
@@ -582,66 +568,42 @@ private void retrieveProtocol(String fsName, int nrProt) {
             log.debug("Transport Protocol (0) di VFS ("+vfsName+")?" + tp);
             tp = capabilities.getProtocolByID(1);
             log.debug("Transport Protocol (1) di VFS ("+vfsName+")?" + tp);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
 
     private  void testGetPoolByScheme() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
             BalancingStrategy<? extends Node> balancer = capabilities.getBalancingStrategyByScheme(Protocol.GSIFTP);
             log.debug("Balancer per GSIFTP di VFS ("+vfsName+")?" + balancer);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
 
     private  void testIsPooledProtocol() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
             boolean result = capabilities.isPooledProtocol(Protocol.GSIFTP);
             log.debug("GSIFTP � Pooled in VFS ("+vfsName+")?" + result);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
 
     private  void testGetAllManagedProtocol() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
             ArrayList<Protocol> listProt = new ArrayList<Protocol>(capabilities.getAllManagedProtocols());
             log.debug("List di protocolli in VFS ("+vfsName+")?" + listProt);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
 
     private  void testGetManagedProtocolByScheme() {
-        try {
             VirtualFSInterface vfs = parser.getVFS("CNAF-FS");
             String vfsName = vfs.getAliasName();
             CapabilityInterface capabilities = vfs.getCapabilities();
             ArrayList<TransportProtocol> listTProt = new ArrayList<TransportProtocol>(capabilities.getManagedProtocolByScheme(Protocol.GSIFTP));
             log.debug("List di T.protocolli di GSIFTP in VFS ("+vfsName+")?" + listTProt);
-        }
-        catch (NamespaceException ex1) {
-            log.error("AHAAH : "+ex1);
-        }
     }
 
     public static void main(String[] args) {

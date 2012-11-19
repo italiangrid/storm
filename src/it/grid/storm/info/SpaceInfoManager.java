@@ -256,15 +256,12 @@ public class SpaceInfoManager {
     public List<String> retrieveQuotaNamesToUse() {
         List<String> quotaNames = new ArrayList<String>();
         List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
-        for (VirtualFSInterface vfsEntry : vfsList) {
-            try {
-                LOG.debug("vfsEntry (AliasName): "+vfsEntry.getAliasName());
-                String quotaName = vfsEntry.getCapabilities().getQuota().getQuotaElementName();
-                LOG.debug("Found this quotaName to check: '"+quotaName+"'");
-                quotaNames.add(quotaName);
-            }  catch (NamespaceException e) {
-                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
-            }
+        for (VirtualFSInterface vfsEntry : vfsList)
+        {
+            LOG.debug("vfsEntry (AliasName): " + vfsEntry.getAliasName());
+            String quotaName = vfsEntry.getCapabilities().getQuota().getQuotaElementName();
+            LOG.debug("Found this quotaName to check: '" + quotaName + "'");
+            quotaNames.add(quotaName);
         }
         LOG.debug("Number of quotaNames: " + quotaNames.size() );
         return quotaNames;

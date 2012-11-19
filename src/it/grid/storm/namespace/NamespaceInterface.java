@@ -379,7 +379,12 @@ public interface NamespaceInterface {
      */
     public boolean isStfnFittingSomewhere(String surlString, GridUserInterface user) throws NamespaceException;
 
-
+    /**
+     * @param surlString : pass the SURL in String format as it comes from the FE.
+     * @return
+     * @throws NamespaceException
+     */
+    public boolean isStfnFittingSomewhere(String surlString) throws NamespaceException;
 
 
 }

@@ -41,6 +41,13 @@ public class SpaceFixedAuthz extends SpaceAuthz {
         // @todo : implement the simple algorithm.
         return true;
     }
+    
+    @Override
+    public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp)
+    {
+        // TODO Auto-generated method stub
+        return true;
+    }
 
     public String getSpaceAuthzID() {
         return FIXED_ID;

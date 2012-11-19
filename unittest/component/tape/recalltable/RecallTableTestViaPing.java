@@ -5,7 +5,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.synchcall.command.discovery.PingCommand;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.discovery.PingInputData;
+import it.grid.storm.synchcall.data.discovery.IdentityPingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
@@ -81,8 +81,8 @@ public class RecallTableTestViaPing {
     /**
      * Build input data
      */
-    private static PingInputData buildInputData(FakeGridUser user, String authzId) {
-        PingInputData input = new PingInputData(user, authzId);
+    private static IdentityPingInputData buildInputData(FakeGridUser user, String authzId) {
+        IdentityPingInputData input = new IdentityPingInputData(user, authzId);
         return input;         
     }
     

@@ -223,7 +223,7 @@ public class LocalFile {
      * @return <em>effective</em> permission associated to the local account primary GID of the given LocalUser <i>u</i>
      *         in the given file ACL, or <code>null</code> if no ACL entry for that group was found.
      */
-    public FilesystemPermission getEffectiveGroupPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission getEffectiveGroupPermission(final LocalUser u){
         return fs.getEffectiveGroupPermission(u, localFile.getAbsolutePath());
     }
 
@@ -236,7 +236,7 @@ public class LocalFile {
      * @return <em>effective</em> permission associated to the local account UID of the given LocalUser <i>u</i> in this
      *         file ACL, or <code>null</code> if no ACL entry for that user was found.
      */
-    public FilesystemPermission getEffectiveUserPermission(final LocalUser u) throws CannotMapUserException {
+    public FilesystemPermission getEffectiveUserPermission(final LocalUser u) {
         return fs.getEffectiveUserPermission(u, localFile.getAbsolutePath());
     }
 

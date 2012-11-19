@@ -16,32 +16,23 @@
  */
 
 /**
- * This class represents an Exception throws if SpaceResData is not well formed. *
+ * This class represents the PutDone Input Data associated with the SRM request PutDone
  * @author  Magnoni Luca
- * @author  Cnaf - INFN Bologna
- * @date
+ * @author  CNAF -INFN Bologna
+ * @date    Dec 2006
  * @version 1.0
  */
 
-package it.grid.storm.synchcall.data.exception;
+package it.grid.storm.synchcall.data.datatransfer;
 
-import it.grid.storm.srm.types.ArrayOfSURLs;
+import it.grid.storm.srm.types.TRequestToken;
 
-import java.util.Vector;
+public class AnonymousAbortRequestInputData extends AnonymousAbortGeneralInputData
+{
 
-public class InvalidLSInputDataAttributeException extends Exception {
-
-    private boolean nullArray = true;
-
-//	public InvalidLSInputDataAttributeException(TSURLInfo[] array) {
-    public InvalidLSInputDataAttributeException(ArrayOfSURLs array)
+    public AnonymousAbortRequestInputData(TRequestToken reqToken)
+        throws IllegalArgumentException
     {
-	nullArray = (array==null);
-    }
-
-
-    public String toString()
-    {
-	return "nullArray = "+nullArray;
+        super(reqToken, AbortType.ABORT_REQUEST);
     }
 }

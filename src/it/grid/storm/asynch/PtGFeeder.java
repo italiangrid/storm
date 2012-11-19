@@ -99,8 +99,6 @@ public final class PtGFeeder implements Delegable {
     private static Logger log = LoggerFactory.getLogger(PtGFeeder.class);
     /* RequestSummaryData this PtGFeeder refers to. */
     private RequestSummaryData rsd = null;
-    /* GridUser for this PtGFeeder. */
-    private GridUserInterface gu = null;
     /* Overall request status. */
     private GlobalStatusManager gsm = null; 
 
@@ -123,14 +121,13 @@ public final class PtGFeeder implements Delegable {
 		}
 		try
 		{
-			gu = rsd.gridUser();
 			this.rsd = rsd;
 			gsm = new GlobalStatusManager(rsd.requestToken());
 		} catch(InvalidOverallRequestAttributeException e)
 		{
 			log.error("ATTENTION in PtGFeeder! Programming bug when creating GlobalStatusManager! "
 				+ e);
-			throw new InvalidPtGFeederAttributesException(rsd, gu, null);
+			throw new InvalidPtGFeederAttributesException(rsd, null, null);
 		}
 	}
 
@@ -226,8 +223,9 @@ public final class PtGFeeder implements Delegable {
 		try
 		{
 			/* hand it to scheduler! */
-			SchedulerFacade.getInstance().chunkScheduler().schedule(
-				new PtGPersistentChunk(gu, rsd, auxChunkData, gsm));
+            SchedulerFacade.getInstance()
+                           .chunkScheduler()
+                           .schedule(new PtGPersistentChunk(rsd, auxChunkData, gsm));
 			log.debug("PtGFeeder - chunk scheduled.");
 		} catch(InvalidPersistentRequestAttributesException e)
 		{
@@ -286,7 +284,7 @@ public final class PtGFeeder implements Delegable {
 		    StoRI stori = null;
 		    try
             {
-                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getSURL(), gu);
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(chunkData.getSURL(), chunkData.getUser());
             }
             catch (IllegalArgumentException e)
             {
@@ -321,7 +319,7 @@ public final class PtGFeeder implements Delegable {
     			{
     				try
     				{
-    					childData = new PtGPersistentChunkData(chunkData.getRequestToken(), storiChild.getSURL(),
+    					childData = new PtGPersistentChunkData(chunkData.getUser(),chunkData.getRequestToken(), storiChild.getSURL(),
     									chunkData.getPinLifeTime(), notDir, chunkData
     										.getTransferProtocols(), chunkData.getFileSize(), chunkData
     										.getStatus(), chunkData.getTransferURL());

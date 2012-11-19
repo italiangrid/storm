@@ -26,6 +26,10 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.synchcall.data.InputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousPrepareToPutInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityPrepareToPutInputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 
@@ -39,42 +43,45 @@ public class PrepareToPutRequestConverter extends FileTransferRequestInputConver
     static final Logger log = LoggerFactory.getLogger(PrepareToPutRequestConverter.class);
 
     @Override
-    public PrepareToPutInputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
+    public InputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
         TSURL surl = decodeSURL(inputParam);
         GridUserInterface user = decodeUser(inputParam);
         TURLPrefix transferProtocols = decodeTransferProtocols(inputParam);
         
-        TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_FILELIFETIME);
-        
         PrepareToPutInputData inputData;
+        try
+        {
+            if(user != null)
+            {
+                inputData = new IdentityPrepareToPutInputData(user, surl, transferProtocols);
+            }
+            else
+            {
+                inputData = new AnonymousPrepareToPutInputData(surl, transferProtocols);
+            }
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
+            throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
+        }
+        TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_FILELIFETIME);
         if (desiredFileLifetime != null && !desiredFileLifetime.isEmpty())
         {
-            try
-            {
-                inputData = new PrepareToPutInputData(user, surl, transferProtocols, desiredFileLifetime);
-            } catch(IllegalArgumentException e)
-            {
-                log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
-                throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
-            }
+            inputData.setDesiredFileLifetime(desiredFileLifetime);
             
         }
-        else
+
+        TLifeTimeInSeconds desiredPinLifetime = decodeDesiredPinLifetime(inputParam);
+        if (desiredPinLifetime != null)
         {
-            try
-            {
-                inputData = new PrepareToPutInputData(user, surl, transferProtocols);
-            } catch(IllegalArgumentException e)
-            {
-                log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
-                throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
-            }
-            
+            inputData.setDesiredPinLifetime(desiredPinLifetime);                
         }
-        
-        inputData.setDesiredPinLifetime(decodeDesiredPinLifetime(inputParam));
-        inputData.setTargetSpaceToken(decodeTargetSpaceToken(inputParam));
+        TSpaceToken targetSpaceToken = decodeTargetSpaceToken(inputParam);
+        if (targetSpaceToken != null)
+        {
+            inputData.setTargetSpaceToken(targetSpaceToken);                
+        }
         TSizeInBytes fileSize = TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_SIZE);
         if (fileSize != null)
         {

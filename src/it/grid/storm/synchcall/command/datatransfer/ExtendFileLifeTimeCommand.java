@@ -35,10 +35,13 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLLifetimeReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DataTransferCommand;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
@@ -66,6 +69,7 @@ import java.util.LinkedList;
  */
 public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Command {
     private static final Logger log = LoggerFactory.getLogger(ExtendFileLifeTimeCommand.class);
+    private static final String SRM_COMMAND = "srmExtendFileLifeTime";
 
     public ExtendFileLifeTimeCommand() {
     };
@@ -80,17 +84,26 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
     public OutputData execute(InputData data) {
         final String funcName = "ExtendFileLifeTime: ";
         ExtendFileLifeTimeOutputData outputData = new ExtendFileLifeTimeOutputData();
-        ExtendFileLifeTimeInputData inputData = (ExtendFileLifeTimeInputData) data;
+        IdentityExtendFileLifeTimeInputData inputData;
+        if (data instanceof IdentityInputData)
+        {
+            inputData = (IdentityExtendFileLifeTimeInputData) data;
+        }
+        else
+        {
+            outputData.setReturnStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
+            outputData.setArrayOfFileStatuses(null);
+            printRequestOutcome(outputData.getReturnStatus(), (ExtendFileLifeTimeInputData) data);
+            return outputData;
+        }
+        
         TReturnStatus globalStatus = null;
 
         ExtendFileLifeTimeCommand.log.debug(funcName + "Started.");
 
         /****************************** Check for malformed request ******************************/
         try {
-            if (inputData == null) {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                 "Missing mandatory parameters");
-            } else if (inputData.getArrayOfSURLs() == null) {
+            if (inputData.getArrayOfSURLs() == null) {
                 globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
                                                  "Missing mandatory parameter 'arrayOfSURLs'");
             } else if (inputData.getArrayOfSURLs().size() < 1) {
@@ -121,15 +134,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
             ExtendFileLifeTimeCommand.log.debug(funcName + globalStatus.getExplanation());
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            if (inputData == null) {
-                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <> Request for [token:] [SURL:] failed with [status: "
-                        + globalStatus + "]");
-            } else {
-                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <" + inputData.getUser()
-                        + "> Request for [token:" + inputData.getRequestToken() + "] for [SURL: "
-                        + inputData.getArrayOfSURLs() + "] failed with [status: " + globalStatus + "]");
-            }
-
+            printRequestOutcome(outputData.getReturnStatus(), inputData);
             return outputData;
         }
 
@@ -137,16 +142,9 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
         GridUserInterface user = inputData.getUser();
         if (user == null) {
             ExtendFileLifeTimeCommand.log.debug(funcName + "The user field is NULL");
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-                                                 "Unable to get user credential!");
-                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <> Request for [token:] [SURL:] failed with [status: "
-                        + globalStatus + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <> Request for [token:] [SURL:] failed. Error creating status: [status: ]");
-
-            }
-            outputData.setReturnStatus(globalStatus);
+            outputData.setReturnStatus(CommandHelper.buildStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
+                                                                 "Unable to get user credential!"));
+            printRequestOutcome(outputData.getReturnStatus(), inputData);
             outputData.setArrayOfFileStatuses(null);
             return outputData;
         }
@@ -183,32 +181,17 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
             } catch(IllegalArgumentException e)
             {
                 log.error(funcName + "Unexpected IllegalArgumentException: " + e.getMessage());
-                globalStatus = buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
+                globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
                 outputData.setReturnStatus(globalStatus);
                 outputData.setArrayOfFileStatuses(null);
-                ExtendFileLifeTimeCommand.log.error("srmExtendFileLifeTime: <> Request for [token:] [SURL:] failed with [status: "
-                                                    + globalStatus + "]");
+                printRequestOutcome(outputData.getReturnStatus(), inputData);
                 return outputData;
             }
         }
 
         outputData.setReturnStatus(globalStatus);
         outputData.setArrayOfFileStatuses(arrayOfFileStatus);
-
-        if (globalStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            log.info("srmExtendFileLifeTime: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] [SURL:" + inputData.getArrayOfSURLs()
-                    + "] successfully done with: [status:" + globalStatus.toString() + "]");
-        } else if (globalStatus.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-            log.info("srmExtendFileLifeTime: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] [SURL:" + inputData.getArrayOfSURLs()
-                    + "] partially done with: [status:" + globalStatus.toString() + "]");
-        } else {
-            log.error("srmExtendFileLifeTime: <" + user + "> Request for [token:"
-                    + inputData.getRequestToken() + "] [SURL:" + inputData.getArrayOfSURLs()
-                    + "] failed with: [status:" + globalStatus.toString() + "]");
-        }
-
+        printRequestOutcome(outputData.getReturnStatus(), inputData);
         log.debug(funcName + "Finished.");
 
         return outputData;
@@ -386,14 +369,14 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
             requestSURLsList = getListOfSURLsInTheRequest(requestToken);
         } catch(UnknownTokenException e4)
         {
-            return buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+            return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
         } catch(ExpiredTokenException e)
         {
-            return buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+            return CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
         }
         if (requestSURLsList.isEmpty())
         {
-            return buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+            return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
         }
         // Once we have the list of SURLs belonging to the request, we must check that the SURLs
         // given by the user are consistent, that the resulting lifetime could be lower than
@@ -634,24 +617,46 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
 
         return listOfSURLsInfo;
     }
-
-    private static TReturnStatus buildStatus(TStatusCode statusCode, String explaination) throws IllegalArgumentException, IllegalStateException
+    
+    private void printRequestOutcome(TReturnStatus status, ExtendFileLifeTimeInputData inputData)
     {
-        if(statusCode == null)
+        if (inputData != null)
         {
-            throw new IllegalArgumentException("Unable to build the status, null arguments: statusCode=" + statusCode);
+            if (inputData.getArrayOfSURLs() != null)
+            {
+                if (inputData.getRequestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+                                                      inputData.getRequestToken(),
+                                                      inputData.getArrayOfSURLs().asStringList());
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+                                                      inputData.getArrayOfSURLs().asStringList());
+                }
+
+            }
+            else
+            {
+                if (inputData.getRequestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+                                                      inputData.getRequestToken());
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+                }
+            }
+
         }
-        try
+        else
         {
-            return new TReturnStatus(statusCode, explaination);
-        } catch(InvalidTReturnStatusAttributeException e1)
-        {
-            // Never thrown
-            throw new IllegalStateException("Unexpected InvalidTReturnStatusAttributeException " +
-                    "in building TReturnStatus: " + e1.getMessage());
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
         }
     }
-    
+
     private class SURLData {
         public TSURL surl;
         public TStatusCode statusCode;

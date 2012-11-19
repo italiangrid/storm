@@ -352,26 +352,16 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
     }
     
     
-    private boolean isStoriOndisk(StoRI storiFile) throws FSException {
-        boolean result = true;
-       
-        //Check if Tape is Enabled
-        boolean isTapeEnabled = false;
-        try {
-            isTapeEnabled = storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
-        } catch (NamespaceException e) {
-            log.error("Cannot retrieve storage class type information", e);
-            result = true;
+    private boolean isStoriOndisk(StoRI storiFile) throws FSException
+    {
+        if (!storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
+        {
+            return true;
         }
-        
-        if (!(isTapeEnabled)) {
-            result = true;
-        } else {
-            LocalFile localFile = storiFile.getLocalFile();
-           result =  localFile.isOnDisk();  
+        else
+        {
+            return storiFile.getLocalFile().isOnDisk();
         }
-        
-        return result;
     }
     
     private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)

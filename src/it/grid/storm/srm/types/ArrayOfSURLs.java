@@ -126,4 +126,17 @@ public class ArrayOfSURLs implements Serializable {
         return buf.toString();
 
     }
+
+    public List<String> asStringList()
+    {
+        ArrayList<String> stringList = new ArrayList<String>(surlList.size());
+        if (surlList != null)
+        {
+            for (TSURL surl : surlList)
+            {
+                stringList.add(surl.toString());
+            }
+        }
+        return stringList;
+    }
 }

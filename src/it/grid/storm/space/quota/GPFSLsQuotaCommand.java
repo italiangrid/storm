@@ -20,7 +20,6 @@ package it.grid.storm.space.quota;
 
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
@@ -30,7 +29,6 @@ import it.grid.storm.space.ExitCode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,31 +119,34 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
     /**
      * Return a list of GPFSQuotaInfo including also failures
      */
-    public GPFSQuotaCommandResult executeGetQuotaInfo(boolean test) {
+    public GPFSQuotaCommandResult executeGetQuotaInfo(boolean test)
+    {
         GPFSQuotaCommandResult returnValue = new GPFSQuotaCommandResult();
         ArrayList<GPFSQuotaInfo> result = new ArrayList<GPFSQuotaInfo>();
         List<VirtualFSInterface> vfsS = SpaceInfoManager.getInstance().retrieveSAtoInitializeWithQuota();
-        for (VirtualFSInterface vfs : vfsS) {
-            try {
-                CapabilityInterface cap = vfs.getCapabilities();
-                if (cap!=null) {
-                    Quota quotaElement = cap.getQuota();
-                    GPFSQuotaCommandResult quotaResult;
-                    try {
-                        quotaResult = executeGetQuotaInfo(quotaElement, test);
-                    } catch (QuotaException qe) {
-                       log.warn("Something was wrong in mmlsquota execution: "+qe);
-                       quotaResult = new GPFSQuotaCommandResult();
-                       quotaResult.setCmdResult(ExitCode.UNDEFINED);
-                    }
-                    GPFSQuotaInfo qInfo = new GPFSQuotaInfo();
-                    qInfo = quotaResult.getQuotaResults().get(0); //Supposed to be unique result
-                    result.add(qInfo);
-                } else {
-                    log.warn("Capability of VFS: "+vfs.getAliasName()+" is null?!");
+        for (VirtualFSInterface vfs : vfsS)
+        {
+            CapabilityInterface cap = vfs.getCapabilities();
+            if (cap != null)
+            {
+                Quota quotaElement = cap.getQuota();
+                GPFSQuotaCommandResult quotaResult;
+                try
+                {
+                    quotaResult = executeGetQuotaInfo(quotaElement, test);
+                } catch(QuotaException qe)
+                {
+                    log.warn("Something was wrong in mmlsquota execution: " + qe);
+                    quotaResult = new GPFSQuotaCommandResult();
+                    quotaResult.setCmdResult(ExitCode.UNDEFINED);
                 }
-            } catch (NamespaceException e) {
-                log.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());    
+                GPFSQuotaInfo qInfo = new GPFSQuotaInfo();
+                qInfo = quotaResult.getQuotaResults().get(0); // Supposed to be unique result
+                result.add(qInfo);
+            }
+            else
+            {
+                log.warn("Capability of VFS: " + vfs.getAliasName() + " is null?!");
             }
         }
         

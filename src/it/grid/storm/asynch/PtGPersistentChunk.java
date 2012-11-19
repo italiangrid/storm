@@ -17,12 +17,15 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Arrays;
 import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.command.CommandHelper;
+import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import org.slf4j.Logger;
@@ -89,16 +92,17 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk{
      * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this chunk. If the supplied
      * attributes are null, an InvalidPtGChunkAttributesException is thrown.
      */
-    public PtGPersistentChunk(GridUserInterface gu, RequestSummaryData rsd, PtGPersistentChunkData chunkData,
+    public PtGPersistentChunk(RequestSummaryData summaryData, PtGPersistentChunkData chunkData,
             GlobalStatusManager gsm) throws InvalidRequestAttributesException, InvalidPersistentRequestAttributesException
     {
-        super(gu, chunkData);
+        super(chunkData);
         
-        if (rsd == null || gsm == null)
+        if (summaryData == null || gsm == null)
         {
-            throw new InvalidPersistentRequestAttributesException(gu, rsd, chunkData, gsm);
+            throw new IllegalArgumentException("Unable to instantiate the object, illegal arguments: summaryData="
+                                               + summaryData + " chunkData=" + chunkData);
         }
-        this.rsd = rsd;
+        this.rsd = summaryData;
         this.gsm = gsm;
     }
 
@@ -107,10 +111,10 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk{
      */
 	public void doIt() {
 
-		log.info("Handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
+		log.info("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
 			+ requestData.getSURL() + "; for requestToken: " + rsd.requestToken());
 		super.doIt();
-		log.info("Finished handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
+		log.info("Finished handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
 			+ requestData.getSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
 			+ requestData.getStatus());
 	}
@@ -189,6 +193,48 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk{
             {
                 gsm.successfulChunk((PtGPersistentChunkData)requestData);
             }
+        }
+    }
+    
+    @Override
+    protected void printRequestOutcome(PtGData inputData)
+    {
+        if(inputData != null)
+        {
+            if (inputData.getSURL() != null)
+            {
+                if (rsd.requestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      rsd.requestToken(),
+                                                      Arrays.asList(inputData.getSURL().toString()));
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      Arrays.asList(inputData.getSURL().toString()));
+                }
+
+            }
+            else
+            {
+                if (rsd.requestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      rsd.requestToken());
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData);
+                }
+            }
+
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+                                              CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                                        "No input available"));
         }
     }
 }

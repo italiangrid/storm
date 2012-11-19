@@ -16,6 +16,7 @@ package it.grid.storm.catalogs;
 
 import org.slf4j.Logger;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -39,7 +40,7 @@ import it.grid.storm.srm.types.TTURL;
  * @date June, 2005
  * @version 2.0
  */
-public class PtPPersistentChunkData extends PtPData implements PersistentChunkData
+public class PtPPersistentChunkData extends IdentityPtPData implements PersistentChunkData
 {
 
     /**
@@ -53,13 +54,13 @@ public class PtPPersistentChunkData extends PtPData implements PersistentChunkDa
      */
     private final TRequestToken requestToken; 
 
-    public PtPPersistentChunkData(TRequestToken requestToken, TSURL toSURL, TLifeTimeInSeconds pinLifetime,
+    public PtPPersistentChunkData(GridUserInterface auth, TRequestToken requestToken, TSURL toSURL, TLifeTimeInSeconds pinLifetime,
             TLifeTimeInSeconds fileLifetime, TFileStorageType fileStorageType, TSpaceToken spaceToken,
             TSizeInBytes expectedFileSize, TURLPrefix transferProtocols, TOverwriteMode overwriteOption,
             TReturnStatus status, TTURL transferURL) throws InvalidPtPPersistentChunkDataAttributesException,
         InvalidPtPDataAttributesException, InvalidFileTransferDataAttributesException, InvalidSurlRequestDataAttributesException
     {
-        super(toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken, expectedFileSize,
+        super(auth, toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken, expectedFileSize,
               transferProtocols, overwriteOption, status, transferURL);
         if (requestToken == null)
         {

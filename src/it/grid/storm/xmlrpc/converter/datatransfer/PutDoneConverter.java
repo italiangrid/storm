@@ -38,6 +38,7 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AnonymousPutDoneInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityPutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -81,10 +82,10 @@ public class PutDoneConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        InputData inputData;
+        PutDoneInputData inputData;
         if(guser != null)
         {
-            inputData = new PutDoneInputData(guser, requestToken, arrayOfSURLs);            
+            inputData = new IdentityPutDoneInputData(guser, requestToken, arrayOfSURLs);            
         }
         else
         {

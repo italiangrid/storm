@@ -3,7 +3,6 @@ package it.grid.storm.space.quota;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.SpaceInfoManager;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -103,16 +102,14 @@ public class QuotaManager {
     }
     
     
-    private VirtualFSInterface retrieveCorrespondingVFS(List<VirtualFSInterface> vfsQuotas, String dName) {
+    private VirtualFSInterface retrieveCorrespondingVFS(List<VirtualFSInterface> vfsQuotas, String dName)
+    {
         VirtualFSInterface result = null;
-        for (VirtualFSInterface vfsItem : vfsQuotas) {
-            try {
-                if (vfsItem.getCapabilities().getQuota().getQuotaElementName().equals(dName)) {
-                    result =  vfsItem;
-                }
-            }
-            catch (NamespaceException e) {
-                log.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+        for (VirtualFSInterface vfsItem : vfsQuotas)
+        {
+            if (vfsItem.getCapabilities().getQuota().getQuotaElementName().equals(dName))
+            {
+                result = vfsItem;
             }
         }
         return result;

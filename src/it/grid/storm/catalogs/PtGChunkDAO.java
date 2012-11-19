@@ -618,7 +618,7 @@ public class PtGChunkDAO {
 
             //TODO MICHELE USER_SURL get new fields
             //get chunks of the request
-            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, rg.sourceSURL, " +
+            str = "SELECT sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, rq.client_dn, rq.proxy, rg.sourceSURL, " +
             		"rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, d.isSourceADirectory, " +
             		"d.allLevelRecursive, d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
@@ -655,6 +655,20 @@ public class PtGChunkDAO {
 					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
 				}
 
+				chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
+
+                /**
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
+                 */
+                java.sql.Blob blob = rs.getBlob("rq.proxy");
+                if (!rs.wasNull() && blob != null)
+                {
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    chunkDataTO.setVomsAttributes(new String(bdata));
+                }
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
 				chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
@@ -1758,7 +1772,7 @@ public class PtGChunkDAO {
             //TODO MICHELE USER_SURL get new fields
             // get chunks of the request
             String str = "SELECT rq.ID, rq.r_token, sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, "
-                    + "rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, "
+                    + "rq.client_dn, rq.proxy, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, "
                     + "d.isSourceADirectory, d.allLevelRecursive,  d.numOfLevels "
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
@@ -1794,6 +1808,20 @@ public class PtGChunkDAO {
 
                 chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
                 chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
+                chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
+
+                /**
+                 * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+                 * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+                 * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+                 * string.
+                 */
+                java.sql.Blob blob = rs.getBlob("rq.proxy");
+                if (!rs.wasNull() && blob != null)
+                {
+                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                    chunkDataTO.setVomsAttributes(new String(bdata));
+                }
                 chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
                 chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
                 chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));

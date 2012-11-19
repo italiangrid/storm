@@ -38,8 +38,4 @@ public interface InputData {
 
 	public String display(Map<?,?> map);
 	
-	public Boolean hasPrincipal();
-	
-	public String getPrincipal();
-	
 }

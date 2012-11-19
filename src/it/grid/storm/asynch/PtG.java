@@ -13,6 +13,7 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.WrongFilesystemType;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -60,6 +60,9 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.command.CommandHelper;
+import it.grid.storm.synchcall.data.DataHelper;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
@@ -68,13 +71,10 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 public class PtG implements Delegable, Chooser, Request, Suspendedable
 {
 
+    protected static final String SRM_COMMAND = "srmPrepareToGet";
+
     private static Logger log = LoggerFactory.getLogger(PtG.class);
     
-    /**
-     * GridUser that made the request
-     */
-    protected final GridUserInterface gu;
-
     /**
      * PtGChunkData that holds the specific info for this chunk
      */
@@ -103,13 +103,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
      * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this chunk. If the supplied
      * attributes are null, an InvalidPtGChunkAttributesException is thrown.
      */
-    public PtG(GridUserInterface gu, PtGData requestData) throws InvalidRequestAttributesException
+    public PtG(PtGData requestData) throws IllegalArgumentException
     {
-        if (gu == null || requestData == null)
+        if (requestData == null)
         {
-            throw new InvalidRequestAttributesException(gu, requestData);
+            throw new IllegalArgumentException("Unable to build the object, invalid arguments: requestData=" + requestData);
         }
-        this.gu = gu;
         this.requestData = requestData;
         start = Calendar.getInstance();
     }
@@ -119,7 +118,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
      */
     public void doIt() {
 
-        log.info("Handling PtG chunk for user DN: " + gu.getDn() + "; for SURL: "
+        log.info("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
             + requestData.getSURL());
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
         {
@@ -127,7 +126,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             requestData.changeStatusSRM_FILE_BUSY("Requested file is"
                                                   + " busy (in an incompatible state with PTG)");
             log.info("Unable to perform the PTG request, surl busy");
-            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+//            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
+            printRequestOutcome(requestData);
             return;
         }
 //        if(PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
@@ -147,7 +147,17 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 StoRI fileStoRI = null;
                 try
                 {
-                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
+//                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
+                    if (requestData instanceof IdentityInputData)
+                    {
+                        fileStoRI = NamespaceDirector.getNamespace()
+                                                     .resolveStoRIbySURL(requestData.getSURL(),
+                                                                         ((IdentityInputData) requestData).getUser());
+                    }
+                    else
+                    {
+                        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+                    }
                 }
                 catch (IllegalArgumentException e)
                 {
@@ -157,7 +167,16 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 }
                 if (!failure)
                 {
-                    AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
+//                    AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
+                    AuthzDecision ptgAuthz;
+                    if (requestData instanceof IdentityInputData)
+                    {
+                        ptgAuthz = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG, fileStoRI);
+                    }
+                    else
+                    {
+                        ptgAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.PTG, fileStoRI.getStFN());
+                    }
                     if (ptgAuthz.equals(AuthzDecision.PERMIT))
                     {
                         manageIsPermit(fileStoRI);
@@ -196,7 +215,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                     + " request for a SURL whose root is not recognised by StoRI! " + e);
             }
         }
-        printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
+//        printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
+        printRequestOutcome(requestData);
     }
     
     
@@ -207,11 +227,11 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         return TStatusCode.SRM_FILE_PINNED.isCompatibleWith(statuses.values());
     }
     
-    private void printOutcome(String dn, TSURL surl, TReturnStatus status)
-    {
-        log.info("Finished handling PtG chunk for user DN: " + dn + "; for SURL: "
-                     + surl + "; result is: " + status);
-    }
+//    private void printOutcome(String dn, TSURL surl, TReturnStatus status)
+//    {
+//        log.info("Finished handling PtG chunk for user DN: " + dn + "; for SURL: "
+//                     + surl + "; result is: " + status);
+//    }
      /**
      * Manager of the IsPermit state: the user may indeed read the specified SURL
      * 
@@ -223,12 +243,22 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-        if(spaceAuth.authorize(gu, SRMSpaceRequest.PTG))
+        boolean isSpaceAuthorized;
+        if (requestData instanceof IdentityInputData)
+        {
+            isSpaceAuthorized = spaceAuth.authorize(((IdentityInputData) requestData).getUser(),
+                                                    SRMSpaceRequest.PTG);
+        }
+        else
+        {
+            isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.PTG);
+        }
+        if (isSpaceAuthorized)
+//        if(spaceAuth.authorize(gu, SRMSpaceRequest.PTG))
         {
             LocalFile localFile = fileStoRI.getLocalFile();
             try
             {
-                LocalUser localUser = gu.getLocalUser();
                 TTURL turl = fileStoRI.getTURL(requestData.getTransferProtocols());
                 if((!localFile.exists()) || (localFile.isDirectory()))
                 {
@@ -247,7 +277,27 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 {
                     /* File exists and it is not a directory */
                     /* Sets traverse permissions on file parent folders */
-                    boolean canTraverse = managePermitTraverseStep(fileStoRI, localUser);
+                    boolean canTraverse;
+                    try
+                    {
+                        canTraverse = managePermitTraverseStep(fileStoRI);
+                    } catch(CannotMapUserException e)
+                    {
+                        requestData.changeStatusSRM_FAILURE("Unable to find local user for " + DataHelper.getRequestor(requestData));
+                        failure = true;
+                        log.error("ERROR in PtGChunk! Unable to find LocalUser for " + DataHelper.getRequestor(requestData)
+                            + "! CannotMapUserException: " + e.getMessage());
+                        return;
+                    }
+//                    if (requestData instanceof IdentityInputData)
+//                    {
+//                        canTraverse = managePermitTraverseStep(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
+//                    }
+//                    else
+//                    {
+//                        canTraverse = true;
+//                    }
+//                    boolean canTraverse = managePermitTraverseStep(fileStoRI);
                     if(canTraverse)
                     {
                         if(fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
@@ -265,8 +315,28 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                             if(isStoriOndisk(fileStoRI))
                             {
                                 /* Set the read permission for the user on the localfile and any default ace specified in the story files*/
-                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile,
-                                                      localUser, turl);
+//                                boolean canRead = managePermitReadFileStep(fileStoRI, localFile,turl);
+                                boolean canRead;
+                                try
+                                {
+                                    canRead = managePermitReadFileStep(fileStoRI, turl);
+                                } catch(CannotMapUserException e)
+                                {
+                                    requestData.changeStatusSRM_FAILURE("Unable to find local user for " + DataHelper.getRequestor(requestData));
+                                    failure = true;
+                                    log.error("ERROR in PtGChunk! Unable to find LocalUser for " + DataHelper.getRequestor(requestData)
+                                        + "! CannotMapUserException: " + e.getMessage());
+                                    return;
+                                }
+//                                if (requestData instanceof IdentityInputData)
+//                                {
+//                                    canRead = managePermitReadFileStep(fileStoRI, localFile, ((IdentityInputData) requestData).getUser().getLocalUser(), turl);
+//                                }
+//                                else
+//                                {
+//                                    canRead = true;
+//                                    setDefaultAcl(fileStoRI, localFile);
+//                                }
                                 if(!canRead)
                                 {
                                     // FIXME roll back Read, and Traverse URGENT!
@@ -278,13 +348,16 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                                     + " file from tape");
                                 
                                 String voName = null;
-                                if(gu instanceof AbstractGridUser)
+                                if (requestData instanceof IdentityInputData)
                                 {
-                                    voName = ((AbstractGridUser) gu).getVO().getValue();
+                                    if (((IdentityInputData) requestData).getUser() instanceof AbstractGridUser)
+                                    {
+                                        voName = ((AbstractGridUser) ((IdentityInputData) requestData).getUser()).getVO()
+                                                                                                                 .getValue();
+                                    }
                                 }
 
                                 TapeRecallCatalog rtCat = null;
-
                                 try {
                                     rtCat = new TapeRecallCatalog();
                                 } catch (DataAccessException e) {
@@ -294,7 +367,15 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                                 rtCat.insertTask(this, voName, localFile.getAbsolutePath());
                                 
                                 /* Stores the parameters in this object */
-                                backupData(fileStoRI, localFile, localUser, turl);
+//                                backupData(fileStoRI, localFile, turl);
+                                if (requestData instanceof IdentityInputData)
+                                {
+                                    backupData(fileStoRI, localFile, ((IdentityInputData) requestData).getUser().getLocalUser(),turl);
+                                }
+                                else
+                                {
+                                    backupData(fileStoRI, localFile, null,turl);
+                                }
 
                                 /*
                                  * The request now ends by saving in the DB the
@@ -309,8 +390,18 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                         {
                             log.debug("File is on SA without Tape, so no EA will be setted on it.");
                             /* Set the read permission for the user on the localfile and any default ace specified in the story files*/
-                            boolean canRead = managePermitReadFileStep(fileStoRI, localFile,
-                                                  localUser, turl);
+//                            boolean canRead = managePermitReadFileStep(fileStoRI, localFile,
+//                                                  turl);
+                            boolean canRead;
+                            if (requestData instanceof IdentityInputData)
+                            {
+                                canRead = managePermitReadFileStep(fileStoRI, localFile, ((IdentityInputData) requestData).getUser().getLocalUser(), turl);
+                            }
+                            else
+                            {
+                                canRead = true;
+                                setDefaultAcl(fileStoRI, localFile);
+                            }
                             if(!canRead)
                             {
                                 // FIXME roll back Read, and Traverse URGENT!
@@ -343,9 +434,9 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                  * StoRM could not get LocalUser corresponding to GridUser! So
                  * ACL cannot be tracked!
                  */
-                requestData.changeStatusSRM_FAILURE("Unable to find local user for " + gu.getDn());
+                requestData.changeStatusSRM_FAILURE("Unable to find local user for " + DataHelper.getRequestor(requestData));
                 failure = true;
-                log.error("ERROR in PtGChunk! Unable to find LocalUser for " + gu.getDn()
+                log.error("ERROR in PtGChunk! Unable to find LocalUser for " + DataHelper.getRequestor(requestData)
                     + "! GridUser object returned: " + e);
             } catch(InvalidGetTURLNullPrefixAttributeException e)
             {
@@ -386,7 +477,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                  */
                 requestData.changeStatusSRM_FAILURE("Unable to map grid credentials to local user!");
                 failure = true;
-                log.error("ERROR in PtGChunk! There was a failure in mapping " + gu.getDn()
+                log.error("ERROR in PtGChunk! There was a failure in mapping " + DataHelper.getRequestor(requestData)
                     + " to a local user! Error returned: " + e);
             }
 
@@ -402,46 +493,59 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         }
     }
     
+    private boolean managePermitReadFileStep(StoRI fileStoRI, TTURL turl) throws CannotMapUserException
+    {
+        if (requestData instanceof IdentityInputData)
+        {
+            if (managePermitReadFileStep(fileStoRI, fileStoRI.getLocalFile(),
+                                         ((IdentityInputData) requestData).getUser().getLocalUser(), turl))
+            {
+                setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
+            return true;
+        }
+    }
+
     /**
      * Private method used to setup the right traverse permissions. Returns false if something goes wrong!
+     * @param fileStoRI 
      * 
      * @param fileStoRI
      * @param localUser
      * @return
+     * @throws CannotMapUserException 
      */
-    private boolean managePermitTraverseStep(StoRI fileStoRI, LocalUser localUser) {
-
-        /* Set Traverse ACL on parent directories */
-        /* ATTENTION!!! For AoT this turns out to be a PERMANENT ACL!!! */
-
-        /* StoRI representing a parent directory */
-        StoRI parentStoRI = null;
-        /* File representing a parent direCtory */
-        LocalFile parentFile = null;
-        /* boolean that is true if parentFile exists */
-        boolean exists = false;
-        /* boolean true if parentFile is a directory */
-        boolean dir = false;
-        /*
-         * boolean _true_ if the parent just treated, exists and is not a
-         * directory
-         */
-        List<StoRI> parentList = fileStoRI.getParents();
-        Iterator<StoRI> i = parentList.iterator();
-        boolean anomaly = false;
-        while((!anomaly) && i.hasNext())
+    
+    private boolean managePermitTraverseStep(StoRI fileStoRI) throws CannotMapUserException {
+        if (requestData instanceof IdentityInputData)
         {
-            parentStoRI = i.next();
-            parentFile = parentStoRI.getLocalFile();
-            exists = parentFile.exists();
-            dir = parentFile.isDirectory();
-            anomaly = ((!exists) || (!dir));
-            if(anomaly)
+            return verifyPath(fileStoRI) && setAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
+        }
+        else
+        {
+            return verifyPath(fileStoRI);
+        }
+        
+    }
+    
+    private boolean verifyPath(StoRI fileStoRI) {
+
+        boolean exists, isDir;
+        for(StoRI parentStoRI : fileStoRI.getParents())
+        {
+            exists = parentStoRI.getLocalFile().exists();
+            isDir = parentStoRI.getLocalFile().isDirectory();
+            if(!exists || !isDir)
             {
-                /*
-                 * error situation! The parent directory either does not exist
-                 * or is not a directory! The request should fail!
-                 */
                 String errorString = "The requested SURL is: " + fileStoRI.getSURL().toString()
                                        + ", but its parent " + parentStoRI.getSURL().toString();
                 if(!exists)
@@ -456,159 +560,120 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 failure = true;
                 log.error(errorString + " Parent points to " + parentStoRI.getLocalFile().toString()
                     + ".");
-                /* anomaly is already true: no need to restate it. */
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private boolean setAcl(StoRI fileStoRI, LocalUser localUser) {
+
+        /* Set Traverse ACL on parent directories */
+        /* ATTENTION!!! For AoT this turns out to be a PERMANENT ACL!!! */
+
+        StoRI parentStoRI = null;
+        LocalFile parentFile = null;
+        List<StoRI> parentList = fileStoRI.getParents();
+        Iterator<StoRI> i = parentList.iterator();
+        boolean anomaly = false;
+        while((!anomaly) && i.hasNext())
+        {
+            parentStoRI = i.next();
+            parentFile = parentStoRI.getLocalFile();
+            FilesystemPermission fp = null;
+            boolean allowsTraverse = false;
+            if(fileStoRI.hasJustInTimeACLs())
+            {
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                try
+                {
+                    manager.grantUserPermission(parentFile,localUser, FilesystemPermission.Traverse);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+                }
+//              parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+                fp = parentFile.getEffectiveUserPermission(localUser);
+                if(fp != null)
+                {
+                    allowsTraverse = fp.allows(FilesystemPermission.Traverse);
+                    if(allowsTraverse)
+                    {
+                        VolatileAndJiTCatalog.getInstance().trackJiT(parentStoRI.getPFN(),
+                            localUser, FilesystemPermission.Traverse, start,
+                            requestData.getPinLifeTime());
+                    }
+                    else
+                    {
+                        log.error("ATTENTION in PtGChunk! The local filesystem has"
+                            + " a mask that does not allow Traverse User-ACL to "
+                            + "be set up on" + parentFile.toString() + "!");
+                    }
+                }
+                else
+                {
+                    log.error("ERROR in PTGChunk! A Traverse User-ACL was set on "
+                        + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
+                        + " but when subsequently verifying its effectivity,"
+                        + " a null ACE was found!");
+                }
             }
             else
             {
-                /* true if parent exists and is not a directory! */
-                /* process existing parent directory */
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
                 try
                 {
-                    FilesystemPermission fp = null;
-                    boolean allowsTraverse = false;
-                    if(fileStoRI.hasJustInTimeACLs())
-                    {
-                        // JiT
-                        AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                        //TODO ACL manager
-                        try
-                        {
-                            manager.grantUserPermission(parentFile,localUser, FilesystemPermission.Traverse);
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
-                        }
-//                      parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
-                        fp = parentFile.getEffectiveUserPermission(localUser);
-                        if(fp != null)
-                        {
-                            allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                            if(allowsTraverse)
-                            {
-                                VolatileAndJiTCatalog.getInstance().trackJiT(parentStoRI.getPFN(),
-                                    localUser, FilesystemPermission.Traverse, start,
-                                    requestData.getPinLifeTime());
-                            }
-                            else
-                            {
-                                log.error("ATTENTION in PtGChunk! The local filesystem has"
-                                    + " a mask that does not allow Traverse User-ACL to "
-                                    + "be set up on" + parentFile.toString() + "!");
-                            }
-                        }
-                        else
-                        {
-                            log.error("ERROR in PTGChunk! A Traverse User-ACL was set on "
-                                + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-                                + " but when subsequently verifying its effectivity,"
-                                + " a null ACE was found!");
-                        }
-                    }
-                    else
-                    {
-                        // AoT
-                        AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                        //TODO ACL manager
-                        try
-                        {
-                            manager.grantGroupPermission(parentFile,localUser, FilesystemPermission.Traverse);
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
-                        }
-//                      parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
-                        fp = parentFile.getEffectiveGroupPermission(localUser);
-                        if(fp != null)
-                        {
-                            allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                            if(!allowsTraverse)
-                            {
-                                log.error("ATTENTION in PtGChunk! The local filesystem has a mask"
-                                    + " that does not allow Traverse Group-ACL to be set up on"
-                                    + parentFile.toString() + "!");
-                            }
-                        }
-                        else
-                        {
-                            log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
-                                + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-                                + " but when subsequently verifying its effectivity, "
-                                + "a null ACE was found!");
-                        }
-                    }
-                    if(fp == null)
-                    {
-                        /*
-                         * Problems when manipulating ACEs! Added a traverse
-                         * permission but no corresponding ACE was found!
-                         * Request fails!
-                         */
-                        requestData.changeStatusSRM_FAILURE("Local filesystem has"
-                            + " problems manipulating ACE!");
-                        failure = true;
-                        anomaly = true;
-                    }
-                    else
-                    {
-                        if(!allowsTraverse)
-                        {
-                            /*
-                             * mask preset in file system does not allow the
-                             * setting up of the required permissions! Request
-                             * fails!
-                             */
-                            requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
-                                + "not allow setting up correct ACLs for PtG!");
-                            failure = true;
-                            anomaly = true;
-                        }
-                        else
-                        {
-                            /* Permissions set correctly */
-                            /* anomaly is already false: no need to restate it! */
-                        }
-                    }
-                } catch(WrongFilesystemType e)
+                    manager.grantGroupPermission(parentFile,localUser, FilesystemPermission.Traverse);
+                }
+                catch (IllegalArgumentException e)
                 {
-                    /* StoRM configured with wrong Filesystem type! */
-                    requestData.changeStatusSRM_FAILURE("StoRM configured for wrong filesystem!");
-                    failure = true;
-                    log.error("ERROR in PtGChunk! StoRM is not configured"
-                        + " for underlying fileystem! " + e);
-                    anomaly = true;
-                } catch(InvalidPermissionOnFileException e)
+                    log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+                }
+//              parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+                fp = parentFile.getEffectiveGroupPermission(localUser);
+                if(fp != null)
+                {
+                    allowsTraverse = fp.allows(FilesystemPermission.Traverse);
+                    if(!allowsTraverse)
+                    {
+                        log.error("ATTENTION in PtGChunk! The local filesystem has a mask"
+                            + " that does not allow Traverse Group-ACL to be set up on"
+                            + parentFile.toString() + "!");
+                    }
+                }
+                else
+                {
+                    log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
+                        + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
+                        + " but when subsequently verifying its effectivity, "
+                        + "a null ACE was found!");
+                }
+            }
+            if(fp == null)
+            {
+                /*
+                 * Problems when manipulating ACEs! Added a traverse
+                 * permission but no corresponding ACE was found!
+                 * Request fails!
+                 */
+                requestData.changeStatusSRM_FAILURE("Local filesystem has"
+                    + " problems manipulating ACE!");
+                failure = true;
+                anomaly = true;
+            }
+            else
+            {
+                if(!allowsTraverse)
                 {
                     /*
-                     * StoRM cannot carry out file manipulation because it lacks
-                     * enough privileges!
+                     * mask preset in file system does not allow the
+                     * setting up of the required permissions! Request
+                     * fails!
                      */
-                    requestData.changeStatusSRM_FAILURE("StoRM cannot manipulate directory!");
+                    requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
+                        + "not allow setting up correct ACLs for PtG!");
                     failure = true;
-                    log.error("ERROR in PtGChunk! StoRM process has"
-                        + " not got enough privileges to work on: " + parentFile.toString()
-                        + "; exception: " + e);
-                    anomaly = true;
-                } catch(InvalidPathException e)
-                {
-                    /* Could not set ACL because file does not exist! */
-                    requestData.changeStatusSRM_FAILURE("Unable to setup ACL!");
-                    failure = true;
-                    log.error("ERROR in PtGChunk! The directory on which to "
-                        + "set up the Trasverse ACL does not exist!");
-                    log.error("ERROR in PtGChunk! This should not have happenned "
-                        + "because previous existence tests were successful!");
-                    anomaly = true;
-                } catch(Exception e)
-                {
-                    /*
-                     * Catch any other Runtime exception: Filesystem component
-                     * may throw other Runtime Exceptions!
-                     */
-                    requestData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
-                    failure = true;
-                    log.error("ERROR in PtGChunk! StoRM process got an unexpected error! " + e);
                     anomaly = true;
                 }
             }
@@ -705,45 +770,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                         + "a null ACE was found!");
                 }
             }
-
-            /* Manage DefaultACL */
-            VirtualFSInterface vfs = fileStoRI.getVirtualFileSystem();
-            DefaultACL acl = vfs.getCapabilities().getDefaultACL();
-            if((acl != null) && (!acl.isEmpty()))
-            {
-                /* There are ACLs to set n file */
-                List<ACLEntry> aclList = acl.getACL();
-                for(ACLEntry ace : aclList)
-                {
-                    /* Re-Check if the ACE is yet valid */
-                    if(ace.isValid())
-                    {
-                        log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
-                            + " with permission: " + ace.getFilePermissionString());
-                        LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                         AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                        //TODO ACL manager
-                        if(ace.getFilesystemPermission() == null)
-                        {
-                            log.warn("Unable to setting up the ACL. ACl entry permission is null!");
-                        }
-                        else
-                        {
-                            try
-                            {
-                                manager.grantGroupPermission(localFile,u, ace.getFilesystemPermission());
-                                
-                            }
-                            catch (IllegalArgumentException e)
-                            {
-                                log.error("Unable to grant group permissions on the file. IllegalArgumentException: " + e.getMessage());
-                            }
-                        }
-//                      localFile.grantGroupPermission(u, ace.getFilesystemPermission());
-                    }
-                }
-            }
-
             if(fp == null)
             {
                 /*
@@ -768,6 +794,9 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 failure = true;
                 return false;
             }
+            
+            setDefaultAcl(fileStoRI, localFile);
+            
             /* ACL was correctly set up! */
             log.debug("PTG CHUNK DAO. Addition of Read ACL on file successfully completed.");
             
@@ -832,6 +861,48 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         }
     }
     
+    private void setDefaultAcl(StoRI fileStoRI, LocalFile localFile)
+    {
+        /* Manage DefaultACL */
+        VirtualFSInterface vfs = fileStoRI.getVirtualFileSystem();
+        DefaultACL acl = vfs.getCapabilities().getDefaultACL();
+        if((acl != null) && (!acl.isEmpty()))
+        {
+            /* There are ACLs to set n file */
+            List<ACLEntry> aclList = acl.getACL();
+            for(ACLEntry ace : aclList)
+            {
+                /* Re-Check if the ACE is yet valid */
+                if(ace.isValid())
+                {
+                    log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
+                        + " with permission: " + ace.getFilePermissionString());
+                    LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                     AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                    //TODO ACL manager
+                    if(ace.getFilesystemPermission() == null)
+                    {
+                        log.warn("Unable to setting up the ACL. ACl entry permission is null!");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            manager.grantGroupPermission(localFile,u, ace.getFilesystemPermission());
+                            
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            log.error("Unable to grant group permissions on the file. IllegalArgumentException: " + e.getMessage());
+                        }
+                    }
+//                  localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                }
+            }
+        }
+
+    }
+
     /**
      * @param fileStoRI
      * @param localFile
@@ -852,29 +923,14 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
      */
     private boolean isStoriOndisk(StoRI storiFile) throws FSException {
 
-        boolean result = true;
-        /* Check if Tape is Enabled */
-        boolean isTapeEnabled = false;
-        try
+        if(!storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
         {
-            isTapeEnabled = storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
-        } catch(NamespaceException e)
-        {
-            log.error("Cannot retrieve storage class type information", e);
-            result = true;
-        }
-
-        if(!(isTapeEnabled))
-        {
-            result = true;
+            return true;
         }
         else
         {
-            LocalFile localFile = storiFile.getLocalFile();
-            result = localFile.isOnDisk();
+            return storiFile.getLocalFile().isOnDisk();
         }
-
-        return result;
     }
     
     /**
@@ -904,6 +960,15 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 if (bupLocalFile.isOnDisk())
                 {
                     success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+                    if (bupLocalUser != null)
+                    {
+                        success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
+                    }
+                    else
+                    {
+                        success = true;
+                        setDefaultAcl(bupFileStori, bupLocalFile);
+                    }
                 }
                 else
                 {
@@ -947,7 +1012,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     }
 
     public String getUserDN() {
-        return gu.getDn();
+        return DataHelper.getRequestor(requestData);
     }
 
     /**
@@ -1003,6 +1068,46 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         log.warn("Received state: " + ad);
         log.warn("Requested SURL: " + requestData.getSURL());
     }
+    
+    protected void printRequestOutcome(PtGData inputData)
+    {
+        if(inputData != null)
+        {
+            if (inputData.getSURL() != null)
+            {
+                if (inputData.getGeneratedRequestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      inputData.getGeneratedRequestToken(),
+                                                      Arrays.asList(inputData.getSURL().toString()));
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      Arrays.asList(inputData.getSURL().toString()));
+                }
 
+            }
+            else
+            {
+                if (inputData.getGeneratedRequestToken() != null)
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+                                                      inputData.getGeneratedRequestToken());
+                }
+                else
+                {
+                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData);
+                }
+            }
+
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+                                              CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                                        "No input available"));
+        }
+    }
 
 }

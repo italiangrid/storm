@@ -53,7 +53,7 @@ public interface VirtualFSInterface {
 
     public String getSpaceTokenDescription() throws NamespaceException;
 
-    public StorageClassType getStorageClassType() throws NamespaceException;
+    public StorageClassType getStorageClassType();
 
     public String getRootPath() throws NamespaceException;
 
@@ -77,9 +77,9 @@ public interface VirtualFSInterface {
 
     public DefaultValuesInterface getDefaultValues();
 
-    public CapabilityInterface getCapabilities() throws NamespaceException;
+    public CapabilityInterface getCapabilities();
 
-    public PropertyInterface getProperties() throws NamespaceException;
+    public PropertyInterface getProperties();
 
     public List<MappingRule> getMappingRules() throws NamespaceException;
     

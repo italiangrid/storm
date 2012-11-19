@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @date Aug 2009
  */
-public class BoLData extends FileTransferData {
+public class BoLData extends AnonymousFileTransferData {
     private static final Logger log = LoggerFactory.getLogger(BoLData.class);
 
     /**

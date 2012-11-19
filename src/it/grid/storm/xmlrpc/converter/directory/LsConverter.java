@@ -20,18 +20,17 @@ package it.grid.storm.xmlrpc.converter.directory;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
 import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.directory.AnonymousLSInputData;
+import it.grid.storm.synchcall.data.directory.IdentityLSInputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidLSInputDataAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
@@ -79,8 +78,6 @@ public class LsConverter implements Converter
         log.debug("SrmLs: LSConverter :Call received :Creation of SpaceResData = " + inputParam.size());
         log.debug("SrmLs: LSConverter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
 
-        /* Creation of LSInputData*/
-        LSInputData inputData = null;
 
         // Member name definition for inputParam struct , from SRM V2.2
         String member_fullDL = new String("fullDetailedList");
@@ -90,9 +87,7 @@ public class LsConverter implements Converter
         String member_count = new String("count");
 
         /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) anyURI[] arrayOfSURLs */
         ArrayOfSURLs surlArray = null;
@@ -126,13 +121,15 @@ public class LsConverter implements Converter
         Integer count = (Integer) inputParam.get(member_count);
         log.debug("count: " + count);
 
-        // Creation of input structure used for Directory Manager invokation
-        try {
-            inputData = new LSInputData(guser, surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);
-        } catch (InvalidLSInputDataAttributeException e) {
-            log.debug("SrmLs: Error Creating LSInputData! " + e);
+        LSInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityLSInputData(guser, surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);            
         }
-
+        else
+        {
+            inputData = new AnonymousLSInputData(surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);
+        }
         return inputData;
     }
 

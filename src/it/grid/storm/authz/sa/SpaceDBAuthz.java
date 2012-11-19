@@ -92,6 +92,13 @@ public class SpaceDBAuthz extends SpaceAuthz {
         // Return the result
         return false;
     }
+    
+    @Override
+    public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp)
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
     /**********************************************************************
      * AUTHZ Algorithm

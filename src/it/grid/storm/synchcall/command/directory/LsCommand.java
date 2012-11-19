@@ -64,7 +64,10 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TUserID;
 import it.grid.storm.srm.types.TUserPermission;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DirectoryCommand;
+import it.grid.storm.synchcall.data.DataHelper;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
@@ -91,6 +94,8 @@ import it.grid.storm.checksum.ChecksumAlgorithm;
  */
 
 public class LsCommand extends DirectoryCommand implements Command {
+    private static final String SRM_COMMAND = "srmLs";
+
     private final NamespaceInterface namespace;
 
     /** In case of ls on more than one file only one checksum computation is admitted */
@@ -124,36 +129,13 @@ public class LsCommand extends DirectoryCommand implements Command {
          */
         if (inputData == null || inputData.getSurlArray() == null || inputData.getSurlArray().size() == 0) {
             log.debug("srmLs: Input parameters for srmLs request NOT found!");
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
-                log.info("srmLs: <guser:NULL> Request for [SURL:NULL] failed with: [status:" + globalStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                // Nothing to do, it will never be thrown.
-                log.error("srmLs: <guser=NULL> Request for [SURL:NULL] failed. Error creating returnStatus " + ex1);
-            }
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
+            printRequestOutcome(globalStatus, inputData);
             outputData.setStatus(globalStatus);
             return outputData;
         }
 
         ArrayOfSURLs surlArray = inputData.getSurlArray();
-
-        // Check if GridUser in LSInputData is not null
-        GridUserInterface guser = inputData.getUser();
-        if (guser == null) {
-            log.debug("srmLs: Unable to get user credential. ");
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.info("srmLs: <guser=NULL> Request for [SURL:] failed with: [status" + globalStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                // Nothing to do, it will never be thrown.
-                log.error("srmLs: <guser=NULL> Request for [SURL:] failed. Error creating returnStatus " + ex1);
-            }
-            outputData.setStatus(globalStatus);
-            outputData.setRequestToken(null);
-            outputData.setDetails(null);
-
-            return outputData;
-        }
 
         /***************** Check for DEFAULT parameters not specified in input Data **************/
 
@@ -162,16 +144,8 @@ public class LsCommand extends DirectoryCommand implements Command {
          * specified return SRM_NOT_SUPPORTED
          */
         if (inputData.getStorageTypeSpecified()) {
-            log.info("srmLs: <" + guser
-                    + "> Request for [SURL:] failed since not supported filtering by FileStorageType");
-            try {
-                globalStatus = new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED, "Filtering result by fileStorageType not supported.");
-                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                        + "] failed with [status" + globalStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                        + "] failed. Error creating returnStatus " + ex1);
-            }
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED, "Filtering result by fileStorageType not supported.");
+            printRequestOutcome(globalStatus, inputData);
             outputData.setStatus(globalStatus);
             outputData.setRequestToken(null);
             outputData.setDetails(null);
@@ -200,18 +174,9 @@ public class LsCommand extends DirectoryCommand implements Command {
         } else {
             numOfLevels = inputData.getNumOfLevels().intValue();
             if (numOfLevels < 0) {
-                try {
-                    globalStatus =
-                            new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'numOfLevels' is negative");
-                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed with [status" + globalStatus.toString() + "]");
-                } catch (InvalidTReturnStatusAttributeException ex1) {
-                    // Nothing to do, it will never be thrown.
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed. Error creating returnStatus " + ex1);
-                }
+                globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'numOfLevels' is negative");
+                printRequestOutcome(globalStatus, inputData);
                 outputData.setStatus(globalStatus);
-
                 return outputData;
             }
         }
@@ -224,14 +189,8 @@ public class LsCommand extends DirectoryCommand implements Command {
         } else {
             count = inputData.getCount().intValue();
             if (count < 0) {
-                try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'count' is less or equal zero");
-                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed with [status" + globalStatus.toString() + "]");
-                } catch (InvalidTReturnStatusAttributeException e) {
-                    // Nothing to do, it will never be thrown.
-                    log.error("Programming BUG", e);
-                }
+                globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'count' is less or equal zero");
+                printRequestOutcome(globalStatus, inputData);
                 outputData.setStatus(globalStatus);
                 return outputData;
             }
@@ -248,15 +207,8 @@ public class LsCommand extends DirectoryCommand implements Command {
         } else {
             offset = inputData.getOffset().intValue();
             if (offset < 0) {
-                try {
-                    globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'offset' is negative");
-                    log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed with [status" + globalStatus.toString() + "]");
-                } catch (InvalidTReturnStatusAttributeException ex1) {
-                    // Nothing to do, it will never be thrown.
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                            + "] failed. Error creating returnStatus " + ex1);
-                }
+                globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Parameter 'offset' is negative");
+                printRequestOutcome(globalStatus, inputData);
                 outputData.setStatus(globalStatus);
                 return outputData;
             }
@@ -292,30 +244,34 @@ public class LsCommand extends DirectoryCommand implements Command {
             TSURL surl = surlArray.getTSURL(j);
             if (!surl.isEmpty()) {
                 try {
-                    stori = namespace.resolveStoRIbySURL(surl, guser);
+                    if (inputData instanceof IdentityInputData)
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData)inputData).getUser());
+                    }
+                    else
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl);
+                    }
                 } catch(IllegalArgumentException e)
                 {
                     log.error("srmLs: Unable to build StoRI by SURL: " + e);
                     failure = true;
                     fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     fileLevelExplanation = "Unable to build StoRI, Illegal Argument Exception";
-                    log.error("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
-                            + "] failed with [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + " ]");
+                    printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
                 } catch (NamespaceException ex) {
                     log.debug("srmLs: Unable to build StoRI by SURL: " + ex);
                     failure = true;
                     fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
                     fileLevelExplanation = "Invalid path";
-                    log.info("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
-                            + "] failed with [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + " ]");
+                    printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
                 }
             } else {
                 log.debug("srmLs: SURL not specified as input parameter!");
                 failure = true;
                 fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
                 fileLevelExplanation = "Invalid path";
-                log.info("srmLs: <" + guser + "> Listing on SURL [SURL:] failed with [status:" + fileLevelStatusCode
-                        + " : " + fileLevelExplanation + " ]");
+                printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
             }
 
             // Check for authorization and execute Ls.
@@ -325,14 +281,21 @@ public class LsCommand extends DirectoryCommand implements Command {
                 /**
                  * 1.5.0 Path Authorization
                  */
-                AuthzDecision lsAuthz = AuthzDirector.getPathAuthz().authorize(guser, SRMFileRequest.LS, stori);
-
+                AuthzDecision lsAuthz;
+                if (inputData instanceof IdentityInputData)
+                {
+                    lsAuthz = AuthzDirector.getPathAuthz().authorize(((IdentityInputData)inputData).getUser(), SRMFileRequest.LS, stori);
+                }
+                else
+                {
+                    lsAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.LS, stori.getStFN());
+                }
                 if (lsAuthz.equals(AuthzDecision.PERMIT)) {
-                    log.debug("srmLs: Ls authorized for user [" + guser + "] and PFN = [" + stori.getPFN() + "]");
+                    log.debug("srmLs: Ls authorized for user [" + DataHelper.getRequestor(inputData) + "] and PFN = [" + stori.getPFN() + "]");
 
                     // At this point starts the recursive call
                     errorCount +=
-                            manageAuthorizedLS(guser,
+                            manageAuthorizedLS(inputData,
                                                stori,
                                                details,
                                                allLevelRecursive,
@@ -348,22 +311,14 @@ public class LsCommand extends DirectoryCommand implements Command {
                 } else {
                     fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
                     fileLevelExplanation = "User does not have valid permissions";
-                    log.info("srmLs: <" + guser + "> Listing on SURL [SURL:" + surl.toString()
-                            + "] failed with: [status:" + fileLevelStatusCode + " : " + fileLevelExplanation + "]");
+                    printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
                     failure = true;
                 }
             }
             if (failure) {
                 errorCount++;
-                TReturnStatus status = null;
-                try {
-                    status = new TReturnStatus(fileLevelStatusCode, fileLevelExplanation);
-                    log.info("srmLs: <" + guser + "> Request for [SURL:" + surl.toString() + "] failed with [status"
-                            + status.toString() + "]");
-                } catch (InvalidTReturnStatusAttributeException ex1) {
-                    log.error("srmLs: <" + guser + "> Request for [SURL:" + surl.toString()
-                            + "] failed. Error creating returnStatus " + ex1);
-                }
+                TReturnStatus status = CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation);
+                printRequestOutcome(status, inputData);
                 TMetaDataPathDetail elementDetail = new TMetaDataPathDetail();
                 elementDetail.setStatus(status);
                 elementDetail.setSurl(surl);
@@ -376,35 +331,23 @@ public class LsCommand extends DirectoryCommand implements Command {
                 details.addTMetaDataPathDetail(elementDetail);
             }
 
-        } // for
+        }
 
         if (details.size() == 0) {
-            try {
-                globalStatus =
-                        new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                          "The offset is grater than the number of results");
-            } catch (InvalidTReturnStatusAttributeException e) {
-                log.error("Strange. Never Thrown."+e);
-            }
-
-            log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
-                    + globalStatus.toString());
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
+                                                     "The offset is grater than the number of results");
+            printRequestOutcome(globalStatus, inputData);
             outputData.setStatus(globalStatus);
             return outputData;
         }
 
         if (numberOfReturnedEntries.intValue() >= maxEntries) {
-            if (maxEntries < count) {
-                try {
-                    globalStatus =
-                            new TReturnStatus(TStatusCode.SRM_TOO_MANY_RESULTS, "Max returned entries is: "
-                                    + DirectoryCommand.config.getLSMaxNumberOfEntry());
-                } catch (InvalidTReturnStatusAttributeException e) {
-                    log.error("Strange. Never Thrown"+e);
-                }
-
-                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray() + "] status:"
-                        + globalStatus.toString());
+            if (maxEntries < count)
+            {
+                globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
+                                                         "Max returned entries is: "
+                                                                 + DirectoryCommand.config.getLSMaxNumberOfEntry());
+                printRequestOutcome(globalStatus, inputData);
                 outputData.setStatus(globalStatus);
                 return outputData;
             }
@@ -414,46 +357,51 @@ public class LsCommand extends DirectoryCommand implements Command {
         log.debug("srmLs: Creation of srmLs outputdata");
 
         // Set the Global return status.
-        try {
-            String warningMessage = "";
+        String warningMessage = "";
 
-            if ((numOfLevels > 0) && atLeastOneInputSURLIsDir && coutOrOffsetAreSpecified) {
-                warningMessage =
-                        "WARNING: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
-                                + "may result in inconsistent results among different srmLs requests. ";
-            }
+        if ((numOfLevels > 0) && atLeastOneInputSURLIsDir && coutOrOffsetAreSpecified) {
+            warningMessage =
+                    "WARNING: specifying \"offset\" and/or \"count\" with \"numOfLevels\" greater than zero "
+                            + "may result in inconsistent results among different srmLs requests. ";
+        }
 
-            if (errorCount == 0) {
+        if (errorCount == 0) {
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, warningMessage
+                                                     + "All requests successfully completed");
+            printRequestOutcome(globalStatus, inputData);
 
-                globalStatus =
-                        new TReturnStatus(TStatusCode.SRM_SUCCESS, warningMessage
-                                + "All requests successfully completed");
-                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                        + "] successfully done with [status:" + globalStatus.toString() + "]");
+        } else if (errorCount < surlArray.size()) {
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage
+                                                     + "Check file statuses for details");
+            printRequestOutcome(globalStatus, inputData);
 
-            } else if (errorCount < surlArray.size()) {
-
-                globalStatus =
-                        new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage
-                                + "Check file statuses for details");
-                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                        + "] partially done with [status:" + globalStatus.toString() + "]");
-
-            } else {
-
-                globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "All requests failed");
-                log.info("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                        + "] failed with [status:" + globalStatus.toString() + "]");
-            }
-
-        } catch (InvalidTReturnStatusAttributeException e) {
-            // Nothing to do, it will never be thrown.
-            log.error("srmLs: <" + guser + "> Request for [SURL:" + inputData.getSurlArray()
-                    + "] failed.Error creating returnStatus " + e);
+        } else {
+            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "All requests failed");
+            printRequestOutcome(globalStatus, inputData);
         }
         outputData.setStatus(globalStatus);
         outputData.setDetails(details);
         return outputData;
+    }
+
+    private void printRequestOutcome(TReturnStatus status, LSInputData inputData)
+    {
+        if(inputData != null)
+        {
+            if(inputData.getSurlArray() != null)
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData, inputData.getSurlArray().asStringList());    
+            }
+            else
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+            }
+                
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+        }
     }
 
     /**
@@ -476,7 +424,7 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @return number of errors
      */
 
-    private int manageAuthorizedLS(GridUserInterface guser, StoRI stori, ArrayOfTMetaDataPathDetail rootArray,
+    private int manageAuthorizedLS(LSInputData inputData, StoRI stori, ArrayOfTMetaDataPathDetail rootArray,
              boolean allLevelRecursive, int numOfLevels, boolean fullDetailedList,
             int errorCount, int count_maxEntries, int offset, MutableInt numberOfResults, int currentLevel,
             MutableInt numberOfIterations) {
@@ -518,7 +466,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     {
                         try
                         {
-                            fullDetail(stori, guser, currentElementDetail);
+                            fullDetail(inputData, stori, currentElementDetail);
                         }
                         catch (FSException e)
                         {
@@ -565,7 +513,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                             break;
                         }
 
-                        manageAuthorizedLS(guser,
+                        manageAuthorizedLS(inputData,
                                            item,
                                            currentMetaDataArray,
                                            allLevelRecursive,
@@ -589,7 +537,7 @@ public class LsCommand extends DirectoryCommand implements Command {
                     {
                         try
                         {
-                            fullDetail(stori, guser, currentElementDetail);
+                            fullDetail(inputData, stori, currentElementDetail);
                         }
                         catch (FSException e)
                         {
@@ -748,7 +696,87 @@ public class LsCommand extends DirectoryCommand implements Command {
             return false;
         }
 	}
+    
+    private void fullDetail(LSInputData inputData, StoRI stori, TMetaDataPathDetail currentElementDetail) throws FSException
+    {
+        if (inputData instanceof IdentityInputData)
+        {
+            fullDetail(stori, ((IdentityInputData)inputData).getUser(),currentElementDetail);
+        }
+        else
+        {
+            fullDetail(stori, currentElementDetail);
+        }
+    }
 
+
+    private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail)
+            throws FSException
+    {
+        fullDetail(element, elementDetail);
+
+        //enrich TMetaDataPathDetail with permissions
+        TUserPermission userPermission = null;
+        TGroupPermission groupPermission = null;
+        TPermissionMode otherPermission = null;
+
+        try
+        {
+            FilesystemPermission permission = null;
+            if (element.hasJustInTimeACLs())
+            {
+                permission = element.getLocalFile().getUserPermission(guser.getLocalUser());
+            }
+            else
+            {
+                permission = element.getLocalFile().getGroupPermission(guser.getLocalUser());
+            }
+            if (permission != null)
+            {
+                userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()),
+                                                     TPermissionMode.getTPermissionMode(permission));
+                groupPermission = new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()),
+                                                       TPermissionMode.getTPermissionMode(permission));
+                otherPermission = TPermissionMode.getTPermissionMode(permission);
+            }
+        } catch(CannotMapUserException e)
+        {
+            log.error("Cannot map user. CannotMapUserException: " + e.getMessage());
+            return;
+        } catch(InvalidTUserIDAttributeException e)
+        {
+            log.error("Error creating TUserID. InvalidTUserIDAttributeException: " + e.getMessage());
+            return;
+        }
+        if (element.getLocalFile().isDirectory())
+        {
+            elementDetail.setOwnerPermission(userPermission);
+            elementDetail.setGroupPermission(groupPermission);
+            elementDetail.setOtherPermission(otherPermission);
+
+        }
+        else
+        {
+            if (userPermission == null)
+            {
+                userPermission = TUserPermission.makeFileDefault();
+            }
+            elementDetail.setOwnerPermission(userPermission);
+
+            if (groupPermission == null)
+            {
+                groupPermission = TGroupPermission.makeFileDefault();
+            }
+            elementDetail.setGroupPermission(groupPermission);
+
+            if (otherPermission == null)
+            {
+                otherPermission = TPermissionMode.NONE;
+            }
+            elementDetail.setOtherPermission(otherPermission);
+        }
+    }
+    
 	/**
      * Set full details into "elementDetail". Information details set by the function populateDetailFromFS() are not
      * considered.
@@ -758,157 +786,92 @@ public class LsCommand extends DirectoryCommand implements Command {
      * @param guser GridUserInterface
      * @param elementDetail TMetaDataPathDetail
      */
-    private void fullDetail(StoRI element, GridUserInterface guser, TMetaDataPathDetail elementDetail) throws FSException {
+    private void fullDetail(StoRI element, TMetaDataPathDetail elementDetail) throws FSException {
         LocalFile localElement = element.getLocalFile();
         
-        /** Retrieve permissions information (used in both file or directory cases) */
-        TUserPermission userPermission = null;
-        TGroupPermission groupPermission = null;
-        TPermissionMode otherPermission = null;
 
-        try {
-            FilesystemPermission permission = null;
-            if (element.hasJustInTimeACLs()) {
-                permission = localElement.getUserPermission(guser.getLocalUser());
-            } else {
-                permission = localElement.getGroupPermission(guser.getLocalUser());
-            }
-            if (permission != null) {
-                userPermission =
-                        new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()),
-                                            TPermissionMode.getTPermissionMode(permission));
-                groupPermission =
-                        new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()),
-                                             TPermissionMode.getTPermissionMode(permission));
-                otherPermission = TPermissionMode.getTPermissionMode(permission);
-            }
-        } catch (CannotMapUserException e1) {
-            log.error("Cannot map user.");
-        } catch (InvalidTUserIDAttributeException e) {
-            log.error("InvalidTUserIDAttributeException...");
-        }
-
-        // Set lastModificationAtTime
-
-        Date lastModificationTime = new Date(localElement.getLastModifiedTime());
-        elementDetail.setModificationTime(lastModificationTime);
+        elementDetail.setModificationTime(new Date(localElement.getLastModifiedTime()));
 
         /** Set specific information of files and directories */
-        if (localElement.isDirectory()) {
-            // Set fileType
+        if (localElement.isDirectory())
+        {
             elementDetail.setFileType(TFileType.getTFileType("Directory"));
-
-            /**
-             * DEFAULT PERMISSION VALUES FOR DIRECTORY
-             */
-
+        }
+        else
+        { 
             /** Set common information (for files and directories) */
-            // Set UserPermission
-            elementDetail.setOwnerPermission(userPermission);
-
-            // Set GroupPermission
-            elementDetail.setGroupPermission(groupPermission);
-
-            // Set otherPermission
-            elementDetail.setOtherPermission(otherPermission);
-
-        } else { // localElement is a file
-
-            /**
-             * DEFAULT PERMISSION VALUES FOR DIRECTORY
-             */
-
-            /** Set common information (for files and directories) */
-            // Set UserPermission
-            if (userPermission == null) {
-                userPermission = TUserPermission.makeFileDefault();
-            }
-            elementDetail.setOwnerPermission(userPermission);
-
-            // Set GroupPermission
-            if (groupPermission == null) {
-                groupPermission = TGroupPermission.makeFileDefault();
-            }
-            elementDetail.setGroupPermission(groupPermission);
-
-            // Set otherPermission
-
-            if (otherPermission == null) {
-                otherPermission = TPermissionMode.NONE;
-            }
-
-            elementDetail.setOtherPermission(otherPermission);
-
-            // fileType
             elementDetail.setFileType(TFileType.getTFileType("File"));
 
-            // retentionPolicyInfo
             TRetentionPolicyInfo retentionPolicyInfo;
-
-            boolean isTapeEnabled = false;
-
-            try {
-                isTapeEnabled = element.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
-            } catch (NamespaceException e) {
-                log.error("Cannot retrieve storage class type information", e);
-            }
-
-            if (isTapeEnabled) {
+            boolean isTapeEnabled = element.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
+            if (isTapeEnabled)
+            {
                 retentionPolicyInfo = TRetentionPolicyInfo.TAPE1_DISK1_RETENTION_POLICY;
-            } else {
+            }
+            else
+            {
                 retentionPolicyInfo = TRetentionPolicyInfo.TAPE0_DISK1_RETENTION_POLICY;
             }
             elementDetail.setTRetentionPolicyInfo(retentionPolicyInfo);
 
-            //declare here to use again for checksumHasToBeRetrieved
             boolean isFileOnDisk = false;
-            if (isTapeEnabled) {
-                // fileLocality
+            if (isTapeEnabled)
+            {
                 isFileOnDisk = localElement.isOnDisk();
-                boolean isFileOnTape = localElement.isOnTape();
-
-                if (isFileOnTape && isFileOnDisk) {
+                if (isFileOnDisk && localElement.isOnTape())
+                {
                     elementDetail.setTFileLocality(TFileLocality.ONLINE_AND_NEARLINE);
-                } else if (isFileOnDisk) {
-                    elementDetail.setTFileLocality(TFileLocality.ONLINE);
-                } else {
-                    elementDetail.setTFileLocality(TFileLocality.NEARLINE);
                 }
-            } else {
+                else
+                {
+                    if (isFileOnDisk)
+                    {
+                        elementDetail.setTFileLocality(TFileLocality.ONLINE);
+                    }
+                    else
+                    {
+                        elementDetail.setTFileLocality(TFileLocality.NEARLINE);
+                    }
+                }
+            }
+            else
+            {
                 elementDetail.setTFileLocality(TFileLocality.ONLINE);
             }
 
-            // lifetimeAssigned
-            TLifeTimeInSeconds lifetimeAssigned = element.getFileLifeTime();
-            elementDetail.setLifeTimeAssigned(lifetimeAssigned);
+            elementDetail.setLifeTimeAssigned(element.getFileLifeTime());
 
-            // lifetimeLeft
-            Date startTime = element.getFileStartTime();
-            if (startTime != null) {
-                elementDetail.setLifetimeLeft(lifetimeAssigned.timeLeft(startTime));
-            } else {
+            if (element.getFileStartTime() != null)
+            {
+                elementDetail.setLifetimeLeft(element.getFileLifeTime().timeLeft(element.getFileStartTime()));
+            }
+            else
+            {
                 elementDetail.setLifetimeLeft(TLifeTimeInSeconds.makeInfinite());
             }
 
             // checksum
             Map<String, String> checksums = retrieveChecksum(localElement, isTapeEnabled, isFileOnDisk);
-            if (!(checksums.isEmpty())) {
+            if (!(checksums.isEmpty()))
+            {
                 String cksmAlg = checksums.keySet().iterator().next();
                 String cksmValue = checksums.get(cksmAlg);
                 TCheckSumValue checkSumValue = new TCheckSumValue(cksmValue);
-                try {
+                try
+                {
                     ChecksumAlgorithm chkType = ChecksumAlgorithm.getChecksumAlgorithm(cksmAlg);
                     TCheckSumType checkSumType = new TCheckSumType(chkType.toString());
-                    elementDetail.setCheckSumType(checkSumType); 
+                    elementDetail.setCheckSumType(checkSumType);
                     elementDetail.setCheckSumValue(checkSumValue);
-                    
-                } catch (IllegalArgumentException iae) {
-                    log.error("Checksum algorithm '"+cksmAlg+"' is unknown!");
-                } catch (NullPointerException npe) {
+
+                } catch(IllegalArgumentException iae)
+                {
+                    log.error("Checksum algorithm '" + cksmAlg + "' is unknown!");
+                } catch(NullPointerException npe)
+                {
                     log.error("Checksum algorithm is empty or null!");
-                }                
+                }
             }
-            
             // Retrieve information on directory from PERSISTENCE
             populateFileDetailsFromPersistence(element, elementDetail);
         }

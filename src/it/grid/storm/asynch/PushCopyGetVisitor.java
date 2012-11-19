@@ -47,7 +47,7 @@ public class PushCopyGetVisitor implements CopyVisitor
                                                                copy.getLocalrt(), copy.getGu());
             TURLPrefix turlPrefix = new TURLPrefix();
             turlPrefix.addProtocol(Protocol.FILE);
-            PtGPersistentChunkData ptgChunkData = new PtGPersistentChunkData(
+            PtGPersistentChunkData ptgChunkData = new PtGPersistentChunkData(copy.getGu(),
                                                                              copy.getLocalrt(),
                                                                              copy.getRequestData().getSURL(),
                                                                              copy.getRequestData()
@@ -68,7 +68,7 @@ public class PushCopyGetVisitor implements CopyVisitor
             GlobalStatusManager gsm = new GlobalStatusManager(copy.getLocalrt());
             gsm.addChunk(ptgChunkData);
             gsm.finishedAdding();
-            PtGPersistentChunk ptgChunk = new PtGPersistentChunk(copy.getGu(), ptgrsd, ptgChunkData, gsm);
+            PtGPersistentChunk ptgChunk = new PtGPersistentChunk(ptgrsd, ptgChunkData, gsm);
             copy.getLog().debug("executeGetOperation: starting ptgChunk.doIt()!");
             ptgChunk.doIt();
             copy.getLog().debug("executeGetOperation: finished ptgChunk.doIt()!");

@@ -40,7 +40,8 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidAbortFilesInputDataAttributeException;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousAbortFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityAbortFilesInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
 import java.util.HashMap;
@@ -63,14 +64,8 @@ public class AbortFilesConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        AbortFilesInputData inputData = null;
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        // Creation of VomsGridUser
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        // (2) TRequestToken requestToken
         TRequestToken requestToken;
         try {
             requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
@@ -80,7 +75,6 @@ public class AbortFilesConverter implements Converter
             log.debug("requestToken=NULL");
         }
 
-        // (3) anyURI[] arrayOfSURLs
         ArrayOfSURLs arrayOfSURLs;
         try {
             arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
@@ -89,14 +83,15 @@ public class AbortFilesConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        try {
-            inputData = new AbortFilesInputData(guser, requestToken, arrayOfSURLs);
-        } catch (InvalidAbortFilesInputDataAttributeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        AbortFilesInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityAbortFilesInputData(guser, requestToken, arrayOfSURLs);
         }
-        log.debug("AbortFilesInputData Created!");
-
+        else
+        {
+            inputData = new AnonymousAbortFilesInputData(requestToken, arrayOfSURLs);
+        }
         return inputData;
     }
 

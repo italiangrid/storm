@@ -27,9 +27,10 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidReleaseFilesInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 
 import java.util.Hashtable;
@@ -50,17 +51,8 @@ public class ReleaseFilesConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        ReleaseFilesInputData inputData = null;
-        String memberName;
 
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        /* (1) authorizationID (never used) */
-        memberName = new String("authorizationID");
-        String authID = (String) inputParam.get(memberName);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) TRequestToken requestToken */
         TRequestToken requestToken;
@@ -81,14 +73,15 @@ public class ReleaseFilesConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        try {
-            inputData = new ReleaseFilesInputData(guser, requestToken, arrayOfSURLs/*, doRemove*/);
-        } catch (InvalidReleaseFilesInputAttributeException e) {
-            log.debug("Invalid ReleaseFilesInputData Creation!" + e);
+        ReleaseFilesInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityReleaseFilesInputData(guser, requestToken, arrayOfSURLs);
         }
-
-        log.debug("ReleaseFilesInputData Created!");
-
+        else
+        {
+            inputData = new AnonymousReleaseFilesInputData(requestToken, arrayOfSURLs);
+        }
         return inputData;
     }
 

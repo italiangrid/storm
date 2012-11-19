@@ -29,7 +29,7 @@ import it.grid.storm.synchcall.command.DiscoveryCommand;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.discovery.AnonymousPingInputData;
+import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
@@ -63,7 +63,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
     public OutputData execute(InputData data) {
         PingOutputData outputData = new PingOutputData();
-        AnonymousPingInputData inputData = (AnonymousPingInputData) data;
+        PingInputData inputData = (PingInputData) data;
 
         outputData.setVersionInfo("StoRM - SRM Version 2.2");
 

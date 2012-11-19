@@ -17,6 +17,7 @@
 
 package it.grid.storm.catalogs;
 
+import java.util.Map;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -200,6 +201,13 @@ public abstract class SurlRequestData implements RequestData
         setStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,explanation);
     }
 
+    @Override
+    public String display(Map<?, ?> map)
+    {
+        // nonsense method
+        return "";
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

@@ -176,11 +176,11 @@ public final class PtPFeeder implements Delegable {
 			
 			/* hand it to scheduler! */
 			SchedulerFacade.getInstance().chunkScheduler().schedule(
-				new PtPPersistentChunk(gu, rsd, auxChunkData, gsm));
+				new PtPPersistentChunk(rsd, auxChunkData, gsm));
 			log.debug("PtPFeeder - chunk scheduled.");
-		} catch(InvalidPersistentRequestAttributesException e)
+		} catch(IllegalArgumentException e)
 		{
-			log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n" + e);
+			log.error("Unable to schedule the chunk. IllegalArgumentException: " + e);
 			
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
 				+ " does not allow this chunk to be processed!");

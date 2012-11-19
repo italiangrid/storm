@@ -33,6 +33,7 @@ import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.AnonymousPingInputData;
+import it.grid.storm.synchcall.data.discovery.IdentityPingInputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -57,10 +58,10 @@ public class PingConverter implements Converter
 
         String authorizationID = (String) inputParam.get("authorizationID");
 
-        InputData inputData;
+        PingInputData inputData;
         if(requestor != null)
         {
-            inputData = new PingInputData(requestor, authorizationID);            
+            inputData = new IdentityPingInputData(requestor, authorizationID);            
         }
         else
         {

@@ -115,14 +115,10 @@ implements StoRI {
 
 
     public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule, String relativeStFN, StoRIType type) {
-        if (vfs != null) {
+        if (vfs != null)
+        {
             this.vfs = vfs;
-            try {
-                this.capability = (Capability) vfs.getCapabilities();
-            }
-            catch (NamespaceException ex) {
-                log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
-            }
+            this.capability = (Capability) vfs.getCapabilities();
         }
         else {
             log.error("!!! StoRI built without VFS!!?!");
@@ -188,12 +184,7 @@ implements StoRI {
 
     public StoRIImpl(VirtualFSInterface vfs, String stfnStr, TLifeTimeInSeconds lifetime, StoRIType type) {
         this.vfs = vfs;
-        try {
-            this.capability = (Capability) vfs.getCapabilities();
-        }
-        catch (NamespaceException ex) {
-            log.error("Unable to retrieve Capability element of VFS :" + getVFSName() + " EXCEP:" + ex);
-        }
+        this.capability = (Capability) vfs.getCapabilities();
         //Relative path has to be a path in a relative form! (without "/" at begins)
         if (relativePath != null) {
             if (relativePath.startsWith(NamingConst.SEPARATOR)) {
@@ -676,13 +667,9 @@ implements StoRI {
     public boolean hasJustInTimeACLs() {
         boolean result = true;
 
-        if (aclMode.equals(Capability.ACLMode.UNDEF)) {
-            try {
-                this.aclMode = vfs.getCapabilities().getACLMode();
-            }
-            catch (NamespaceException ex) {
-                log.error("Error while retrieving ACL Mode for SURL : '" + getSURL() + "'", ex);
-            }
+        if (aclMode.equals(Capability.ACLMode.UNDEF))
+        {
+            this.aclMode = vfs.getCapabilities().getACLMode();
         }
         if (aclMode.equals(Capability.ACLMode.JUST_IN_TIME)) {
             result = true;

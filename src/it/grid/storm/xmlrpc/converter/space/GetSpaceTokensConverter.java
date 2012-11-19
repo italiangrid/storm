@@ -34,7 +34,9 @@ import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.space.AnonymousGetSpaceTokensInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceTokensInputData;
+import it.grid.storm.synchcall.data.space.IdentityGetSpaceTokensInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
@@ -57,21 +59,25 @@ public class GetSpaceTokensConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        GetSpaceTokensInputData inputData = null;
 
         String memberName = new String("authorizationID");
 
-        /* Creation of VomsGridUser */
         GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (1) authorizationID (never used) */
         String authID = (String) inputParam.get(memberName);
 
-        /* (2) userSpaceTokenDescription */
         memberName = new String("userSpaceTokenDescription");
         String userSpaceTokenDescription = (String) inputParam.get(memberName);
-        inputData = new GetSpaceTokensInputData(guser, userSpaceTokenDescription);
-
+        GetSpaceTokensInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityGetSpaceTokensInputData(guser, userSpaceTokenDescription);         
+        }
+        else
+        {
+            inputData = new AnonymousGetSpaceTokensInputData(userSpaceTokenDescription);
+        }
         return inputData;
     }
 

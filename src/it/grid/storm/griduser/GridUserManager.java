@@ -135,12 +135,33 @@ public class GridUserManager {
      * @return
      * @throws IllegalArgumentException
      */
+    public static GridUserInterface makeVOMSGridUser(String dn, String[] fqansString) throws IllegalArgumentException
+    {
+        if(fqansString == null || fqansString.length == 0)
+        {
+            log.error("Unable to make VomsGridUser. Invalid fqansString argument: " + fqansString);
+            throw new IllegalArgumentException("Unable to make VomsGridUser. Invalid fqansString argument: " + fqansString);
+        }
+        FQAN[] fqans = new FQAN[fqansString.length]; 
+        for(int i = 0 ; i < fqansString.length ; i++)
+        {
+            fqans[i] = new FQAN(fqansString[i]);
+        }
+        return userFactory.createGridUser(dn, fqans);
+    }
+    
+    /**
+     * @param dn
+     * @param fqans
+     * @return
+     * @throws IllegalArgumentException
+     */
     public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans) throws IllegalArgumentException
     {
         if(fqans == null || fqans.length == 0)
         {
-            log.error("Unable to make VomsGridUser. Inavlid fqans argument: " + fqans);
-            throw new IllegalArgumentException("Unable to make VomsGridUser. Inavlid fqans argument: " + fqans);
+            log.error("Unable to make VomsGridUser. Invalid fqans argument: " + fqans);
+            throw new IllegalArgumentException("Unable to make VomsGridUser. Invalid fqans argument: " + fqans);
         }
         return userFactory.createGridUser(dn, fqans);
     }

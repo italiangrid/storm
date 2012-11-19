@@ -19,16 +19,15 @@ package it.grid.storm.xmlrpc.converter.directory;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.directory.AnonymousMkdirInputData;
+import it.grid.storm.synchcall.data.directory.IdentityMkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidMkdirInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
@@ -70,11 +69,7 @@ public class MkdirConverter implements Converter
         log.debug("SrmMkdir: Converter :Call received :Creation of MkdirInputData = " + inputParam.size());
         log.debug("SrmMkdir: Converter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
 
-        MkdirInputData inputData = null;
-
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) directoryPath */
         TSURL surl = null;
@@ -84,12 +79,15 @@ public class MkdirConverter implements Converter
             log.debug("SrmMkdir: ErrorCreating surl: " + e1.toString());
         }
 
-        try {
-            inputData = new MkdirInputData(guser, surl);
-        } catch (InvalidMkdirInputAttributeException e) {
-            log.debug("SrmMkdir: Invalid Mkdir data creation!" + e);
+        MkdirInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityMkdirInputData(guser, surl);            
         }
-
+        else
+        {
+            inputData = new AnonymousMkdirInputData(surl);
+        }
         return inputData;
     }
 

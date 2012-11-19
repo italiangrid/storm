@@ -251,12 +251,15 @@ public class SpaceHelper {
      */
     public void increaseFreeSpaceForSA(Logger log,
             String funcName,GridUserInterface user, TSURL surl, long fileSize) {
-
         updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.ADD, fileSize);
-
     }
 
-
+    public void increaseFreeSpaceForSA(Logger log,
+            String funcName, TSURL surl, long fileSize) {
+        updateSpaceUsageForSA(log, funcName, null, surl, SpaceHelper.ADD, fileSize);
+    }
+    
+    
     public boolean isSAFull(Logger log, StoRI stori) {
 
         log.debug("Checking if the Storage Area is full");

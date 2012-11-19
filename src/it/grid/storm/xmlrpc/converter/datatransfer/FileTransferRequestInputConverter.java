@@ -32,8 +32,11 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousFileTransferInputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityFileTransferInputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferOutputData;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -46,11 +49,9 @@ public abstract class FileTransferRequestInputConverter implements Converter
 {
     static final Logger log = LoggerFactory.getLogger(FileTransferRequestInputConverter.class);
     
-    private static final String USER_DN_PARAMETER_NAME = "userDN";
-
 
     @Override
-    public FileTransferInputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
+    public InputData convertToInputData(Map<String,Object> inputParam) throws IllegalArgumentException, StoRMXmlRpcException
     {
         TSURL surl = decodeSURL(inputParam);
         if (surl == null)
@@ -60,13 +61,6 @@ public abstract class FileTransferRequestInputConverter implements Converter
             throw new IllegalArgumentException("Missing mandatory parameter \'" + TSURL.PNAME_SURL + "\'");
         }
         GridUserInterface user = decodeUser(inputParam);
-        if (user == null)
-        {
-            log.error("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
-                    + "\' Unable to build FileTransferInputData");
-            throw new IllegalArgumentException("Missing mandatory parameter \'" + USER_DN_PARAMETER_NAME
-                    + "\'");
-        }
         TURLPrefix transferProtocols = decodeTransferProtocols(inputParam);
         if (transferProtocols == null)
         {
@@ -75,14 +69,22 @@ public abstract class FileTransferRequestInputConverter implements Converter
             throw new IllegalArgumentException("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
                     + "\'");
         }
+        
         FileTransferInputData inputData;
         try
         {
-            inputData = new FileTransferInputData(user, surl, transferProtocols);
+            if(user != null)
+            {
+                inputData = new IdentityFileTransferInputData(user, surl, transferProtocols);
+            }
+            else
+            {
+                inputData = new AnonymousFileTransferInputData(surl, transferProtocols);
+            }
         } catch(IllegalArgumentException e)
         {
-            log.error("Unable to build PrepareToPutInputData. IllegalArgumentException: " + e.getMessage());
-            throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
+            log.error("Unable to build FileTransferInputData. IllegalArgumentException: " + e.getMessage());
+            throw new StoRMXmlRpcException("Unable to build FileTransferInputData");
         }
         TLifeTimeInSeconds desiredPinLifetime = decodeDesiredPinLifetime(inputParam);
         if (desiredPinLifetime != null)
@@ -94,7 +96,6 @@ public abstract class FileTransferRequestInputConverter implements Converter
         {
             inputData.setTargetSpaceToken(targetSpaceToken);                
         }
-        log.debug("FileTransferInputData Created!");
         return inputData;
     }
     

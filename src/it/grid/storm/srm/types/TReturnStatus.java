@@ -194,6 +194,11 @@ public class TReturnStatus implements Serializable
 			return false;
 	}
 
+    public void extendExplaination(String string)
+    {
+        this.explanation += " [ " + string + " ]";
+    }
+
     //WARNING!!!
     //No equals(Object) and hashCode(): this may be dangerous
     //if these Objects get used in containers!

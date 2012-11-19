@@ -19,6 +19,7 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.synchcall.data.InputData;
 
 /**
  * Class that represents a generic chunk. It provides only one method which is the
@@ -28,7 +29,7 @@ import it.grid.storm.srm.types.TSURL;
  * @version 1.0
  * @date    September, 2006
  */
-public interface RequestData {
+public interface RequestData extends InputData{
 
     public abstract TReturnStatus getStatus();
 

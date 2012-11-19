@@ -40,7 +40,6 @@ import it.grid.storm.srm.types.TTURL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -195,8 +194,7 @@ public class Namespace implements NamespaceInterface {
      * @throws NamespaceException
      */
     public StoRI resolveStoRIbySURL(TSURL surl) throws NamespaceException {
-        StFN stfn = surl.sfn().stfn();
-        String stfnStr = stfn.toString();
+        String stfnStr = surl.sfn().stfn().toString();
         String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
         MappingRule winnerRule = getWinnerRuleWithoutApproachableRule(stfnPath);
         if (winnerRule == null) { //No winner rule found.
@@ -628,7 +626,8 @@ public class Namespace implements NamespaceInterface {
      * @param gUser GridUserInterface
      * @return Set
      */
-    public List<VirtualFSInterface> getListOfVFS(GridUserInterface gUser) {
+    public List<VirtualFSInterface> getListOfVFS(GridUserInterface gUser)
+    {
         Hashtable apprules = new Hashtable(parser.getApproachableRules());
         LinkedList<VirtualFSInterface> approachVFS = new LinkedList<VirtualFSInterface>();
         for (Object appRule : apprules.values())
@@ -676,6 +675,49 @@ public class Namespace implements NamespaceInterface {
         for (Map.Entry<String, MappingRule> rule : rules.entrySet()) {
             VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
             if (listVFS.contains(mappedFS)) { // retrieve stfnRoot
+                stfnRoot = rule.getValue().getStFNRoot();
+                stfnRoots.add(stfnRoot);
+            }
+        }
+        log.debug("FITTING: List of StFNRoots approachables = " + stfnRoots);
+
+        //Build SURL and retrieve the StFN part.
+        String stfn = SURL.makeSURLfromString(surlString).getStFN();
+
+        // Path elements of stfn
+        ArrayList<String> stfnArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfn);
+
+        for (Object element : stfnRoots) {
+            stfnRoot = (String) element;
+            log.debug("FITTING: considering StFNRoot = " + stfnRoot + " against StFN = " + stfn);
+            ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfnRoot);
+            stfnRootArray.retainAll(stfnArray);
+            if (!(stfnRootArray.isEmpty())) {
+                result = true;
+                log.debug("FIT!");
+                break;
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public boolean isStfnFittingSomewhere(String surlString) throws NamespaceException
+    {
+        boolean result = false;
+
+        // Array of all stfnRoots
+        ArrayList<String> stfnRoots = new ArrayList<String>();
+        // List of Mapping Rule
+        Hashtable<String, MappingRule> rules = new Hashtable<String, MappingRule>(parser.getMappingRules());
+
+        // Retrieve the list of stfnRoot approachable
+        String stfnRoot;
+        for (Map.Entry<String, MappingRule> rule : rules.entrySet())
+        {
+            VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
+            if (mappedFS.isApproachableByAnonymous())
+            { 
                 stfnRoot = rule.getValue().getStFNRoot();
                 stfnRoots.add(stfnRoot);
             }

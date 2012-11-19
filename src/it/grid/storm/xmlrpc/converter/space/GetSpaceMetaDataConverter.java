@@ -25,8 +25,9 @@ import it.grid.storm.srm.types.InvalidArrayOfTSpaceTokenAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataInputAttributeException;
+import it.grid.storm.synchcall.data.space.AnonymousGetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataInputData;
+import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
@@ -68,20 +69,15 @@ public class GetSpaceMetaDataConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        GetSpaceMetaDataInputData inputData = null;
 
         String memberName = null;
 
         /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (1) authorizationID (never used) */
-        memberName = new String("authorizationID");
-        String authID = (String) inputParam.get(memberName);
+        String authID = (String) inputParam.get("authorizationID");
 
-        /* (2) arrayOfSpaceTokens */
         ArrayOfTSpaceToken arrayOfSpaceTokens;
         try {
             arrayOfSpaceTokens = ArrayOfTSpaceToken.decode(inputParam,
@@ -90,13 +86,15 @@ public class GetSpaceMetaDataConverter implements Converter
             arrayOfSpaceTokens = null;
         }
 
-        try {
-            inputData = new GetSpaceMetaDataInputData(guser, arrayOfSpaceTokens);
-        } catch (InvalidGetSpaceMetaDataInputAttributeException e) {
-            log.error("Error Creating inputData for GetSpaceMetaDataManager" + e);
+        GetSpaceMetaDataInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityGetSpaceMetaDataInputData(guser, arrayOfSpaceTokens);            
         }
-
-        // Return GetSpaceMetaDataInputData Created
+        else
+        {
+            inputData = new AnonymousGetSpaceMetaDataInputData(arrayOfSpaceTokens);
+        }
         return inputData;
     }
 

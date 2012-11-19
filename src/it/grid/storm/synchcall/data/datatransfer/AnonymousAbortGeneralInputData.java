@@ -25,25 +25,17 @@
 
 package it.grid.storm.synchcall.data.datatransfer;
 
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
-import it.grid.storm.synchcall.data.exception.InvalidAbortGeneralInputDataAttributeException;
-import it.grid.storm.synchcall.data.exception.InvalidAbortRequestInputDataAttributeException;
 
-public class AbortGeneralInputData extends AbstractInputData
+public abstract class AnonymousAbortGeneralInputData extends AbstractInputData implements AbortInputData
 {
-    private final GridUserInterface auth;
 
     private final AbortType type;
 
     private final TRequestToken reqToken;
 
-    public static enum AbortType{
-        ABORT_REQUEST, ABORT_FILES;
-    }
-    
-    protected AbortGeneralInputData(GridUserInterface auth, TRequestToken reqToken, AbortType type)
+    protected AnonymousAbortGeneralInputData(TRequestToken reqToken, AbortType type)
         throws IllegalArgumentException
     {
         if (reqToken == null || type == null)
@@ -52,35 +44,24 @@ public class AbortGeneralInputData extends AbstractInputData
                     + reqToken + " type=" + type);
         }
         this.reqToken = reqToken;
-        this.auth = auth;
         this.type = type;
     }
-
-
-    public GridUserInterface getUser()
-    {
-        return this.auth;
-    }
     
+    /* (non-Javadoc)
+     * @see it.grid.storm.synchcall.data.datatransfer.AbortInputData#getRequestToken()
+     */
+    @Override
     public TRequestToken getRequestToken()
     {
         return reqToken;
     }
 
+    /* (non-Javadoc)
+     * @see it.grid.storm.synchcall.data.datatransfer.AbortInputData#getType()
+     */
+    @Override
     public AbortType getType() {
         return type;
-    }
-
-    @Override
-    public Boolean hasPrincipal()
-    {
-        return this.auth != null;
-    }
-
-    @Override
-    public String getPrincipal()
-    {
-        return this.auth.getDn();
     }
 
 }

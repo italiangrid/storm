@@ -69,15 +69,7 @@ public class XMLRPCExecutor {
         
         log.debug("Converting input data with Converter " + converter.getClass().getName());
         InputData inputData = converter.convertToInputData(inputParam);
-        String dn;
-        if(inputData.hasPrincipal())
-        {
-            dn = inputData.getPrincipal();
-        }
-        else
-        {
-            dn = DataHelper.ANONYMOUS_REQUESTOR;
-        }
+        
         log.debug("Dispatching request using SynchcallDispatcher " + dispatcher.getClass().getName());
         OutputData outputData;
         try
@@ -95,7 +87,7 @@ public class XMLRPCExecutor {
         Map outputParam = converter.convertFromOutputData(outputData);
         duration = System.nanoTime() - duration;
 
-        logExecution(convertOperationType(type), dn, startTime, duration, outputData.isSuccess());
+        logExecution(convertOperationType(type), DataHelper.getRequestor(inputData), startTime, duration, outputData.isSuccess());
       //TODO rewrite the display method
 //        log.debug("Output Map: " + ParameterDisplayHelper.display(outputParam));
         return outputParam;

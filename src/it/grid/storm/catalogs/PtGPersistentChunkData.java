@@ -18,6 +18,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @date    March 21st, 2005
  * @version 3.0
  */
-public class PtGPersistentChunkData extends PtGData implements PersistentChunkData {
+public class PtGPersistentChunkData extends IdentityPtGData implements PersistentChunkData {
     private static final Logger log = LoggerFactory.getLogger(PtGPersistentChunkData.class);
 
     /**
@@ -67,13 +68,13 @@ public class PtGPersistentChunkData extends PtGData implements PersistentChunkDa
 	 * @param transferURL
 	 * @throws InvalidPtGDataAttributesException
 	 */
-    public PtGPersistentChunkData(TRequestToken requestToken, TSURL fromSURL, TLifeTimeInSeconds lifeTime,
+    public PtGPersistentChunkData(GridUserInterface auth, TRequestToken requestToken, TSURL fromSURL, TLifeTimeInSeconds lifeTime,
             TDirOption dirOption, TURLPrefix desiredProtocols, TSizeInBytes fileSize, TReturnStatus status,
             TTURL transferURL) throws InvalidPtGDataAttributesException,
         InvalidPtGDataAttributesException, InvalidFileTransferDataAttributesException, InvalidSurlRequestDataAttributesException
     {
 
-        super(fromSURL, lifeTime, dirOption, desiredProtocols, fileSize, status, transferURL);
+        super(auth, fromSURL, lifeTime, dirOption, desiredProtocols, fileSize, status, transferURL);
         if (requestToken == null)
         {
             throw new InvalidPtGPersistentChunkDataAttributesException(requestToken, fromSURL, lifeTime,

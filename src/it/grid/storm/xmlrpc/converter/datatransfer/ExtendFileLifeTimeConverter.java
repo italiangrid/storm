@@ -28,7 +28,9 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
@@ -70,19 +72,10 @@ public class ExtendFileLifeTimeConverter implements Converter
      */
     public InputData convertToInputData(Map inputParam)
     {
-        ExtendFileLifeTimeInputData inputData = null;
-        String memberName;
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        // Creation of VomsGridUser
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        String authID = (String) inputParam.get("authorizationID");
 
-        // (1) authorizationID (never used)
-        memberName = new String("authorizationID");
-        String authID = (String) inputParam.get(memberName);
-
-        // (2) TRequestToken requestToken
         TRequestToken requestToken;
         try {
             requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
@@ -92,7 +85,6 @@ public class ExtendFileLifeTimeConverter implements Converter
             log.error("requestToken=NULL");
         }
 
-        // (3) anyURI[] arrayOfSURLs
         ArrayOfSURLs arrayOfSURLs;
         try {
             arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
@@ -101,18 +93,22 @@ public class ExtendFileLifeTimeConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        // (4) int newFileLifetime
         TLifeTimeInSeconds newFileLifetime = TLifeTimeInSeconds.decode(inputParam,
                 TLifeTimeInSeconds.PNAME_FILELIFETIME);
 
-        // (5) int newPinLifetime
         TLifeTimeInSeconds newPinLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
 
-        // Creation of ExtendFileLifeTimeInputData structure
-        inputData = new ExtendFileLifeTimeInputData(guser, requestToken, arrayOfSURLs, newFileLifetime, newPinLifetime);
-
-        log.debug("ExtendFileLifeTimeInputData Created!");
-
+        ExtendFileLifeTimeInputData inputData;
+        if (guser != null)
+        {
+            inputData = new IdentityExtendFileLifeTimeInputData(guser, requestToken, arrayOfSURLs,
+                                                                newFileLifetime, newPinLifetime);
+        }
+        else
+        {
+            inputData = new AnonymousExtendFileLifeTimeInputData(requestToken, arrayOfSURLs, newFileLifetime,
+                                                                 newPinLifetime);
+        }
         return inputData;
     }
 

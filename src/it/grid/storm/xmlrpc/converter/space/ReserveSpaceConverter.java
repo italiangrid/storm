@@ -31,7 +31,6 @@ package it.grid.storm.xmlrpc.converter.space;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.ArrayOfTSizeInBytes;
 import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRetentionPolicyInfo;
@@ -40,7 +39,8 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceInputDataAttributesException;
+import it.grid.storm.synchcall.data.space.AnonymousReserveSpaceInputData;
+import it.grid.storm.synchcall.data.space.IdentityReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -70,40 +70,25 @@ public class ReserveSpaceConverter implements Converter {
         log.debug("reserveSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
         log.debug("reserveSpaceConverter: Input Structure toString: "+ParameterDisplayHelper.display(inputParam));
 
-        ReserveSpaceInputData inputData = null;
-
         String memberName = null;
 
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        /* (1) authorizationID (never used) */
         memberName = new String("authorizationID");
         String authID = (String) inputParam.get(memberName);
 
-        /* (2) userSpaceTokenDescription */
         memberName = new String("userSpaceTokenDescription");
         String spaceAlias = (String) inputParam.get(memberName);
         if (spaceAlias == null) {
             spaceAlias = new String("");
         }
 
-        /* (3) retentionPolicyInfo */
         TRetentionPolicyInfo retentionPolicyInfo = TRetentionPolicyInfo.decode(inputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
 
-        /* (4) desiredSizeOfTotalSpace */
         TSizeInBytes desiredSizeOfTotalSpace = TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_DESIREDSIZEOFTOTALSPACE);
 
-        /* (5) desiredSizeOfGuaranteedSpace */
         TSizeInBytes desiredSizeOfGuaranteedSpace = TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_DESIREDSIZEOFGUARANTEEDSPACE);
 
-        /* (6) desiredLifetimeOfReservedSpace */
-        TLifeTimeInSeconds desiredLifetimeOfReservedSpace = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_DESIREDLIFETIMEOFRESERVEDSPACE);
-
-
-        /* (8) storageSystemInfo */
         ArrayOfTExtraInfo storageSystemInfo;
         try {
             storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
@@ -111,17 +96,23 @@ public class ReserveSpaceConverter implements Converter {
         catch (InvalidArrayOfTExtraInfoAttributeException e) {
             storageSystemInfo = null;
         }
-
-        /* Creation of SpaceResInputData */
-        try {
-            inputData = new ReserveSpaceInputData(guser, spaceAlias, retentionPolicyInfo, desiredSizeOfTotalSpace,
-                    desiredSizeOfGuaranteedSpace, desiredLifetimeOfReservedSpace, storageSystemInfo);
+        
+        ReserveSpaceInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityReserveSpaceInputData(guser, spaceAlias, retentionPolicyInfo, desiredSizeOfTotalSpace,
+                                                          desiredSizeOfGuaranteedSpace, storageSystemInfo);            
         }
-        catch (InvalidReserveSpaceInputDataAttributesException e) {
-            log.debug("Error Creating inputData for SpaceReservationManager: " + e);
+        else
+        {
+            inputData = new AnonymousReserveSpaceInputData(spaceAlias, retentionPolicyInfo, desiredSizeOfTotalSpace,
+                                                          desiredSizeOfGuaranteedSpace, storageSystemInfo);
         }
-
-        // Return Space Reservation Data Created
+        TLifeTimeInSeconds desiredLifetimeOfReservedSpace = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_DESIREDLIFETIMEOFRESERVEDSPACE);
+        if(desiredLifetimeOfReservedSpace != null && !desiredLifetimeOfReservedSpace.isEmpty())
+        {
+            inputData.setSpaceLifetime(desiredLifetimeOfReservedSpace); 
+        }
         return inputData;
 
     }

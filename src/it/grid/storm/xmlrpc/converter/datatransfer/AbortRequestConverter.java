@@ -35,8 +35,10 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
-import it.grid.storm.synchcall.data.datatransfer.AbortRequestInputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousAbortRequestInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityAbortRequestInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
 import java.util.HashMap;
@@ -60,14 +62,8 @@ public class AbortRequestConverter implements Converter
     public InputData convertToInputData(Map inputParam)
     {
 
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        // Creation of VomsGridUser
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-
-        // (2) TRequestToken requestToken
         TRequestToken requestToken;
         try {
             requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
@@ -76,12 +72,14 @@ public class AbortRequestConverter implements Converter
             requestToken = null;
             log.debug("requestToken=NULL");
         }
-        AbortRequestInputData inputData = null;
-        try {
-            inputData = new AbortRequestInputData(guser, requestToken);
-            log.debug("AbortRequestInputData Created!");
-        } catch (IllegalArgumentException e) {
-            log.error("Unable to build AbortRequestInputData. IllegalArgumentException: " + e);
+        AbortInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityAbortRequestInputData(guser, requestToken);
+        }
+        else
+        {
+            inputData = new AnonymousAbortRequestInputData(requestToken);
         }
         return inputData;
     }

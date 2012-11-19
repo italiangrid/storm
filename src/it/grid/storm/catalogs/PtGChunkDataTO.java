@@ -20,7 +20,6 @@ package it.grid.storm.catalogs;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.common.types.TURLPrefix;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import it.grid.storm.namespace.model.Protocol;
 
@@ -41,7 +40,8 @@ import it.grid.storm.namespace.model.Protocol;
  */
 public class PtGChunkDataTO {
 	
-	/* Database table request_Get fields BEGIN*/
+	private static final String FQAN_SEPARATOR = "#";
+    /* Database table request_Get fields BEGIN*/
     private long primaryKey = -1; //ID primary key of record in DB
     private boolean dirOption; //initialised in constructor
     private String fromSURL = " ";
@@ -60,6 +60,8 @@ public class PtGChunkDataTO {
     private String errString = " ";
     private String turl = " ";
     private Timestamp timeStamp;
+    private String clientDN = null;
+    private String vomsAttributes = null;
 
     public PtGChunkDataTO() {
         TURLPrefix protocolPreferences = new TURLPrefix();
@@ -211,6 +213,41 @@ public class PtGChunkDataTO {
         turl = s;
     }
 
+    public String clientDN() {
+        return clientDN;
+    }
+
+    public void setClientDN(String s) {
+        clientDN = s;
+    }
+
+    public String vomsAttributes() {
+        return vomsAttributes;
+    }
+
+    public void setVomsAttributes(String s) {
+        vomsAttributes = s;
+    }
+    
+    public void setVomsAttributes(String[] fqaNsAsString)
+    {
+        vomsAttributes = "";
+        for(int i = 0 ; i < fqaNsAsString.length ; i++)
+        {
+            vomsAttributes += fqaNsAsString[i];
+            if(i < fqaNsAsString.length - 1)
+            {
+                vomsAttributes += FQAN_SEPARATOR;                
+            }
+        }
+        
+    }
+    
+    public String[] vomsAttributesArray()
+    {
+        return vomsAttributes.split(FQAN_SEPARATOR);
+    }
+    
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();

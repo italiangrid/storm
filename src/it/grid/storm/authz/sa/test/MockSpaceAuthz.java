@@ -40,11 +40,18 @@ public class MockSpaceAuthz implements SpaceAuthzInterface {
      * @param srmSpaceOp SRMSpaceRequest
      * @return boolean
      */
+    @Override
     public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
         log.debug("MOCK Space Authz : Authorize = Always TRUE");
         return true;
     }
 
+    @Override
+    public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp) {
+        log.debug("MOCK Space Authz : Authorize = Always TRUE");
+        return true;
+    }
+    
     /**
      * setAuthzDB
      * 

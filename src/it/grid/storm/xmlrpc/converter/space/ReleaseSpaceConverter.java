@@ -19,13 +19,12 @@ package it.grid.storm.xmlrpc.converter.space;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidReleaseSpaceAttributesException;
+import it.grid.storm.synchcall.data.space.AnonymousReleaseSpaceInputData;
+import it.grid.storm.synchcall.data.space.IdentityReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
@@ -68,54 +67,26 @@ public class ReleaseSpaceConverter implements Converter {
         log.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "+inputParam.size());
         log.debug("ReleaseSpaceConverter: Input Structure toString: "+ParameterDisplayHelper.display(inputParam));
 
-        /* Creationd of SpaceResData, INPUT STRUCTURE for */
-        /* SpaceReservationManager!			  */
-        ReleaseSpaceInputData inputData = null;
 
-        // Member name definition for inputParam struct , from SRM V2.1
-        String member_force = new String("forceFileRelease");
 
-        // String member_DN = new String("authorizationID");
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        /* Get parameter value from struct, if defined! */
-        /* Creation of GridUser into inputStructure */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
-        //guser = VomsGridUser.decode(inputParam);
-
-        /* (2) spaceToken */
         TSpaceToken spaceToken = TSpaceToken.decode(inputParam,TSpaceToken.PNAME_SPACETOKEN);
 
-        /*
-        String tokenString = (String)inputParam.get(member_token);
-    	if (tokenString!=null) {
-    	    //LOG4J is better...
-    	    log.debug("ReleaseSpace:SpaceToken: "+tokenString);
-    	    //Creation of srm TSpaceToken
-    	    try {
-    		spaceToken = TSpaceToken.make(tokenString);
-    	    }
-    	    catch (InvalidTSpaceTokenAttributesException e) {
-    		log.warn("Error creating TSpaceToken:"+e);
-    	    }
-    	}
-         */
-
-        /* (4) ForceFileRelease */
-        Boolean force = (Boolean)inputParam.get(member_force);
+        Boolean force = (Boolean)inputParam.get("forceFileRelease");
         if (force == null) {
             force = new Boolean(false);
         }
 
-        /* Creation of ReleaseSpaceInputStructure */
-        try {
-            inputData = new ReleaseSpaceInputData(guser, spaceToken, force.booleanValue());
+        ReleaseSpaceInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityReleaseSpaceInputData(guser, spaceToken, force.booleanValue());    
         }
-        catch (InvalidReleaseSpaceAttributesException e) {
-            log.error("Error Creating inputData for ReleaseSpace"+e);
+        else
+        {
+            inputData = new AnonymousReleaseSpaceInputData(spaceToken, force.booleanValue());
         }
-
-        //Return ReleaseSpaceData Data Created
         return inputData;
 
     }

@@ -38,19 +38,21 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DirectoryCommand;
+import it.grid.storm.synchcall.data.DataHelper;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project
@@ -61,6 +63,7 @@ import java.util.List;
 
 public class MkdirCommand extends DirectoryCommand implements Command {
 
+    private static final String SRM_COMMAND = "SrmMkdir";
     private final NamespaceInterface namespace;
 
     public MkdirCommand() {
@@ -86,220 +89,177 @@ public class MkdirCommand extends DirectoryCommand implements Command {
          */
 
         if ((inputData == null) || ((inputData != null) && (inputData.getSurl() == null))) {
-            // Something was wrong..
-            try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified.");
-                log.info("srmMkdir: <guser=NULL> [SURL=NULL] Request failed with [status: " + returnStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMkdir: <> [SURL=] Request failed. Error creating returnStatus " + ex1);
-            }
+            returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "Invalid parameter specified.");
+            printRequestOutcome(returnStatus, inputData);
             outData = new MkdirOutputData(returnStatus);
             return outData;
         }
 
-        /**
-         * Check if GridUser in MkdirInputData is not null, otherwise return with an error message.
-         */
-        GridUserInterface guser = inputData.getUser();
-        if (guser == null) {
-            // Something was wrong..
-            log.info("srmMkdir: Unable to get user credential. ");
-            try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential!");
-                log.info("srmMkdir: <> [SURL=] Request failed with [status: " + returnStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMkdir: <> [SURL=] Request failed. Error creating returnStatus " + ex1);
-            }
-            outData = new MkdirOutputData(returnStatus);
-            return outData;
-        }
-
-        // Get SURL from input structure.
         TSURL surl = inputData.getSurl();
 
-        // Create StoRI from SURL
         StoRI stori = null;
-
-        if (!surl.isEmpty()) {
-            // Building StoRI representation of SURL within the request.
-            try {
-                stori = namespace.resolveStoRIbySURL(surl, guser);
+        if (!surl.isEmpty())
+        {
+            try
+            {
+                if (inputData instanceof IdentityInputData)
+                {
+                    stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData) inputData).getUser());
+                }
+                else
+                {
+                    stori = namespace.resolveStoRIbySURL(surl);
+                }
             } catch(IllegalArgumentException e)
             {
-                log.error("srmMkdir: <" + guser + "> Unable to get StoRI for surl: " + e);
+                log.error("Unable to get surl's stori. IllegalArgumentException: " + e.getMessage());
+                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                         "Unable to get StoRI for surl");
+                printRequestOutcome(returnStatus, inputData);
+                outData = new MkdirOutputData(returnStatus);
+                return outData;
+            } catch(NamespaceException e)
+            {
+                log.error("Unable to get surl's stori. NamespaceException: " + e.getMessage());
+                boolean fitsSomewhere;
                 try
                 {
-                    returnStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to get StoRI for surl");
-                }
-                catch (InvalidTReturnStatusAttributeException e1)
-                {
-                    log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
-                              + "'] failed. Error creating returnStatus " + e1);
-                }
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                        + returnStatus.toString() + "]");
-                outData = new MkdirOutputData(returnStatus);
-                return outData;
-            } catch (NamespaceException ex) {
-                // Something was wrong ....
-                log.debug("srmMkdir: <" + guser + "> Unable to build StoRI by SURL: " + ex);
-                try {
-                    // log.info("srmMkdir: >>>> stfnpath: "+ newsurl.getStFN());
-                    if (namespace.isStfnFittingSomewhere(surl.toString(), guser)) {
-                        returnStatus =
-                                new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
-                                                  "Invalid SURL specified, the SAPath is incomplete!");
-                        log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                                + returnStatus.toString() + "]");
-                    } else {
-                        returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
-                        log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                                + returnStatus.toString() + "]");
+                    if (inputData instanceof IdentityInputData)
+                    {
+                        fitsSomewhere = namespace.isStfnFittingSomewhere(surl.toString(),
+                                                                         ((IdentityInputData) inputData).getUser());
                     }
-
-                } catch (InvalidTReturnStatusAttributeException ex1) {
-                    log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
-                            + "'] failed. Error creating returnStatus " + ex1);
-                } catch (NamespaceException e) {
-                    log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
-                            + "'] failed. Error checking if SURL fits in SAPath" + e);
+                    else
+                    {
+                        fitsSomewhere = namespace.isStfnFittingSomewhere(surl.toString());
+                    }
+                } catch(NamespaceException e1)
+                {
+                    log.error("Unable to check if surl fits somewhere. NamespaceException: " + e1.getMessage());
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                             "Unable to check if surl fits somewhere");
+                    printRequestOutcome(returnStatus, inputData);
+                    outData = new MkdirOutputData(returnStatus);
+                    return outData;
+                }
+                if (fitsSomewhere)
+                {
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED,
+                                                             "Invalid SURL specified, the SAPath is incomplete!");
+                    printRequestOutcome(returnStatus, inputData);
+                }
+                else
+                {
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                             "Invalid SURL specified!");
+                    printRequestOutcome(returnStatus, inputData);
                 }
                 outData = new MkdirOutputData(returnStatus);
                 return outData;
             }
-        } else {
-            // Something was wrong..
-            try {
-                returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                        + returnStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
-                        + "'] failed. Error creating returnStatus " + ex1);
-            }
+        }
+        else
+        {
+            returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified!");
+            printRequestOutcome(returnStatus, inputData);
             outData = new MkdirOutputData(returnStatus);
             return outData;
         }
 
-        // Get ACL mode from StoRI (AoT or JiT)
-        boolean hasJiTACL = stori.hasJustInTimeACLs();
-
-        LocalFile file = stori.getLocalFile();
-
-        /**
-         * Construction of AuthZ request
-         */
-
-        /**
-         * From version 1.4 Add the control for Storage Area using the new authz for space component.
-         */
-
-        SpaceHelper sp = new SpaceHelper();
-        TSpaceToken token = sp.getTokenFromStoRI(log, stori);
+        TSpaceToken token = new SpaceHelper().getTokenFromStoRI(log, stori);
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
-        if (!(spaceAuth.authorize(guser, SRMSpaceRequest.MD))) {
+        boolean isSpaceAuthorized;
+        if (inputData instanceof IdentityInputData)
+        {
+            isSpaceAuthorized = spaceAuth.authorize(((IdentityInputData) inputData).getUser(), SRMSpaceRequest.MD);
+        }
+        else
+        {
+            isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MD);
+        }
+        if (!isSpaceAuthorized)
+        {
             // User not authorized to perform RM request on the storage area
-            log.debug("srmMkdir: User not authorized to perform srmMkdir request on the storage area: " + token);
-            try {
-                returnStatus =
-                        new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                                          ": User not authorized to perform srmMkdir request on the storage area: "
-                                                  + token);
-                log.error("srmMkdir: <> Request for [SURL:" + surl + "] failed with [status: "
-                        + returnStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMkdir: <> Request for [SURL:" + surl + "] failed. Error creating returnStatus " + ex1);
-            }
+            log.debug("srmMkdir: User not authorized to perform srmMkdir request on the storage area: "
+                    + token);
+            returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+                                                     ": User not authorized to perform srmMkdir request on the storage area: "
+                                                             + token);
+            printRequestOutcome(returnStatus, inputData);
             outData = new MkdirOutputData(returnStatus);
             return outData;
         }
 
-        // AuthorizationDecision mkdirAuth = AuthorizationCollector.getInstance().canMakeDirectory(guser, stori);
         /**
          * 1.5.0 Path Authorization
          */
-        AuthzDecision mkdirAuthz = AuthzDirector.getPathAuthz().authorize(guser, SRMFileRequest.MD, stori);
-        if (mkdirAuthz.equals(AuthzDecision.PERMIT)) {
-            log.debug("srmMkdir authorized for " + guser + " for directory = " + stori.getPFN());
+        AuthzDecision decision;
+        if (inputData instanceof IdentityInputData)
+        {
+            decision = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) inputData).getUser(), SRMFileRequest.MD, stori);
+        }
+        else
+        {
+            decision = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.MD, stori.getStFN());
+        }
+        if (decision.equals(AuthzDecision.PERMIT))
+        {
+            log.debug("srmMkdir authorized for " + DataHelper.getRequestor(inputData) + " for directory = " + stori.getPFN());
 
-            // ### DO THE WORK !
-            returnStatus = manageAuthorizedMKDIR(guser, file, hasJiTACL);
+            returnStatus = manageAuthorizedMKDIR(inputData, stori.getLocalFile(), stori.hasJustInTimeACLs());
 
-            if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-
-                // #!! Created the directory with SUCCESS!
-                log.info("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] successfully done with: [status:"
-                        + returnStatus.toString() + "]");
-
-                // ///////////////////////
-                // //Manage Default ACL
-                // ///////////////////////
-
-                FilesystemPermission fp = null;
-                if (Configuration.getInstance().getEnableWritePermOnDirectory()) {
-                    fp = FilesystemPermission.ListTraverseWrite;
-                } else {
-                    fp = FilesystemPermission.ListTraverse;
-                }
-
-                VirtualFSInterface vfs = stori.getVirtualFileSystem();
-                DefaultACL dacl = null;
-                try {
-                    dacl = vfs.getCapabilities().getDefaultACL();
-                } catch (NamespaceException e) {
-                    log.error("Unable to retrieve the Default ACL: " + e.getMessage());
-                }
-                if ((dacl != null) && (!dacl.isEmpty())) {
-                    // There are Default ACLs to set into the file
-                    List<ACLEntry> dacl_list = dacl.getACL();
-                    for (ACLEntry ace : dacl_list) {
-                        // TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or xrw in respect to getEnableWritePermOnDirectory
-                        log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
-                                + ace.getFilePermissionString());
-                        LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                        //TODO ACL manager
-//                        try {
-                            AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                            //TODO ACL manager
-                            try
-                            {
-                                manager.grantGroupPermission(file, u, fp);
-                            }
-                            catch (IllegalArgumentException e)
-                            {
-                                log.error("Unable to grant group permission on the created folder. IllegalArgumentException: " + e.getMessage());
-//                                returnStatus.setExplanation(returnStatus.getExplanation() + "NOTE: Unable to grant group permission on the created folder");
-                            }
-//                            file.grantGroupPermission(u, fp);
-                            //TODO ACL manager
-//                        } catch (CannotMapUserException e) {
-//                            // TODO Auto-generated catch block
-//                            log.error("Error adding default ACL for the gid: " + ace.getGroupID()
-//                                    + " with permission: " + ace.getFilePermissionString());
-//                            e.printStackTrace();
-//                        }
-                    }
-                }
-            } else {
-                log.info("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                        + returnStatus.toString() + "]");
-            }
-
-        } else {
-            try {
-                returnStatus =
-                        new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-                                          "User is not authorized to make a new directory");
-                log.info("srmMkdir: <" + guser + "> Request for [SURL:'" + surl + "'] failed with: [status:"
-                        + returnStatus.toString() + "]");
-            } catch (InvalidTReturnStatusAttributeException ex1) {
-                log.error("srmMkdir: <" + guser + "> Request for [SURL:'" + surl
-                        + "'] failed. Error creating returnStatus " + ex1);
+            if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+            {
+                manageDefaultACL(stori);
             }
         }
+        else
+        {
+            returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+            "User is not authorized to make a new directory");
+        }
+        printRequestOutcome(returnStatus, inputData);
         outData = new MkdirOutputData(returnStatus);
         return outData;
+    }
+
+    private void manageDefaultACL(StoRI stori)
+    {
+        FilesystemPermission fp;
+        if (Configuration.getInstance().getEnableWritePermOnDirectory())
+        {
+            fp = FilesystemPermission.ListTraverseWrite;
+        }
+        else
+        {
+            fp = FilesystemPermission.ListTraverse;
+        }
+
+        VirtualFSInterface vfs = stori.getVirtualFileSystem();
+        DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
+        if ((dacl != null) && (!dacl.isEmpty()))
+        {
+            for (ACLEntry ace : dacl.getACL())
+            {
+                /*
+                 * TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or
+                 * xrw in respect to getEnableWritePermOnDirectory
+                 */
+                log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
+                        + ace.getFilePermissionString());
+                LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                try
+                {
+                    manager.grantGroupPermission(stori.getLocalFile(), u, fp);
+                } catch(IllegalArgumentException e)
+                {
+                    log.error("Unable to grant group permission on the created folder. IllegalArgumentException: "
+                            + e.getMessage());
+                }
+            }
+        }
     }
 
     /**
@@ -309,136 +269,159 @@ public class MkdirCommand extends DirectoryCommand implements Command {
      * @param stori StoRI
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedMKDIR(GridUserInterface user, LocalFile file, boolean hasJiTACL) {
-        TReturnStatus returnStatus = null;
-        boolean creationDone;
-
-        boolean failure = false;
-        String explanation = "";
-        TStatusCode statusCode = TStatusCode.EMPTY;
-
-        LocalFile parent = file.getParentFile();
-        if (parent != null) {
-            log.debug("Mkdir : Parent of '" + file + "' exists");
-            if (!file.exists()) {
-
-                creationDone = file.mkdir();
-
-                if (creationDone) {
-                    
-                    log.debug("SrmMkdir: Request success!");
-                    failure = false;
-                    explanation = "Directory created with success";
-                    statusCode = TStatusCode.SRM_SUCCESS;
-                    
-                } else {
-                    
-                    if (file.exists()) { // Race condition, the directory has been created by another mkdir or
-                                         // a PtP running concurrently.
-                        log.debug("SrmMkdir: Request fails because it specifies an existent file or directory.");
-                        failure = true;
-                        explanation = "The given SURL identifies an existing file or directory";
-                        statusCode = TStatusCode.SRM_DUPLICATION_ERROR;
-                        
-                    } else {
-                        
-                        log.debug("SrmMkdir: Request fails because the path is invalid.");
-                        failure = true;
-                        explanation = "Invalid path";
-                        statusCode = TStatusCode.SRM_INVALID_PATH;
-                        
-                    }
-                }
-            } else { // Directory exists!
-                if (!file.isDirectory()) { // and it is a file
-                    log.debug("SrmMkdir: Request fails because the path specified is an existent file.");
-                    failure = true;
-                    explanation = "Path specified exists as a file";
-                    statusCode = TStatusCode.SRM_INVALID_PATH;
-                }
-                if (file.isDirectory()) {
-                    log.debug("SrmMkdir: Request fails because it specifies an existent directory.");
-                    failure = true;
-                    explanation = "Directory specified exists!";
-                    statusCode = TStatusCode.SRM_DUPLICATION_ERROR;
-                }
+    private TReturnStatus manageAuthorizedMKDIR(InputData inputData, LocalFile file,
+            boolean hasJiTACL)
+    {
+        TReturnStatus returnStatus = createFolder(file);
+        if(returnStatus.isSRM_SUCCESS())
+        {
+            if (inputData instanceof IdentityInputData)
+            {
+                setAcl(((IdentityInputData) inputData).getUser(), file, hasJiTACL, returnStatus);
             }
-        } else {
-            log.debug("SrmMkdir: Request fails because it specifies an invalid parent directory.");
-            failure = true;
-            explanation = "Parent directory does not exists. Recursive directory creation Not Allowed";
-            statusCode = TStatusCode.SRM_INVALID_PATH;
+        } 
+        return returnStatus;
+    }
+    
+    private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL, TReturnStatus returnStatus)
+    {
+        /*
+         * Add Acces Control List (ACL) in directory created.
+         * ACL allow user to read-write-list the new directory
+         * Call wrapper to set ACL on file created.
+         */
+        log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  " + "group:g_name:--x");
+
+        /*
+         * Set permission on directory
+         * In case of local auth source enable also write
+         */
+        FilesystemPermission fpLIST;
+        if (Configuration.getInstance().getEnableWritePermOnDirectory())
+        {
+            fpLIST = FilesystemPermission.ListTraverseWrite;
+        }
+        else
+        {
+            fpLIST = FilesystemPermission.ListTraverse;
         }
 
-        // Check if failure occour before try to set up ACL.
-        if (!failure) {
-            // Add Acces Control List (ACL) in directory created.
-            // ACL allow user to read-write-list the new directory
-            // Call wrapper to set ACL on file created.
-            log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  " + "group:g_name:--x");
-
-            // Set permission on directory
-            // In case of local auth source enable also write
-            FilesystemPermission fpLIST = null;
-            if (Configuration.getInstance().getEnableWritePermOnDirectory()) {
-                fpLIST = FilesystemPermission.ListTraverseWrite;
-            } else {
-                fpLIST = FilesystemPermission.ListTraverse;
-            }
-
-            // Check if Jit or AoT
-            if (hasJiTACL) {
-                // Jit Case
-                // With JiT Model the ACL for directory is not needed.
-            } else {
-                // AoT Case
-                try {
-                    AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                    //TODO ACL manager
-                    if(user.getLocalUser() == null)
+        if (hasJiTACL)
+        {
+            // Jit Case
+            // With JiT Model the ACL for directory is not needed.
+        }
+        else
+        {
+            try
+            {
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                if (user.getLocalUser() == null)
+                {
+                    log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
+                    returnStatus.extendExplaination("Unable to setting up the ACL");
+                }
+                else
+                {
+                    try
                     {
-                        log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
-                        failure = true;
-                        explanation = explanation + " [ Unable to setting up the ACL ]";
+                        manager.grantGroupPermission(file, user.getLocalUser(), fpLIST);
+                    } catch(IllegalArgumentException e)
+                    {
+                        log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
+                                + e.getMessage());
+                        returnStatus.extendExplaination("Unable to grant group permission on the created folder");
+                    }
+                }
+            } catch(CannotMapUserException ex5)
+            {
+                log.info("SrmMkdir: Unable to setting up the ACL " + ex5);
+                returnStatus.extendExplaination("Unable to setting up the ACL");
+            }
+        }
+//        if (failure)
+//        {
+//            // Rollback ...
+//            log.warn("Error while trying to set ACL for group of requestor.");
+//            /**
+//             * @todo: Rollback of failure.
+//             */
+//        }
+    }
+
+    private TReturnStatus createFolder(LocalFile file)
+    {
+        LocalFile parent = file.getParentFile();
+        if (parent != null)
+        {
+            log.debug("Mkdir : Parent of '" + file + "' exists");
+            if (!file.exists())
+            {
+                if (file.mkdir())
+                {
+                    log.debug("SrmMkdir: Request success!");
+                    return CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
+                                                     "Directory created with success");
+                }
+                else
+                {
+                    if (file.exists())
+                    { /*
+                       * Race condition, the directory has been created by another mkdir or
+                       * a PtP running concurrently.
+                       */
+                        log.debug("SrmMkdir: Request fails because it specifies an existent file or directory.");
+                        return CommandHelper.buildStatus(TStatusCode.SRM_DUPLICATION_ERROR,
+                                                         "The given SURL identifies an existing file or directory");
                     }
                     else
                     {
-                        try
-                        {
-                            manager.grantGroupPermission(file,user.getLocalUser(), fpLIST);
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: " + e.getMessage());
-                            failure = true;
-                            explanation = explanation + " [ Unable to grant group permission on the created folder]";
-                        }
+                        log.debug("SrmMkdir: Request fails because the path is invalid.");
+                        return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid path");
                     }
-//                    file.grantGroupPermission(user.getLocalUser(), fpLIST);
-                } catch (CannotMapUserException ex5) {
-                    log.info("SrmMkdir: Unable to setting up the ACL " + ex5);
-                    failure = true;
-                    explanation = explanation + " [ Unable to setting up the ACL ]";
                 }
             }
-
-            if (failure) {
-                // Rollback ...
-                log.warn("Error while trying to set ACL for group of requestor.");
-                /**
-                 * @todo: Rollback of failure.
-                 */
+            else
+            {
+                if (file.isDirectory())
+                {
+                    log.debug("SrmMkdir: Request fails because it specifies an existent directory.");
+                    return CommandHelper.buildStatus(TStatusCode.SRM_DUPLICATION_ERROR,
+                                                     "Directory specified exists!");
+                }
+                else
+                {
+                    log.debug("SrmMkdir: Request fails because the path specified is an existent file.");
+                    return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                     "Path specified exists as a file");
+                }
             }
-
-        } // failure
-
-        // Setting of Return Status
-        try {
-            returnStatus = new TReturnStatus(statusCode, explanation);
-        } catch (InvalidTReturnStatusAttributeException e) {
-            log.error("SrmMkdir: Error creating returnStatus " + e);
         }
+        else
+        {
+            log.debug("SrmMkdir: Request fails because it specifies an invalid parent directory.");
+            return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                             "Parent directory does not exists. Recursive directory creation Not Allowed");
+        }
+    }
 
-        return returnStatus;
+    private void printRequestOutcome(TReturnStatus status, MkdirInputData inputData)
+    {
+        if(inputData != null)
+        {
+            if(inputData.getSurl() != null)
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData, Arrays.asList(inputData.getSurl().toString()));    
+            }
+            else
+            {
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+            }
+                
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+        }
     }
 }

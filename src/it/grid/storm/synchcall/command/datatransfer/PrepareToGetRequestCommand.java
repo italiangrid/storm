@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.asynch.BuilderException;
 import it.grid.storm.asynch.PtG;
+import it.grid.storm.asynch.PtGBuilder;
 import it.grid.storm.scheduler.ChunkTask;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.data.InputData;

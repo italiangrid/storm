@@ -21,6 +21,9 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -118,21 +121,29 @@ public class PtPChunkCatalog {
     /**
      * Method used to update into Persistence a retrieved PtPChunkData.
      */
-	synchronized public void update(PtPPersistentChunkData cd) {
+	synchronized public void update(PtPPersistentChunkData chunkData) {
 		
 		PtPChunkDataTO to = new PtPChunkDataTO();
 		/* rimary key needed by DAO Object */
-		to.setPrimaryKey(cd.getPrimaryKey());
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
-		to.setErrString(cd.getStatus().getExplanation());
-		to.setTransferURL(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
-		to.setPinLifetime(PinLifetimeConverter.getInstance().toDB(cd.pinLifetime().value()));
-		to.setFileLifetime(FileLifetimeConverter.getInstance().toDB(cd.fileLifetime().value()));
-		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.fileStorageType()));
-		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.overwriteOption()));
-		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
-		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
-		
+		to.setPrimaryKey(chunkData.getPrimaryKey());
+		to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
+		to.setErrString(chunkData.getStatus().getExplanation());
+		to.setTransferURL(TURLConverter.getInstance().toDB(chunkData.getTransferURL().toString()));
+		to.setPinLifetime(PinLifetimeConverter.getInstance().toDB(chunkData.pinLifetime().value()));
+		to.setFileLifetime(FileLifetimeConverter.getInstance().toDB(chunkData.fileLifetime().value()));
+		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(chunkData.fileStorageType()));
+		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(chunkData.overwriteOption()));
+		to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+		to.setClientDN(chunkData.getUser().getDn());
+		if(chunkData.getUser() instanceof AbstractGridUser)
+        {
+            if(((AbstractGridUser)chunkData.getUser()).hasVoms())
+            {
+                to.setVomsAttributes(((AbstractGridUser)chunkData.getUser()).getFQANsAsString());
+            }
+                
+        }
 		dao.update(to);
 		// TODO MICHELE SURL STORE
 //		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
@@ -376,6 +387,25 @@ public class PtPChunkCatalog {
 				errorSb.append(e);
 			}
 		}
+		GridUserInterface gridUser = null;
+        try
+        {
+            if(auxTO.vomsAttributes() != null && !auxTO.vomsAttributes().trim().equals(""))
+            {
+                gridUser = GridUserManager.makeVOMSGridUser(auxTO.clientDN(), auxTO.vomsAttributesArray());    
+            }
+            else
+            {
+                gridUser = GridUserManager.makeGridUser(auxTO.clientDN());
+            }
+            
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+		
 		// transferURL
 		/**
 		 * whatever is read is just meaningless because PtP will fill it in!!!
@@ -387,7 +417,7 @@ public class PtPChunkCatalog {
 		PtPPersistentChunkData aux = null;
 		try
 		{
-			aux = new PtPPersistentChunkData(rt, toSURL, pinLifetime, fileLifetime, fileStorageType,
+			aux = new PtPPersistentChunkData(gridUser, rt, toSURL, pinLifetime, fileLifetime, fileStorageType,
 					  spaceToken, expectedFileSize, transferProtocols, overwriteOption, status,
 					  transferURL);
 			aux.setPrimaryKey(auxTO.primaryKey());

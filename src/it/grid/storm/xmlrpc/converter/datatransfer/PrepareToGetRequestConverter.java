@@ -34,47 +34,6 @@ public class PrepareToGetRequestConverter extends FileTransferRequestInputConver
 
     private static final Logger log = LoggerFactory.getLogger(PrepareToGetRequestConverter.class);
     
-//    @Override
-//    public InputData convertToInputData(Map inputParam) throws StoRMXmlRpcException
-//    {
-//        FileTransferInputData ftInputData = (FileTransferInputData) super.convertToInputData(inputParam);
-//        PrepareToGetInputData inputData;
-//        try
-//        {
-//            inputData = new PrepareToGetInputData(ftInputData);
-//        } catch(IllegalArgumentException e)
-//        {
-//            log.error("Unable to build PrepareToGetInputData. IllegalArgumentException: " + e.getMessage());
-//            throw new StoRMXmlRpcException("Unable to build PrepareToGetInputData");
-//        }
-//        TLifeTimeInSeconds desiredPinLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
-//        if (desiredPinLifetime != null)
-//        {
-//            if(!desiredPinLifetime.isEmpty())
-//            {
-//                inputData.setDesiredPinLifetime(desiredPinLifetime);                
-//            }
-//            else
-//            {
-//                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_PINLIFETIME + "\', interpreted as an empty value");
-//            }
-//        }
-//        TSpaceToken targetSpaceToken = TSpaceToken.decode(inputParam, TSpaceToken.PNAME_SPACETOKEN);
-//        if (desiredPinLifetime != null)
-//        {
-//            if(!desiredPinLifetime.isEmpty())
-//            {
-//                inputData.setTargetSpaceToken(targetSpaceToken);                
-//            }
-//            else
-//            {
-//                log.warn("Unable to use the received \'" + TLifeTimeInSeconds.PNAME_PINLIFETIME + "\', interpreted as an empty value");
-//            }
-//        }
-//        log.debug("PrepareToGetInputData Created!");
-//        return inputData;
-//    }
-
     @Override
     public Map<String,Object> convertFromOutputData(OutputData outputData)
     {

@@ -18,9 +18,9 @@ package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.synchcall.data.discovery.AnonymousInputData;
+import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousPutDoneInputData extends AnonymousInputData
+public class AnonymousPutDoneInputData extends AbstractInputData implements PutDoneInputData
 {
     private final TRequestToken reqToken;
     private final ArrayOfSURLs arrayOfSURLs;
@@ -36,11 +36,19 @@ public class AnonymousPutDoneInputData extends AnonymousInputData
         this.arrayOfSURLs = surlArray;
     }
     
+    /* (non-Javadoc)
+     * @see it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getRequestToken()
+     */
+    @Override
     public TRequestToken getRequestToken()
     {
         return reqToken;
     }
 
+    /* (non-Javadoc)
+     * @see it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getArrayOfSURLs()
+     */
+    @Override
     public ArrayOfSURLs getArrayOfSURLs()
     {
         return arrayOfSURLs;

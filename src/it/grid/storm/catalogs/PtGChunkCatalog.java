@@ -21,7 +21,9 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 //import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
@@ -102,19 +104,27 @@ public class PtGChunkCatalog {
      * Only fileSize, StatusCode, errString and transferURL are updated. Likewise
      * for the request pinLifetime.
      */
-	synchronized public void update(PtGPersistentChunkData cd) {
+	synchronized public void update(PtGPersistentChunkData chunkData) {
 
 		PtGChunkDataTO to = new PtGChunkDataTO();
 		/* Primary key needed by DAO Object */
-		to.setPrimaryKey(cd.getPrimaryKey());
-		to.setFileSize(cd.getFileSize().value());
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
-		to.setErrString(cd.getStatus().getExplanation());
-		to.setTurl(TURLConverter.getInstance().toDB(cd.getTransferURL().toString()));
-		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getPinLifeTime().value()));
-		to.setNormalizedStFN(cd.getSURL().normalizedStFN());
-		to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
-
+		to.setPrimaryKey(chunkData.getPrimaryKey());
+		to.setFileSize(chunkData.getFileSize().value());
+		to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
+		to.setErrString(chunkData.getStatus().getExplanation());
+		to.setTurl(TURLConverter.getInstance().toDB(chunkData.getTransferURL().toString()));
+		to.setLifeTime(PinLifetimeConverter.getInstance().toDB(chunkData.getPinLifeTime().value()));
+		to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
+		to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+		to.setClientDN(chunkData.getUser().getDn());
+        if(chunkData.getUser() instanceof AbstractGridUser)
+        {
+            if(((AbstractGridUser)chunkData.getUser()).hasVoms())
+            {
+                to.setVomsAttributes(((AbstractGridUser)chunkData.getUser()).getFQANsAsString());
+            }
+                
+        }
 		dao.update(to);
 		// TODO MICHELE SURL STORE
 //		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
@@ -321,18 +331,36 @@ public class PtGChunkCatalog {
 				errorSb.append(e);
 			}
 		}
-		// transferURL
-		/*
-		 * whatever is read is just meaningless because PtG will fill it in!!!
-		 * So create an Empty TTURL by default! Vital to avoid problems with
-		 * unknown DPM NULL/EMPTY logic policy!
-		 */
+		GridUserInterface gridUser = null;
+        try
+        {
+            if(chunkDataTO.vomsAttributes() != null && !chunkDataTO.vomsAttributes().trim().equals(""))
+            {
+                gridUser = GridUserManager.makeVOMSGridUser(chunkDataTO.clientDN(), chunkDataTO.vomsAttributesArray());    
+            }
+            else
+            {
+                gridUser = GridUserManager.makeGridUser(chunkDataTO.clientDN());
+            }
+            
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
+                      + e.getMessage());
+        }
+        // transferURL
+        /*
+         * whatever is read is just meaningless because PtG will fill it in!!!
+         * So create an Empty TTURL by default! Vital to avoid problems with
+         * unknown DPM NULL/EMPTY logic policy!
+         */
 		TTURL transferURL = TTURL.makeEmpty();
 		// make PtGChunkData
 		PtGPersistentChunkData aux = null;
 		try
 		{
-			aux = new PtGPersistentChunkData(rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
+			aux = new PtGPersistentChunkData(gridUser, rt, fromSURL, lifeTime, dirOption, transferProtocols, fileSize,
 					  status, transferURL);
 			aux.setPrimaryKey(chunkDataTO.primaryKey());
 		} catch(InvalidSurlRequestDataAttributesException e)
@@ -728,7 +756,15 @@ public class PtGChunkCatalog {
         to.setNumLevel(chunkData.getDirOption().getNumLevel());
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
         to.setErrString(chunkData.getStatus().getExplanation());
-        
+        to.setClientDN(chunkData.getUser().getDn());
+        if(chunkData.getUser() instanceof AbstractGridUser)
+        {
+            if(((AbstractGridUser)chunkData.getUser()).hasVoms())
+            {
+                to.setVomsAttributes(((AbstractGridUser)chunkData.getUser()).getFQANsAsString());
+            }
+                
+        }
         /* add the entry and update the Primary Key field! */
         dao.addChild(to);
      // TODO MICHELE SURL STORE
@@ -767,6 +803,16 @@ public class PtGChunkCatalog {
         to.setProtocolList(TransferProtocolListConverter.toDB(chunkData.getTransferProtocols()));
         to.setStatus(StatusCodeConverter.getInstance().toDB(chunkData.getStatus().getStatusCode()));
         to.setErrString(chunkData.getStatus().getExplanation());
+        
+        to.setClientDN(chunkData.getUser().getDn());
+        if(chunkData.getUser() instanceof AbstractGridUser)
+        {
+            if(((AbstractGridUser)chunkData.getUser()).hasVoms())
+            {
+                to.setVomsAttributes(((AbstractGridUser)chunkData.getUser()).getFQANsAsString());
+            }
+                
+        }
         
         dao.addNew(to,gu.getDn()); //add the entry and update the Primary Key field!
      // TODO MICHELE SURL STORE

@@ -232,7 +232,7 @@ public class VirtualFS implements VirtualFSInterface {
         return this.spaceTokenDescription;
     }
 
-    public StorageClassType getStorageClassType() throws NamespaceException {
+    public StorageClassType getStorageClassType(){
         return this.storageClass;
     }
 
@@ -242,7 +242,7 @@ public class VirtualFS implements VirtualFSInterface {
     }
      **/
 
-    public PropertyInterface getProperties() throws NamespaceException {
+    public PropertyInterface getProperties(){
         return this.properties;
     }
 
@@ -458,7 +458,7 @@ public class VirtualFS implements VirtualFSInterface {
         return this.defValue;
     }
 
-    public CapabilityInterface getCapabilities() throws NamespaceException {
+    public CapabilityInterface getCapabilities(){
         return this.capabilities;
     }
 

@@ -44,6 +44,8 @@ import java.util.List;
  * @date    June 2005
  */
 public class PtPChunkDataTO {
+    
+    private static final String FQAN_SEPARATOR = "#";
 	/* Database table request_Get fields BEGIN*/
     private long primaryKey = -1; //ID primary key of status_Put record in DB
     private String toSURL = " ";
@@ -64,6 +66,9 @@ public class PtPChunkDataTO {
     private String errString = " ";
     private String turl = " ";
     private Timestamp timeStamp = null;
+    
+    private String clientDN = null;
+    private String vomsAttributes = null;
 
     /**
      * Constructr that initialises PtPChunkDataTO with correct SRM 2.2 default
@@ -236,6 +241,41 @@ public class PtPChunkDataTO {
         turl = s;
     }
 
+    public String clientDN() {
+        return clientDN;
+    }
+
+    public void setClientDN(String s) {
+        clientDN = s;
+    }
+
+    public String vomsAttributes() {
+        return vomsAttributes;
+    }
+
+    public void setVomsAttributes(String s) {
+        vomsAttributes = s;
+    }
+    
+    public void setVomsAttributes(String[] fqaNsAsString)
+    {
+        vomsAttributes = "";
+        for(int i = 0 ; i < fqaNsAsString.length ; i++)
+        {
+            vomsAttributes += fqaNsAsString[i];
+            if(i < fqaNsAsString.length - 1)
+            {
+                vomsAttributes += FQAN_SEPARATOR;                
+            }
+        }
+        
+    }
+    
+    public String[] vomsAttributesArray()
+    {
+        return vomsAttributes.split(FQAN_SEPARATOR);
+    }
+    
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();

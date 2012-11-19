@@ -20,16 +20,15 @@ package it.grid.storm.xmlrpc.converter.directory;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.directory.AnonymousRmInputData;
+import it.grid.storm.synchcall.data.directory.IdentityRmInputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidRmInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
@@ -74,8 +73,6 @@ public class RmConverter implements Converter {
         log.debug("RmConverter: Input Structure toString: "
                 + ParameterDisplayHelper.display(inputParam));
 
-        RmInputData inputData = null;
-
         GridUserInterface guser = GridUserManager.decode(inputParam);
 
         ArrayOfSURLs surlArray = null;
@@ -87,13 +84,15 @@ public class RmConverter implements Converter {
             e1.printStackTrace();
         }
 
-        try {
-            inputData = new RmInputData(guser, surlArray);
-
-        } catch (InvalidRmInputAttributeException e) {
-            log.debug("Invalid RmInputData Creation!" + e);
+        RmInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityRmInputData(guser, surlArray);            
         }
-
+        else
+        {
+            inputData = new AnonymousRmInputData(surlArray);
+        }
         log.debug("RmInputData Created!");
         return inputData;
     }

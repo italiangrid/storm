@@ -19,16 +19,15 @@ package it.grid.storm.xmlrpc.converter.directory;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.directory.AnonymousRmdirInputData;
+import it.grid.storm.synchcall.data.directory.IdentityRmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidRmdirInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
@@ -74,11 +73,9 @@ public class RmdirConverter implements Converter {
         log.debug("srmRmdir: Converter :Call received :Creation of RmdirInputData = " + inputParam.size());
         log.debug("srmRmdir: Converter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
 
-        RmdirInputData inputData = null;
 
         /* Creation of VomsGridUser */
-        GridUserInterface guser = null;
-        guser = GridUserManager.decode(inputParam);
+        GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) directoryPath */
         TSURL surl = null;
@@ -92,16 +89,15 @@ public class RmdirConverter implements Converter {
         String member_recursive = new String("recursive");
         Boolean recursive = (Boolean) inputParam.get(member_recursive);
 
-        try {
-            log.debug("srmRm: Rmdir input data creation...");
-            inputData = new RmdirInputData(guser, surl, recursive);
-            log.debug("srmRm: Rmdir input data created.");
-
-        } catch (InvalidRmdirInputAttributeException e) {
-            log.debug("Invalid RmdirInputData Creation!" + e);
+        RmdirInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityRmdirInputData(guser, surl, recursive);
         }
-
-        // Return Space Reservation Data Created
+        else
+        {
+            inputData = new AnonymousRmdirInputData(surl, recursive);
+        }
         return inputData;
 
     }

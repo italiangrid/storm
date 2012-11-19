@@ -19,8 +19,8 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class CopyAbortExecutor implements AbortExecutorInterface {
 
     public CopyAbortExecutor() {};
 
-    public AbortGeneralOutputData doIt(AbortGeneralInputData inputData) {
+    public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
         AbortGeneralOutputData outputData = new AbortGeneralOutputData();
         boolean requestFailure, requestSuccess;

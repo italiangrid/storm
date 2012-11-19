@@ -82,41 +82,34 @@ public class NamespaceCheck {
              
              ArrayList<VirtualFSInterface> vf = new ArrayList<VirtualFSInterface>(vfss.values());
              for (VirtualFSInterface vfs : vf) {
-                try {
-                    if (vfs.getStorageClassType().isTapeEnabled()) {
-                       //Checking the existence of groups for the buffers
-                       String groupRead = Configuration.getInstance().getGroupTapeReadBuffer(); 
-                       if (!LocalGroups.isGroupDefined(groupRead)) {
-                           log.warn("!!!!! Local Group for READ BUFFER ('"+groupRead+"') is not defined!");
-                           result = false;
-                       }
-                       String groupWrite = Configuration.getInstance().getGroupTapeWriteBuffer();
-                       if (!LocalGroups.isGroupDefined(groupWrite)) {
-                           log.warn("!!!!! Local Group for WRITE BUFFER ('"+groupWrite+"') is not defined!");
-                       }
-                    }
-                    // Check the presence of Default ACL
-                    CapabilityInterface cap = vfs.getCapabilities();
-                    if (cap!=null) {
-                        DefaultACL defACL = cap.getDefaultACL();
-                        if (defACL!=null) {
-                            ArrayList<ACLEntry> acl = new ArrayList<ACLEntry>(defACL.getACL());
-                            if (!acl.isEmpty()) {
-                                for (ACLEntry aclEntry : acl) {
-                                    if (!LocalGroups.isGroupDefined(aclEntry.getGroupName())) {
-                                        log.warn("!!!!! Local Group for ACL ('"+aclEntry+"') is not defined!");
-                                        result = false;
-                                    }
+                if (vfs.getStorageClassType().isTapeEnabled()) {
+                   //Checking the existence of groups for the buffers
+                   String groupRead = Configuration.getInstance().getGroupTapeReadBuffer(); 
+                   if (!LocalGroups.isGroupDefined(groupRead)) {
+                       log.warn("!!!!! Local Group for READ BUFFER ('"+groupRead+"') is not defined!");
+                       result = false;
+                   }
+                   String groupWrite = Configuration.getInstance().getGroupTapeWriteBuffer();
+                   if (!LocalGroups.isGroupDefined(groupWrite)) {
+                       log.warn("!!!!! Local Group for WRITE BUFFER ('"+groupWrite+"') is not defined!");
+                   }
+                }
+                // Check the presence of Default ACL
+                CapabilityInterface cap = vfs.getCapabilities();
+                if (cap!=null) {
+                    DefaultACL defACL = cap.getDefaultACL();
+                    if (defACL!=null) {
+                        ArrayList<ACLEntry> acl = new ArrayList<ACLEntry>(defACL.getACL());
+                        if (!acl.isEmpty()) {
+                            for (ACLEntry aclEntry : acl) {
+                                if (!LocalGroups.isGroupDefined(aclEntry.getGroupName())) {
+                                    log.warn("!!!!! Local Group for ACL ('"+aclEntry+"') is not defined!");
+                                    result = false;
                                 }
                             }
-                        }  
-                    }
-                    
-                    
-                } catch (NamespaceException e) {
-                    log.error("Error while checking VFS.", e);
-                    result = false;   
-                }    
+                        }
+                    }  
+                }
             }
         }
         if (result) {

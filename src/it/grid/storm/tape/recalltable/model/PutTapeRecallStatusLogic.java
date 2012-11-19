@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.UUID;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
@@ -61,18 +60,7 @@ public class PutTapeRecallStatusLogic
         }
         if (fileOnDisk)
         {
-            boolean tapeEnabledVFS = false;
-            try
-            {
-                tapeEnabledVFS = stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled();
-            }
-            catch (NamespaceException e)
-            {
-                //never thrown
-                log.error("Unexpected NamespaceException: " + e);
-                throw new TapeRecallException("Unable to inspect StoRI VFS");
-            }
-            if(tapeEnabledVFS)
+            if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
             {
                 TapeRecallCatalog rtCat = null;
                 try

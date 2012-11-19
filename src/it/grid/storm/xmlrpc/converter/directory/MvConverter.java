@@ -19,16 +19,15 @@ package it.grid.storm.xmlrpc.converter.directory;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.ArrayOfTExtraInfo;
-import it.grid.storm.srm.types.InvalidArrayOfTExtraInfoAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.directory.AnonymousMvInputData;
+import it.grid.storm.synchcall.data.directory.IdentityMvInputData;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidMvInputAttributeException;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
@@ -72,8 +71,6 @@ public class MvConverter implements Converter
         log.debug("SrmMv: Converter :Call received :Creation of MvInputData = " + inputParam.size());
         log.debug("SrmMv: Converter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
 
-        InputData inputData = null;
-
         GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) fromSURL*/
@@ -92,16 +89,15 @@ public class MvConverter implements Converter
             log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
         }
 
-        try {
-            log.debug("SrmMv: Input data creation...");
-            inputData = new MvInputData(guser, fromSURL, toSURL);
-            log.debug("Mv input data created.");
-
-        } catch (InvalidMvInputAttributeException e) {
-            log.debug("Invalid MvInputData Creation!" + e);
+        MvInputData inputData;
+        if(guser != null)
+        {
+            inputData = new IdentityMvInputData(guser, fromSURL, toSURL);            
         }
-
-        // Return Space Reservation Data Created
+        else
+        {
+            inputData = new AnonymousMvInputData(fromSURL, toSURL);
+        }
         return inputData;
 
     }

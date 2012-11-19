@@ -97,6 +97,67 @@ public class PathAuthz implements PathAuthzInterface {
           return pathAuthzDB.evaluateAnonymous(fileStFN, srmPathOp);
     }
     
+    @Override
+    public AuthzDecision authorizeAnonymous(SRMFileRequest pathOperation, StoRI storiSource, StoRI storiDest)
+    {
+        AuthzDecision result = AuthzDecision.INDETERMINATE;
+
+        // Retrieve the StFN source from StoRI
+        StFN sourceFileName = storiSource.getStFN();
+        // Retrieve the StFN destination from StoRI
+        StFN destFileName = storiDest.getStFN();
+
+        switch (pathOperation) {
+            case CPfrom:
+                AuthzDecision fromDec = pathAuthzDB.evaluateAnonymous(sourceFileName, SRMFileRequest.CPfrom);
+                AuthzDecision toDec = pathAuthzDB.evaluateAnonymous(destFileName, SRMFileRequest.CPto);
+                if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
+                    result = AuthzDecision.PERMIT;
+                } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
+                    result = AuthzDecision.DENY;
+                } else if (fromDec.equals(AuthzDecision.NOT_APPLICABLE) || (toDec.equals(AuthzDecision.NOT_APPLICABLE))) {
+                    result = AuthzDecision.NOT_APPLICABLE;
+                }
+                break;
+            case CPto:
+                fromDec = pathAuthzDB.evaluateAnonymous(sourceFileName, SRMFileRequest.CPfrom);
+                toDec = pathAuthzDB.evaluateAnonymous(destFileName, SRMFileRequest.CPto);
+                if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
+                    result = AuthzDecision.PERMIT;
+                } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
+                    result = AuthzDecision.DENY;
+                } else if (fromDec.equals(AuthzDecision.NOT_APPLICABLE) || (toDec.equals(AuthzDecision.NOT_APPLICABLE))) {
+                    result = AuthzDecision.NOT_APPLICABLE;
+                }
+                break;
+            case MV_dest:
+                fromDec = pathAuthzDB.evaluateAnonymous(sourceFileName, SRMFileRequest.MV_source);
+                toDec = pathAuthzDB.evaluateAnonymous(destFileName, SRMFileRequest.MV_dest);
+                if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
+                    result = AuthzDecision.PERMIT;
+                } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
+                    result = AuthzDecision.DENY;
+                } else if (fromDec.equals(AuthzDecision.NOT_APPLICABLE) || (toDec.equals(AuthzDecision.NOT_APPLICABLE))) {
+                    result = AuthzDecision.NOT_APPLICABLE;
+                }
+                break;
+            case MV_source:
+                fromDec = pathAuthzDB.evaluateAnonymous(sourceFileName, SRMFileRequest.MV_source);
+                toDec = pathAuthzDB.evaluateAnonymous(destFileName, SRMFileRequest.MV_dest);
+                if (fromDec.equals(AuthzDecision.PERMIT) && (toDec.equals(AuthzDecision.PERMIT))) {
+                    result = AuthzDecision.PERMIT;
+                } else if (fromDec.equals(AuthzDecision.DENY) || (toDec.equals(AuthzDecision.DENY))) {
+                    result = AuthzDecision.DENY;
+                } else if (fromDec.equals(AuthzDecision.NOT_APPLICABLE) || (toDec.equals(AuthzDecision.NOT_APPLICABLE))) {
+                    result = AuthzDecision.NOT_APPLICABLE;
+                }
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+    
     public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation, StoRI storiSource,
             StoRI storiDest) {
 

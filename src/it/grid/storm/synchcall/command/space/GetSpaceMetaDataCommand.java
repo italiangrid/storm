@@ -33,11 +33,14 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.SpaceCommand;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataOutputAttributeException;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataInputData;
+import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 
 /**
@@ -62,6 +65,8 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
     private static final boolean GLOBALSTATUS = true;
     private static final boolean LOCALSTATUS = false;
 
+    private static final String SRM_COMMAND = "srmGetSpaceMetaData";
+
     /**
      * Constructor. Bind the Executor with ReservedSpaceCatalog
      */
@@ -81,8 +86,18 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
         log.debug(" Updating SA with GPFS quotas results");
         BackgroundGPFSQuota.getInstance().submitGPFSQuota();
         
-        GetSpaceMetaDataInputData data = (GetSpaceMetaDataInputData) indata;
-
+        IdentityGetSpaceMetaDataInputData data;
+        if (indata instanceof IdentityInputData)
+        {
+            data = (IdentityGetSpaceMetaDataInputData) indata;
+        }
+        else
+        {
+            GetSpaceMetaDataOutputData outputData = new GetSpaceMetaDataOutputData();
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
+            printRequestOutcome(outputData.getStatus(), (GetSpaceMetaDataInputData) indata);
+            return outputData;
+        }
         int errorCount = 0;
         ArrayOfTMetaDataSpace arrayData = new ArrayOfTMetaDataSpace();
         TReturnStatus globalStatus = null;
@@ -217,6 +232,18 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
         }
         log.error(formatLogMessage(SUCCESS, LOCALSTATUS, user, token, null, metadata.getStatus()));
         return metadata;
+    }
+    
+    private void printRequestOutcome(TReturnStatus status, GetSpaceMetaDataInputData inputData)
+    {
+        if(inputData != null)
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+        }
     }
 
     /**

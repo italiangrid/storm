@@ -46,11 +46,11 @@ public class FQAN implements SubjectAttribute {
      * Constructor, taking a single FQAN passed as string; assumes VO
      * name is first part of group name.
      */
-    public FQAN(String fqan) {
+    public FQAN(String fqan) throws IllegalArgumentException {
       this(fqan, true);
     }
 
-    public FQAN(String fqan, boolean checkFormedness)
+    public FQAN(String fqan, boolean checkFormedness) throws IllegalArgumentException
     {
         this.checkFormedness = checkFormedness;
         setFqan(fqan);

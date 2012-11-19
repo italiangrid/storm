@@ -22,11 +22,11 @@ public class DataHelper
 
     public static final String ANONYMOUS_REQUESTOR = "Anonymous";
 
-    public static String getRequestor(AbstractInputData data)
+    public static String getRequestor(InputData data)
     {
-        if(data.hasPrincipal())
+        if(data instanceof IdentityInputData)
         {
-            return data.getPrincipal();
+            return ((IdentityInputData)data).getPrincipal();
         }
         else
         {

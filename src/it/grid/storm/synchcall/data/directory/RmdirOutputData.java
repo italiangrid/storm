@@ -25,10 +25,8 @@
  */
 package it.grid.storm.synchcall.data.directory;
 
-import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidRmOutputAttributeException;
 
 public class RmdirOutputData implements OutputData {
 
@@ -38,8 +36,7 @@ public class RmdirOutputData implements OutputData {
 
     }
 
-    public RmdirOutputData(TReturnStatus retStatus)
-            throws InvalidRmOutputAttributeException {
+    public RmdirOutputData(TReturnStatus retStatus)            {
      
         this.returnStatus = retStatus;
        

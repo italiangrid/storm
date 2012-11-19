@@ -37,4 +37,6 @@ public interface PathAuthzInterface {
     
     public AuthzDecision authorizeAnonymous(SRMFileRequest srmPathOp, StFN fileStFN);
 
+    public AuthzDecision authorizeAnonymous(SRMFileRequest mvSource, StoRI fromStori, StoRI toStori);
+
 }

@@ -27,9 +27,12 @@ import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
+import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.SpaceCommand;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.space.IdentityReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 
@@ -58,13 +61,25 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
      */
     private static final Logger log = LoggerFactory.getLogger(ReleaseSpaceCommand.class);
 
+    private static final String SRM_COMMAND = "srmReleaseSpace";
+
     public ReleaseSpaceCommand() {
         catalog = new ReservedSpaceCatalog();
     };
 
     public OutputData execute(InputData indata) {
         ReleaseSpaceOutputData outputData = new ReleaseSpaceOutputData();
-        ReleaseSpaceInputData inputData = (ReleaseSpaceInputData) indata;
+        IdentityReleaseSpaceInputData inputData;
+        if (indata instanceof IdentityInputData)
+        {
+            inputData = (IdentityReleaseSpaceInputData) indata;
+        }
+        else
+        {
+            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
+            printRequestOutcome(outputData.getStatus(), (ReleaseSpaceInputData) indata);
+            return outputData;
+        }
         TReturnStatus returnStatus = null;
 
         /**
@@ -101,7 +116,7 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
         ReleaseSpaceCommand.log.debug("INPUT data not null");
 
-        boolean forceFileRelease = inputData.getForceFileRelease();
+        boolean forceFileRelease = inputData.isForceFileRelease();
         boolean nopinned = true;
         boolean failure = false;
         String explanation = "";
@@ -273,4 +288,16 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
         return returnStatus;
     }
 
+    private void printRequestOutcome(TReturnStatus status, ReleaseSpaceInputData indata)
+    {
+        if(indata != null)
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, indata);
+        }
+        else
+        {
+            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+        }
+    }
+    
 }

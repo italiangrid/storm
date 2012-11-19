@@ -15,11 +15,12 @@
  *  limitations under the License.
  */
 
-package it.grid.storm.synchcall.command.datatransfer;
+package it.grid.storm.asynch;
 
 import it.grid.storm.asynch.BuilderException;
-import it.grid.storm.asynch.InvalidRequestAttributesException;
 import it.grid.storm.asynch.PtG;
+import it.grid.storm.catalogs.AnonymousPtGData;
+import it.grid.storm.catalogs.IdentityPtGData;
 import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
 import it.grid.storm.catalogs.InvalidPtGDataAttributesException;
 import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
@@ -33,6 +34,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +67,16 @@ public class PtGBuilder
         PtGData data;
         try
         {
-            data = new PtGData(toSURL, pinLifetime, dirOption, transferProtocols, fileSize, 
-                                                 status, transferURL);
+            if (inputData instanceof IdentityInputData)
+            {
+                data = new IdentityPtGData(((IdentityInputData)inputData).getUser(), toSURL, pinLifetime, dirOption, transferProtocols, fileSize, 
+                                   status, transferURL);
+            }
+            else
+            {
+                data = new AnonymousPtGData(toSURL, pinLifetime, dirOption, transferProtocols, fileSize, 
+                                   status, transferURL);
+            }
         } catch(InvalidPtGDataAttributesException e)
         {
             log.error("Unable to build PtGChunkData. InvalidPtGChunkDataAttributesException: " + e.getMessage());
@@ -80,13 +90,13 @@ public class PtGBuilder
             log.error("Unable to build PtGChunkData. InvalidSurlRequestDataAttributesException: " + e.getMessage());
             throw new BuilderException("Error building PtG PtGChunkData. Building failed");
         }
-        try
-        {
-            return new PtG(inputData.getUser(), data);
-        } catch(InvalidRequestAttributesException e)
-        {
-            log.error("Unable to build PtG. InvalidRequestAttributesException: " + e.getMessage());
-            throw new BuilderException("Error building PtG. Building failed");
-        }
+//        try
+//        {
+            return new PtG(data);
+//        } catch(InvalidRequestAttributesException e)
+//        {
+//            log.error("Unable to build PtG. InvalidRequestAttributesException: " + e.getMessage());
+//            throw new BuilderException("Error building PtG. Building failed");
+//        }
     }
 }

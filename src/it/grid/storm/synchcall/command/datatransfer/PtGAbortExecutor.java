@@ -34,9 +34,10 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
-import it.grid.storm.synchcall.data.datatransfer.AbortGeneralInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
@@ -60,7 +61,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 
     public PtGAbortExecutor() {};
 
-    public AbortGeneralOutputData doIt(AbortGeneralInputData inputData) {
+    public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
         PtGAbortExecutor.log.debug("srmAbortRequest: Started PtGAbortExecutor");
         
@@ -91,7 +92,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
+            PtGAbortExecutor.log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
             return outputData;
         } catch(ExpiredTokenException e)
         {
@@ -99,7 +100,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
             return outputData;
         }
         if(surlStatusMap.isEmpty()) {
@@ -107,7 +108,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
+            PtGAbortExecutor.log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
             return outputData;
         }
 
@@ -117,7 +118,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
          * in input request
          */
 
-        if(inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_FILES)) 
+        if(inputData.getType().equals( AbortInputData.AbortType.ABORT_FILES)) 
         {
             PtGAbortExecutor.log.debug("PtGAbortExecutor: Case of AbortFile request. Purge Chunks with SurlArray.");
 
@@ -138,7 +139,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                         TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
                         surlReturnStatus.setSurl(surl);
                         surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INVALID_PATH, "SURL specified does not referes to this request token."));
-                        log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surl+"] failed  with [status: "+surlReturnStatus.getStatus()+"]");
+                        log.info("srmAbortFiles: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] for [SURL:"+surl+"] failed  with [status: "+surlReturnStatus.getStatus()+"]");
                         arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
                     }
                 }
@@ -152,7 +153,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             globalStatus = manageStatus(TStatusCode.SRM_FAILURE, "All surl specified does not referes to the request token.");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-            log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
             return outputData;
         }
 
@@ -217,7 +218,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                             globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
                             outputData.setReturnStatus(globalStatus);
                             outputData.setArrayOfFileStatuses(null);
-                            log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+                            log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
                             return outputData;
                         }
                     }
@@ -226,9 +227,9 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     iterator.remove();
 
                     if((surlReturnStatus.getStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS))) {
-                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
+                        PtGAbortExecutor.log.info("srmAbortFiles: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] successfully done  with [status: "+surlReturnStatus.getStatus()+"]");
                     } else {
-                        PtGAbortExecutor.log.info("srmAbortFiles: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
+                        PtGAbortExecutor.log.info("srmAbortFiles: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] for SURL "+numOfSurl+" of "+totalSize+" [SURL:"+surlStatus.getKey()+"] failed with [status: "+surlReturnStatus.getStatus()+"]");
                         errorCount++;
                     }
                     //Add returnStatus
@@ -263,7 +264,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Expired request token");
                     outputData.setReturnStatus(globalStatus);
                     outputData.setArrayOfFileStatuses(null);
-                    PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
+                    PtGAbortExecutor.log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] successfully done with [status: "+globalStatus+"]");
                     return outputData;
                 } catch(ExpiredTokenException e)
                 {
@@ -271,7 +272,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
                     globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
                     outputData.setReturnStatus(globalStatus);
                     outputData.setArrayOfFileStatuses(null);
-                    log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+                    log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
                     return outputData;
                 }
                 log.debug("srmAbortRequest: PtGAbortExecutor: refresh done.");
@@ -287,7 +288,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             globalStatus = manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"TimeOut for abort execution exceeded.");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-            log.warn("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+            log.warn("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
             return outputData;
         }
 
@@ -299,7 +300,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
         {
             if (errorCount > 0)
             {
-                if (inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_REQUEST))
+                if (inputData.getType().equals( AbortInputData.AbortType.ABORT_REQUEST))
                 {
                     globalStatus = manageStatus(TStatusCode.SRM_FAILURE, "Some chunks failed.");
                 }
@@ -311,7 +312,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
             else
             {
                 globalStatus = manageStatus(TStatusCode.SRM_SUCCESS, "Abort request completed.");
-                if ((inputData.getType().equals( AbortGeneralInputData.AbortType.ABORT_FILES)))
+                if ((inputData.getType().equals( AbortInputData.AbortType.ABORT_FILES)))
                 {
                     TReturnStatus requestStatus = manageStatus(TStatusCode.SRM_ABORTED, "Request Aborted.");
                     RequestSummaryCatalog.getInstance().updateGlobalStatus(inputData.getRequestToken(), requestStatus);
@@ -321,13 +322,13 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
         //Set output data
         outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
         outputData.setReturnStatus(globalStatus);
-        PtGAbortExecutor.log.info("srmAbortRequest: <"+inputData.getUser()+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
+        PtGAbortExecutor.log.info("srmAbortRequest: <"+DataHelper.getRequestor(inputData)+"> Request for [token:"+inputData.getRequestToken()+"] failed with [status: "+globalStatus+"]");
         return outputData;
 
     }
 
 
-    private ArrayOfSURLs extractSurlArray(AbortGeneralInputData inputData)
+    private ArrayOfSURLs extractSurlArray(AbortInputData inputData)
     {
         switch (inputData.getType())
         {
