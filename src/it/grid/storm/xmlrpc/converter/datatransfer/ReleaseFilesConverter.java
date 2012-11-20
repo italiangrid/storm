@@ -28,8 +28,11 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseFilesInputData;
-import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
@@ -61,7 +64,7 @@ public class ReleaseFilesConverter implements Converter
             log.debug("requestToken=" + requestToken.toString());
         } catch (InvalidTRequestTokenAttributesException e) {
             requestToken = null;
-            log.debug("requestToken=NULL");
+            log.error("unable to decode request token. InvalidTRequestTokenAttributesException: " + e.getMessage());
         }
 
         /* (3) anyURI[] arrayOfSURLs */
@@ -73,14 +76,42 @@ public class ReleaseFilesConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        ReleaseFilesInputData inputData;
+        InputData inputData;
         if(guser != null)
         {
-            inputData = new IdentityReleaseFilesInputData(guser, requestToken, arrayOfSURLs);
+            if(requestToken != null)
+            {
+                if(arrayOfSURLs != null && arrayOfSURLs.size() > 0)
+                {
+                    inputData = new IdentityReleaseRequestFilesInputData(guser, requestToken, arrayOfSURLs);                    
+                }
+                else
+                {
+                    inputData = new IdentityReleaseRequestInputData(guser, requestToken);
+                }
+            }
+            else
+            {
+                inputData = new IdentityReleaseFilesInputData(guser, arrayOfSURLs);
+            }
         }
         else
         {
-            inputData = new AnonymousReleaseFilesInputData(requestToken, arrayOfSURLs);
+            if(requestToken != null)
+            {
+                if(arrayOfSURLs != null && arrayOfSURLs.size() > 0)
+                {
+                    inputData = new AnonymousReleaseRequestFilesInputData(requestToken, arrayOfSURLs);                    
+                }
+                else
+                {
+                    inputData = new AnonymousReleaseRequestInputData(requestToken);
+                }
+            }
+            else
+            {
+                inputData = new AnonymousReleaseFilesInputData(arrayOfSURLs);
+            }
         }
         return inputData;
     }

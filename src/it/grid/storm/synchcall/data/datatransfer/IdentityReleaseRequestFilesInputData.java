@@ -19,17 +19,18 @@ package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.IdentityInputData;
 
-public class IdentityReleaseFilesInputData extends AnonymousReleaseFilesInputData implements
+public class IdentityReleaseRequestFilesInputData extends AnonymousReleaseRequestFilesInputData implements
         IdentityInputData
 {
     private final GridUserInterface auth;
 
-    public IdentityReleaseFilesInputData(GridUserInterface auth,
+    public IdentityReleaseRequestFilesInputData(GridUserInterface auth, TRequestToken requestToken,
             ArrayOfSURLs arrayOfSURLs) throws IllegalArgumentException
     {
-        super(arrayOfSURLs);
+        super(requestToken, arrayOfSURLs);
         if (auth == null)
         {
             throw new IllegalArgumentException("Unable to create the object, invalid arguments: auth=" + auth);

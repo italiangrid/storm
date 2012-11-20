@@ -35,6 +35,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesOutputData;
+import it.grid.storm.synchcall.data.datatransfer.ReleaseRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.ReleaseRequestInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
@@ -75,31 +77,31 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
      * Does a ReleaseFiles. Used to release pins on the previously requested "copies" (or "state") of the
      * SURL. This function normally follows a srmPrepareToGet or srmBringOnline functions.
      */
-    public OutputData execute(InputData data) {
+    public OutputData execute(InputData inputData) {
 
         
-        ReleaseFilesOutputData outputData = new ReleaseFilesOutputData();
-        ReleaseFilesInputData inputData = (ReleaseFilesInputData) data;
-
         log.debug("Started ReleaseFiles function");
-
+        ReleaseFilesOutputData outputData = new ReleaseFilesOutputData();
         /******************** Check for malformed request: missing mandatory input parameters ****************/
-        if (inputData == null
-                || ((inputData.getArrayOfSURLs() == null || inputData.getArrayOfSURLs().size() == 0) && inputData.getRequestToken() == null))
+        if (inputData == null)
         {
-            log.error("ReleaseFiles: Invalid input parameters specified");
-            outputData.setReturnStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-                                                                 "Missing mandatory parameters (requestToken or arrayOfSURLs must be specified)"));
+            log.error("ReleaseFiles: Invalid input parameters specified: inputData=" + inputData);
+            outputData.setReturnStatus(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+                                                                 "Empty request parametes"));
             outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(outputData.getReturnStatus(), inputData);
             return outputData;
         }
+        
+        if(!(inputData instanceof ReleaseRequestFilesInputData || inputData instanceof ReleaseFilesInputData || inputData instanceof ReleaseRequestInputData))
+        {
+            throw new IllegalArgumentException("Unable to execute the task. Wrong input argumenbt type: " + inputData.getClass());
+        }
 
-        TRequestToken requestToken = inputData.getRequestToken();
         Map<TSURL, TReturnStatus> surlStastuses;
         try
         {
-            surlStastuses = getSurlsStatus(requestToken, inputData.getArrayOfSURLs());
+            surlStastuses = getSurlsStatus(inputData);
         } catch(IllegalArgumentException e)
         {
             log.warn("Unexpected IllegalArgumentException in getSurlsStatus: " + e);
@@ -135,22 +137,27 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             // Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or SRM_FAILURE are returned.
             log.info("No SURLs found in the DB. Request failed");
             TReturnStatus returnStatus;
-            if (requestToken != null)
+            if(inputData instanceof ReleaseRequestFilesInputData)
             {
-                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token, no match with provided surls");
             }
             else
             {
-                if (inputData.getArrayOfSURLs() != null)
+                if(inputData instanceof ReleaseRequestInputData)
                 {
-
-                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-                                                    "None of the specified SURLs was found");
+                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
                 }
                 else
                 {
-                    //impossible
-                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "Internal error. Precondition check mismatch");
+                    if(inputData instanceof ReleaseFilesInputData)
+                    {
+                        returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
+                        "None of the specified SURLs was found");                        
+                    }
+                    else
+                    {
+                        throw new IllegalStateException("Unexpected InputData received: " + inputData.getClass());
+                    }
                 }
             }
             outputData.setReturnStatus(returnStatus);
@@ -159,21 +166,30 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             return outputData;
         }
         ArrayOfTSURLReturnStatus surlReturnStatuses;
-        if (inputData.getArrayOfSURLs() == null || inputData.getArrayOfSURLs().size() == 0)
+        if(inputData instanceof ReleaseFilesInputData)
         {
-            surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses, requestToken);
+            surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses,
+                                                          ((ReleaseFilesInputData)inputData).getArrayOfSURLs());
+            
         }
         else
         {
-            surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses, requestToken,
-                                                          inputData.getArrayOfSURLs());
+            surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses);            
         }
         List<TSURL> surlToRelease = extractSurlToRelease(surlReturnStatuses);
         if (!surlToRelease.isEmpty())
         {
             try
             {
-                expireSurls(surlToRelease, requestToken);
+                if(inputData instanceof ReleaseRequestInputData)
+                {
+                    expireSurls(surlToRelease, ((ReleaseRequestInputData)inputData).getRequestToken());
+                }
+                else
+                {
+                    expireSurls(surlToRelease);
+                }
+                
             } catch(IllegalArgumentException e)
             {
                 log.warn("Unexpected IllegalArgumentException in expireSurls: " + e);
@@ -247,52 +263,101 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return outputData;
     }
 
-    private Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken,
-            ArrayOfSURLs arrayOfSURLs) throws RequestUnknownException, IllegalArgumentException, UnknownTokenException, ExpiredTokenException
+    private Map<TSURL, TReturnStatus> getSurlsStatus(InputData inputData) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException, ExpiredTokenException
     {
-        if ((requestToken == null) && (arrayOfSURLs == null))
+        if(inputData instanceof ReleaseRequestFilesInputData)
         {
-            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
-                    + requestToken + " arrayOfSURLs=" + arrayOfSURLs);
-        }
-        Map<TSURL, TReturnStatus> surlsStatuses = null;
-        if (requestToken != null)
-        {
-            surlsStatuses = SurlStatusManager.getSurlsStatus(requestToken, arrayOfSURLs.getArrayList());
-            if (surlsStatuses.isEmpty())
-            {
-                log.info("No one of the requested surls found for the provided token");
-                throw new RequestUnknownException("No one of the requested surls found for the provided token");
-            }
+            return getSurlsStatus(((ReleaseRequestFilesInputData)inputData).getRequestToken(), ((ReleaseRequestFilesInputData)inputData).getArrayOfSURLs());
         }
         else
         {
-            surlsStatuses = new HashMap<TSURL, TReturnStatus>();
-            for(TSURL surl : arrayOfSURLs.getArrayList())
+            if(inputData instanceof ReleaseFilesInputData)
             {
-                try
+                return getSurlsStatus(((ReleaseFilesInputData)inputData).getArrayOfSURLs());
+            }
+            else
+            {
+                if(inputData instanceof ReleaseRequestInputData)
                 {
-                    surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl));
-                } catch(IllegalArgumentException e)
+                    return getSurlsStatus(((ReleaseRequestInputData)inputData).getRequestToken());
+                }
+                else
                 {
-                    throw new IllegalStateException("Unexpected IllegalArgumentException in getSurlsStatus: "
-                            + e);
-                } catch(UnknownSurlException e)
-                {
-                    log.info("Requested surl " + surl + " is unknown");
+                    throw new IllegalStateException();
                 }
             }
-            if (surlsStatuses.isEmpty())
-            {
-                log.info("No one of the requested surls found for the provided token");
-                throw new RequestUnknownException("No one of the requested surls found for the provided token");
-            }
+            
+        }
+    }
+
+    private Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken)
+            throws RequestUnknownException, IllegalArgumentException, UnknownTokenException,
+            ExpiredTokenException
+    {
+        if (requestToken == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken);
+        }
+        Map<TSURL, TReturnStatus> surlsStatuses = SurlStatusManager.getSurlsStatus(requestToken);
+        if (surlsStatuses.isEmpty())
+        {
+            log.info("No one of the requested surls found for the provided token");
+            throw new RequestUnknownException("No one of the requested surls found for the provided token");
         }
         return surlsStatuses;
     }
 
-    private ArrayOfTSURLReturnStatus prepareSurlsReturnStatus(Map<TSURL, TReturnStatus> surlStastuses,
-            TRequestToken requestToken)
+    private Map<TSURL, TReturnStatus> getSurlsStatus(ArrayOfSURLs arrayOfSURLs)
+            throws RequestUnknownException, IllegalArgumentException
+    {
+        if (arrayOfSURLs == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: arrayOfSURLs="
+                    + arrayOfSURLs);
+        }
+        Map<TSURL, TReturnStatus> surlsStatuses = new HashMap<TSURL, TReturnStatus>();
+        for (TSURL surl : arrayOfSURLs.getArrayList())
+        {
+            try
+            {
+                surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl));
+            } catch(IllegalArgumentException e)
+            {
+                throw new IllegalStateException("Unexpected IllegalArgumentException in getSurlsStatus: " + e);
+            } catch(UnknownSurlException e)
+            {
+                log.info("Requested surl " + surl + " is unknown");
+            }
+        }
+        if (surlsStatuses.isEmpty())
+        {
+            log.info("No one of the requested surls found for the provided token");
+            throw new RequestUnknownException("No one of the requested surls found for the provided token");
+        }
+        return surlsStatuses;
+    }
+    
+    private Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs)
+            throws RequestUnknownException, IllegalArgumentException, UnknownTokenException,
+            ExpiredTokenException
+    {
+        if (requestToken == null || arrayOfSURLs == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken + " arrayOfSURLs=" + arrayOfSURLs);
+        }
+        Map<TSURL, TReturnStatus> surlsStatuses = SurlStatusManager.getSurlsStatus(requestToken,
+                                                                                   arrayOfSURLs.getArrayList());
+        if (surlsStatuses.isEmpty())
+        {
+            log.info("No one of the requested surls found for the provided token");
+            throw new RequestUnknownException("No one of the requested surls found for the provided token");
+        }
+        return surlsStatuses;
+    }
+
+    private ArrayOfTSURLReturnStatus prepareSurlsReturnStatus(Map<TSURL, TReturnStatus> surlStastuses)
     {
         ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(surlStastuses.size());
         for (Entry<TSURL, TReturnStatus> surlStatus : surlStastuses.entrySet())
@@ -314,7 +379,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
     
     private ArrayOfTSURLReturnStatus prepareSurlsReturnStatus(Map<TSURL, TReturnStatus> surlStastuses,
-            TRequestToken requestToken, ArrayOfSURLs arrayOfUserSURLs)
+            ArrayOfSURLs arrayOfUserSURLs)
     {
         ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(surlStastuses.size());
         for(TSURL surl : arrayOfUserSURLs.getArrayList())
@@ -356,39 +421,54 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return surlToRelease;
     }
 
-    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException, UnknownSurlException
+    private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken)
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException,
+            UnknownSurlException
     {
-        if(requestToken != null)
+        if (surlToRelease == null || surlToRelease.isEmpty() || requestToken == null)
         {
-            SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease,
-                                                   TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED);
-            SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease,
-                                                   TStatusCode.SRM_SUCCESS, TStatusCode.SRM_RELEASED);
+            throw new IllegalArgumentException("unable to expire Surls, null arguments: surlToRelease="
+                    + surlToRelease + " requestToken=" + requestToken);
         }
-        else
+
+        SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease, TStatusCode.SRM_FILE_PINNED,
+                                               TStatusCode.SRM_RELEASED);
+        SurlStatusManager.checkAndUpdateStatus(requestToken, surlToRelease, TStatusCode.SRM_SUCCESS,
+                                               TStatusCode.SRM_RELEASED);
+    }
+
+    private void expireSurls(List<TSURL> surlToRelease) throws IllegalArgumentException,
+            UnknownTokenException, ExpiredTokenException, UnknownSurlException
+    {
+        if (surlToRelease == null)
         {
-            for(TSURL surl : surlToRelease)
+            throw new IllegalArgumentException("unable to expire Surls, null arguments: surlToRelease="
+                    + surlToRelease);
+        }
+        for (TSURL surl : surlToRelease)
+        {
+            Map<TRequestToken, TReturnStatus> tokenStatusMap = SurlStatusManager.getSurlCurrentStatuses(surl);
+            for (Entry<TRequestToken, TReturnStatus> tokenStatus : tokenStatusMap.entrySet())
             {
-                Map<TRequestToken, TReturnStatus> tokenStatusMap = SurlStatusManager.getSurlCurrentStatuses(surl);
-                for(Entry<TRequestToken, TReturnStatus> tokenStatus : tokenStatusMap.entrySet())
+                if (TStatusCode.SRM_FILE_PINNED.equals(tokenStatus.getValue().getStatusCode()))
                 {
-                    if(TStatusCode.SRM_FILE_PINNED.equals(tokenStatus.getValue().getStatusCode()))
+                    SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(), surlToRelease,
+                                                           TStatusCode.SRM_FILE_PINNED,
+                                                           TStatusCode.SRM_RELEASED);
+                }
+                else
+                {
+                    if (TStatusCode.SRM_SUCCESS.equals(tokenStatus.getValue().getStatusCode()))
                     {
                         SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(), surlToRelease,
-                                                               TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED);
-                    }
-                    else
-                    {
-                        if(TStatusCode.SRM_SUCCESS.equals(tokenStatus.getValue().getStatusCode()))
-                        {
-                            SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(), surlToRelease,
-                                                                   TStatusCode.SRM_SUCCESS, TStatusCode.SRM_RELEASED);
-                        }
+                                                               TStatusCode.SRM_SUCCESS,
+                                                               TStatusCode.SRM_RELEASED);
                     }
                 }
-            }    
+            }
         }
     }
+
 
     /**
      * Removes the Extended Attribute "pinned" from SURLs belonging to a filesystem with tape support.
@@ -414,38 +494,37 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         }
     }
 
-    private static void printRequestOutcome(TReturnStatus status, ReleaseFilesInputData inputData)
+    private static void printRequestOutcome(TReturnStatus status, InputData inputData)
     {
         if (inputData != null)
         {
-            if (inputData.getArrayOfSURLs() != null)
+            if (inputData instanceof ReleaseRequestFilesInputData)
             {
-                if (inputData.getRequestToken() != null)
-                {
-                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-                                                      inputData.getRequestToken(),
-                                                      inputData.getArrayOfSURLs().asStringList());
-                }
-                else
-                {
-                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-                                                      inputData.getArrayOfSURLs().asStringList());
-                }
-
+                CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+                                                  ((ReleaseRequestFilesInputData)inputData).getRequestToken(), ((ReleaseRequestFilesInputData)inputData).getArrayOfSURLs()
+                                                                                        .asStringList());
             }
             else
             {
-                if (inputData.getRequestToken() != null)
+                if (inputData instanceof ReleaseFilesInputData)
                 {
                     CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-                                                      inputData.getRequestToken());
+                                                      ((ReleaseFilesInputData)inputData).getArrayOfSURLs().asStringList());
                 }
                 else
                 {
-                    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+                    if (inputData instanceof ReleaseRequestInputData)
+                    {
+                        CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+                                                          ((ReleaseRequestInputData)inputData).getRequestToken());
+                    }
+                    else
+                    {
+                        CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+                    }
                 }
-            }
 
+            }
         }
         else
         {
@@ -453,7 +532,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         }
     }
     
-    private void printSurlOutcome(TSURLReturnStatus surlStatus, ReleaseFilesInputData inputData)
+    private void printSurlOutcome(TSURLReturnStatus surlStatus, InputData inputData)
     {
         CommandHelper.printSurlOutcome(SRM_COMMAND, log, surlStatus.getStatus(), inputData, surlStatus.getSurl());   
     }
