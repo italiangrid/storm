@@ -73,7 +73,7 @@ public class CommandHelper
     public static void printRequestOutcome(String srmCommand, Logger log, TReturnStatus status,
             InputData inputData)
     {
-        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS) || status.getStatusCode().equals(TStatusCode.SRM_SPACE_AVAILABLE))
         {
             log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
                     + "> Request successfully done with: [status: " + status + "]");

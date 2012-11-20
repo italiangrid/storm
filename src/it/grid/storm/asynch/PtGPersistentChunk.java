@@ -25,7 +25,6 @@ import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.CommandHelper;
-import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import org.slf4j.Logger;
@@ -106,19 +105,6 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk{
         this.gsm = gsm;
     }
 
-	  /**
-     * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
-     */
-	public void doIt() {
-
-		log.info("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
-			+ requestData.getSURL() + "; for requestToken: " + rsd.requestToken());
-		super.doIt();
-		log.info("Finished handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
-			+ requestData.getSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
-			+ requestData.getStatus());
-	}
-	
 	@Override
 	public Boolean completeRequest(TapeRecallStatus recallStatus) {
 

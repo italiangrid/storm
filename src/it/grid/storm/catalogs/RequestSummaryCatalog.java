@@ -280,7 +280,7 @@ public class RequestSummaryCatalog {
         RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for " + dn + " " + fqans_string + " " + proxyString);
         if ((dn != null) && (fqans_vector != null) && (fqans_vector.length > 0) && (proxyString != null)) {
             // all credentials available!
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request " + rtoken);
+            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request " + rtoken);
             GridUserInterface gridUser = null;
             try
             {
@@ -294,7 +294,7 @@ public class RequestSummaryCatalog {
             return gridUser;
         } else if ((dn != null) && (fqans_vector != null && fqans_vector.length > 0) && (proxyString == null)) {
             // voms credentials without proxy
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request " + rtoken);
+            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request " + rtoken);
             GridUserInterface gridUser = null;
             try
             {
@@ -308,11 +308,11 @@ public class RequestSummaryCatalog {
             return gridUser;
         } else if ((dn != null) && (fqans_string == null) && (proxyString != null)) {
             // NON-voms credentials with proxy
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN and Proxy found for request " + rtoken);
+            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! DN and Proxy found for request " + rtoken);
             return GridUserManager.makeGridUser(dn, proxyString);
         } else if ((dn != null) && (fqans_string == null) && (proxyString == null)) {
             // NON-voms credentials without proxy
-            RequestSummaryCatalog.log.info("REQUEST SUMMARY CATALOG! DN only found for request " + rtoken);
+            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG! DN only found for request " + rtoken);
             return GridUserManager.makeGridUser(dn);
         } else {
             // unmanageble combination!

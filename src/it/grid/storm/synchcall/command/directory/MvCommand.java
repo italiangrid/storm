@@ -268,8 +268,6 @@ public class MvCommand extends DirectoryCommand implements Command {
             returnStatus = manageAuthorizedMV(fromStori, toStori.getLocalFile());
             if (returnStatus.isSRM_SUCCESS())
             {
-                log.info("srmMv: <" + DataHelper.getRequestor(inputData) + "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-                        + "] successfully done with [status: " + returnStatus + "]");
                 LocalUser user = null;
                 if (inputData instanceof IdentityInputData)
                 {

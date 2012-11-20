@@ -1080,8 +1080,8 @@ public class PtPChunkDAO {
         {
             str += buildTokenWhereClause(requestToken) + " AND ";
         }
-        str += " rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surls);
+        str += " ( rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rp.targetSURL IN " + makeSurlString(surls) + " ) ";
         PreparedStatement stmt = null;
         try
         {
@@ -1244,9 +1244,9 @@ public class PtPChunkDAO {
                 + "sp.statusCode "
                 + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
                 + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
-                + "WHERE rp.targetSURL_uniqueID IN "
+                + "WHERE ( rp.targetSURL_uniqueID IN "
                 + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surlsArray);
+                + " OR rp.targetSURL IN " + makeSurlString(surlsArray) + " ) ";
             
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
@@ -1367,8 +1367,8 @@ public class PtPChunkDAO {
     
     private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
     {
-        return " rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surls);
+        return " ( rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rp.targetSURL IN " + makeSurlString(surls) + " ) ";
     }
     
     /**

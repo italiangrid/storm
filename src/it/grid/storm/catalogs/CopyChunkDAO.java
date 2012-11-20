@@ -346,7 +346,7 @@ public class CopyChunkDAO {
                       + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
                       + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
                       + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-                      + "WHERE rq.r_token=? AND rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rc.sourceSURL IN " + makeSurlString(surls);
+                      + "WHERE rq.r_token=? AND ( rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rc.sourceSURL IN " + makeSurlString(surls) + " ) ";
             
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
@@ -709,9 +709,9 @@ public class CopyChunkDAO {
                     + "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
                     + "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
                     + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-                    + "WHERE rc.sourceSURL_uniqueID IN "
+                    + "WHERE ( rc.sourceSURL_uniqueID IN "
                     + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rc.sourceSURL IN " + makeSurlString(surlsArray);
+                    + " OR rc.sourceSURL IN " + makeSurlString(surlsArray) + " ) ";
             
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
@@ -776,8 +776,8 @@ public class CopyChunkDAO {
     
     private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
     {
-        return " rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rc.sourceSURL IN " + makeSurlString(surls);
+        return " ( rc.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rc.sourceSURL IN " + makeSurlString(surls) + " ) ";
     }
 
 }

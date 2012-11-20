@@ -768,7 +768,7 @@ public class PtGChunkDAO {
             String str = "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
                              + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                              + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
-                             + "WHERE rq.r_token=? AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rg.sourceSURL IN " + makeSurlString(surlsArray);
+                             + "WHERE rq.r_token=? AND ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rg.sourceSURL IN " + makeSurlString(surlsArray) + " ) ";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             
@@ -833,7 +833,7 @@ public class PtGChunkDAO {
 			String str = "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
 							 + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
 							 + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
-							 + "WHERE rq.client_dn=? AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rg.sourceSURL IN " + makeSurlString(surls);
+							 + "WHERE rq.client_dn=? AND ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rg.sourceSURL IN " + makeSurlString(surls) + " ) ";
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 			
@@ -1395,8 +1395,8 @@ public class PtGChunkDAO {
         String str = "UPDATE "
                 + "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
                 + "SET sg.statusCode=? , sg.explanation=? " + "WHERE rq.r_token='" + requestToken.toString()
-                + "' AND rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs)
-                + " OR rg.sourceSURL IN " + makeSurlString(surls);
+                + "' AND ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs)
+                + " OR rg.sourceSURL IN " + makeSurlString(surls) + " ) ";
         PreparedStatement stmt = null;
         try
         {
@@ -1777,8 +1777,8 @@ public class PtGChunkDAO {
                     + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
                     + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
-                    + "WHERE rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rg.sourceSURL IN " + makeSurlString(surlsArray);
+                    + "WHERE ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                    + " OR rg.sourceSURL IN " + makeSurlString(surlsArray) + " ) ";
 
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
@@ -1853,8 +1853,8 @@ public class PtGChunkDAO {
     
     private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
     {
-        return " rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rg.sourceSURL IN " + makeSurlString(surls);
+        return " ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rg.sourceSURL IN " + makeSurlString(surls) + " ) ";
     }
 
 }

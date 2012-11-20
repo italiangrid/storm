@@ -718,7 +718,7 @@ public class BoLChunkDAO {
             String str = "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
                              + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
                              + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
-                             + "WHERE rq.r_token=? AND rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rb.sourceSURL IN " + makeSurlString(surls);
+                             + "WHERE rq.r_token=? AND ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rb.sourceSURL IN " + makeSurlString(surls) + " ) ";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             
@@ -780,7 +780,7 @@ public class BoLChunkDAO {
 			String str = "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
 							 + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
 							 + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
-							 + "WHERE rq.client_dn=? AND rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rb.sourceSURL IN " + makeSurlString(surls);
+							 + "WHERE rq.client_dn=? AND ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rb.sourceSURL IN " + makeSurlString(surls) + " ) ";
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             
@@ -1712,7 +1712,7 @@ public class BoLChunkDAO {
     
     private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls)
     {
-        return " rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rb.sourceSURL IN " + makeSurlString(surls);
+        return " ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                + " OR rb.sourceSURL IN " + makeSurlString(surls) + " ) ";
     }
 }

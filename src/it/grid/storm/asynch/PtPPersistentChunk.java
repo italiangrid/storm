@@ -22,7 +22,6 @@ import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.CommandHelper;
-import it.grid.storm.synchcall.data.DataHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,19 +67,6 @@ public class PtPPersistentChunk extends PtP implements PersistentRequestChunk
         this.gsm = gsm;
     }
 
-    /**
-     * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
-     */
-    public void doIt()
-    {
-        PtPPersistentChunk.log.info("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
-                + requestData.getSURL() + "; for requestToken: " + rsd.requestToken());
-        super.doIt();
-        log.info("Finished handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
-                 + requestData.getSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
-                 + requestData.getStatus());
-    }
-    
     /**
      * Method that supplies a String describing this PtGChunk - for scheduler Log purposes! It returns the request token
      * and the SURL that was asked for.
