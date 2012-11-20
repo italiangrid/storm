@@ -32,7 +32,6 @@
 
 package it.grid.storm.filesystem;
 
-import it.grid.storm.acl.AclManager;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -439,13 +438,13 @@ public class LocalFile {
                 long blocksSize = CUtilManager.getFileBlocksSize(localFile.getAbsolutePath());
                 if (blocksSize >= localFile.length()) {
     
-                    log.info("File is on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
+                    log.debug("File is on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
                             + " file=" + localFile.getAbsolutePath());
                     return true;
                 }
                 else
                 {
-                    log.info("File is NOT on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
+                    log.debug("File is NOT on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
                              + " file=" + localFile.getAbsolutePath());
                     return false;
                 }

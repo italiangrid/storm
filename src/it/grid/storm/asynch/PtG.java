@@ -120,7 +120,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
 
         log.info("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
             + requestData.getSURL());
-        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {
             failure = true;
             requestData.changeStatusSRM_FILE_BUSY("Requested file is"
@@ -1075,10 +1075,10 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         {
             if (inputData.getSURL() != null)
             {
-                if (inputData.getGeneratedRequestToken() != null)
+                if (inputData.getRequestToken() != null)
                 {
                     CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-                                                      inputData.getGeneratedRequestToken(),
+                                                      inputData.getRequestToken(),
                                                       Arrays.asList(inputData.getSURL().toString()));
                 }
                 else
@@ -1090,10 +1090,10 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             }
             else
             {
-                if (inputData.getGeneratedRequestToken() != null)
+                if (inputData.getRequestToken() != null)
                 {
                     CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-                                                      inputData.getGeneratedRequestToken());
+                                                      inputData.getRequestToken());
                 }
                 else
                 {

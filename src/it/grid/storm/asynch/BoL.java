@@ -21,7 +21,8 @@ import java.util.Map;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.BoLPersistentChunkData;
+import it.grid.storm.catalogs.BoLData;
+import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -99,7 +100,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
     /** GridUser that made the request */
     protected GridUserInterface gu = null;
     /** BoLChunkData that holds the specific info for this chunk */
-    protected BoLPersistentChunkData requestData = null;
+    protected BoLData requestData = null;
     /** boolean that indicates a chunk failure */
     protected boolean failure = false;
 
@@ -113,7 +114,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
      * Constructor requiring the GridUser, the RequestSummaryData and the BoLChunkData about this chunk. If the supplied
      * attributes are null, an InvalidBoLChunkAttributesException is thrown.
      */
-    public BoL(GridUserInterface gu, BoLPersistentChunkData chunkData) throws InvalidRequestAttributesException {
+    public BoL(GridUserInterface gu, BoLData chunkData) throws InvalidRequestAttributesException {
         if (gu == null || chunkData == null) {
             throw new InvalidRequestAttributesException(gu, chunkData);
         }
@@ -179,7 +180,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
         log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
 
-        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {
             failure = true;
             requestData.changeStatusSRM_FILE_BUSY("Requested file is"
@@ -243,7 +244,8 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
         printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
     }
 
-    public BoLPersistentChunkData getRequestData() {
+    @Override
+    public RequestData getRequestData() {
         return requestData;
     }
 

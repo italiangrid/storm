@@ -29,17 +29,19 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
             try
             {
                 boolean notStored = true;
-                while(notStored)
-                try
+                while (notStored)
                 {
-                    notStored = false;
-                    SurlStatusStore.getInstance().store(generatedRequestToken,
-                                                        buildSurlStatusMap(surl, status.getStatusCode(),
-                                                                           status.getExplanation()));
-                } catch(TokenDuplicationException e)
-                {
-                    notStored = true;
-                    generatedRequestToken = TRequestToken.getRandom();
+                    try
+                    {
+                        notStored = false;
+                        SurlStatusStore.getInstance().store(generatedRequestToken,
+                                                            buildSurlStatusMap(surl, status.getStatusCode(),
+                                                                               status.getExplanation()));
+                    } catch(TokenDuplicationException e)
+                    {
+                        notStored = true;
+                        generatedRequestToken = TRequestToken.getRandom();
+                    }
                 }
             } catch(IllegalArgumentException e)
             {
@@ -81,6 +83,12 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
     public TRequestToken getGeneratedRequestToken()
     {
         return generatedRequestToken;
+    }
+
+    @Override
+    public TRequestToken getRequestToken()
+    {
+        return getGeneratedRequestToken();
     }
     
     /**

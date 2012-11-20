@@ -17,6 +17,7 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
@@ -31,6 +32,8 @@ import it.grid.storm.synchcall.data.InputData;
  */
 public interface RequestData extends InputData{
 
+    public TRequestToken getRequestToken();
+    
     public abstract TReturnStatus getStatus();
 
     public abstract TSURL getSURL();

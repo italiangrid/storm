@@ -168,7 +168,7 @@ public class PtP implements Delegable, Chooser, Request
     public void doIt()
     {
         PtP.log.info("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
-        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getGeneratedRequestToken()))
+        if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {//should return SRM_DUPLICATION_ERROR if file overwrite disabled instead of SRM_FILE_BUSY
             failure = true;
             requestData.changeStatusSRM_FILE_BUSY("The surl " + requestData.getSURL() + " is currently busy");
@@ -1207,10 +1207,10 @@ public class PtP implements Delegable, Chooser, Request
         {
             if (inputData.getSURL() != null)
             {
-                if (inputData.getGeneratedRequestToken() != null)
+                if (inputData.getRequestToken() != null)
                 {
                     CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-                                                      inputData.getGeneratedRequestToken(),
+                                                      inputData.getRequestToken(),
                                                       Arrays.asList(inputData.getSURL().toString()));
                 }
                 else
@@ -1222,10 +1222,10 @@ public class PtP implements Delegable, Chooser, Request
             }
             else
             {
-                if (inputData.getGeneratedRequestToken() != null)
+                if (inputData.getRequestToken() != null)
                 {
                     CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-                                                      inputData.getGeneratedRequestToken());
+                                                      inputData.getRequestToken());
                 }
                 else
                 {

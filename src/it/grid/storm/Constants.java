@@ -82,8 +82,8 @@ public class Constants {
         String svnRevision = prop.getProperty("svn.revision.number","N/A");
         String buildDate = prop.getProperty("build.date","N/A");
     	BE_VERSION = new Entry("BE-Version", version+"-"+age);
-    	log.info("SVN-Revision : "+svnRevision);
-    	log.info("Build Date   : "+buildDate);
+    	log.debug("SVN-Revision : "+svnRevision);
+    	log.debug("Build Date   : "+buildDate);
     }
     
     /**

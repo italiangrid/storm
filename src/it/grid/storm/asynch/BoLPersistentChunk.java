@@ -103,32 +103,17 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
         persistStatus();
         if (requestSuccessfull)
         {
-            gsm.successfulChunk(requestData);
+            gsm.successfulChunk((BoLPersistentChunkData) requestData);
             log.info("Completed BoL request (" + rsd.requestToken()
                     + "), file successfully recalled from tape: " + requestData.getSURL().toString());
         }
         else
         {
-            gsm.failedChunk(requestData);
+            gsm.failedChunk((BoLPersistentChunkData) requestData);
             log.error("BoL request (" + requestData.getRequestToken() + "), file not recalled from tape: "
                     + requestData.getSURL().toString());
         }
         return requestSuccessfull;
-    }
-
-    /**
-     * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
-     */
-    @Override
-    public void doIt() {
-
-        log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL()
-                + "; for requestToken: " + rsd.requestToken());
-        super.doIt();
-
-        log.info("Finished handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: "
-                + requestData.getSURL() + "; for requestToken: " + rsd.requestToken() + "; result is: "
-                + requestData.getStatus());
     }
 
     /**
@@ -154,9 +139,9 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
          */
         if (requestData.getStatus().getStatusCode() != TStatusCode.SRM_REQUEST_INPROGRESS) {
             if (failure) {
-                gsm.failedChunk(requestData);
+                gsm.failedChunk((BoLPersistentChunkData) requestData);
             } else {
-                gsm.successfulChunk(requestData);
+                gsm.successfulChunk((BoLPersistentChunkData) requestData);
             }
         }
     }
@@ -164,6 +149,6 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
     @Override
     public void persistStatus()
     {
-        BoLChunkCatalog.getInstance().update(requestData); 
+        BoLChunkCatalog.getInstance().update((BoLPersistentChunkData) requestData); 
     }
 }

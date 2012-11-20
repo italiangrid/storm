@@ -23,10 +23,6 @@ import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * Public super class from which both the PushCopyChunk and the PullCopyChunk are derived.
  *
@@ -39,8 +35,6 @@ public abstract class CopyPersistentChunk extends Copy implements PersistentRequ
     protected RequestSummaryData rsd=null;  
     protected GlobalStatusManager gsm = null;
 
-
-    private static Logger log = LoggerFactory.getLogger(CopyPersistentChunk.class);
 
     /**
      * Constructor requiring the GridUser, the RequestSummaryData, the
@@ -58,35 +52,6 @@ public abstract class CopyPersistentChunk extends Copy implements PersistentRequ
         this.gsm = gsm;
     }
     
-    
-    /**
-     * Method that handles a chunk. It is invoked by the scheduler to carry out
-     * the task.
-     *
-     * It creates the appropriate TRequestToken for the srmPrepareToGet/Put that
-     * takes place locally, it executes the getOperation, then the putOperation,
-     * and finally executes the transferOperation. The new requestToken is created
-     * by concatenating the one of this srmCopy request with the string "-copy-"
-     * and the supplied integer n, which is the counter of a multifile srmCopy
-     * request.
-     *
-     * The local get/put operation may fail because it could not start, or because
-     * the SRM status is not SRM_DONE: then the copyChunk fails with SRM_ABORT
-     * and appropriate explanation string which reports the local SRM STATUS.
-     *
-     * The remote get/put operation may fail because it could not start, the
-     * SRMClient failed, the operation timed-out, or a state other than SRM_DONE
-     * is returned. The srmCopy request fails with SRM_ABORT and appropriate
-     * explanation strings may include the remote SRM STATUS.
-     *
-     * The Transfer could fail, and in that case the status of the srmCopy changes
-     * to SRM_ABORT and explanation string reporting the GridFTP client error.
-     */
-    public void doIt() {
-        log.info("Handling Copy chunk for user DN: "+this.gu.getDn()+"; fromSURL: "+this.requestData.getSURL()+"; toSURL: "+this.requestData.getDestinationSURL()+"; for requestToken: "+this.rsd.requestToken());
-        super.doIt();
-    }
-
     /**
      * Method that supplies a String describing this PushCopyChunk - for scheduler Log
      * purposes! It returns the request token of This request.

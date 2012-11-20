@@ -1,0 +1,93 @@
+<class-diagram version="1.0.9" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true">  
+  <class id="1" corner="BOTTOM_RIGHT" language="java" 
+    name="it.grid.storm.synchcall.data.datatransfer.IdentityPutDoneInputData" project="backend_branch_BE_1.11" 
+    file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/datatransfer/IdentityPutDoneInputData.java" 
+    binary="false">    
+    <position x="897" y="590" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </class>  
+  <class id="2" corner="BOTTOM_RIGHT" language="java" 
+    name="it.grid.storm.synchcall.data.datatransfer.AnonymousPutDoneInputData" project="backend_branch_BE_1.11" 
+    file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/datatransfer/AnonymousPutDoneInputData.java" 
+    binary="false">    
+    <position x="897" y="370" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </class>  
+  <interface id="3" corner="BOTTOM_RIGHT" language="java" name="it.grid.storm.synchcall.data.IdentityInputData" 
+    project="backend_branch_BE_1.11" 
+    file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/IdentityInputData.java" binary="false">    
+    <position x="509" y="380" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </interface>  
+  <interface id="4" corner="BOTTOM_RIGHT" language="java" name="it.grid.storm.synchcall.data.InputData" 
+    project="backend_branch_BE_1.11" file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/InputData.java" 
+    binary="false">    
+    <position x="604" y="5" width="144" height="78"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </interface>  
+  <class id="5" corner="BOTTOM_RIGHT" language="java" name="it.grid.storm.synchcall.data.AbstractInputData" 
+    project="backend_branch_BE_1.11" 
+    file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/AbstractInputData.java" binary="false">    
+    <position x="903" y="51" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </class>  
+  <interface id="6" corner="BOTTOM_RIGHT" language="java" 
+    name="it.grid.storm.synchcall.data.datatransfer.PutDoneInputData" project="backend_branch_BE_1.11" 
+    file="/backend_branch_BE_1.11/src/it/grid/storm/synchcall/data/datatransfer/PutDoneInputData.java" binary="false">    
+    <position x="735" y="199" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true"/>      
+      <operations public="true" package="true" protected="true" private="true"/>    
+    </display>  
+  </interface>  
+  <realization id="7">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="6"/>  
+  </realization>  
+  <generalization id="8">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="5"/>  
+  </generalization>  
+  <generalization id="9">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="2"/>  
+  </generalization>  
+  <realization id="10">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="3"/>  
+  </realization>  
+  <realization id="11">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="4"/>  
+  </realization>  
+  <generalization id="12">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="4"/>  
+  </generalization>  
+  <generalization id="13">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="4"/>  
+  </generalization>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true"/>    
+    <operations public="true" package="true" protected="true" private="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>

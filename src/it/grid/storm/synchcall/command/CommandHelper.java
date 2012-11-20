@@ -73,7 +73,7 @@ public class CommandHelper
     public static void printRequestOutcome(String srmCommand, Logger log, TReturnStatus status,
             InputData inputData)
     {
-        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS) || status.getStatusCode().equals(TStatusCode.SRM_SPACE_AVAILABLE))
+        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
         {
             log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
                     + "> Request successfully done with: [status: " + status + "]");
@@ -142,7 +142,8 @@ public class CommandHelper
     public static void printRequestOutcome(String srmCommand, Logger log, TReturnStatus status,
             InputData inputData, TRequestToken token, List<String> surls)
     {
-        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
+        if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS) || status.getStatusCode().equals(TStatusCode.SRM_SPACE_AVAILABLE)
+                || status.getStatusCode().equals(TStatusCode.SRM_FILE_PINNED))
         {
             log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
                     + token + "] for [SURL: " + surls + "] successfully done with: [status: " + status + "]");

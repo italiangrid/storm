@@ -1,7 +1,5 @@
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.TRequestToken;
-
 public interface ChunkData extends RequestData
 {
     /**
@@ -10,5 +8,5 @@ public interface ChunkData extends RequestData
      */
     public long getIdentifier();
     
-    public TRequestToken getRequestToken();
+    
 }
