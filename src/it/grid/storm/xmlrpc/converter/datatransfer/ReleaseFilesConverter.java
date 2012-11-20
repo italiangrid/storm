@@ -58,13 +58,12 @@ public class ReleaseFilesConverter implements Converter
         GridUserInterface guser = GridUserManager.decode(inputParam);
 
         /* (2) TRequestToken requestToken */
-        TRequestToken requestToken;
+        TRequestToken requestToken = null;
         try {
             requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
             log.debug("requestToken=" + requestToken.toString());
         } catch (InvalidTRequestTokenAttributesException e) {
-            requestToken = null;
-            log.error("unable to decode request token. InvalidTRequestTokenAttributesException: " + e.getMessage());
+            log.debug("No request token provided by user. InvalidTRequestTokenAttributesException: " + e.getMessage());
         }
 
         /* (3) anyURI[] arrayOfSURLs */

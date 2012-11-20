@@ -1515,7 +1515,7 @@ public class PtGChunkDAO {
             }
             else
             {
-                log.info("PtG CHUNK DAO! " + count + " chunks of PtG requests were updated from "
+                log.debug("PtG CHUNK DAO! " + count + " chunks of PtG requests were updated from "
                         + expectedStatusCode + " to " + newStatusCode + ".");
             }
         } catch(SQLException e)

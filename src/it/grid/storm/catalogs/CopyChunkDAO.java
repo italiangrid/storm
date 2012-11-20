@@ -643,7 +643,7 @@ public class CopyChunkDAO {
             }
             else
             {
-                log.info("COPY CHUNK DAO! " + count + " chunks of COPY requests were updated from "
+                log.debug("COPY CHUNK DAO! " + count + " chunks of COPY requests were updated from "
                         + expectedStatusCode + " to " + newStatusCode + ".");
             }
         } catch(SQLException e)

@@ -1617,7 +1617,7 @@ public class BoLChunkDAO {
             }
             else
             {
-                log.info("BOL CHUNK DAO! " + count + " chunks of BOL requests were updated from "
+                log.debug("BOL CHUNK DAO! " + count + " chunks of BOL requests were updated from "
                         + expectedStatusCode + " to " + newStatusCode + ".");
             }
         } catch(SQLException e)

@@ -118,7 +118,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
      */
     public void doIt() {
 
-        log.info("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
+        log.debug("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
             + requestData.getSURL());
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {

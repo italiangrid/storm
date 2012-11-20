@@ -1211,7 +1211,7 @@ public class PtPChunkDAO {
             }
             else
             {
-                log.info("PTP CHUNK DAO! " + count + " chunks of PTP requests were updated from "
+                log.debug("PTP CHUNK DAO! " + count + " chunks of PTP requests were updated from "
                         + expectedStatusCode + " to " + newStatusCode + ".");
             }
         } catch(SQLException e)

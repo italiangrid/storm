@@ -449,7 +449,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 //
 //            } else {
 //                log.info("Executing PutDone for SURL: " + spaceAvailableSURLs.get(i).toSURL().getSURLString());
-                log.info("Executing PutDone for SURL: " + surl.getSURLString());
+                log.debug("Executing PutDone for SURL: " + surl.getSURLString());
 //            }
 
             StoRI stori = null;

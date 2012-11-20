@@ -86,7 +86,7 @@ public class SpaceHelper {
     private void updateSpaceUsageForSA(Logger log,
             String funcName,GridUserInterface user, TSURL surl, int operation, long filesize) {
 
-        log.debug(funcName+"Updating Storage Area free size on db");
+        log.debug(funcName+" Updating Storage Area free size on db");
         ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
         StoRI stori = null;
         // Retrieve the StoRI associate to the SURL
@@ -104,12 +104,12 @@ public class SpaceHelper {
                 }
                 catch (IllegalArgumentException e)
                 {
-                    log.error(funcName + "Unable to build StoRI by SURL and user: " + surl, e);
+                    log.error(funcName + " Unable to build StoRI by SURL and user: " + surl, e);
                     return;
                 }
             }
         } catch (NamespaceException e1) {
-            log.debug(funcName + "Unable to build StoRI by SURL: "
+            log.debug(funcName + " Unable to build StoRI by SURL: "
                     + surl.toString(), e1);
             return;
         }
@@ -174,11 +174,11 @@ public class SpaceHelper {
             try {
                 fs.storeSpaceByToken(spaceData);
             } catch (NamespaceException e) {
-                log.error(funcName + "Unable to update the new free size.",
+                log.error(funcName + " Unable to update the new free size.",
                         e);
             }
 
-            log.info(funcName + "Storage Area used size updated to: "
+            log.debug(funcName + " Storage Area used size updated to: "
                     + newUsedSize.value());
 
         } else {

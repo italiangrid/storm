@@ -167,7 +167,7 @@ public class PtP implements Delegable, Chooser, Request
      */
     public void doIt()
     {
-        PtP.log.info("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
+        PtP.log.debug("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {//should return SRM_DUPLICATION_ERROR if file overwrite disabled instead of SRM_FILE_BUSY
             failure = true;

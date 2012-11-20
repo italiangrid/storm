@@ -140,7 +140,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
      */
     public void doIt()
     {
-        log.info("Handling Copy chunk for user DN: " + this.gu.getDn() + "; fromSURL: "
+        log.debug("Handling Copy chunk for user DN: " + this.gu.getDn() + "; fromSURL: "
                 + this.requestData.getSURL() + "; toSURL: " + this.requestData.getDestinationSURL());
         log.debug("RequestToken used for local operation: " + localrt);
         GetOperationResult getResult = executeGetOperation();

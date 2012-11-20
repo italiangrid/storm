@@ -277,13 +277,13 @@ public class RmCommand implements Command {
             else
             {
                 globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-                "No files removed"); 
+                "All files removed"); 
             }
         }
         else
         {
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-            "All files removed"); 
+            "No files removed"); 
         }
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);

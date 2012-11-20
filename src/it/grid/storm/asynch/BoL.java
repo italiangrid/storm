@@ -178,7 +178,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
      */
     public void doIt() {
 
-        log.info("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
+        log.debug("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: " + requestData.getSURL());
 
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {
