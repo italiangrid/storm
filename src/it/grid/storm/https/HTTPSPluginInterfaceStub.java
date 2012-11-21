@@ -19,6 +19,12 @@ public class HTTPSPluginInterfaceStub implements HTTPSPluginInterface
 
     private static final Logger log = LoggerFactory.getLogger(HTTPSPluginInterfaceStub.class);
     
+    @Override
+    public void grantServiceGroupPermission(LocalFile localFile, FilesystemPermission permission)
+    {
+        log.info("Granted group permission " + permission.toString() +  " on file " + localFile.toString() + " to service group");
+    }
+    
     /* (non-Javadoc)
      * @see it.grid.storm.https.HTTPSPluginInterface#grantGroupPermission(it.grid.storm.filesystem.LocalFile, it.grid.storm.griduser.LocalUser, it.grid.storm.filesystem.FilesystemPermission)
      */
@@ -26,6 +32,12 @@ public class HTTPSPluginInterfaceStub implements HTTPSPluginInterface
     public void grantGroupPermission(LocalFile localFile, LocalUser localUser, FilesystemPermission permission)
     {
         log.info("Granted group permission " + permission.toString() +  " on file " + localFile.toString() + " to group " + localUser.toString());
+    }
+    
+    @Override
+    public void grantServiceUserPermission(LocalFile localFile, FilesystemPermission permission)
+    {
+        log.info("Granted user permission " + permission.toString() +  " on file " + localFile.toString() + " to service user");
     }
 
     /* (non-Javadoc)
@@ -37,7 +49,7 @@ public class HTTPSPluginInterfaceStub implements HTTPSPluginInterface
         log.info("Granted user permission " + permission.toString() +  " on file " + localFile.toString() + " to user " + localUser.toString());
 
     }
-
+    
     /* (non-Javadoc)
      * @see it.grid.storm.https.HTTPSPluginInterface#removeGroupPermission(it.grid.storm.filesystem.LocalFile, it.grid.storm.griduser.LocalUser)
      */
@@ -133,5 +145,5 @@ public class HTTPSPluginInterfaceStub implements HTTPSPluginInterface
         log.info("Mapping local absolute path \'" + localAbsolutePath + "\' to \'itIsTheSame" + File.separatorChar + localAbsolutePath + "\'");
         return  File.separatorChar + "itIsTheSame" + localAbsolutePath;
     }
-    
+
 }

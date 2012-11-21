@@ -18,6 +18,8 @@ package it.grid.storm.https;
 
 
 import it.grid.storm.acl.AclManagementInterface;
+import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.LocalFile;
 
 /**
  * @author Michele Dibenedetto
@@ -30,4 +32,8 @@ public interface HTTPSPluginInterface extends AclManagementInterface
     public Integer getServicePort();
     
     public String MapLocalPath(String localAbsolutePath) throws HTTPSPluginException;
+
+    public void grantServiceGroupPermission(LocalFile localFile, FilesystemPermission permission);
+
+    public void grantServiceUserPermission(LocalFile localFile, FilesystemPermission permission);
 }

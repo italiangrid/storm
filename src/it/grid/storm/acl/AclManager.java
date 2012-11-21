@@ -107,23 +107,40 @@ public interface AclManager
     /**
      * @param localFile an existent file
      * @param localUser
-     * @param readwrite
+     * @param permission
      * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to a not existent file
      */
-    void grantHttpsUserPermission(LocalFile localFile, LocalUser localUser, FilesystemPermission readwrite) throws IllegalArgumentException;
+    void grantHttpsUserPermission(LocalFile localFile, LocalUser localUser, FilesystemPermission permission) throws IllegalArgumentException;
 
     /**
      * @param localFile an existent file
      * @param localUser
-     * @param readwrite
+     * @param permission
      * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to a not existent file
      */
-    void grantHttpsGroupPermission(LocalFile localFile, LocalUser localUser, FilesystemPermission readwrite) throws IllegalArgumentException;
+    void grantHttpsServiceGroupPermission(LocalFile localFile, FilesystemPermission permission) throws IllegalArgumentException;
 
+    /**
+     * @param localFile an existent file
+     * @param localUser
+     * @param permission
+     * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to a not existent file
+     */
+    void grantHttpsGroupPermission(LocalFile localFile, LocalUser localUser, FilesystemPermission permission) throws IllegalArgumentException;
+
+    /**
+     * @param localFile an existent file
+     * @param localUser
+     * @param permission
+     * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to a not existent file
+     */
+    void grantHttpsServiceUserPermission(LocalFile localFile, FilesystemPermission permission) throws IllegalArgumentException;
+    
     /**
      * @param oldLocalFile an existent source file
      * @param newLocalFile an existent destination file
      * @throws IllegalArgumentException if received null parameters or the LocalFile objects refers to not existent files
      */
     void moveHttpsPermissions(LocalFile oldLocalFile, LocalFile newLocalFile) throws IllegalArgumentException;
+
 }
