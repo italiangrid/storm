@@ -207,12 +207,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
         {
             log.debug("srmMkdir authorized for " + DataHelper.getRequestor(inputData) + " for directory = " + stori.getPFN());
 
-            returnStatus = manageAuthorizedMKDIR(inputData, stori.getLocalFile(), stori.hasJustInTimeACLs());
-
-            if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
-            {
-                manageDefaultACL(stori);
-            }
+            returnStatus = manageAuthorizedMKDIR(stori, data);
         }
         else
         {
@@ -223,141 +218,26 @@ public class MkdirCommand extends DirectoryCommand implements Command {
         outData = new MkdirOutputData(returnStatus);
         return outData;
     }
-
-    private void manageDefaultACL(StoRI stori)
-    {
-        FilesystemPermission fp;
-        if (Configuration.getInstance().getEnableWritePermOnDirectory())
-        {
-            fp = FilesystemPermission.ListTraverseWrite;
-        }
-        else
-        {
-            fp = FilesystemPermission.ListTraverse;
-        }
-
-        VirtualFSInterface vfs = stori.getVirtualFileSystem();
-        DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
-        if ((dacl != null) && (!dacl.isEmpty()))
-        {
-            for (ACLEntry ace : dacl.getACL())
-            {
-                /*
-                 * TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or
-                 * xrw in respect to getEnableWritePermOnDirectory
-                 */
-                log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
-                        + ace.getFilePermissionString());
-                LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                try
-                {
-                    manager.grantGroupPermission(stori.getLocalFile(), u, fp);
-                } catch(IllegalArgumentException e)
-                {
-                    log.error("Unable to grant group permission on the created folder. IllegalArgumentException: "
-                            + e.getMessage());
-                }
-            }
-        }
-    }
-
+    
     /**
      * Split PFN , recursive creation is not supported, as reported at page 16 of Srm v2.1 spec.
+     * @param stori 
      * 
      * @param user VomsGridUser
      * @param stori StoRI
+     * @param data 
      * @return TReturnStatus
      */
-    private TReturnStatus manageAuthorizedMKDIR(InputData inputData, LocalFile file,
-            boolean hasJiTACL)
+    private TReturnStatus manageAuthorizedMKDIR(StoRI stori, InputData data)
     {
-        TReturnStatus returnStatus = createFolder(file);
-        if(returnStatus.isSRM_SUCCESS())
+        TReturnStatus returnStatus = createFolder(stori.getLocalFile());
+        if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))
         {
-            FilesystemPermission permission;
-            if (Configuration.getInstance().getEnableWritePermOnDirectory())
-            {
-                permission = FilesystemPermission.ListTraverseWrite;
-            }
-            else
-            {
-                permission = FilesystemPermission.ListTraverse;
-            }
-            if (inputData instanceof IdentityInputData)
-            {
-                setAcl(((IdentityInputData) inputData).getUser(), file, hasJiTACL, permission, returnStatus);
-            }
-            else
-            {
-                setDefaultAcl(file, permission, returnStatus);
-            }
-        } 
+            manageAcl(stori, data, returnStatus);
+        }
         return returnStatus;
     }
     
-    private void setDefaultAcl(LocalFile file, FilesystemPermission permission, TReturnStatus returnStatus)
-    {
-        log.debug("SrmMkdir: Adding default ACL for directory created : '" + file + "'  " + permission);
-        try
-        {
-            AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file, permission);
-        } catch(IllegalArgumentException e)
-        {
-            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
-                    + e.getMessage());
-            returnStatus.extendExplaination("Unable to grant group permission on the created folder");
-        }
-    }
-
-    private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL, FilesystemPermission permission, TReturnStatus returnStatus)
-    {
-        /*
-         * Add Acces Control List (ACL) in directory created.
-         * ACL allow user to read-write-list the new directory
-         * Call wrapper to set ACL on file created.
-         */
-        log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  " + "group:g_name:--x");
-
-        /*
-         * Set permission on directory
-         * In case of local auth source enable also write
-         */
-        if (hasJiTACL)
-        {
-            // Jit Case
-            // With JiT Model the ACL for directory is not needed.
-        }
-        else
-        {
-            try
-            {
-                AclManager manager = AclManagerFSAndHTTPS.getInstance();
-                if (user.getLocalUser() == null)
-                {
-                    log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
-                    returnStatus.extendExplaination("Unable to setting up the ACL");
-                }
-                else
-                {
-                    try
-                    {
-                        manager.grantGroupPermission(file, user.getLocalUser(), permission);
-                    } catch(IllegalArgumentException e)
-                    {
-                        log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
-                                + e.getMessage());
-                        returnStatus.extendExplaination("Unable to grant group permission on the created folder");
-                    }
-                }
-            } catch(CannotMapUserException e)
-            {
-                log.warn("SrmMkdir: Unable to setting up the ACL.CannotMapUserException: " + e.getMessage());
-                returnStatus.extendExplaination("Unable to setting up the ACL");
-            }
-        }
-    }
-
     private TReturnStatus createFolder(LocalFile file)
     {
         LocalFile parent = file.getParentFile();
@@ -411,6 +291,120 @@ public class MkdirCommand extends DirectoryCommand implements Command {
             log.debug("SrmMkdir: Request fails because it specifies an invalid parent directory.");
             return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
                                              "Parent directory does not exists. Recursive directory creation Not Allowed");
+        }
+    }
+    
+    private void manageAcl(StoRI stori, InputData inputData, TReturnStatus returnStatus)
+    {
+        FilesystemPermission permission;
+        if (Configuration.getInstance().getEnableWritePermOnDirectory())
+        {
+            permission = FilesystemPermission.ListTraverseWrite;
+        }
+        else
+        {
+            permission = FilesystemPermission.ListTraverse;
+        }
+        if (inputData instanceof IdentityInputData)
+        {
+            setAcl(((IdentityInputData) inputData).getUser(), stori.getLocalFile(), stori.hasJustInTimeACLs(), permission, returnStatus);
+            manageDefaultACL(stori, permission, returnStatus);
+        }
+        else
+        {
+            manageDefaultACL(stori, permission, returnStatus);
+            setHttpsServiceAcl(stori.getLocalFile(), permission, returnStatus);
+        }
+    }
+    
+    private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL, FilesystemPermission permission, TReturnStatus returnStatus)
+    {
+        /*
+         * Add Acces Control List (ACL) in directory created.
+         * ACL allow user to read-write-list the new directory
+         * Call wrapper to set ACL on file created.
+         */
+        log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  " + "group:g_name:--x");
+
+        /*
+         * Set permission on directory
+         * In case of local auth source enable also write
+         */
+        if (hasJiTACL)
+        {
+            // Jit Case
+            // With JiT Model the ACL for directory is not needed.
+        }
+        else
+        {
+            try
+            {
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                if (user.getLocalUser() == null)
+                {
+                    log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
+                    returnStatus.extendExplaination("Unable to setting up the ACL");
+                }
+                else
+                {
+                    try
+                    {
+                        manager.grantGroupPermission(file, user.getLocalUser(), permission);
+                    } catch(IllegalArgumentException e)
+                    {
+                        log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
+                                + e.getMessage());
+                        returnStatus.extendExplaination("Unable to grant group permission on the created folder");
+                    }
+                }
+            } catch(CannotMapUserException e)
+            {
+                log.warn("SrmMkdir: Unable to setting up the ACL.CannotMapUserException: " + e.getMessage());
+                returnStatus.extendExplaination("Unable to setting up the ACL");
+            }
+        }
+    }
+
+    private void manageDefaultACL(StoRI stori, FilesystemPermission permission, TReturnStatus returnStatus)
+    {
+        VirtualFSInterface vfs = stori.getVirtualFileSystem();
+        DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
+        if ((dacl != null) && (!dacl.isEmpty()))
+        {
+            for (ACLEntry ace : dacl.getACL())
+            {
+                /*
+                 * TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or
+                 * xrw in respect to getEnableWritePermOnDirectory
+                 */
+                log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
+                        + ace.getFilePermissionString());
+                LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
+                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                try
+                {
+                    manager.grantGroupPermission(stori.getLocalFile(), u, permission);
+                } catch(IllegalArgumentException e)
+                {
+                    log.error("Unable to grant group permission on the created folder to user " + u + " . IllegalArgumentException: "
+                            + e.getMessage());
+                    returnStatus.extendExplaination("Errors setting default acls");
+                }
+            }
+        }
+    }
+
+    private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission, TReturnStatus returnStatus)
+    {
+        log.debug("SrmMkdir: Adding default ACL for directory created : '" + file + "'  " + permission);
+        try
+        {
+            AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file, permission);
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
+                    + e.getMessage());
+            returnStatus.extendExplaination("Unable to grant group permission on the created folder");
         }
     }
 
