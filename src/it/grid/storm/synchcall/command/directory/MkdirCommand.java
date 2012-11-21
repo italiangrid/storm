@@ -275,15 +275,42 @@ public class MkdirCommand extends DirectoryCommand implements Command {
         TReturnStatus returnStatus = createFolder(file);
         if(returnStatus.isSRM_SUCCESS())
         {
+            FilesystemPermission permission;
+            if (Configuration.getInstance().getEnableWritePermOnDirectory())
+            {
+                permission = FilesystemPermission.ListTraverseWrite;
+            }
+            else
+            {
+                permission = FilesystemPermission.ListTraverse;
+            }
             if (inputData instanceof IdentityInputData)
             {
-                setAcl(((IdentityInputData) inputData).getUser(), file, hasJiTACL, returnStatus);
+                setAcl(((IdentityInputData) inputData).getUser(), file, hasJiTACL, permission, returnStatus);
+            }
+            else
+            {
+                setDefaultAcl(file, permission, returnStatus);
             }
         } 
         return returnStatus;
     }
     
-    private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL, TReturnStatus returnStatus)
+    private void setDefaultAcl(LocalFile file, FilesystemPermission permission, TReturnStatus returnStatus)
+    {
+        log.debug("SrmMkdir: Adding default ACL for directory created : '" + file + "'  " + permission);
+        try
+        {
+            AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file, permission);
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
+                    + e.getMessage());
+            returnStatus.extendExplaination("Unable to grant group permission on the created folder");
+        }
+    }
+
+    private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL, FilesystemPermission permission, TReturnStatus returnStatus)
     {
         /*
          * Add Acces Control List (ACL) in directory created.
@@ -296,16 +323,6 @@ public class MkdirCommand extends DirectoryCommand implements Command {
          * Set permission on directory
          * In case of local auth source enable also write
          */
-        FilesystemPermission fpLIST;
-        if (Configuration.getInstance().getEnableWritePermOnDirectory())
-        {
-            fpLIST = FilesystemPermission.ListTraverseWrite;
-        }
-        else
-        {
-            fpLIST = FilesystemPermission.ListTraverse;
-        }
-
         if (hasJiTACL)
         {
             // Jit Case
@@ -325,7 +342,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                 {
                     try
                     {
-                        manager.grantGroupPermission(file, user.getLocalUser(), fpLIST);
+                        manager.grantGroupPermission(file, user.getLocalUser(), permission);
                     } catch(IllegalArgumentException e)
                     {
                         log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
@@ -333,20 +350,12 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                         returnStatus.extendExplaination("Unable to grant group permission on the created folder");
                     }
                 }
-            } catch(CannotMapUserException ex5)
+            } catch(CannotMapUserException e)
             {
-                log.info("SrmMkdir: Unable to setting up the ACL " + ex5);
+                log.warn("SrmMkdir: Unable to setting up the ACL.CannotMapUserException: " + e.getMessage());
                 returnStatus.extendExplaination("Unable to setting up the ACL");
             }
         }
-//        if (failure)
-//        {
-//            // Rollback ...
-//            log.warn("Error while trying to set ACL for group of requestor.");
-//            /**
-//             * @todo: Rollback of failure.
-//             */
-//        }
     }
 
     private TReturnStatus createFolder(LocalFile file)
