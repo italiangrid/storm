@@ -62,19 +62,10 @@ public class PutTapeRecallStatusLogic
         {
             if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
             {
-                TapeRecallCatalog rtCat = null;
-                try
-                {
-                    rtCat = new TapeRecallCatalog();
-                }
-                catch (DataAccessException e)
-                {
-                    log.error("Unable to use RecallTable DB.");
-                    throw new TapeRecallException("Unable to use RecallTable DB");
-                }
                 String pfn = localFile.getAbsolutePath();
 
                 UUID taskId = TapeRecallTO.buildTaskIdFromFileName(pfn);
+                TapeRecallCatalog rtCat = new TapeRecallCatalog();
                 boolean exists = false;
                 try
                 {

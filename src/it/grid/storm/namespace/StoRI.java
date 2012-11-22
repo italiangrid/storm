@@ -51,7 +51,7 @@ public interface StoRI {
      * @throws Exception 
      */
     public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException, TURLBuildingException;
+        IllegalArgumentException, InvalidGetTURLProtocolException, TURLBuildingException;
 
 
     public TSURL getSURL();

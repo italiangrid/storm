@@ -49,7 +49,7 @@ public interface DAOFactory {
      */
     public StorageSpaceDAO getStorageSpaceDAO() throws DataAccessException;
 
-    public TapeRecallDAO getTapeRecallDAO() throws DataAccessException;
+    public TapeRecallDAO getTapeRecallDAO();
 
     public TapeRecallDAO getTapeRecallDAO(boolean test) throws DataAccessException;
 

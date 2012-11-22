@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRIImpl;
@@ -90,7 +89,7 @@ public class StoRIImplTest
             try
             {
                 System.err.println("Built TURL = " + s.getTURL(pref));
-            } catch(InvalidGetTURLNullPrefixAttributeException e)
+            } catch(IllegalArgumentException e)
             {
                 fail("Unable to get the turl " + e);
             } catch(InvalidGetTURLProtocolException e)
@@ -193,7 +192,7 @@ public class StoRIImplTest
             try
             {
                 System.err.println("Built TURL = " + s.getTURL(pref));
-            } catch(InvalidGetTURLNullPrefixAttributeException e)
+            } catch(IllegalArgumentException e)
             {
                 fail("Unable to get the turl " + e);
             } catch(InvalidGetTURLProtocolException e)

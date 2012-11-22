@@ -32,7 +32,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -45,7 +44,6 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import org.slf4j.Logger;
@@ -321,16 +319,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
                         {
                             voName = ((AbstractGridUser) gu).getVO().getValue();
                         }
-
-                        TapeRecallCatalog rtCat = null;
-
-                        try {
-                            rtCat = new TapeRecallCatalog();
-                        } catch (DataAccessException e) {
-                            log.error("Unable to use RecallTable DB.");
-                            throw new TapeRecallException("Unable to use RecallTable DB.");
-                        }
-                        rtCat.insertTask(this, voName, localFile.getAbsolutePath());
+                        new TapeRecallCatalog().insertTask(this, voName, localFile.getAbsolutePath());
                         backupData(localFile);
                     }
                 } else {

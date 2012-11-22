@@ -64,7 +64,6 @@ public class MvCommand extends DirectoryCommand implements Command {
     private static final String SRM_COMMAND = "SrmMv";
     private final NamespaceInterface namespace;
 
-    private static final AclManager manager = AclManagerFSAndHTTPS.getInstance();
     public MvCommand() {
         namespace = NamespaceDirector.getNamespace();
 
@@ -349,7 +348,7 @@ public class MvCommand extends DirectoryCommand implements Command {
     {
         try
         {
-            manager.moveHttpsPermissions(oldFileStoRI.getLocalFile(), newFileStoRI.getLocalFile());
+            AclManagerFSAndHTTPS.getInstance().moveHttpsPermissions(oldFileStoRI.getLocalFile(), newFileStoRI.getLocalFile());
         }
         catch (IllegalArgumentException e)
         {
@@ -365,7 +364,7 @@ public class MvCommand extends DirectoryCommand implements Command {
             // JiT
             try
             {
-                manager.grantHttpsUserPermission(newFileStoRI.getLocalFile(),localUser, FilesystemPermission.ReadWrite);
+                AclManagerFSAndHTTPS.getInstance().grantHttpsUserPermission(newFileStoRI.getLocalFile(),localUser, FilesystemPermission.ReadWrite);
             }
             catch (IllegalArgumentException e)
             {
@@ -377,7 +376,7 @@ public class MvCommand extends DirectoryCommand implements Command {
             // AoT
             try
             {
-                manager.grantHttpsGroupPermission(newFileStoRI.getLocalFile(), localUser, FilesystemPermission.ReadWrite);
+                AclManagerFSAndHTTPS.getInstance().grantHttpsGroupPermission(newFileStoRI.getLocalFile(), localUser, FilesystemPermission.ReadWrite);
             }
             catch (IllegalArgumentException e)
             {

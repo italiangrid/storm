@@ -259,15 +259,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
         ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
         // Recall Table Catalog
         String errorStr;
-        TapeRecallCatalog rtCat = null;
-        try {
-            rtCat = new TapeRecallCatalog();
-        } catch (DataAccessException e) {
-            errorStr = "Unable to use RecallTable DB.";
-            log.error(errorStr);
-            return arrayResult;
-        }
-
         // Parsing of the inputString to extract the fields of RecallTask
         TapeRecallData rtd;
         try {
@@ -275,9 +266,8 @@ public class PingCommand extends DiscoveryCommand implements Command {
             log.debug("RTD=" + rtd.toString());
             // Store the new Recall Task if it is all OK.
             TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
-            if (rtCat != null) {
                 try {
-                    rtCat.insertNewTask(task);
+                    new TapeRecallCatalog().insertNewTask(task);
                 }
                 catch (DataAccessException e) {
                     errorStr = "Unable to use RecallTable DB.";
@@ -286,7 +276,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
                 }
                 URI newResource = URI.create("/" + task.getTaskId());
                 log.debug("New task resource created: " + newResource);
-            }       
            
         } catch (TapeRecallException e) {
             errorStr = "Unable to use build the recall task from the provided string \'" + param + "\'";
@@ -317,12 +306,10 @@ public class PingCommand extends DiscoveryCommand implements Command {
         int numbOfTask = 1;
 
         // Recall Table Catalog
-        TapeRecallCatalog rtCat = null;
 
         try {
-            rtCat = new TapeRecallCatalog();
             // Retrieve the Task
-            ArrayList<TapeRecallTO> tasks = rtCat.takeoverNTasksWithDoubles(numbOfTask);
+            ArrayList<TapeRecallTO> tasks = new TapeRecallCatalog().takeoverNTasksWithDoubles(numbOfTask);
 
             if (tasks != null) {
                 // Build the response
@@ -332,8 +319,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
                     arrayResult.addTExtraInfo(otherInfo);
                 }
             }
-        } catch (DataAccessException e) {
-            log.error("Unable to use RecallTable DB.");
         } catch (InvalidTExtraInfoAttributeException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -117,7 +117,7 @@ public class MockDAOFactory implements DAOFactory {
      * @return TapeReallDAO
      * @todo Implement this it.grid.storm.persistence.DAOFactory method
      */
-    public TapeRecallDAO getTapeRecallDAO() throws DataAccessException {
+    public TapeRecallDAO getTapeRecallDAO() {
         return null;
     }
 

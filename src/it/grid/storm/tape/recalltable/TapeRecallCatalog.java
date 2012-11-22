@@ -57,7 +57,7 @@ public class TapeRecallCatalog {
      * 
      * @throws DataAccessException
      */
-    public TapeRecallCatalog() throws DataAccessException {
+    public TapeRecallCatalog() {
 
             tapeRecallDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
     }

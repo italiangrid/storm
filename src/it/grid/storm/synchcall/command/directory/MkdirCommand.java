@@ -339,7 +339,6 @@ public class MkdirCommand extends DirectoryCommand implements Command {
         {
             try
             {
-                AclManager manager = AclManagerFSAndHTTPS.getInstance();
                 if (user.getLocalUser() == null)
                 {
                     log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
@@ -349,7 +348,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                 {
                     try
                     {
-                        manager.grantGroupPermission(file, user.getLocalUser(), permission);
+                        AclManagerFSAndHTTPS.getInstance().grantGroupPermission(file, user.getLocalUser(), permission);
                     } catch(IllegalArgumentException e)
                     {
                         log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
@@ -379,14 +378,13 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                  */
                 log.debug("Adding DefaultACL for the gid: " + ace.getGroupID() + " with permission: "
                         + ace.getFilePermissionString());
-                LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
-                AclManager manager = AclManagerFSAndHTTPS.getInstance();
+                LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
                 try
                 {
-                    manager.grantGroupPermission(stori.getLocalFile(), u, permission);
+                    AclManagerFSAndHTTPS.getInstance().grantGroupPermission(stori.getLocalFile(), user, permission);
                 } catch(IllegalArgumentException e)
                 {
-                    log.error("Unable to grant group permission on the created folder to user " + u + " . IllegalArgumentException: "
+                    log.error("Unable to grant group permission on the created folder to user " + user + " . IllegalArgumentException: "
                             + e.getMessage());
                     returnStatus.extendExplaination("Errors setting default acls");
                 }

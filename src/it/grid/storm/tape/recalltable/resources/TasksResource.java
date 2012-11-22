@@ -21,7 +21,6 @@
 package it.grid.storm.tape.recalltable.resources;
 
 import it.grid.storm.config.Configuration;
-import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
@@ -65,16 +64,6 @@ public class TasksResource {
         String inputStr = buildInputString(input);
         log.debug("@PUT (input string) = '" + inputStr + "'");
 
-        // Recall Table Catalog
-        TapeRecallCatalog rtCat = null;
-
-        try {
-            rtCat = new TapeRecallCatalog();
-        } catch (DataAccessException e) {
-            log.error("Unable to use RecallTable DB.");
-            throw new TapeRecallException("Unable to use RecallTable DB.");
-        }
-
         // Retrieve the number of tasks to takeover (default = 1)
         int numbOfTask = 1;
         // Retrieve value from Body param
@@ -95,7 +84,7 @@ public class TasksResource {
         }
 
         // Retrieve the Tasks
-        ArrayList<TapeRecallTO> tasks = rtCat.takeoverNTasksWithDoubles(numbOfTask);
+        ArrayList<TapeRecallTO> tasks = new TapeRecallCatalog().takeoverNTasksWithDoubles(numbOfTask);
         HashMap<UUID, ArrayList<TapeRecallTO>> groupTaskMap = buildGroupTaskMap(tasks);
         
         ArrayList<TapeRecallTO> groupTasks = new ArrayList<TapeRecallTO>();

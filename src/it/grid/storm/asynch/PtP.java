@@ -32,7 +32,6 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
-import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -326,13 +325,13 @@ public class PtP implements Delegable, Chooser, Request
         {
             auxTURL = fileStoRI.getTURL(requestData.getTransferProtocols());
         }
-        catch(InvalidGetTURLNullPrefixAttributeException e)
+        catch(IllegalArgumentException e)
         {
             // Handle null TURL prefix! This is a programming error: it
             // should not occur!
             requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! StoRI object returned the following message: "
+            PtP.log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! IllegalArgumentException: "
                     + e);
             return;
         } catch(InvalidGetTURLProtocolException e)

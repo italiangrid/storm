@@ -133,16 +133,9 @@ public class TaskResource {
         //  - the relationship between groupTaskId and entries within the DB is one-to-many
 
         // Recall Table Catalog
-        TapeRecallCatalog rtCat = null;
-
         String errorStr = null;
         
-        try {
-            rtCat = new TapeRecallCatalog();
-        } catch (DataAccessException e) {
-            log.error("Unable to use RecallTable DB.");
-            throw new TapeRecallException("Unable to use RecallTable DB.");
-        }
+        TapeRecallCatalog rtCat = new TapeRecallCatalog();
         try
         {
             if(!rtCat.existsGroupTask(groupTaskId))
@@ -228,21 +221,6 @@ public class TaskResource {
         String inputStr = buildInputString(input);
         log.debug("@POST (input string) = '" + inputStr + "'");
 
-        // Recall Table Catalog
-        TapeRecallCatalog rtCat = null;
-        try {
-            rtCat = new TapeRecallCatalog();
-        } catch (DataAccessException e) {
-            errorStr = "Unable to use RecallTable DB.";
-            log.error(errorStr);
-            throw new TapeRecallException(errorStr);
-            //TODO
-            /**
-             * @todo : // Build an error response!
-             * result = Response.serverError().build();
-             */
-        }
-
         // Parsing of the inputString to extract the fields of RecallTask
         // RecallTaskData rtd = new RecallTaskData(inputStr);
         TapeRecallData rtd = TapeRecallData.buildFromString(inputStr);
@@ -250,19 +228,18 @@ public class TaskResource {
 
         // Store the new Recall Task if it is all OK.
         TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
-        if (rtCat != null) {
-            try {
-                rtCat.insertNewTask(task);
-            }
-            catch (DataAccessException e) {
-                errorStr = "Unable to insert the new task in tape recall DB.";
-                log.error(errorStr);
-                throw new TapeRecallException(errorStr);
-            }
-            URI newResource = URI.create("/" + task.getTaskId());
-            result = Response.created(newResource).build();
-            log.debug("New task resource created: " + newResource);
-        } 
+        try
+        {
+            new TapeRecallCatalog().insertNewTask(task);
+        } catch(DataAccessException e)
+        {
+            errorStr = "Unable to insert the new task in tape recall DB.";
+            log.error(errorStr);
+            throw new TapeRecallException(errorStr);
+        }
+        URI newResource = URI.create("/" + task.getTaskId());
+        result = Response.created(newResource).build();
+        log.debug("New task resource created: " + newResource);
         return result;
     }
 

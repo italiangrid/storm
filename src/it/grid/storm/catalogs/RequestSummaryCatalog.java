@@ -21,7 +21,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -89,12 +88,7 @@ public class RequestSummaryCatalog {
 
             @Override
             public void run() {
-                try {
-                    TapeRecallCatalog rtCat = new TapeRecallCatalog();
-                    rtCat.purgeCatalog(Configuration.getInstance().getPurgeBatchSize());
-                } catch (DataAccessException e) {
-                    log.error("Cannot purge expired entries of tape_recall table.", e);
-                }
+                new TapeRecallCatalog().purgeCatalog(Configuration.getInstance().getPurgeBatchSize());
             }
         };
         clock.scheduleAtFixedRate(tableRecallPurgeTask, Configuration.getInstance().getTransitInitialDelay() * 1000, Configuration.getInstance().getTransitTimeInterval() * 1000);

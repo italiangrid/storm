@@ -577,83 +577,75 @@ implements StoRI {
      ***************************************************************************/
 
 
-    public TTURL getTURL(TURLPrefix desiredProtocols) throws InvalidGetTURLNullPrefixAttributeException, InvalidGetTURLProtocolException, TURLBuildingException {
+    public TTURL getTURL(TURLPrefix desiredProtocols) throws IllegalArgumentException, InvalidGetTURLProtocolException, TURLBuildingException {
 
         //TransportProtocol protocolPrefix = null;
         TTURL resultTURL = null;
 
-        if (desiredProtocols == null) {
-            log.error("<GetTURL> request with NULL prefixOfAcceptedTransferProtocol!");
-            throw new InvalidGetTURLNullPrefixAttributeException(desiredProtocols);
+        if (desiredProtocols == null || desiredProtocols.size() == 0) {
+            log.error("<GetTURL> request with NULL or empty prefixOfAcceptedTransferProtocol!");
+            throw new IllegalArgumentException("unable to build the TTURL, invalid arguments: desiredProtocols=" + desiredProtocols);
         }
         else {
 
             /**
              * Retrieve Protocol to build the TURL
              */
-            if ( (desiredProtocols.size() == 0)) {
-                log.debug("<GetTURL> No matching transfer protocol Found! Returnig Error");
-                //Creation TURL with DEFAULT Transport Prefix
-                //protocolPrefix = getDefaultTransferProtocol();
-                //Change here
+            //Within the request there are some protocol preferences
+            //Calculate the intersection between Desired Protocols and Available Protocols
+            ArrayList<Protocol> desiredP = new ArrayList<Protocol>(desiredProtocols.getDesiredProtocols());
+            ArrayList<Protocol> availableP = new ArrayList<Protocol> (this.capability.getAllManagedProtocols());
+            desiredP.retainAll(availableP);
+            if (desiredP.isEmpty()) {
+                //No match found!
+                log.error("stori:No match with Protocol Preferences and Protocol Managed!");
                 throw new InvalidGetTURLProtocolException(desiredProtocols);
-            }
-            else { //Within the request there are some protocol preferences
-                //Calculate the intersection between Desired Protocols and Available Protocols
-                ArrayList<Protocol> desiredP = new ArrayList<Protocol>(desiredProtocols.getDesiredProtocols());
-                ArrayList<Protocol> availableP = new ArrayList<Protocol> (this.capability.getAllManagedProtocols());
-                desiredP.retainAll(availableP);
-                if (desiredP.isEmpty()) {
-                    //No match found!
-                    log.error("stori:No match with Protocol Preferences and Protocol Managed!");
-                    throw new InvalidGetTURLProtocolException(desiredProtocols);
-                } else {
-                    log.debug("Protocol matching.. Intersection size:"+desiredP.size());
-                    
-                    Protocol choosen = null;
-                    Authority authority = null;
-                    int index = 0;
-                    boolean turlBuilt = false;
-                    while (!turlBuilt && index < desiredP.size())
+            } else {
+                log.debug("Protocol matching.. Intersection size:"+desiredP.size());
+                
+                Protocol choosen = null;
+                Authority authority = null;
+                int index = 0;
+                boolean turlBuilt = false;
+                while (!turlBuilt && index < desiredP.size())
+                {
+                    choosen = desiredP.get(index);
+                    authority = null;
+                    log.debug("Selected Protocol :" + choosen);
+                    if (capability.isPooledProtocol(choosen))
                     {
-                        choosen = desiredP.get(index);
-                        authority = null;
-                        log.debug("Selected Protocol :" + choosen);
-                        if (capability.isPooledProtocol(choosen))
+                        log.debug("The protocol selected is in POOL Configuration");
+                        try
                         {
-                            log.debug("The protocol selected is in POOL Configuration");
-                            try
-                            {
-                                authority = getPooledAuthority(choosen);
-                            } catch(BalancingStrategyException e)
-                            {
-                                log.warn("Unable to get the pool member to be used to build the turl. BalancerException : "
-                                        + e.getMessage());
-                                index++;
-                                continue;
-                            }
-                        }
-                        else
+                            authority = getPooledAuthority(choosen);
+                        } catch(BalancingStrategyException e)
                         {
-                            log.debug("The protocol selected is in NON-POOL Configuration");
-                            TransportProtocol transProt = null;
-                            List<TransportProtocol> protList = capability.getManagedProtocolByScheme(choosen);
-                            if (protList.size() > 1)
-                            { // Strange case
-                                log.warn("More than one protocol " + choosen
-                                        + " defined but NOT in POOL Configuration. Taking the first one.");
-                            }
-                            transProt = protList.get(0);
-                            authority = transProt.getAuthority();
+                            log.warn("Unable to get the pool member to be used to build the turl. BalancerException : "
+                                    + e.getMessage());
+                            index++;
+                            continue;
                         }
-                        // TODO HTTPS TURL
-                        resultTURL = buildTURL(choosen, authority);
-                        turlBuilt = true;
                     }
-                    if(!turlBuilt)
+                    else
                     {
-                        throw new TURLBuildingException("Unable to build the turl given protocols " + desiredP.toString());
+                        log.debug("The protocol selected is in NON-POOL Configuration");
+                        TransportProtocol transProt = null;
+                        List<TransportProtocol> protList = capability.getManagedProtocolByScheme(choosen);
+                        if (protList.size() > 1)
+                        { // Strange case
+                            log.warn("More than one protocol " + choosen
+                                    + " defined but NOT in POOL Configuration. Taking the first one.");
+                        }
+                        transProt = protList.get(0);
+                        authority = transProt.getAuthority();
                     }
+                    // TODO HTTPS TURL
+                    resultTURL = buildTURL(choosen, authority);
+                    turlBuilt = true;
+                }
+                if(!turlBuilt)
+                {
+                    throw new TURLBuildingException("Unable to build the turl given protocols " + desiredP.toString());
                 }
             }
         }

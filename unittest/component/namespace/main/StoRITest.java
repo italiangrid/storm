@@ -4,7 +4,6 @@ package component.namespace.main;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.namespace.InvalidGetTURLNullPrefixAttributeException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -207,7 +206,7 @@ public class StoRITest {
         try {
             log.debug( "TURL : " + stori.getTURL( turlPrefix ) );
         }
-        catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
+        catch ( IllegalArgumentException ex ) {
             ex.printStackTrace();
         }
         catch (InvalidGetTURLProtocolException ex) {
@@ -225,7 +224,7 @@ public class StoRITest {
         try {
             log.debug( "TURL : " + stori.getTURL( turlPrefix ) );
         }
-        catch ( InvalidGetTURLNullPrefixAttributeException ex ) {
+        catch ( IllegalArgumentException ex ) {
             ex.printStackTrace();
         }
         catch (InvalidGetTURLProtocolException ex) {
