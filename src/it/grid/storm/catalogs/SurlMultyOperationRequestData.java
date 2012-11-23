@@ -8,6 +8,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
 import it.grid.storm.synchcall.surl.TokenDuplicationException;
@@ -20,26 +21,39 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
     
     private TRequestToken generatedRequestToken = TRequestToken.getRandom();
 
+    private boolean stored = false;
+
     public SurlMultyOperationRequestData(TSURL surl, TReturnStatus status)
         throws InvalidSurlRequestDataAttributesException
     {
         super(surl, status);
-        if(!(this instanceof PersistentChunkData))
+    }
+    
+    public synchronized void store()
+    {
+        if(!stored)
         {
             try
             {
-                boolean notStored = true;
-                while (notStored)
+                while (!stored)
                 {
                     try
                     {
-                        notStored = false;
-                        SurlStatusStore.getInstance().store(generatedRequestToken,
-                                                            buildSurlStatusMap(surl, status.getStatusCode(),
-                                                                               status.getExplanation()));
+                        if(this instanceof IdentityInputData)
+                        {
+                            SurlStatusStore.getInstance().store(generatedRequestToken, ((IdentityInputData)this).getUser(),
+                                                                buildSurlStatusMap(SURL, status.getStatusCode(),
+                                                                                   status.getExplanation()));
+                        }
+                        else
+                        {
+                            SurlStatusStore.getInstance().store(generatedRequestToken,
+                                                                buildSurlStatusMap(SURL, status.getStatusCode(),
+                                                                                   status.getExplanation()));                            
+                        }
+                        stored = true;
                     } catch(TokenDuplicationException e)
                     {
-                        notStored = true;
                         generatedRequestToken = TRequestToken.getRandom();
                     }
                 }
@@ -48,7 +62,6 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData impl
                 throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
             }
         }
-        
     }
     
     private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl, TStatusCode code, String explanation) throws IllegalArgumentException

@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -42,6 +43,8 @@ public class SurlStatusStore
 
     private HashMap<TRequestToken, Map<TSURL, ModifiableReturnStatus>> tokenSurlStatusStore = new HashMap<TRequestToken, Map<TSURL, ModifiableReturnStatus>>();
 
+    private HashMap<TRequestToken, GridUserInterface> tokenUserStore = new HashMap<TRequestToken, GridUserInterface>();
+    
     private ConcurrentSkipListMap<Long, TRequestToken> expirationTokenRegistry = new ConcurrentSkipListMap<Long, TRequestToken>();
 
     private static final SurlStatusStore instance = new SurlStatusStore();
@@ -50,9 +53,12 @@ public class SurlStatusStore
     private final ConcurrentHashMap<TSURL,ReentrantReadWriteLock> surlLockMap = new ConcurrentHashMap<TSURL,ReentrantReadWriteLock>();
     private final ConcurrentHashMap<TRequestToken,ReentrantReadWriteLock> tokenLockMap = new ConcurrentHashMap<TRequestToken,ReentrantReadWriteLock>();
     
-    private final ReentrantLock expirationTokenRegistryLock = new ReentrantLock(); 
+    private final ReentrantLock expirationTokenRegistryLock = new ReentrantLock();
+    private final ReentrantLock tokenUserStoreLock = new ReentrantLock();
     private final Timer clock;
     private final TimerTask clockTask;
+
+    
     
     private SurlStatusStore()
     {
@@ -114,7 +120,7 @@ public class SurlStatusStore
     {
         if (requestToken == null || surlStatuses == null || surlStatuses.isEmpty())
         {
-            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+            throw new IllegalArgumentException("unable to store the request, null arguments: requestToken="
                     + requestToken + " surlStatuses=" + surlStatuses);
         }
         WriteLock writeLock = null;
@@ -212,7 +218,26 @@ public class SurlStatusStore
             {
                 unlockExpirationMap();
             }
-
+        }
+    }
+    
+    public void store(TRequestToken requestToken, GridUserInterface user,
+            HashMap<TSURL, TReturnStatus> surlStatuses) throws IllegalArgumentException, TokenDuplicationException
+    {
+        if (user == null)
+        {
+            throw new IllegalArgumentException("unable to store the request, null arguments: user="
+                    + user);
+        }
+        store(requestToken, surlStatuses);
+        try
+        {
+            lockTokenUserStore();
+            tokenUserStore.put(requestToken, user);
+        }
+        finally
+        {
+            unlockTokenUserStore();
         }
     }
     
@@ -684,6 +709,15 @@ public class SurlStatusStore
         {
             unlockExpirationMap();
         }
+        try
+        {
+            lockTokenUserStore();
+            tokenUserStore.remove(requestToken);
+        }
+        finally
+        {
+            unlockTokenUserStore();
+        }
         WriteLock writeLockToken = null;
         try
         {
@@ -759,7 +793,7 @@ public class SurlStatusStore
         return (!tokenSurlStatusStore.containsKey(requestToken) && 
                 !tokenLockMap.containsKey(requestToken) && 
                 (!requestToken.hasExpirationDate() || 
-                 !requestToken.equals(expirationTokenRegistry.get(requestToken.getExpiration()))));
+                 !requestToken.equals(expirationTokenRegistry.get(requestToken.getExpiration()))) && !tokenUserStore.containsKey(requestToken));
     }
 
     private long getStoredTokenExpiration(TRequestToken requestToken) throws UnknownTokenException
@@ -923,6 +957,13 @@ public class SurlStatusStore
                 throw new Exception("Integrity violation: Null tokenSurlStatus map for expirationToken " + surlexpirationToken.getValue());
             }
         }
+        for (TRequestToken token : tokenUserStore.keySet())
+        {
+            if (tokenSurlStatusStore.get(token) == null)
+            {
+                throw new Exception("Integrity violation: Null tokenSurlStatus map for tokenUserStore " + token.getValue());
+            }
+        }
         for (Entry<TRequestToken, ReentrantReadWriteLock> tokenLock : tokenLockMap.entrySet())
         {
             if (tokenSurlStatusStore.get(tokenLock.getKey()) == null)
@@ -1064,6 +1105,19 @@ public class SurlStatusStore
         {
             throw new IllegalArgumentException("Unable to remove the provided token lock, it doesn't exists");
         }
+    }
+    
+    
+    private void unlockTokenUserStore()
+    {
+        tokenUserStoreLock.unlock();
+        log.trace("SurlStatusStore.unlockTokenUserStore()");
+    }
+
+    private void lockTokenUserStore()
+    {
+        tokenUserStoreLock.lock();
+        log.trace("SurlStatusStore.lockTokenUserStore()");
     }
     
     private void unlockExpirationMap()

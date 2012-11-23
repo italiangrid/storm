@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.FQAN;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -35,13 +38,30 @@ public class SurlStatusStoreTestNew
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    public static final char[] LETTERS_ALPHABET = {
+        'A','B','C','D','E','F','G','H',
+        'I','J','K','L','M','N','O','P',
+        'Q','R','S','T','U','V','W','X',
+        'Y','Z','a','b','c','d','e','f',
+        'g','h','i','j','k','l','m','n',
+        'o','p','q','r','s','t','u','v',
+        'w','x','y','z',
+    };
+    
+    
     private static final String FE_HOST = "omii005-vm03.cnaf.infn.it";
     
     private static final String EXPIRED_TOKEN_PREFIX = "Expired-";
     
-    private static Random randomGenerator = new Random();
+    private static final Random randomGenerator = new Random();
+
+    private static final GridUserInterface gridUser = GridUserManager.makeGridUser(buildRandomDn());
     
-    private static final Logger logger; 
+    private static final GridUserInterface vomsGridUser = GridUserManager.makeVOMSGridUser(buildRandomDn(), buildRandomFQANs());
+    
+    private static final Logger logger;
+
+    private static final int MAX_STRING_SIZE = 40; 
     static{
         logger = ((Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
     }
@@ -61,13 +81,161 @@ public class SurlStatusStoreTestNew
                 SurlStatusStore.getInstance().checkIntegrity();
             } catch(Exception e1)
             {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         }
         logger.setLevel(Level.INFO);
     }
     
+    @Test
+    public void testRandomString()
+    {
+        String s = randomString();
+        assertNotNull(s);
+        assertTrue(s.length() > 0);
+    }
+    
+    @Test
+    public void testRandomStringInt()
+    {
+        int size = randomGenerator.nextInt(MAX_STRING_SIZE);
+        String s = randomString(size);
+        assertEquals(size, s.length());
+    }
+    
+    @Test
+    public void testRandomStringIntBaseCase()
+    {
+        String s = randomString(1);
+        assertEquals(1, s.length());
+    }
+    
+    @Test
+    public void testRandomMailAddress()
+    {
+        String s = randomMailAddress();
+        assertNotNull(s);
+        assertTrue(s.length() > 0);
+        assertTrue(s.lastIndexOf('@') > 0);
+        assertTrue(s.substring(s.lastIndexOf('@')).length() >= 4);
+        assertTrue(s.lastIndexOf('.') > 0);
+        assertTrue(s.substring(s.lastIndexOf('.')).length() ==  3);
+    }
+    
+    @Test
+    public void testRandomMail()
+    {
+        String mail = randomMail();
+        assertNotNull(mail);
+        System.out.println(mail);
+    }
+    
+    @Test
+    public void testBuildRandomDn()
+    {
+        String dn = buildRandomDn();
+        assertNotNull(dn);
+        System.out.println(dn);
+    }
+    
+    @Test
+    public void fai()
+    {
+        String ciao = "a";
+        System.out.println(ciao + " ? " + ciao.matches("(/[\\w-\\.]+)+"));
+    }
+    
+    private static FQAN[] buildRandomFQANs()
+    {
+        int size = randomGenerator.nextInt(5);
+        size = (size == 0 ? 1 : size);
+        FQAN[] fquans = new FQAN[size];
+        for(int i = 0; i < size ; i++)
+        {
+            fquans[i] = new FQAN(randomString(), '/' + randomString(), randomString(), randomString());    
+        }
+        return fquans;
+    }
+    
+    private static String buildRandomDn()
+    {
+        char dnFieldsSeparatoChar = ',';
+        String dn = "";
+        dn += "C=" + randomString(2) + dnFieldsSeparatoChar;
+        dn += "ST=" + randomString() + dnFieldsSeparatoChar;    
+        dn += "O=" + randomString() + dnFieldsSeparatoChar;
+        for(int i = randomGenerator.nextInt(5); i > 0 ; i--)
+        {
+            dn += "OU=" + randomString() + dnFieldsSeparatoChar;    
+        }
+        
+        dn += "L=" + randomString() + dnFieldsSeparatoChar;
+        
+        for(int i = randomGenerator.nextInt(5); i >= 0 ; i--)
+        {
+            dn += "CN=" + randomString() + dnFieldsSeparatoChar;
+        }
+        for(int i = randomGenerator.nextInt(5); i > 0 ; i--)
+        {
+            dn += "DC=" + randomString() + dnFieldsSeparatoChar;    
+        }
+        if(randomGenerator.nextBoolean())
+        {
+            dn += randomMail();
+        }
+        if(dnFieldsSeparatoChar == dn.charAt(dn.length() -1))
+        {
+            dn.substring(0, dn.length() -2);    
+        }
+        return dn;
+    }
+
+    private static String randomMail()
+    {
+        switch (randomGenerator.nextInt(3))
+        {
+            case 0:
+                return "Email=" + randomMailAddress();
+            case 1:
+                return "E=" + randomMailAddress();
+            default:
+                return "EMailAddress=" + randomMailAddress();
+        }
+    }
+    
+    private static String randomMailAddress()
+    {
+        return randomString() + "@" + randomString() + "." + randomString(2);   
+    }
+
+    private static String randomString(int i)
+    {
+        if(i == 0)
+        {
+            return "";
+        }
+        String startingString = randomString();
+        if(startingString.length() < i)
+        {
+            char[] padding = new char[i - startingString.length()];
+            Arrays.fill(padding, startingString.charAt(startingString.length() - 1));
+            startingString += new String(padding);
+        }
+        return startingString.substring(0, i);
+    }
+
+    private static String randomString()
+    {
+        int size = randomGenerator.nextInt(MAX_STRING_SIZE);
+        size = (size == 0 ? 1 : size);
+        char[] stringChars = new char[size];
+        for(int i = 0 ; i < size ; i++)
+        {
+            stringChars[i] = LETTERS_ALPHABET[randomGenerator.nextInt(LETTERS_ALPHABET.length)]; 
+        }
+        return new String(stringChars);
+    }
+
     @After
     public void tearDown() 
     {
@@ -82,7 +250,6 @@ public class SurlStatusStoreTestNew
                 SurlStatusStore.getInstance().checkIntegrity();
             } catch(Exception e1)
             {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         }
@@ -99,6 +266,19 @@ public class SurlStatusStoreTestNew
     public final void testStore() throws IllegalArgumentException, TokenDuplicationException
     {
         SurlStatusStore.getInstance().store(TRequestToken.getRandom(), buildSurlStatusMap(buildRandomSurl(), TStatusCode.SRM_AUTHENTICATION_FAILURE, "Autentication failed"));
+    }
+    
+    
+    @Test
+    public final void testStoreWithGridUser() throws IllegalArgumentException, TokenDuplicationException
+    {
+        SurlStatusStore.getInstance().store(TRequestToken.getRandom(), gridUser, buildSurlStatusMap(buildRandomSurl(), TStatusCode.SRM_AUTHENTICATION_FAILURE, "Autentication failed"));
+    }
+    
+    @Test
+    public final void testStoreWithVomsGridUser() throws IllegalArgumentException, TokenDuplicationException
+    {
+        SurlStatusStore.getInstance().store(TRequestToken.getRandom(), vomsGridUser, buildSurlStatusMap(buildRandomSurl(), TStatusCode.SRM_AUTHENTICATION_FAILURE, "Autentication failed"));
     }
     
     @Test

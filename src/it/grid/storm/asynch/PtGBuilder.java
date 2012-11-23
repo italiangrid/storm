@@ -77,6 +77,7 @@ public class PtGBuilder
                 data = new AnonymousPtGData(toSURL, pinLifetime, dirOption, transferProtocols, fileSize, 
                                    status, transferURL);
             }
+            data.store();
         } catch(InvalidPtGDataAttributesException e)
         {
             log.error("Unable to build PtGChunkData. InvalidPtGChunkDataAttributesException: " + e.getMessage());
@@ -90,13 +91,6 @@ public class PtGBuilder
             log.error("Unable to build PtGChunkData. InvalidSurlRequestDataAttributesException: " + e.getMessage());
             throw new BuilderException("Error building PtG PtGChunkData. Building failed");
         }
-//        try
-//        {
-            return new PtG(data);
-//        } catch(InvalidRequestAttributesException e)
-//        {
-//            log.error("Unable to build PtG. InvalidRequestAttributesException: " + e.getMessage());
-//            throw new BuilderException("Error building PtG. Building failed");
-//        }
+        return new PtG(data);
     }
 }
