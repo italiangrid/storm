@@ -329,10 +329,6 @@ public class AclManagerFSAndHTTPS implements AclManager
         }
         if (isHttpsEnabled)
         {
-            if(!fromLocalFile.exists())
-            {
-                throw new IllegalArgumentException("Unable to perform the operation. The received source file parameter points to a non existent file");
-            }
             if(!toLocalFile.exists())
             {
                 throw new IllegalArgumentException("Unable to perform the operation. The received destination file parameter points to a non existent file");
