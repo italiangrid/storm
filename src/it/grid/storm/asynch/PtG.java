@@ -588,7 +588,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             }
         } catch(Exception e)
         {
-            requestData.changeStatusSRM_FAILURE("Local filesystem has" + " problems manipulating ACE!");
+            requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has" + " problems manipulating ACE!");
             failure = true;
             return false;
         }
@@ -688,7 +688,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         }
         else
         {
-            log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
+            log.error("ERROR in PtGChunk! A Traverse Group-ACL was set on "
                 + fileStori.getAbsolutePath() + " for user " + localUser.toString()
                 + " but when subsequently verifying its effectivity, "
                 + "a null ACE was found!");

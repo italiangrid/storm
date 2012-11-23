@@ -166,7 +166,7 @@ public class PtP implements Delegable, Chooser, Request
      */
     public void doIt()
     {
-        PtP.log.debug("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
+        log.debug("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
         {//should return SRM_DUPLICATION_ERROR if file overwrite disabled instead of SRM_FILE_BUSY
             failure = true;
@@ -202,7 +202,7 @@ public class PtP implements Delegable, Chooser, Request
         {
             requestData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
             failure = true;
-            PtP.log.debug("ATTENTION in PtPChunk! PtPChunk received request for a SURL whose root is not recognised by StoRI!");
+            log.debug("ATTENTION in PtPChunk! PtPChunk received request for a SURL whose root is not recognised by StoRI!");
             printRequestOutcome(requestData);
             return;
         } 
@@ -214,7 +214,7 @@ public class PtP implements Delegable, Chooser, Request
         {
             requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
             failure = true;
-            PtP.log.error("ATTENTION in PtPChunk! PtPChunk received a SecurityException from Java SecurityManager: StoRM cannot check for the existence of file: "
+            log.error("ATTENTION in PtPChunk! PtPChunk received a SecurityException from Java SecurityManager: StoRM cannot check for the existence of file: "
                     + fileStoRI.getLocalFile().toString() + "; exception: " + e);
             printRequestOutcome(requestData);
             return;
@@ -242,8 +242,8 @@ public class PtP implements Delegable, Chooser, Request
                     // unexpected overwrite option!!!
                     requestData.changeStatusSRM_FAILURE("Unexpected overwrite option! Processing failed!");
                     failure = true; 
-                    PtP.log.error("UNEXPECTED ERROR in PtPChunk! The specified overwrite option is unknown!");
-                    PtP.log.error("Received Overwrite Option: " + requestData.overwriteOption());
+                    log.error("UNEXPECTED ERROR in PtPChunk! The specified overwrite option is unknown!");
+                    log.error("Received Overwrite Option: " + requestData.overwriteOption());
                 }
             }
         }
@@ -291,6 +291,53 @@ public class PtP implements Delegable, Chooser, Request
                 break;
         }
     }
+    
+    /**
+     * Private method that handles the case of overwriting of an existing file: this gets invoked if
+     * TOverwriteMode is
+     * set to Always or WhenFilesAreDifferet, and a file already exists. Notice that the logic for permit is
+     * exactly the
+     * same as that for the case of non existent files! This is because the placeHolder/reserveSpace functions
+     * of the
+     * FileSystem object, in case of existing files, they erase it and create a new mock file - thereby
+     * following the
+     * SRM specs that no append is possible. So the only difference between the two cases is the kind of
+     * policies that
+     * are checked before going on and carrying out the processing.
+     */
+    private void manageOverwriteExistingFile(StoRI fileStoRI)
+    {
+        AuthzDecision decision;
+        if (requestData instanceof IdentityInputData)
+        {
+            decision = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) requestData).getUser(),
+                                                              SRMFileRequest.RM, fileStoRI);
+        }
+        else
+        {
+            decision = AuthzDirector.getPathAuthz()
+                                    .authorizeAnonymous(SRMFileRequest.RM, fileStoRI.getStFN());
+        }
+        if (decision.equals(AuthzDecision.PERMIT))
+        {
+            managePermit(fileStoRI);
+        }
+        else
+        {
+            if (decision.equals(AuthzDecision.DENY))
+            {
+                requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Write access to " + requestData.getSURL()
+                        + " denied!");
+                failure = true; // gsm.failedChunk(chunkData);
+                log.debug("Write access to " + requestData.getSURL() + " for user "
+                        + DataHelper.getRequestor(requestData) + " denied!");
+            }
+            else
+            {
+                manageAnomaly(decision);
+            }
+        }
+    }
 
     /**
      * Private method that handles the case of Permit on Create and Write rights!
@@ -316,7 +363,7 @@ public class PtP implements Delegable, Chooser, Request
             requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access for " + requestData.getSURL()
                     + " in Storage Area: " + token + " denied!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.debug("Create/Write access for " + requestData.getSURL() + " in Storage Area: " + token
+            log.debug("Create/Write access for " + requestData.getSURL() + " in Storage Area: " + token
                     + " denied!");
             return;
         }
@@ -327,30 +374,25 @@ public class PtP implements Delegable, Chooser, Request
         }
         catch(IllegalArgumentException e)
         {
-            // Handle null TURL prefix! This is a programming error: it
-            // should not occur!
             requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! IllegalArgumentException: "
+            log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! IllegalArgumentException: "
                     + e);
             return;
         } catch(InvalidGetTURLProtocolException e)
         {
-            // Handle null TURL prefix! This is a programming error: it
-            // should not occur!
             requestData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! No valid transfer protocol found.");
+            log.error("ERROR in PtPChunk! No valid transfer protocol found.");
             return;
         } catch(TURLBuildingException e)
         {
             requestData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException "
+            log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException "
                     + e);
             return;
         }
-        // set right permissions to traverse to file
         boolean canTraverse;
         try
         {
@@ -370,11 +412,10 @@ public class PtP implements Delegable, Chooser, Request
             // file!
             if (managePermitReserveSpaceStep(fileStoRI))
             {
-                // set right permission on file!
                 boolean canWrite;
                 try
                 {
-                    canWrite = managePermitSetFileStep(fileStoRI, auxTURL);
+                    canWrite = managePermitSetFileStep(fileStoRI);
                 } catch(CannotMapUserException e)
                 {
                     requestData.changeStatusSRM_FAILURE("Unable to find local user for " + DataHelper.getRequestor(requestData));
@@ -390,7 +431,7 @@ public class PtP implements Delegable, Chooser, Request
                 }
                 else
                 {
-                    PtP.log.debug("PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for "
+                    log.debug("PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for "
                             + fileStoRI.getAbsolutePath());
                     requestData.setTransferURL(auxTURL);
                     requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
@@ -416,27 +457,43 @@ public class PtP implements Delegable, Chooser, Request
         }
     }
     
+    /**
+     * @param fileStoRI
+     * @return
+     * @throws CannotMapUserException
+     */
     private boolean managePermitTraverseStep(StoRI fileStoRI) throws CannotMapUserException
     {
         if (requestData instanceof IdentityInputData)
         {
             return verifyPath(fileStoRI)
-                    && setAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
+                    && setParentAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
         }
         else
         {
-            return verifyPath(fileStoRI);
+            if (verifyPath(fileStoRI))
+            {
+                setHttpsServiceParentAcl(fileStoRI);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
     
+    /**
+     * @param fileStoRI
+     * @return
+     */
     private boolean verifyPath(StoRI fileStoRI) {
 
-        boolean exists, isDir;
+        boolean exists;
         for(StoRI parentStoRI : fileStoRI.getParents())
         {
             exists = parentStoRI.getLocalFile().exists();
-            isDir = parentStoRI.getLocalFile().isDirectory();
-            if(!exists || !isDir)
+            if(!exists || !parentStoRI.getLocalFile().isDirectory())
             {
                 String errorString = "The requested SURL is: " + fileStoRI.getSURL().toString()
                                        + ", but its parent " + parentStoRI.getSURL().toString();
@@ -458,14 +515,13 @@ public class PtP implements Delegable, Chooser, Request
         return true;
     }
     
-    private boolean setAcl(StoRI fileStoRI, LocalUser localUser)
+    private boolean setParentAcl(StoRI fileStoRI, LocalUser localUser)
     {
-        PtP.log.debug("PtPChunk: entered TraverseStep for " + fileStoRI.getAbsolutePath());
+        log.debug("PtPChunk: setting parent traverse ACL for " + fileStoRI.getAbsolutePath() + " to user " + localUser);
         boolean automaticDirectoryCreation = Configuration.getInstance().getAutomaticDirectoryCreation();
-        LocalFile parentFile;
         for (StoRI parentStoRI : fileStoRI.getParents())
         {
-            parentFile = parentStoRI.getLocalFile();
+            LocalFile parentFile = parentStoRI.getLocalFile();
             log.debug("PtPChunk TraverseStep - processing parent " + parentFile.toString());
             if (!prepareDirectory(parentFile, automaticDirectoryCreation))
             {
@@ -476,93 +532,20 @@ public class PtP implements Delegable, Chooser, Request
             }
             else
             {
-                FilesystemPermission fp = null;
-                boolean allowsTraverse = false;
-                if (fileStoRI.hasJustInTimeACLs())
+                try
                 {
-                    // TODO DEFAULT ACL here to make cms happy we have to set also default ACL
-                    // JiT
-                    // TODO ACL manager
-                    try
+                    if(!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse, fileStoRI.hasJustInTimeACLs()))
                     {
-                        AclManagerFSAndHTTPS.getInstance().grantUserPermission(parentFile, localUser, FilesystemPermission.Traverse);
-                    } catch(IllegalArgumentException e)
-                    {
-                        log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: "
-                                + e.getMessage());
-                        requestData.changeStatusSRM_INTERNAL_ERROR("Unable to grant user traverse permission ACL on parent file");
+                        requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
+                                                            + "not allow setting up correct ACLs for PtG!");
                         failure = true;
                         return false;
                     }
-// parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
-                    fp = parentFile.getEffectiveUserPermission(localUser);
-                    if (fp != null)
-                    {
-                        allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                        if (allowsTraverse)
-                        {
-                            VolatileAndJiTCatalog.getInstance().trackJiT(parentStoRI.getPFN(), localUser,
-                                                                         FilesystemPermission.Traverse,
-                                                                         start, requestData.pinLifetime());
-                        }
-                        else
-                        {
-                            log.error("ATTENTION in PtPChunk! The local filesystem has a mask that does not allow Traverse User-ACL to be set up on"
-                                    + parentFile.toString() + "!");
-                            requestData.changeStatusSRM_INTERNAL_ERROR("Unable to grant user traverse permission ACL on parent file");
-                            failure = true;
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        log.error("ERROR in PTPChunk! A Traverse User-ACL was set on "
-                                + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-                                + " but when subsequently verifying its effectivity, a null ACE was found!");
-                        requestData.changeStatusSRM_INTERNAL_ERROR("Unable to grant user traverse permission ACL on parent file");
-                        failure = true;
-                        return false;
-                    }
-                }
-                else
+                } catch(Exception e)
                 {
-                    // TODO DEFAULT ACL here to make cms happy we have to set also default ACL
-                    try
-                    {
-                        AclManagerFSAndHTTPS.getInstance().grantGroupPermission(parentFile, localUser, FilesystemPermission.Traverse);
-                    } catch(IllegalArgumentException e)
-                    {
-                        log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: "
-                                + e.getMessage());
-                        requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get user ACL for the file");
-                        failure = true;
-                        return false;
-                    }
-// parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
-                    fp = parentFile.getEffectiveGroupPermission(localUser);
-                    if (fp != null)
-                    {
-                        allowsTraverse = fp.allows(FilesystemPermission.Traverse);
-                    }
-                    else
-                    {
-                        log.error("ERROR in PTPChunk! A Traverse Group-ACL was set on "
-                                + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-                                + " but when subsequently verifying its effectivity, a null ACE was found!");
-                        requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get group ACL for the file");
-                        failure = true;
-                        return false;
-                    }
-                }
-                if (!allowsTraverse)
-                {
-                    /*
-                     * mask preset in filesystem does not allow the
-                     * setting up of the required permissions!
-                     * Request fails!
-                     */
-                    requestData.changeStatusSRM_FAILURE("Local filesystem mask does not allow setting up correct ACLs for PtP!");
-                    failure = true; // gsm.failedChunk(chunkData);
+                    requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
+                                                        + " problems manipulating ACE!");
+                    failure = true;
                     return false;
                 }
             }
@@ -592,7 +575,7 @@ public class PtP implements Delegable, Chooser, Request
             {
                 if (f.mkdirs())
                 {
-                    requestData.changeStatusSRM_FAILURE("Local filesystem error: could not crete directory!");
+                    requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem error: could not crete directory!");
                     failure = true; // gsm.failedChunk(chunkData);
                     log.error("ERROR in PtPChunk! Filesystem was unable to successfully create directory: "
                             + f.toString());
@@ -602,13 +585,183 @@ public class PtP implements Delegable, Chooser, Request
         }
         return true;
     }
+    
+    private boolean managePermitSetFileStep(StoRI fileStoRI) throws CannotMapUserException
+    {
+        if (requestData instanceof IdentityInputData)
+        {
+            if (managePermitSetFileStep(fileStoRI, 
+                                         ((IdentityInputData) requestData).getUser().getLocalUser()))
+            {
+                setDefaultAcl(fileStoRI);
+                setTapeManagementAcl(fileStoRI);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            setDefaultAcl(fileStoRI);
+            setTapeManagementAcl(fileStoRI);
+            setHttpsServiceAcl(fileStoRI.getLocalFile(), FilesystemPermission.ReadWrite);
+            return true;
+        }
+    }
+    
+    /**
+     * Private method used to setup the right file permission Returns false if something goes wrong!
+     */
+    private boolean managePermitSetFileStep(StoRI fileStoRI, LocalUser localUser)
+    {
+        // BEWARE THAT READ PERMISSION IS NEEDED BECAUSE GRID_FTP SERVER _ALSO_
+        // REQUIRES READ RIGHTS ELSE IT WON T BE ABLE TO WRITE THE FILE!!!
+        log.debug("PtPChunk: setting RW ACL for " + fileStoRI.getAbsolutePath() + " for user " + localUser);
+        try
+        {
+            if (!setAcl(fileStoRI, localUser, FilesystemPermission.ReadWrite, fileStoRI.hasJustInTimeACLs()))
+            {
+                requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
+                        + "not allow setting up correct ACLs for PtP!");
+                failure = true;
+                return false;
+            }
+        } catch(Exception e)
+        {
+            requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has" + " problems manipulating ACE!");
+            failure = true;
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean setAcl(StoRI parentStoRI, LocalUser localUser, FilesystemPermission permission, boolean hasJustInTimeACLs) throws Exception
+    {
+        if(hasJustInTimeACLs)
+        {
+            return setJiTAcl(parentStoRI, localUser, permission);
+        }
+        else
+        {
+            return setAoTAcl(parentStoRI, localUser, permission);
+        }
+    }
 
+    private boolean setJiTAcl(StoRI fileStori, LocalUser localUser, FilesystemPermission permission) throws Exception
+    {
+        log.debug("SrmMkdir: Adding JiT ACL " + permission + " to user " + localUser + " for directory : '" + fileStori.getAbsolutePath() + "'");
+        try
+        {
+            AclManagerFSAndHTTPS.getInstance().grantUserPermission(fileStori.getLocalFile(),localUser, permission);
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+            return false;
+        }
+        boolean response;
+//      parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+        FilesystemPermission fp = fileStori.getLocalFile().getEffectiveUserPermission(localUser);
+        if(fp != null)
+        {
+            if(fp.allows(permission))
+            {
+                VolatileAndJiTCatalog.getInstance().trackJiT(fileStori.getPFN(),
+                    localUser, permission, start,
+                    requestData.pinLifetime());
+                response = true;
+            }
+            else
+            {
+                log.error("ATTENTION in PtPChunk! The local filesystem has"
+                    + " a mask that does not allow " + permission + " User-ACL to "
+                    + "be set up on" + fileStori.getLocalFile().toString() + "!");
+                response = false;
+            }
+        }
+        else
+        {
+            log.error("ERROR in PtPChunk! A " + permission + " User-ACL was set on "
+                + fileStori.getAbsolutePath() + " for user " + localUser.toString()
+                + " but when subsequently verifying its effectivity,"
+                + " a null ACE was found!");
+            throw new Exception("Unable to verify user ACL");
+        }
+        return response;
+    }
+    
+    private boolean setAoTAcl(StoRI fileStori, LocalUser localUser, FilesystemPermission permission) throws Exception
+    {
+        log.debug("SrmMkdir: Adding AoT ACL " + permission + " to user " + localUser + " for directory : '" + fileStori.getAbsolutePath() + "'");
+        try
+        {
+            AclManagerFSAndHTTPS.getInstance().grantGroupPermission(fileStori.getLocalFile(),localUser, permission);
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.error("Unable to grant user traverse permission on parent file. IllegalArgumentException: " + e.getMessage());
+            return false;
+        }
+        boolean response;        
+//      parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+        FilesystemPermission fp = fileStori.getLocalFile().getEffectiveGroupPermission(localUser);
+        if(fp != null)
+        {
+            if (fp.allows(permission))
+            {
+                response = true;
+            }
+            else
+            {
+                log.error("ATTENTION in PtPChunk! The local filesystem has a mask"
+                        + " that does not allow Traverse Group-ACL to be set up on"
+                        + fileStori.getLocalFile().toString() + "!");
+                response = false;
+            }
+        }
+        else
+        {
+            log.error("ERROR in PtPChunk! A Traverse Group-ACL was set on "
+                + fileStori.getAbsolutePath() + " for user " + localUser.toString()
+                + " but when subsequently verifying its effectivity, "
+                + "a null ACE was found!");
+            response = false;
+        }
+        return response;        
+    }
+
+    private void setHttpsServiceParentAcl(StoRI fileStoRI)
+    {
+        log.debug("SrmMkdir: Adding parent https ACL for directory : '" + fileStoRI.getAbsolutePath() + "' parents");
+        for(StoRI parentStoRI : fileStoRI.getParents())
+        {
+            setHttpsServiceAcl(parentStoRI.getLocalFile(), FilesystemPermission.Traverse);
+        }
+    }
+    
+    
+    private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission)
+    {
+        log.debug("SrmMkdir: Adding https ACL " + permission + "for directory : '" + file + "'");
+        try
+        {
+            AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file, permission);
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
+                    + e.getMessage());
+            requestData.getStatus().extendExplaination("Unable to grant group permission on the created folder");
+        }
+    }
+    
     /**
      * Private method used to manage ReserveSpace. Returns false if something went wrong!
      */
     private boolean managePermitReserveSpaceStep(StoRI fileStoRI)
     {
-        PtP.log.debug("PtPChunk: entered ReserveSpaceStep for " + fileStoRI.getAbsolutePath());
+        log.debug("PtPChunk: entered ReserveSpaceStep for " + fileStoRI.getAbsolutePath());
         TSizeInBytes size = requestData.expectedFileSize();
         TSpaceToken spaceToken = requestData.getSpaceToken();
         LocalFile localFile = fileStoRI.getLocalFile();
@@ -646,12 +799,12 @@ public class PtP implements Delegable, Chooser, Request
                             && SpaceInfoManager.isInProgress(SASpaceToken))
                     {
                         /* Trust we got space, let the request pass */
-                        PtP.log.debug("PtPChunk: ReserveSpaceStep: the storage area space initialization is in progress, "
+                        log.debug("PtPChunk: ReserveSpaceStep: the storage area space initialization is in progress, "
                                 + "optimistic approach, considering we got enough space");
                     }
                     else
                     {
-                        PtP.log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
+                        log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
                         requestData.changeStatusSRM_FAILURE("No free space on Storage Area");
                         failure = true; // gsm.failedChunk(chunkData);
                         return false;
@@ -679,7 +832,7 @@ public class PtP implements Delegable, Chooser, Request
                 // syncronisation issues!
                 //
                 // File exists but Overwrite set to NEVER!!!
-                PtP.log.debug("PtPChunk - ReserveSpaceStep: no overwrite allowed! Failing chunk... ");
+                log.debug("PtPChunk - ReserveSpaceStep: no overwrite allowed! Failing chunk... ");
                 requestData.changeStatusSRM_DUPLICATION_ERROR("Cannot srmPut file because it already exists!");
                 failure = true; // gsm.failedChunk(chunkData);
                 return false;
@@ -716,28 +869,28 @@ public class PtP implements Delegable, Chooser, Request
                     // fail request with SRM_FILE_BUSY
                     requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
                     failure = true; // gsm.failedChunk(chunkData);
-                    PtP.log.debug("ATTENTION in PtPChunk! PtPChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
+                    log.debug("ATTENTION in PtPChunk! PtPChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
                     return false;
                 }
                 else
                     if ((spaceToken.isEmpty()) && (size.isEmpty()))
                     {
-                        PtP.log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken and no FileSize specified; mock file will be created... ");
+                        log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken and no FileSize specified; mock file will be created... ");
                     }
                     else
                         if ((spaceToken.isEmpty()) && (!size.isEmpty()))
                         {
-                            PtP.log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken available but there is a FileSize specified; implicit space reservation taking place...");
+                            log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken available but there is a FileSize specified; implicit space reservation taking place...");
                             fileStoRI.allotSpaceForFile(size);
                         }
                         else
                             if ((!spaceToken.isEmpty()) && (!size.isEmpty()))
                             {
-                                PtP.log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
+                                log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
                                 if (!isExistingSpaceToken(spaceToken))
                                 {
                                     requestData.changeStatusSRM_INVALID_REQUEST("The provided Space Token does not exists");
-                                    PtP.log.info("PtPChunk execution failed. The space token " + spaceToken
+                                    log.info("PtPChunk execution failed. The space token " + spaceToken
                                             + " provided by user does not exists");
                                     return false;
                                 }
@@ -751,11 +904,11 @@ public class PtP implements Delegable, Chooser, Request
                                 // spaceToken is NOT empty but size IS!
                                 // Use of EMPTY Space Size. That means total size of Storage
                                 // Space will be used!!
-                                PtP.log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
+                                log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and FileSize specified; reserving space by token...");
                                 if (!isExistingSpaceToken(spaceToken))
                                 {
                                     requestData.changeStatusSRM_INVALID_REQUEST("The provided Space Token does not exists");
-                                    PtP.log.info("PtPChunk execution failed. The space token " + spaceToken
+                                    log.info("PtPChunk execution failed. The space token " + spaceToken
                                             + " provided by user does not exists");
                                     return false;
                                 }
@@ -764,7 +917,7 @@ public class PtP implements Delegable, Chooser, Request
                                     fileStoRI.allotSpaceByToken(spaceToken);
                                 }
                             }
-            PtP.log.debug("PtPChunk: finished ReserveSpaceStep for " + fileStoRI.getAbsolutePath());
+            log.debug("PtPChunk: finished ReserveSpaceStep for " + fileStoRI.getAbsolutePath());
             return true;
         } catch(SecurityException e)
         {
@@ -776,7 +929,7 @@ public class PtP implements Delegable, Chooser, Request
             // the PolicyCollector!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! During space reservation step in PtP, could not create file: "
+            log.error("ERROR in PtPChunk! During space reservation step in PtP, could not create file: "
                     + localFile.toString() + "; Java s SecurityManager does not allow writing the file! " + e);
             return false;
         } catch(IOException e)
@@ -785,7 +938,7 @@ public class PtP implements Delegable, Chooser, Request
             // Error!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! During space reservation step in PtP, an error occured while trying to create the file:"
+            log.error("ERROR in PtPChunk! During space reservation step in PtP, an error occured while trying to create the file:"
                     + localFile.toString() + "; error: " + e);
             return false;
         } catch(it.grid.storm.filesystem.InvalidPermissionOnFileException e)
@@ -794,7 +947,7 @@ public class PtP implements Delegable, Chooser, Request
             // This is thrown when executing createNewFile method!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! During space reservation step in PtP, an attempt to create file "
+            log.error("ERROR in PtPChunk! During space reservation step in PtP, an attempt to create file "
                     + localFile.toString()
                     + " failed because StoRM lacks the privileges to do so! Exception follows: " + e);
             return false;
@@ -803,14 +956,14 @@ public class PtP implements Delegable, Chooser, Request
             // Something went wrong while using space reservation component!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk! Space component failed! Exception follows: " + e);
+            log.error("ERROR in PtPChunk! Space component failed! Exception follows: " + e);
             return false;
         } catch(ExpiredSpaceTokenException e)
         {
             // The supplied space token is expired
             requestData.changeStatusSRM_SPACE_LIFETIME_EXPIRED("The provided Space Token has expired its lifetime");
             spacefailure = true; // gsm.expiredSpaceLifetimeChunk(chunkData);
-            PtP.log.info("PtPChunk execution failed. ExpiredSpaceTokenException : " + e.getMessage());
+            log.info("PtPChunk execution failed. ExpiredSpaceTokenException : " + e.getMessage());
             return false;
         } catch(Exception e)
         {
@@ -820,15 +973,15 @@ public class PtP implements Delegable, Chooser, Request
             // capable filesystem!!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
             failure = true; // gsm.failedChunk(chunkData);
-            PtP.log.error("ERROR in PtPChunk - space Step! Unexpected error in reserve space step of PtP for file "
+            log.error("ERROR in PtPChunk - space Step! Unexpected error in reserve space step of PtP for file "
                     + localFile.toString() + "! Exception follows: " + e);
-            PtP.log.error("Complete error stack trace follows: ");
+            log.error("Complete error stack trace follows: ");
             StackTraceElement[] ste = e.getStackTrace();
             if (ste != null)
             {
                 for (StackTraceElement element : ste)
                 {
-                    PtP.log.error(element.toString());
+                    log.error(element.toString());
                 }
             }
 
@@ -861,141 +1014,7 @@ public class PtP implements Delegable, Chooser, Request
         return spaceData != null;
     }
 
-    private boolean managePermitSetFileStep(StoRI fileStoRI, TTURL turl) throws CannotMapUserException
-    {
-        if (requestData instanceof IdentityInputData)
-        {
-            if (managePermitSetFileStep(fileStoRI, 
-                                         ((IdentityInputData) requestData).getUser().getLocalUser(), turl))
-            {
-                setDefaultAcl(fileStoRI, turl);
-                setTapeManagementAcl(fileStoRI);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            setDefaultAcl(fileStoRI, turl);
-            setTapeManagementAcl(fileStoRI);
-            return true;
-        }
-    }
-    
-    /**
-     * Private method used to setup the right file permission Returns false if something goes wrong!
-     */
-    private boolean managePermitSetFileStep(StoRI fileStoRI, LocalUser localUser, TTURL turl)
-    {
-        // BEWARE THAT READ PERMISSION IS NEEDED BECAUSE GRID_FTP SERVER _ALSO_
-        // REQUIRES READ RIGHTS ELSE IT WON T BE ABLE TO WRITE THE FILE!!!
-        PtP.log.debug("PtPChunk: entered SetFileStep for " + fileStoRI.getAbsolutePath());
-        LocalFile localFile = fileStoRI.getLocalFile();
-        FilesystemPermission fp = null;
-        boolean effective = false;
-        if (fileStoRI.hasJustInTimeACLs())
-        {
-            /*
-             * here we can suppose (more or less) that the call fileStoRI.getLocalFile() never returns
-             * null (code should be revised)
-             */
-            try
-            {
-                AclManagerFSAndHTTPS.getInstance().grantUserPermission(localFile, localUser,
-                                                                       FilesystemPermission.ReadWrite);
-            } catch(IllegalArgumentException e)
-            {
-                log.error("Unable to grant user write permission on the file. IllegalArgumentException: "
-                        + e.getMessage());
-            }
-// localFile.grantUserPermission(localUser, FilesystemPermission.ReadWrite);
-            fp = localFile.getEffectiveUserPermission(localUser);
-            if (fp != null)
-            {
-                effective = fp.allows(FilesystemPermission.ReadWrite);
-                if (effective)
-                {
-                    // ACL was correctly set up! Track JiT!
-                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(), localUser,
-                                                                 FilesystemPermission.Read, start,
-                                                                 requestData.pinLifetime());
-                    VolatileAndJiTCatalog.getInstance().trackJiT(fileStoRI.getPFN(), localUser,
-                                                                 FilesystemPermission.Write, start,
-                                                                 requestData.pinLifetime());
-                }
-                else
-                {
-                    PtP.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite User-ACL to be set up on"
-                            + localFile.toString() + "!");
-                }
-            }
-            else
-            {
-                PtP.log.error("ERROR in PTP CHUNK! A ReadWrite User-ACL was set on "
-                        + fileStoRI.getAbsolutePath() + " for user " + localUser.toString()
-                        + " but when subsequently verifying its effectivity, a null ACE was found!");
-            }
-        }
-        else
-        {
-            try
-            {
-                AclManagerFSAndHTTPS.getInstance().grantGroupPermission(localFile, localUser,
-                                                                        FilesystemPermission.ReadWrite);
-            } catch(IllegalArgumentException e)
-            {
-                log.error("Unable to grant group permission on the file. IllegalArgumentException: "
-                        + e.getMessage());
-            }
-// localFile.grantGroupPermission(localUser, FilesystemPermission.ReadWrite);
-            fp = localFile.getEffectiveGroupPermission(localUser);
-            if (fp != null)
-            {
-                effective = fp.allows(FilesystemPermission.ReadWrite);
-                if (!effective)
-                {
-                    PtP.log.error("ATTENTION in PTP CHUNK! The local filesystem has a mask that does not allow ReadWrite Group-ACL to be set up on"
-                            + localFile.toString() + "!");
-                }
-            }
-            else
-            {
-                PtP.log.error("ERROR in PTP CHUNK! ReadWrite Group-ACL was set on "
-                        + fileStoRI.getAbsolutePath() + " for group " + localUser.toString()
-                        + " but when subsequently verifying its effectivity, a null ACE was found!");
-            }
-        }
-        if (fp == null)
-        {
-            /*
-             * This is a programming bug and should not occur! An attempt
-             * was just made to grant Read
-             * permission; so regardless of the umask allowing the
-             * permission or not, there must be at least an ACE
-             * present! Yet none was found!
-             */
-            requestData.changeStatusSRM_FAILURE("Local filesystem has problems manipulating ACE!");
-            failure = true; // gsm.failedChunk(chunkData);
-            return false;
-        }
-        if (!effective)
-        {
-            /*
-             * mask preset in filesystem does not allow the setting up of
-             * the required permissions!
-             * Request fails!
-             */
-            requestData.changeStatusSRM_FAILURE("Local filesystem mask does not allow setting up correct ACLs for PtP!");
-            failure = true; // gsm.failedChunk(chunkData);
-            return false;
-        }
-        return true;
-    }
-    
-    private void setDefaultAcl(StoRI fileStoRI, TTURL turl)
+    private void setDefaultAcl(StoRI fileStoRI)
     {
         DefaultACL dacl = fileStoRI.getVirtualFileSystem().getCapabilities().getDefaultACL();
         if (dacl != null && !dacl.isEmpty())
@@ -1004,7 +1023,7 @@ public class PtP implements Delegable, Chooser, Request
             {
                 if (ace.isValid())
                 {
-                    PtP.log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
+                    log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
                             + " with permission: " + ace.getFilePermissionString());
                     LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
                     if (ace.getFilesystemPermission() == null)
@@ -1051,7 +1070,7 @@ public class PtP implements Delegable, Chooser, Request
         requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access to " + requestData.getSURL()
                 + " denied!");
         failure = true; // gsm.failedChunk(chunkData);
-        PtP.log.debug("Create/Write access to " + requestData.getSURL() + " for user " + DataHelper.getRequestor(requestData)
+        log.debug("Create/Write access to " + requestData.getSURL() + " for user " + DataHelper.getRequestor(requestData)
                 + " denied!"); // info
     }
 
@@ -1067,7 +1086,7 @@ public class PtP implements Delegable, Chooser, Request
         {
             requestData.changeStatusSRM_FAILURE("Null policy! internal error");
             failure = true; 
-            PtP.log.error("PtPChunk: Null policy! internal error!");
+            log.error("PtPChunk: Null policy! internal error!");
             return;
         }
         switch (decision)
@@ -1076,70 +1095,23 @@ public class PtP implements Delegable, Chooser, Request
                 // Missing policy
                 requestData.changeStatusSRM_FAILURE("Missing Policy! Access rights cannot be established!");
                 failure = true; 
-                PtP.log.error("PtPChunk: PolicyCollector warned of missing policies for the supplied SURL!");
-                PtP.log.error("Requested SURL: " + requestData.getSURL());
+                log.error("PtPChunk: PolicyCollector warned of missing policies for the supplied SURL!");
+                log.error("Requested SURL: " + requestData.getSURL());
                 break;
             case INDETERMINATE:
                 // PolicyCollector error
                 requestData.changeStatusSRM_FAILURE("PolicyCollector error! Access rights cannot be established!");
                 failure = true; 
-                PtP.log.error("PtPChunk: PolicyCollector encountered internal problems!");
-                PtP.log.error("Requested SURL: " + requestData.getSURL());
+                log.error("PtPChunk: PolicyCollector encountered internal problems!");
+                log.error("Requested SURL: " + requestData.getSURL());
                 break;
             default:
                 // Unexpected policy!
                 requestData.changeStatusSRM_FAILURE("Unexpected Policy! StoRM does not know what to do!");
                 failure = true; 
-                PtP.log.error("PtPChunk: unexpected policy returned by PolicyCollector for the supplied SURL!");
-                PtP.log.error("Requested SURL: " + requestData.getSURL());
+                log.error("PtPChunk: unexpected policy returned by PolicyCollector for the supplied SURL!");
+                log.error("Requested SURL: " + requestData.getSURL());
                 break;
-        }
-    }
-
-    /**
-     * Private method that handles the case of overwriting of an existing file: this gets invoked if
-     * TOverwriteMode is
-     * set to Always or WhenFilesAreDifferet, and a file already exists. Notice that the logic for permit is
-     * exactly the
-     * same as that for the case of non existent files! This is because the placeHolder/reserveSpace functions
-     * of the
-     * FileSystem object, in case of existing files, they erase it and create a new mock file - thereby
-     * following the
-     * SRM specs that no append is possible. So the only difference between the two cases is the kind of
-     * policies that
-     * are checked before going on and carrying out the processing.
-     */
-    private void manageOverwriteExistingFile(StoRI fileStoRI)
-    {
-        AuthzDecision decision;
-        if (requestData instanceof IdentityInputData)
-        {
-            decision = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) requestData).getUser(),
-                                                              SRMFileRequest.RM, fileStoRI);
-        }
-        else
-        {
-            decision = AuthzDirector.getPathAuthz()
-                                    .authorizeAnonymous(SRMFileRequest.RM, fileStoRI.getStFN());
-        }
-        if (decision.equals(AuthzDecision.PERMIT))
-        {
-            managePermit(fileStoRI);
-        }
-        else
-        {
-            if (decision.equals(AuthzDecision.DENY))
-            {
-                requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Write access to " + requestData.getSURL()
-                        + " denied!");
-                failure = true; // gsm.failedChunk(chunkData);
-                log.debug("Write access to " + requestData.getSURL() + " for user "
-                        + DataHelper.getRequestor(requestData) + " denied!");
-            }
-            else
-            {
-                manageAnomaly(decision);
-            }
         }
     }
 
