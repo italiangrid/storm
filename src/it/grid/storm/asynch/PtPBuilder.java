@@ -85,6 +85,7 @@ public class PtPBuilder
                                             expectedFileSize, transferProtocols, overwriteOption,
                                             status, transferURL);
             }
+            data.store();
         } catch(InvalidPtPDataAttributesException e)
         {
             log.error("Unable to build PtPChunkData. InvalidPtPChunkDataAttributesException: " + e.getMessage());
