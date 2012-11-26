@@ -96,7 +96,7 @@ public class PathACE {
         }
         else
         {
-            if (LocalGroups.isGroupDefined(localGroup))
+            if (LocalGroups.getInstance().isGroupDefined(localGroup))
             {
                 localGroupName = localGroup;
             }

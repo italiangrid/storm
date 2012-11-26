@@ -28,10 +28,10 @@ public class RetrieveGroupInfo {
         String logFile = configurationDir + "logging-test.xml";
         SetUpTest.init(logFile);
          
-        int gid = LocalGroups.getGroupId("ritz");         
+        int gid = LocalGroups.getInstance().getGroupId("ritz");         
         log.debug("GID of ritz : "+gid);
         HashMap<String,Integer> gdb = new HashMap<String, Integer>();
-        gdb.putAll(LocalGroups.getGroupDB());
+//        gdb.putAll(LocalGroups.getGroupDB());
         
         Iterator<String> iterator = gdb.keySet().iterator();      
         while (iterator.hasNext()) {  

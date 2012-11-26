@@ -55,7 +55,7 @@ public class PathAuthz implements PathAuthzInterface {
 
         String groupName = null;
         try {
-            groupName = LocalGroups.getGroupName(guser.getLocalUser().getPrimaryGid());
+            groupName = LocalGroups.getInstance().getGroupName(guser.getLocalUser().getPrimaryGid());
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
             return AuthzDecision.INDETERMINATE;
@@ -69,7 +69,7 @@ public class PathAuthz implements PathAuthzInterface {
 
         String groupName = null;
         try {
-            groupName = LocalGroups.getGroupName(guser.getLocalUser().getPrimaryGid());
+            groupName = LocalGroups.getInstance().getGroupName(guser.getLocalUser().getPrimaryGid());
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
             return AuthzDecision.INDETERMINATE;
@@ -167,7 +167,7 @@ public class PathAuthz implements PathAuthzInterface {
         String groupName = null;
         try {
             int localGroup = guser.getLocalUser().getPrimaryGid();
-            groupName = LocalGroups.getGroupName(localGroup);
+            groupName = LocalGroups.getInstance().getGroupName(localGroup);
         } catch (CannotMapUserException e) {
             log.error("Unable to retrieve the local group for '" + guser + "'");
             groupName = "unknown";

@@ -676,7 +676,7 @@ implements StoRI {
     public void setGroupTapeRead() {
         
         String groupName = Configuration.getInstance().getGroupTapeReadBuffer(); 
-        boolean isGroupDefined = LocalGroups.isGroupDefined(groupName);
+        boolean isGroupDefined = LocalGroups.getInstance().isGroupDefined(groupName);
         if (isGroupDefined) {
             LocalFile localFile = getLocalFile();
             try {
@@ -693,7 +693,7 @@ implements StoRI {
     public void setGroupTapeWrite() {
         
         String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
-        boolean isGroupDefined = LocalGroups.isGroupDefined(groupName);
+        boolean isGroupDefined = LocalGroups.getInstance().isGroupDefined(groupName);
         if (isGroupDefined) {
             LocalFile localFile = getLocalFile();       
             try {

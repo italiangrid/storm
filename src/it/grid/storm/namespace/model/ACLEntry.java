@@ -19,7 +19,6 @@ package it.grid.storm.namespace.model;
 
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
-import it.grid.storm.namespace.util.userinfo.UserInfoException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,25 +43,25 @@ public class ACLEntry {
         // Digest the GroupName and Retrieve the GroupId
         this.groupName = groupName;
 
-        boolean isDefined = LocalGroups.isGroupDefined(groupName);
+        boolean isDefined = LocalGroups.getInstance().isGroupDefined(groupName);
         if (!isDefined) {
             throw new PermissionException("The groupName '" + groupName + "' does not exist!");
         } else {
             LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
-            groupId = LocalGroups.getGroupId(groupName);
+            groupId = LocalGroups.getInstance().getGroupId(groupName);
             LOG.debug("GroupID of '" + groupName + "' = " + groupId);
         }
     }
 
     public boolean isValid() {
         boolean result = false;
-        boolean isDefined = LocalGroups.isGroupDefined(groupName);
+        boolean isDefined = LocalGroups.getInstance().isGroupDefined(groupName);
         if (!isDefined) {
             LOG.error("The groupName '" + groupName + "' does not exist!");
             result = false;
         } else {
             LOG.debug("Checking if groupName '" + groupName + "' is defined: " + isDefined);
-            groupId = LocalGroups.getGroupId(groupName);
+            groupId = LocalGroups.getInstance().getGroupId(groupName);
             LOG.debug("GroupID of '" + groupName + "' = " + groupId);
             result = true;
         }
