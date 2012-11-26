@@ -695,9 +695,41 @@ public class CopyChunkDAO {
         sb.append(")");
         return sb.toString();
     }
-
-    public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    
+    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn)
+            throws IllegalArgumentException
     {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
+                || surlsArray.length == 0 || dn == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray
+                    + " dn=" + dn);
+        }
+        return find(surlsUniqueIDs, surlsArray, dn, true);
+    }
+
+    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+            throws IllegalArgumentException
+    {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
+                || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray);
+        }
+        return find(surlsUniqueIDs, surlsArray, null, false);
+    }
+
+    private synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray,
+            String dn, boolean withDn) throws IllegalArgumentException
+    {
+        if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray="
+                    + surlsArray + " withDn=" + withDn + " dn=" + dn);
+        }
         PreparedStatement find = null;
         ResultSet rs = null;
         try
@@ -711,8 +743,11 @@ public class CopyChunkDAO {
                     + "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
                     + "WHERE ( rc.sourceSURL_uniqueID IN "
                     + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rc.sourceSURL IN " + makeSurlString(surlsArray) + " ) ";
-            
+                    + " OR rc.sourceSURL IN " + makeSurlString(surlsArray) + " )";
+            if(withDn)
+            {
+                str += " AND rq.client_dn=\'" + dn + "\'";
+            }
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             

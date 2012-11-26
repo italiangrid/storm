@@ -520,9 +520,30 @@ public class PtGChunkCatalog {
         return buildReducedChunkDataList(chunkDataTOCollection);
     }
     
+    public Collection<PtGPersistentChunkData> lookupPtGChunkData(TSURL surl, GridUserInterface user)
+    {
+        return lookupPtGChunkData(Arrays.asList(new TSURL[]{surl}), user);
+    }
+    
     public Collection<PtGPersistentChunkData> lookupPtGChunkData(TSURL surl)
     {
         return lookupPtGChunkData(Arrays.asList(new TSURL[]{surl}));
+    }
+    
+    private Collection<PtGPersistentChunkData> lookupPtGChunkData(List<TSURL> surls, GridUserInterface user)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<PtGChunkDataTO> chunkDataTOCollection = dao.find(surlsUniqueIDs, surlsArray, user.getDn());
+        log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+        return buildChunkDataList(chunkDataTOCollection);
     }
     
     public Collection<PtGPersistentChunkData> lookupPtGChunkData(List<TSURL> surls)
@@ -941,6 +962,6 @@ public class PtGChunkCatalog {
         dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
                                          expectedStatusCode, newStatusCode);
     }
-    
+
 }
 

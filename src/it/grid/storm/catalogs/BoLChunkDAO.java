@@ -1629,9 +1629,42 @@ public class BoLChunkDAO {
             close(stmt);
         }
     }
-
-    public synchronized Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+	
+    public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn)
+            throws IllegalArgumentException
     {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
+                || surlsArray.length == 0 || dn == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray
+                    + " dn=" + dn);
+        }
+        return find(surlsUniqueIDs, surlsArray, dn, true);
+    }
+
+    public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+            throws IllegalArgumentException
+    {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
+                || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray);
+        }
+        return find(surlsUniqueIDs, surlsArray, null, false);
+    }
+
+    private synchronized Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray,
+            String dn, boolean withDn) throws IllegalArgumentException
+    {
+        if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0
+                || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray
+                    + " withDn=" + withDn + " dn=" + dn);
+        }
         if(!checkConnection())
         {
             log.error("BoL CHUNK DAO: find - unable to get a valid connection!");
@@ -1649,9 +1682,12 @@ public class BoLChunkDAO {
                     + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
                     + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
                     + "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
-                    + "WHERE rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rb.sourceSURL IN " + makeSurlString(surlsArray);
-
+                    + "WHERE ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
+                    + " OR rb.sourceSURL IN " + makeSurlString(surlsArray) + " )";
+            if(withDn)
+            {
+                str += " AND rq.client_dn=\'" + dn + "\'";
+            }
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             
@@ -1715,4 +1751,5 @@ public class BoLChunkDAO {
         return " ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
                 + " OR rb.sourceSURL IN " + makeSurlString(surls) + " ) ";
     }
+
 }

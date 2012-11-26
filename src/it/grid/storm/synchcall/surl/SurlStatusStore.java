@@ -639,6 +639,56 @@ public class SurlStatusStore
         return new ArrayList<TReturnStatus>(new HashSet<TReturnStatus>(tokensStatusMap.values()));
     }
 
+    public Map<TRequestToken, ? extends TReturnStatus> getSurlPerTokenStatuses(TSURL surl,
+            GridUserInterface user) throws UnknownSurlException
+    {
+        if (surl == null || user == null)
+        {
+            throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl + " user=" + user);
+        }
+        log.debug("Retrieving status-token for surl " + surl);
+        ReadLock readLock = null;
+        try
+        {
+            readLock = readLock(surl);
+            Map<TRequestToken, ModifiableReturnStatus> tokensStatusMap = surlTokenStatusStore.get(surl);
+            if (tokensStatusMap == null)
+            {
+                throw new UnknownSurlException("Surl " + surl + " is not stored");
+            }
+            if (tokensStatusMap.isEmpty())
+            {
+                throw new UnknownSurlException("Surl " + surl + " is not stored");
+            }
+            Map<TRequestToken, ModifiableReturnStatus> userTokensStatusMap = new HashMap<TRequestToken, ModifiableReturnStatus>();
+            lockTokenUserStore();
+            for(Entry<TRequestToken, ModifiableReturnStatus> tokenStatus : tokensStatusMap.entrySet())
+            {
+                if(!tokenUserStore.containsKey(tokenStatus.getKey()))
+                {
+                    userTokensStatusMap.put(tokenStatus.getKey(), tokenStatus.getValue());
+                }
+                else
+                {
+                    if(tokenUserStore.get(tokenStatus.getKey()).equals(user))
+                    {
+                        userTokensStatusMap.put(tokenStatus.getKey(), tokenStatus.getValue());
+                    }
+                    else
+                    {
+                        log.debug("Surl " + surl + " has not been stored with a token belonging to user " + user);
+                    }
+                }
+            }
+            return userTokensStatusMap;
+        }
+        finally
+        {
+            unlockSurl(readLock);
+            unlockTokenUserStore();
+        }
+    }
+    
     public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
             throws IllegalArgumentException, UnknownSurlException
     {

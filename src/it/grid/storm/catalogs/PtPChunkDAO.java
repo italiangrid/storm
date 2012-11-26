@@ -1225,9 +1225,34 @@ public class PtPChunkDAO {
     }
     
     
-
-    public synchronized Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn) throws IllegalArgumentException
     {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0 || dn == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray + " dn=" + dn);
+        }
+        return find(surlsUniqueIDs,surlsArray,dn,true);
+    }
+    
+    public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray) throws IllegalArgumentException
+    {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray);
+        }
+        return find(surlsUniqueIDs,surlsArray,null,false);
+    }
+
+    private synchronized Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn, boolean withDn) throws IllegalArgumentException
+    {
+        if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray="
+                    + surlsArray + " withDn=" + withDn + " dn=" + dn);
+        }
         if(!checkConnection())
         {
             log.error("PtP CHUNK DAO: find - unable to get a valid connection!");
@@ -1246,7 +1271,12 @@ public class PtPChunkDAO {
                 + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
                 + "WHERE ( rp.targetSURL_uniqueID IN "
                 + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                + " OR rp.targetSURL IN " + makeSurlString(surlsArray) + " ) ";
+                + " OR rp.targetSURL IN " + makeSurlString(surlsArray) + " )";
+            
+            if(withDn)
+            {
+                str += " AND rq.client_dn=\'" + dn + "\'";
+            }
             
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
@@ -1410,4 +1440,5 @@ public class PtPChunkDAO {
         sb.append(")");
         return sb.toString();
     }
+
 }

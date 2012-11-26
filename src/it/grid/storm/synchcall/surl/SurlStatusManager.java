@@ -12,6 +12,7 @@ import it.grid.storm.catalogs.ReducedBoLChunkData;
 import it.grid.storm.catalogs.ReducedChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.ReducedPtPChunkData;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -177,6 +178,29 @@ public class SurlStatusManager
         }
     }
     
+    private static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user)
+    {
+        if (surl == null || user == null)
+        {
+            throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl + " user=" + surl);
+        }
+        Map<TRequestToken, TReturnStatus> persistentTokensStatusMap = getSurlPerPersistentTokenStatuses(surl, user);
+        try
+        {
+            persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl, user));
+        } catch(UnknownSurlException e)
+        {
+            log.debug("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: "
+                    + e);
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+        }
+
+        return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
     public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl)
             throws IllegalArgumentException
     {
@@ -199,6 +223,35 @@ public class SurlStatusManager
         }
 
         return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
+    public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user) throws UnknownSurlException
+    {
+        if (surl == null || user == null)
+        {
+            throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl + " user=" + surl);
+        }
+        
+        Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl, user).values();
+        if(statuses.isEmpty())
+        {
+            throw new UnknownSurlException("The surl is not stored");
+        }
+        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
+        removeStartingStatus(nonFinalStatuses);
+        if(nonFinalStatuses.isEmpty())
+        {
+            return extractMostRecentStatus(statuses);
+        }
+        if(nonFinalStatuses.size() > 1)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
+            return extractMostRecentStatus(nonFinalStatuses);
+        }
+        else
+        {
+            return nonFinalStatuses.getFirst();
+        }
     }
     
     public static TReturnStatus getSurlsStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
@@ -462,6 +515,18 @@ public class SurlStatusManager
         }
     }
     
+    private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl,
+            GridUserInterface user)
+    {
+        HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
+        tokenStatusMap.putAll(buildPtGTokenStatusMap(PtGChunkCatalog.getInstance().lookupPtGChunkData(surl, user)));
+        tokenStatusMap.putAll(buildPtPTokenStatusMap(PtPChunkCatalog.getInstance().lookupPtPChunkData(surl, user)));
+        tokenStatusMap.putAll(buildCopyTokenStatusMap(CopyChunkCatalog.getInstance()
+                                                                      .lookupCopyChunkData(surl, user)));
+        tokenStatusMap.putAll(buildBoLTokenStatusMap(BoLChunkCatalog.getInstance().lookupBoLChunkData(surl, user)));
+        return tokenStatusMap;
+    }
+    
     private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl)
     {
         HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
@@ -579,4 +644,5 @@ public class SurlStatusManager
         }
         return RequestSummaryCatalog.getInstance().typeOf(requestToken);
     }
+
 }

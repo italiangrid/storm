@@ -619,6 +619,27 @@ public class PtPChunkCatalog {
         return lookupPtPChunkData((List<TSURL>)Arrays.asList(new TSURL[]{surl}));
     }
     
+    public Collection<PtPPersistentChunkData> lookupPtPChunkData(TSURL surl, GridUserInterface user)
+    {
+        return lookupPtPChunkData((List<TSURL>)Arrays.asList(new TSURL[]{surl}), user);
+    }
+    
+    private Collection<PtPPersistentChunkData> lookupPtPChunkData(List<TSURL> surls, GridUserInterface user)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<PtPChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs, surlsArray, user.getDn());
+        log.debug("PtP CHUNK CATALOG: retrieved data " + chunkDataTOs);
+        return buildChunkDataList(chunkDataTOs);
+    }
+
     public Collection<PtPPersistentChunkData> lookupPtPChunkData(List<TSURL> surls)
     {
         int[] surlsUniqueIDs = new int[surls.size()];

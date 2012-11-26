@@ -1757,9 +1757,35 @@ public class PtGChunkDAO {
         	}
         }
 	}
-
-    public synchronized Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+	
+    public Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn) throws IllegalArgumentException
     {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0 || dn == null)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray + " dn=" + dn);
+        }
+        return find(surlsUniqueIDs, surlsArray, dn, true);
+    }
+
+    public Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray) throws IllegalArgumentException
+    {
+        if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray);
+        }
+        return find(surlsUniqueIDs, surlsArray, null, false);
+    }
+    
+    private synchronized Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn, boolean withDn) throws IllegalArgumentException
+    {
+        if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null || surlsArray.length == 0)
+        {
+            throw new IllegalArgumentException("Unable to perform the find, "
+                    + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray="
+                    + surlsArray + " withDn=" + withDn + " dn=" + dn);
+        }
         if(!checkConnection())
         {
             log.error("PTG CHUNK DAO: find - unable to get a valid connection!");
@@ -1778,8 +1804,12 @@ public class PtGChunkDAO {
                     + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
                     + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
                     + "WHERE ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-                    + " OR rg.sourceSURL IN " + makeSurlString(surlsArray) + " ) ";
+                    + " OR rg.sourceSURL IN " + makeSurlString(surlsArray) + " )";
 
+            if(withDn)
+            {
+                str += " AND rq.client_dn=\'" + dn + "\'";
+            }
             find = con.prepareStatement(str);
             logWarnings(con.getWarnings());
             

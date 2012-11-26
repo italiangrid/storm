@@ -19,6 +19,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TimeUnit;
+import it.grid.storm.griduser.GridUserInterface;
 //import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
@@ -226,11 +227,30 @@ public class CopyChunkCatalog
         return buildChunkDataList(chunkDataTOs, requestToken);
     }
     
+    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl, GridUserInterface user)
+    {
+        return lookupCopyChunkData(Arrays.asList(new TSURL[]{surl}), user);
+    }
+    
     public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl)
     {
         return lookupCopyChunkData(Arrays.asList(new TSURL[]{surl}));
     }
 
+    private Collection<CopyPersistentChunkData> lookupCopyChunkData(List<TSURL> surls, GridUserInterface user)
+    {
+        int[] surlsUniqueIDs = new int[surls.size()];
+        String[] surlsArray = new String[surls.size()];
+        int index = 0;
+        for (TSURL tsurl : surls)
+        {
+            surlsUniqueIDs[index] = tsurl.uniqueId();
+            surlsArray[index] = tsurl.rawSurl();
+            index++;
+        }
+        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs, surlsArray, user.getDn());
+        return buildChunkDataList(chunkDataTOs);
+    }
 
     public Collection<CopyPersistentChunkData> lookupCopyChunkData(List<TSURL> surls)
     {
@@ -519,5 +539,6 @@ public class CopyChunkCatalog
         dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
                                          expectedStatusCode, newStatusCode);
     }
+
 }
 
