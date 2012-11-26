@@ -126,33 +126,36 @@ public class DNMatchingRule {
             String[] rules = regularExpressionRule.split("/");
             if (rules != null)
             {
-                int length = rules.length;
-                for (int i = 0; i < length; i++)
+                for (int i = 0; i < rules.length; i++)
                 {
-                    int separatorIndex = rules[i].indexOf('=');
-                    if(separatorIndex < 0)
+                    if(rules[i].indexOf('=') < 0)
                     {
                         continue;
                     }
-                    switch (DNFields.fromString(rules[i].substring(0, separatorIndex)))
+                    String[] elementCoupple = rules[i].split("=");
+                    if(elementCoupple.length != 2)
+                    {
+                        continue;
+                    }
+                    switch (DNFields.fromString(elementCoupple[0]))
                     {
                         case COUNTRY:
-                            countryPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            countryPatternString = elementCoupple[1];
                             break;
                         case ORGANIZATION:
-                            organizationPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            organizationPatternString = elementCoupple[1];
                             break;
                         case ORGANIZATIONALUNIT:
-                            organizationalUnitPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            organizationalUnitPatternString = elementCoupple[1];
                             break;
                         case LOCALITY:
-                            localityPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            localityPatternString = elementCoupple[1];
                             break;
                         case COMMONNAME:
-                            commonNamePatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            commonNamePatternString = elementCoupple[1];
                             break;
                         case DOMAINCOMPONENT:
-                            domainComponentPatternString = rules[i].substring(separatorIndex, rules[i].length());
+                            domainComponentPatternString = elementCoupple[1];
                             break;
                         default:
                             break;
