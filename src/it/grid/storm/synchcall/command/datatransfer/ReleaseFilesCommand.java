@@ -18,6 +18,7 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -31,6 +32,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DataTransferCommand;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData;
@@ -273,7 +275,15 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         {
             if(inputData instanceof ReleaseFilesInputData)
             {
-                return getSurlsStatus(((ReleaseFilesInputData)inputData).getArrayOfSURLs());
+                if(inputData instanceof IdentityInputData)
+                {
+                    return getSurlsStatus(((ReleaseFilesInputData)inputData).getArrayOfSURLs(), ((IdentityInputData)inputData).getUser(), true);
+                }  
+                else
+                {
+                    return getSurlsStatus(((ReleaseFilesInputData)inputData).getArrayOfSURLs(), null, false);
+                }
+
             }
             else
             {
@@ -308,20 +318,28 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return surlsStatuses;
     }
 
-    private Map<TSURL, TReturnStatus> getSurlsStatus(ArrayOfSURLs arrayOfSURLs)
+    private Map<TSURL, TReturnStatus> getSurlsStatus(ArrayOfSURLs arrayOfSURLs, GridUserInterface user, boolean withUser)
             throws RequestUnknownException, IllegalArgumentException
     {
-        if (arrayOfSURLs == null)
+        if (arrayOfSURLs == null || (withUser && user == null))
         {
-            throw new IllegalArgumentException("unable to get the statuses, null arguments: arrayOfSURLs="
-                    + arrayOfSURLs);
+            throw new IllegalArgumentException("unable to get the statuses, invalid arguments: arrayOfSURLs="
+                    + arrayOfSURLs + " hasUser=" + withUser + " user=" + user);
         }
         Map<TSURL, TReturnStatus> surlsStatuses = new HashMap<TSURL, TReturnStatus>();
         for (TSURL surl : arrayOfSURLs.getArrayList())
         {
             try
             {
-                surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl));
+                if (withUser)
+                {
+                    surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl, user));
+                }
+                else
+                {
+                    surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl));
+                }
+                
             } catch(IllegalArgumentException e)
             {
                 throw new IllegalStateException("Unexpected IllegalArgumentException in getSurlsStatus: " + e);

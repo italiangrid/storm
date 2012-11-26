@@ -178,7 +178,7 @@ public class SurlStatusManager
         }
     }
     
-    private static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user)
+    public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user)
     {
         if (surl == null || user == null)
         {
