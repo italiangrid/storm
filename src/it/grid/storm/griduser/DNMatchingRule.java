@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Iterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Title: </p>
@@ -49,6 +51,8 @@ import java.util.Iterator;
  */
 public class DNMatchingRule {
 
+    private static final Logger log = LoggerFactory.getLogger(DNMatchingRule.class);
+    
     private enum DNFields
     {
         COUNTRY("C"),
@@ -91,12 +95,12 @@ public class DNMatchingRule {
     private String commonNamePatternString;
     private String domainComponentPatternString;
 
-    private Pattern countryPattern = null;
-    private Pattern organizationPattern = null;
-    private Pattern organizationalUnitPattern = null;
-    private Pattern localityPattern = null;
-    private Pattern commonNamePattern = null;
-    private Pattern domainComponentPattern = null;
+    private Pattern countryPattern;
+    private Pattern organizationPattern;
+    private Pattern organizationalUnitPattern;
+    private Pattern localityPattern;
+    private Pattern commonNamePattern;
+    private Pattern domainComponentPattern;
 
     public static DNMatchingRule buildMatchAllDNMatchingRule()
     {
@@ -110,66 +114,53 @@ public class DNMatchingRule {
      */
     public DNMatchingRule(String regularExpressionRule)
     {
-        if ((regularExpressionRule == null) || regularExpressionRule.trim().equals("*")
-                || (regularExpressionRule.trim().equals(".*")))
+        countryPatternString = ADMIT_ALL;
+        organizationPatternString = ADMIT_ALL;
+        organizationalUnitPatternString = ADMIT_ALL;
+        localityPatternString = ADMIT_ALL;
+        commonNamePatternString = ADMIT_ALL;
+        domainComponentPatternString = ADMIT_ALL;
+        if (!(regularExpressionRule == null) && (regularExpressionRule.trim().equals("*")
+                || regularExpressionRule.trim().equals(".*")))
         {
-            this.countryPatternString = ADMIT_ALL;
-            this.organizationPatternString = ADMIT_ALL;
-            this.organizationalUnitPatternString = ADMIT_ALL;
-            this.localityPatternString = ADMIT_ALL;
-            this.commonNamePatternString = ADMIT_ALL;
-            this.domainComponentPatternString = ADMIT_ALL;
-        }
-        else
-        {
-            // Split the rule into the attribute rules
-            String[] rules = regularExpressionRule.split("/");
-            if (rules != null)
+            for (String rule : regularExpressionRule.split("/"))
             {
-                for (int i = 0; i < rules.length; i++)
+                if (!rule.contains("="))
                 {
-                    if(rules[i].indexOf('=') < 0)
-                    {
-                        continue;
-                    }
-                    String[] elementCoupple = rules[i].split("=");
-                    if(elementCoupple.length != 2)
-                    {
-                        continue;
-                    }
-                    switch (DNFields.fromString(elementCoupple[0]))
-                    {
-                        case COUNTRY:
-                            countryPatternString = elementCoupple[1];
-                            break;
-                        case ORGANIZATION:
-                            organizationPatternString = elementCoupple[1];
-                            break;
-                        case ORGANIZATIONALUNIT:
-                            organizationalUnitPatternString = elementCoupple[1];
-                            break;
-                        case LOCALITY:
-                            localityPatternString = elementCoupple[1];
-                            break;
-                        case COMMONNAME:
-                            commonNamePatternString = elementCoupple[1];
-                            break;
-                        case DOMAINCOMPONENT:
-                            domainComponentPatternString = elementCoupple[1];
-                            break;
-                        default:
-                            break;
-                    }
+                    log.warn("Malformed DN regex element \'" + rule
+                            + "\' it does not contains \'=\' key-value separator");
+                    continue;
                 }
-            }
-            else
-            {
-                countryPatternString = ADMIT_ALL;
-                organizationPatternString = ADMIT_ALL;
-                organizationalUnitPatternString = ADMIT_ALL;
-                localityPatternString = ADMIT_ALL;
-                commonNamePatternString = ADMIT_ALL;
-                domainComponentPatternString = ADMIT_ALL;
+                String[] ruleCoupple = rule.split("=");
+                if (ruleCoupple.length != 2)
+                {
+                    log.warn("Malformed DN regex element \'" + rule
+                             + "\' it does not contains the key or contains more \'=\' separators");
+                    continue;
+                }
+                switch (DNFields.fromString(ruleCoupple[0]))
+                {
+                    case COUNTRY:
+                        countryPatternString = ruleCoupple[1];
+                        break;
+                    case ORGANIZATION:
+                        organizationPatternString = ruleCoupple[1];
+                        break;
+                    case ORGANIZATIONALUNIT:
+                        organizationalUnitPatternString = ruleCoupple[1];
+                        break;
+                    case LOCALITY:
+                        localityPatternString = ruleCoupple[1];
+                        break;
+                    case COMMONNAME:
+                        commonNamePatternString = ruleCoupple[1];
+                        break;
+                    case DOMAINCOMPONENT:
+                        domainComponentPatternString = ruleCoupple[1];
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         initPatterns();
