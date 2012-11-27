@@ -87,8 +87,7 @@ public class RmdirConverter implements Converter {
 
         /* (4) recursive */
         String member_recursive = new String("recursive");
-        Boolean recursive = (Boolean) inputParam.get(member_recursive);
-
+        Boolean recursive = inputParam.get(member_recursive) == null ? false : (Boolean) inputParam.get(member_recursive);
         RmdirInputData inputData;
         if(guser != null)
         {

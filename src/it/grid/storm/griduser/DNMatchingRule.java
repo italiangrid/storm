@@ -127,8 +127,11 @@ public class DNMatchingRule {
             {
                 if (!rule.contains("="))
                 {
-                    log.warn("Malformed DN regex element \'" + rule
-                            + "\' it does not contains \'=\' key-value separator");
+                    if(!rule.equals(ADMIT_ALL))
+                    {
+                        log.warn("Malformed DN regex element \'" + rule
+                                 + "\' it does not contains \'=\' key-value separator");                        
+                    }
                     continue;
                 }
                 String[] ruleCoupple = rule.split("=");
