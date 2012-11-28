@@ -76,6 +76,7 @@ class PermissionEvaluator
         }
         StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
         AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, operation, fileStFN);
+        log.info("Authorization decision for user " + DNDecoded + (FQANSDecoded == null ? "" : " - " + FQANSDecoded) + " requesting " + operation + " on " + filePathDecoded + " is [" + decision + "]" );
         return evaluateDecision(decision);
     }
     
@@ -112,7 +113,7 @@ class PermissionEvaluator
         }
         StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
         AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, request, fileStFN);
-        
+        log.info("Authorization decision for user " + DNDecoded + (FQANSDecoded == null ? "" : " - " + FQANSDecoded) + " requesting " + request + " on " + filePathDecoded + " is [" + decision + "]" );
         return evaluateDecision(decision);
     }
     
@@ -137,7 +138,7 @@ class PermissionEvaluator
         }
         StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
         AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(request, fileStFN);
-        
+        log.info("Authorization decision for Anonymous user requesting " + request + " on " + filePathDecoded + " is [" + decision + "]" );
         return evaluateDecision(decision);
     }
     
@@ -162,7 +163,7 @@ class PermissionEvaluator
         }
         StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
         AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(request, fileStFN);
-        
+        log.info("Authorization decision for Anonymous user requesting " + request + " on " + filePathDecoded + " is [" + decision + "]" );
         return evaluateDecision(decision);
     }
     
