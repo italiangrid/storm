@@ -130,7 +130,7 @@ class PermissionEvaluator
           responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
           throw new WebApplicationException(responseBuilder.build());
         }
-        if(!fileVFS.isApproachableByAnonymous())
+        if(!fileVFS.isApproachableByAnonymous() && !(request.isReadOnly() && fileVFS.isHttpWorldReadable()))
         {
             log.debug("The requeste Storage Area \'" + fileVFS.getAliasName() + "\' is not appoachable by anonymous users");
             return new Boolean(false);    
@@ -155,7 +155,7 @@ class PermissionEvaluator
           responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
           throw new WebApplicationException(responseBuilder.build());
         }
-        if(!fileVFS.isApproachableByAnonymous())
+        if(!fileVFS.isApproachableByAnonymous() && !(request.isReadOnly() && fileVFS.isHttpWorldReadable()))
         {
             log.debug("The requeste Storage Area \'" + fileVFS.getAliasName() + "\' is not appoachable by anonymous users");
             return new Boolean(false);    

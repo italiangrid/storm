@@ -175,7 +175,7 @@ public enum SRMFileRequest {
             requestedPathOps.addPathOperation(pathOp);
         }
     }
-
+    
     public PathAccessMask getSRMPathAccessMask() {
         return requestedPathOps;
     }
@@ -185,6 +185,18 @@ public enum SRMFileRequest {
         String result;
         result = srmOp + " : " + description + " = " + requestedPathOps;
         return result;
+    }
+
+    public boolean isReadOnly()
+    {
+        for(PathOperation operation : requestedPathOps.getPathOperations())
+        {
+            if(!operation.isReadOnly())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

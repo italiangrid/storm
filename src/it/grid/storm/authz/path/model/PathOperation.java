@@ -26,11 +26,11 @@ package it.grid.storm.authz.path.model;
 
 public enum PathOperation {
     WRITE_FILE('W', "WRITE_FILE", "Write data"),
-    READ_FILE('R', "READ_FILE", "Read data"),
+    READ_FILE('R', "READ_FILE", "Read data", true),
     RENAME('F', "RENAME", "Rename a file or a directory"),
     DELETE('D', "DELETE", "Delete a file or a directory"),
     // TRAVERSE_DIRECTORY('T', "TRAVERSE_DIRECTORY", "Traverse a directory"),
-    LIST_DIRECTORY('L', "LIST_DIRECTORY", "Listing a directory"),
+    LIST_DIRECTORY('L', "LIST_DIRECTORY", "Listing a directory", true),
     MAKE_DIRECTORY('M', "CREATE_DIRECTORY", "Create a directory"),
     CREATE_FILE('N', "CREATE_FILE", "Create a new file"),
     UNDEFINED('?', "UNDEFINED", "Undefined");
@@ -38,12 +38,23 @@ public enum PathOperation {
     private final char operation;
     private final String operationName;
     private final String operationDescription;
+    private final boolean readonly;
 
     private PathOperation(char operation, String spaceOpName, String spaceOpDesc) {
         this.operation = operation;
         operationName = spaceOpName;
         operationDescription = spaceOpDesc;
+        readonly = false;
     }
+    
+    private PathOperation(char operation, String spaceOpName, String spaceOpDesc, boolean readonly) {
+        this.operation = operation;
+        operationName = spaceOpName;
+        operationDescription = spaceOpDesc;
+        this.readonly = readonly;
+    }
+    
+    
 
     public static PathOperation getSpaceOperation(char op) {
         switch (op) {
@@ -88,6 +99,11 @@ public enum PathOperation {
 
     public int getNumberOfPathOp() {
         return PathOperation.values().length - 1;
+    }
+
+    public boolean isReadOnly()
+    {
+        return this.readonly;
     }
 
 }
