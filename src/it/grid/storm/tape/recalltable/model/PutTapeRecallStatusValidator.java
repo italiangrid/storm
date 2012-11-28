@@ -18,7 +18,6 @@
 package it.grid.storm.tape.recalltable.model;
 
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
@@ -121,16 +120,7 @@ public class PutTapeRecallStatusValidator {
             validationResponse = Response.status(400).build();
             return false;
         }
-
-        try {
-            
-            stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-            
-        } catch (NamespaceException e) {
-            validationResponse = Response.status(400).build();
-            return false;
-        }
-        
+        stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
         return true;
     }
 }

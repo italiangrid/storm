@@ -22,19 +22,19 @@ import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.synchcall.data.DataHelper;
 
 import java.util.Collection;
 
@@ -293,6 +293,14 @@ public final class PtGFeeder implements Delegable {
                 PtGChunkCatalog.getInstance().update(chunkData);
                 log.error("ATTENTION in PtGFeeder! PtGFeeder received " + "request for a SURL and user not recognised by StoRI!"); // info
                 gsm.failedChunk(chunkData);
+            } catch(UnapprochableSurlException e)
+            {
+                chunkData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+                PtGChunkCatalog.getInstance().update(chunkData);
+                log.info("Unable to build a stori for surl " + chunkData.getSURL() + " for user "
+                        + DataHelper.getRequestor(chunkData) + " UnapprochableSurlException: "
+                        + e.getMessage());
+                gsm.failedChunk(chunkData);
             }
             if (stori != null)
             {
@@ -347,22 +355,7 @@ public final class PtGFeeder implements Delegable {
     				+ "request successfully expanded!");
     			PtGChunkCatalog.getInstance().update(chunkData);
     			gsm.successfulChunk(chunkData);
-        }
-		} catch(NamespaceException e)
-		{
-			/*
-			 * The Supplied SURL does not contain a root that could be
-			 * identified by the StoRI factory as referring to a VO being
-			 * managed by StoRM... that is SURLs beginning with such root are not
-			 * handled by this SToRM!
-			 */
-			chunkData.changeStatusSRM_INVALID_PATH("The path specified "
-				+ "in the SURL does not have a local equivalent!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-			
-			log.debug("ATTENTION in PtGFeeder! PtGFeeder received "
-				+ "request for a SURL whose root is not recognised by StoRI!"); // info
-			gsm.failedChunk(chunkData);
+            }
 		} catch(InvalidTDirOptionAttributesException e)
 		{
 			// Could not create TDirOption that specifies no-expansion!

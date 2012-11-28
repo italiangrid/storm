@@ -26,9 +26,8 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -454,105 +453,105 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
             StoRI stori = null;
             // Retrieve the StoRI associate to the SURL
-            try {
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                if (user == null) {
-                    stori = namespace.resolveStoRIbySURL(surl);
+            if (user == null)
+            {
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+            }
+            else
+            {
+                try
+                {
+                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
+                } catch(IllegalArgumentException e)
+                {
+                    log.error(funcName + "unable to build STORI from surl=" + surl + " user=" + user);
+                    continue;
+                } catch(UnapprochableSurlException e)
+                {
+                    log.info("Unable to build a stori for surl " + surl + " for user " + user
+                            + " UnapprochableSurlException: " + e.getMessage());
+                    continue;
+                }
+            }
+
+            // 1- if the SURL is volatile update the entry in the Volatile table
+            if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
+                try
+                {
+                    VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
+                                                        Calendar.getInstance());
+                } catch(Exception e)
+                {
+                    //impossible because of the "exists" check
+                }
+            }
+
+            // 2- JiTs must me removed from the TURL;
+            if (stori.hasJustInTimeACLs()) {
+                log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
+                // Retrieve the PFN of the SURL parents
+                List<StoRI> storiParentsList = stori.getParents();
+                List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+
+                for (StoRI parentStoRI : storiParentsList) {
+                    pfnParentsList.add(parentStoRI.getPFN());
+                }
+                LocalUser localUser = null;
+                try
+                {
+                    if(user != null)
+                    {
+                        localUser = user.getLocalUser();                            
+                    }
+                } catch(CannotMapUserException e)
+                {
+                    log.warn(funcName + "Unable to get the local user for user " + user
+                            + ". CannotMapUserException: " + e.getMessage());
+                }
+                if (localUser != null) {
+                    VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(), localUser);
                 } else {
-                    try
-                    {
-                        stori = namespace.resolveStoRIbySURL(surl, user);
-                    }
-                    catch (IllegalArgumentException e)
-                    {
-                        log.error(funcName + "unable to build STORI from surl=" + surl + " user=" + user);
-                        continue;
-                    }
+                    VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
                 }
+            }
 
-                // 1- if the SURL is volatile update the entry in the Volatile table
-                if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
-                    try
-                    {
-                        VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
-                                                            Calendar.getInstance());
-                    } catch(Exception e)
-                    {
-                        //impossible because of the "exists" check
-                    }
-                }
+            // 3- compute the checksum and store it in an extended attribute
+            LocalFile localFile = stori.getLocalFile();
 
-                // 2- JiTs must me removed from the TURL;
-                if (stori.hasJustInTimeACLs()) {
-                    log.debug(funcName + "JiT case, removing ACEs on SURL: " + surl.toString());
-                    // Retrieve the PFN of the SURL parents
-                    List<StoRI> storiParentsList = stori.getParents();
-                    List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+            if (Configuration.getInstance().getChecksumEnabled()) {
 
-                    for (StoRI parentStoRI : storiParentsList) {
-                        pfnParentsList.add(parentStoRI.getPFN());
-                    }
-                    LocalUser localUser = null;
-                    try
-                    {
-                        if(user != null)
-                        {
-                            localUser = user.getLocalUser();                            
-                        }
-                    } catch(CannotMapUserException e)
-                    {
-                        log.warn(funcName + "Unable to get the local user for user " + user
-                                + ". CannotMapUserException: " + e.getMessage());
-                    }
-                    if (localUser != null) {
-                        VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(), localUser);
-                    } else {
-                        VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
-                    }
-                }
-
-                // 3- compute the checksum and store it in an extended attribute
-                LocalFile localFile = stori.getLocalFile();
-
-                if (Configuration.getInstance().getChecksumEnabled()) {
-
-                    boolean checksumComputed = localFile.setChecksum();
-                    if (!checksumComputed) {
+                boolean checksumComputed = localFile.setChecksum();
+                if (!checksumComputed) {
 //                        if (arrayOfFileStatus != null) {
 //                            arrayOfFileStatus.getTSURLReturnStatus(i)
 //                                             .getStatus()
 //                                             .setExplanation("Warning: failed to compute the checksum "
 //                                                     + "(checksum computation is enabled in the server)");
 //                        } else {
-                            log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
+                        log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
 //                        }
-                    } else {
-                        log.debug("Checksum set to SURL:" + surl.toString());
-                    }
-
+                } else {
+                    log.debug("Checksum set to SURL:" + surl.toString());
                 }
 
-                // 4- Tape stuff management.
-                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-                    String fileAbosolutePath = localFile.getAbsolutePath();
-                    StormEA.removePinned(fileAbosolutePath);
-                    StormEA.setPremigrate(fileAbosolutePath);
-                }
+            }
 
-                // 5- Update FreeSpace into DB
-                /**
-                 * If Storage Area hard limit is enabled, update space on DB
-                 */
-                    VirtualFSInterface fs = stori.getVirtualFileSystem();
-                    if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
-                        SpaceHelper sh = new SpaceHelper();
-                        // Update the used space into Database
-                        sh.decreaseFreeSpaceForSA(log, funcName, user, surl);
-                    }
-                
-            } catch (NamespaceException e1) {
-                log.debug(funcName + "Unable to build StoRI by SURL: " + surl.toString(), e1);
-                continue;
+            // 4- Tape stuff management.
+            if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+                String fileAbosolutePath = localFile.getAbsolutePath();
+                StormEA.removePinned(fileAbosolutePath);
+                StormEA.setPremigrate(fileAbosolutePath);
+            }
+
+            // 5- Update FreeSpace into DB
+            /**
+             * If Storage Area hard limit is enabled, update space on DB
+             */
+            VirtualFSInterface fs = stori.getVirtualFileSystem();
+            if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
+                SpaceHelper sh = new SpaceHelper();
+                // Update the used space into Database
+                sh.decreaseFreeSpaceForSA(log, funcName, user, surl);
             }
         }
     }

@@ -34,9 +34,9 @@ import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
@@ -177,35 +177,37 @@ public class PtP implements Delegable, Chooser, Request
         }
         requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");
         StoRI fileStoRI = null;
-        try
+        if (requestData instanceof IdentityInputData)
         {
-            if (requestData instanceof IdentityInputData)
+            try
             {
                 fileStoRI = NamespaceDirector.getNamespace()
                                              .resolveStoRIbySURL(requestData.getSURL(),
                                                                  ((IdentityInputData) requestData).getUser());
-            }
-            else
+            } catch(UnapprochableSurlException e)
             {
-                fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
-            }
-        } catch(IllegalArgumentException e)
+                requestData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+                failure = true;
+                log.info("Unable to build a stori for surl " + requestData.getSURL() + " for user "
+                        + DataHelper.getRequestor(requestData) + " UnapprochableSurlException: "
+                        + e.getMessage());
+                printRequestOutcome(requestData);
+                return;
+            } catch(IllegalArgumentException e)
+            {
+                failure = true;
+                requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                        + requestData.getSURL());
+                log.error("Unable to get StoRI for surl " + requestData.getSURL()
+                        + " IllegalArgumentException: " + e.getMessage());
+                printRequestOutcome(requestData);
+                return;
+            } 
+        }
+        else
         {
-            failure = true;
-            requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-                    + requestData.getSURL());
-            log.error("Unable to get StoRI for surl " + requestData.getSURL()
-                    + " IllegalArgumentException: " + e.getMessage());
-            printRequestOutcome(requestData);
-            return;
-        } catch(NamespaceException e)
-        {
-            requestData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
-            failure = true;
-            log.debug("ATTENTION in PtPChunk! PtPChunk received request for a SURL whose root is not recognised by StoRI!");
-            printRequestOutcome(requestData);
-            return;
-        } 
+            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+        }
         boolean exists = false;
         try
         {

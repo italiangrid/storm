@@ -24,9 +24,9 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfSURLs;
@@ -114,7 +114,22 @@ public class RmCommand implements Command {
                 {
                     if (inputData instanceof IdentityInputData)
                     {
-                        stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData) inputData).getUser());
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl,
+                                                                 ((IdentityInputData) inputData).getUser());
+                        } catch(UnapprochableSurlException e)
+                        {
+                            log.info("Unable to build a stori for surl " + surl + " for user "
+                                    + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                    + e.getMessage());
+                            globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                     "Invalid SURL path specified");
+                            printRequestOutcome(globalStatus, inputData);
+                            outputData.setStatus(globalStatus);
+                            outputData.setSurlStatus(null);
+                            return outputData;
+                        }
                     }
                     else
                     {
@@ -123,16 +138,6 @@ public class RmCommand implements Command {
                 } catch(IllegalArgumentException e)
                 {
                     log.error("SrmRm: Unable to build StoRI by surl and user. IllegalArgumentException: "
-                            + e.getMessage());
-                    globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-                                                             "Unable to build a STORI from surl");
-                    printRequestOutcome(globalStatus, inputData);
-                    outputData.setStatus(globalStatus);
-                    outputData.setSurlStatus(null);
-                    return outputData;
-                } catch(NamespaceException e)
-                {
-                    log.error("SrmRm: Unable to build StoRI by surl and user. NamespaceException: "
                             + e.getMessage());
                     globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
                                                              "Unable to build a STORI from surl");

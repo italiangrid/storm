@@ -21,9 +21,9 @@ import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLLifetimeReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -233,6 +233,13 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                     ExtendFileLifeTimeCommand.log.error("Unable to build StoRI by SURL and user", e);
                     fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     fileStatusExplanation = "Unable to build StoRI by SURL and user";
+                } catch(UnapprochableSurlException e)
+                {
+                    log.info("Unable to build a stori for surl " + surl + " for user "
+                             + guser + " UnapprochableSurlException: "
+                             + e.getMessage());
+                    fileStatusCode = TStatusCode.SRM_INVALID_PATH;
+                    fileStatusExplanation = "Invalid SURL path specified";
                 } 
                 if(stori != null)
                 {
@@ -292,10 +299,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                                                                                                    null);
                     details.addTSurlReturnStatus(lifetimeReturnStatus);
                 }
-            } catch (NamespaceException e1) {
-                ExtendFileLifeTimeCommand.log.debug("Unable to build StoRI by SURL", e1);
-                fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-                fileStatusExplanation = "Invalid path";
             } catch (InvalidTReturnStatusAttributeException e2) {
                 // Nothing to do, it will never be thrown
                 ExtendFileLifeTimeCommand.log.debug("Thrown InvalidTReturnStatusAttributeException");
@@ -422,7 +425,12 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                     catch (IllegalArgumentException e)
                     {
                         log.error("Unable to build StoRI by SURL and user", e);   
-                    } 
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("Unable to build a stori for surl " + surl + " for user "
+                                + guser + " UnapprochableSurlException: "
+                                + e.getMessage());
+                    }
                     if(stori != null)
                     {
                         LocalFile localFile = stori.getLocalFile();
@@ -530,10 +538,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements Co
                                                                                                PINLifetime);
                 // log.warn("pinlifetime"+PINLifetime.value());
                 details.addTSurlReturnStatus(lifetimeReturnStatus);
-            } catch (NamespaceException e1) {
-                ExtendFileLifeTimeCommand.log.debug("Unable to build StoRI by SURL", e1);
-                fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-                fileStatusExplanation = "Invalid path";
             } catch (InvalidTReturnStatusAttributeException e2) {
                 // Nothing to do, it will never be thrown
                 ExtendFileLifeTimeCommand.log.debug("Thrown InvalidTReturnStatusAttributeException");

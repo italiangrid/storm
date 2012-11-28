@@ -123,6 +123,11 @@ public class TURLPrefix  {
         return decodedTurlPrefix;
     }
 
+    public boolean allows(Protocol protocol)
+    {
+        return desiredProtocols.contains(protocol);
+    }
+
 
 //	public TransferProtocol[] getArray() {
 //		return prefix.toArray();

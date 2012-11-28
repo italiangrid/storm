@@ -18,12 +18,9 @@
 package it.grid.storm.namespace.model;
 
 import it.grid.storm.griduser.AbstractGridUser;
-import it.grid.storm.griduser.DNMatchingRule;
 import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 
 import java.util.LinkedList;
@@ -53,25 +50,28 @@ public class ApproachableRule implements Comparable{
     private String relativePath = null;
     private LinkedList<VirtualFSInterface> appFS = new LinkedList<VirtualFSInterface>();
 
+    private final boolean anonymousHttpReadAccess;
 
-    public ApproachableRule(String rulename, SubjectRules subjectRules, String relativePath) throws NamespaceException {
+
+    public ApproachableRule(String rulename, SubjectRules subjectRules, String relativePath, boolean anonymousHttpReadAccess) {
         this.ruleName = rulename;
         this.subjectRules = subjectRules;
         /**
          *     @todo : Check if relative Path is a path well formed.
          */
         this.relativePath = relativePath;
+        this.anonymousHttpReadAccess = anonymousHttpReadAccess;
     }
-
-    public ApproachableRule(String rulename, String relativePath) throws NamespaceException {
+    
+    public ApproachableRule(String rulename, SubjectRules subjectRules, String relativePath) {
         this.ruleName = rulename;
+        this.subjectRules = subjectRules;
         /**
          *     @todo : Check if relative Path is a path well formed.
          */
         this.relativePath = relativePath;
-        this.subjectRules = null;
+        this.anonymousHttpReadAccess = false;
     }
-    
     
     public boolean isAdmitAll()
     {
@@ -105,6 +105,12 @@ public class ApproachableRule implements Comparable{
     public String getRuleName() {
         return this.ruleName;
     }
+    
+    public boolean getAnonymousHttpReadAccess()
+    {
+        return this.anonymousHttpReadAccess;
+    }
+
 
     /**
      *
@@ -284,5 +290,4 @@ public class ApproachableRule implements Comparable{
             }
         return true;
     }
-
 }

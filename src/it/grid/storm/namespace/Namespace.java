@@ -40,6 +40,7 @@ import it.grid.storm.srm.types.TTURL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -126,57 +127,26 @@ public class Namespace implements NamespaceInterface {
         return true;
     }
 
-    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException, IllegalArgumentException {
+    /* (non-Javadoc)
+     * @see it.grid.storm.namespace.NamespaceInterface#resolveStoRIbySURL(it.grid.storm.srm.types.TSURL, it.grid.storm.griduser.GridUserInterface)
+     */
+    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws IllegalArgumentException, UnapprochableSurlException {
 
-        if(user == null)
+        if(surl == null || user == null)
         {
             log.error("Received null parameters: surl= " + surl + " user=" + user);
             throw new IllegalArgumentException("Received null parameters");
         }
         List<VirtualFSInterface> vfsApproachable =  getListOfVFS(user);
 
-        return resolveStoRIbySURL(surl, vfsApproachable);
-    }
-
-    /**
-     *
-     * The resolution is based on the retrieving of the Winner Rule
-     * 1) First attempt is based on StFN-Path
-     * 2) Second attempt is based on all StFN. That because is possible that SURL
-     *    is expressed without File Name so StFN is a directory.
-     *    ( Special case is when the SFN does not contain the File Name and ALL
-     *      the StFN is considerable as StFN-Path. )
-     *
-     * @param surl TSURL
-     * @return StoRI
-     * @throws NamespaceException
-     */
-    public StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException {
-        StFN stfn = surl.sfn().stfn();
-        String stfnStr = stfn.toString();
-        String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-        MappingRule winnerRule = getWinnerRule(stfnPath, vfsApproachable);
-        if (winnerRule == null) { //No winner rule found.
-            //Last chance thinking stfnStr as stfnPath
-            winnerRule = getWinnerRule(stfnStr, vfsApproachable);
-            if (winnerRule == null) {
-                throw new NamespaceException("Malformed SURL Exception", new MalformedSURLException(surl));
+        StoRI stori = resolveStoRIbySURL(surl, vfsApproachable);
+        if(stori == null)
+        {
+            if(isStfnFittingSomewhere(surl))
+            {
+                throw new UnapprochableSurlException("Surl " + surl + " is not approchable by user " + user);
             }
         }
-        log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
-        if (vfs == null) {
-            throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
-        }
-        String stfnRoot = winnerRule.getStFNRoot();
-        log.debug("StFN-root is " + stfnRoot);
-        String relat = NamespaceUtil.extractRelativePath(stfnRoot, stfnStr);
-        log.debug("Relative StFN is " + relat);
-
-        StoRI stori = vfs.createFile(relat, StoRIType.FILE);
-        stori.setStFNRoot(stfnRoot);
-        stori.setMappingRule(winnerRule);
-
         return stori;
     }
 
@@ -193,51 +163,78 @@ public class Namespace implements NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl) throws NamespaceException {
+    private StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable)
+    {
+        log.debug("Resolving StoRI from surl " + surl + " on " + vfsApproachable + " VFS");
+        return resolveStoRIbySURL(surl, vfsApproachable, true);
+    }
+
+    /**
+     *
+     * The resolution is based on the retrieving of the Winner Rule
+     * 1) First attempt is based on StFN-Path
+     * 2) Second attempt is based on all StFN. That because is possible that SURL
+     *    is expressed without File Name so StFN is a directory.
+     *    ( Special case is when the SFN does not contain the File Name and ALL
+     *      the StFN is considerable as StFN-Path. )
+     *
+     * @param surl TSURL
+     * @return StoRI
+     * @throws NamespaceException
+     */
+    public StoRI resolveStoRIbySURL(TSURL surl)
+    {
+        log.debug("Resolving StoRI from surl " + surl + " on any VFS");
+        return resolveStoRIbySURL(surl, null, false);
+    }
+    
+    private StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable, boolean withVFSList)
+    {
+        if(surl == null || withVFSList && vfsApproachable == null)
+        {
+            log.error("Unable to perform resolveStoRIbySURL, invalid arguments: surl=" + surl + " withVFSList=" + withVFSList + " vfsApproachable=" + vfsApproachable);
+            throw new IllegalArgumentException("Unable to perform getWinnerRule, invalid arguments");
+        }
         String stfnStr = surl.sfn().stfn().toString();
-        String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-        MappingRule winnerRule = getWinnerRuleWithoutApproachableRule(stfnPath);
-        if (winnerRule == null) { //No winner rule found.
-            //Last chance thinking stfnStr as stfnPath
-            winnerRule = getWinnerRuleWithoutApproachableRule(stfnStr);
-            if (winnerRule == null) {
-                throw new NamespaceException("Malformed SURL Exception", new MalformedSURLException(surl));
-            }
+        MappingRule winnerRule = getWinnerRule(NamespaceUtil.getStFNPath(stfnStr), vfsApproachable, withVFSList);
+        if (winnerRule == null)
+        {
+            /* attempt using complete file path */
+            winnerRule = getWinnerRule(stfnStr, vfsApproachable, withVFSList);
         }
-        log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
-        if (vfs == null) {
-            throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
+        StoRI stori = null;
+        if(winnerRule != null)
+        {
+            log.debug("For StFN " + stfnStr + " the winner Rule is " + winnerRule.getRuleName());
+            stori = winnerRule.getMappedFS()
+                              .createFile(NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(), stfnStr),
+                                          StoRIType.FILE);
+            stori.setStFNRoot(winnerRule.getStFNRoot());
+            stori.setMappingRule(winnerRule);
         }
-        String stfnRoot = winnerRule.getStFNRoot();
-        log.debug("StFN-root is " + stfnRoot);
-        String relat = NamespaceUtil.extractRelativePath(stfnRoot, stfnStr);
-        log.debug("Relative StFN is " + relat);
-
-        StoRI stori = vfs.createFile(relat, StoRIType.FILE);
-        stori.setStFNRoot(stfnRoot);
-        stori.setMappingRule(winnerRule);
-
+        else
+        {
+            log.debug("No MappingRule matches SURL " + surl);
+        }
         return stori;
     }
 
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws NamespaceException {
+    public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws UnapprochableSurlException {
 
         List<VirtualFSInterface> vfsApproachable = getListOfVFS(user);
-        return resolveVFSbySURL(surl, vfsApproachable);
-    }
-
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException {
-        StFN stfn = surl.sfn().stfn();
-        String stfnStr = stfn.toString();
-        String stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-        MappingRule winnerRule = getWinnerRule(stfnPath, vfsApproachable);
-        log.debug("With StFN path =" + stfnPath + " the winner Rule is " + winnerRule.getRuleName());
-        VirtualFSInterface vfs = parser.getVFS(winnerRule.getMappedFS().getAliasName());
-        if (vfs == null) {
-            throw new NamespaceException("Mapping rule '" + winnerRule.getRuleName() + "' does not detect no one VFS");
+        VirtualFSInterface vfs = resolveVFSbySURL(surl, vfsApproachable);
+        if(vfs == null)
+        {
+            throw new UnapprochableSurlException("Surl " + surl + " is not approchable by user " + user);
         }
         return vfs;
+    }
+
+    private VirtualFSInterface resolveVFSbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable)
+    {
+        MappingRule winnerRule = getWinnerRule(NamespaceUtil.getStFNPath(surl.sfn().stfn().toString()), vfsApproachable);
+        log.debug("For surl " + surl + " the winner Rule is " + winnerRule.getRuleName());
+        return parser.getVFS(winnerRule.getMappedFS().getAliasName());
     }
 
     public StoRI resolveStoRIbyAbsolutePath(String absolutePath, GridUserInterface user) throws NamespaceException {
@@ -382,25 +379,36 @@ public class Namespace implements NamespaceInterface {
      * @param stfnPath String
      * @return MappingRule
      */
-    private MappingRule getWinnerRuleWithoutApproachableRule(String stfnPath) {
-        //log.debug("[getWinnerRule] StFN Path string = "+stfnPath);
-        Vector rules = new Vector(parser.getMappingRules().values());
+    public MappingRule getWinnerRule(String stfnPath)
+    {
+        log.debug("Getting winner rule for StFN path =" + stfnPath + " on any VFS");
+        return getWinnerRule(stfnPath, null, false);
+    }
+    
+    private MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable, boolean withVFSList)
+    {
+        if(stfnPath == null || stfnPath.trim().isEmpty() || withVFSList && vfsApproachable == null)
+        {
+            log.error("Unable to perform getWinnerRule, invalid arguments: stfnPath=" + stfnPath + " withVFSList=" + withVFSList + " vfsApproachable=" + vfsApproachable);
+            throw new IllegalArgumentException("Unable to perform getWinnerRule, invalid arguments");
+        }
+        Vector<MappingRule> rules = new Vector<MappingRule>(parser.getMappingRules().values());
         MappingRule winnerRule = null;
-        String stfnRule;
-        MappingRule rule;
-        int distance = Integer.MAX_VALUE;
-        for (int i = 0; i < rules.size(); i++) {
-            rule = (MappingRule) rules.elementAt(i);
-            stfnRule = rule.getStFNRoot();
-            int d = NamespaceUtil.computeDistanceFromPath(stfnRule, stfnPath);
-            //log.debug("[getWinnerRule] Evaluating with sftnRule = "+stfnRule+" | Distance = "+d);
-            if (d < distance) {
-                //Check if the rule is compatible
-                //  log.debug("[getWinnerRule] Updating the winner Rule with "+rule);
-                boolean enclosed = NamespaceUtil.isEnclosed(stfnRule, stfnPath);
-                if (enclosed) { //Found a compatible Mapping rule
-                    distance = d;
-                    winnerRule = rule;
+        int minDistance = Integer.MAX_VALUE;
+        for (MappingRule rule : rules)
+        {
+            VirtualFSInterface mappedVFS = rule.getMappedFS();
+            if (!withVFSList || vfsApproachable.contains(mappedVFS))
+            {
+                String stfnRoot = rule.getStFNRoot();
+                int distance = NamespaceUtil.computeDistanceFromPath(stfnRoot, stfnPath);
+                if (distance < minDistance)
+                {
+                    if (NamespaceUtil.isEnclosed(stfnRoot, stfnPath))
+                    {
+                        minDistance = distance;
+                        winnerRule = rule;
+                    }
                 }
             }
         }
@@ -414,33 +422,10 @@ public class Namespace implements NamespaceInterface {
      * @param stfnPath String
      * @return MappingRule
      */
-    public MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable)
+    private MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable)
     {
-
-        Vector<MappingRule> rules = new Vector(parser.getMappingRules().values());
-        MappingRule winnerRule = null;
-        String stfnRoot;
-        int distance = Integer.MAX_VALUE;
-        for (MappingRule rule : rules)
-        {
-            VirtualFSInterface mappedVFS = rule.getMappedFS();
-            if (vfsApproachable.contains(mappedVFS))
-            {
-                stfnRoot = rule.getStFNRoot();
-                int d = NamespaceUtil.computeDistanceFromPath(stfnRoot, stfnPath);
-                if (d < distance)
-                {
-                    // Check if the rule is compatible
-                    // log.debug("[getWinnerRule] Updating the winner Rule with "+rule);
-                    if (NamespaceUtil.isEnclosed(stfnRoot, stfnPath))
-                    {
-                        distance = d;
-                        winnerRule = rule;
-                    }
-                }
-            }
-        }
-        return winnerRule;
+        log.debug("Getting winner rule for StFN path =" + stfnPath + " on " + vfsApproachable + " VFS");
+        return getWinnerRule(stfnPath, vfsApproachable, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -628,15 +613,14 @@ public class Namespace implements NamespaceInterface {
      */
     public List<VirtualFSInterface> getListOfVFS(GridUserInterface gUser)
     {
-        Hashtable apprules = new Hashtable(parser.getApproachableRules());
+        Hashtable<String, ApproachableRule> apprules = new Hashtable<String, ApproachableRule>(parser.getApproachableRules());
         LinkedList<VirtualFSInterface> approachVFS = new LinkedList<VirtualFSInterface>();
-        for (Object appRule : apprules.values())
+        for (ApproachableRule appRule : apprules.values())
         {
-            if (((ApproachableRule) appRule).match(gUser))
+            if (appRule.match(gUser))
             {
-                approachVFS.addAll(((ApproachableRule) appRule).getApproachableVFS());
+                approachVFS.addAll(appRule.getApproachableVFS());
             }
-
         }
         return approachVFS;
     }
@@ -702,7 +686,7 @@ public class Namespace implements NamespaceInterface {
     }
     
     @Override
-    public boolean isStfnFittingSomewhere(String surlString) throws NamespaceException
+    public boolean isStfnFittingSomewhereAnonymous(String surlString) throws NamespaceException
     {
         boolean result = false;
 
@@ -717,30 +701,51 @@ public class Namespace implements NamespaceInterface {
         {
             VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
             if (mappedFS.isApproachableByAnonymous())
-            { 
+            {
                 stfnRoot = rule.getValue().getStFNRoot();
                 stfnRoots.add(stfnRoot);
             }
         }
         log.debug("FITTING: List of StFNRoots approachables = " + stfnRoots);
 
-        //Build SURL and retrieve the StFN part.
+        // Build SURL and retrieve the StFN part.
         String stfn = SURL.makeSURLfromString(surlString).getStFN();
 
         // Path elements of stfn
         ArrayList<String> stfnArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfn);
 
-        for (Object element : stfnRoots) {
+        for (Object element : stfnRoots)
+        {
             stfnRoot = (String) element;
             log.debug("FITTING: considering StFNRoot = " + stfnRoot + " against StFN = " + stfn);
             ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfnRoot);
             stfnRootArray.retainAll(stfnArray);
-            if (!(stfnRootArray.isEmpty())) {
+            if (!(stfnRootArray.isEmpty()))
+            {
                 result = true;
                 log.debug("FIT!");
                 break;
             }
         }
         return result;
+    }
+    
+    private boolean isStfnFittingSomewhere(TSURL surl)
+    {
+        Collection<MappingRule> rules = new HashSet<MappingRule>(parser.getMappingRules().values());
+        Collection<String> stfnArray = NamespaceUtil.getPathElement(surl.sfn().stfn().toString());
+        for (MappingRule rule : rules)
+        {
+            log.debug("FITTING: considering StFNRoot " + rule.getStFNRoot() + " against StFN " + surl.sfn().stfn().toString());
+            ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil.getPathElement(rule.getStFNRoot());
+            //TODO this is bugged! it should consider the order of the elements in the two arrays!
+            stfnRootArray.retainAll(stfnArray);
+            if (!(stfnRootArray.isEmpty()))
+            {
+                log.debug("FITS!");
+                return true;
+            }
+        }
+        return false;
     }
 }

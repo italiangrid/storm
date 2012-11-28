@@ -18,6 +18,8 @@
 package it.grid.storm.namespace.config;
 
 import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.MappingRule;
 
 import java.util.List;
 import java.util.Map;
@@ -49,11 +51,11 @@ public interface NamespaceParser {
 
     public List getAllMappingRule_StFNRoots();
 
-    public Map getMappingRules();
+    public Map<String, MappingRule> getMappingRules();
 
     public Map getMappingRuleMAP();
 
-    public Map getApproachableRules();
+    public Map<String, ApproachableRule> getApproachableRules();
 
     public long getLastUpdateTime();
 

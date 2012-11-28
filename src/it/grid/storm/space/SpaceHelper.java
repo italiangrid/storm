@@ -33,6 +33,7 @@ import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -90,28 +91,28 @@ public class SpaceHelper {
         ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
         StoRI stori = null;
         // Retrieve the StoRI associate to the SURL
-        try {
-            if(user == null)
+        if(user == null)
+        {
+            //implicit put done by TimerTask
+            stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        }
+        else
+        {
+            try
             {
-                //implicit put done by TimerTask
-                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
             }
-            else
+            catch (IllegalArgumentException e)
             {
-                try
-                {
-                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
-                }
-                catch (IllegalArgumentException e)
-                {
-                    log.error(funcName + " Unable to build StoRI by SURL and user: " + surl, e);
-                    return;
-                }
+                log.error(funcName + " Unable to build StoRI by SURL and user: " + surl, e);
+                return;
+            } catch(UnapprochableSurlException e)
+            {
+                log.warn("Unable to build a stori for surl " + surl + " for user "
+                        + user + " UnapprochableSurlException: "
+                        + e.getMessage());
+                return;
             }
-        } catch (NamespaceException e1) {
-            log.debug(funcName + " Unable to build StoRI by SURL: "
-                    + surl.toString(), e1);
-            return;
         }
         // Get Virtual FileSystem for DB information
         VirtualFSInterface fs = stori.getVirtualFileSystem();

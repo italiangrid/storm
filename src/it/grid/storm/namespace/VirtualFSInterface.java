@@ -103,7 +103,7 @@ public interface VirtualFSInterface {
 
     public StoRI createFile(String relativePath) throws NamespaceException;
 
-    public StoRI createFile(String relativePath, StoRIType type) throws NamespaceException;
+    public StoRI createFile(String relativePath, StoRIType type);
 
     /**************************************************
      *    Methods Used for implicit space reservation
@@ -178,5 +178,6 @@ public interface VirtualFSInterface {
 
     public boolean isApproachableByAnonymous();
 
+    public boolean isHttpWorldReadable();
 
 }

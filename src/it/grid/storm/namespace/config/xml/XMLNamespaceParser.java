@@ -711,19 +711,31 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         int numOfAppRules = parserUtil.getNumberOfApproachRule();
 
         verboseLog("Number of APP Rule : " + numOfAppRules);
-        String ruleName, dn, vo_name, relPath;
+        String ruleName, dn, vo_name, relPath, anonymousHttpReadString;
         List<String> appFSList;
         ApproachableRule appRule;
         for (int i = 0; i < numOfAppRules; i++) 
         {
             ruleName = parserUtil.getApproachRuleName(i);
             verboseLog(" APP rule nr:" + i + " is named : " + ruleName);
+            
             dn = parserUtil.getAppRule_SubjectDN(ruleName);
             vo_name = parserUtil.getAppRule_SubjectVO(ruleName);
-            appFSList = parserUtil.getAppRule_AppFS(ruleName);
-            relPath = parserUtil.getAppRule_RelativePath(ruleName);
             SubjectRules subjectRules = new SubjectRules(dn, vo_name);
-            appRule = new ApproachableRule(ruleName, subjectRules, relPath);
+            
+            relPath = parserUtil.getAppRule_RelativePath(ruleName);
+            
+            anonymousHttpReadString = parserUtil.getAppRule_AnonymousHttpRead(ruleName);
+            if(anonymousHttpReadString != null && !anonymousHttpReadString.trim().isEmpty())
+            {
+                appRule = new ApproachableRule(ruleName, subjectRules, relPath, Boolean.parseBoolean(anonymousHttpReadString));
+            }
+            else
+            {
+                appRule = new ApproachableRule(ruleName, subjectRules, relPath);
+            }
+            
+            appFSList = parserUtil.getAppRule_AppFS(ruleName);
             for(String appFS : appFSList)
             {
                 if (vfss.containsKey(appFS)) {

@@ -26,9 +26,9 @@ import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -92,7 +92,19 @@ public class RmdirCommand extends DirectoryCommand implements Command {
             {
                 if (inputData instanceof IdentityInputData)
                 {
-                    stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData) inputData).getUser());
+                    try
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData) inputData).getUser());
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("Unable to build a stori for surl " + surl + " for user "
+                                + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                + e.getMessage());
+                        returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                 "Invalid SURL path specified");
+                        printRequestOutcome(returnStatus, inputData);
+                        return new RmdirOutputData(returnStatus);
+                    }
                 }
                 else
                 {
@@ -106,15 +118,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
                 printRequestOutcome(returnStatus, inputData);
                 outData = new RmdirOutputData(returnStatus);
                 return outData;
-            } catch(NamespaceException e)
-            {
-                log.debug("srmRm: Unable to build StoRI by SURL : '" + surl + "'. NamespaceException:" + e.getMessage());
-                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL specified");
-                printRequestOutcome(returnStatus, inputData);
-                outData = new RmdirOutputData(returnStatus);
-                return outData;
             }
-
         }
         else
         {

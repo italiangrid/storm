@@ -20,7 +20,6 @@ package it.grid.storm.catalogs;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
@@ -1110,19 +1109,11 @@ public class BoLChunkDAO {
                     continue;
                 }
                 expiredSurlList.add(surl);
-				try
-				{
-				    StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+			    StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 
-					if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
-					{
-						StormEA.removePinned(stori.getAbsolutePath());
-					}
-				} catch(NamespaceException e)
+				if(stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
 				{
-					log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: "
-						+ surlEntry.getKey());
-					continue;
+					StormEA.removePinned(stori.getAbsolutePath());
 				}
 			}
 		}

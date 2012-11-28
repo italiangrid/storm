@@ -286,6 +286,19 @@ public class VirtualFS implements VirtualFSInterface {
         return this.aliasName;
     }
 
+    @Override
+    public boolean isHttpWorldReadable()
+    {
+        for (ApproachableRule rule : approachableRules)
+        {
+            if (rule.getAnonymousHttpReadAccess())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public Class getFSDriver() throws NamespaceException {
         return this.fsDriver;
     }
@@ -510,7 +523,7 @@ public class VirtualFS implements VirtualFSInterface {
         return stori;
     }
 
-    public StoRI createFile(String relativePath, StoRIType type) throws NamespaceException {
+    public StoRI createFile(String relativePath, StoRIType type){
         /**
          * @todo Check if relativePath is a valid path for a file.
          */

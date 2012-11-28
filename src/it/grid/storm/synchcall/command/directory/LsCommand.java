@@ -35,9 +35,9 @@ import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
@@ -246,7 +246,21 @@ public class LsCommand extends DirectoryCommand implements Command {
                 try {
                     if (inputData instanceof IdentityInputData)
                     {
-                        stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData)inputData).getUser());
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl,
+                                                                 ((IdentityInputData) inputData).getUser());
+                        } catch(UnapprochableSurlException e)
+                        {
+                            failure = true;
+                            log.info("Unable to build a stori for surl " + surl + " for user "
+                                    + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                    + e.getMessage());
+                            fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
+                            fileLevelExplanation = "Invalid SURL path specified";
+                            printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode,
+                                                                          fileLevelExplanation), inputData);
+                        }
                     }
                     else
                     {
@@ -258,12 +272,6 @@ public class LsCommand extends DirectoryCommand implements Command {
                     failure = true;
                     fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
                     fileLevelExplanation = "Unable to build StoRI, Illegal Argument Exception";
-                    printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
-                } catch (NamespaceException ex) {
-                    log.debug("srmLs: Unable to build StoRI by SURL: " + ex);
-                    failure = true;
-                    fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
-                    fileLevelExplanation = "Invalid path";
                     printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
                 }
             } else {

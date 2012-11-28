@@ -33,6 +33,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -104,7 +105,20 @@ public class MvCommand extends DirectoryCommand implements Command {
 
                 if (inputData instanceof IdentityInputData)
                 {
-                    fromStori = namespace.resolveStoRIbySURL(fromSURL, ((IdentityInputData) inputData).getUser());
+                    try
+                    {
+                        fromStori = namespace.resolveStoRIbySURL(fromSURL,
+                                                                 ((IdentityInputData) inputData).getUser());
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("srmMv: Unable to build a stori for surl " + fromSURL + " for user "
+                                + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                + e.getMessage());
+                        outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                       "Invalid SURL path specified"));
+                        printRequestOutcome(outputData.getStatus(), inputData);
+                        return outputData;
+                    }
                 }
                 else
                 {
@@ -114,13 +128,6 @@ public class MvCommand extends DirectoryCommand implements Command {
             {
                 log.warn("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]. IllegalArgumentException: " + e.getMessage());
                 outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
-                printRequestOutcome(outputData.getStatus(), inputData);
-                return outputData;
-            }
-            catch (NamespaceException e)
-            {
-                log.warn("srmMv: Unable to build StoRI by SURL:[" + fromSURL + "]. NamespaceException: " + e.getMessage());
-                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid fromSURL specified!"));
                 printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
@@ -141,7 +148,19 @@ public class MvCommand extends DirectoryCommand implements Command {
             {
                 if (inputData instanceof IdentityInputData)
                 {
-                    toStori = namespace.resolveStoRIbySURL(toSURL, ((IdentityInputData) inputData).getUser());
+                    try
+                    {
+                        toStori = namespace.resolveStoRIbySURL(toSURL, ((IdentityInputData) inputData).getUser());
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("srmMv: Unable to build a stori for surl " + toSURL + " for user "
+                                + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                + e.getMessage());
+                        outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                       "Invalid SURL path specified"));
+                        printRequestOutcome(outputData.getStatus(), inputData);
+                        return outputData;
+                    }
                 }
                 else
                 {
@@ -151,13 +170,6 @@ public class MvCommand extends DirectoryCommand implements Command {
             {
                 log.error("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]. IllegalArgumentException: " + e.getMessage());
                 outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by destination SURL"));
-                printRequestOutcome(outputData.getStatus(), inputData);
-                return outputData;
-            }
-            catch (NamespaceException e)
-            {
-                log.debug("srmMv: Unable to build StoRI by SURL:[" + toSURL + "]. NamespaceException: " + e.getMessage());
-                outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Unable to build StoRI by destination SURL"));
                 printRequestOutcome(outputData.getStatus(), inputData);
                 return outputData;
             }
@@ -216,14 +228,15 @@ public class MvCommand extends DirectoryCommand implements Command {
                                                                    "Unable to build StoRI by SURL"));
                     printRequestOutcome(outputData.getStatus(), inputData);
                     return outputData;
-                } catch(NamespaceException e)
+                } catch(UnapprochableSurlException e)
                 {
-                    log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL + "'. NamespaceException: "
-                            + e.getMessage());
-                    outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-                                                                   "Invalid toSURL specified!"));
-                    printRequestOutcome(outputData.getStatus(), inputData);
-                    return outputData;
+                    log.info("srmMv: Unable to build a stori for surl " + toSURL + " for user "
+                             + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                             + e.getMessage());
+                     outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                    "Invalid SURL path specified"));
+                     printRequestOutcome(outputData.getStatus(), inputData);
+                     return outputData;
                 } catch(InvalidTSURLAttributesException e)
                 {
                     log.error("Unable to create toSURL. InvalidTSURLAttributesException: " + e.getMessage());
@@ -322,7 +335,7 @@ public class MvCommand extends DirectoryCommand implements Command {
     }
 
     private StoRI buildDestinationStoryForFolder(TSURL toSURL, StoRI fromStori, InputData inputData)
-            throws IllegalArgumentException, NamespaceException, InvalidTSURLAttributesException
+            throws IllegalArgumentException, InvalidTSURLAttributesException, UnapprochableSurlException
     {
         StoRI toStori;
         String toSURLString = toSURL.getSURLString();

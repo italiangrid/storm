@@ -13,6 +13,7 @@
 
 package it.grid.storm.asynch;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -25,9 +26,12 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.catalogs.AnonymousPtGData;
+import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -37,12 +41,13 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -73,7 +78,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     /**
      * PtGChunkData that holds the specific info for this chunk
      */
-    protected final PtGData requestData;
+    protected PtGData requestData;
     
     /**
      * Time that wil be used in all jit and volatile tracking.
@@ -121,7 +126,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             requestData.changeStatusSRM_FILE_BUSY("Requested file is"
                                                   + " busy (in an incompatible state with PTG)");
             log.info("Unable to perform the PTG request, surl busy");
-//            printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());
             printRequestOutcome(requestData);
             return;
         }
@@ -137,33 +141,44 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         else
         {
             /* proceed normally! */
+            StoRI fileStoRI = null;
+            boolean unapprochableSurl = false;
             try
             {
-                StoRI fileStoRI = null;
-                try
+// fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
+                if (requestData instanceof IdentityInputData)
                 {
-//                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
-                    if (requestData instanceof IdentityInputData)
+                    try
                     {
                         fileStoRI = NamespaceDirector.getNamespace()
                                                      .resolveStoRIbySURL(requestData.getSURL(),
                                                                          ((IdentityInputData) requestData).getUser());
-                    }
-                    else
+                    } catch(UnapprochableSurlException e)
                     {
-                        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+                        unapprochableSurl = true;
+                        log.info("Unable to build a stori for surl " + requestData.getSURL() + " for user "
+                                + DataHelper.getRequestor(requestData) + " UnapprochableSurlException: "
+                                + e.getMessage());
                     }
                 }
-                catch (IllegalArgumentException e)
+                else
                 {
-                    failure = true;
-                    requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl " + requestData.getSURL());
-                    log.error("Unable to get StoRY for surl " + requestData.getSURL() + " IllegalArgumentException: " + e.getMessage());
+                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
                 }
-                if (!failure)
-                {
+            } catch(IllegalArgumentException e)
+            {
+                failure = true;
+                requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                        + requestData.getSURL());
+                log.error("Unable to get StoRY for surl " + requestData.getSURL()
+                        + " IllegalArgumentException: " + e.getMessage());
+            }
+            if (!failure)
+            {
 //                    AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
-                    AuthzDecision ptgAuthz;
+                AuthzDecision ptgAuthz;
+                if(!unapprochableSurl)
+                {
                     if (requestData instanceof IdentityInputData)
                     {
                         ptgAuthz = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG, fileStoRI);
@@ -172,49 +187,75 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                     {
                         ptgAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.PTG, fileStoRI.getStFN());
                     }
-                    if (ptgAuthz.equals(AuthzDecision.PERMIT))
+                }
+                else
+                {
+                    if (requestData.getTransferProtocols().allows(Protocol.HTTP))
                     {
-                        manageIsPermit(fileStoRI);
-                    }
-                    else
-                    {
-                        if (ptgAuthz.equals(AuthzDecision.DENY))
+                        fileStoRI = NamespaceDirector.getNamespace()
+                                                     .resolveStoRIbySURL(requestData.getSURL());
+                        if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable())
                         {
-                            manageIsDeny();
+                            try
+                            {
+                                this.downgradeToAnonymousHttpRequest();
+                                ptgAuthz = AuthzDecision.PERMIT;
+                            } catch(InvalidSurlRequestDataAttributesException e)
+                            {
+                                log.error("Unable to downgrade the request to an anonymous http request. InvalidSurlRequestDataAttributesException: "
+                                        + e);
+                                ptgAuthz = AuthzDecision.DENY;
+                            }
                         }
                         else
                         {
-                            if (ptgAuthz.equals(AuthzDecision.INDETERMINATE))
-                            {
-                                manageIsIndeterminate(ptgAuthz);
-                            }
-                            else
-                            {
-                                manageIsNotApplicabale(ptgAuthz);
-                            }
+                            ptgAuthz = AuthzDecision.DENY;    
+                        }
+                    }
+                    else
+                    {
+                        ptgAuthz = AuthzDecision.DENY;
+                    }
+                }
+                if (ptgAuthz.equals(AuthzDecision.PERMIT))
+                {
+                    manageIsPermit(fileStoRI);
+                }
+                else
+                {
+                    if (ptgAuthz.equals(AuthzDecision.DENY))
+                    {
+                        manageIsDeny();
+                    }
+                    else
+                    {
+                        if (ptgAuthz.equals(AuthzDecision.INDETERMINATE))
+                        {
+                            manageIsIndeterminate(ptgAuthz);
+                        }
+                        else
+                        {
+                            manageIsNotApplicabale(ptgAuthz);
                         }
                     }
                 }
-            } catch(NamespaceException e)
-            {
-                /*
-                 * The Supplied SURL does not contain a root that could be
-                 * identified by the StoRI factory as referring to a VO being
-                 * managed by StoRM... that is SURLs begining with such root are
-                 * not handled by this SToRM!
-                 */
-                requestData.changeStatusSRM_INVALID_PATH("The path specified in the"
-                    + "SURL does not have a local equivalent!");
-                failure = true;
-                log.debug("ATTENTION in PtGChunk! PtGChunk received"
-                    + " request for a SURL whose root is not recognised by StoRI! " + e);
             }
         }
-//        printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
         printRequestOutcome(requestData);
     }
     
     
+    private void downgradeToAnonymousHttpRequest() throws InvalidSurlRequestDataAttributesException
+    {
+        List<Protocol> desiredProtocols = new ArrayList<Protocol>(1);
+        desiredProtocols.add(Protocol.HTTP);
+        TURLPrefix prefix = new TURLPrefix(desiredProtocols);
+        requestData = new AnonymousPtGData(requestData.getSURL(), requestData.getPinLifeTime(),
+                                           requestData.getDirOption(), prefix,
+                                           requestData.getFileSize(), requestData.getStatus(),
+                                           requestData.getTransferURL());
+    }
+
     private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)
     {
         Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager.getSurlCurrentStatuses(surl);

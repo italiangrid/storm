@@ -20,7 +20,6 @@ package it.grid.storm.namespace.naming;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.naming.NamespaceUtil.PathElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

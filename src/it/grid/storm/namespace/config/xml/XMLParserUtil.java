@@ -358,6 +358,12 @@ public class XMLParserUtil implements XMLConst {
         int numOfAppRule = retrieveNumberByName(nameOfAppRule, XMLConst.APP_RULE_BY_NAME);
         return getStringProperty(substituteNumberInAPPElement(numOfAppRule, XMLConst.APP_SPACE_REL_PATH));
     }
+    
+    public String getAppRule_AnonymousHttpRead(String nameOfAppRule) throws NamespaceException
+    {
+        int numOfAppRule = retrieveNumberByName(nameOfAppRule, XMLConst.APP_RULE_BY_NAME);
+        return getStringProperty(substituteNumberInAPPElement(numOfAppRule, XMLConst.APP_ANONYMOUS_HTTP_READ));
+    }
 
     /*****************************************************************************
      * QUOTA METHODS

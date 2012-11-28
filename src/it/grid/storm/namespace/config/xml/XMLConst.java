@@ -95,7 +95,7 @@ public interface XMLConst {
     public String APP_SUBJECTS = APP_RULE + ".subjects";
     public String APPROACHABLE_FS = APP_RULE + ".approachable-fs";
     public String APP_SPACE_REL_PATH = APP_RULE + ".space-rel-path";
-
+    public String APP_ANONYMOUS_HTTP_READ = ".anonymous-http-read";
     //#########     Level-4     #########
     //    STORAGE-AREA-AUTHZ
     public String SA_AUTHZ_FIXED = FS_AUTHZ + ".fixed"; //1.4.0
@@ -182,7 +182,6 @@ public interface XMLConst {
     public final String DEFAULT_UNIT_TYPE = "TB";
     public final String DEFAULT_AUTHZ_SOURCE = "PermitAll";
     public final String DEFAULT_STORAGE_CLASS = "T0D1";
-
     /**
      * METHOD Interface
      */

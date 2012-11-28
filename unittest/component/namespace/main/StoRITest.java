@@ -85,9 +85,6 @@ public class StoRITest {
             log.debug(" TSURL : "+tsurl);
             stori = namespace.resolveStoRIbySURL(tsurl);
         }
-        catch (NamespaceException ex) {
-            ex.printStackTrace();
-        }
         catch (InvalidTSURLAttributesException ex) {
             /** @todo Handle this exception */
         }

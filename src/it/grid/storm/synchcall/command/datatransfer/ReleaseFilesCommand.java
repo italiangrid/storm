@@ -20,7 +20,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -497,17 +496,10 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     {
         for (TSURL surl : surlToRelease)
         {
-            try
+            StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+            if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
             {
-                StoRI stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-                if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled())
-                {
-                    StormEA.removePinned(stori.getAbsolutePath());
-                }
-            } catch(NamespaceException e)
-            {
-                log.error("Cannot remove EA \"pinned\" because cannot get StoRI from SURL: " + surl);
-                continue;
+                StormEA.removePinned(stori.getAbsolutePath());
             }
         }
     }

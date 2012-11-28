@@ -28,9 +28,7 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <p>Title: </p>
@@ -114,8 +112,9 @@ public interface NamespaceInterface {
      * @param user GridUserInterface
      * @return StoRI
      * @throws NamespaceException
+     * @throws UnapprochableSurlException 
      */
-    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws NamespaceException, IllegalArgumentException;
+    public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user) throws IllegalArgumentException, UnapprochableSurlException;
 
     /**
      *
@@ -123,15 +122,7 @@ public interface NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException;
-
-    /**
-     *
-     * @param surl TSURL
-     * @return StoRI
-     * @throws NamespaceException
-     */
-    public StoRI resolveStoRIbySURL(TSURL surl) throws NamespaceException;
+    public StoRI resolveStoRIbySURL(TSURL surl);
 
     /**
      *
@@ -139,16 +130,9 @@ public interface NamespaceInterface {
      * @param user GridUserInterface
      * @return VirtualFSInterface
      * @throws NamespaceException
+     * @throws UnapprochableSurlException 
      */
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws NamespaceException;
-
-    /**
-     *
-     * @param surl TSURL
-     * @return VirtualFSInterface
-     * @throws NamespaceException
-     */
-    public VirtualFSInterface resolveVFSbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws NamespaceException;
+    public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user) throws UnapprochableSurlException;
 
     /**
      *
@@ -352,8 +336,6 @@ public interface NamespaceInterface {
      */
     public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException;
 
-    public MappingRule getWinnerRule(String stfnPath, List<VirtualFSInterface> vfsApproachable);
-
     public String getNamespaceVersion() throws NamespaceException;
  
 
@@ -384,7 +366,7 @@ public interface NamespaceInterface {
      * @return
      * @throws NamespaceException
      */
-    public boolean isStfnFittingSomewhere(String surlString) throws NamespaceException;
+    public boolean isStfnFittingSomewhereAnonymous(String surlString) throws NamespaceException;
 
 
 }

@@ -30,8 +30,8 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -42,6 +42,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -195,48 +196,44 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 //
 //        }
         else {
-            try {
-
-                StoRI fileStoRI = null;
-                try
-                {
+            StoRI fileStoRI = null;
+            try
+            {
                 fileStoRI = NamespaceDirector.getNamespace()
                                                    .resolveStoRIbySURL(requestData.getSURL(), gu);
-                } catch(IllegalArgumentException e)
+            } catch(IllegalArgumentException e)
+            {
+                failure = true;
+                requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
+                        + requestData.getSURL());
+                log.error("Unable to get StoRI for surl "
+                          + requestData.getSURL() + " IllegalArgumentException: " + e.getMessage());
+            } catch(UnapprochableSurlException e)
+            {
+                requestData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+                failure = true;
+                log.info("Unable to build a stori for surl " + requestData.getSURL() + " for user "
+                        + DataHelper.getRequestor(requestData) + " UnapprochableSurlException: "
+                        + e.getMessage());
+            }
+            if(!failure)
+            {
+                SpaceHelper sp = new SpaceHelper();
+                TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+                SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+
+                if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL))
+                {
+                    manageIsPermit(fileStoRI);
+                }
+                else
                 {
                     failure = true;
-                    requestData.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-                            + requestData.getSURL());
-                    log.error("Unable to get StoRI for surl "
-                              + requestData.getSURL() + " IllegalArgumentException: " + e.getMessage());
+                    requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
+                            + requestData.getSURL() + " in Storage Area: " + token);
+                    log.debug("Read access to " + requestData.getSURL() + " in Storage Area: " + token
+                            + " denied!");
                 }
-                if(!failure)
-                {
-                    SpaceHelper sp = new SpaceHelper();
-                    TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
-                    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-    
-                    if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL))
-                    {
-                        manageIsPermit(fileStoRI);
-                    }
-                    else
-                    {
-                        failure = true;
-                        requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
-                                + requestData.getSURL() + " in Storage Area: " + token);
-                        log.debug("Read access to " + requestData.getSURL() + " in Storage Area: " + token
-                                + " denied!");
-                    }
-                }
-            } catch (NamespaceException e) {
-                // The Supplied SURL does not contain a root that could be identified by the StoRI factory
-                // as referring to a VO being managed by StoRM... that is SURLs begining with such root
-                // are not handled by this SToRM!
-                requestData.changeStatusSRM_INVALID_PATH("The path specified in the SURL does not have a local equivalent!");
-                failure = true;
-                log.debug("ATTENTION in BoLChunk! BoLChunk received request for a SURL whose root is not recognised by StoRI! "
-                        + e);
             }
         }
         printOutcome(gu.getDn(),requestData.getSURL(),requestData.getStatus());

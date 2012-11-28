@@ -13,10 +13,19 @@
 			<xs:element name="subjects" type="subjectsType"/>
 			<xs:element ref="approachable-fs"/>
 			<xs:element ref="space-rel-path" minOccurs="0"/>
+			<xs:element ref="anonymous-http-read" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attribute name="name" type="xs:NMTOKEN" use="required"/>
 	</xs:complexType>
 	<xs:element name="approachable-fs" type="xs:string"/>
+	<xs:element name="anonymous-http-read" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="true"/>
+				<xs:enumeration value="false"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
 	<xs:complexType name="approachable-rulesType">
 		<xs:sequence>
 			<xs:element name="app-rule" type="app-ruleType" maxOccurs="unbounded"/>

@@ -30,9 +30,9 @@ import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -500,7 +500,26 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                 {
                     if(inputData instanceof IdentityInputData)
                     {
-                        stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData)inputData).getUser());    
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl, ((IdentityInputData)inputData).getUser());
+                        } catch(UnapprochableSurlException e)
+                        {
+                            failure = true;
+                            log.info("Unable to build a stori for surl " + surl + " for user "
+                                    + DataHelper.getRequestor(inputData) + " UnapprochableSurlException: "
+                                    + e.getMessage());
+                          try
+                          {
+                              SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
+                          } catch(UnknownSurlException e1)
+                          {
+                              PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e1);
+                          }
+                          surlReturnStatus.setSurl(surl);
+                          surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INVALID_PATH,"Invalid SURL path specified"));
+                          return surlReturnStatus;
+                        }
                     }
                     else
                     {
@@ -517,20 +536,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     {
                         SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
                     } catch(UnknownSurlException e1)
-                    {
-                        PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
-                    }
-                    surlReturnStatus.setSurl(surl);
-                    surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,"Unable to build StoRI by SURL and user"));
-                    return surlReturnStatus;
-                } catch (NamespaceException ex) {
-                    PtPAbortExecutor.log.error("Unable to build StoRI by SURL and user", ex);
-//                    chunkData.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
-//                    putCatalog.update(chunkData);
-                    try
-                    {
-                        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl, TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL and user");
-                    } catch(UnknownSurlException e)
                     {
                         PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ", e);
                     }
