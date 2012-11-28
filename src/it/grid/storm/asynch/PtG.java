@@ -13,7 +13,6 @@
 
 package it.grid.storm.asynch;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -26,12 +25,9 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.AnonymousPtGData;
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -99,6 +95,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     private LocalUser bupLocalUser;
     private TTURL bupTURL;
 
+    private boolean downgradedToAnonymous = false;
+
     /**
      * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this chunk. If the supplied
      * attributes are null, an InvalidPtGChunkAttributesException is thrown.
@@ -146,7 +144,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             try
             {
 // fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
-                if (requestData instanceof IdentityInputData)
+                if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
                 {
                     try
                     {
@@ -179,7 +177,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 AuthzDecision ptgAuthz;
                 if(!unapprochableSurl)
                 {
-                    if (requestData instanceof IdentityInputData)
+                    if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
                     {
                         ptgAuthz = AuthzDirector.getPathAuthz().authorize(((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG, fileStoRI);
                     }
@@ -196,16 +194,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                                                      .resolveStoRIbySURL(requestData.getSURL());
                         if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable())
                         {
-                            try
-                            {
-                                this.downgradeToAnonymousHttpRequest();
-                                ptgAuthz = AuthzDecision.PERMIT;
-                            } catch(InvalidSurlRequestDataAttributesException e)
-                            {
-                                log.error("Unable to downgrade the request to an anonymous http request. InvalidSurlRequestDataAttributesException: "
-                                        + e);
-                                ptgAuthz = AuthzDecision.DENY;
-                            }
+                            this.downgradeToAnonymousHttpRequest();
+                            ptgAuthz = AuthzDecision.PERMIT;
                         }
                         else
                         {
@@ -245,15 +235,11 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     }
     
     
-    private void downgradeToAnonymousHttpRequest() throws InvalidSurlRequestDataAttributesException
+    private void downgradeToAnonymousHttpRequest() 
     {
-        List<Protocol> desiredProtocols = new ArrayList<Protocol>(1);
-        desiredProtocols.add(Protocol.HTTP);
-        TURLPrefix prefix = new TURLPrefix(desiredProtocols);
-        requestData = new AnonymousPtGData(requestData.getSURL(), requestData.getPinLifeTime(),
-                                           requestData.getDirOption(), prefix,
-                                           requestData.getFileSize(), requestData.getStatus(),
-                                           requestData.getTransferURL());
+        this.downgradedToAnonymous = true;
+        this.requestData.getTransferProtocols().getDesiredProtocols().clear();
+        this.requestData.getTransferProtocols().getDesiredProtocols().add(Protocol.HTTP);
     }
 
     private boolean verifySurlStatusTransition(TSURL surl, TRequestToken requestToken)
@@ -274,7 +260,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
         SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
         boolean isSpaceAuthorized;
-        if (requestData instanceof IdentityInputData)
+        if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
         {
             isSpaceAuthorized = spaceAuth.authorize(((IdentityInputData) requestData).getUser(),
                                                     SRMSpaceRequest.PTG);
@@ -386,7 +372,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                         {
                             requestData.changeStatusSRM_REQUEST_INPROGRESS("Recalling" + " file from tape");
                             String voName = null;
-                            if (requestData instanceof IdentityInputData)
+                            if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
                             {
                                 if (((IdentityInputData) requestData).getUser() instanceof AbstractGridUser)
                                 {
@@ -406,7 +392,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                                 return;
                             }
                             /* Stores the parameters in this object */
-                            if (requestData instanceof IdentityInputData)
+                            if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
                             {
                                 try
                                 {
@@ -510,7 +496,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     
     private boolean managePermitTraverseStep(StoRI fileStoRI) throws CannotMapUserException
     {
-        if (requestData instanceof IdentityInputData)
+        if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
         {
             return verifyPath(fileStoRI)
                     && setParentsAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
@@ -585,7 +571,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     
     private boolean managePermitReadFileStep(StoRI fileStoRI, TTURL turl) throws CannotMapUserException
     {
-        if (requestData instanceof IdentityInputData)
+        if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
         {
             if (managePermitReadFileStep(fileStoRI, fileStoRI.getLocalFile(),
                                          ((IdentityInputData) requestData).getUser().getLocalUser(), turl))
