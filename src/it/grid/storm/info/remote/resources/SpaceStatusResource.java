@@ -23,7 +23,6 @@ import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.quota.BackgroundGPFSQuota;
-import it.grid.storm.space.quota.QuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 
@@ -47,6 +46,7 @@ public class SpaceStatusResource {
     private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);
 
     private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+    
     @GET
     @Produces("application/json")
     @Path("/{alias}")
@@ -57,18 +57,26 @@ public class SpaceStatusResource {
     	log.debug("Received call getStatusSummary for SA '"+saAlias+"'");
     	
     	int quotaDefined = SpaceInfoManager.getInstance().getQuotasDefined();
-    	if (quotaDefined>0) {
-    	       // Update SA used space using quota defined..
+        if (quotaDefined > 0)
+        {
+	       // Update SA used space using quota defined..
             BackgroundGPFSQuota.getInstance().submitGPFSQuota();
             log.info("Submitted an asynchronous GPFS Quota job");
     	}
        
-        // Check if saAlias exists
-    	
-    	// Retrieve info for saAlias
-        
     	// Load SA values
-    	SpaceStatusSummary saSum = SpaceStatusSummary.createFromDB(saAlias);
+    	SpaceStatusSummary saSum;
+    	try
+    	{
+    	    saSum = SpaceStatusSummary.createFromDB(saAlias);
+    	}catch(IllegalArgumentException e)
+    	{
+    	    log.info("Unable to load requested space status summary from database. IllegalArgumentException: " + e.getMessage());
+    	    ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+    	    responseBuilder.status(Response.Status.NOT_FOUND);
+            responseBuilder.entity("Unable to load requested space status info from database");
+            throw new WebApplicationException(responseBuilder.build());
+    	}
     	result = saSum.getJsonFormat();
     	return result;
     }
