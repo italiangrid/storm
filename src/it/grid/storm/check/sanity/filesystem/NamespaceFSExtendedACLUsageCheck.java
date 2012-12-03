@@ -47,8 +47,6 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
      * The maximum number of attempts of temporary file creation
      */
     private static final int MAX_FILE_CREATION_ATTEMPTS = 10;
-//    private static final GridUserInterface TEST_USER = 
-//        GridUserManager.makeVOMSGridUser("/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Michele Dibenedetto", new FQAN[]{ new FQAN("/dteam")});
     private static final GridUserInterface TEST_USER = new FakeGridUser("/C=IT/O=INFN/L=CNAF/CN=Fake User");
     private static LocalUser TEST_LOCAL_USER = null;
     private static final FilesystemPermission TEST_PERMISSION = FilesystemPermission.ListTraverseWrite;
@@ -208,6 +206,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
         log.debug("Returned value is \'" + currentPermission + "\'");
         log.debug("Trying to remove the extended group ACL " + TEST_PERMISSION + " from file " + file.getAbsolutePath());
         FilesystemPermission previousPermission = filesystem.revokeGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
+        oldPermisssion.deny(TEST_PERMISSION);
         if(previousPermission == null)
         {
             previousPermission = FilesystemPermission.None;
@@ -256,6 +255,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
         log.debug("Returned value is \'" + currentPermission + "\'");
         log.debug("Trying to remove the extended user ACL " + TEST_PERMISSION + " from file " + file.getAbsolutePath());
         previousPermission = filesystem.revokeUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
+        oldPermisssion.deny(TEST_PERMISSION);
         if(previousPermission == null)
         {
             previousPermission = FilesystemPermission.None;
