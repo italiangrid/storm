@@ -696,7 +696,7 @@ public class CopyChunkDAO {
         return sb.toString();
     }
     
-    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn)
+    public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn)
             throws IllegalArgumentException
     {
         if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
@@ -709,7 +709,7 @@ public class CopyChunkDAO {
         return find(surlsUniqueIDs, surlsArray, dn, true);
     }
 
-    public Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
+    public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
             throws IllegalArgumentException
     {
         if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
