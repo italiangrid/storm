@@ -154,27 +154,34 @@ public class StoRM {
             throw new RuntimeException("Unable to create the XML-RPC Server");
         }
         
-        //Execute checks
-        CheckManager checkManager = new SimpleCheckManager();
-        checkManager.init();
-        CheckResponse checkResponse = checkManager.lauchChecks();
-        if(checkResponse.isSuccessfull())
+        if(Configuration.getInstance().getSanityChecksEnabled())
         {
-            log.info("Check suite executed successfully");
-        }
-        else
-        {
-            if(checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE))
+            //Execute checks
+            CheckManager checkManager = new SimpleCheckManager();
+            checkManager.init();
+            CheckResponse checkResponse = checkManager.lauchChecks();
+            if(checkResponse.isSuccessfull())
             {
-                log.error("Storm Check suite is failed for some critical checks!");
-                StoRMLoggers.getStderrLogger().error("Storm Check suite is failed for some critical checks! Please check the log for more details");
-                throw new RuntimeException("Storm Check suite is failed for some critical checks! Please check the log for more details");
+                log.info("Check suite executed successfully");
             }
             else
             {
-                log.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
-                StoRMLoggers.getStderrLogger().error("Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
+                if(checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE))
+                {
+                    log.error("Storm Check suite is failed for some critical checks!");
+                    StoRMLoggers.getStderrLogger().error("Storm Check suite is failed for some critical checks! Please check the log for more details");
+                    throw new RuntimeException("Storm Check suite is failed for some critical checks! Please check the log for more details");
+                }
+                else
+                {
+                    log.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
+                    StoRMLoggers.getStderrLogger().error("Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
+                }
             }
+        }
+        else
+        {
+            log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
         }
     }
 

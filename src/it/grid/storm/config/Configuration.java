@@ -165,6 +165,7 @@ public class Configuration {
     private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
     private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
     private static final String GRIDFTP_POOL_STATUS_CHECK_TIMEOUT_KEY = "gridftp-pool.status-check.timeout";
+    private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
 
     
     private Configuration() {
@@ -2087,6 +2088,17 @@ public class Configuration {
             return new Long(cr.getConfiguration().getLong(GRIDFTP_POOL_STATUS_CHECK_TIMEOUT_KEY));
         }
     }
+    
+    public boolean getSanityChecksEnabled()
+    {
+        if (!cr.getConfiguration().containsKey(SANITY_CHECK_ENABLED_KEY)) {
+            // return default
+            return true;
+        } else {
+            // load from external source
+            return new Boolean(cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY));
+        }
+    }
 
     @Override
     public String toString() {
@@ -2160,4 +2172,5 @@ public class Configuration {
         	return configurationStringBuilder.toString();
         }
     }
+
 }
