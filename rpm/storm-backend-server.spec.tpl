@@ -149,17 +149,19 @@ if [ "$1" = "1" ] ; then
 
   # add symbolic link
   echo 'add symbolic link'
-  /bin/ln -sf /usr/share/java/mysql-connector-java-5.1.12.jar %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
-fi;
-if [ "$1" = "2" ] ; then
+  /bin/ln -sf /usr/share/java/mysql-connector-java.jar %{_javadir}/%{longname}/mysql-connector-java.jar
+elif [ "$1" = "2" ] ; then
   echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to use yaim to configure the server.
 "
-  if [ ! -e %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar ] ; then
-    echo 'add symbolic link'
-    /bin/ln -sf /usr/share/java/mysql-connector-java-5.1.12.jar %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
+  if [ ! -L %{_javadir}/%{longname}/mysql-connector-java.jar ] ; then
+    echo 'Add mysql symbolic link'
+    /bin/ln -sf /usr/share/java/mysql-connector-java.jar %{_javadir}/%{longname}/mysql-connector-java.jar
   fi
-    
+  if [ -L %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar ] ; then
+    echo 'Removing old mysql symbolic link'
+    /bin/unlink %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
+  fi    
   echo 'stop service'
   /sbin/service %{longname} stop >/dev/null 2>&1 || :
 fi;
@@ -222,18 +224,13 @@ if [ "$1" = "0" ] ; then
   rm -f %{_sysconfdir}/%{prefixname}/%{_modulename}/storm.properties
 
   #remove symbolic link
-  echo 'remove symbolic link'
-  rm -f %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
+  echo 'remove mysql symbolic link'
+  /bin/unlink %{_javadir}/%{longname}/mysql-connector-java.jar
 fi;
 if [ "$1" = "1" ] ; then
   echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
 You need to use yaim to configure the server.
 "
-  if [ ! -e %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar ] ; then
-    echo 'add symbolic link'
-    /bin/ln -sf /usr/share/java/mysql-connector-java-5.1.12.jar %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
-  fi
-
   echo 'stop service'
   /sbin/service %{longname} stop >/dev/null 2>&1 || :
 fi;
@@ -241,29 +238,9 @@ fi;
 %postun
 #during an upgrade, the value of the argument passed in is 1
 #during an uninstall, the value of the argument passed in is 0
-if [ "$1" = "0" ] ; then
-  #remove files from folders not belonging to the rpm
-  echo 'remove old file'
-  rm -f %{_sysconfdir}/init.d/%{longname}.*
-  rm -f %{_sysconfdir}/cron.d/%{longname}.cron.*
-
-  #remove symbolic link
-  echo 'remove symbolic link'
-  rm -f %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
-fi;
-
-if [ "$1" = "1" ] ; then
-  echo "The StoRM BackEnd server has been upgraded but NOT configured yet.
-You need to use yaim to configure the server.
-"
-  if [ ! -e %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar ] ; then
-    echo 'add symbolic link'
-    /bin/ln -sf /usr/share/java/mysql-connector-java-5.1.12.jar %{_javadir}/%{longname}/mysql-connector-java-5.1.12.jar
-  fi
-
-  echo 'stop service'
-  /sbin/service %{longname} stop >/dev/null 2>&1 || :
-fi;
+##if [ "$1" = "0" ] ; then
+##elif [ "$1" = "1" ] ; then
+##fi;
 
 %files
 %defattr(-,%{default_user},%{default_user})
