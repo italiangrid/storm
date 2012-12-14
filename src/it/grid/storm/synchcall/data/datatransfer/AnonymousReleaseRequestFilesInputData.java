@@ -4,7 +4,7 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 
-public class AnonymousReleaseRequestFilesInputData extends AnonymousReleaseFilesInputData  implements ReleaseRequestFilesInputData
+public class AnonymousReleaseRequestFilesInputData extends AnonymousReleaseFilesInputData  implements ManageFileTransferRequestFilesInputData
 {
 
     private final TRequestToken requestToken;

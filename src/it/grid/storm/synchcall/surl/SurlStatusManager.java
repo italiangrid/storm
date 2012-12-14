@@ -18,6 +18,7 @@ import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,6 +52,25 @@ public class SurlStatusManager
             return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
         }
         
+    }
+
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken,
+            TRequestType requestType) throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
+    {
+        if (requestToken == null || requestType == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken + " requestType=" + requestType);
+        }
+        if(requestType.equals(isPersisted(requestToken)))
+        {
+            return getPersistentSurlsStatuses(requestType, requestToken);
+        }
+        else
+        {
+         // TODO requestType should be stored together with the token
+            return SurlStatusStore.getInstance().getSurlsStatus(requestToken);
+        }
     }
     
     public static void checkAndUpdateStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
@@ -178,6 +198,26 @@ public class SurlStatusManager
         }
     }
     
+
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(TRequestToken requestToken,
+            ArrayList<TSURL> surls, TRequestType requestType)
+            throws IllegalArgumentException, UnknownTokenException, ExpiredTokenException
+    {
+        if(requestToken == null || surls == null || surls.isEmpty() || requestType == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: requestToken="
+                    + requestToken + " surls=" + surls + " requestType=" + requestType);
+        }
+        if(requestType.equals(isPersisted(requestToken)))
+        {
+            return getPersistentSurlsStatuses(requestType, requestToken, surls);
+        }
+        else
+        {
+            return SurlStatusStore.getInstance().getSurlsStatus(requestToken, surls);
+        }
+    }
+    
     public static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user)
     {
         if (surl == null || user == null)
@@ -187,6 +227,33 @@ public class SurlStatusManager
         Map<TRequestToken, TReturnStatus> persistentTokensStatusMap = getSurlPerPersistentTokenStatuses(surl, user);
         try
         {
+         // TODO requestType should be stored together with the token
+            persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl, user));
+        } catch(UnknownSurlException e)
+        {
+            log.debug("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: "
+                    + e);
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+        }
+
+        return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
+    private static HashMap<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user,
+            TRequestType requestType)
+    {
+        if (surl == null || user == null || requestType == null)
+        {
+            throw new IllegalArgumentException("Unable to get the statuses, null arguments: surl=" + surl
+                    + " user=" + surl + " requestType=" + requestType);
+        }
+        Map<TRequestToken, TReturnStatus> persistentTokensStatusMap = getSurlPerPersistentTokenStatuses(surl, user, requestType);
+        try
+        {
+          // TODO requestType should be stored together with the token
             persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl, user));
         } catch(UnknownSurlException e)
         {
@@ -225,7 +292,32 @@ public class SurlStatusManager
         return filterOutFinalStatuses(persistentTokensStatusMap);
     }
     
-    public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user) throws UnknownSurlException
+
+    private static Map<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, TRequestType requestType)
+    {
+        if (surl == null || requestType == null)
+        {
+            throw new IllegalArgumentException("unable to get the statuses, null arguments: surl=" + surl + " requestType=" + requestType);
+        }
+        Map<TRequestToken, TReturnStatus> persistentTokensStatusMap = getSurlPerPersistentTokenStatuses(surl, requestType);
+        try
+        {
+         // TODO requestType should be stored together with the token
+            persistentTokensStatusMap.putAll(SurlStatusStore.getInstance().getSurlPerTokenStatuses(surl));
+        } catch(UnknownSurlException e)
+        {
+            log.debug("Unable to get surl statuses. UnknownTokenException: " + e.getMessage());
+        } catch(IllegalArgumentException e)
+        {
+            log.error("Unexpected IllegalArgumentException during surl statuses retrieving: "
+                    + e);
+            throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
+        }
+
+        return filterOutFinalStatuses(persistentTokensStatusMap);
+    }
+    
+    public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user) throws UnknownSurlException, IllegalArgumentException
     {
         if (surl == null || user == null)
         {
@@ -233,6 +325,37 @@ public class SurlStatusManager
         }
         
         Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl, user).values();
+        if(statuses.isEmpty())
+        {
+            throw new UnknownSurlException("The surl is not stored");
+        }
+        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
+        removeStartingStatus(nonFinalStatuses);
+        if(nonFinalStatuses.isEmpty())
+        {
+            return extractMostRecentStatus(statuses);
+        }
+        if(nonFinalStatuses.size() > 1)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
+            return extractMostRecentStatus(nonFinalStatuses);
+        }
+        else
+        {
+            return nonFinalStatuses.getFirst();
+        }
+    }
+    
+    public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user, TRequestType requestType)
+            throws UnknownSurlException, IllegalArgumentException
+    {
+        if (surl == null || user == null || requestType == null)
+        {
+            throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl
+                    + " user=" + surl + " requestType=" + requestType);
+        }
+        
+        Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl, user, requestType).values();
         if(statuses.isEmpty())
         {
             throw new UnknownSurlException("The surl is not stored");
@@ -262,6 +385,35 @@ public class SurlStatusManager
         }
         
         Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl).values();
+        if(statuses.isEmpty())
+        {
+            throw new UnknownSurlException("The surl is not stored");
+        }
+        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
+        removeStartingStatus(nonFinalStatuses);
+        if(nonFinalStatuses.isEmpty())
+        {
+            return extractMostRecentStatus(statuses);
+        }
+        if(nonFinalStatuses.size() > 1)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
+            return extractMostRecentStatus(nonFinalStatuses);
+        }
+        else
+        {
+            return nonFinalStatuses.getFirst();
+        }
+    }
+    
+    public static TReturnStatus getSurlsStatus(TSURL surl, TRequestType requestType) throws IllegalArgumentException, UnknownSurlException
+    {
+        if (surl == null || requestType == null)
+        {
+            throw new IllegalArgumentException("Unable to get the status, null arguments: surl=" + surl + " requestType=" + requestType);
+        }
+        
+        Collection<TReturnStatus> statuses = getSurlCurrentStatuses(surl, requestType).values();
         if(statuses.isEmpty())
         {
             throw new UnknownSurlException("The surl is not stored");
@@ -527,6 +679,25 @@ public class SurlStatusManager
         return tokenStatusMap;
     }
     
+    private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl,
+            GridUserInterface user, TRequestType requestType) throws IllegalArgumentException
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                return buildPtGTokenStatusMap(PtGChunkCatalog.getInstance().lookupPtGChunkData(surl, user));
+            case PREPARE_TO_PUT:
+
+                return buildPtPTokenStatusMap(PtPChunkCatalog.getInstance().lookupPtPChunkData(surl, user));
+            case COPY:
+                return buildCopyTokenStatusMap(CopyChunkCatalog.getInstance().lookupCopyChunkData(surl, user));
+            case BRING_ON_LINE:
+                return buildBoLTokenStatusMap(BoLChunkCatalog.getInstance().lookupBoLChunkData(surl, user));
+            default:
+                throw new IllegalArgumentException("Inavalid TRequestType " + requestType);
+        }
+    }
+    
     private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl)
     {
         HashMap<TRequestToken, TReturnStatus> tokenStatusMap = new HashMap<TRequestToken, TReturnStatus>();
@@ -537,8 +708,25 @@ public class SurlStatusManager
         return tokenStatusMap;
     }
 
-  
-    
+    private static Map<TRequestToken, TReturnStatus> getSurlPerPersistentTokenStatuses(TSURL surl,
+            TRequestType requestType)
+    {
+        switch (requestType)
+        {
+            case PREPARE_TO_GET:
+                return buildPtGTokenStatusMap(PtGChunkCatalog.getInstance().lookupPtGChunkData(surl));
+            case PREPARE_TO_PUT:
+
+                return buildPtPTokenStatusMap(PtPChunkCatalog.getInstance().lookupPtPChunkData(surl));
+            case COPY:
+                return buildCopyTokenStatusMap(CopyChunkCatalog.getInstance().lookupCopyChunkData(surl));
+            case BRING_ON_LINE:
+                return buildBoLTokenStatusMap(BoLChunkCatalog.getInstance().lookupBoLChunkData(surl));
+            default:
+                throw new IllegalArgumentException("Inavalid TRequestType " + requestType);
+        }
+    }
+
     private static Map<TRequestToken, TReturnStatus> buildPtGTokenStatusMap(
             Collection<PtGPersistentChunkData> chunksData)
     {

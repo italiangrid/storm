@@ -165,10 +165,26 @@ public class XMLRPCMethods
     }
     
     /**
+     * SrmPrepareToPutStatus functionality.
+     */
+    public Map prepareToPutStatus(Map inputParam)  throws StoRMXmlRpcException
+    {
+        return executor.execute(OperationType.SPTP, inputParam);
+    }
+    
+    /**
      * SrmPrepareToGet functionality.
      */
     public Map prepareToGet(Map inputParam)  throws StoRMXmlRpcException
     {
         return executor.execute(OperationType.PTG, inputParam);
+    }
+    
+    /**
+     * SrmPrepareToGetStatus functionality.
+     */
+    public Map prepareToGetStatus(Map inputParam)  throws StoRMXmlRpcException
+    {
+        return executor.execute(OperationType.SPTG, inputParam);
     }
 }

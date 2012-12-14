@@ -10,7 +10,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 import it.grid.storm.synchcall.data.datatransfer.IdentityPutDoneInputData;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
+import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.surl.SurlStatusStore;
 import org.junit.Before;
 import org.junit.Rule;
@@ -90,7 +90,7 @@ public class PutDoneCommandTest
     @Test
     public final void testExecuteNullArg()
     {
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_INVALID_REQUEST, output.getReturnStatus().getStatusCode());
@@ -100,7 +100,7 @@ public class PutDoneCommandTest
     public final void testExecuteEmptySurls()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,new ArrayOfSURLs());
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_INVALID_REQUEST, output.getReturnStatus().getStatusCode());
@@ -110,7 +110,7 @@ public class PutDoneCommandTest
     public final void testExecuteUnknownTokenAndSurls()
     {
         data = new IdentityPutDoneInputData(auth,unknownReqToken,unknownSurlArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_INVALID_REQUEST, output.getReturnStatus().getStatusCode());
@@ -120,7 +120,7 @@ public class PutDoneCommandTest
     public final void testExecuteUnknownSurls()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,unknownSurlArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_INVALID_REQUEST, output.getReturnStatus().getStatusCode());
@@ -130,7 +130,7 @@ public class PutDoneCommandTest
     public final void testExecuteUnknownToken()
     {
         data = new IdentityPutDoneInputData(auth,unknownReqToken,mixedSurlArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_INVALID_REQUEST, output.getReturnStatus().getStatusCode());
@@ -140,7 +140,7 @@ public class PutDoneCommandTest
     public final void testExecuteAlreadySuccessSurl()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,surlSuccessfulArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_FAILURE, output.getReturnStatus().getStatusCode());
@@ -150,7 +150,7 @@ public class PutDoneCommandTest
     public final void testExecute()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,surlSpaceAvalableArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertTrue("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_SUCCESS, output.getReturnStatus().getStatusCode());
@@ -160,7 +160,7 @@ public class PutDoneCommandTest
     public final void testExecutePartialSuccess()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,mixedSurlArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_PARTIAL_SUCCESS, output.getReturnStatus().getStatusCode());
@@ -170,7 +170,7 @@ public class PutDoneCommandTest
     public final void testExecuteAborted()
     {
         data = new IdentityPutDoneInputData(auth,reqToken,abortedSurlArray);
-        PutDoneOutputData output = (PutDoneOutputData) command.execute(data);
+        ManageFileTransferOutputData output = (ManageFileTransferOutputData) command.execute(data);
         assertNotNull("output should never be null" , output);
         assertFalse("resoult should be failure" , output.getReturnStatus().isSRM_SUCCESS());
         assertEquals("resoult should be failure" , TStatusCode.SRM_ABORTED, output.getReturnStatus().getStatusCode());

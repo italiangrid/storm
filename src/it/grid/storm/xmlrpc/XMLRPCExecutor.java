@@ -116,8 +116,12 @@ public class XMLRPCExecutor {
         switch (type) {
             case PTG:
                 return it.grid.storm.health.OperationType.PTG;
+            case SPTG:
+                return it.grid.storm.health.OperationType.SPTG;
             case PTP:
                 return it.grid.storm.health.OperationType.PTP;
+            case SPTP:
+                return it.grid.storm.health.OperationType.SPTP;
             case COPY:
                 return it.grid.storm.health.OperationType.COPY;
             case BOL:

@@ -4,7 +4,7 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousReleaseFilesInputData extends AbstractInputData implements ReleaseFilesInputData
+public class AnonymousReleaseFilesInputData extends AbstractInputData implements ManageFileTransferFilesInputData
 {
 
     protected final ArrayOfSURLs arrayOfSURLs;

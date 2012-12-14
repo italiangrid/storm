@@ -30,26 +30,21 @@ package it.grid.storm.xmlrpc.converter.datatransfer;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AnonymousPutDoneInputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityPutDoneInputData;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
+import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutDoneConverter implements Converter
+public class PutDoneConverter extends ManageFileTransferConverter implements Converter
 {
     private static final Logger log = LoggerFactory.getLogger(PutDoneConverter.class);
 
@@ -82,7 +77,7 @@ public class PutDoneConverter implements Converter
             arrayOfSURLs = null;
         }
 
-        PutDoneInputData inputData;
+        ManageFileTransferRequestFilesInputData inputData;
         if(guser != null)
         {
             inputData = new IdentityPutDoneInputData(guser, requestToken, arrayOfSURLs);            
@@ -97,29 +92,10 @@ public class PutDoneConverter implements Converter
         return inputData;
     }
 
-    public Map convertFromOutputData(OutputData absData)
+    @Override
+    protected Logger getLogger()
     {
-        log.debug("PutDoneConverter - Creation of XMLRPC Output Structure!");
-
-        Map outputParam = new HashMap();
-        PutDoneOutputData outputData = (PutDoneOutputData) absData;
-
-
-        /* (1) returnStatus */
-        TReturnStatus returnStatus = outputData.getReturnStatus();
-        if (returnStatus != null) {
-            returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        }
-
-        /* (2) arrayOfFileStatuses */
-        ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData. getArrayOfFileStatuses();
-        if (arrayOfFileStatuses != null) {
-            arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
-        }
-
-        log.debug("PutDoneConverter - Sending: " + outputParam.toString());
-
-        // Return global structure.
-        return outputParam;
+        return log;
     }
+
 }

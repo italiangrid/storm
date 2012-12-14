@@ -17,10 +17,12 @@
 
 package it.grid.storm.synchcall.data.datatransfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidPutDoneOutputAttributeException;
 
 /**
  *
@@ -38,26 +40,35 @@ import it.grid.storm.synchcall.data.exception.InvalidPutDoneOutputAttributeExcep
  *
  */
 
-public class PutDoneOutputData implements OutputData
+public class ManageFileTransferOutputData implements OutputData
 {
-    private TReturnStatus returnStatus = null;
-    private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
+    
+    private static final Logger log = LoggerFactory.getLogger(ManageFileTransferOutputData.class);
+    private final TReturnStatus returnStatus;
+    private final ArrayOfTSURLReturnStatus arrayOfFileStatus;
 
-    public PutDoneOutputData()
+    public ManageFileTransferOutputData(TReturnStatus retStatus) throws IllegalArgumentException
     {
-        this.returnStatus = null;
-        this.arrayOfFileStatus = null;
-    }
 
-    public PutDoneOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus arrayOfFileStatus)
-                    throws InvalidPutDoneOutputAttributeException
-    {
-        boolean ok = (arrayOfFileStatus == null);
-
-        if (!ok) {
-            throw new InvalidPutDoneOutputAttributeException(arrayOfFileStatus);
+        if (retStatus == null)
+        {
+            log.error("Unable to create the object, invalid arguments: retStatus=" + retStatus);
+            throw new IllegalArgumentException("Unable to create the object, invalid arguments");
         }
 
+        this.returnStatus = retStatus;
+        this.arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
+    }
+
+    public ManageFileTransferOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus arrayOfFileStatus)
+        throws IllegalArgumentException
+    {
+        if (retStatus == null || arrayOfFileStatus == null || arrayOfFileStatus.getArray().isEmpty())
+        {
+            log.error("Unable to create the object, invalid arguments: retStatus=" + retStatus
+                    + " arrayOfFileStatus=" + arrayOfFileStatus);
+            throw new IllegalArgumentException("Unable to create the object, invalid arguments");
+        }
         this.returnStatus = retStatus;
         this.arrayOfFileStatus = arrayOfFileStatus;
     }
@@ -72,15 +83,6 @@ public class PutDoneOutputData implements OutputData
     }
 
     /**
-     * Set the returnStatus field
-     * @param returnStatus
-     */
-    public void setReturnStatus(TReturnStatus returnStatus)
-    {
-        this.returnStatus = returnStatus;
-    }
-
-    /**
      * Returns the arrayOfFileStatuses field
      * @return TSURLReturnStatus
      */
@@ -89,20 +91,15 @@ public class PutDoneOutputData implements OutputData
         return arrayOfFileStatus;
     }
 
-    /**
-     * Set the arrayOfFileStatuses field
-     * @param arrayOfFileStatuses
-     */
-    public void setArrayOfFileStatuses(ArrayOfTSURLReturnStatus arrayOfFileStatuses)
+    public void addFileStatus(TSURLReturnStatus surlStatus)
     {
-        this.arrayOfFileStatus = arrayOfFileStatuses;
+        arrayOfFileStatus.addTSurlReturnStatus(surlStatus);
     }
 
     /* (non-Javadoc)
      * @see it.grid.storm.synchcall.data.OutputData#isSuccess()
      */
     public boolean isSuccess() {
-        // TODO Auto-generated method stub
-        return true;
+        return returnStatus.isSRM_SUCCESS();
     }
 }

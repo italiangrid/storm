@@ -20,7 +20,7 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousPutDoneInputData extends AbstractInputData implements PutDoneInputData
+public class AnonymousPutDoneInputData extends AbstractInputData implements ManageFileTransferRequestFilesInputData
 {
     private final TRequestToken reqToken;
     private final ArrayOfSURLs arrayOfSURLs;

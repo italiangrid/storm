@@ -49,6 +49,8 @@ public enum OperationTypeCategory {
             add(OperationType.EFL);
             add(OperationType.GST);
             add(OperationType.RSP);
+            add(OperationType.SPTG);
+            add(OperationType.SPTP);
         }
     }),
     SYNCH_FS ( "SYNCH_FS", new ArrayList<OperationType>() {

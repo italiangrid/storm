@@ -44,8 +44,8 @@ import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneInputData;
-import it.grid.storm.synchcall.data.datatransfer.PutDoneOutputData;
+import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
@@ -93,8 +93,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
      */
     public OutputData execute(InputData absData) {
 
-        PutDoneInputData inputData = (PutDoneInputData) absData;
-        PutDoneOutputData outputData = new PutDoneOutputData();
+        ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
         TReturnStatus globalStatus = null;
         log.debug(funcName + "Started.");
 
@@ -103,8 +102,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         {
             log.error(funcName + "Invalid input parameter specified");
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
             if (inputData == null)
             {
                 log.error("srmPutDone: Requestfailed with [status: " + globalStatus + "]");
@@ -113,7 +110,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             {
                 printRequestOutcome(globalStatus, inputData);
             }
-            return outputData;
+            return new ManageFileTransferOutputData(globalStatus);
         }
 
         /********************************** Start to manage the request ***********************************/
@@ -128,34 +125,26 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         {
             log.error(funcName + "Unexpected IllegalArgumentException: " + e.getMessage());
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
-            return outputData;
+            return new ManageFileTransferOutputData(globalStatus);
         } catch(RequestUnknownException e)
         {
             log.info(funcName + "Invalid request token and surl. RequestUnknownException: " + e.getMessage());
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token and surls");
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
-            return outputData;
+            return new ManageFileTransferOutputData(globalStatus);
         } catch(UnknownTokenException e)
         {
             log.info(funcName + "Invalid request token. UnknownTokenException: " + e.getMessage());
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
-            return outputData;
+            return new ManageFileTransferOutputData(globalStatus);
         } catch(ExpiredTokenException e)
         {
             log.info(funcName + "The request is expired: ExpiredTokenException: " + e.getMessage());
             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-            outputData.setReturnStatus(globalStatus);
-            outputData.setArrayOfFileStatuses(null);
             printRequestOutcome(globalStatus, inputData);
-            return outputData;
+            return new ManageFileTransferOutputData(globalStatus);
         }
         
         LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
@@ -221,34 +210,26 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             {
                 log.error(funcName + "Unexpected IllegalArgumentException: " + e.getMessage());
                 globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
-                outputData.setReturnStatus(globalStatus);
-                outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
-                return outputData;
+                return new ManageFileTransferOutputData(globalStatus);
             } catch(UnknownTokenException e)
             {
                 log.error(funcName + "Unexpected UnknownTokenException: " + e.getMessage());
                 globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed,. Unexpected UnknownSurlException in checkAndUpdateStatus");
-                outputData.setReturnStatus(globalStatus);
-                outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
-                return outputData;
+                return new ManageFileTransferOutputData(globalStatus);
             } catch(ExpiredTokenException e)
             {
                 log.info(funcName + "The request is expired: ExpiredTokenException: " + e.getMessage());
                 globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-                outputData.setReturnStatus(globalStatus);
-                outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
-                return outputData;
+                return new ManageFileTransferOutputData(globalStatus);
             } catch(UnknownSurlException e)
             {
                 log.error(funcName + "Unexpected UnknownSurlException: " + e.getMessage());
                 globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed. Unexpected UnknownSurlException in checkAndUpdateStatus");
-                outputData.setReturnStatus(globalStatus);
-                outputData.setArrayOfFileStatuses(null);
                 printRequestOutcome(globalStatus, inputData);
-                return outputData;
+                return new ManageFileTransferOutputData(globalStatus);
             }
         }
         
@@ -306,12 +287,10 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         log.debug(funcName + "Finished with status: " + globalStatus.toString());
 
         printRequestOutcome(globalStatus, inputData);
-        outputData.setReturnStatus(globalStatus);
-        outputData.setArrayOfFileStatuses(surlsStatuses);
-        return outputData;
+        return new ManageFileTransferOutputData(globalStatus, surlsStatuses);
     }
 
-    private static void printRequestOutcome(TReturnStatus status, PutDoneInputData inputData)
+    private static void printRequestOutcome(TReturnStatus status, ManageFileTransferRequestFilesInputData inputData)
     {
         if (inputData != null)
         {

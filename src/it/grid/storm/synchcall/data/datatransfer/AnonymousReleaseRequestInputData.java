@@ -3,8 +3,8 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousReleaseRequestInputData extends AbstractInputData implements 
-        ReleaseRequestInputData
+public class AnonymousReleaseRequestInputData extends AbstractInputData implements
+        ManageFileTransferRequestInputData
 {
     private final TRequestToken requestToken;
     public AnonymousReleaseRequestInputData(TRequestToken requestToken)

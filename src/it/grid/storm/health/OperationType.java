@@ -42,7 +42,9 @@ public class OperationType {
     public final static OperationType UNDEF = new OperationType(0, "UNDEF", "Undefined", OperationTypeCategory.UNKNOWN);
 
     public final static OperationType PTG = new OperationType(1, "PTG", "srmPrepareToGet", OperationTypeCategory.ASYNCH);
+    public final static OperationType SPTG = new OperationType(20, "SPTG", "srmPrepareToGetStatus", OperationTypeCategory.SYNCH_DB);
     public final static OperationType PTP = new OperationType(2, "PTP", "srmPrepareToPut", OperationTypeCategory.ASYNCH);
+    public final static OperationType SPTP = new OperationType(21, "SPTP", "srmPrepareToPutStatus", OperationTypeCategory.SYNCH_DB);
     public final static OperationType COPY = new OperationType(3, "COPY", "srmCopy", OperationTypeCategory.ASYNCH);
     public final static OperationType BOL = new OperationType(4, "BOL", "srmBringOnLine", OperationTypeCategory.ASYNCH);
 

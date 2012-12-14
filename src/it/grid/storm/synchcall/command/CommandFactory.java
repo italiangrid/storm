@@ -21,7 +21,9 @@ import it.grid.storm.synchcall.command.datatransfer.AbortFilesCommand;
 import it.grid.storm.synchcall.command.datatransfer.AbortRequestCommand;
 import it.grid.storm.synchcall.command.datatransfer.ExtendFileLifeTimeCommand;
 import it.grid.storm.synchcall.command.datatransfer.PrepareToGetRequestCommand;
+import it.grid.storm.synchcall.command.datatransfer.PrepareToGetRequestStatusCommand;
 import it.grid.storm.synchcall.command.datatransfer.PrepareToPutRequestCommand;
+import it.grid.storm.synchcall.command.datatransfer.PrepareToPutRequestStatusCommand;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 import it.grid.storm.synchcall.command.datatransfer.ReleaseFilesCommand;
 import it.grid.storm.synchcall.command.directory.LsCommand;
@@ -87,8 +89,12 @@ public class CommandFactory
                 
             case PTP:
                 return new PrepareToPutRequestCommand();
+            case SPTP:
+                return new PrepareToPutRequestStatusCommand();
             case PTG:
                 return new PrepareToGetRequestCommand();
+            case SPTG:
+                return new PrepareToGetRequestStatusCommand();
                 
             default:
                     log.error("No Command available for OperationType " + type);
