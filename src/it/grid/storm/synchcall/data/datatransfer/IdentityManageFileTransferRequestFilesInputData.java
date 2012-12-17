@@ -22,12 +22,12 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.IdentityInputData;
 
-public class IdentityReleaseRequestFilesInputData extends AnonymousReleaseRequestFilesInputData implements
+public class IdentityManageFileTransferRequestFilesInputData extends AnonymousManageFileTransferRequestFilesInputData implements
         IdentityInputData
 {
     private final GridUserInterface auth;
 
-    public IdentityReleaseRequestFilesInputData(GridUserInterface auth, TRequestToken requestToken,
+    public IdentityManageFileTransferRequestFilesInputData(GridUserInterface auth, TRequestToken requestToken,
             ArrayOfSURLs arrayOfSURLs) throws IllegalArgumentException
     {
         super(requestToken, arrayOfSURLs);

@@ -4,11 +4,11 @@ package it.grid.storm.synchcall.data.datatransfer;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 
-public class AnonymousReleaseRequestFilesInputData extends AnonymousReleaseFilesInputData  implements ManageFileTransferRequestFilesInputData
+public class AnonymousManageFileTransferRequestFilesInputData extends AnonymousManageFileTransferFilesInputData  implements ManageFileTransferRequestFilesInputData
 {
 
     private final TRequestToken requestToken;
-    public AnonymousReleaseRequestFilesInputData(TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs) throws IllegalArgumentException
+    public AnonymousManageFileTransferRequestFilesInputData(TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs) throws IllegalArgumentException
     {
         super(arrayOfSURLs);
         if (requestToken == null)

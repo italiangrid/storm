@@ -24,11 +24,11 @@ import it.grid.storm.srm.types.InvalidArrayOfSURLsAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseFilesInputData;
-import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousManageFileTransferFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AnonymousReleaseRequestInputData;
-import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseFilesInputData;
-import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseRequestFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityManageFileTransferFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityReleaseRequestInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
@@ -37,9 +37,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReleaseFilesConverter extends ManageFileTransferConverter implements Converter
+public class ManageFileTransferRequestConverter extends ManageFileTransferConverter implements Converter
 {
-    static final Logger log = LoggerFactory.getLogger(ReleaseFilesConverter.class);
+    static final Logger log = LoggerFactory.getLogger(ManageFileTransferRequestConverter.class);
 
     /**
      * This method returns a ReleaseFilesInputData created from the input Hashtable structure
@@ -77,7 +77,7 @@ public class ReleaseFilesConverter extends ManageFileTransferConverter implement
             {
                 if(arrayOfSURLs != null && arrayOfSURLs.size() > 0)
                 {
-                    inputData = new IdentityReleaseRequestFilesInputData(guser, requestToken, arrayOfSURLs);                    
+                    inputData = new IdentityManageFileTransferRequestFilesInputData(guser, requestToken, arrayOfSURLs);                    
                 }
                 else
                 {
@@ -86,7 +86,7 @@ public class ReleaseFilesConverter extends ManageFileTransferConverter implement
             }
             else
             {
-                inputData = new IdentityReleaseFilesInputData(guser, arrayOfSURLs);
+                inputData = new IdentityManageFileTransferFilesInputData(guser, arrayOfSURLs);
             }
         }
         else
@@ -95,7 +95,7 @@ public class ReleaseFilesConverter extends ManageFileTransferConverter implement
             {
                 if(arrayOfSURLs != null && arrayOfSURLs.size() > 0)
                 {
-                    inputData = new AnonymousReleaseRequestFilesInputData(requestToken, arrayOfSURLs);                    
+                    inputData = new AnonymousManageFileTransferRequestFilesInputData(requestToken, arrayOfSURLs);                    
                 }
                 else
                 {
@@ -104,7 +104,7 @@ public class ReleaseFilesConverter extends ManageFileTransferConverter implement
             }
             else
             {
-                inputData = new AnonymousReleaseFilesInputData(arrayOfSURLs);
+                inputData = new AnonymousManageFileTransferFilesInputData(arrayOfSURLs);
             }
         }
         return inputData;

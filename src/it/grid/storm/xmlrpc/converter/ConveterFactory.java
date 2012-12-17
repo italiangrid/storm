@@ -22,7 +22,7 @@ import it.grid.storm.xmlrpc.converter.datatransfer.ExtendFileLifeTimeConverter;
 import it.grid.storm.xmlrpc.converter.datatransfer.PrepareToGetRequestConverter;
 import it.grid.storm.xmlrpc.converter.datatransfer.PrepareToPutRequestConverter;
 import it.grid.storm.xmlrpc.converter.datatransfer.PutDoneConverter;
-import it.grid.storm.xmlrpc.converter.datatransfer.ReleaseFilesConverter;
+import it.grid.storm.xmlrpc.converter.datatransfer.ManageFileTransferRequestConverter;
 import it.grid.storm.xmlrpc.converter.directory.LsConverter;
 import it.grid.storm.xmlrpc.converter.directory.MkdirConverter;
 import it.grid.storm.xmlrpc.converter.directory.MvConverter;
@@ -95,7 +95,7 @@ public class ConveterFactory
             case PD:
                 return new PutDoneConverter();
             case RF:
-                return new ReleaseFilesConverter();
+                return new ManageFileTransferRequestConverter();
             case EFL:
                 return new ExtendFileLifeTimeConverter();
             case AF:
@@ -105,9 +105,12 @@ public class ConveterFactory
 
             case PTP:
                 return new PrepareToPutRequestConverter();
+            case SPTP:
+                return new ManageFileTransferRequestConverter();
             case PTG:
                 return new PrepareToGetRequestConverter();
-                
+            case SPTG:
+                return new ManageFileTransferRequestConverter();                
             default:
                     log.error("No Converter available for OperationType " + type);
                     throw new StoRMXmlRpcException("No Converter available for OperationType " + type);
