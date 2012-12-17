@@ -30,7 +30,7 @@ public class SurlStatusCommandHelper
     
     private static final Logger log = LoggerFactory.getLogger(SurlStatusCommandHelper.class);
     
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(ManageFileTransferRequestInputData inputData,
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(InputData inputData,
             TRequestType requestType) throws IllegalArgumentException, RequestUnknownException,
             UnknownTokenException, ExpiredTokenException, IllegalStateException
     {

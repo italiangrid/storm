@@ -32,17 +32,16 @@ public abstract class FileTransferRequestStatusCommand extends DataTransferComma
     };
 
     @Override
-    public OutputData execute(InputData absData) throws IllegalArgumentException, CommandException
+    public OutputData execute(InputData inputData) throws IllegalArgumentException, CommandException
     {
         TReturnStatus globalStatus = null;
         log.debug(getSrmCommand() + "Started.");
-        if (!(absData instanceof ManageFileTransferRequestFilesInputData
-                || absData instanceof ManageFileTransferFilesInputData || absData instanceof ManageFileTransferRequestInputData))
+        if (!(inputData instanceof ManageFileTransferRequestFilesInputData
+                || inputData instanceof ManageFileTransferFilesInputData || inputData instanceof ManageFileTransferRequestInputData))
         {
             throw new IllegalArgumentException("Unable to execute the task. Wrong input argument type: "
-                    + absData.getClass());
+                    + inputData.getClass());
         }
-        ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;        
         Map<TSURL, TReturnStatus> surlStastuses;
         try
         {
