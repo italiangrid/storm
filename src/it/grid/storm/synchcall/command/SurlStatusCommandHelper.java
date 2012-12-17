@@ -30,7 +30,9 @@ public class SurlStatusCommandHelper
     
     private static final Logger log = LoggerFactory.getLogger(SurlStatusCommandHelper.class);
     
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(InputData inputData, TRequestType requestType) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException, ExpiredTokenException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(ManageFileTransferRequestInputData inputData,
+            TRequestType requestType) throws IllegalArgumentException, RequestUnknownException,
+            UnknownTokenException, ExpiredTokenException, IllegalStateException
     {
         if(inputData instanceof ManageFileTransferRequestFilesInputData)
         {
@@ -57,13 +59,15 @@ public class SurlStatusCommandHelper
                 }
                 else
                 {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unknown iput data type " + inputData.getClass());
                 }
             }
         }
     }
     
-    public static Map<TSURL, TReturnStatus> getSurlsStatus(InputData inputData) throws IllegalArgumentException, RequestUnknownException, UnknownTokenException, ExpiredTokenException
+    public static Map<TSURL, TReturnStatus> getSurlsStatus(InputData inputData)
+            throws IllegalArgumentException, RequestUnknownException, UnknownTokenException,
+            ExpiredTokenException, IllegalStateException
     {
         if(inputData instanceof ManageFileTransferRequestFilesInputData)
         {
@@ -90,7 +94,7 @@ public class SurlStatusCommandHelper
                 }
                 else
                 {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unknown iput data type " + inputData.getClass());
                 }
             }
         }
@@ -148,7 +152,7 @@ public class SurlStatusCommandHelper
                 {
                     if(withRequestType)
                     {
-                        surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl, user, requestType));
+                        surlsStatuses.put(surl, SurlStatusManager.getSurlStatus(surl, user, requestType));
                     }
                     else
                     {
@@ -164,7 +168,7 @@ public class SurlStatusCommandHelper
                     }
                     else
                     {
-                        surlsStatuses.put(surl, SurlStatusManager.getSurlsStatus(surl));
+                        surlsStatuses.put(surl, SurlStatusManager.getSurlStatus(surl));
                     }
                 }
 

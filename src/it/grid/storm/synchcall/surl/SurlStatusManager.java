@@ -238,8 +238,7 @@ public class SurlStatusManager
                     + e);
             throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
         }
-
-        return filterOutFinalStatuses(persistentTokensStatusMap);
+        return persistentTokensStatusMap;
     }
     
     private static HashMap<TRequestToken, TReturnStatus> getSurlCurrentStatuses(TSURL surl, GridUserInterface user,
@@ -289,7 +288,7 @@ public class SurlStatusManager
             throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
         }
 
-        return filterOutFinalStatuses(persistentTokensStatusMap);
+        return persistentTokensStatusMap;
     }
     
 
@@ -313,8 +312,7 @@ public class SurlStatusManager
                     + e);
             throw new IllegalStateException("Unexpected IllegalArgumentException: " + e.getMessage());
         }
-
-        return filterOutFinalStatuses(persistentTokensStatusMap);
+        return persistentTokensStatusMap;
     }
     
     public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user) throws UnknownSurlException, IllegalArgumentException
@@ -329,24 +327,18 @@ public class SurlStatusManager
         {
             throw new UnknownSurlException("The surl is not stored");
         }
-        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
-        removeStartingStatus(nonFinalStatuses);
-        if(nonFinalStatuses.isEmpty())
+        try
         {
+            return extractSurlStatus(statuses);
+       
+        } catch (IllegalArgumentException e)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Statuses are: " + statuses);
             return extractMostRecentStatus(statuses);
-        }
-        if(nonFinalStatuses.size() > 1)
-        {
-            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
-            return extractMostRecentStatus(nonFinalStatuses);
-        }
-        else
-        {
-            return nonFinalStatuses.getFirst();
         }
     }
     
-    public static TReturnStatus getSurlsStatus(TSURL surl, GridUserInterface user, TRequestType requestType)
+    public static TReturnStatus getSurlStatus(TSURL surl, GridUserInterface user, TRequestType requestType)
             throws UnknownSurlException, IllegalArgumentException
     {
         if (surl == null || user == null || requestType == null)
@@ -360,24 +352,18 @@ public class SurlStatusManager
         {
             throw new UnknownSurlException("The surl is not stored");
         }
-        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
-        removeStartingStatus(nonFinalStatuses);
-        if(nonFinalStatuses.isEmpty())
+        try
         {
+            return extractSurlStatus(statuses);
+       
+        } catch (IllegalArgumentException e)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Statuses are: " + statuses);
             return extractMostRecentStatus(statuses);
-        }
-        if(nonFinalStatuses.size() > 1)
-        {
-            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
-            return extractMostRecentStatus(nonFinalStatuses);
-        }
-        else
-        {
-            return nonFinalStatuses.getFirst();
         }
     }
     
-    public static TReturnStatus getSurlsStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
+    public static TReturnStatus getSurlStatus(TSURL surl) throws IllegalArgumentException, UnknownSurlException
     {
         if (surl == null)
         {
@@ -389,20 +375,14 @@ public class SurlStatusManager
         {
             throw new UnknownSurlException("The surl is not stored");
         }
-        LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
-        removeStartingStatus(nonFinalStatuses);
-        if(nonFinalStatuses.isEmpty())
+        try
         {
+            return extractSurlStatus(statuses);
+       
+        } catch (IllegalArgumentException e)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Statuses are: " + statuses);
             return extractMostRecentStatus(statuses);
-        }
-        if(nonFinalStatuses.size() > 1)
-        {
-            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
-            return extractMostRecentStatus(nonFinalStatuses);
-        }
-        else
-        {
-            return nonFinalStatuses.getFirst();
         }
     }
     
@@ -418,6 +398,19 @@ public class SurlStatusManager
         {
             throw new UnknownSurlException("The surl is not stored");
         }
+        try
+        {
+            return extractSurlStatus(statuses);
+       
+        } catch (IllegalArgumentException e)
+        {
+            log.warn("Inconsistent status for surl " + surl + " . Statuses are: " + statuses);
+            return extractMostRecentStatus(statuses);
+        }
+    }
+    
+    private static TReturnStatus extractSurlStatus(Collection<TReturnStatus> statuses) throws IllegalArgumentException
+    {
         LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
         removeStartingStatus(nonFinalStatuses);
         if(nonFinalStatuses.isEmpty())
@@ -426,8 +419,7 @@ public class SurlStatusManager
         }
         if(nonFinalStatuses.size() > 1)
         {
-            log.warn("Inconsistent status for surl " + surl + " . Not final statuses are: " + nonFinalStatuses);
-            return extractMostRecentStatus(nonFinalStatuses);
+            throw new IllegalArgumentException("Inconsistent status set, multiple not final statuses: " + nonFinalStatuses);
         }
         else
         {

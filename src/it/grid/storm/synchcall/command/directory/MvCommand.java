@@ -452,7 +452,7 @@ public class MvCommand extends DirectoryCommand implements Command {
             TReturnStatus surlStatus = null;
             try
             {
-                surlStatus = SurlStatusManager.getSurlsStatus(fromStori.getSURL());
+                surlStatus = SurlStatusManager.getSurlStatus(fromStori.getSURL());
             } catch(IllegalArgumentException e)
             {
                 throw new IllegalStateException("Unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: " + e);

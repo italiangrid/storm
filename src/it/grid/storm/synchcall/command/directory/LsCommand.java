@@ -694,7 +694,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         try
         {
-            return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlsStatus(element.getSURL()));
+            return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlStatus(element.getSURL()));
         } catch(IllegalArgumentException e)
         {
            throw new IllegalStateException("unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: " + e);

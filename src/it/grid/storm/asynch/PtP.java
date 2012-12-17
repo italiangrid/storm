@@ -840,7 +840,7 @@ public class PtP implements Delegable, Chooser, Request
                 return false;
             }
             else
-                if (!successful && TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlsStatus(requestData.getSURL())))//PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
+                if (!successful && TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager.getSurlStatus(requestData.getSURL())))//PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
                 {
                     // atomic operation of creation of file if non existent, failed:
                     // so the file
