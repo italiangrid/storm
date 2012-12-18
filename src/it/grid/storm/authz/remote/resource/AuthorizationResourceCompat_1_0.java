@@ -17,14 +17,11 @@ package it.grid.storm.authz.remote.resource;
 * 
 */
 
-import it.grid.storm.authz.path.model.PathOperation;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.ws.rs.QueryParam;
 import it.grid.storm.authz.remote.Constants;
 
@@ -35,8 +32,7 @@ import it.grid.storm.authz.remote.Constants;
 public class AuthorizationResourceCompat_1_0
 {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationResourceCompat_1_0.class);
-    
+    private static final AuthorizationResource resourceInstance = new AuthorizationResource();
     /**
      * @param filePath
      * @param DN
@@ -50,9 +46,7 @@ public class AuthorizationResourceCompat_1_0
     public String evaluateVomsGridUserReadPermission(@PathParam("filePath") String filePath,
             @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS) throws WebApplicationException
     {
-        log.info("Serving read operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
-        RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.READ_FILE).toString();
+        return resourceInstance.evaluateVomsGridUserReadPermission(filePath, DN, FQANS);
     }
     
 
@@ -69,9 +63,7 @@ public class AuthorizationResourceCompat_1_0
     public String evaluateVomsGridUserWritePermission(@PathParam("filePath") String filePath,
             @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS) throws WebApplicationException
     {
-        log.info("Serving write operation authorization on file '" + filePath + "\' User provides a VOMS proxy");
-        RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
+        return resourceInstance.evaluateVomsGridUserWritePermission(filePath, DN, FQANS);
     }
     
     /**
@@ -87,9 +79,7 @@ public class AuthorizationResourceCompat_1_0
             @QueryParam(Constants.DN_KEY) String DN)
             throws WebApplicationException
     {
-        log.info("Serving read operation authorization on file '" + filePath + "\'");
-        RequestParameters parameters = new RequestParameters(filePath, DN);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.READ_FILE).toString();
+        return resourceInstance.evaluateGridUserReadPermission(filePath, DN);
     }
 
     /**
@@ -105,9 +95,6 @@ public class AuthorizationResourceCompat_1_0
             @QueryParam(Constants.DN_KEY) String DN)
             throws WebApplicationException
     {
-        log.info("Serving write operation authorization on file '" + filePath + "\'");
-        
-        RequestParameters parameters = new RequestParameters(filePath, DN);
-        return PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(), parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), PathOperation.WRITE_FILE).toString();
+        return resourceInstance.evaluateGridUserWritePermission(filePath, DN);
     }
 }

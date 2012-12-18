@@ -33,6 +33,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TOverwriteMode;
 import java.util.Arrays;
 import java.util.List;
@@ -69,10 +70,15 @@ class PermissionEvaluator
           responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
           throw new WebApplicationException(responseBuilder.build());
         }
+        if(!fileVFS.getCapabilities().getAllManagedProtocols().contains(Protocol.HTTPS))
+        {
+            log.debug("User\'" + gu + "\' not authorize to access the requeste file \'" + filePathDecoded + "\' via HTTPS");
+            return new Boolean(false);    
+        }
         if(!fileVFS.isApproachableByUser(gu))
         {
-            log.debug("User\'" + gu + "\' not authorize to approach the requeste Storage Area \'" + fileVFS.getAliasName() + "\'");
-            return new Boolean(false);    
+            log.debug("User\'" + gu + "\' not authorize to approach the requeste Storage Area \'" + fileVFS.getAliasName() + "\' via HTTPS");
+            return new Boolean(false);
         }
         StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
         AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, operation, fileStFN);
@@ -131,15 +137,13 @@ class PermissionEvaluator
           responseBuilder.entity("Unable to determine file path\'s associated virtual file system");
           throw new WebApplicationException(responseBuilder.build());
         }
-        if(!fileVFS.isApproachableByAnonymous() && !(request.isReadOnly() && fileVFS.isHttpWorldReadable()))
+        if(!fileVFS.getCapabilities().getAllManagedProtocols().contains(Protocol.HTTP))
         {
-            log.debug("The requeste Storage Area \'" + fileVFS.getAliasName() + "\' is not appoachable by anonymous users");
-            return new Boolean(false);    
+            log.debug("The requeste Storage Area \'" + fileVFS.getAliasName() + "\' is not appoachable via HTTPS");
+            return Boolean.FALSE;    
         }
-        StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
-        AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(request, fileStFN);
-        log.info("Authorization decision for Anonymous user requesting " + request + " on " + filePathDecoded + " is [" + decision + "]" );
-        return evaluateDecision(decision);
+        log.info("Authorization decision for Anonymous user requesting " + request + " on " + filePathDecoded + " is [" + AuthzDecision.PERMIT + "]" );
+        return Boolean.TRUE;
     }
     
     static Boolean evaluateAnonymousPermission(String filePathDecoded, SRMFileRequest request)
