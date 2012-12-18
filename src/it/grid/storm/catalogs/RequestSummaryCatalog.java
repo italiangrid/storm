@@ -237,7 +237,10 @@ public class RequestSummaryCatalog {
         }
         data.setUserToken(to.getUserToken());
         data.setRetrytime(to.getRetrytime());
-        data.setPinLifetime(TLifeTimeInSeconds.make(PinLifetimeConverter.getInstance().toStoRM(to.getPinLifetime()), TimeUnit.SECONDS));
+        if(to.getPinLifetime() != null)
+        {
+            data.setPinLifetime(TLifeTimeInSeconds.make(PinLifetimeConverter.getInstance().toStoRM(to.getPinLifetime()), TimeUnit.SECONDS));    
+        }
         data.setSpaceToken(to.getSpaceToken());
         data.setStatus(status);
         data.setErrstring(to.getErrstring());
