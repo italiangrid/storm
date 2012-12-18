@@ -17,11 +17,14 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -128,10 +131,19 @@ public class RequestSummaryCatalog {
             int fetched = c.size();
             log.debug("REQUEST SUMMARY CATALOG: " + fetched + " new requests picked up. "); // info
             for (RequestSummaryDataTO auxTO: c) {
-                RequestSummaryData aux = makeOne(auxTO);
-                if (aux != null) {
-                    RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + aux.requestToken() + " associated to " + aux.gridUser().getDn() + " included for processing "); // info
-                    list.add(aux);
+                try
+                {
+                    RequestSummaryData aux = makeOne(auxTO);
+                    if (aux != null)
+                    {
+                        RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + aux.requestToken()
+                                + " associated to " + aux.gridUser().getDn() + " included for processing ");
+                        list.add(aux);
+                    }
+                } catch(IllegalArgumentException e)
+                {
+                    RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG; Failure performing makeOne operation. IllegalArgumentException: "
+                            + e.getMessage());
                 }
             }
             int ret = list.size();
@@ -154,55 +166,94 @@ public class RequestSummaryCatalog {
      * gets logged and an attempt is made to signal in the DB that the request
      * is malformed.
      */
-    private RequestSummaryData makeOne(RequestSummaryDataTO auxTO) {
-        StringBuffer sb = new StringBuffer();
-        // ID
-//        long auxid = auxTO.primaryKey();
-        // TRequestType
-        TRequestType auxrtype = RequestTypeConverter.getInstance().toSTORM(auxTO.requestType());
+    private RequestSummaryData makeOne(RequestSummaryDataTO to) throws IllegalArgumentException {
+        
+        TRequestType auxrtype = RequestTypeConverter.getInstance().toSTORM(to.requestType());
         if (auxrtype == TRequestType.EMPTY) {
+            StringBuffer sb = new StringBuffer();
             sb.append("TRequestType could not be created from its String representation ");
-            sb.append(auxTO.requestType());
+            sb.append(to.requestType());
             sb.append("\n");
-            auxrtype = null; // Fail RequestSummaryData creation!
+            RequestSummaryCatalog.log.warn(sb.toString());
+            throw new IllegalArgumentException("Invalid TRequestType in the provided RequestSummaryDataTO");
         }
-        // TRequestToken
-        TRequestToken auxrtoken = null;
+        TRequestToken auxrtoken;
         try {
-            auxrtoken = new TRequestToken(auxTO.requestToken(), auxTO.timestamp());
+            auxrtoken = new TRequestToken(to.requestToken(), to.timestamp());
         } catch (InvalidTRequestTokenAttributesException e) {
-            sb.append(e);
-            sb.append("\n");
+            RequestSummaryCatalog.log.warn("Unable to create TRequestToken from RequestSummaryDataTO. " +
+            		"InvalidTRequestTokenAttributesException: " + e.getMessage());
+            throw new IllegalArgumentException("Unable to create TRequestToken from RequestSummaryDataTO.");
         }
-        // VomsGridUser
-        GridUserInterface auxgu = null;
-        String auxVomsAttributes = auxTO.vomsAttributes();
+        GridUserInterface auxgu;
 
-        String auxClientDN = auxTO.clientDN();
         try {
             // auxgu = loadVomsGridUser(auxClientDN,auxTO.requestToken());
             // //BEWARE!!! NO VOMS ATTRIBUTES ARE LOADED AS OF TODAY!!!
             // VOMS attributes workaround
-            auxgu = loadVomsGridUser(auxClientDN, auxVomsAttributes, auxTO.requestToken());
+            auxgu = loadVomsGridUser(to.clientDN(), to.vomsAttributes(), to.requestToken());
         } catch (MalformedGridUserException e) {
+            StringBuffer sb = new StringBuffer();
             sb.append("VomsGridUser could not be created from DN String ");
-            sb.append(auxClientDN);
+            sb.append(to.clientDN());
+            sb.append(" voms attributes String ");
+            sb.append(to.vomsAttributes());
             sb.append(" and from request token String ");
-            sb.append(auxTO.requestToken());
+            sb.append(to.requestToken());
+            RequestSummaryCatalog.log.warn(sb.toString()+ " MalformedGridUserException: " + e.getMessage());
+            throw new IllegalArgumentException("Unable to load Voms Grid User from RequestSummaryDataTO. "
+                                               + "MalformedGridUserException: " + e.getMessage());
         }
-        // make RequestSummaryData
-        RequestSummaryData aux = null;
+        RequestSummaryData data = null;
         try {
-            aux = new RequestSummaryData(auxrtype, auxrtoken, auxgu);
-            aux.setPrimaryKey(auxTO.primaryKey());
+            data = new RequestSummaryData(auxrtype, auxrtoken, auxgu);
+            data.setPrimaryKey(to.primaryKey());
         } catch (InvalidRequestSummaryDataAttributesException e) {
-            dao.failRequest(auxTO.primaryKey(), "The request data is malformed!");
-            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved malformed request, and it is being dropped: " + auxTO);
+            dao.failRequest(to.primaryKey(), "The request data is malformed!");
+            RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! Unable to create RequestSummaryData. " +
+                                           "InvalidRequestSummaryDataAttributesException: " + e.getMessage());
             RequestSummaryCatalog.log.warn(e.getMessage(), e);
-            RequestSummaryCatalog.log.warn(sb.toString());
+            throw new IllegalArgumentException("Unable to reate RequestSummaryData");
         }
-        // end...
-        return aux;
+        TReturnStatus status = null;
+        if(to.getStatus() != null)
+        {
+            TStatusCode code = StatusCodeConverter.getInstance().toSTORM(to.getStatus());
+            if(code == TStatusCode.EMPTY)
+            {
+                log.warn("RequestSummaryDataTO retrieved StatusCode was not recognised: " + to.getStatus());
+            }
+            else
+            {
+                try
+                {
+                    status = new TReturnStatus(code, to.getErrstring());
+                } catch(InvalidTReturnStatusAttributeException e)
+                {
+                    log.warn("Unable to build TReturnStatus from " + code + " " + to.getErrstring()
+                            + ".InvalidTReturnStatusAttributeException : " + e.getMessage());
+                }
+            }
+        }
+        data.setUserToken(to.getUserToken());
+        data.setRetrytime(to.getRetrytime());
+        data.setPinLifetime(TLifeTimeInSeconds.make(PinLifetimeConverter.getInstance().toStoRM(to.getPinLifetime()), TimeUnit.SECONDS));
+        data.setSpaceToken(to.getSpaceToken());
+        data.setStatus(status);
+        data.setErrstring(to.getErrstring());
+        data.setRemainingTotalTime(to.getRemainingTotalTime());
+        data.setNbreqfiles(to.getNbreqfiles());
+        data.setNumOfCompleted(to.getNumOfCompleted());
+        if(to.getFileLifetime() != null)
+        {
+            data.setFileLifetime(TLifeTimeInSeconds.make(to.getFileLifetime(), TimeUnit.SECONDS));    
+        }
+        
+        data.setDeferredStartTime(to.getDeferredStartTime());
+        data.setNumOfWaiting(to.getNumOfWaiting());
+        data.setNumOfFailed(to.getNumOfFailed());
+        data.setRemainingDeferredStartTime(to.getRemainingDeferredStartTime());
+        return data;
     }
 
 
@@ -436,6 +487,36 @@ public class RequestSummaryCatalog {
         }
     }
 
+    synchronized public RequestSummaryData find(TRequestToken requestToken) throws IllegalArgumentException{
+        if(requestToken == null || requestToken.toString().trim().isEmpty())
+        {
+            throw new IllegalArgumentException("Unable to perform find, illegal arguments: requestToken=" + requestToken);
+        }
+        RequestSummaryDataTO to = dao.find(requestToken.toString());
+        if (to != null)
+        {
+            try
+            {
+                RequestSummaryData data = makeOne(to);
+                if (data != null)
+                {
+                    RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + data.requestToken()
+                            + " associated to " + data.gridUser().getDn() + " retrieved");
+                    return data;
+                }
+            } catch(IllegalArgumentException e)
+            {
+                RequestSummaryCatalog.log.error("REQUEST SUMMARY CATALOG; Failure performing makeOne operation. IllegalArgumentException: "
+                        + e.getMessage());
+            }
+        }
+        else
+        {
+            RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; " + requestToken + " token not found");
+        }
+        return null;
+    }
+    
 
     /**
      * Method that returns the TRequestType associated to the request with the

@@ -24,7 +24,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -258,7 +257,7 @@ public class PtPChunkCatalog {
 				pinLifeTime = max;
 			}
 			pinLifetime = TLifeTimeInSeconds.make(pinLifeTime, TimeUnit.SECONDS);
-		} catch(InvalidTLifeTimeAttributeException e)
+		} catch(IllegalArgumentException e)
 		{
 			errorSb.append("\n");
 			errorSb.append(e);
@@ -270,7 +269,7 @@ public class PtPChunkCatalog {
 			fileLifetime =
 						   TLifeTimeInSeconds.make(FileLifetimeConverter.getInstance().toStoRM(
 							   auxTO.fileLifetime()), TimeUnit.SECONDS);
-		} catch(InvalidTLifeTimeAttributeException e)
+		} catch(IllegalArgumentException e)
 		{
 			errorSb.append("\n");
 			errorSb.append(e);
@@ -827,7 +826,7 @@ public class PtPChunkCatalog {
 			fileLifetime =
 						   TLifeTimeInSeconds.make(FileLifetimeConverter.getInstance().toStoRM(
 							   reducedChunkDataTO.fileLifetime()), TimeUnit.SECONDS);
-		} catch(InvalidTLifeTimeAttributeException e)
+		} catch(IllegalArgumentException e)
 		{
 			errorSb.append("\n");
 			errorSb.append(e);

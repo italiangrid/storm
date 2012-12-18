@@ -19,7 +19,6 @@ package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -140,7 +139,7 @@ public class BoLData extends AnonymousFileTransferData {
         TLifeTimeInSeconds lifeTime;
         try {
             lifeTime = TLifeTimeInSeconds.make(lifeTimeInSeconds, TimeUnit.SECONDS);
-        } catch (InvalidTLifeTimeAttributeException e) {
+        } catch (IllegalArgumentException e) {
             return;
         }
         

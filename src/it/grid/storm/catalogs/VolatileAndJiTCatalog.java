@@ -26,7 +26,6 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 
 import java.util.ArrayList;
@@ -487,7 +486,7 @@ public class VolatileAndJiTCatalog {
                 TLifeTimeInSeconds auxLifeTime = TLifeTimeInSeconds.makeEmpty();
                 try {
                     auxLifeTime = TLifeTimeInSeconds.make(lifetimeInSeconds, TimeUnit.SECONDS);
-                } catch (InvalidTLifeTimeAttributeException e) {
+                } catch (IllegalArgumentException e) {
                     log.error("VolatileAndJiT CATALOG: programming bug! Retrieved long does not allow TLifeTimeCreation! long is: "
                             + lifetimeInSeconds + "; exception is: " + e);
                 }

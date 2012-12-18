@@ -24,7 +24,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
 //import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -196,7 +195,7 @@ public class BoLChunkCatalog
 				pinLifeTime = max;
 			}
 			lifeTime = TLifeTimeInSeconds.make(pinLifeTime, TimeUnit.SECONDS);
-		} catch(InvalidTLifeTimeAttributeException e)
+		} catch(IllegalArgumentException e)
 		{
 			errorSb.append("\n");
 			errorSb.append(e);

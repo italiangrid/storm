@@ -957,6 +957,80 @@ public class RequestSummaryDAO {
         }
         return result;
     }
+    
+    /**
+     * Method that returns the config_RequestTypeID field present in request_queue table, for the request with the
+     * specified request token rt. In case of any error, the empty String "" is returned.
+     */
+    public RequestSummaryDataTO find(String rt) {
+
+        PreparedStatement query = null;
+        ResultSet rs = null;
+        RequestSummaryDataTO to = null;
+        if(!checkConnection())
+        {
+            log.error("REQUEST SUMMARY DAO - find: unable to get a valid connection!");
+            return null;
+        }
+        try {
+            query = con.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
+            logWarnings(con.getWarnings());
+            query.setString(1, rt);
+            con.setAutoCommit(false);
+
+            rs = query.executeQuery();
+            logWarnings(query.getWarnings());
+            if(!rs.first())
+            {
+                log.debug("No requests found with token " + rt);
+                return null;
+            }
+            to = new RequestSummaryDataTO();
+            to.setPrimaryKey(rs.getLong("ID"));
+            to.setRequestType(rs.getString("config_RequestTypeID"));
+            to.setClientDN(rs.getString("client_dn"));
+            to.setUserToken(rs.getString("u_token"));
+            to.setRetrytime(rs.getInt("retrytime"));
+            to.setPinLifetime(rs.getInt("pinLifetime"));
+            to.setSpaceToken(rs.getString("s_token"));
+            to.setStatus(rs.getInt("status"));
+            to.setErrstring(rs.getString("errstring"));
+            to.setRequestToken(rs.getString("r_token"));
+            to.setRemainingTotalTime(rs.getInt("remainingTotalTime"));
+            to.setFileLifetime(rs.getInt("fileLifetime"));
+            to.setNbreqfiles(rs.getInt("nbreqfiles"));
+            to.setNumOfCompleted(rs.getInt("numOfCompleted"));
+            to.setNumOfWaiting(rs.getInt("numOfWaiting"));
+            to.setNumOfFailed(rs.getInt("numOfFailed"));
+            to.setTimestamp(rs.getTimestamp("timeStamp"));
+            /**
+             * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field on
+             * request_queue. The FE use the proxy field of request_queue to insert a single FQAN string containing
+             * all FQAN separeted by the "#" char. The proxy is a BLOB, hence it has to be properly conveted in
+             * string.
+             */
+            java.sql.Blob blob = rs.getBlob("proxy");
+            if (blob != null) {
+                byte[] bdata = blob.getBytes(1, (int) blob.length());
+                to.setVomsAttributes(new String(bdata));
+            }
+            to.setDeferredStartTime(rs.getInt("deferredStartTime"));
+            to.setRemainingDeferredStartTime(rs.getInt("remainingDeferredStartTime"));
+
+            if(rs.next())
+            {
+                log.warn("More than a row matches token " + rt);
+            }
+            close(rs);
+            close(query);
+        } catch (SQLException e) {
+            log.error("REQUEST SUMMARY DAO - find - " + e);
+        } finally {
+            close(rs);
+            close(query);
+        }
+        return to;
+    }
 
     /**
      * Method that purges expired requests: it only removes up to a fixed value of expired requests at a time. The value

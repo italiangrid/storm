@@ -7,7 +7,6 @@ import it.grid.storm.asynch.Copy.ResultType;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.common.types.TransferProtocol;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TStatusCode;
@@ -161,7 +160,7 @@ public class PushCopyPutVisitor implements CopyVisitor
                 return copy.buildOperationResult(
                                               "Cannot talk to other SRM server because no SRM client could be loaded!", ResultType.PUT);
             }
-        } catch(InvalidTLifeTimeAttributeException e3)
+        } catch(IllegalArgumentException e3)
         {
             // Cannot create TLifeTimeInSeconds! This is a programming bug and should not occur!!!
             copy.getLog().error("ERROR IN PushCopyChunk! Cannot create TLifeTimeInSeconds! " + e3);

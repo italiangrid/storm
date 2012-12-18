@@ -199,6 +199,72 @@ public class TReturnStatus implements Serializable
         this.explanation += " [ " + string + " ]";
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((explanation == null) ? 0 : explanation.hashCode());
+        result = prime * result + ((lastUpdateTIme == null) ? 0 : lastUpdateTIme.hashCode());
+        result = prime * result + ((statusCode == null) ? 0 : statusCode.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        TReturnStatus other = (TReturnStatus) obj;
+        if (explanation == null)
+        {
+            if (other.explanation != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!explanation.equals(other.explanation))
+            {
+                return false;
+            }
+        if (lastUpdateTIme == null)
+        {
+            if (other.lastUpdateTIme != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!lastUpdateTIme.equals(other.lastUpdateTIme))
+            {
+                return false;
+            }
+        if (statusCode != other.statusCode)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    
+    
     //WARNING!!!
     //No equals(Object) and hashCode(): this may be dangerous
     //if these Objects get used in containers!

@@ -22,7 +22,6 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -147,7 +146,7 @@ implements DefaultValuesInterface {
             try {
                 this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_SPACE_LT, TimeUnit.SECONDS);
             }
-            catch (InvalidTLifeTimeAttributeException ex) {
+            catch (IllegalArgumentException ex) {
                 log.error(" Default Space Lifetime was wrong ");
                 throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
             }
@@ -178,7 +177,7 @@ implements DefaultValuesInterface {
             try {
                 this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
             }
-            catch (InvalidTLifeTimeAttributeException ex) {
+            catch (IllegalArgumentException ex) {
                 log.error(" Default Space Lifetime was wrong ");
                 throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
             }
@@ -252,7 +251,7 @@ implements DefaultValuesInterface {
             try {
                 this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_FILE_LT, TimeUnit.SECONDS);
             }
-            catch (InvalidTLifeTimeAttributeException ex) {
+            catch (IllegalArgumentException ex) {
                 log.error(" Default Space Lifetime was wrong ");
                 throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
             }
@@ -268,7 +267,7 @@ implements DefaultValuesInterface {
             try {
                 this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
             }
-            catch (InvalidTLifeTimeAttributeException ex) {
+            catch (IllegalArgumentException ex) {
                 log.error(" Default Space Lifetime was wrong ");
                 throw new NamespaceException("Space Lifetime invalid argument in Namespace configuration.", ex);
             }

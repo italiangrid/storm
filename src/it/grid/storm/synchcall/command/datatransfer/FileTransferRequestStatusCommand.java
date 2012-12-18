@@ -3,6 +3,8 @@ package it.grid.storm.synchcall.command.datatransfer;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -13,7 +15,6 @@ import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.command.SurlStatusCommandHelper;
 import it.grid.storm.synchcall.data.InputData;
-import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
@@ -32,9 +33,8 @@ public abstract class FileTransferRequestStatusCommand extends DataTransferComma
     };
 
     @Override
-    public OutputData execute(InputData inputData) throws IllegalArgumentException, CommandException
+    public ManageFileTransferOutputData execute(InputData inputData) throws IllegalArgumentException, CommandException
     {
-        TReturnStatus globalStatus = null;
         log.debug(getSrmCommand() + "Started.");
         if (!(inputData instanceof ManageFileTransferRequestFilesInputData
                 || inputData instanceof ManageFileTransferFilesInputData || inputData instanceof ManageFileTransferRequestInputData))
@@ -114,8 +114,27 @@ public abstract class FileTransferRequestStatusCommand extends DataTransferComma
         {
             surlReturnStatuses = SurlStatusCommandHelper.prepareSurlsReturnStatus(surlStastuses);            
         }
-        SurlStatusCommandHelper.printRequestOutcome(globalStatus, inputData, getSrmCommand());
-        return new ManageFileTransferOutputData(globalStatus, surlReturnStatuses);
+        TReturnStatus requestStatus;
+        if(inputData instanceof ManageFileTransferRequestInputData)
+        {
+            RequestSummaryData data = RequestSummaryCatalog.getInstance().find(((ManageFileTransferRequestInputData)inputData).getRequestToken());
+            if(data != null)
+            {
+                requestStatus = data.getStatus();
+            }
+            else
+            {
+                requestStatus = computeRequestStatus(surlReturnStatuses);
+            }
+        }
+        else
+        {
+            requestStatus = computeRequestStatus(surlReturnStatuses);
+        }
+        SurlStatusCommandHelper.printRequestOutcome(requestStatus, inputData, getSrmCommand());
+        return new ManageFileTransferOutputData(requestStatus, surlReturnStatuses);
     }
+    
+    protected abstract TReturnStatus computeRequestStatus(ArrayOfTSURLReturnStatus arrayOfFileStatuses);
 
 }

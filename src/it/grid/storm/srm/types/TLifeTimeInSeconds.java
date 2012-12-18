@@ -27,7 +27,6 @@
 package it.grid.storm.srm.types;
 
 import java.io.Serializable;
-import java.util.Hashtable;
 import java.util.Date;
 import java.util.Map;
 
@@ -64,10 +63,18 @@ public class TLifeTimeInSeconds implements Serializable {
      * InvalidTLifeTimeAttributeException if u is null. A negative value for time, automatically
      * results in an Infinite TLifeTimeInSeconds.
      */
-    public static TLifeTimeInSeconds make(long time, TimeUnit u) throws InvalidTLifeTimeAttributeException {
-        if (u==null) throw new InvalidTLifeTimeAttributeException(u);
-        if (time<0) return makeInfinite();
-        return new TLifeTimeInSeconds(time,u,false,false);
+    public static TLifeTimeInSeconds make(long time, TimeUnit unit) throws IllegalArgumentException
+    {
+        if (unit == null)
+        {
+            throw new IllegalArgumentException("Unable to create the object, illegal arguments: time=" + time
+                    + " unit=" + unit);   
+        }
+        if (time < 0)
+        {
+            return makeInfinite();            
+        }
+        return new TLifeTimeInSeconds(time, unit, false, false);
     }
 
     /**
@@ -150,7 +157,7 @@ public class TLifeTimeInSeconds implements Serializable {
         TLifeTimeInSeconds timeLeft = null;
         try {
             timeLeft = TLifeTimeInSeconds.make(secondsLeft, TimeUnit.SECONDS);
-        } catch (InvalidTLifeTimeAttributeException e) {
+        } catch (IllegalArgumentException e) {
             timeLeft = TLifeTimeInSeconds.makeEmpty();
         }
         
@@ -183,7 +190,7 @@ public class TLifeTimeInSeconds implements Serializable {
         
         try {
             return TLifeTimeInSeconds.make(lifetimeLong, TimeUnit.SECONDS);
-        } catch (InvalidTLifeTimeAttributeException e) {
+        } catch (IllegalArgumentException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return TLifeTimeInSeconds.makeEmpty();

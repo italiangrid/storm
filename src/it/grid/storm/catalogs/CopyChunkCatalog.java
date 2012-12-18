@@ -21,7 +21,6 @@ package it.grid.storm.catalogs;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.griduser.GridUserInterface;
 //import it.grid.storm.namespace.SurlStatusStore;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -329,7 +328,7 @@ public class CopyChunkCatalog
 			lifeTime =
 					   TLifeTimeInSeconds.make(FileLifetimeConverter.getInstance().toStoRM(
 						   chunkDataTO.lifeTime()), TimeUnit.SECONDS);
-		} catch(InvalidTLifeTimeAttributeException e)
+		} catch(IllegalArgumentException e)
 		{
 			errorSb.append("\n");
 			errorSb.append(e);

@@ -34,7 +34,6 @@ import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.persistence.model.StorageSpaceTO;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
@@ -214,7 +213,7 @@ public class StorageSpaceData {
             try {
                 this.spaceLifetime = TLifeTimeInSeconds.make(ssTO.getLifetime(), TimeUnit.SECONDS);
             }
-            catch (InvalidTLifeTimeAttributeException e) {
+            catch (IllegalArgumentException e) {
                 log.error("Error while constructing Space Life Time", e);
             }
             if (this.spaceLifetime != null) {

@@ -21,7 +21,6 @@ import it.grid.storm.catalogs.OverwriteModeConverter;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.InvalidTLifeTimeAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
@@ -49,13 +48,7 @@ public class AnonymousPrepareToPutInputData extends AnonymousFileTransferInputDa
     public AnonymousPrepareToPutInputData(TSURL surl, TURLPrefix transferProtocols) throws IllegalArgumentException, IllegalStateException
     {
         super(surl, transferProtocols);
-        try
-        {
-            this.desiredFileLifetime = TLifeTimeInSeconds.make(Configuration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
-        } catch(InvalidTLifeTimeAttributeException e)
-        {
-           throw new IllegalStateException("Unexpected InvalidTLifeTimeAttributeException: " + e);
-        }
+        this.desiredFileLifetime = TLifeTimeInSeconds.make(Configuration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
         
     }
     
