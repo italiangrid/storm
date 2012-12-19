@@ -526,7 +526,7 @@ public class CopyChunkDAO {
      * Auxiliary method that checks if time for resetting the connection has
      * come, and eventually takes it down and up back again.
      */
-	private boolean checkConnection() {
+	private synchronized boolean checkConnection() {
 
 	    boolean response = true;
 		if(reconnect)
