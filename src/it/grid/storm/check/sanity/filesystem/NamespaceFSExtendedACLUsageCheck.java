@@ -189,13 +189,17 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
     {
         boolean response = true;
         log.debug("Testing extended attribute management on file " + file.getAbsolutePath());
-        log.debug("Trying to set the extended ACL " + TEST_PERMISSION + " to group " + TEST_LOCAL_USER.getPrimaryGid() + " on file "
-                + file.getAbsolutePath());
-        FilesystemPermission oldPermisssion = filesystem.grantGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
+        
+        FilesystemPermission oldPermisssion = filesystem.getGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath());
         if(oldPermisssion == null)
         {
             oldPermisssion = FilesystemPermission.None;
         }
+        FilesystemPermission testPermission = TEST_PERMISSION.deny(oldPermisssion);
+        log.debug("Trying to set the extended ACL " + testPermission + " to group " + TEST_LOCAL_USER.getPrimaryGid() + " on file "
+                + file.getAbsolutePath());
+        filesystem.grantGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
+        
         log.debug("Original group permission : " + oldPermisssion);
         log.debug("Trying to get the extended ACL  of group " + TEST_LOCAL_USER.getPrimaryGid() + " from file " + file.getAbsolutePath());
         FilesystemPermission currentPermission = filesystem.getGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath());
@@ -204,9 +208,8 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
             currentPermission = FilesystemPermission.None;
         }
         log.debug("Returned value is \'" + currentPermission + "\'");
-        log.debug("Trying to remove the extended group ACL " + TEST_PERMISSION + " from file " + file.getAbsolutePath());
-        FilesystemPermission previousPermission = filesystem.revokeGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
-        oldPermisssion.deny(TEST_PERMISSION);
+        log.debug("Trying to remove the extended group ACL " + testPermission + " from file " + file.getAbsolutePath());
+        FilesystemPermission previousPermission = filesystem.revokeGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
         if(previousPermission == null)
         {
             previousPermission = FilesystemPermission.None;
@@ -238,13 +241,15 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
         {
             response &= true;
         }
-        log.debug("Trying to set the extended ACL " + TEST_PERMISSION + " to user " + TEST_LOCAL_USER.getUid() + " on file "
-                  + file.getAbsolutePath());
-        oldPermisssion = filesystem.grantUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
+        oldPermisssion = filesystem.getUserPermission(TEST_LOCAL_USER, file.getAbsolutePath());
         if(oldPermisssion == null)
         {
             oldPermisssion = FilesystemPermission.None;
         }
+        testPermission = TEST_PERMISSION.deny(oldPermisssion);
+        log.debug("Trying to set the extended ACL " + testPermission + " to user " + TEST_LOCAL_USER.getUid() + " on file "
+                  + file.getAbsolutePath());
+        filesystem.grantUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
         log.debug("Original user permission : " + oldPermisssion);
         log.debug("Trying to get the extended ACL  of user " + TEST_LOCAL_USER.getUid() + " from file " + file.getAbsolutePath());
         currentPermission = filesystem.getUserPermission(TEST_LOCAL_USER, file.getAbsolutePath());
@@ -253,9 +258,8 @@ public class NamespaceFSExtendedACLUsageCheck implements Check
             currentPermission = FilesystemPermission.None;
         }
         log.debug("Returned value is \'" + currentPermission + "\'");
-        log.debug("Trying to remove the extended user ACL " + TEST_PERMISSION + " from file " + file.getAbsolutePath());
-        previousPermission = filesystem.revokeUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), TEST_PERMISSION);
-        oldPermisssion.deny(TEST_PERMISSION);
+        log.debug("Trying to remove the extended user ACL " + testPermission + " from file " + file.getAbsolutePath());
+        previousPermission = filesystem.revokeUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
         if(previousPermission == null)
         {
             previousPermission = FilesystemPermission.None;
