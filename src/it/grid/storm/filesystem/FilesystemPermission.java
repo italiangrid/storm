@@ -361,6 +361,10 @@ public class FilesystemPermission implements java.io.Serializable
         permission &= ~DELETE;
         return this;
     }
+    
+    public FilesystemPermission deny(FilesystemPermission other) {
+        return new FilesystemPermission(this.permission & ~other.permission);
+    }
 
     /**
      * Change instance status so that all subsequent
