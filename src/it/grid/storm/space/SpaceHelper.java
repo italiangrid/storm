@@ -39,6 +39,7 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -461,7 +462,7 @@ public class SpaceHelper {
                                            spaceTokenAlias, 
                                            totalOnLineSize,
                                            totalOnLineSize, 
-                                           null, 
+                                           TLifeTimeInSeconds.makeInfinite(), 
                                            null, 
                                            null, 
                                            sfname);
