@@ -793,6 +793,10 @@ public class StorageSpaceData {
      * @return true if expired, false otherwise.
      */
     public boolean isExpired() {
+        if(this.spaceLifetime != null && this.spaceLifetime.isInfinite())
+        {
+            return false;
+        }
         Date currentTime = new Date();
         // Get the expiration time in millisec getting the creation time plus the lifetime in millisec
         long expirationTimeInMillisec = this.creationDate.getTime() + this.spaceLifetime.value() * 1000;
