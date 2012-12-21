@@ -120,7 +120,7 @@ public class DNMatchingRule {
         localityPatternString = ADMIT_ALL;
         commonNamePatternString = ADMIT_ALL;
         domainComponentPatternString = ADMIT_ALL;
-        if (!(regularExpressionRule == null) && (regularExpressionRule.trim().equals("*")
+        if (!(regularExpressionRule == null || regularExpressionRule.trim().equals("*")
                 || regularExpressionRule.trim().equals(".*")))
         {
             for (String rule : regularExpressionRule.split("/"))
