@@ -23,8 +23,12 @@ class RequestParameters
         checksumDecoded = decodeAndCheckChecksum(builder.checksum);
     }
     
-    private static String decodeAndCheckFilePath(String filePath) throws WebApplicationException
+    private static String decodeAndCheckFilePath(String filePath) throws WebApplicationException, IllegalArgumentException
     {
+        if(filePath == null) 
+        {
+            throw new IllegalArgumentException("Unable to decode file path. Invalid parameters: filePath=" + filePath);
+        }
         String filePathDecoded;
         try
         {
@@ -53,6 +57,7 @@ class RequestParameters
     
     private static String decodeAndCheckChecksum(String checksum) throws WebApplicationException
     {
+        if(checksum == null) return null;
         String checksumDecoded;
         try
         {
