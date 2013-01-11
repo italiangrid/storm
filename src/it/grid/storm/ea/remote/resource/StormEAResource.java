@@ -50,7 +50,32 @@ public class StormEAResource
     {
         RequestParameters parameters = new RequestParameters.Builder(filePath).build();
         log.info("Getting " + Constants.ADLER_32 +" checksum for file " + parameters.getFilePathDecoded());
-        String checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
+        String checksum;
+        try
+        {
+            checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
+        } catch(FileNotFoundException e)
+        {
+            log.error("Unable to get file checksum. FileNotFoundException: " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("File " + parameters.getFilePathDecoded() + " does not exists");
+            throw new WebApplicationException(responseBuilder.build());
+        } catch(NotSupportedException e)
+        {
+            log.error("Unable to get file checksum. NotSupportedException: " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
+            responseBuilder.entity("Unable to get the checksum, operation not supported by the filesystem");
+            throw new WebApplicationException(responseBuilder.build());
+        } catch(ExtendedAttributesException e)
+        {
+            log.error("Unable to get file checksum. ExtendedAttributesException: " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
+            responseBuilder.entity("Unable to get the checksum, Extended attributes management failure");
+            throw new WebApplicationException(responseBuilder.build());
+        }
         log.info("Retrieved checksum is " + checksum);
         return checksum;
     }

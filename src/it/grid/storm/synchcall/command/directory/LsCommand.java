@@ -889,7 +889,11 @@ public class LsCommand extends DirectoryCommand implements Command {
     private Map<String, String> retrieveChecksum(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
         HashMap<String, String> checksums = new HashMap<String, String>();
         if (localFile.hasChecksum()) {
-            checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), localFile.getDefaultChecksum());
+            String checksum = localFile.getDefaultChecksum();
+            if(checksum != null)
+            {
+                checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), checksum);                
+            }
         }
         else { // Checksum computed with default algorithm is not present.
             if (Configuration.getInstance().getChecksumEnabled()) {
@@ -951,55 +955,55 @@ public class LsCommand extends DirectoryCommand implements Command {
     }
      
 
-    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
-
-        boolean retrieveChecksum;
-
-        // Check if checksum with default algorithm is already in place
-        if (localFile.hasChecksum()) {
-
-            // Computation of checksum is not needed
-            retrieveChecksum = true;
-
-        } else {
-            // Computation of checksum could be needed
-
-            if (Configuration.getInstance().getChecksumEnabled()) {
-
-                if (tapeEnabled) {
-                    if (fileOnDisk) {
-                        // Only one checksum computation is admitted
-                        if (doNotComputeMoreChecksums) {
-                            retrieveChecksum = false;
-                        } else {
-                            retrieveChecksum = true;
-                            doNotComputeMoreChecksums = true;
-                            log.debug("Checksum Computation is needed for file :'"
-                                    + localFile.getAbsolutePath() + "'");
-                        }
-                    } else {
-                        retrieveChecksum = false;
-                    }
-                } else {
-                    // Tape not enabled
-                    // Only one checksum computation is admitted
-                    if (doNotComputeMoreChecksums) {
-                        retrieveChecksum = false;
-                    } else {
-                        retrieveChecksum = true;
-                        doNotComputeMoreChecksums = true;
-                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
-                                + "'");
-                    }
-                }
-            } else {
-                // Computation is needed but it is disabled
-                retrieveChecksum = false;
-                log.debug("Checksum computation is disabled.");
-            }
-        }
-        return retrieveChecksum;
-    }
+//    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
+//
+//        boolean retrieveChecksum;
+//
+//        // Check if checksum with default algorithm is already in place
+//        if (localFile.hasChecksum()) {
+//
+//            // Computation of checksum is not needed
+//            retrieveChecksum = true;
+//
+//        } else {
+//            // Computation of checksum could be needed
+//
+//            if (Configuration.getInstance().getChecksumEnabled()) {
+//
+//                if (tapeEnabled) {
+//                    if (fileOnDisk) {
+//                        // Only one checksum computation is admitted
+//                        if (doNotComputeMoreChecksums) {
+//                            retrieveChecksum = false;
+//                        } else {
+//                            retrieveChecksum = true;
+//                            doNotComputeMoreChecksums = true;
+//                            log.debug("Checksum Computation is needed for file :'"
+//                                    + localFile.getAbsolutePath() + "'");
+//                        }
+//                    } else {
+//                        retrieveChecksum = false;
+//                    }
+//                } else {
+//                    // Tape not enabled
+//                    // Only one checksum computation is admitted
+//                    if (doNotComputeMoreChecksums) {
+//                        retrieveChecksum = false;
+//                    } else {
+//                        retrieveChecksum = true;
+//                        doNotComputeMoreChecksums = true;
+//                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
+//                                + "'");
+//                    }
+//                }
+//            } else {
+//                // Computation is needed but it is disabled
+//                retrieveChecksum = false;
+//                log.debug("Checksum computation is disabled.");
+//            }
+//        }
+//        return retrieveChecksum;
+//    }
 
     /**
      * populateDetailFromPersistence

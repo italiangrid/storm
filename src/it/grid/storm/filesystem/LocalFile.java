@@ -33,6 +33,7 @@
 package it.grid.storm.filesystem;
 
 import it.grid.storm.checksum.ChecksumManager;
+import it.grid.storm.ea.FileNotFoundException;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
@@ -41,6 +42,7 @@ import it.grid.storm.jna.NoGPFSFileSystemException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -193,14 +195,28 @@ public class LocalFile {
      */
     public String getDefaultChecksum() {
 
-        return ChecksumManager.getInstance().getDefaultChecksum(localFile.getAbsolutePath());
+        try
+        {
+            return ChecksumManager.getInstance().getDefaultChecksum(localFile.getAbsolutePath());
+        } catch(FileNotFoundException e)
+        {
+            log.warn("Unable to get local file checksum. FileNotFoundException: " + e.getMessage());
+            return null;
+        }
 
     }
 
     
     public Map<String,String> getChecksums() {
         
-        return ChecksumManager.getInstance().getChecksums(localFile.getAbsolutePath());
+        try
+        {
+            return ChecksumManager.getInstance().getChecksums(localFile.getAbsolutePath());
+        } catch(FileNotFoundException e)
+        {
+            log.warn("Unable to get local file checksum. FileNotFoundException: " + e.getMessage());
+            return new HashMap<String, String>(0);
+        }
         
     }
     
@@ -393,7 +409,14 @@ public class LocalFile {
      */
     public boolean hasChecksum() {
 
-        return ChecksumManager.getInstance().hasChecksum(localFile.getAbsolutePath());
+        try
+        {
+            return ChecksumManager.getInstance().hasChecksum(localFile.getAbsolutePath());
+        } catch(FileNotFoundException e)
+        {
+            log.warn("Unable to verify if local file has the checksum. FileNotFoundException: " + e.getMessage());
+            return false;
+        }
     }
 
     /**

@@ -19,10 +19,8 @@ package it.grid.storm.ea;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import it.grid.storm.checksum.ChecksumAlgorithm;
@@ -42,10 +40,23 @@ public class StormEA {
 
     private static final ExtendedAttributes ea = new ExtendedAttributesImpl();
 
-    public static Map<String,String> getChecksums(String filename) {
+    public static Map<String,String> getChecksums(String filename) throws FileNotFoundException {
         HashMap<String,String> result = new HashMap<String, String>();
         for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
-            String cksm = getChecksum(filename, checksumAlgorithm.toString());
+            String cksm = null;
+            try
+            {
+                cksm = getChecksum(filename, checksumAlgorithm.toString());
+            } catch(NotSupportedException e)
+            {
+                log.warn("Cannot retrieve checksum EA for algorithm " + checksumAlgorithm
+                        + " (operation not supported) from file: " + filename
+                        + " NotSupportedException: " + e.getMessage());
+            } catch(ExtendedAttributesException e)
+            {
+                if(e instanceof FileNotFoundException) throw (FileNotFoundException)e;
+                log.warn("Error manipulating EA for algorithm " + checksumAlgorithm + " on file: " + filename + " ExtendedAttributesException: " + e.getMessage());
+            }
             if (cksm!=null) {
                 result.put(checksumAlgorithm.toString(),cksm);
             }
@@ -54,38 +65,16 @@ public class StormEA {
     }
     
     
-    public static String getChecksum(String fileName, String algorithm) {
+    public static String getChecksum(String fileName, String algorithm) throws FileNotFoundException, ExtendedAttributesException, NotSupportedException{
 
-        String checksum = null;
-        String chkEA = EA_CHECKSUM + algorithm.toLowerCase();
-
-        try {
-
-            byte[] byteArray = ea.getXAttr(fileName, chkEA);
-
-            checksum = new String(byteArray);
-
-        } catch (AttributeNotFoundException e) {
-
-            return null;
-
-        } catch (FileNotFoundException e) {
-
-            log.warn("Cannot retrieve checksum EA because file does not exists: " + fileName);
-            return null;
-
-        } catch (NotSupportedException e) {
-
-            log.warn("Cannot retrieve checksum EA (operation not supported) from file: " + fileName);
-            return null;
-
-        } catch (ExtendedAttributesException e) {
-
-            log.warn("Cannot retrieve checksum EA from file: " + fileName);
+        try
+        {
+            byte[] byteArray = ea.getXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase());
+            return new String(byteArray);
+        } catch(AttributeNotFoundException e)
+        {
             return null;
         }
-
-        return checksum;
     }
     
 
