@@ -497,23 +497,23 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             // 3- compute the checksum and store it in an extended attribute
             LocalFile localFile = stori.getLocalFile();
 
-            if (Configuration.getInstance().getChecksumEnabled()) {
-
-                boolean checksumComputed = localFile.setChecksum();
-                if (!checksumComputed) {
-//                        if (arrayOfFileStatus != null) {
-//                            arrayOfFileStatus.getTSURLReturnStatus(i)
-//                                             .getStatus()
-//                                             .setExplanation("Warning: failed to compute the checksum "
-//                                                     + "(checksum computation is enabled in the server)");
-//                        } else {
-                        log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
-//                        }
-                } else {
-                    log.debug("Checksum set to SURL:" + surl.toString());
-                }
-
-            }
+//            if (Configuration.getInstance().getChecksumEnabled()) {
+//
+//                boolean checksumComputed = localFile.setChecksum();
+//                if (!checksumComputed) {
+////                        if (arrayOfFileStatus != null) {
+////                            arrayOfFileStatus.getTSURLReturnStatus(i)
+////                                             .getStatus()
+////                                             .setExplanation("Warning: failed to compute the checksum "
+////                                                     + "(checksum computation is enabled in the server)");
+////                        } else {
+//                        log.warn("Error comuting checksum for file: " + localFile.getAbsolutePath());
+////                        }
+//                } else {
+//                    log.debug("Checksum set to SURL:" + surl.toString());
+//                }
+//
+//            }
 
             // 4- Tape stuff management.
             if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {

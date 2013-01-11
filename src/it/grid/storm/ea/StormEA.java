@@ -194,27 +194,10 @@ public class StormEA {
         }
     }
 
-    public static void setChecksum(String fileName, String checksum, String algorithm) {
-
-        if (checksum == null) {
-            return;
-        }
-
-        String chkEA = EA_CHECKSUM + algorithm.toLowerCase();
-
-        try {
-            ea.setXAttr(fileName, chkEA, checksum.getBytes());
-        } catch (FileNotFoundException e) {
-
-            log.warn("Cannot set checksum EA because file does not exists: " + fileName);
-
-        } catch (NotSupportedException e) {
-
-            log.warn("Cannot set checksum EA (operation not supported) to file: " + fileName);
-
-        } catch (ExtendedAttributesException e) {
-            log.warn("Cannot set checksum EA to file: " + fileName);
-        }
+    public static void setChecksum(String fileName, String checksum, String algorithm)
+            throws FileNotFoundException, NotSupportedException, ExtendedAttributesException
+    {
+        ea.setXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase(), checksum.getBytes());
     }
 
     /**
