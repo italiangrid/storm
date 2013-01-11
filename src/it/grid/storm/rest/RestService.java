@@ -59,6 +59,7 @@ public class RestService {
     		add(InfoService.getResourcePackage());
     		add("it.grid.storm.authz.remote.resource");
     		add("it.grid.storm.namespace.remote.resource");
+    		add("it.grid.storm.ea.remote.resource");
     	}
     };
  
