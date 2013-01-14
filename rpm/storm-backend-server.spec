@@ -53,9 +53,7 @@ BuildRequires: libattr-devel
 BuildRequires: libacl-devel
 BuildRequires: java-devel
 BuildRequires: lcmaps-interface
-BuildRequires: lcmaps-without-gsi
-BuildRequires: lcmaps-plugins-basic
-BuildRequires: lcmaps-plugins-voms
+BuildRequires: lcmaps-without-gsi-devel
 
 Requires(post):   chkconfig
 Requires(preun):  chkconfig
