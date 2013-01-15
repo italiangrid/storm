@@ -154,7 +154,7 @@ public class StoRM {
             throw new RuntimeException("Unable to create the XML-RPC Server");
         }
         
-        if(Configuration.getInstance().getSanityChecksEnabled())
+        if(Configuration.getInstance().getSanityCheckEnabled())
         {
             //Execute checks
             CheckManager checkManager = new SimpleCheckManager();

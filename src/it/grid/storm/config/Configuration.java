@@ -143,16 +143,12 @@ public class Configuration {
     private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
     private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
     private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-    private static final String CHECKSUM_HOSTS_KEY = "checksum.server.hostnames";
-    private static final String CHECKSUM_SERVICE_PORTS_KEY = "checksum.server.service_ports";
-    private static final String CHECKSUM_STATUS_PORTS_KEY = "checksum.server.status_ports";
     private static final String CHECKSUM_ALGORITHM_KEY = "checksum.algorithm";
     private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
     private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
     private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
     private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
     private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-    private static final String CHECKSUM_ENABLED_KEY = "checksum.enabled";
     private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
     private static final String GRIDHTTPS_SERVER_HOST_KEY = "gridhttps.server.host";
     private static final String GRIDHTTPS_SERVER_PORT_KEY = "gridhttps.server.port";
@@ -1792,59 +1788,6 @@ public class Configuration {
         }
     }
 
-    public String[] getChecksumHosts() {
-        if (!cr.getConfiguration().containsKey(CHECKSUM_HOSTS_KEY)) {
-            // return default
-        	return new String[] { "localhost" };
-        } else {
-            // load from external source
-            return cr.getConfiguration().getStringArray(CHECKSUM_HOSTS_KEY);
-        }
-    }
-
-    public int[] getChecksumServicePorts() {
-    	int[] defaultValue = new int[] { 9995 };
-        return getChecksumPorts(CHECKSUM_SERVICE_PORTS_KEY, defaultValue);
-    }
-    
-    public int[] getChecksumStatusPorts() {
-    	int[] defaultValue = new int[] { 9996 };
-        return getChecksumPorts(CHECKSUM_STATUS_PORTS_KEY, defaultValue);
-    }
-    
-    
-    private int[] getChecksumPorts(String key, int[] defaultValue) {
-
-        String[] portStringArray = null;
-		if(!cr.getConfiguration().containsKey(key))
-		{
-			return defaultValue;
-		}
-        else
-        {
-       		portStringArray = cr.getConfiguration().getStringArray(key);
-        }
-        int size = portStringArray.length;
-        if (size == 0 || (size == 1 && portStringArray[0].trim().equals(""))) {
-        	return defaultValue;
-        }
-
-        int[] portArray = new int[size];
-
-        for (int i = 0; i < size; i++) {
-            int port = -1;
-            try {
-                port = Integer.valueOf(portStringArray[i]);
-            } catch (NumberFormatException e) {
-            	System.err.println("Unable to parse the Checksum port String '"+portStringArray[i]+"'."+e);
-            }
-            portArray[i] = port;
-        }
-        
-        return portArray;
-    }
-
-
     public String getChecksumAlgorithm() {
         if (cr.getConfiguration().containsKey(CHECKSUM_ALGORITHM_KEY)) {
             return cr.getConfiguration().getString(CHECKSUM_ALGORITHM_KEY);
@@ -1918,21 +1861,6 @@ public class Configuration {
     }
 
     /**
-     * This is the FLAG to support or not the checksum in the srmLS sull detailed list. Since the checksum is calculated
-     * run time each time and LS request in full detailed is done, it could be quite expensive for large file. Since FTS
-     * can use both srmls and gridftp based checksum, the support has been made optional. Default is false.
-     */
-    public boolean getChecksumEnabled() {
-        if (!cr.getConfiguration().containsKey(CHECKSUM_ENABLED_KEY)) {
-            // return default
-            return false;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getBoolean(CHECKSUM_ENABLED_KEY);
-        }
-    }
-
-    /**
      * This is the FLAG to support or not the http(s) protocol. Default is false.
      * 
      * @return
@@ -1967,7 +1895,7 @@ public class Configuration {
     public int getGridhttpsServerPort() {
         if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_PORT_KEY)) {
             // return default
-            return 8088;
+            return 8085;
         } else {
             // load from external source
             return cr.getConfiguration().getInt(GRIDHTTPS_SERVER_PORT_KEY);
@@ -2089,7 +2017,7 @@ public class Configuration {
         }
     }
     
-    public boolean getSanityChecksEnabled()
+    public boolean getSanityCheckEnabled()
     {
         if (!cr.getConfiguration().containsKey(SANITY_CHECK_ENABLED_KEY)) {
             // return default

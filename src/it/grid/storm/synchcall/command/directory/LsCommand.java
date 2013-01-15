@@ -24,7 +24,6 @@ import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
@@ -98,8 +97,6 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     private final NamespaceInterface namespace;
 
-    /** In case of ls on more than one file only one checksum computation is admitted */
-    private boolean doNotComputeMoreChecksums = false;
     private boolean atLeastOneInputSURLIsDir;
 
     public LsCommand() {
@@ -896,44 +893,6 @@ public class LsCommand extends DirectoryCommand implements Command {
             }
         }
         else { // Checksum computed with default algorithm is not present.
-            if (Configuration.getInstance().getChecksumEnabled()) {
-                // Checksum is enabled.
-                if (tapeEnabled) {
-                    if (fileOnDisk) {
-                        // Only one checksum computation is admitted
-                        if (doNotComputeMoreChecksums) {
-                            log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath()
-                                    + "' because only one checksum per request will be computed.");
-                        }
-                        else {
-                            doNotComputeMoreChecksums = true;
-                            log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
-                            // Ask for checksum value, but only one time per request.
-                            String checksum = localFile.getDefaultChecksum();
-                            checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), checksum);
-                        }
-                    }
-                    else {
-                        // File is on tape
-                        log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath() + "' because it is on tape");
-                    }
-                }
-                else {
-                    // Tape not enabled
-                    // Only one checksum computation is admitted
-                    if (doNotComputeMoreChecksums) {
-                        log.debug("Checksum will be not computed for file :'" + localFile.getAbsolutePath()
-                                + "' because only one checksum per request will be computed.");
-                    }
-                    else {
-                        doNotComputeMoreChecksums = true;
-                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath() + "'");
-                        String checksum = localFile.getDefaultChecksum();
-                        checksums.put(ChecksumManager.getInstance().getDefaultAlgorithm(), checksum);
-                    }
-                }
-            }
-            else { // Checksum is disabled
                 // Check if there are other checksum values already computed
                 // Check if there is some other Checksum type
                 Map<String, String> cksms = localFile.getChecksums();
@@ -949,61 +908,9 @@ public class LsCommand extends DirectoryCommand implements Command {
                     checksums.put(cksmAlg, cksmValue);
                 }
             }
-
-        }
         return checksums;
     }
      
-
-//    private boolean checksumHasToBeRetrieved(LocalFile localFile, boolean tapeEnabled, boolean fileOnDisk) {
-//
-//        boolean retrieveChecksum;
-//
-//        // Check if checksum with default algorithm is already in place
-//        if (localFile.hasChecksum()) {
-//
-//            // Computation of checksum is not needed
-//            retrieveChecksum = true;
-//
-//        } else {
-//            // Computation of checksum could be needed
-//
-//            if (Configuration.getInstance().getChecksumEnabled()) {
-//
-//                if (tapeEnabled) {
-//                    if (fileOnDisk) {
-//                        // Only one checksum computation is admitted
-//                        if (doNotComputeMoreChecksums) {
-//                            retrieveChecksum = false;
-//                        } else {
-//                            retrieveChecksum = true;
-//                            doNotComputeMoreChecksums = true;
-//                            log.debug("Checksum Computation is needed for file :'"
-//                                    + localFile.getAbsolutePath() + "'");
-//                        }
-//                    } else {
-//                        retrieveChecksum = false;
-//                    }
-//                } else {
-//                    // Tape not enabled
-//                    // Only one checksum computation is admitted
-//                    if (doNotComputeMoreChecksums) {
-//                        retrieveChecksum = false;
-//                    } else {
-//                        retrieveChecksum = true;
-//                        doNotComputeMoreChecksums = true;
-//                        log.debug("Checksum Computation is needed for file :'" + localFile.getAbsolutePath()
-//                                + "'");
-//                    }
-//                }
-//            } else {
-//                // Computation is needed but it is disabled
-//                retrieveChecksum = false;
-//                log.debug("Checksum computation is disabled.");
-//            }
-//        }
-//        return retrieveChecksum;
-//    }
 
     /**
      * populateDetailFromPersistence
