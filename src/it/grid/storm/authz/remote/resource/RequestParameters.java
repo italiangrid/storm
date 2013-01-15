@@ -2,6 +2,8 @@ package it.grid.storm.authz.remote.resource;
 
 import it.grid.storm.authz.remote.Constants;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -72,7 +74,19 @@ class RequestParameters
             responseBuilder.entity("Unable to evaluate permissions. Some parameters are missing");
             throw new WebApplicationException(responseBuilder.build());
         }
-        return filePathDecoded;
+        URI filePathURI;
+        try
+        {
+            filePathURI = new URI(filePathDecoded);
+        } catch(URISyntaxException e)
+        {
+            log.error("Unable to evaluate permissions on path " + filePathDecoded + " .URISyntaxException : " + e.getMessage());
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity("Unable to evaluate permissions. Invalid file path");
+            throw new WebApplicationException(responseBuilder.build());
+        }
+        return filePathURI.normalize().toString();
     }
     
     private static String decodeAndCheckDN(String DN) throws WebApplicationException

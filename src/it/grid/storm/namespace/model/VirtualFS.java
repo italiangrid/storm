@@ -56,6 +56,8 @@ import it.grid.storm.srm.types.TSpaceType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -115,7 +117,7 @@ public class VirtualFS implements VirtualFSInterface {
             CapabilityInterface capabilities) throws NamespaceException {
         this.aliasName = aliasName;
         this.type = type;
-        this.rootPath = rootPath;
+        this.rootPath = buildRootPath(rootPath);
         this.spaceTokenDescription = spaceTokenDescription;
         this.storageClass = storageClass;
         this.fsDriver = fsDriver;
@@ -183,7 +185,7 @@ public class VirtualFS implements VirtualFSInterface {
     }
 
     public void setRoot(String rootPath) throws NamespaceException {
-        this.rootPath = rootPath;
+        this.rootPath = buildRootPath(rootPath);
         buildStoRIRoot(rootPath);
     }
 
@@ -207,6 +209,19 @@ public class VirtualFS implements VirtualFSInterface {
 
     public void setSAAuthzSource(String authzSourceName) {
         this.saAuthzSourceName = authzSourceName;
+    }
+    
+    private String buildRootPath(String rootPath) throws NamespaceException
+    {
+        URI rootPathUri;
+        try
+        {
+            rootPathUri = new URI(rootPath);
+        } catch(URISyntaxException e)
+        {
+            throw new NamespaceException("Unable to set rootPath. Invalid string. URISyntaxException: " + e.getMessage()); 
+        }
+        return rootPathUri.normalize().toString();
     }
 
 
