@@ -43,7 +43,7 @@ public class AnonymousReserveSpaceInputData extends AbstractInputData implements
         {
             this.guaranteedSize = spaceGuaranteed;
         }
-        this.spaceLifetime = null;
+        this.spaceLifetime = TLifeTimeInSeconds.makeEmpty();
         this.storageSystemInfo = storageSystemInfo;
         this.retentionPolicyInfo = retentionPolicyInfo;
     }
