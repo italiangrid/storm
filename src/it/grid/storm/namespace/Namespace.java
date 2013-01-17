@@ -565,38 +565,43 @@ public class Namespace implements NamespaceInterface {
      * @param appRule ApproachableRule
      * @return VirtualFSInterface
      */
-    public VirtualFSInterface getApproachableDefaultVFS(ApproachableRule appRule) {
+    public VirtualFSInterface getApproachableDefaultVFS(ApproachableRule appRule) throws NamespaceException
+    {
         VirtualFSInterface defaultVFS = null;
         String defaultVFSName = null;
 
-        //Retrieve VFS names list
-        List listVFSnames = appRule.getApproachableVFS();
-        if (listVFSnames != null) {
-            Vector<String> vfsNames = new Vector<String>(listVFSnames);
-            log.debug(" VFS NAMES = " + vfsNames);
-            //Looking for the default element, signed with a '*' char at the end
+        List<VirtualFSInterface> listVFS = appRule.getApproachableVFS();
+        if (listVFS != null && !listVFS.isEmpty())
+        {
+            log.debug(" VFS List = " + listVFS);
+            // Looking for the default element, signed with a '*' char at the end
+             // Various VFS names exists. The default is '*' tagged or the first.
             String vfsName = null;
-            if (vfsNames.size() > 0) { //Various VFS names exists. The default is '*' tagged or the first.
-                boolean found = false;
-                for (Object element : vfsNames) {
-                    vfsName = (String) element;
-                    if (vfsName.endsWith("*")) {
-                        found = true;
-                        vfsName = vfsName.substring(0, vfsName.length() - 1);
-                        break;
-                    }
-                }
-                if (!found) {
-                    defaultVFSName = vfsNames.firstElement();
-                } else {
-                    defaultVFSName = vfsName;
+            for (VirtualFSInterface element : listVFS)
+            {
+                if (element.getAliasName().endsWith("*"))
+                {
+                    vfsName = element.getAliasName().substring(0, element.getAliasName().length() - 1);
+                    break;
                 }
             }
+            if (vfsName == null)
+            {
+                defaultVFSName = listVFS.get(0).getAliasName();
+            }
+            else
+            {
+                defaultVFSName = vfsName;
+            }
+            log.debug(" Default VFS detected : '" + defaultVFSName + "'");
+            defaultVFS = parser.getVFS(defaultVFSName);
+            log.debug(" VFS Description " + defaultVFS);
+            return defaultVFS;
         }
-        log.debug(" Default VFS detected : '" + defaultVFSName + "'");
-        defaultVFS = parser.getVFS(defaultVFSName);
-        log.debug(" VFS Description " + defaultVFS);
-        return defaultVFS;
+        else
+        {
+            throw new NamespaceException("No VFS associated to the provided ApproachableRule " + appRule);
+        }
     }
 
     private static boolean matchSubject(ApproachableRule approachableRule, GridUserInterface user) {

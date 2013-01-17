@@ -57,8 +57,6 @@ public class WeightStrategy<E extends Node> extends RoundRobinStrategy<E> {
                 weighedList.add(nodePool.indexOf(node));
             }
         }
-        
-        System.out.println("list: "+weighedList);
     }
 
     public E getNextElement() {
