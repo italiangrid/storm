@@ -730,6 +730,11 @@ public class CopyChunkDAO {
                     + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray="
                     + surlsArray + " withDn=" + withDn + " dn=" + dn);
         }
+        if(!checkConnection())
+        {
+            log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
+            return new ArrayList<CopyChunkDataTO>();
+        }
         PreparedStatement find = null;
         ResultSet rs = null;
         try
