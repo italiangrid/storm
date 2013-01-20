@@ -609,7 +609,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         } catch (InvalidDescendantsAuthRequestException ex1) {
             log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
         } catch (InvalidDescendantsEmptyRequestException ex1) {
-            log.error("srmLs: Unable to retrieve StoRI children !" + ex1);
+            log.debug("srmLs: directory " + element.getAbsolutePath() + " is empty");
         }
 
         if (result == null) {

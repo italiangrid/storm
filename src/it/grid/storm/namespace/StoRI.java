@@ -21,7 +21,6 @@ import java.util.*;
 
 import it.grid.storm.common.types.*;
 import it.grid.storm.filesystem.*;
-import it.grid.storm.griduser.*;
 import it.grid.storm.namespace.model.*;
 import it.grid.storm.srm.types.*;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
@@ -97,15 +96,6 @@ public interface StoRI {
     /*****************************************************************************
      *  BUSINESS METHODs
      ****************************************************************************/
-
-    @Deprecated
-    public ArrayList<StoRI> getChildren(GridUserInterface gUser, TDirOption dirOption) throws
-        InvalidDescendantsPathRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsFileRequestException, InvalidDescendantsEmptyRequestException, InvalidDescendantsTDirOptionRequestException;
-
-    public ArrayList<StoRI> generateChildrenNoFolders(TDirOption dirOption) throws
-        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-        InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException;
 
     public ArrayList<StoRI> getChildren(TDirOption dirOption) throws
        InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,

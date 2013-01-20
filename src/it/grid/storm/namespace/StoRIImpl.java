@@ -32,7 +32,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.https.HTTPSPluginException;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
@@ -88,12 +87,7 @@ implements StoRI {
     private Filesystem fs;
     private SpaceSystem spaceDriver;
     private StoRIType type;
-
     private Capability capability;
-
-
-
-    // private Vector transferProtocolManaged = null;
 
     // Elements of Name of StoRI
     private String stfn;
@@ -112,7 +106,6 @@ implements StoRI {
     /*****************************************************************************
      *  BUILDING METHODs
      ****************************************************************************/
-
 
     public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule, String relativeStFN, StoRIType type) {
         if (vfs != null)
@@ -214,7 +207,6 @@ implements StoRI {
 
     }
 
-
     public void allotSpaceByToken(TSpaceToken token) throws ReservationException, ExpiredSpaceTokenException {
 
         LocalFile localfile = this.getLocalFile();
@@ -312,69 +304,6 @@ implements StoRI {
      *  BUSINESS METHODs
      ****************************************************************************/
 
-    @Deprecated
-    public ArrayList<StoRI> getChildren(GridUserInterface gUser, TDirOption dirOption) throws
-    InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException {
-
-        log.error("METHOD DEPRECATED! : getChildren (GridUser, DirOption); use without GridUser");
-        return generateChildrenNoFolders(dirOption);
-    }
-
-    public ArrayList<StoRI> generateChildrenNoFolders(TDirOption dirOption) throws InvalidDescendantsEmptyRequestException,
-            InvalidDescendantsAuthRequestException, InvalidDescendantsPathRequestException,
-            InvalidDescendantsFileRequestException, InvalidDescendantsTDirOptionRequestException {
-
-        ArrayList<StoRI> stoRIList = new ArrayList<StoRI>();
-        File fileHandle = new File(getAbsolutePath());
-
-        if (!fileHandle.isDirectory()) {
-            if (fileHandle.isFile()) {
-                log.error("SURL represents a File, not a Directory!");
-                throw new InvalidDescendantsFileRequestException(fileHandle);
-            } else {
-                log.warn("SURL does not exists!");
-                throw new InvalidDescendantsPathRequestException(fileHandle);
-            }
-        } else { // SURL point to an existent directory.
-            // Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
-        	if(!dirOption.isAllLevelRecursive() && !(dirOption.getNumLevel() > 0))
-        	{
-        		log.debug("Requested to list the content of a folder without the folder " +
-        				"itself specifying to not descend recursively in the directory (all" +
-        				"Recursive is false and levelRecursive is 0)...nonsense!");
-                throw new InvalidDescendantsTDirOptionRequestException(fileHandle, dirOption);
-        	}
-            PathCreator pCreator = new PathCreator(fileHandle,
-                                                   dirOption.isAllLevelRecursive(),
-                                                   dirOption.getNumLevel());
-            Collection<String> pathList = pCreator.generateChildrenNoFolders();
-            
-            if (pathList.size() == 0) {
-                
-                log.debug("SURL point to an EMPTY DIRECTORY");
-                throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
-                
-            } else { // Creation of StoRI LIST
-                
-                NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                StoRI createdStoRI = null;
-                
-                for (String childPath : pathList) {
-                    log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
-                    try {
-                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
-                        stoRIList.add(createdStoRI);
-                    } catch (NamespaceException ex) {
-                        log.error("Error occurred while resolving StoRI by absolute path", ex);
-                    }
-                }
-            }
-        }
-        return stoRIList;
-    }
-
-
     /**
      * Returns the SURL lifetime. This method queries the DB and retrieves also the startTime.
      * The DB is queried only on the first invocation of this or the getFileStartTime() methods,
@@ -410,44 +339,47 @@ implements StoRI {
         return startTime;
     }
 
-    public ArrayList<StoRI> getChildren(TDirOption dirOption)
-    throws InvalidDescendantsEmptyRequestException,
-    InvalidDescendantsAuthRequestException,
-    InvalidDescendantsPathRequestException,
-    InvalidDescendantsFileRequestException {
-
-
+    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws InvalidDescendantsEmptyRequestException,
+            InvalidDescendantsAuthRequestException, InvalidDescendantsPathRequestException,
+            InvalidDescendantsFileRequestException
+    {
         ArrayList<StoRI> stoRIList = new ArrayList<StoRI>();
         File fileHandle = new File(getAbsolutePath());
 
-        if (!fileHandle.isDirectory()) {
-            if (fileHandle.isFile()) {
+        if (!fileHandle.isDirectory())
+        {
+            if (fileHandle.isFile())
+            {
                 log.error("SURL represents a File, not a Directory!");
                 throw new InvalidDescendantsFileRequestException(fileHandle);
             }
-            else {
+            else
+            {
                 log.warn("SURL does not exists!");
                 throw new InvalidDescendantsPathRequestException(fileHandle);
             }
         }
-        else { //SURL point to an existent directory.
-            //Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
+        else
+        { // SURL point to an existent directory.
+          // Create ArrayList containing all Valid fileName path found in PFN of StoRI's SURL
             PathCreator pCreator = new PathCreator(fileHandle, dirOption.isAllLevelRecursive(), 1);
             Collection<String> pathList = pCreator.generateChildren();
-            if (pathList.size() == 0) {
+            if (pathList.size() == 0)
+            {
                 log.debug("SURL point to an EMPTY DIRECTORY");
                 throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
             }
-            else { //Creation of StoRI LIST
+            else
+            { // Creation of StoRI LIST
                 NamespaceInterface namespace = NamespaceDirector.getNamespace();
-                StoRI createdStoRI = null;
-                for (String childPath : pathList) {
+                for (String childPath : pathList)
+                {
                     log.debug("<GetChildren>:Creation of new StoRI with path : " + childPath);
-                    try {
-                        createdStoRI = namespace.resolveStoRIbyAbsolutePath(childPath);
-                        stoRIList.add(createdStoRI);
-                    }
-                    catch (NamespaceException ex) {
+                    try
+                    {
+                        stoRIList.add(namespace.resolveStoRIbyAbsolutePath(childPath));
+                    } catch(NamespaceException ex)
+                    {
                         log.error("Error occurred while resolving StoRI by absolute path", ex);
                     }
                 }
@@ -518,8 +450,6 @@ implements StoRI {
     public String getRelativeStFN() {
         return this.relativeStFN;
     }
-
-
 
     public Space getSpace() {
         if (space == null) {
@@ -706,7 +636,6 @@ implements StoRI {
         }
     }
     
-    
     public void setMappingRule(MappingRule winnerRule) {
         this.winnerRule = winnerRule;
     }
@@ -816,8 +745,6 @@ implements StoRI {
         return result;
     }
 
-
-
     /**
      * @param pooledProtocol
      * @return
@@ -852,27 +779,6 @@ implements StoRI {
         return result;
     }
 
-
-    private TransportProtocol retrieveTrasferProtocolByProtocolScheme(Protocol protocol) {
-        TransportProtocol result = null;
-        Capability capability = null;
-        //Retrieve CAPABILITY Element
-
-        //Retrieve LIST of TRANSFER PROTOCOL
-        List<TransportProtocol> listTransProt = capability.getManagedProtocolByScheme(protocol);
-        if (listTransProt.isEmpty()) {
-            log.error("ERROR: protocol with protocol "+protocol+" is not supported in the VFS :"+getVFSName());
-        } else {
-            //Take the first element of the list
-            result = listTransProt.get(0);
-            if (listTransProt.size()>1) {
-                log.warn("ATTENTION: Pool managed as a single element!");
-            }
-        }
-        return result;
-    }
-
-
     /**
      * Set "lifetime" and "startTime" information. The corresponding values are retrieved from the DB.
      */
@@ -888,7 +794,5 @@ implements StoRI {
         lifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
         volatileInformationAreSet = true;
     }
-
-
 
 }
