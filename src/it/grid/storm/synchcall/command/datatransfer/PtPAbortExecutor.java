@@ -318,7 +318,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     + "]"
                     + (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
                             + extractSurlArray(inputData) + "]"
-                            : "") + " failed with [status: " + globalStatus + "]");
+                            : "") + " completed with [status: " + globalStatus + "]");
             return outputData;
         }
 
@@ -340,13 +340,13 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
         //Set output data
         outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
         outputData.setReturnStatus(globalStatus);
-        PtPAbortExecutor.log.error("srmAbortFiles: <"
+        PtPAbortExecutor.log.info("srmAbortFiles: <"
                 + DataHelper.getRequestor(inputData)
                 + "> Request for [token:"
                 + inputData.getRequestToken()
                 + "]"
                 + (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
-                        + extractSurlArray(inputData) + "]" : "") + " failed with [status: " + globalStatus
+                        + extractSurlArray(inputData) + "]" : "") + " completed with [status: " + globalStatus
                 + "]");
         return outputData;
 
