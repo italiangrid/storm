@@ -150,8 +150,6 @@ public class Configuration {
     private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
     private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
     private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
-    private static final String GRIDHTTPS_SERVER_HOST_KEY = "gridhttps.server.host";
-    private static final String GRIDHTTPS_SERVER_PORT_KEY = "gridhttps.server.port";
     private static final String GRIDHTTPS_PLUGIN_CLASSNAME_KEY = "gridhttps.plugin.classname";
     private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
     private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
@@ -1872,33 +1870,6 @@ public class Configuration {
         } else {
             // load from external source
             return cr.getConfiguration().getBoolean(GRIDHTTPS_ENABLED_KEY);
-        }
-    }
-    
-  
-    /**
-     * @return the host running gridhttps serivice
-     */
-    public String getGridhttpsServerHost() {
-        if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_HOST_KEY)) {
-            // return default
-            return "localhost";
-        } else {
-            // load from external source
-            return cr.getConfiguration().getString(GRIDHTTPS_SERVER_HOST_KEY);
-        }
-    }
-    
-    /**
-     * @return the port on which gridhttps mapping serivice is listening
-     */
-    public int getGridhttpsServerPort() {
-        if (!cr.getConfiguration().containsKey(GRIDHTTPS_SERVER_PORT_KEY)) {
-            // return default
-            return 8085;
-        } else {
-            // load from external source
-            return cr.getConfiguration().getInt(GRIDHTTPS_SERVER_PORT_KEY);
         }
     }
     

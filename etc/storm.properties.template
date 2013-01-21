@@ -81,17 +81,6 @@ gridhttps.enabled=false
 #The complete classname of the class implementing the http(s) plugin interface 
 gridhttps.plugin.classname=it.grid.storm.httpsHTTPSPluginInterfaceStub
 
-# ============================
-# StoRM Gridhttps server parameters
-# ============================ 
-# The host running the Gridhttps server service  
-#   <!! managed by YAIM; please read the above NOTE !!>
-#Default=localhost
-gridhttps.server.host=localhost
-# The port on which Gridhttps server service is listening
-#Default=8085
-gridhttps.server.port=8085
-
 # Algorithm used by file-transfer agents to compute checksum. (not case-sensitive): Adler32 
 #   <!! managed by YAIM; please read the above NOTE !!>
 checksum.algorithm=Adler32 
