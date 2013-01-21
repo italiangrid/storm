@@ -1,7 +1,6 @@
-package it.grid.storm.balancer.ftp;
+package it.grid.storm.balancer;
 
 
-import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +11,7 @@ public class ResponsivenessCache
 {
 
     private static final Logger log = LoggerFactory.getLogger(ResponsivenessCache.class);
-    private final Map<InetSocketAddress, ResponsivenessCacheEntry> cache =  new HashMap<InetSocketAddress, ResponsivenessCacheEntry>();
+    private final Map<Node, ResponsivenessCacheEntry> cache =  new HashMap<Node, ResponsivenessCacheEntry>();
     private long entryLifetime;
     
     public enum Responsiveness
@@ -25,11 +24,11 @@ public class ResponsivenessCache
         this.entryLifetime = entryLifetimeMillisec;
     }
 
-    public ResponsivenessCacheEntry addEntry(String hostname, int port)
+    public ResponsivenessCacheEntry addEntry(Node node)
     {
-        log.debug("Adding cache entry for " + hostname + ":" + port);
-        ResponsivenessCacheEntry newEntry = this.new ResponsivenessCacheEntry(hostname, port,Responsiveness.UNKNOWN);
-        cache.put(newEntry.getRemoteService(), newEntry);
+        log.debug("Adding cache entry for " + node);
+        ResponsivenessCacheEntry newEntry = this.new ResponsivenessCacheEntry(node,Responsiveness.UNKNOWN);
+        cache.put(node, newEntry);
         return newEntry;
     }
 
@@ -39,27 +38,27 @@ public class ResponsivenessCache
      * @return
      * @throws Exception 
      */
-    public Responsiveness getResponsiveness(String hostname, int port) throws Exception
+    public Responsiveness getResponsiveness(Node node) throws Exception
     {
         Responsiveness resp = Responsiveness.UNKNOWN;
-        ResponsivenessCacheEntry entry = getEntry(hostname, port);
+        ResponsivenessCacheEntry entry = getEntry(node);
         if (entry != null)
         {
             if (isExpired(entry))
             {
-                log.debug("Cache entry " + entry.getRemoteService().toString() + " expired. Refresching");
+                log.debug("Cache entry " + entry.toString() + " expired. Refresching");
                 resp = entry.refresh();
             }
             else
             {
-                log.debug("Found valid cache entry for " + entry.getRemoteService().toString());
+                log.debug("Found valid cache entry for " + entry.toString());
                 resp = entry.getStatus();
             }
         }
         else
         {
-            log.debug("Missing cache entry for " + hostname + ":" + port + " .Adding and refresching");
-            entry = addEntry(hostname, port);
+            log.debug("Missing cache entry for " + node + " .Adding and refresching");
+            entry = addEntry(node);
             resp = entry.refresh();
         }
         return resp;
@@ -83,38 +82,22 @@ public class ResponsivenessCache
      * @param port
      * @return null if there is no entry for the provided parameters
      */
-    public ResponsivenessCacheEntry getEntry(String hostname, int port)
+    public ResponsivenessCacheEntry getEntry(Node node)
     {
-        return cache.get(new InetSocketAddress(hostname, port));
+        return cache.get(node);
     }
     
     private class ResponsivenessCacheEntry
     {
 
-        private final InetSocketAddress remoteService;
+        private final Node cachedNode;
         private long checkTime = -1;
         private Responsiveness status = Responsiveness.UNKNOWN;
 
-        public ResponsivenessCacheEntry(String hostname, int port, Responsiveness status)
+        public ResponsivenessCacheEntry(Node node, Responsiveness status)
         {
-            remoteService = new InetSocketAddress(hostname, port);
-//            if (remoteService.isUnresolved())
-//            {
-//                resolvedAddress = false;
-//            }
-//            else
-//            {
-//                resolvedAddress = true;
-//            }
+            this.cachedNode = node; 
             this.status = status;
-        }
-
-        /**
-         * @return the remoteService
-         */
-        public final InetSocketAddress getRemoteService()
-        {
-            return remoteService;
         }
 
         /**
@@ -149,7 +132,7 @@ public class ResponsivenessCache
         public final Responsiveness refresh() throws Exception
         {
             Responsiveness respness = Responsiveness.UNKNOWN;
-            if (CheckControlChannel.checkGFtpServer(remoteService))
+            if (cachedNode.checkServer())
             {
                 respness = Responsiveness.RESPONSIVE;
             }
@@ -161,6 +144,7 @@ public class ResponsivenessCache
             this.setStatus(respness);
             return this.status;
         }
+        
         /* (non-Javadoc)
          * @see java.lang.Object#toString()
          */
@@ -168,8 +152,8 @@ public class ResponsivenessCache
         public String toString()
         {
             StringBuilder builder = new StringBuilder();
-            builder.append("ResponsivenessCacheEntry [remoteService=");
-            builder.append(remoteService);
+            builder.append("ResponsivenessCacheEntry [cachedNode=");
+            builder.append(cachedNode);
             builder.append(", checkTime=");
             builder.append(checkTime);
             builder.append(", status=");

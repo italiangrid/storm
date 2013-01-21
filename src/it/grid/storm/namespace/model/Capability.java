@@ -21,6 +21,8 @@ import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyFactory;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.ftp.FTPNode;
+import it.grid.storm.balancer.http.HTTPNode;
+import it.grid.storm.balancer.http.HTTPSNode;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -119,22 +121,40 @@ public class Capability implements CapabilityInterface {
         protocolPoolsByScheme.put(protocol, protPool);
 
         // Building Balancer and put it into Map of Balancers
-        if (protocol.equals(Protocol.GSIFTP))
+        if (protocol.equals(Protocol.GSIFTP) || protocol.equals(Protocol.HTTP) || protocol.equals(Protocol.HTTPS))
         {
-            LinkedList<FTPNode> nodeList = new LinkedList<FTPNode>();
+            BalancingStrategy<? extends Node> balancingStrategy = null;
+            LinkedList<Node> nodeList = new LinkedList<Node>();
+            Node node = null;
+            boolean weighedPool = protPool.getBalanceStrategy().requireWeight();
             for (PoolMember member : protPool.getPoolMembers())
             {
                 String hostname = member.getMemberProtocol().getAuthority().getServiceHostname();
                 int port = member.getMemberProtocol().getAuthority().getServicePort();
-                FTPNode ftpNode = new FTPNode(hostname, port);
-                if (protPool.getBalanceStrategy().requireWeight())
+                if (weighedPool)
                 {
-                    int weight = member.getMemberWeight();
-                    ftpNode.setWeight(weight);
+                    try
+                    {
+                        buildNode(protocol, hostname, port,member.getMemberWeight());
+                    } catch(Exception e)
+                    {
+                        log.error("Unable to build a node for protocol " + protocol);
+                        throw new NamespaceException("Unable to build pool for protocol " + protocol);
+                    }
                 }
-                nodeList.add(ftpNode);
+                else
+                {
+                    try
+                    {
+                        buildNode(protocol, hostname, port);
+                    } catch(Exception e)
+                    {
+                        log.error("Unable to build a node for protocol " + protocol);
+                        throw new NamespaceException("Unable to build pool for protocol " + protocol);
+                    }
+                }
+                nodeList.add(node);
             }
-            BalancingStrategy<FTPNode> balancingStrategy;
             try
             {
                 balancingStrategy = BalancingStrategyFactory.getBalancingStrategy(protPool.getBalanceStrategy(), nodeList);    
@@ -148,9 +168,32 @@ public class Capability implements CapabilityInterface {
         }
         else
         {
-            log.error("The current version manage only GSIFTP POOL.");
+            log.error("The current version manage only GSIFTP and HTTP/HTTPS POOL.");
         }
     }
+
+    private Node buildNode(Protocol protocol, String hostname, int port) throws Exception
+    {
+        if (Protocol.GSIFTP == protocol)
+            return new FTPNode(hostname, port);
+        if (Protocol.HTTP == protocol)
+            return new HTTPNode(hostname, port);
+        if (Protocol.HTTPS == protocol)
+            return new HTTPSNode(hostname, port);
+        throw new Exception("Unsupported protocol, no node type available: " + protocol);
+    }
+
+    private Node buildNode(Protocol protocol, String hostname, int port, int memberWeight) throws Exception
+    {
+        if (Protocol.GSIFTP == protocol)
+            return new FTPNode(hostname, port, memberWeight);
+        if (Protocol.HTTP == protocol)
+            return new HTTPNode(hostname, port, memberWeight);
+        if (Protocol.HTTPS == protocol)
+            return new HTTPSNode(hostname, port, memberWeight);
+        throw new Exception("Unsupported protocol, no node type available: " + protocol);
+    }
+    
 
     /*****************************************************************************
      *  READ METHODs

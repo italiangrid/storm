@@ -1,4 +1,6 @@
-package it.grid.storm.balancer.ftp;
+package it.grid.storm.balancer;
+
+import it.grid.storm.balancer.ResponsivenessCache.Responsiveness;
 
 public class SmartRRManager
 {
@@ -26,9 +28,9 @@ public class SmartRRManager
      * @param hostname
      * @param port
      */
-    public void add(String hostname, int port)
+    public void add(Node node)
     {
-        cache.addEntry(hostname, port);
+        cache.addEntry(node);
     }
     
     /**
@@ -37,9 +39,9 @@ public class SmartRRManager
      * @return
      * @throws Exception 
      */
-    public boolean isResponsive(String hostname, int port) throws Exception
+    public boolean isResponsive(Node node) throws Exception
     {
-        return cache.getResponsiveness(hostname, port).equals(ResponsivenessCache.Responsiveness.RESPONSIVE);
+        return cache.getResponsiveness(node).equals(ResponsivenessCache.Responsiveness.RESPONSIVE);
     }
 
     public void setCacheEntryLifetime(Long lifetime)

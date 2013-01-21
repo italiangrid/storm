@@ -107,12 +107,12 @@ public class TURLBuilder {
      * @throws IllegalStateException 
      */
  // TODO HTTPS TURL
-    public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile) throws HTTPSPluginException
+    public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile) throws HTTPSPluginException 
     {
 //        ????? NEEDED ??? String extraSlashesFor?? = Configuration.getInstance().getExtraSlashesFor??PTURL();
 //        return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP, physicalFN) ;
         
-        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().MapLocalPath(localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
         return buildTURL(Protocol.HTTP, authority, "", serviceRelativePath);
     }
 
@@ -132,7 +132,7 @@ public class TURLBuilder {
 //      return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP, physicalFN) ;
         
 //        String servicePath = HTTPPluginManager.getHTTPSPluginInstance().getServicePath(); // HTTPSPluginInterface.getServicePath();
-        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().MapLocalPath(localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+        String serviceRelativePath = HTTPPluginManager.getHTTPSPluginInstance().mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());//HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
       return buildTURL(Protocol.HTTPS, authority, "", serviceRelativePath);
     }
     

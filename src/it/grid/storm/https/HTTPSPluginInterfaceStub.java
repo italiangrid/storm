@@ -126,24 +126,17 @@ public class HTTPSPluginInterfaceStub implements HTTPSPluginInterface
     }
 
     @Override
-    public String getServiceHost()
-    {
-        log.info("Gettin service host \'localhost\'");
-        return "localhost";
-    }
-
-    @Override
-    public Integer getServicePort()
-    {
-        log.info("Gettin service port \'12345\'");
-        return new Integer(12345);
-    }
-
-    @Override
-    public String MapLocalPath(String localAbsolutePath)
+    public String mapLocalPath(String hostname, String localAbsolutePath)
     {
         log.info("Mapping local absolute path \'" + localAbsolutePath + "\' to \'itIsTheSame" + File.separatorChar + localAbsolutePath + "\'");
         return  File.separatorChar + "itIsTheSame" + localAbsolutePath;
+    }
+
+    @Override
+    public ServiceStatus getServiceStatus(String hostname, int port, Protocol protocol)
+            throws HTTPSPluginException
+    {
+        return ServiceStatus.RUNNING;
     }
 
 }

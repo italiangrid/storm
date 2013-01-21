@@ -1,7 +1,5 @@
 package it.grid.storm.balancer;
 
-import it.grid.storm.balancer.ftp.CyclicCounter;
-import it.grid.storm.balancer.ftp.SmartRRManager;
 import it.grid.storm.config.Configuration;
 
 import java.util.List;
@@ -28,9 +26,9 @@ public class SmartRoundRobinStrategy <E extends Node> extends AbstractBalancingS
         SmartRRManager manager = SmartRRManager.getInstance();
         for(E node : nodes)
         {
-            manager.add(node.getHostName(), node.getPort());
+            manager.add(node);
         }
-        Long lifetime = Configuration.getInstance().getGridftpPoolStatusCheckTimeout();
+        Long lifetime = Configuration.getInstance().getServerPoolStatusCheckTimeout();
         if(lifetime != null)
         {
             manager.setCacheEntryLifetime(lifetime);
@@ -43,19 +41,19 @@ public class SmartRoundRobinStrategy <E extends Node> extends AbstractBalancingS
         int attempts = 0;
         SmartRRManager manager = SmartRRManager.getInstance();
 
-        E remoteService = null;
+        E node = null;
         boolean responsiveFound = false;
         while (!responsiveFound)
         {
             attempts++;
             //maybe should be better to remove the CyclicCounterand use a concurrent list
-            remoteService =  nodePool.get(counter.next());
+            node =  nodePool.get(counter.next());
             try
             {
-                responsiveFound = manager.isResponsive(remoteService.getHostName(), remoteService.getPort());
+                responsiveFound = manager.isResponsive(node);
             } catch(Exception e)
             {
-                log.warn("Unable to check the status of the The GFTP " + remoteService.toString()
+                log.warn("Unable to check the status of the The GFTP " + node.toString()
                         + " . .Exception : " + e.getMessage());
                 throw new BalancingStrategyException("Unable to check the status of the The GFTP");
             }
@@ -69,7 +67,7 @@ public class SmartRoundRobinStrategy <E extends Node> extends AbstractBalancingS
                 }
             }
         }
-        return remoteService;
+        return node;
     }
 
 	@Override

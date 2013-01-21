@@ -1,4 +1,4 @@
-package it.grid.storm.balancer.ftp;
+package it.grid.storm.balancer;
 
 
 import java.util.concurrent.atomic.AtomicInteger;

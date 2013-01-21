@@ -27,13 +27,21 @@ import it.grid.storm.filesystem.LocalFile;
 public interface HTTPSPluginInterface extends AclManagementInterface  
 {
 
-    public String getServiceHost();
+    public String mapLocalPath(String hostname, String localAbsolutePath) throws HTTPSPluginException;
     
-    public Integer getServicePort();
-    
-    public String MapLocalPath(String localAbsolutePath) throws HTTPSPluginException;
+    public ServiceStatus getServiceStatus(String hostname, int port, Protocol protocol) throws HTTPSPluginException;
 
     public void grantServiceGroupPermission(LocalFile localFile, FilesystemPermission permission);
 
     public void grantServiceUserPermission(LocalFile localFile, FilesystemPermission permission);
+    
+    public enum Protocol{
+        HTTP, HTTPS;
+    }
+    
+    public enum ServiceStatus
+    {
+        RUNNING, NOT_RESPONDING, UNEXPECTED_BEHAVIOUR;
+    }
+    
 }

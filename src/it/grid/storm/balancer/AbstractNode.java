@@ -20,16 +20,34 @@ package it.grid.storm.balancer;
 public abstract class AbstractNode implements Node {
     
     protected int nodeId = 0;
-	protected int weight = 0;
+	protected final Integer weight;
     
-    public int getWeight() {
-        return weight;
+	protected final String hostname;
+    protected final int port;
+	
+    
+    protected AbstractNode(String hostname, int port) {
+        this.hostname = hostname;
+        this.port = port;
+        this.weight = null;
     }
     
-    public void setWeight(int w) {
-        //Weight between 1 and 100
-        weight = w%100;
+    protected AbstractNode(String hostname, int port, int weight)
+    {
+        this.hostname = hostname;
+        this.port = port;
+        // Weight between 1 and 100
+        this.weight = weight%100;
     }
+
+    public int getWeight() throws IllegalStateException {
+        if(weight != null)
+        {
+            return weight.intValue();
+        }
+        throw new IllegalStateException("No weight available for this node: " + toString());
+    }
+    
 
     public void setId(int id) {
     	nodeId=id;
@@ -38,5 +56,94 @@ public abstract class AbstractNode implements Node {
     public int getId() {
     	return nodeId;
     }
+    
+    public String getHostName() {
+        return hostname;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("AbstractNode [nodeId=");
+        builder.append(nodeId);
+        builder.append(", weight=");
+        builder.append(weight);
+        builder.append(", hostname=");
+        builder.append(hostname);
+        builder.append(", port=");
+        builder.append(port);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
+        result = prime * result + nodeId;
+        result = prime * result + port;
+        result = prime * result + weight;
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        AbstractNode other = (AbstractNode) obj;
+        if (hostname == null)
+        {
+            if (other.hostname != null)
+            {
+                return false;
+            }
+        }
+        else
+            if (!hostname.equals(other.hostname))
+            {
+                return false;
+            }
+        if (nodeId != other.nodeId)
+        {
+            return false;
+        }
+        if (port != other.port)
+        {
+            return false;
+        }
+        if (weight != other.weight)
+        {
+            return false;
+        }
+        return true;
+    }
+    
     
 }

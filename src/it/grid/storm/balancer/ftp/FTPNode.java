@@ -17,6 +17,7 @@
 
 package it.grid.storm.balancer.ftp;
 
+import java.net.InetSocketAddress;
 import it.grid.storm.balancer.AbstractNode;
 import it.grid.storm.namespace.model.Protocol;
 
@@ -36,46 +37,43 @@ import it.grid.storm.namespace.model.Protocol;
 
 public class FTPNode extends AbstractNode {
 
-    private String hostname;
-    private int port;
-
-    public FTPNode() {
+    private static final String prefix = Protocol.GSIFTP.getProtocolPrefix(); 
+    
+    public FTPNode(String hostname, int port)
+    {
+        super(hostname, port);
+    }
+    
+    public FTPNode(String hostname, int port, int weight)
+    {
+        super(hostname, port, weight);
     }
 
-    public FTPNode(String hostname, int port) {
-        this.hostname = hostname;
-        this.port = port;
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append(prefix);
+        sb.append(hostname);
+        sb.append(":" + port);
+        return sb.toString();
     }
 
+    @Override
+    public boolean checkServer() throws Exception
+    {
+        return CheckControlChannel.checkGFtpServer(new InetSocketAddress(hostname, port));
+    }
 
-    /**
-     * @return String hostname
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
      */
-    public String getHostName() {
-        return hostname;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-
-    public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append(Protocol.GSIFTP.getProtocolPrefix());
-      sb.append(this.hostname);
-      sb.append(":"+this.port);
-      return sb.toString();
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+        return result;
     }
 
 }
