@@ -895,6 +895,8 @@ public class XMLParserUtil implements XMLConst {
         if (numOfFS == -1) {
             throw new NamespaceException("FS named '" + nameOfFS + "' does not exist in config");
         }
+        if(!getPoolDefined(nameOfFS))
+            return 0;
         String protCount = substitutionNumber(XMLConst.POOL_COUNTING, XMLConst.FS_SUB_PATTERN, numOfFS);
         return getPropertyNumber(protCount);
     }
@@ -902,7 +904,7 @@ public class XMLParserUtil implements XMLConst {
     public boolean getPoolDefined(String nameOfFS) throws NamespaceException {
         int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
         boolean result = false;
-        if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL_ID))) {
+        if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL_COUNTING))) {
             result = true;
         }
         return result;

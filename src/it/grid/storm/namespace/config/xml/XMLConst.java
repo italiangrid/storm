@@ -131,7 +131,6 @@ public interface XMLConst {
     //    PROTOCOL POOL DEFINITION
     public String POOL = FS_CAPABILITIES + ".pool(" + POOL_SUB_PATTERN + ")"; //1.4.0
     public String POOL_COUNTING = FS_CAPABILITIES + ".pool.balance-strategy";
-    public String POOL_ID = FS_CAPABILITIES + ".pool";
 
     //#########     Level-5     #########
     //    DEFAULT_ACL

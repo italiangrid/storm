@@ -753,7 +753,7 @@ implements StoRI {
     private Authority getPooledAuthority(Protocol pooledProtocol) throws BalancingStrategyException
     {
         Authority authority = null;
-        if (pooledProtocol.equals(Protocol.GSIFTP))
+        if (pooledProtocol.equals(Protocol.GSIFTP) || pooledProtocol.equals(Protocol.HTTP) || pooledProtocol.equals(Protocol.HTTPS))
         {
             BalancingStrategy<? extends Node> bal = vfs.getProtocolBalancingStrategy(pooledProtocol);
             if (bal != null)
