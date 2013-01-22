@@ -147,7 +147,7 @@ public class StoRM {
         picker = new AdvancedPicker();
         try
         {
-            xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort());
+            xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort(), Configuration.getInstance().getMaxXMLRPCThread());
         } catch(StoRMXmlRpcException e)
         {
             log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: " + e.getMessage());
