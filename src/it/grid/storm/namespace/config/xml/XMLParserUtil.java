@@ -537,18 +537,37 @@ public class XMLParserUtil implements XMLConst {
         new_element = substitutionNumber(new_element, XMLConst.PROT_SUB_PATTERN, numberOfProtocol);
         return new_element;
     }
+    
+    private String substituteNumberInPoolElement(String nameOfFS, int numberOfPool, String element)
+            throws NamespaceException
+    {
+        int numFS = getFSNumber(nameOfFS);
+        if (numFS == -1)
+        {
+            throw new NamespaceException("Virtual File system (" + nameOfFS + ") does not exists");
+        }
+        int numPool = getNumberOfPool(nameOfFS);
+        if (numberOfPool > numPool)
+        {
+            throw new NamespaceException("Invalid pointing of Pool within VFS");
+        }
+        String new_element = substitutionNumber(element, XMLConst.FS_SUB_PATTERN, numFS);
+        new_element = substitutionNumber(new_element, XMLConst.POOL_SUB_PATTERN, numberOfPool);
+        return new_element;
+    }
 
-    private String substituteNumberInMembersElement(String nameOfFS, int numberOfMember, String element)
+    private String substituteNumberInMembersElement(String nameOfFS, int numOfPool, int numberOfMember, String element)
             throws NamespaceException {
         int numFS = getFSNumber(nameOfFS);
         if (numFS == -1) {
             throw new NamespaceException("Virtual File system (" + nameOfFS + ") does not exists");
         }
-        int numMembers = getNumberOfPoolMembers(nameOfFS);
+        int numMembers = getNumberOfPoolMembers(nameOfFS, numOfPool);
         if (numberOfMember > numMembers) {
             throw new NamespaceException("Invalid pointing of Member within VFS");
         }
         String new_element = substitutionNumber(element, XMLConst.FS_SUB_PATTERN, numFS);
+        new_element = substitutionNumber(new_element, XMLConst.POOL_SUB_PATTERN, numOfPool);
         new_element = substitutionNumber(new_element, XMLConst.MEMBER_SUB_PATTERN, numberOfMember);
         return new_element;
     }
@@ -870,11 +889,20 @@ public class XMLParserUtil implements XMLConst {
         result = getBooleanProperty(substituteNumberInFSElement(numOfFS, XMLConst.LIMITED_SIZE));
         return result;
     }
+    
+    public int getNumberOfPool(String nameOfFS) throws NamespaceException {
+        int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
+        if (numOfFS == -1) {
+            throw new NamespaceException("FS named '" + nameOfFS + "' does not exist in config");
+        }
+        String protCount = substitutionNumber(XMLConst.POOL_COUNTING, XMLConst.FS_SUB_PATTERN, numOfFS);
+        return getPropertyNumber(protCount);
+    }
 
     public boolean getPoolDefined(String nameOfFS) throws NamespaceException {
         int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
         boolean result = false;
-        if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.BALANCE_STRATEGY))) {
+        if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.POOL_ID))) {
             result = true;
         }
         return result;
@@ -892,14 +920,12 @@ public class XMLParserUtil implements XMLConst {
         return result;
     }
 
-    public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException {
+    public int getNumberOfPoolMembers(String nameOfFS, int poolCounter) throws NamespaceException {
         int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
         if (numOfFS == -1) {
             throw new NamespaceException("FS named '" + nameOfFS + "' does not exist in config");
         }
-
-        String subTree = substituteNumberInFSElement(numOfFS, XMLConst.POOL);
-        //log.debug("SubTree :" + subTree);
+        String subTree = substituteNumberInPoolElement(nameOfFS, poolCounter, XMLConst.POOL);
         HierarchicalConfiguration sub = configuration.configurationAt(subTree);
         Object members = sub.getProperty("members.member[@member-id]");
         int numOfMembers = -1;
@@ -915,12 +941,23 @@ public class XMLParserUtil implements XMLConst {
         return numOfMembers;
     }
 
-    public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException {
-        return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_ID));
+    public int getMemberID(String nameOfFS, int numOfPool, int memberNr) throws NamespaceException {
+        return getIntProperty(substituteNumberInMembersElement(nameOfFS, numOfPool, memberNr, XMLConst.POOL_MEMBER_ID));
     }
 
-    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException{
-    	return getIntProperty(substituteNumberInMembersElement(nameOfFS, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
+    public int getMemberWeight(String nameOfFS, int numOfPool, int memberNr) throws NamespaceException{
+    	return getIntProperty(substituteNumberInMembersElement(nameOfFS, numOfPool, memberNr, XMLConst.POOL_MEMBER_WEIGHT));
+    }
+
+    public String getBalancerStrategy(String fsName, int poolCounter) throws NamespaceException
+    {
+        String poolId = substituteNumberInPoolElement(fsName, poolCounter, XMLConst.BALANCE_STRATEGY);
+        if (isPresent(poolId)) {
+            return getStringProperty(substituteNumberInPoolElement(fsName, poolCounter, XMLConst.BALANCE_STRATEGY));
+        } else {
+            throw new NamespaceException("Unable to find the element '" + XMLConst.BALANCE_STRATEGY + "' for the VFS:'"
+                                         + fsName + "'");
+        }
     }
 
 }

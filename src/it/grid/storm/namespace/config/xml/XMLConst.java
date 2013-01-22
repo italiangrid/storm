@@ -39,6 +39,7 @@ public interface XMLConst {
     public final char FS_SUB_PATTERN = '°';
     public final char MAP_SUB_PATTERN = 'ç';
     public final char PROT_SUB_PATTERN = '§';
+    public final char POOL_SUB_PATTERN = '£';
     public final char APPRULE_SUB_PATTERN = '^';
     public final char ACL_ENTRY_SUB_PATTERN = '~';
     public final char MEMBER_SUB_PATTERN = '*';
@@ -128,7 +129,9 @@ public interface XMLConst {
     public String APP_DN = APP_SUBJECTS + ".dn";
     public String APP_VO_NAME = APP_SUBJECTS + ".vo-name";
     //    PROTOCOL POOL DEFINITION
-    public String POOL = FS_CAPABILITIES + ".pool"; //1.4.0
+    public String POOL = FS_CAPABILITIES + ".pool(" + POOL_SUB_PATTERN + ")"; //1.4.0
+    public String POOL_COUNTING = FS_CAPABILITIES + ".pool.balance-strategy";
+    public String POOL_ID = FS_CAPABILITIES + ".pool";
 
     //#########     Level-5     #########
     //    DEFAULT_ACL
@@ -286,11 +289,11 @@ public interface XMLConst {
 
     public String getBalancerStrategy(String nameOfFS) throws NamespaceException; //1.4.0
 
-    public int getNumberOfPoolMembers(String nameOfFS) throws NamespaceException; //1.4.0
+    public int getNumberOfPoolMembers(String nameOfFS, int numOfPool) throws NamespaceException; //1.4.0
 
-    public int getMemberID(String nameOfFS, int memberNr) throws NamespaceException; //1.4.0
+    public int getMemberID(String nameOfFS, int numOfPool, int memberNr) throws NamespaceException; //1.4.0
 
-    public int getMemberWeight(String nameOfFS, int memberNr) throws NamespaceException; //1.4.0
+    public int getMemberWeight(String nameOfFS, int numOfPool, int memberNr) throws NamespaceException; //1.4.0
 
     public int getNumberOfMappingRule() throws NamespaceException;
 

@@ -578,44 +578,48 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         /**
          * PROTOCOL POOL
          */
-        if (parserUtil.getPoolDefined(fsName))
+        int nrPools = parserUtil.getNumberOfPool(fsName);
+        if (nrPools > 0)
         {
-            BalancingStrategyType balanceStrategy = BalancingStrategyType.getByValue(parserUtil.getBalancerStrategy(fsName));
-            ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
-            int nrMembers = parserUtil.getNumberOfPoolMembers(fsName);
-            for (int i = 0; i < nrMembers; i++)
-            {
-                int protIndex = parserUtil.getMemberID(fsName, i);
-                TransportProtocol tProtMember = cap.getProtocolByID(protIndex); // search for the member with specified ID
-                if (tProtMember != null)
-                { // member found!
-                    PoolMember poolMember;
-                    if (balanceStrategy.requireWeight())
-                    { // Check for the weight
-                        int memberWeight = parserUtil.getMemberWeight(fsName, i);
-                        poolMember = new PoolMember(protIndex, tProtMember, memberWeight);
+            
+            for (int poolCounter = 0; poolCounter < nrPools; poolCounter++) {
+                BalancingStrategyType balanceStrategy = BalancingStrategyType.getByValue(parserUtil.getBalancerStrategy(fsName, poolCounter)); //1.4.0 (Return -1 if ID is not present)
+                ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
+                int nrMembers = parserUtil.getNumberOfPoolMembers(fsName, poolCounter);
+                for (int i = 0; i < nrMembers; i++)
+                {
+                    int protIndex = parserUtil.getMemberID(fsName, poolCounter, i);
+                    TransportProtocol tProtMember = cap.getProtocolByID(protIndex); // search for the member with specified ID
+                    if (tProtMember != null)
+                    { // member found!
+                        PoolMember poolMember;
+                        if (balanceStrategy.requireWeight())
+                        { // Check for the weight
+                            int memberWeight = parserUtil.getMemberWeight(fsName, poolCounter, i);
+                            poolMember = new PoolMember(protIndex, tProtMember, memberWeight);
+                        }
+                        else
+                        {
+                            poolMember = new PoolMember(protIndex, tProtMember);
+                        }
+                        poolMembers.add(poolMember);
                     }
                     else
-                    {
-                        poolMember = new PoolMember(protIndex, tProtMember);
+                    { // member pointed out doesn't exist!!
+                        log.error("POOL Building: Protocol with index " + protIndex
+                                + " does not exists in the VFS :" + fsName);
+                        throw new NamespaceException("POOL Building: Protocol with index " + protIndex
+                                + " does not exists in the VFS :" + fsName);
                     }
-                    poolMembers.add(poolMember);
                 }
-                else
-                { // member pointed out doesn't exist!!
-                    log.error("POOL Building: Protocol with index " + protIndex
-                            + " does not exists in the VFS :" + fsName);
-                    throw new NamespaceException("POOL Building: Protocol with index " + protIndex
-                            + " does not exists in the VFS :" + fsName);
-                }
-            }
-            Protocol pooProtocol = poolMembers.get(0).getMemberProtocol().getProtocol();
-            verifyPoolIsValid(poolMembers);
-            log.debug("Defined pool for protocol "
-                    + pooProtocol.toString() + " with size "
-                    + poolMembers.size());
-            cap.addProtocolPoolBySchema(pooProtocol, new ProtocolPool(balanceStrategy, poolMembers));
-            log.debug("PROTOCOL POOL: " + cap.getPoolByScheme(pooProtocol));
+                Protocol pooProtocol = poolMembers.get(0).getMemberProtocol().getProtocol();
+                verifyPoolIsValid(poolMembers);
+                log.debug("Defined pool for protocol "
+                        + pooProtocol.toString() + " with size "
+                        + poolMembers.size());
+                cap.addProtocolPoolBySchema(pooProtocol, new ProtocolPool(balanceStrategy, poolMembers));
+                log.debug("PROTOCOL POOL: " + cap.getPoolByScheme(pooProtocol));
+            }                
         } else {
             log.debug("Pool is not defined in VFS " + fsName);
         }
