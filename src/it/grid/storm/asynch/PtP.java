@@ -206,7 +206,18 @@ public class PtP implements Delegable, Chooser, Request
         }
         else
         {
-            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+            try
+            {
+                fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+            } catch(UnapprochableSurlException e)
+            {
+                failure = true;
+                log.info("Unable to build a stori for surl " + requestData.getSURL() + " UnapprochableSurlException: "
+                         + e.getMessage());
+                requestData.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
+                printRequestOutcome(requestData);
+                return;
+            }
         }
         boolean exists = false;
         try

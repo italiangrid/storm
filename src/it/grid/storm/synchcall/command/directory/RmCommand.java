@@ -133,7 +133,20 @@ public class RmCommand implements Command {
                     }
                     else
                     {
-                        stori = namespace.resolveStoRIbySURL(surl);
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl);
+                        } catch(UnapprochableSurlException e)
+                        {
+                            log.info("Unable to build a stori for surl " + surl + " UnapprochableSurlException: "
+                                     + e.getMessage());
+                             globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                      "Invalid SURL path specified");
+                             printRequestOutcome(globalStatus, inputData);
+                             outputData.setStatus(globalStatus);
+                             outputData.setSurlStatus(null);
+                             return outputData;
+                        }
                     }
                 } catch(IllegalArgumentException e)
                 {

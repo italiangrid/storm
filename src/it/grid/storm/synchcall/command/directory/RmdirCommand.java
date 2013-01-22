@@ -108,7 +108,18 @@ public class RmdirCommand extends DirectoryCommand implements Command {
                 }
                 else
                 {
-                    stori = namespace.resolveStoRIbySURL(surl);
+                    try
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl);
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("Unable to build a stori for surl " + surl + " UnapprochableSurlException: "
+                                 + e.getMessage());
+                         returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                  "Invalid SURL path specified");
+                         printRequestOutcome(returnStatus, inputData);
+                         return new RmdirOutputData(returnStatus);
+                    }
                 }
             } catch(IllegalArgumentException e)
             {

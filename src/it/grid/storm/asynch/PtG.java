@@ -161,7 +161,16 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 }
                 else
                 {
-                    fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+                    try
+                    {
+                        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("Unable to build a stori for surl " + requestData.getSURL() + " UnapprochableSurlException: "
+                                + e.getMessage());
+                        failure = true;
+                        requestData.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
+                    }
                 }
             } catch(IllegalArgumentException e)
             {
@@ -190,16 +199,32 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                 {
                     if (requestData.getTransferProtocols().allows(Protocol.HTTP))
                     {
-                        fileStoRI = NamespaceDirector.getNamespace()
-                                                     .resolveStoRIbySURL(requestData.getSURL());
-                        if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable())
+                        try
                         {
-                            this.downgradeToAnonymousHttpRequest();
-                            ptgAuthz = AuthzDecision.PERMIT;
+                            fileStoRI = NamespaceDirector.getNamespace()
+                                                         .resolveStoRIbySURL(requestData.getSURL());
+                        } catch(UnapprochableSurlException e)
+                        {
+                            log.info("Unable to build a stori for surl " + requestData.getSURL() + " UnapprochableSurlException: "
+                                     + e.getMessage());
+                             failure = true;
+                             requestData.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
+                        }
+                        if (!failure)
+                        {
+                            if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable())
+                            {
+                                this.downgradeToAnonymousHttpRequest();
+                                ptgAuthz = AuthzDecision.PERMIT;
+                            }
+                            else
+                            {
+                                ptgAuthz = AuthzDecision.DENY;    
+                            }
                         }
                         else
                         {
-                            ptgAuthz = AuthzDecision.DENY;    
+                            ptgAuthz = AuthzDecision.INDETERMINATE;
                         }
                     }
                     else
@@ -207,25 +232,28 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                         ptgAuthz = AuthzDecision.DENY;
                     }
                 }
-                if (ptgAuthz.equals(AuthzDecision.PERMIT))
+                if (!failure)
                 {
-                    manageIsPermit(fileStoRI);
-                }
-                else
-                {
-                    if (ptgAuthz.equals(AuthzDecision.DENY))
+                    if (ptgAuthz.equals(AuthzDecision.PERMIT))
                     {
-                        manageIsDeny();
+                        manageIsPermit(fileStoRI);
                     }
                     else
                     {
-                        if (ptgAuthz.equals(AuthzDecision.INDETERMINATE))
+                        if (ptgAuthz.equals(AuthzDecision.DENY))
                         {
-                            manageIsIndeterminate(ptgAuthz);
+                            manageIsDeny();
                         }
                         else
                         {
-                            manageIsNotApplicabale(ptgAuthz);
+                            if (ptgAuthz.equals(AuthzDecision.INDETERMINATE))
+                            {
+                                manageIsIndeterminate(ptgAuthz);
+                            }
+                            else
+                            {
+                                manageIsNotApplicabale(ptgAuthz);
+                            }
                         }
                     }
                 }

@@ -261,7 +261,19 @@ public class LsCommand extends DirectoryCommand implements Command {
                     }
                     else
                     {
-                        stori = namespace.resolveStoRIbySURL(surl);
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl);
+                        } catch(UnapprochableSurlException e)
+                        {
+                            failure = true;
+                            log.info("Unable to build a stori for surl " + surl + " UnapprochableSurlException: "
+                                    + e.getMessage());
+                            fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
+                            fileLevelExplanation = "Invalid SURL path specified";
+                            printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode,
+                                                                          fileLevelExplanation), inputData);
+                        }
                     }
                 } catch(IllegalArgumentException e)
                 {

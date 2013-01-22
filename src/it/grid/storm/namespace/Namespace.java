@@ -149,6 +149,10 @@ public class Namespace implements NamespaceInterface {
             {
                 throw new UnapprochableSurlException("Surl " + surl + " is not approchable by user " + user);
             }
+            else
+            {
+                throw new UnapprochableSurlException("Surl " + surl + " is not managed by this StoRM instance");
+            }
         }
         return stori;
     }
@@ -166,7 +170,7 @@ public class Namespace implements NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    private StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable)
+    private StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable) throws UnapprochableSurlException
     {
         log.debug("Resolving StoRI from surl " + surl + " on " + vfsApproachable + " VFS");
         return resolveStoRIbySURL(surl, vfsApproachable, true);
@@ -185,10 +189,15 @@ public class Namespace implements NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl)
+    public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException
     {
         log.debug("Resolving StoRI from surl " + surl + " on any VFS");
-        return resolveStoRIbySURL(surl, null, false);
+        StoRI stori = resolveStoRIbySURL(surl, null, false);
+        if (stori == null)
+        {
+            throw new UnapprochableSurlException("Surl " + surl + " is not managed by this StoRM instance");
+        }
+        return stori;
     }
     
     private StoRI resolveStoRIbySURL(TSURL surl, List<VirtualFSInterface> vfsApproachable, boolean withVFSList)

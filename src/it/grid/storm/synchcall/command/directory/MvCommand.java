@@ -18,7 +18,6 @@
 package it.grid.storm.synchcall.command.directory;
 
 import java.util.Arrays;
-import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -30,7 +29,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -122,7 +120,18 @@ public class MvCommand extends DirectoryCommand implements Command {
                 }
                 else
                 {
-                    fromStori = namespace.resolveStoRIbySURL(fromSURL);
+                    try
+                    {
+                        fromStori = namespace.resolveStoRIbySURL(fromSURL);
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("srmMv: Unable to build a stori for surl " + fromSURL + " UnapprochableSurlException: "
+                                 + e.getMessage());
+                         outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                        "Invalid SURL path specified"));
+                         printRequestOutcome(outputData.getStatus(), inputData);
+                         return outputData;
+                    }
                 }
             } catch(IllegalArgumentException e)
             {
@@ -164,7 +173,18 @@ public class MvCommand extends DirectoryCommand implements Command {
                 }
                 else
                 {
-                    toStori = namespace.resolveStoRIbySURL(toSURL);
+                    try
+                    {
+                        toStori = namespace.resolveStoRIbySURL(toSURL);
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("srmMv: Unable to build a stori for surl " + toSURL + " UnapprochableSurlException: "
+                                 + e.getMessage());
+                         outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                        "Invalid SURL path specified"));
+                         printRequestOutcome(outputData.getStatus(), inputData);
+                         return outputData;
+                    }
                 }
             } catch(IllegalArgumentException e)
             {

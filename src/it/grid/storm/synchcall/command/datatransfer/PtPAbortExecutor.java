@@ -523,9 +523,31 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
                     }
                     else
                     {
-                        stori = namespace.resolveStoRIbySURL(surl);
+                        try
+                        {
+                            stori = namespace.resolveStoRIbySURL(surl);
+                        } catch(UnapprochableSurlException e)
+                        {
+                            failure = true;
+                            log.info("Unable to build a stori for surl " + surl + " UnapprochableSurlException: "
+                                    + e.getMessage());
+                            try
+                            {
+                                SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+                                                               TStatusCode.SRM_INVALID_PATH,
+                                                               "Invalid SURL path specified");
+                            } catch(UnknownSurlException e1)
+                            {
+                                PtPAbortExecutor.log.error("Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+                                                           e1);
+                            }
+                            surlReturnStatus.setSurl(surl);
+                            surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INVALID_PATH,
+                                                                    "Invalid SURL path specified"));
+                            return surlReturnStatus;
+                        }
                     }
-                    
+
                 }
                 catch (IllegalArgumentException e)
                 {

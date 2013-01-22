@@ -10,6 +10,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
+import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -83,7 +84,14 @@ public class StoRITest {
         try {
             TSURL tsurl = TSURL.makeFromStringValidate(surl);
             log.debug(" TSURL : "+tsurl);
-            stori = namespace.resolveStoRIbySURL(tsurl);
+            try
+            {
+                stori = namespace.resolveStoRIbySURL(tsurl);
+            } catch(UnapprochableSurlException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         catch (InvalidTSURLAttributesException ex) {
             /** @todo Handle this exception */

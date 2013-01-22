@@ -95,7 +95,15 @@ public class SpaceHelper {
         if(user == null)
         {
             //implicit put done by TimerTask
-            stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+            try
+            {
+                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+            } catch(UnapprochableSurlException e)
+            {
+                log.warn("Unable to build a stori for requested surl " + surl + " UnapprochableSurlException: "
+                         + e.getMessage());
+                 return;
+            }
         }
         else
         {

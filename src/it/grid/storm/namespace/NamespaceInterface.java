@@ -122,7 +122,7 @@ public interface NamespaceInterface {
      * @return StoRI
      * @throws NamespaceException
      */
-    public StoRI resolveStoRIbySURL(TSURL surl);
+    public StoRI resolveStoRIbySURL(TSURL surl)throws UnapprochableSurlException;
 
     /**
      *

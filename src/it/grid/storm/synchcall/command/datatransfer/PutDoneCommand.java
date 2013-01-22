@@ -19,7 +19,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.PFN;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -434,7 +433,15 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             // Retrieve the StoRI associate to the SURL
             if (user == null)
             {
-                stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+                try
+                {
+                    stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+                } catch(UnapprochableSurlException e)
+                {
+                    log.info("Unable to build a stori for surl " + surl
+                             + " UnapprochableSurlException: " + e.getMessage());
+                     continue;
+                }
             }
             else
             {

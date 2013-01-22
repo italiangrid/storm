@@ -119,7 +119,19 @@ public class MkdirCommand extends DirectoryCommand implements Command {
                 }
                 else
                 {
-                    stori = namespace.resolveStoRIbySURL(surl);
+                    try
+                    {
+                        stori = namespace.resolveStoRIbySURL(surl);
+                    } catch(UnapprochableSurlException e)
+                    {
+                        log.info("Unable to build a stori for surl " + surl + " UnapprochableSurlException: "
+                                 + e.getMessage());
+                         returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                         "Invalid SURL path specified");
+                         printRequestOutcome(returnStatus, inputData);
+                         outData = new MkdirOutputData(returnStatus);
+                         return outData;
+                    }
                 }
             } catch(IllegalArgumentException e)
             {
