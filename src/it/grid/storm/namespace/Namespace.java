@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
 
 import org.slf4j.Logger;
@@ -66,6 +67,8 @@ import org.slf4j.Logger;
  */
 public class Namespace implements NamespaceInterface {
 
+    private static final String SPACE_FILE_NAME_SUFFIX = ".space";
+    private static final char SPACE_FILE_NAME_SEPARATOR = '_';
     private final Logger log = NamespaceDirector.getLogger();
     private final NamespaceParser parser;
 
@@ -527,7 +530,32 @@ public class Namespace implements NamespaceInterface {
             userName = "unknown";
         }
         GUID guid = new GUID();
-        return userName + "_" + guid + ".space";
+        return userName + SPACE_FILE_NAME_SEPARATOR + guid + SPACE_FILE_NAME_SUFFIX;
+    }
+    
+    public boolean isSpaceFile(String fileName) throws IllegalArgumentException
+    {
+        if (fileName == null)
+        {
+            throw new IllegalArgumentException("Unable to check space file name. "
+                    + "Invalid arguments: fileName=" + fileName);
+        }
+        if (!fileName.endsWith(SPACE_FILE_NAME_SUFFIX))
+            return false;
+        if (fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) <= 0)
+            return false;
+        if (fileName.substring(fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1).length() <= SPACE_FILE_NAME_SUFFIX.length())
+            return false;
+        String uuidString = fileName.substring(fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1,
+                                               fileName.lastIndexOf(SPACE_FILE_NAME_SUFFIX));
+        try
+        {
+            UUID.fromString(uuidString);
+        } catch(Exception e)
+        {
+            return false;
+        }
+        return true;
     }
 
     /**

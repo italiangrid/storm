@@ -536,7 +536,7 @@ public class LsCommand extends DirectoryCommand implements Command {
             } else { // The local element is a file
 
                 // Retrieve information on file from underlying file system
-                if (numberOfIterations.intValue() >= offset) {
+                if (numberOfIterations.intValue() >= offset && !namespace.isSpaceFile(stori.getFilename())) {
                     populateDetailFromFS(stori, currentElementDetail);
                     if (fullDetailedList)
                     {

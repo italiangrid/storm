@@ -336,6 +336,13 @@ public interface NamespaceInterface {
      */
     public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException;
 
+    /**
+     * @param fileName
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public boolean isSpaceFile(String fileName) throws IllegalArgumentException;
+    
     public String getNamespaceVersion() throws NamespaceException;
  
 
