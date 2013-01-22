@@ -135,7 +135,7 @@ public class Capability implements CapabilityInterface {
                 {
                     try
                     {
-                        buildNode(protocol, hostname, port,member.getMemberWeight());
+                        node = buildNode(protocol, hostname, port,member.getMemberWeight());
                     } catch(Exception e)
                     {
                         log.error("Unable to build a node for protocol " + protocol);
@@ -146,7 +146,7 @@ public class Capability implements CapabilityInterface {
                 {
                     try
                     {
-                        buildNode(protocol, hostname, port);
+                        node = buildNode(protocol, hostname, port);
                     } catch(Exception e)
                     {
                         log.error("Unable to build a node for protocol " + protocol);

@@ -20,7 +20,7 @@ package it.grid.storm.balancer;
 public abstract class AbstractNode implements Node {
     
     protected int nodeId = 0;
-	protected final Integer weight;
+	private final Integer weight;
     
 	protected final String hostname;
     protected final int port;
@@ -95,7 +95,8 @@ public abstract class AbstractNode implements Node {
         result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
         result = prime * result + nodeId;
         result = prime * result + port;
-        result = prime * result + weight;
+        if(weight != null)
+            result = prime * result + weight;
         return result;
     }
 
