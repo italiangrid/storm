@@ -615,7 +615,7 @@ mmlsquota: Command failed.  Examine previous error messages to determine cause.
         boolean result = true;
         List<String> tokens = splitTokens(line);
         int size = tokens.size();
-        if (size!=13) {
+        if (size!=13 && size!=14) {
             result = false;
         } else {
             if (tokens.get(0) != null) {

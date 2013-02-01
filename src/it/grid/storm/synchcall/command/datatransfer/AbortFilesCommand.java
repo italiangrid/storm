@@ -60,20 +60,9 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
     public AbortFilesCommand() {};
 
     /**
-     * SrmAbortRequest and SrmAbortFiles request differs only for
-     * the SURL array specified in the AbortFiles request.
-     * We can view the SrmAbortRequest as a special case of SrmAbortFiles with
-     * an empty SURLArray.
-     */
-
-
-
-
-
-    /**
-     * This executor performs a SrmAbortRequests.
+     * This executor performs a SrmAbortFiles.
      * This function prematurely terminate asynchronous requests of any types.
-     * The effects of SrmAbortRequests() depends on the type of request.
+     * The effects of srmAbortFiles() depends on the type of request.
      */
 
     public OutputData execute(InputData data)
@@ -96,11 +85,11 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
                 || inputData.getRequestToken() == null
                 || (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) && inputData.getArrayOfSURLs() == null))
         {
-            AbortFilesCommand.log.debug("SrmAbortRequest: Invalid input parameter specified");
+            AbortFilesCommand.log.debug("srmAbortFiles: Invalid input parameter specified");
             globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
             outputData.setReturnStatus(globalStatus);
             outputData.setArrayOfFileStatuses(null);
-            AbortFilesCommand.log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: "
+            AbortFilesCommand.log.error("srmAbortFiles: <> Request for [token:] [SURL:] failed with [status: "
                     + globalStatus + "]");
             return outputData;
         }
@@ -130,7 +119,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
 
         TRequestToken requestToken = inputData.getRequestToken();
         ArrayOfSURLs surlArray  = inputData.getArrayOfSURLs();
-        AbortFilesCommand.log.debug("srmAbortRequest: requestToken=" + requestToken.toString());
+        AbortFilesCommand.log.debug("srmAbortFiles: requestToken=" + requestToken.toString());
 
 
         /******************************   PHASE (1) LOOKING INTO PENDING DB AND ADVANCED PICKER   ***************************/
@@ -244,7 +233,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             else
             {
                 outputData.setArrayOfFileStatuses(null);
-                AbortFilesCommand.log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
+                AbortFilesCommand.log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
                         + inputData.getRequestToken() + "] successfully done with [status: " + globalStatus
                         + "]");
             }
@@ -311,7 +300,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
             else
             {
                 outputData.setArrayOfFileStatuses(null);
-                AbortFilesCommand.log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
+                AbortFilesCommand.log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
                         + inputData.getRequestToken() + "] successfully done with [status: " + globalStatus
                         + "]");
             }
@@ -378,10 +367,10 @@ public class AbortFilesCommand extends DataTransferCommand implements Command
                 {
                     // This case is really possibile?
                     AbortFilesCommand.log.debug("This case is really possibile?");
-                    AbortFilesCommand.log.debug("SrmAbortRequest : Invalid input parameter specified");
+                    AbortFilesCommand.log.debug("srmAbortFiles : Invalid input parameter specified");
                     globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
                                                 "Invalid request token. Abort only works for PtG, PtP and Copy.");
-                    AbortFilesCommand.log.error("srmAbortRequest: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
+                    AbortFilesCommand.log.error("srmAbortFiles: <" + DataHelper.getRequestor(inputData) + "> Request for [token:"
                             + inputData.getRequestToken() + "] failed with [status: " + globalStatus + "]");
                     outputData.setReturnStatus(globalStatus);
                     outputData.setArrayOfFileStatuses(null);
