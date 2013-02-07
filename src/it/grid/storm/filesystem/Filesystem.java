@@ -186,6 +186,12 @@ public class Filesystem {
 
         return fs.get_size(file);
     }
+    
+    public long getCreationTime(final String fileOrDirectory) {
+
+        return new javaxt.io.File(fileOrDirectory).getCreationTime().getTime();
+
+    }
 
     /** Get file last modification time, as a UNIX epoch.  Same as
      *  calling {@link java.io.File#lastModified()}.

@@ -808,7 +808,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         
 
         elementDetail.setModificationTime(new Date(localElement.getLastModifiedTime()));
-
+        elementDetail.setCreationTime(new Date(localElement.getCreationTime()));
         /** Set specific information of files and directories */
         if (localElement.isDirectory())
         {
