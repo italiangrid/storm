@@ -332,6 +332,7 @@ fi;
 %{_javadir}/%{longname}/xmlrpc-common-3.0.jar
 %{_javadir}/%{longname}/xalan.jar
 %{_javadir}/%{longname}/xercesImpl.jar
+%{_javadir}/%{longname}/javaxt-core.jar
 
 %dir %{_javadir}/%{longname}/doc
 %{_javadir}/%{longname}/doc/puretls.LICENSE
