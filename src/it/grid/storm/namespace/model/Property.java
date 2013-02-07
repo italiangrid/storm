@@ -132,10 +132,10 @@ public class Property  implements PropertyInterface {
         private long size;
 
         public final static SizeUnitType BYTE = new SizeUnitType("Byte", 0, 1);
-        public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1024);
-        public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1048576);
-        public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1073741824);
-        public final static SizeUnitType TB = new SizeUnitType("TB", 4, 1073741824*1024);
+        public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1000);
+        public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1000000);
+        public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1000000000);
+        public final static SizeUnitType TB = new SizeUnitType("TB", 4, 1000000000000L);
         public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1, -1);
 
         private SizeUnitType(String sizeTypeName, int ordinal, long size) {

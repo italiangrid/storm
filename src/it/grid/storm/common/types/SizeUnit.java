@@ -55,7 +55,7 @@ public abstract class SizeUnit implements Serializable {
 
     public static final SizeUnit KILOBYTES = new SizeUnit() {
         public double conversionFactor() {
-            return 1024.0;
+            return 1000.0;
         }
 
         public String toString() {
@@ -69,7 +69,7 @@ public abstract class SizeUnit implements Serializable {
 
     public static final SizeUnit MEGABYTES = new SizeUnit() {
         public double conversionFactor() {
-            return 1048576.0;
+            return 1000000.0;
         }
 
         public String toString() {
@@ -83,7 +83,7 @@ public abstract class SizeUnit implements Serializable {
 
     public static final SizeUnit GIGABYTES = new SizeUnit() {
         public double conversionFactor() {
-            return SizeUnit.MEGABYTES.conversionFactor()*1024;
+            return SizeUnit.MEGABYTES.conversionFactor()*1000;
         }
 
         public String toString() {
@@ -97,7 +97,7 @@ public abstract class SizeUnit implements Serializable {
 
     public static final SizeUnit TERABYTES = new SizeUnit() {
     public double conversionFactor() {
-        return SizeUnit.GIGABYTES.conversionFactor()*1024;
+        return SizeUnit.GIGABYTES.conversionFactor()*1000;
     }
 
     public String toString() {

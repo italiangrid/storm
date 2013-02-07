@@ -495,7 +495,7 @@ public class Configuration {
     public long getFileDefaultSize() {
         if (!cr.getConfiguration().containsKey(FILE_DEFAULT_SIZE_KEY)) {
             // return default
-            return (1024 * 1024); // 1 MB
+            return (1000000); // 1 MB
         } else {
             // load from external source
             return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY);

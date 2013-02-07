@@ -126,7 +126,7 @@ public class QuotaManager {
         long usedSize = gpfsQuotaInfoEntry.getCurrentBlocksUsage();
         log.debug("Used size for '"+gpfsQuotaInfoEntry.getQuotaEntryName()+"' is "+usedSize+" KB.");
         try {
-            //Convert in BYTES
+            //Convert in BYTES (mmlsquota provides KiB)
             usedSize = usedSize * 1024;
             TSizeInBytes us = TSizeInBytes.make(usedSize, SizeUnit.BYTES);
             ssd.setUsedSpaceSize(us);
