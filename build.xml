@@ -464,9 +464,6 @@ test.junit.dir
 		
 		<!-- Smart Round Robin -->
 		<include name="netty-3.5.0.Final.jar"/>
-	    
-		<!-- File Metadata -->
-		<include name="javaxt-core.jar"/>
 	</fileset>
 
 	<fileset id="src.jars.build"

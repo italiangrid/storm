@@ -309,13 +309,7 @@ public class LocalFile {
         return fs.getLastModifiedTime(localFile.getAbsolutePath());
     }
     
-    
 
-    public long getCreationTime() {
-        return fs.getCreationTime(localFile.getAbsolutePath());
-
-    }
-    
     // overridden from java.io.File to change return value
     public LocalFile getParentFile() {
         return new LocalFile(localFile.getParentFile().getAbsolutePath(), this.fs);
