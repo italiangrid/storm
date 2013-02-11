@@ -211,14 +211,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
         removePinneExtendedAttribute(surlToRelease);
         
-        boolean atLeastOneSuccess = false;
+        boolean atLeastOneReleased = false;
         boolean atLeastOneFailure = false;
         for (TSURLReturnStatus returnStatus : surlReturnStatuses.getArray())
         {
             printSurlOutcome(returnStatus, inputData);
-            if (returnStatus.getStatus().isSRM_SUCCESS())
+            if (returnStatus.getStatus().getStatusCode().equals(TStatusCode.SRM_RELEASED))
             {
-                atLeastOneSuccess = true;
+                atLeastOneReleased = true;
 
             }
             else
@@ -227,7 +227,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             }
         }
         TReturnStatus returnStatus;
-        if (atLeastOneSuccess)
+        if (atLeastOneReleased)
         {
             if (atLeastOneFailure)
             {
@@ -255,16 +255,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         for (Entry<TSURL, TReturnStatus> surlStatus : surlStastuses.entrySet())
         {
 
-            TReturnStatus returnStatus;
-            if (TStatusCode.SRM_FILE_PINNED.equals(surlStatus.getValue().getStatusCode()))
-            {
-                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Released");
-            }
-            else
-            {
-                returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-                                                   "Not released because it is not pinned");
-            }
+            TReturnStatus returnStatus = prepareStatus(surlStatus.getValue());
             surlReturnStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(surlStatus.getKey(), returnStatus));
         }
         return surlReturnStatuses;
@@ -280,15 +271,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
             TReturnStatus status = surlStastuses.get(surl);
             if(status != null)
             {
-                if(TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode()))
-                {
-                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Released");
-                }
-                else
-                {
-                    returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-                                                       "Not released because it is not pinned");
-                }
+                returnStatus = prepareStatus(status);
             }
             else
             {
@@ -300,12 +283,25 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         return surlReturnStatuses;
     }
     
+    private TReturnStatus prepareStatus(TReturnStatus status)
+    {
+        if(TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode()) || TStatusCode.SRM_SUCCESS.equals(status.getStatusCode()))
+        {
+            return CommandHelper.buildStatus(TStatusCode.SRM_RELEASED, "Released");
+        }
+        else
+        {
+            return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+                                               "Not released because it is not pinned");
+        }
+    }    
+    
     private List<TSURL> extractSurlToRelease(ArrayOfTSURLReturnStatus surlReturnStatuses)
     {
         LinkedList<TSURL> surlToRelease = new LinkedList<TSURL>();
         for(TSURLReturnStatus returnStatus : surlReturnStatuses.getArray())
         {
-            if(TStatusCode.SRM_SUCCESS.equals(returnStatus.getStatus().getStatusCode()))
+            if(TStatusCode.SRM_RELEASED.equals(returnStatus.getStatus().getStatusCode()))
             {
                 surlToRelease.add(returnStatus.getSurl());
             }
