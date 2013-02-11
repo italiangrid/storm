@@ -888,6 +888,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                     }
                     if(success)
                     {
+                        requestData.setTransferURL(bupTURL);
                         requestData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");    
                     }
                     else
