@@ -475,7 +475,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                             }
                             else
                             {
-
+                                requestData.changeStatusSRM_FAILURE("Local filesystem mask does not allow"
+                                                                  +   " setting up correct ACLs for PtG!");
                             }
                         }
                     }
@@ -884,6 +885,15 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                     {
                         success = true;
                         setDefaultAcl(bupFileStori, bupLocalFile);
+                    }
+                    if(success)
+                    {
+                        requestData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");    
+                    }
+                    else
+                    {
+                        requestData.changeStatusSRM_FAILURE("Local filesystem mask does not allow"
+                                                            +   " setting up correct ACLs for PtG!");
                     }
                 }
                 else
