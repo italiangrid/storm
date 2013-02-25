@@ -9,7 +9,6 @@
 	<classpathentry kind="var" path="BE_JAR_LIB/axis-ant.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/axis-schema.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/axis.jar"/>
-	<classpathentry kind="var" path="BE_JAR_LIB/backport-util-concurrent.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/cog-axis.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/cog-jglobus.jar"/>
 	<classpathentry kind="var" path="BE_JAR_LIB/cog-jobmanager.jar"/>
