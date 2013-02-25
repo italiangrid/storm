@@ -49,7 +49,7 @@ import java.util.List;
  */
 public interface VirtualFSInterface {
 
-    public String getFSType() throws NamespaceException;
+    public String getFSType();
 
     public String getSpaceTokenDescription() throws NamespaceException;
 

@@ -103,53 +103,53 @@ public class SpaceInfoManager {
 
     
     private final BackgroundDUTasks bDUTasks = new BackgroundDUTasks();
-	private int attempt = 1;
+    private int attempt = 1;
 
     public static SpaceInfoManager getInstance() {
         return instance;
     }
 
     public static boolean isInProgress() {
-    	boolean result = false;
-    	if (SpaceInfoManager.getInstance().tasksToComplete.get()>0) {
-    		result = true;
-    	}
-    	return result;
+        boolean result = false;
+        if (SpaceInfoManager.getInstance().tasksToComplete.get()>0) {
+            result = true;
+        }
+        return result;
     }
     
     
-	public static boolean isInProgress(TSpaceToken spaceToken) {
-		boolean result = false;
-		if (SpaceInfoManager.getInstance().tasksToComplete.get() > 0) {
-			BackgroundDUTasks tasks = SpaceInfoManager.getInstance().bDUTasks;
-		
-			// Looking for Task with the same SpaceToken passed as parameter 
-			Collection<BgDUTask> ts = tasks.getTasks();
-			for (BgDUTask bgDUTask : ts) {
-				if (bgDUTask.getSpaceToken().equals(spaceToken)) {
-					result = true;
-				}
-			}	
-		}
-		return result;
-	}
+    public static boolean isInProgress(TSpaceToken spaceToken) {
+        boolean result = false;
+        if (SpaceInfoManager.getInstance().tasksToComplete.get() > 0) {
+            BackgroundDUTasks tasks = SpaceInfoManager.getInstance().bDUTasks;
+        
+            // Looking for Task with the same SpaceToken passed as parameter 
+            Collection<BgDUTask> ts = tasks.getTasks();
+            for (BgDUTask bgDUTask : ts) {
+                if (bgDUTask.getSpaceToken().equals(spaceToken)) {
+                    result = true;
+                }
+            }   
+        }
+        return result;
+    }
     
-	
-	public int updateSpaceUsed() {
-	    int quotaFailures = 0;
-	    quotaFailures = execGPFSQuota(false, true);
-	    startBackGroundDU();
-	    return quotaFailures;
-	}
-	
-	public static int howManyBackgroundDU() {
-	    return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
-	}
-	
-	public int howManyQuotas() {
-	    return this.quotas;
-	}
-	       
+    
+    public int updateSpaceUsed() {
+        int quotaFailures = 0;
+        quotaFailures = execGPFSQuota(false, true);
+        startBackGroundDU();
+        return quotaFailures;
+    }
+    
+    public static int howManyBackgroundDU() {
+        return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
+    }
+    
+    public int howManyQuotas() {
+        return this.quotas;
+    }
+           
     public int execGPFSQuota(boolean test, boolean bootstrap) {
         int result = 0;
         boolean synchronousQuotaCheck = Configuration.getInstance().getSynchronousQuotaCheckEnabled();
@@ -175,43 +175,43 @@ public class SpaceInfoManager {
 
         return result;
     }
-	
-	
-	private int startBackGroundDU() {
-    	int result = 0;
-		//This call populate the Task Queue: "bDUTasks"
-		SpaceInfoManager.getInstance().foundSAtoAnalyze();
-		result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
-		LOG.debug(String.format("Tasks: %d", result));
-		//Submit the tasks
-		SpaceInfoManager.getInstance().submitTasks(SpaceInfoManager.getInstance().bDUTasks);
-		return result;
-	}
+    
+    
+    private int startBackGroundDU() {
+        int result = 0;
+        //This call populate the Task Queue: "bDUTasks"
+        SpaceInfoManager.getInstance().foundSAtoAnalyze();
+        result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
+        LOG.debug(String.format("Tasks: %d", result));
+        //Submit the tasks
+        SpaceInfoManager.getInstance().submitTasks(SpaceInfoManager.getInstance().bDUTasks);
+        return result;
+    }
 
-		
-	
-	public int startTest(List<String> absPaths) {
+        
+    
+    public int startTest(List<String> absPaths) {
         int result = 0;
         testMode = new AtomicBoolean(true); 
         SpaceInfoManager.getInstance().fakeSAtoAnalyze(absPaths);
         result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
         SpaceInfoManager.getInstance().submitTasks(SpaceInfoManager.getInstance().bDUTasks);
-        return result;	    
-	}
-	
-	
-	public static int stop() {
-	    int result = 0;
-	    SpaceInfoManager.getInstance().stopExecution();
-	    result = SpaceInfoManager.getInstance().failures.get();
-	    return result;
-	}
-	
-	
-	//********************************************
-	// Package methods
-	//********************************************
-	
+        return result;      
+    }
+    
+    
+    public static int stop() {
+        int result = 0;
+        SpaceInfoManager.getInstance().stopExecution();
+        result = SpaceInfoManager.getInstance().failures.get();
+        return result;
+    }
+    
+    
+    //********************************************
+    // Package methods
+    //********************************************
+    
 
     /**
      * @return a list of StorageSpaceData related to SA with quota enabled to be initialized. Can be empty.
@@ -219,20 +219,20 @@ public class SpaceInfoManager {
     public List<StorageSpaceData> retrieveSSDtoInitializeWithQuota() {
         // Dispatch SA to compute in two categories: Quota and DU tasks
         List<StorageSpaceData> ssdSet = new ArrayList<StorageSpaceData>();
-        List<VirtualFSInterface> vfsSet = retrieveSAtoInitializeWithQuota();	
+        List<VirtualFSInterface> vfsSet = retrieveSAtoInitializeWithQuota();    
         ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
         for (VirtualFSInterface vfsEntry : vfsSet) {
-			try {
-				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
-				StorageSpaceData ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
-				ssdSet.add(ssd);
-			} catch (NamespaceException e) {
-				LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
-			}
-		}
+            try {
+                String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
+                StorageSpaceData ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
+                ssdSet.add(ssd);
+            } catch (NamespaceException e) {
+                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+            }
+        }
         return ssdSet;
     }
-	
+    
     
     public StorageSpaceData getSSDfromQuotaName(String quotaName) {
         StorageSpaceData ssd = null;
@@ -266,7 +266,7 @@ public class SpaceInfoManager {
         LOG.debug("Number of quotaNames: " + quotaNames.size() );
         return quotaNames;
     }
-	
+    
     
     public List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
         // Dispatch SA to compute in two categories: Quota and DU tasks
@@ -296,42 +296,39 @@ public class SpaceInfoManager {
     
     
  
-	
-	private boolean gpfsQuotaEnabled(VirtualFSInterface vfsItem) {
-	    boolean result = false;
-	    if (vfsItem!=null) {
-	        CapabilityInterface cap = null;
-	        Quota quota = null;
-	        String fsType = "Unknown";
-            try {
-                fsType = vfsItem.getFSType();
-                if ( fsType != null) {
-                    if (fsType.trim().toLowerCase().equals("gpfs")) {
-                        cap = vfsItem.getCapabilities();
-                        if (cap!=null) {
-                            quota = cap.getQuota();    
-                        }
-                        if (quota!=null) {
-                           result = ((quota.getDefined()) && (quota.getEnabled()));    
-                        }        
+    
+    private boolean gpfsQuotaEnabled(VirtualFSInterface vfsItem) {
+        boolean result = false;
+        if (vfsItem!=null) {
+            CapabilityInterface cap = null;
+            Quota quota = null;
+            String fsType = "Unknown";
+            fsType = vfsItem.getFSType();
+            if (fsType != null)
+            {
+                if (fsType.trim().toLowerCase().equals("gpfs"))
+                {
+                    cap = vfsItem.getCapabilities();
+                    if (cap != null)
+                    {
+                        quota = cap.getQuota();
+                    }
+                    if (quota != null)
+                    {
+                        result = ((quota.getDefined()) && (quota.getEnabled()));
                     }
                 }
-                
             }
-            catch (NamespaceException e) {
-                LOG.error("Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
-            }
-	        
-	    }
-	    return result;
-	}
-	
-	
-	/**
-	 * @return
-	 */
-//	private List<VirtualFSInterface> getAllVFS() {
-//	    Collection<VirtualFSInterface> vfsCollection = null ;
+        }
+        return result;
+    }
+    
+    
+    /**
+     * @return
+     */
+//  private List<VirtualFSInterface> getAllVFS() {
+//      Collection<VirtualFSInterface> vfsCollection = null ;
 //        try {
 //            vfsCollection = new ArrayList<VirtualFSInterface>(NamespaceDirector.getNamespace().getAllDefinedVFS());
 //        }
@@ -340,11 +337,11 @@ public class SpaceInfoManager {
 //            
 //        }
 //        LOG.debug("Found '"+vfsCollection.size()+"' VFS defined in Namespace.xml" );
-//	    return (List<VirtualFSInterface>) vfsCollection;
-//	}
+//      return (List<VirtualFSInterface>) vfsCollection;
+//  }
     
     
-	
+    
     /**
      * Populate with DU tasks
      */
@@ -381,7 +378,7 @@ public class SpaceInfoManager {
         }
         LOG.info(String.format("Background DU tasks size: %d", bDUTasks.getTasks().size()));
     }
-	
+    
     /**
      * Populate with DU tasks
      */
@@ -511,8 +508,8 @@ public class SpaceInfoManager {
        
        //Check if all the tasks has been processed
 //       if (this.tasksToComplete.get()<=0) {
-//    	   //All the tasks has been processed
-//    	   //Check if there was some failures
+//         //All the tasks has been processed
+//         //Check if there was some failures
 //           if ((failures.get()) >0) {
 //               attempt++;
 //               if (attempt>MaxAttempt) {
@@ -527,16 +524,16 @@ public class SpaceInfoManager {
 //                   
 //                   submitTasks(bDUTasks);    
 //               }
-//    	   }
+//         }
 //       }       
     }
 
     
-	/**
+    /**
      * Submit all the tasks to a BackgroundDU
      */
     void submitTasks(BackgroundDUTasks tasks) {
-    	
+        
         bDU = new BackgroundDU(timeOutDurationInSec * attempt, TimeUnit.SECONDS);
         
         Collection<BgDUTask> tasksToSubmit = tasks.getTasks();
@@ -545,9 +542,9 @@ public class SpaceInfoManager {
         this.numberOfTasks = new AtomicInteger(size);
         this.tasksToComplete = new AtomicInteger(size);
         this.tasksToSave = new AtomicInteger(size);
-    	this.failures = new AtomicInteger(0);
-    	this.success = new AtomicInteger(0);
-    	
+        this.failures = new AtomicInteger(0);
+        this.success = new AtomicInteger(0);
+        
         LOG.info("Submitting "+this.tasksToComplete+" DU tasks.");
         for (BgDUTask task : tasksToSubmit ) {
             //task.getSpaceToken();

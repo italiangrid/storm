@@ -18,6 +18,7 @@
 package it.grid.storm.namespace.config.xml;
 
 import it.grid.storm.balancer.BalancingStrategyType;
+import it.grid.storm.check.sanity.filesystem.SupportedFSType;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -57,6 +58,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
@@ -251,8 +253,6 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
          *************************/
         try {
             buildVFSs();
-            //Update SA within Reserved Space Catalog
-            updateSA();
         } catch (ClassNotFoundException ex) {
             log.error("Namespace Configuration ERROR in VFS-DRIVER specification", ex);
             /**
@@ -289,11 +289,37 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
              */
         }
         log.info("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : end ###############");
+        
+        //Update SA within Reserved Space Catalog
+        handleGPFSTotalOnlineSizeWarning();
+        updateSA();
+    }
 
+    private void handleGPFSTotalOnlineSizeWarning()
+    {
+        for (Entry<String, VirtualFSInterface> entry : vfss.entrySet())
+        {
+            String storageAreaName = entry.getKey();
+            VirtualFSInterface storageArea = entry.getValue();
+            SupportedFSType storageAreaFSType = SupportedFSType.parseFS(storageArea.getFSType());
+            if (storageAreaFSType == SupportedFSType.GPFS)
+            {
+                Quota quota = storageArea.getCapabilities().getQuota();
+                if (quota != null)
+                {
+                    if (quota.getEnabled())
+                    {
+                        log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
+                                + "since quota is enabled on the GPFS {} Storage Area.", storageAreaName);
+                    }
+                }
+            }
+
+        }
     }
 
     //*******************  Update SA Catalog ***************************
-    private void updateSA() throws NamespaceException {
+    private void updateSA() {
         TSpaceToken spaceToken = null;
         // ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
         SpaceHelper spaceHelp = new SpaceHelper();

@@ -239,11 +239,11 @@ public class VirtualFS implements VirtualFSInterface {
      *  READ METHODs
      ****************************************************************************/
 
-    public String getFSType() throws NamespaceException {
+    public String getFSType() {
         return this.type;
     }
 
-    public String getSpaceTokenDescription() throws NamespaceException {
+    public String getSpaceTokenDescription() {
         return this.spaceTokenDescription;
     }
 
@@ -490,7 +490,7 @@ public class VirtualFS implements VirtualFSInterface {
         return this.capabilities;
     }
 
-    public String getRootPath() throws NamespaceException {
+    public String getRootPath() {
         return this.rootPath;
     }
 
@@ -703,7 +703,7 @@ public class VirtualFS implements VirtualFSInterface {
 
         //Verify that Size retrieved from DB are not null.
         if (availableSpaceSize == null) {
-        	availableSpaceSize = TSizeInBytes.makeEmpty();
+            availableSpaceSize = TSizeInBytes.makeEmpty();
         }
         if (usedSpaceSize == null) {
             usedSpaceSize = TSizeInBytes.makeEmpty();

@@ -90,17 +90,9 @@ public class NamespaceFSAssociationCheck implements Check
                 log.info("The vfsSet contains null entries");
                 return false;
             }
-            try
+            if(vfs.getFSType() == null)
             {
-                if(vfs.getFSType() == null)
-                {
-                    log.info("The vfs " + vfs.getAliasName() + " has null FSType");
-                    return false;
-                }
-            }
-            catch (NamespaceException e)
-            {
-                log.info("Unable to get FSType from vfs " + vfs);
+                log.info("The vfs " + vfs.getAliasName() + " has null FSType");
                 return false;
             }
             try
