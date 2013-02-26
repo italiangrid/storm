@@ -7,6 +7,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.util.GPFSSizeHelper;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -30,33 +31,42 @@ public class QuotaManager {
     }
     
     
-    public int updateSAwithQuotaResult(GPFSQuotaCommandResult quotaResult) {
+    public int updateSAwithQuotaResult(GPFSQuotaCommandResult quotaResult)
+    {
         int nrFailures = 0;
-        if (quotaResult!=null) {
+        if (quotaResult != null)
+        {
             List<String> quotaNames = SpaceInfoManager.getInstance().retrieveQuotaNamesToUse();
             log.debug("QuotaNames: {} ", quotaNames);
-            
-            List<VirtualFSInterface> vfsQuotas = SpaceInfoManager.getInstance().retrieveSAtoInitializeWithQuota();
-            log.debug("vfs Quotas (size) : " + (vfsQuotas!=null?vfsQuotas.size():0));
-            
-            List<VirtualFSInterface> vfsQuotaEnabled = new ArrayList<VirtualFSInterface>();               
-            
-            //Update the result into the DB
-            for (GPFSQuotaInfo gpfsQuotaInfoEntry : quotaResult.getQuotaResults()) {
-                if (gpfsQuotaInfoEntry.isFailure()) {
+
+            List<VirtualFSInterface> vfsQuotas = SpaceInfoManager.getInstance()
+                                                                 .retrieveSAtoInitializeWithQuota();
+            log.debug("vfs Quotas (size) : " + (vfsQuotas != null ? vfsQuotas.size() : 0));
+
+            List<VirtualFSInterface> vfsQuotaEnabled = new ArrayList<VirtualFSInterface>();
+
+            // Update the result into the DB
+            for (GPFSQuotaInfo gpfsQuotaInfoEntry : quotaResult.getQuotaResults())
+            {
+                if (gpfsQuotaInfoEntry.isFailure())
+                {
                     nrFailures++;
-                } else {
+                }
+                else
+                {
                     String qName = gpfsQuotaInfoEntry.getQuotaEntryName();
-                    log.debug(".. evaluating QuotaEntryName : '"+qName+"'");
-                    if (quotaNames.contains(qName)) {
-                        //Retrieve corresponding VFS
+                    log.debug(".. evaluating QuotaEntryName : '" + qName + "'");
+                    if (quotaNames.contains(qName))
+                    {
+                        // Retrieve corresponding VFS
                         VirtualFSInterface vfsItem = retrieveCorrespondingVFS(vfsQuotas, qName);
-                        if (vfsItem!=null) {
+                        if (vfsItem != null)
+                        {
                             vfsQuotaEnabled.add(vfsItem);
                         }
                         // Elaborate gpfsQuotaInfoEntry;
                         StorageSpaceData ssd = SpaceInfoManager.getInstance().getSSDfromQuotaName(qName);
-                        if(ssd != null)
+                        if (ssd != null)
                         {
                             process(gpfsQuotaInfoEntry, ssd);
                         }
@@ -65,13 +75,15 @@ public class QuotaManager {
                             log.error("Retrieved null StorageSpaceData. Unable to update the database");
                             nrFailures++;
                         }
-                    } else {
-                        log.error("Found '"+qName+"' quota Name not corresponding to a Storage Area.");
+                    }
+                    else
+                    {
+                        log.error("Found '" + qName + "' quota Name not corresponding to a Storage Area.");
                         nrFailures++;
-                    }    
+                    }
                 }
-            }            
-            log.debug("vfs Enabled Quotas : "+ (vfsQuotaEnabled!=null?vfsQuotaEnabled.size():0));
+            }
+            log.debug("vfs Enabled Quotas : " + (vfsQuotaEnabled != null ? vfsQuotaEnabled.size() : 0));
             setHowmanyQuotas(vfsQuotaEnabled.size());
         }
         return nrFailures;
@@ -122,23 +134,32 @@ public class QuotaManager {
      * @param gpfsQuotaInfoEntry
      * @param ssd
      */
-    private void process(GPFSQuotaInfo gpfsQuotaInfoEntry, StorageSpaceData ssd) {
+    private void process(GPFSQuotaInfo gpfsQuotaInfoEntry, StorageSpaceData ssd)
+    {
         long usedSize = gpfsQuotaInfoEntry.getCurrentBlocksUsage();
-        log.debug("Used size for '"+gpfsQuotaInfoEntry.getQuotaEntryName()+"' is "+usedSize+" KB.");
-        try {
-            //Convert in BYTES (mmlsquota provides KiB)
-            usedSize = usedSize * 1024;
+        long totalSize = gpfsQuotaInfoEntry.getSoftBlocksLimit();
+        log.debug("Used size for '" + gpfsQuotaInfoEntry.getQuotaEntryName() + "' is " + usedSize + " KB.");
+        try
+        {
+            // Convert in BYTES (mmlsquota provides KiB)
+            usedSize = GPFSSizeHelper.getBytesFromKIB(usedSize);
+            totalSize = GPFSSizeHelper.getBytesFromKIB(totalSize);
             TSizeInBytes us = TSizeInBytes.make(usedSize, SizeUnit.BYTES);
+            TSizeInBytes totalSizeInBytes = TSizeInBytes.make(totalSize, SizeUnit.BYTES);
             ssd.setUsedSpaceSize(us);
-        } catch (InvalidTSizeAttributesException e) {
-            log.error("Negative size?");
-        }        
+            ssd.setTotalGuaranteedSize(totalSizeInBytes);
+            ssd.setTotalSpaceSize(totalSizeInBytes);
+        } catch(InvalidTSizeAttributesException e)
+        {
+            log.error("Negative values from gpfsQuotaCommand. Used size={} , Total size={}", usedSize,
+                      totalSize);
+        }
         log.debug("Saving updated Used Size into DB ... ");
+
         ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
         spaceCatalog.updateStorageSpace(ssd);
         log.debug("... saved. ");
     }
-    
 
     
     

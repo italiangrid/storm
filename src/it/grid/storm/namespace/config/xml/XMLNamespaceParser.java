@@ -19,7 +19,6 @@ package it.grid.storm.namespace.config.xml;
 
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.check.sanity.filesystem.SupportedFSType;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -54,7 +53,7 @@ import it.grid.storm.space.quota.GPFSQuotaCommandResult;
 import it.grid.storm.space.quota.GPFSQuotaInfo;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.util.GPFSBlockSizeHelper;
+import it.grid.storm.util.GPFSSizeHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -343,7 +342,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
     
     private void updateTotalOnlineSizeFromGPFSQuota(String storageAreaName, VirtualFSInterface storageArea, GPFSQuotaInfo quotaInfo)
     {
-        long gpfsTotalOnlineSize = GPFSBlockSizeHelper.getBytesFromBlocks(quotaInfo.getHardBlocksLimit());
+        long gpfsTotalOnlineSize = GPFSSizeHelper.getBytesFromKIB(quotaInfo.getSoftBlocksLimit());
         Property newProperties = Property.from(storageArea.getProperties());
         try
         {
