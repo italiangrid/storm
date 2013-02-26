@@ -179,46 +179,32 @@ public class GPFSQuotaInfo {
      */
     
     private String deviceName;
-    private static int deviceNameIndex = 0;
     
     private String quotaEntryName;
-    private static int quotaEntryNameIndex = 1;    
     
     private QuotaType quotaType;
-    private static int quotaTypeIndex = 2;      
    
     private long currentBlocksUsage = -1L;
-    private static int currentBlocksUsageIndex = 3; 
     
     private long softBlocksLimit = -1L;
-    private static int softBlocksLimitIndex = 4;  
     
     private long hardBlocksLimit = -1L;
-    private static int hardBlocksLimitIndex = 5;      
     
     private long spaceInDoubt = -1L;
-    private static int spaceInDoubtIndex = 6;  
     
     private String blockGracePeriod;
-    private static int blockGracePeriodIndex = 7;  
     
     private long currentNumberOfFiles = -1L;
-    private static int currentNumberOfFilesIndex = 9;    
     
     private long softFilesLimit = -1L;
-    private static int softFilesLimitIndex = 10;    
     
     private long hardFilesLimit = -1L;
-    private static int hardFilesLimitIndex = 11;    
     
     private long filesInDoubt = -1L;
-    private static int filesInDoubtIndex = 12;
     
     private String fileGracePeriod;
-    private static int fileGracePeriodIndex = 13;
     
     private EntryType entryType;
-    private static int entryTypeIndex = 14;
 
     /**
 	 * @return the deviceName
@@ -341,12 +327,10 @@ public class GPFSQuotaInfo {
         ArrayList<String> outputList = new ArrayList<String>();
         if (outputLine!=null) {
             StringTokenizer st = new StringTokenizer(outputLine);
-            int cont = 0;
             while (st.hasMoreTokens()) {
                 String element = st.nextToken();
                 outputList.add(element);
                 log.trace(element);
-                cont++;
             }    
         }
         return outputList;
@@ -391,100 +375,6 @@ public class GPFSQuotaInfo {
      * @param output String
      * @return QuotaInfoInterface
      */
-    public void build(String outputLine) {
-
-        initializated = true;
-        
-        List<String> outputList = splitTokens(outputLine);
-
-        // ### DeviceName
-        deviceName = outputList.get(deviceNameIndex);
-        
-        // ### QuotaEntryName
-        quotaEntryName = outputList.get(quotaEntryNameIndex);
-        
-        // ### QuotaType
-        quotaType = QuotaType.getQuotaType(outputList.get(quotaTypeIndex));
-
-        // ### EntryType
-        try {
-            currentBlocksUsage = Long.parseLong(outputList.get(currentBlocksUsageIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(currentBlocksUsageIndex) + "'");
-            currentBlocksUsage = 0;
-        }
-
-        // ### EntryType
-        try {
-            softBlocksLimit = Long.parseLong(outputList.get(softBlocksLimitIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(softBlocksLimitIndex) + "'");
-            softBlocksLimit = 0;
-        }
-        // ### EntryType
-        try {
-            hardBlocksLimit = Long.parseLong(outputList.get(hardBlocksLimitIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(hardBlocksLimitIndex) + "'");
-            hardBlocksLimit = 0;
-        }
-
-        // ### EntryType
-        try {
-            spaceInDoubt = Long.parseLong(outputList.get(spaceInDoubtIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(spaceInDoubtIndex) + "'");
-            spaceInDoubt = 0;
-        }
-        // ### EntryType
-        blockGracePeriod = outputList.get(blockGracePeriodIndex);
-        
-        // ### EntryType
-        try {
-            currentNumberOfFiles = Long.parseLong(outputList.get(currentNumberOfFilesIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(currentNumberOfFilesIndex) + "'");
-            currentNumberOfFiles = 0;
-        }
-
-        // ### EntryType
-        try {
-            softFilesLimit = Long.parseLong(outputList.get(softFilesLimitIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(softFilesLimitIndex) + "'");
-            softFilesLimit = 0;
-        }
-        // ### EntryType
-        try {
-            hardFilesLimit = Long.parseLong(outputList.get(hardFilesLimitIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(hardFilesLimitIndex) + "'");
-            hardFilesLimit = 0;
-        }
-        // ### EntryType
-        try {
-            filesInDoubt = Long.parseLong(outputList.get(filesInDoubtIndex));
-        }
-        catch (NumberFormatException nfe) {
-            log.warn("Unable to parse Long '" + outputList.get(filesInDoubtIndex) + "'");
-            filesInDoubt = 0;
-        }
-
-        // ### EntryType
-        fileGracePeriod = outputList.get(fileGracePeriodIndex);
-
-
-        // ### EntryType
-        entryType = EntryType.getEntryType(outputList.get(entryTypeIndex));
-
-    }
     
 
     public boolean isInitializated() {
@@ -493,7 +383,7 @@ public class GPFSQuotaInfo {
     
     
     
-    public void buildLs(String line, Quota quotaElement) {
+    public void parseMMLSQuotaCommandOutput(String line, Quota quotaElement) {
         initializated = true;
         
         List<String> outputList = splitTokens(line);

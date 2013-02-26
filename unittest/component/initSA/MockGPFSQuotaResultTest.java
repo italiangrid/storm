@@ -2,7 +2,7 @@ package component.initSA;
 
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
-import it.grid.storm.space.quota.GPFSLsQuotaCommand;
+import it.grid.storm.space.quota.GPFSMMLSQuotaCommand;
 import it.grid.storm.space.quota.GPFSQuotaCommandResult;
 import it.grid.storm.space.quota.GPFSQuotaInfo;
 import org.junit.Test;
@@ -15,13 +15,13 @@ public class MockGPFSQuotaResultTest {
     
     @Test
     public void testExecuteGetQuotaInfo() {
-        GPFSLsQuotaCommand quotaCmd = new GPFSLsQuotaCommand();
+        GPFSMMLSQuotaCommand quotaCmd = new GPFSMMLSQuotaCommand();
         quotaCmd.executeGetQuotaInfo(true);
     }
     
     @Test
     public void testExecuteGetQuotaInfo2() {
-        GPFSLsQuotaCommand quotaCmd = new GPFSLsQuotaCommand();
+        GPFSMMLSQuotaCommand quotaCmd = new GPFSMMLSQuotaCommand();
         Quota quota = new Quota();
         quota.setDevice("gemss_test");
         quota.setEnabled(true);

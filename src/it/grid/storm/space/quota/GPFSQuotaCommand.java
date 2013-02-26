@@ -26,6 +26,12 @@ public abstract class GPFSQuotaCommand {
     
     public abstract GPFSQuotaCommandResult executeGetQuotaInfo(boolean test);
     
+    /**
+     * @param quotaElement
+     * @param test
+     * @return the result of the GPFS quota query. Never returns null
+     * @throws QuotaException
+     */
     public abstract GPFSQuotaCommandResult executeGetQuotaInfo(Quota quotaElement, boolean test) throws QuotaException;
     
     

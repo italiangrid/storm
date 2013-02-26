@@ -162,6 +162,7 @@ public class VirtualFS implements VirtualFSInterface {
         this.storageClass = storageClass;
     }
 
+    @Override
     public void setProperties(PropertyInterface prop) {
         this.properties = prop;
     }

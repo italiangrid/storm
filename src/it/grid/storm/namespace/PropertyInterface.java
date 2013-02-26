@@ -53,6 +53,8 @@ public interface PropertyInterface {
 
   public boolean isOnlineSpaceLimited();
 
+  public boolean hasLimitedSize();
+
 
   //public TLifeTimeInSeconds getSpaceLifeTimeMAX();
 

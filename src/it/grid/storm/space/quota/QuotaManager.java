@@ -93,7 +93,7 @@ public class QuotaManager {
     public int updateSAwithQuotaSynch(boolean test) {
 
         //Execute Quota Command to retrieve info about used space
-        GPFSLsQuotaCommand quotaCmd = new GPFSLsQuotaCommand();
+        GPFSMMLSQuotaCommand quotaCmd = new GPFSMMLSQuotaCommand();
         GPFSQuotaCommandResult quotaResult = quotaCmd.executeGetQuotaInfo(test);
         
         int nrFailures = updateSAwithQuotaResult(quotaResult);

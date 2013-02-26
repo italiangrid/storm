@@ -19,6 +19,7 @@ package it.grid.storm.namespace.config.xml;
 
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.check.sanity.filesystem.SupportedFSType;
+import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -47,8 +48,12 @@ import it.grid.storm.namespace.model.SubjectRules;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.quota.GPFSMMLSQuotaCommand;
+import it.grid.storm.space.quota.GPFSQuotaCommandResult;
+import it.grid.storm.space.quota.GPFSQuotaInfo;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.util.GPFSBlockSizeHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -290,31 +295,65 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         }
         log.info("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : end ###############");
         
+        handleTotalOnlineSizeFromGPFSQuota();
         //Update SA within Reserved Space Catalog
-        handleGPFSTotalOnlineSizeWarning();
         updateSA();
     }
-
-    private void handleGPFSTotalOnlineSizeWarning()
+    
+    private void handleTotalOnlineSizeFromGPFSQuota()
     {
         for (Entry<String, VirtualFSInterface> entry : vfss.entrySet())
         {
             String storageAreaName = entry.getKey();
             VirtualFSInterface storageArea = entry.getValue();
-            SupportedFSType storageAreaFSType = SupportedFSType.parseFS(storageArea.getFSType());
-            if (storageAreaFSType == SupportedFSType.GPFS)
+            if (SupportedFSType.parseFS(storageArea.getFSType()) == SupportedFSType.GPFS)
             {
                 Quota quota = storageArea.getCapabilities().getQuota();
                 if (quota != null)
                 {
-                    if (quota.getEnabled())
+                    GPFSQuotaInfo quotaInfo = getGPFSQuotaInfo(storageAreaName, quota);
+                    if(quotaInfo == null)
                     {
-                        log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
-                                + "since quota is enabled on the GPFS {} Storage Area.", storageAreaName);
+                        log.warn("Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+                                + "for Storage Area {}.", storageAreaName); 
                     }
+                    updateTotalOnlineSizeFromGPFSQuota(storageAreaName, storageArea, quotaInfo);
                 }
             }
+        }
+    }
 
+    private GPFSQuotaInfo getGPFSQuotaInfo(String storageAreaName, Quota quota)
+    {
+        if (quota.getEnabled())
+        {
+            GPFSQuotaCommandResult quotaCommandResult = new GPFSMMLSQuotaCommand().executeGetQuotaInfo(quota, false);
+            List<GPFSQuotaInfo> quotaResults = quotaCommandResult.getQuotaResults();
+            if(quotaResults == null || quotaResults.isEmpty())
+            {
+                log.warn("Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+                                 + "for Storage Area {}.", storageAreaName);
+                return null;
+            }
+            return quotaResults.get(0);
+        }
+        return null;
+    }
+    
+    private void updateTotalOnlineSizeFromGPFSQuota(String storageAreaName, VirtualFSInterface storageArea, GPFSQuotaInfo quotaInfo)
+    {
+        long gpfsTotalOnlineSize = GPFSBlockSizeHelper.getBytesFromBlocks(quotaInfo.getHardBlocksLimit());
+        Property newProperties = Property.from(storageArea.getProperties());
+        try
+        {
+            newProperties.setTotalOnlineSize(SizeUnit.BYTES.toString(), gpfsTotalOnlineSize);
+            storageArea.setProperties(newProperties);
+            log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
+                    + "since quota is enabled on the GPFS {} Storage Area.", storageAreaName);
+        } catch(NamespaceException e)
+        {
+            log.warn("Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+                             + "for Storage Area {}.", storageAreaName, e);
         }
     }
 

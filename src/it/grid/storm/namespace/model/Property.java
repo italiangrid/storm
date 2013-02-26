@@ -36,6 +36,19 @@ public class Property  implements PropertyInterface {
     private AccessLatency accessLatency = AccessLatency.UNKNOWN;
     private boolean hasLimitedSize = false;
 
+    
+    public static Property from(PropertyInterface other)
+    {
+        Property property = new Property();
+        property.accessLatency = other.getAccessLatency();
+        property.expirationMode = other.getExpirationMode();
+        property.hasLimitedSize = other.hasLimitedSize();
+        property.retentionPolicy = other.getRetentionPolicy();
+        property.totalNearlineSize = other.getTotalNearlineSize();
+        property.totalOnlineSize = other.getTotalOnlineSize();
+        return property;
+    }
+    
     public TSizeInBytes getTotalOnlineSize() {
         return totalOnlineSize;
     }
@@ -54,6 +67,12 @@ public class Property  implements PropertyInterface {
 
     public AccessLatency getAccessLatency() {
         return accessLatency;
+    }
+    
+    @Override
+    public boolean hasLimitedSize()
+    {
+        return hasLimitedSize;
     }
 
     public void setTotalOnlineSize(String unitType, long onlineSize) throws NamespaceException {
@@ -189,4 +208,5 @@ public class Property  implements PropertyInterface {
         }
 
     }
+
 }

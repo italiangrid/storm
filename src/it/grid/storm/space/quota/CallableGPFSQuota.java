@@ -18,40 +18,40 @@ public class CallableGPFSQuota implements Callable<GPFSQuotaCommandResult> {
     }
 
 
-    private GPFSLsQuotaCommand quotaCmd;
+    private GPFSMMLSQuotaCommand quotaCmd;
     
     /**
      * @return the quotaCmd
      */
-    public final GPFSLsQuotaCommand getQuotaCmd() {
+    public final GPFSMMLSQuotaCommand getQuotaCmd() {
         return quotaCmd;
     }
 
     public CallableGPFSQuota() {
         this.test = false;
-        this.timeout = GPFSLsQuotaCommand.DEFAULT_TIMEOUT;
+        this.timeout = GPFSMMLSQuotaCommand.DEFAULT_TIMEOUT;
         this.creationTime = System.currentTimeMillis();
-        this.quotaCmd = new GPFSLsQuotaCommand(this.timeout);
+        this.quotaCmd = new GPFSMMLSQuotaCommand(this.timeout);
     }
     
     public CallableGPFSQuota(long timeout) {
         this.test = false;
         this.timeout = timeout;
         this.creationTime = System.currentTimeMillis();
-        this.quotaCmd = new GPFSLsQuotaCommand(this.timeout);
+        this.quotaCmd = new GPFSMMLSQuotaCommand(this.timeout);
     }
 
    public CallableGPFSQuota(long timeout, boolean test) {
         this.test = test;
         this.timeout = timeout;
         this.creationTime = System.currentTimeMillis();
-        this.quotaCmd = new GPFSLsQuotaCommand(this.timeout);
+        this.quotaCmd = new GPFSMMLSQuotaCommand(this.timeout);
     }
 
    public CallableGPFSQuota(boolean poisonPill) {
        this.test = false;
        this.creationTime = System.currentTimeMillis();
-       this.quotaCmd = new GPFSLsQuotaCommand(this.timeout);
+       this.quotaCmd = new GPFSMMLSQuotaCommand(this.timeout);
    }
    
    

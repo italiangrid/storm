@@ -180,4 +180,6 @@ public interface VirtualFSInterface {
 
     public boolean isHttpWorldReadable();
 
+    public void setProperties(PropertyInterface prop);
+
 }

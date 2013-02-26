@@ -7,7 +7,7 @@ package unitTests;
 import static org.junit.Assert.fail;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
-import it.grid.storm.space.quota.GPFSLsQuotaCommand;
+import it.grid.storm.space.quota.GPFSMMLSQuotaCommand;
 import it.grid.storm.space.quota.GPFSQuotaInfo;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,7 +38,7 @@ public class GPFSLsQuotaCommandTest
     
     private static final String mmlsquotaOutput = mmlsquotaOutputLine1 + eol + mmlsquotaOutputLine2 + eol + mmlsquotaOutputLine3;
 
-    private GPFSLsQuotaCommand quotaCommand;
+    private GPFSMMLSQuotaCommand quotaCommand;
 
     /**
      * @throws java.lang.Exception
@@ -46,7 +46,7 @@ public class GPFSLsQuotaCommandTest
     @Before
     public void setUp() throws Exception
     {
-        quotaCommand = new GPFSLsQuotaCommand();
+        quotaCommand = new GPFSMMLSQuotaCommand();
     }
 
     @Test
@@ -55,7 +55,7 @@ public class GPFSLsQuotaCommandTest
         Method method = null;
         try
         {
-            method = GPFSLsQuotaCommand.class.getDeclaredMethod("manageSuccess", new Class[] { String.class,
+            method = GPFSMMLSQuotaCommand.class.getDeclaredMethod("manageSuccess", new Class[] { String.class,
                     Quota.class });
         } catch(SecurityException e)
         {

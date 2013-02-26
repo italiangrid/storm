@@ -33,9 +33,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
+public class GPFSMMLSQuotaCommand extends GPFSQuotaCommand {
 
-    private static final Logger log = LoggerFactory.getLogger(GPFSLsQuotaCommand.class);
+    private static final Logger log = LoggerFactory.getLogger(GPFSMMLSQuotaCommand.class);
 
     private static String pathSep = File.separator;
     private static String gpfsCommandPath = pathSep + "usr" + pathSep + "lpp" + pathSep + "mmfs" + pathSep + "bin";
@@ -47,14 +47,14 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
      * Default constructor
      * @param timeout
      */
-    public GPFSLsQuotaCommand(long timeout) {
+    public GPFSMMLSQuotaCommand(long timeout) {
         super(timeout);
     }
 
     /**
      * 
      */
-    public GPFSLsQuotaCommand() {
+    public GPFSMMLSQuotaCommand() {
         super(DEFAULT_TIMEOUT);
     }
     
@@ -65,6 +65,9 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
     }
     
     
+    /* (non-Javadoc)
+     * @see it.grid.storm.space.quota.GPFSQuotaCommand#executeGetQuotaInfo(it.grid.storm.namespace.model.Quota, boolean)
+     */
     @Override
     public GPFSQuotaCommandResult executeGetQuotaInfo(Quota quotaElement, boolean test) throws QuotaException {
        
@@ -216,7 +219,7 @@ public class GPFSLsQuotaCommand extends GPFSQuotaCommand {
             for (String line : outputList) {
                 if (GPFSQuotaInfo.meaningfullLineForLS(line)) {
                     log.debug("MMLSQUOTA - line: '"+line+"' is meaningfull!");
-                    qInfo.buildLs(line, quotaElement);
+                    qInfo.parseMMLSQuotaCommandOutput(line, quotaElement);
                     meaningfullFound = true;
                 } else {
                     log.trace("MMLSQUOTA - line: '"+line+"' doesn't contain any usefull info.");
