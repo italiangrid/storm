@@ -38,6 +38,7 @@ import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.PermissionException;
 import it.grid.storm.namespace.model.PoolMember;
 import it.grid.storm.namespace.model.Property;
+import it.grid.storm.namespace.model.Property.SizeUnitType;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.ProtocolPool;
 import it.grid.storm.namespace.model.Quota;
@@ -346,7 +347,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
         Property newProperties = Property.from(storageArea.getProperties());
         try
         {
-            newProperties.setTotalOnlineSize(SizeUnit.BYTES.toString(), gpfsTotalOnlineSize);
+            newProperties.setTotalOnlineSize(SizeUnitType.BYTE.getTypeName(), gpfsTotalOnlineSize);
             storageArea.setProperties(newProperties);
             log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
                     + "since quota is enabled on the GPFS {} Storage Area.", storageAreaName);
