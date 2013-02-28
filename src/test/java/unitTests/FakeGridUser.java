@@ -1,4 +1,4 @@
-package component.namespace.config;
+package unitTests;
 
 import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.*;
