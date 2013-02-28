@@ -14,7 +14,7 @@ cluster file systems, as GPFS from IBM and Lustre from SUN.
 
 ### Build instructions
 
-You need git to get the code.
+You need git to get the code, and Maven to build.
 
 Build command:
 ```bash
