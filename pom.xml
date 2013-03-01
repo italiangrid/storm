@@ -22,6 +22,7 @@
 		<xmlrpcVersion>3.0</xmlrpcVersion>
 		<jaxrpcVersion>1.1</jaxrpcVersion>
 		<jsonVersion>20080701</jsonVersion>
+		<cogGlobusVersion>1.4</cogGlobusVersion>
 	</properties>
 
 	<build>
@@ -138,22 +139,22 @@
 		<dependency>
 			<groupId>org.globus</groupId>
 			<artifactId>cog-axis</artifactId>
-			<version>1.x</version>
+			<version>${cogGlobusVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.globus</groupId>
 			<artifactId>cog-jglobus</artifactId>
-			<version>1.x</version>
+			<version>${cogGlobusVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.globus</groupId>
 			<artifactId>cog-jobmanager</artifactId>
-			<version>1.x</version>
+			<version>${cogGlobusVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.globus</groupId>
 			<artifactId>cog-url</artifactId>
-			<version>1.x</version>
+			<version>${cogGlobusVersion}</version>
 		</dependency>
 
 		<dependency>
