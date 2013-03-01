@@ -136,24 +136,24 @@
 		</dependency>
 
 		<dependency>
-			<groupId>globus</groupId>
+			<groupId>org.globus</groupId>
 			<artifactId>cog-axis</artifactId>
-			<version>0.0.1</version>
+			<version>1.x</version>
 		</dependency>
 		<dependency>
-			<groupId>globus</groupId>
+			<groupId>org.globus</groupId>
 			<artifactId>cog-jglobus</artifactId>
-			<version>0.0.1</version>
+			<version>1.x</version>
 		</dependency>
 		<dependency>
-			<groupId>globus</groupId>
+			<groupId>org.globus</groupId>
 			<artifactId>cog-jobmanager</artifactId>
-			<version>0.0.1</version>
+			<version>1.x</version>
 		</dependency>
 		<dependency>
-			<groupId>globus</groupId>
+			<groupId>org.globus</groupId>
 			<artifactId>cog-url</artifactId>
-			<version>0.0.1</version>
+			<version>1.x</version>
 		</dependency>
 
 		<dependency>
