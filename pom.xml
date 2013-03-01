@@ -7,7 +7,7 @@
 	<version>1.11</version>
 
 	<properties>
-		<commonsConfigurationVersion>1.5</commonsConfigurationVersion>
+		<commonsConfigurationVersion>1.4</commonsConfigurationVersion>
 		<jerseyVersion>1.1.0-ea</jerseyVersion>
 		<grizzlyVersion>1.9.15b</grizzlyVersion>
 		<slf4jVersion>1.5.6</slf4jVersion>
@@ -28,6 +28,8 @@
 	<build>
 
 		<plugins>
+
+			<!-- Maven Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -37,22 +39,41 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			
-		<!-- Maven Surefire Plugin -->
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-surefire-plugin</artifactId>
-			<version>2.13</version>
-			<configuration>
-				<!-- skips tests by default-->
-				<skipTests>true</skipTests>
-			</configuration>
-		</plugin>
-			
-			
+
+			<!-- Maven Surefire Plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.13</version>
+				<configuration>
+					<!-- skips tests by default -->
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+
+			<!-- Maven Assembly Plugin -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<finalName>${project.name}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+					<descriptors>
+						<descriptor>${basedir}/src/main/assemblies/assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
-
-
 
 	</build>
 
@@ -78,6 +99,12 @@
 			<groupId>com.sun.grizzly</groupId>
 			<artifactId>grizzly-webserver</artifactId>
 			<version>${grizzlyVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.grizzly</groupId>
+			<artifactId>grizzly-nio-framework</artifactId>
+			<version>${grizzlyVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -133,6 +160,11 @@
 			<artifactId>axis</artifactId>
 			<version>${axisVersion}</version>
 		</dependency>
+		<dependency>
+			<groupId>axis</groupId>
+			<artifactId>axis-schema</artifactId>
+			<version>1.3</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.xmlrpc</groupId>
@@ -182,6 +214,58 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.0</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-discovery</groupId>
+			<artifactId>commons-discovery</artifactId>
+			<version>0.2</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>wsdl4j</groupId>
+			<artifactId>wsdl4j</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<version>2.7.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.6</version>
 		</dependency>
 
 	</dependencies>

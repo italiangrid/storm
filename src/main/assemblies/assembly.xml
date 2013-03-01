@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+	<id>storm-backend</id>
+
+	<formats>
+		<format>tar.gz</format>
+	</formats>
+
+	<!-- include all project dependencies and the project artifact -->
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>usr/share/java</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+
+	<fileSets>
+
+		<!-- include a few file in etc -->
+		<fileSet>
+			<directory>etc</directory>
+			<includes>
+				<include>logging.xml</include>
+				<include>namespace-1.5.0.xsd</include>
+				<include>namespace.xml</include>
+				<include>path-authz.db</include>
+				<include>storm.properties.template</include>
+				<include>used-space.ini.template</include>
+				<include>welcome.txt</include>
+			</includes>
+			<outputDirectory>etc/storm/backend-server</outputDirectory>
+		</fileSet>
+
+		<!-- include a few file in etc/db -->
+		<fileSet>
+			<directory>etc/db</directory>
+			<includes>
+				<include>storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql</include>
+				<include>storm_database_config.sh</include>
+				<include>storm_mysql_grant.sql</include>
+				<include>/storm_mysql_tbl.sql</include>
+			</includes>
+			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
+		</fileSet>
+
+		<!-- include a few file in the project root -->
+		<fileSet>
+			<directory></directory>
+			<includes>
+				<include>ACKNOWLEDGEMENTS.txt</include>
+				<include>CREDITS</include>
+				<include>LICENSE.txt</include>
+				<include>RELEASE-NOTES.txt</include>
+			</includes>
+			<outputDirectory>usr/share/doc/backend-server-${project.version}</outputDirectory>
+		</fileSet>
+
+		<!-- an empty fileset to create an empty sysconfig directory -->
+		<fileSet>
+			<directory>src</directory>
+			<outputDirectory>/etc/sysconfig/storm-backend-server</outputDirectory>
+			<excludes>
+				<exclude>**/*</exclude>
+			</excludes>
+			<directoryMode>0750</directoryMode>
+		</fileSet>
+
+		<!-- an empty fileset to create an empty log directory -->
+		<fileSet>
+			<directory>src</directory>
+			<outputDirectory>/var/log/storm</outputDirectory>
+			<excludes>
+				<exclude>**/*</exclude>
+			</excludes>
+			<directoryMode>0750</directoryMode>
+		</fileSet>
+
+	</fileSets>
+
+	<files>
+
+		<file>
+			<source>etc/init.d/storm-backend-server</source>
+			<outputDirectory>/etc/init.d</outputDirectory>
+		</file>
+
+		<file>
+			<source>etc/logrotate.d/storm-backend-server</source>
+			<outputDirectory>/etc/logrotate.d</outputDirectory>
+		</file>
+
+		<file>
+			<source>etc/lcmaps-${os.arch}.db</source>
+			<outputDirectory>/etc</outputDirectory>
+			<destName>lcmaps.db</destName>
+		</file>
+
+	</files>
+
+</assembly>
