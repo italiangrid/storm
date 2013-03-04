@@ -94,7 +94,7 @@
 
 		<file>
 			<source>etc/lcmaps-${os.arch}.db</source>
-			<outputDirectory>/etc</outputDirectory>
+			<outputDirectory>/etc/storm/backend-server</outputDirectory>
 			<destName>lcmaps.db</destName>
 		</file>
 
