@@ -7,6 +7,8 @@
 	<version>1.11</version>
 
 	<properties>
+
+		<!-- versions of the project dependencies -->
 		<commonsConfigurationVersion>1.4</commonsConfigurationVersion>
 		<jerseyVersion>1.1.0-ea</jerseyVersion>
 		<grizzlyVersion>1.9.15b</grizzlyVersion>
@@ -19,17 +21,29 @@
 		<commonsIoVersion>2.0.1</commonsIoVersion>
 		<ini4jVersion>0.5.2</ini4jVersion>
 		<axisVersion>1.4</axisVersion>
+		<axisSchemaVersion>1.3</axisSchemaVersion>
 		<xmlrpcVersion>3.0</xmlrpcVersion>
 		<jaxrpcVersion>1.1</jaxrpcVersion>
 		<jsonVersion>20080701</jsonVersion>
 		<cogGlobusVersion>1.4</cogGlobusVersion>
+		<junitVersion>4.8.1</junitVersion>
+		<commonsCliVersion>1.0</commonsCliVersion>
+		<commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
+		<commonsHttpClientVersion>3.1</commonsHttpClientVersion>
+		<activationVersion>1.1.1</activationVersion>
+		<commonsValidatorVersion>1.3.0</commonsValidatorVersion>
+		<wsdl4jVersion>1.5.1</wsdl4jVersion>
+		<xalanVersion>2.7.1</xalanVersion>
+		<mailVersion>1.4.6</mailVersion>
+		<jakartaOroVersion>2.0.8</jakartaOroVersion>
+
 	</properties>
 
 	<build>
 
 		<plugins>
 
-			<!-- Maven Compiler Plugin -->
+			<!-- Enable maven compiler plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -40,18 +54,20 @@
 				</configuration>
 			</plugin>
 
-			<!-- Maven Surefire Plugin -->
+			<!-- Enable maven surefire plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.13</version>
 				<configuration>
-					<!-- skips tests by default -->
+					<!-- skips tests by default, until we have not reviewed them and make 
+						sure they work -->
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
 
-			<!-- Maven Assembly Plugin -->
+			<!-- Enable the maven assembly plugin. Assembly a tarball as per description 
+				in src/main/assembly.xml -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -87,11 +103,6 @@
 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
-			<version>${jerseyVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
 			<version>${jerseyVersion}</version>
 		</dependency>
@@ -112,7 +123,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4jVersion}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -163,7 +173,7 @@
 		<dependency>
 			<groupId>axis</groupId>
 			<artifactId>axis-schema</artifactId>
-			<version>1.3</version>
+			<version>${axisSchemaVersion}</version>
 		</dependency>
 
 		<dependency>
@@ -183,6 +193,11 @@
 			<version>${jsonVersion}</version>
 		</dependency>
 
+		<!-- not on Maven Central, we have it on our own repository, you can install 
+			it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The 
+			artifacts not prefix with cog are dependencies. As all of them are very old, 
+			and not supported, we have installed the versions distributed with CoG, with 
+			the CoG version and groupID -->
 		<dependency>
 			<groupId>org.globus</groupId>
 			<artifactId>cog-axis</artifactId>
@@ -203,7 +218,34 @@
 			<artifactId>cog-url</artifactId>
 			<version>${cogGlobusVersion}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>cryptix-asn1</artifactId>
+			<version>${cogGlobusVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>cryptix32</artifactId>
+			<version>${cogGlobusVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>puretls</artifactId>
+			<version>${cogGlobusVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>jgss</artifactId>
+			<version>${cogGlobusVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>jce-jdk13-131</artifactId>
+			<version>${cogGlobusVersion}</version>
+		</dependency>
 
+		<!-- not on Maven Central, we have it on our own repository, taken form 
+			the lib directory of the old src code repository https://github.com/italiangrid/storm/commits/BE_1.11/lib/srm22client.jar -->
 		<dependency>
 			<groupId>srm22client</groupId>
 			<artifactId>srm22client</artifactId>
@@ -213,59 +255,73 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
+			<version>${junitVersion}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
-			<version>1.0</version>
+			<version>${commonsCliVersion}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-discovery</groupId>
 			<artifactId>commons-discovery</artifactId>
-			<version>0.2</version>
+			<version>${commonsDiscoveryVersion}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
+			<version>${commonsHttpClientVersion}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
+			<version>${activationVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.3.0</version>
+			<version>${commonsValidatorVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>wsdl4j</groupId>
 			<artifactId>wsdl4j</artifactId>
-			<version>1.5.1</version>
+			<version>${wsdl4jVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
+			<version>${xalanVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
-			<version>1.4.6</version>
+			<version>${mailVersion}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- not on Maven Central, we have it on our own repository, you can install 
+			it from official releases http://archive.apache.org/dist/jakarta/oro/ -->
+		<dependency>
+			<groupId>org.apache.oro</groupId>
+			<artifactId>jakarta-oro</artifactId>
+			<version>${jakartaOroVersion}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 	</dependencies>
