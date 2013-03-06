@@ -15,7 +15,7 @@
 	<!-- include all project dependencies and the project artifact -->
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>usr/share/java</outputDirectory>
+			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
 		</dependencySet>
 	</dependencySets>
 
