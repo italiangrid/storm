@@ -2,6 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+    <name>StoRM Backend server</name>
 	<groupId>org.italiangrid.storm</groupId>
 	<artifactId>storm-backend</artifactId>
 	<version>1.11</version>
@@ -36,6 +37,8 @@
 		<xalanVersion>2.7.1</xalanVersion>
 		<mailVersion>1.4.6</mailVersion>
 		<jakartaOroVersion>2.0.8</jakartaOroVersion>
+    
+    <native-interface.version>1.0.0-SNAPSHOT</native-interface.version>
 
 	</properties>
 
@@ -65,9 +68,7 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-
-			<!-- Enable the maven assembly plugin. Assembly a tarball as per description 
-				in src/main/assembly.xml -->
+  
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -95,7 +96,13 @@
 
 	<dependencies>
 
-		<dependency>
+    <dependency>
+      <groupId>org.italiangrid</groupId>
+      <artifactId>storm-native-interface</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>${commonsConfigurationVersion}</version>
