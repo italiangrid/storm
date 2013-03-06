@@ -36,10 +36,10 @@ import java.util.List;
  */
 public interface XMLConst {
 
-    public final char FS_SUB_PATTERN = '°';
-    public final char MAP_SUB_PATTERN = 'ç';
-    public final char PROT_SUB_PATTERN = '§';
-    public final char POOL_SUB_PATTERN = '£';
+    public final char FS_SUB_PATTERN = 'Â°';
+    public final char MAP_SUB_PATTERN = 'Ã§';
+    public final char PROT_SUB_PATTERN = 'Â§';
+    public final char POOL_SUB_PATTERN = 'Â£';
     public final char APPRULE_SUB_PATTERN = '^';
     public final char ACL_ENTRY_SUB_PATTERN = '~';
     public final char MEMBER_SUB_PATTERN = '*';
