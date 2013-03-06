@@ -93,7 +93,7 @@
 		</file>
 
 		<file>
-			<source>etc/lcmaps-${os.arch}.db</source>
+			<source>etc/lcmaps.db</source>
 			<outputDirectory>/etc/storm/backend-server</outputDirectory>
 			<destName>lcmaps.db</destName>
 		</file>
