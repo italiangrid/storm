@@ -255,7 +255,15 @@ public class StoRM {
      */
     synchronized public void stopRestServer() 
     {
-            RestService.stop();
+            try {
+				
+            	RestService.stop();
+			
+            } catch (Exception e) {
+				
+            	System.err.println("Unable to stop internal HTTP Server listening for RESTFul services: " + e.getMessage());
+			}
+            
             this.isRestServerRunning = false;
     }
     

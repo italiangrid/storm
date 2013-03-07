@@ -13,18 +13,20 @@
  
 package it.grid.storm.info.remote.resources;
 
+import it.grid.storm.info.remote.Constants;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import it.grid.storm.info.remote.Constants;
+
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import com.sun.jersey.server.impl.ResponseBuilderImpl;
+
+import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 @Path("/info/ping")
 public class Ping {

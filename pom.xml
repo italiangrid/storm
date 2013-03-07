@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-    <name>StoRM Backend server</name>
+	<name>StoRM Backend server</name>
 	<groupId>org.italiangrid.storm</groupId>
 	<artifactId>storm-backend</artifactId>
 	<version>1.11</version>
@@ -11,8 +11,8 @@
 
 		<!-- versions of the project dependencies -->
 		<commonsConfigurationVersion>1.4</commonsConfigurationVersion>
-		<jerseyVersion>1.1.0-ea</jerseyVersion>
-		<grizzlyVersion>1.9.15b</grizzlyVersion>
+		<jerseyVersion>1.17.1</jerseyVersion>
+		<jettyVersion>8.1.9.v20130131</jettyVersion>
 		<slf4jVersion>1.5.6</slf4jVersion>
 		<logbackVersion>0.9.15</logbackVersion>
 		<nettyVersion>3.5.0.Final</nettyVersion>
@@ -37,9 +37,9 @@
 		<xalanVersion>2.7.1</xalanVersion>
 		<mailVersion>1.4.6</mailVersion>
 		<jakartaOroVersion>2.0.8</jakartaOroVersion>
-    
-    <native-interface.version>1.0.0-SNAPSHOT</native-interface.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<native-interface.version>1.0.0-SNAPSHOT</native-interface.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 	</properties>
 
@@ -69,7 +69,7 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-  
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -97,13 +97,13 @@
 
 	<dependencies>
 
-    <dependency>
-      <groupId>org.italiangrid</groupId>
-      <artifactId>storm-native-interface</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
+		<dependency>
+			<groupId>org.italiangrid</groupId>
+			<artifactId>storm-native-interface</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 
-    <dependency>
+		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>${commonsConfigurationVersion}</version>
@@ -111,21 +111,16 @@
 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-server</artifactId>
+			<artifactId>jersey-servlet</artifactId>
 			<version>${jerseyVersion}</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>com.sun.grizzly</groupId>
-			<artifactId>grizzly-webserver</artifactId>
-			<version>${grizzlyVersion}</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jettyVersion}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.sun.grizzly</groupId>
-			<artifactId>grizzly-nio-framework</artifactId>
-			<version>${grizzlyVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

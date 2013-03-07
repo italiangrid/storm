@@ -23,122 +23,120 @@ package it.grid.storm.rest;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.info.InfoService;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import javax.ws.rs.core.UriBuilder;
-
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.grizzly.http.SelectorThread;
-import com.sun.grizzly.http.embed.GrizzlyWebServer;
-import com.sun.grizzly.http.servlet.ServletAdapter;
-import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
-import com.sun.jersey.api.core.PackagesResourceConfig;
+import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 /**
+ * This class provides static methods for starting and stopping
+ * the storm-backend restful services.
+ * 
  * @author zappi
+ * @author valerioventuri
  */
 public class RestService {
 
     private static final Logger log = LoggerFactory.getLogger(RestService.class);
     
+    /**
+     * Object holding the service configuration.
+     */
     private static Configuration config = Configuration.getInstance();
     
-    public static URI BASE_URI =  getBaseURI();
-    
-    private static SelectorThread httpThreadSelector;
+    /**
+     * The Jetty {@link Server} object.
+     */
+    private static Server server;
        
-    @SuppressWarnings("serial")
-	private static final HashSet<String> resources = new HashSet<String>(){ 
-    	{
-    		add("it.grid.storm.tape.recalltable.resources");
-    		add(InfoService.getResourcePackage());
-    		add("it.grid.storm.authz.remote.resource");
-    		add("it.grid.storm.namespace.remote.resource");
-    		add("it.grid.storm.ea.remote.resource");
-    	}
-    };
- 
-    
+    /**
+     * Get the port on which the server will bind from the service
+     * configuration.
+     * 
+     * @return the port on which the server will bind
+     */
     private static int getPort() {
-        int restServicePort = config.getRestServicesPort();
-        log.debug("Rest Service Port =  " + restServicePort);
+        
+    	int restServicePort = config.getRestServicesPort();
+        
+    	log.debug("Rest Service Port =  " + restServicePort);
+        
         return restServicePort;
     }
 
-    private static URI getBaseURI() {
-        return UriBuilder.fromUri("http://localhost/").port(RestService.getPort()).build();
-    }
-    
- 
-    /**
-     * Build the required initialization parameters Map for Grizzly adding the ';' separated package names
-     * containing rest resources
-     * 
-     * @return the produced map
-     */
-    private static Map<String, String> buildInitParams()
-    {
-        Map<String, String> initParams = new HashMap<String, String>();
-        String key = PackagesResourceConfig.PROPERTY_PACKAGES;
-        String value = "";
-        for(String resource : resources)
-        {
-            value += resource + ";"; 
-        }
-        initParams.put(key, value);
-        return initParams;
-    }
+    private static void configureServerConnector() {
+    	
+    	Connector connector = new SelectChannelConnector();
 
-
-    /**
-     * @throws IOException
-     */
-    public static void startServer() throws IOException
-    {
-        log.info("Starting Grizzly Web Server ... ");
-        SelectorThread threadSelector = GrizzlyWebContainerFactory.create(BASE_URI, buildInitParams());
-        log.info(" ... started!");
-        httpThreadSelector = threadSelector;
-        return;
-    }
-
-    /**
-     * NOTE: never used
-     * @throws IOException
-     */
-    public static void startWithAdapter() throws IOException {
-        GrizzlyWebServer ws = new GrizzlyWebServer(config.getRestServicesPort());
-        ServletAdapter jerseyAdapter = new ServletAdapter();
-        jerseyAdapter.setServletInstance(new com.sun.jersey.spi.container.servlet.ServletContainer());
-        Map<String,String> initParam = buildInitParams();
-        String key = PackagesResourceConfig.PROPERTY_PACKAGES;
-        jerseyAdapter.addInitParameter(key, initParam.get(key));
-        ws.addGrizzlyAdapter(jerseyAdapter, new String[] { "/" });
-        ws.getSelectorThread().enableMonitoring();
-        ws.start();
-    }
-
-    /**
-     * @return
-     */
-    public static boolean isRunning()
-    {
-        return httpThreadSelector != null;
+		connector.setHost("localhost");
+    	connector.setPort(RestService.getPort());
+    	
+    	server.addConnector(connector);
     }
     
     /**
+     * Configure the {@link Server} to bind on localhost and the configured port,
+     * and install the Jersey {@link ServletContainer} and look for resources in the 
+     * provided directories.
      * 
      */
-    public static void stop()
+	private static void configureServer() {
+    	
+        ServletContainer servlet = new ServletContainer();
+
+        ServletHolder holder = new ServletHolder(servlet);
+        holder.setInitParameter("it.grid.storm.tape.recalltable.resources",
+        		"it.grid.storm.tape.recalltable.resources," +
+        		"it.grid.storm.authz.remote.resource," +
+        		"it.grid.storm.namespace.remote.resource," +
+        		"it.grid.storm.ea.remote.resource," +
+        		InfoService.getResourcePackage());
+
+        ServletContextHandler servletContextHandler = 
+        		new ServletContextHandler(ServletContextHandler.SESSIONS);
+        servletContextHandler.setContextPath("/");
+        servletContextHandler.addServlet(holder, "/*");
+
+        server.setHandler(servletContextHandler);
+	}
+
+    /**
+     * Starts the server.
+     * 
+     * @throws Exception
+     */
+    public static void startServer() throws Exception {
+    	
+    	server = new Server();
+    	
+    	configureServerConnector();
+    	configureServer();
+    	
+    	log.info("Starting RESTFul services ... ");
+
+        server.start();
+        server.join();
+        
+        log.info(" ... started");
+    }
+
+    /**
+     * Stops the server.
+     * 
+     * @throws Exception
+     */
+    public static void stop() throws Exception
     {
-        if (httpThreadSelector != null)
-        {
-            httpThreadSelector.stopEndpoint();
-        }
+    	log.info("Starting RESTFul services ... ");
+
+    	server.stop();
+
+    	log.info("... stopped");
+
     }
 }

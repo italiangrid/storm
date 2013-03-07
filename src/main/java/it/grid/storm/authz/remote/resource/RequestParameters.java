@@ -9,7 +9,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sun.jersey.server.impl.ResponseBuilderImpl;
+import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 class RequestParameters
 {
