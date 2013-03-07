@@ -64,11 +64,15 @@ public class RestService {
         
     	int restServicePort = config.getRestServicesPort();
         
-    	log.debug("Rest Service Port =  " + restServicePort);
+    	log.debug("RESTFul services will be listening on port " + restServicePort);
         
         return restServicePort;
     }
 
+    /**
+     * Configure the {@link Server} object to bind on localhost and 
+     * on the port taken from the service configuration.
+     */
     private static void configureServerConnector() {
     	
     	Connector connector = new SelectChannelConnector();
@@ -80,9 +84,8 @@ public class RestService {
     }
     
     /**
-     * Configure the {@link Server} to bind on localhost and the configured port,
-     * and install the Jersey {@link ServletContainer} and look for resources in the 
-     * provided directories.
+     * Configure the {@link Server}. Install the Jersey {@link ServletContainer} and 
+     * configure it to with resources locations.
      * 
      */
 	private static void configureServer() {
