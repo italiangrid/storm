@@ -199,7 +199,7 @@ classpath="$classpath:$STORM_BE_CONFIGDIR"
 ######################
 PLATFORM=`${JAVA} -cp $STORM_BE_JAR -Xmx32m it.grid.storm.Platform | sed -e "s/ /_/g"`
 
-setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/${NAME}/"
+setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/"
 export LD_LIBRARY_PATH="/usr/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
 # port for the command server (FIXME: should read from conf. file)
