@@ -15,6 +15,13 @@
 	<!-- include all project dependencies and the project artifact -->
 	<dependencySets>
 		<dependencySet>
+			<!-- need to exclude this old xerces version that would otherwise be brough 
+				in as a commons-dbcp dendendency. Though the compiler seems to resolve the 
+				conflict fine, the assembly plugin put it in the package -->
+			<excludes>
+				<exclude>xerces:xerces</exclude>
+			</excludes>
+			<useProjectArtifact>false</useProjectArtifact>
 			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
 		</dependencySet>
 	</dependencySets>
@@ -25,6 +32,7 @@
 		<fileSet>
 			<directory>etc</directory>
 			<includes>
+				<include>lcmaps.db</include>
 				<include>logging.xml</include>
 				<include>namespace-1.5.0.xsd</include>
 				<include>namespace.xml</include>
@@ -48,32 +56,10 @@
 			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
 		</fileSet>
 
-		<!-- include a few file in the project root -->
-		<fileSet>
-			<directory></directory>
-			<includes>
-				<include>ACKNOWLEDGEMENTS.txt</include>
-				<include>CREDITS</include>
-				<include>LICENSE.txt</include>
-				<include>RELEASE-NOTES.txt</include>
-			</includes>
-			<outputDirectory>usr/share/doc/backend-server-${project.version}</outputDirectory>
-		</fileSet>
-
-		<!-- an empty fileset to create an empty sysconfig directory -->
-		<fileSet>
-			<directory>src</directory>
-			<outputDirectory>/etc/sysconfig/storm-backend-server</outputDirectory>
-			<excludes>
-				<exclude>**/*</exclude>
-			</excludes>
-			<directoryMode>0750</directoryMode>
-		</fileSet>
-
 		<!-- an empty fileset to create an empty log directory -->
 		<fileSet>
 			<directory>src</directory>
-			<outputDirectory>/var/log/storm</outputDirectory>
+			<outputDirectory>var/log/storm</outputDirectory>
 			<excludes>
 				<exclude>**/*</exclude>
 			</excludes>
@@ -85,19 +71,23 @@
 	<files>
 
 		<file>
+			<source>target/${artifactId}.jar</source>
+			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
+		</file>
+
+		<file>
 			<source>etc/init.d/storm-backend-server</source>
-			<outputDirectory>/etc/init.d</outputDirectory>
+			<outputDirectory>etc/init.d</outputDirectory>
 		</file>
 
 		<file>
 			<source>etc/logrotate.d/storm-backend-server</source>
-			<outputDirectory>/etc/logrotate.d</outputDirectory>
+			<outputDirectory>etc/logrotate.d</outputDirectory>
 		</file>
 
 		<file>
-			<source>etc/lcmaps.db</source>
-			<outputDirectory>/etc/storm/backend-server</outputDirectory>
-			<destName>lcmaps.db</destName>
+			<source>etc/sysconfig/storm-backend-server</source>
+			<outputDirectory>etc/sysconfig</outputDirectory>
 		</file>
 
 	</files>
