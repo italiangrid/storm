@@ -122,8 +122,8 @@ public class RestService {
     	
     	log.info("Starting RESTFul services ... ");
 
-        server.start();
-        server.join();
+        JettyThread thread = new JettyThread(server);
+        thread.run();
         
         log.info(" ... started");
     }
