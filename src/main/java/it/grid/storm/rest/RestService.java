@@ -123,7 +123,7 @@ public class RestService {
     	log.info("Starting RESTFul services ... ");
 
         JettyThread thread = new JettyThread(server);
-        thread.run();
+        thread.start();
         
         log.info(" ... started");
     }
