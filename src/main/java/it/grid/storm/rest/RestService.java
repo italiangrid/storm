@@ -93,7 +93,7 @@ public class RestService {
         ServletContainer servlet = new ServletContainer();
 
         ServletHolder holder = new ServletHolder(servlet);
-        holder.setInitParameter("it.grid.storm.tape.recalltable.resources",
+        holder.setInitParameter("com.sun.jersey.config.property.packages",
         		"it.grid.storm.tape.recalltable.resources," +
         		"it.grid.storm.authz.remote.resource," +
         		"it.grid.storm.namespace.remote.resource," +
