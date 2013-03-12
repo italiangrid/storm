@@ -77,7 +77,6 @@ public class RestService {
     	
     	Connector connector = new SelectChannelConnector();
 
-		connector.setHost("localhost");
     	connector.setPort(RestService.getPort());
     	
     	server.addConnector(connector);
