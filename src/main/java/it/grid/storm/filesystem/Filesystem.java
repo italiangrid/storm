@@ -99,6 +99,8 @@ import java.util.concurrent.Semaphore;
  **/
 public class Filesystem {
 
+	
+	public static final long FS_BLOCK_SIZE = 512;
 
     // --- private instance variables ---
 
@@ -205,8 +207,6 @@ public class Filesystem {
         File fileOrDir = new File(fileOrDirectory);
         return fileOrDir.lastModified();
 
-        //return fs.get_last_modification_time(fileOrDirectory);
-
     }
 
     /** Get up-to-date file size in bytes.  Returned value may differ
@@ -218,7 +218,6 @@ public class Filesystem {
     public long getExactSize(final String file) {
         File fileOrDir = new File(file);
         return fileOrDir.length();
-        //return fs.get_exact_size(file);
     }
 
     /** Get up-to-date file last modification time, as a UNIX epoch.
@@ -245,9 +244,13 @@ public class Filesystem {
 
 
 
+    public long getFileBlockSize(String filename){
+    	return FS_BLOCK_SIZE * fs.get_number_of_blocks(filename);
+    }
 
-
-
+    public void changeFileGroupOwnership(String filename, String groupName){
+    	fs.change_group_ownership(filename, groupName);
+    }
 
 
     /**
@@ -273,135 +276,9 @@ public class Filesystem {
         return fs.get_free_space();
     }
 
-    /**
-     * Pre-allocate <i>size</i> bytes on a file; return actual size
-     * (in bytes) of reserved space.  When
-     *
-     * @return actual size (in bytes) reserved for the file
-     *
-     * @param pathToFile pathname of the file for which disk space
-     * should be reserved.
-     *
-     * @param size size (in bytes) of requested space
-     *
-     * @exception InvalidPathException if <i>pathToFile</i> is not a
-     * valid fileystem path, or if the named file does not exist.
-     *
-     * @exception InvalidPermissionOnFileException if permission is
-     * denied (to the user running the StoRM server process) to
-     * operate on the named file.
-     */
-    //    public long reserveSpaceForFile(final String pathToFile, final long size)
-    //        throws InvalidPathException, InvalidPermissionOnFileException {
-    //        // cannot reserve space on a generic filesystem
-    //        return 0;
-    //    }
+    
 
-    /**
-     * Return to filesystems' available space any space previously
-     * allocated to a file, but presently unused.
-     *
-     * @param pathToFile pathname of the file for which disk space
-     * should be reserved.
-     *
-     * @exception InvalidPathException if <i>pathToFile</i> is not a
-     * valid fileystem path, or if the named file does not exist.
-     *
-     * @exception InvalidPermissionOnFileException if permission is
-     * denied (to the user running the StoRM server process) to
-     * operate on the named file.
-     */
-    //    public long compactSpaceInFile(final String pathToFile)
-    //        throws InvalidPathException, InvalidPermissionOnFileException {
-    //        // cannot compact space on a generic filesystem
-    //        return 0;
-    //    }
-
-    /** Reserve <i>size</i> bytes on filesystem; return actual size
-     * (in bytes) of reserved space.  If any space is actually
-     * reserved by this function, then it is considered a
-     * <em>guaranteed</em> reservation, that is, only user <i>u</i>
-     * can operate on it and eventually dispose the space.
-     *
-     * <p><strong>This interface is a draft!</strong> Due to the
-     * unsettled state of the SRM spec regarding to reserved space
-     * semantics, and the differences between SRM space reservation
-     * and GPFS preallocation, it's better not use this interface
-     * directly; rather, use wrapper objects (like {@link
-     * it.grid.storm.filesystem.File} for file operations).
-     *
-     * @param u the local user ({@link
-     * it.grid.storm.griduser.LocalUser} instance) whom the space has
-     * been assigned to.
-     *
-     * @param token a string uniquely identifying the reserved space.
-     *
-     * @param size size (in bytes) of space to reserve.
-     *
-     * @return actual size (in bytes) of the space reserved.
-     */
-    //    public long reserveGuaranteedSpace(final LocalUser u, final Space space, final long size) {
-    //        // cannot reserve space on a generic filesystem
-    //        return 0;
-    //    }
-
-    /** Return to filesystems' available space any space previously
-     * reserved in object <i>space</i> but currently unused.
-     *
-     * <p><strong>This interface is a draft!</strong> Due to the
-     * unsettled state of the SRM spec regarding to reserved space
-     * semantics, and the differences between SRM space reservation
-     * and GPFS preallocation, it's better not use this interface
-     * directly; rather, use wrapper objects (like {@link
-     * it.grid.storm.filesystem.File} for file operations).
-     *
-     * @param u the local user ({@link
-     * it.grid.storm.griduser.LocalUser} instance) whom the space has
-     * been assigned to.
-     *
-     * @param token a string uniquely identifying the reserved space.
-     *
-     * @return actual size (in bytes) of the space returned to
-     * "available" state.  Will return <code>-1</code> to indicate
-     * successful completion of operation, but that the exact amount
-     * of space freed cannot be determined.
-     */
-    //    public long compactSpace(final LocalUser u, final Space space) {
-    //        // cannot compact space on a generic filesystem
-    //        return 0;
-    //    }
-
-    /** Dispose reserved space and return any used space to the
-     * general filesystem availability.  The space to be freed is
-     * identified by <i>Space</i> and the user <i>u</i>.
-     *
-     * <p><strong>This interface is a draft!</strong> Due to the
-     * unsettled state of the SRM spec regarding to reserved space
-     * semantics, and the differences between SRM space reservation
-     * and GPFS preallocation, it's better not use this interface
-     * directly; rather, use wrapper objects (like {@link
-     * it.grid.storm.filesystem.File} for file operations).
-     *
-     * @param u the local user ({@link it.grid.storm.griduser.LocalUser} instance) whom the
-     * space has been assigned to.
-     *
-     * @param space the space to be freed and returned to the
-     * filesystem
-     */
-    //    public void disposeGuaranteedSpace(final LocalUser u, final Space space) {
-    //        // cannot reserve space on a generic filesystem
-    //    }
-
-    /** @} **/
-
-
-
-
-
-
-
-
-    /**
+     /**
        @defgroup fs_access Access Control
 
        These functions should be used to test if a certain user is

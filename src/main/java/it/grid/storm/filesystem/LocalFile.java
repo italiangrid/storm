@@ -37,8 +37,6 @@ import it.grid.storm.ea.FileNotFoundException;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.jna.CUtilManager;
-import it.grid.storm.jna.NoGPFSFileSystemException;
 
 import java.io.File;
 import java.io.IOException;
@@ -428,64 +426,48 @@ public class LocalFile {
         return localFile.isDirectory();
     }
 
+    
+    private boolean isGPFS() throws FSException{
+        
+    	try
+        {
+            return FileSystemCheckerFactory.getInstance().createFileSystemChecker().isGPFS(this.localFile);
+        }
+        catch (Exception e)
+        {
+            log.error("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalArgumentException " + e.getMessage());
+            throw new FSException("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalArgumentException " + e.getMessage());
+        }
+    }
     /**
      * Returns <code>true</code> is the file is present on the disk, <code>false</code> otherwise.
      * 
      * @return <code>true</code> is the file is present on the disk, <code>false</code> otherwise.
      */
-    public boolean isOnDisk() throws FSException{
-        
-        boolean isGPFS;
-        try
-        {
-            isGPFS = FileSystemCheckerFactory.getInstance().createFileSystemChecker().isGPFS(this.localFile);
-        }
-        catch (IllegalArgumentException e)
-        {
-            log.error("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalArgumentException " + e.getMessage());
-            throw new FSException("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalArgumentException " + e.getMessage());
-        }
-        catch (IllegalStateException e)
-        {
-            log.error("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalStateException " + e.getMessage());
-            throw new FSException("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. IllegalStateException " + e.getMessage());
-        }
-        catch (FileSystemCheckerException e)
-        {
-            log.error("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. FileSystemCheckerException " + e.getMessage());
-            throw new FSException("Unable to check if file " + this.localFile.getAbsolutePath() + " is on GPFS. FileSystemCheckerException " + e.getMessage());
-        }
-        if(isGPFS)
-        {
-            try
-            {
-                long blocksSize = CUtilManager.getFileBlocksSize(localFile.getAbsolutePath());
-                if (blocksSize >= localFile.length()) {
-    
-                    log.debug("File is on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
-                            + " file=" + localFile.getAbsolutePath());
-                    return true;
-                }
-                else
-                {
-                    log.debug("File is NOT on disk: blockSize=" + blocksSize + " fileSize=" + localFile.length()
-                             + " file=" + localFile.getAbsolutePath());
-                    return false;
-                }
-            }
-            catch (NoGPFSFileSystemException e)
-            {
-                log.error("Unable to retrieve file block size for file " + localFile.getAbsolutePath()
-                        + " NoGPFSFileSystemException : " + e.getMessage());
-                throw new FSException("Unable to retrieve file block size for file " + localFile.getAbsolutePath()
-                                      + " NoGPFSFileSystemException : " + e.getMessage()); 
-            }
-        }
-        else
-        {
-            return this.localFile.exists();   
-        }
-    }
+	public boolean isOnDisk() throws FSException {
+
+		if (!isGPFS()){
+			return localFile.exists();
+		}else {
+
+			long fileSizeInBlocks = fs.getFileBlockSize(localFile
+					.getAbsolutePath());
+
+			if (fileSizeInBlocks >= localFile.length()) {
+
+				log.debug("File is on disk: blockSize=" + fileSizeInBlocks
+						+ " fileSize=" + localFile.length() + " file="
+						+ localFile.getAbsolutePath());
+				return true;
+			
+			} else {
+				log.debug("File is NOT on disk: blockSize=" + fileSizeInBlocks
+						+ " fileSize=" + localFile.length() + " file="
+						+ localFile.getAbsolutePath());
+				return false;
+			}
+		}
+	}
 
     /**
      * Returns <code>true</code> is the file is stored on the tape, <code>false</code> otherwise.
@@ -650,62 +632,7 @@ public class LocalFile {
      */
     public void setGroupOwnership(String groupName) throws FSException
     {
-
-        boolean isGPFS;
-        try
-        {
-            isGPFS = FileSystemCheckerFactory.getInstance().createFileSystemChecker().isGPFS(this.localFile);
-        }
-        catch (IllegalArgumentException e)
-        {
-            log.error("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. IllegalArgumentException " + e.getMessage());
-            throw new FSException("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. IllegalArgumentException " + e.getMessage());
-        }
-        catch (IllegalStateException e)
-        {
-            log.error("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. IllegalStateException " + e.getMessage());
-            throw new FSException("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. IllegalStateException " + e.getMessage());
-        }
-        catch (FileSystemCheckerException e)
-        {
-            log.error("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. FileSystemCheckerException " + e.getMessage());
-            throw new FSException("Unable to check is file " + this.localFile.getAbsolutePath()
-                    + " is on GPFS. FileSystemCheckerException " + e.getMessage());
-        }
-        if (isGPFS)
-        {
-            try
-            {
-                int returnValue = CUtilManager.setFileGroup(localFile.getAbsolutePath(), groupName);
-                if (returnValue != 0)
-                {
-
-                    throw new FSException("Error in CUtilManager.setFileGroup execution . CUtil ErrNo : "
-                            + returnValue);
-                }
-            }
-            catch (NoGPFSFileSystemException e)
-            {
-                log.error("Unable to set group owner to file " + localFile.getAbsolutePath()
-                        + " NoGPFSFileSystemException : " + e.getMessage());
-                throw new FSException("Unable to set group owner to file " + localFile.getAbsolutePath()
-                        + " NoGPFSFileSystemException : " + e.getMessage());
-            }
-        }
-        else
-        {
-            log.error("Unable to set group owner to file "
-                    + localFile.getAbsolutePath()
-                    + " filesystem is not GPFS! This error should never appair. Please contact StoRM developers");
-            throw new FSException("Unable to set group owner to file "
-                    + localFile.getAbsolutePath()
-                    + " filesystem is not GPFS! This error should never appair. Please contact StoRM developers");
-        }
+        fs.changeFileGroupOwnership(localFile.getAbsolutePath(), groupName);
     }
 
     /**
