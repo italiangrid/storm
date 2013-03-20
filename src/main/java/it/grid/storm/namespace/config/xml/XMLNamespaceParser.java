@@ -316,8 +316,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
                     {
                         log.warn("Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
                                 + "for Storage Area {}.", storageAreaName); 
+                    } else {
+                    	updateTotalOnlineSizeFromGPFSQuota(storageAreaName, storageArea, quotaInfo);
                     }
-                    updateTotalOnlineSizeFromGPFSQuota(storageAreaName, storageArea, quotaInfo);
                 }
             }
         }
