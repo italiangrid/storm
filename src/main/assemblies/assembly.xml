@@ -20,6 +20,7 @@
 				conflict fine, the assembly plugin put it in the package -->
 			<excludes>
 				<exclude>xerces:xerces</exclude>
+				<exclude>org.italiangrid:storm-native-interface</exclude>
 			</excludes>
 			<useProjectArtifact>false</useProjectArtifact>
 			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
