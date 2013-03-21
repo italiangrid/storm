@@ -17,7 +17,7 @@
 
 package it.grid.storm.ea;
 
-public class ExtendedAttributesException extends Exception {
+public class ExtendedAttributesException extends RuntimeException {
 
     private static final long serialVersionUID = 1484068785050730930L;
 

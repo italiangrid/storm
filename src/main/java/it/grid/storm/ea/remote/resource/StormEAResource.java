@@ -17,6 +17,10 @@ package it.grid.storm.ea.remote.resource;
 * 
 */
 
+import it.grid.storm.ea.ExtendedAttributesException;
+import it.grid.storm.ea.StormEA;
+import it.grid.storm.ea.remote.Constants;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -25,14 +29,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
-import it.grid.storm.ea.ExtendedAttributesException;
-import it.grid.storm.ea.FileNotFoundException;
-import it.grid.storm.ea.NotSupportedException;
-import it.grid.storm.ea.StormEA;
-import it.grid.storm.ea.remote.Constants;
 
 /**
  * @author Michele Dibenedetto
@@ -54,20 +55,6 @@ public class StormEAResource
         try
         {
             checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
-        } catch(FileNotFoundException e)
-        {
-            log.error("Unable to get file checksum. FileNotFoundException: " + e.getMessage());
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.BAD_REQUEST);
-            responseBuilder.entity("File " + parameters.getFilePathDecoded() + " does not exists");
-            throw new WebApplicationException(responseBuilder.build());
-        } catch(NotSupportedException e)
-        {
-            log.error("Unable to get file checksum. NotSupportedException: " + e.getMessage());
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-            responseBuilder.entity("Unable to get the checksum, operation not supported by the filesystem");
-            throw new WebApplicationException(responseBuilder.build());
         } catch(ExtendedAttributesException e)
         {
             log.error("Unable to get file checksum. ExtendedAttributesException: " + e.getMessage());
@@ -90,20 +77,6 @@ public class StormEAResource
         try
         {
             StormEA.setChecksum(parameters.getFilePathDecoded(), parameters.getChecksumDecoded(), Constants.ADLER_32);
-        } catch(FileNotFoundException e)
-        {
-            log.error("Unable to set file checksum. FileNotFoundException: " + e.getMessage());
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.BAD_REQUEST);
-            responseBuilder.entity("File " + parameters.getFilePathDecoded() + " does not exists");
-            throw new WebApplicationException(responseBuilder.build());
-        } catch(NotSupportedException e)
-        {
-            log.error("Unable to set file checksum. NotSupportedException: " + e.getMessage());
-            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-            responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-            responseBuilder.entity("Unable to set the checksum, operation not supported by the filesystem");
-            throw new WebApplicationException(responseBuilder.build());
         } catch(ExtendedAttributesException e)
         {
             log.error("Unable to set file checksum. ExtendedAttributesException: " + e.getMessage());

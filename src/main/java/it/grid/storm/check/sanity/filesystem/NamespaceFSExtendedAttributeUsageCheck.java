@@ -14,21 +14,23 @@
 package it.grid.storm.check.sanity.filesystem;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import it.grid.storm.check.GenericCheckException;
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
+import it.grid.storm.check.GenericCheckException;
 import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.ExtendedAttributesException;
-import it.grid.storm.jna.ExtendedAttributesImpl;
+import it.grid.storm.ea.ExtendedAttributesFactory;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Dibenedetto
@@ -59,7 +61,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
      */
     private static final String CHECK_ATTRIBUTE_VALUE = "Yes.I.am";
 
-    private final ExtendedAttributes extendedAttribute = new ExtendedAttributesImpl();
+    private final ExtendedAttributes extendedAttribute = ExtendedAttributesFactory.getExtendedAttributes();
 
     private static final boolean criticalCheck = true;
     
@@ -201,9 +203,11 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check
         {
             log.debug("Trying to set the extended attribute " + CHECK_ATTRIBUTE_NAME + " to value "
                     + CHECK_ATTRIBUTE_VALUE + " on file " + file.getAbsolutePath());
+            
             extendedAttribute.setXAttr(file.getAbsolutePath(),
                                        CHECK_ATTRIBUTE_NAME,
-                                       CHECK_ATTRIBUTE_VALUE.getBytes());
+                                       CHECK_ATTRIBUTE_VALUE);
+            
             log.debug("Trying to get the extended attribute " + CHECK_ATTRIBUTE_NAME + " from file "
                     + file.getAbsolutePath());
             String value = new String(extendedAttribute.getXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME));

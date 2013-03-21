@@ -33,12 +33,12 @@
 package it.grid.storm.filesystem;
 
 import it.grid.storm.checksum.ChecksumManager;
-import it.grid.storm.ea.FileNotFoundException;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

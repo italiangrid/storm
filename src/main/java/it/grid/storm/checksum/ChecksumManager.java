@@ -19,30 +19,25 @@ package it.grid.storm.checksum;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.ExtendedAttributesException;
-import it.grid.storm.ea.FileNotFoundException;
-import it.grid.storm.ea.NotSupportedException;
 import it.grid.storm.ea.StormEA;
 
+import java.io.FileNotFoundException;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 //import java.io.IOException;
 //import java.net.MalformedURLException;
 //import java.net.URL;
 //import java.util.ArrayList;
 //import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChecksumManager {
 
     private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
-//    private final String URL_FORMAT = "http://%s:%d/";
+
 
     private static volatile ChecksumManager instance = null;
-//    private List<String> serviceUrlList = null;
-//    private List<String> statusUrlList = null;
-//    private int urlListSize;
-//    private volatile int currentUrlIndex = -1;
     private String defaultAlgorithm;
     
     
@@ -57,14 +52,6 @@ public class ChecksumManager {
         }
         return instance;
     }
-
-//    private synchronized int getNextIndex() {
-//        currentUrlIndex++;
-//        if (currentUrlIndex >= urlListSize) {
-//            currentUrlIndex = 0;
-//        }
-//        return currentUrlIndex;
-//    }
 
     /**
      * Return the algorithm used to compute checksums as well as retrieve the value from extended attributes.
@@ -94,83 +81,16 @@ public class ChecksumManager {
         try
         {
             checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
-        } catch(NotSupportedException e)
-        {
-            log.warn("Cannot retrieve checksum EA for default algorithm " + defaultAlgorithm
-                    + " (operation not supported) from file: " + fileName
-                    + " NotSupportedException: " + e.getMessage());
         } catch(ExtendedAttributesException e)
         {
-            if (e instanceof FileNotFoundException)
-                throw (FileNotFoundException) e;
+        	
             log.warn("Error manipulating EA for default algorithm " + defaultAlgorithm + " on file: "
                     + fileName + " ExtendedAttributesException: " + e.getMessage());
         }
 
-//        if (checksum == null) {
-//
-//            // check if Checksum computation is Enabled or not
-//            if (Configuration.getInstance().getChecksumEnabled()) {
-//
-//                // Get current time
-//                long start = System.currentTimeMillis();
-//
-//                log.debug("Checksum Computation: START.");
-//
-//                checksum = retrieveChecksumFromExternalService(fileName, defaultAlgorithm);
-//
-//                if (checksum == null) {
-//                    return null;
-//                }
-//
-//                // Get elapsed time in milliseconds
-//                long elapsedTimeMillis = System.currentTimeMillis() - start;
-//
-//                log.debug("Checksum Computation: END. Elapsed Time (ms) = " + elapsedTimeMillis);
-//                StormEA.setChecksum(fileName, checksum, defaultAlgorithm);
-//            } else {
-//                log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
-//            }
-//        }
-
         return checksum;
     }
 
-    
-//    public String getChecksumWithAlgorithm(String fileName, ChecksumAlgorithm algorithm) {
-//
-//        log.debug("Requesting checksum "+algorithm+" for file: " + fileName);
-//        
-//        String checksum = StormEA.getChecksum(fileName, algorithm.toString());
-//
-//        if (checksum == null) {
-//
-//            // check if Checksum computation is Enabled or not
-//            if (Configuration.getInstance().getChecksumEnabled()) {
-//
-//                // Get current time
-//                long start = System.currentTimeMillis();
-//
-//                log.debug("Checksum Computation: START.");
-//
-//                checksum = retrieveChecksumFromExternalService(fileName, algorithm.toString());
-//
-//                if (checksum == null) {
-//                    return null;
-//                }
-//
-//                // Get elapsed time in milliseconds
-//                long elapsedTimeMillis = System.currentTimeMillis() - start;
-//
-//                log.debug("Checksum Computation: END. Elapsed Time (ms) = " + elapsedTimeMillis);
-//                StormEA.setChecksum(fileName, checksum, algorithm.toString());
-//            } else {
-//                log.debug("Checksum Computation: The computation will not take place. Feature DISABLED.");
-//            }
-//        }
-//
-//        return checksum;
-//    }
     
     /**
      * Checks whether the given file has a checksum stored in an extended attribute.
@@ -184,28 +104,17 @@ public class ChecksumManager {
     public boolean hasChecksum(String fileName) throws FileNotFoundException {
 
         String value = null;
+        
         try
         {
             value = StormEA.getChecksum(fileName, defaultAlgorithm);
-        } catch(NotSupportedException e)
-        {
-            log.warn("Cannot retrieve checksum EA for default algorithm " + defaultAlgorithm
-                    + " (operation not supported) from file: " + fileName
-                    + " NotSupportedException: " + e.getMessage());
         } catch(ExtendedAttributesException e)
         {
-            if (e instanceof FileNotFoundException)
-                throw (FileNotFoundException) e;
-            log.warn("Error manipulating EA for default algorithm " + defaultAlgorithm + " on file: "
+        	log.warn("Error manipulating EA for default algorithm " + defaultAlgorithm + " on file: "
                     + fileName + " ExtendedAttributesException: " + e.getMessage());
         }
 
-        if (value == null) {
-
-            return false;
-        }
-
-        return true;
+        return (value != null);
     }
 
     
