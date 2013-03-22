@@ -3,3 +3,4 @@
 .settings
 .checkstyle
 target
+src/main/java/rebel*.xml
