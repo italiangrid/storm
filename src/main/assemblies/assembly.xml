@@ -43,7 +43,6 @@
 				<include>welcome.txt</include>
 			</includes>
 			<outputDirectory>etc/storm/backend-server</outputDirectory>
-			<fileMode>0640</fileMode>
 		</fileSet>
 
 		<!-- include a few file in etc/db -->
@@ -55,7 +54,6 @@
 				<include>/storm_mysql_tbl.sql</include>
 			</includes>
 			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
-			<fileMode>0640</fileMode>
 		</fileSet>
 
 		<!-- an empty fileset to create an empty log directory -->
@@ -65,7 +63,7 @@
 			<excludes>
 				<exclude>**/*</exclude>
 			</excludes>
-			<directoryMode>0750</directoryMode>
+			<directoryMode>0755</directoryMode>
 		</fileSet>
 
 	</fileSets>
@@ -75,7 +73,7 @@
 		<file>
 			<source>etc/db/storm_database_config.sh</source>
 			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
-			<fileMode>0750</fileMode>
+			<fileMode>0755</fileMode>
 		</file>
 
 		<file>
@@ -97,7 +95,6 @@
 		<file>
 			<source>etc/sysconfig/storm-backend-server</source>
 			<outputDirectory>etc/sysconfig</outputDirectory>
-			<fileMode>0640</fileMode>
 		</file>
 
 	</files>
