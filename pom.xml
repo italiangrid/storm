@@ -93,7 +93,147 @@
 				</executions>
 			</plugin>
 
+			<!-- Enable the wagon plugin (which in turn need some work from the dependency plugin) 
+				to deploy to a remote machine. It copies over ssh the storm-backend-server 
+				jar, the dependency jars, and all configuration files except those that are
+				not supposed to be overwritten by a re-deployment, i.e. those that are marked
+				config noreplace in the rpm -->
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<!-- configure the plugin here -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0-beta-4</version>
+				<executions>
+					<execution>
+						<id>upload-config</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}/</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>etc</fromDir>
+							<!-- exclude config files that might have edited remotely, the same 
+								that are marked config noreplace in rpm -->
+							<excludes>
+								logging.xml, namespace.xml, path-authz.db,
+								init.d/*, logrotate.d/*, sysconfig/*
+							</excludes>
+							<toDir>/etc/storm/backend-server</toDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>upload-initd</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>etc/init.d</fromDir>
+							<toDir>/etc/init.d</toDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>upload-sysconfig</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>etc/sysconfig</fromDir>
+							<toDir>/etc/sysconfig</toDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>upload-logrotated</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>etc/logrotate.d</fromDir>
+							<toDir>/etc/logrotate.d</toDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>upload-deps</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>target/dependency</fromDir>
+							<includes>*</includes>
+							<toDir>/usr/share/java/storm-backend-server</toDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>upload-jar</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>${remoteDeployment.url}</url>
+							<serverId>${remoteDeployment.serverId}</serverId>
+							<fromDir>target</fromDir>
+							<includes>storm-backend-server.jar</includes>
+							<toDir>/usr/share/java/storm-backend-server</toDir>
+						</configuration>
+					</execution>
+					
+				</executions>
+			</plugin>
+			
+			<!-- needed so that mvn is not going to try to deploy (classic maven deploy),
+				because we are using mvn deploy to deploy the complete project to a remote machine
+				in development -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 		</plugins>
+
+		<!-- Needed by the wagon plugin -->
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0</version>
+			</extension>
+		</extensions>
 
 	</build>
 
