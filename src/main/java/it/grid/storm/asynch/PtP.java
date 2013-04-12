@@ -60,10 +60,12 @@ import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +166,8 @@ public class PtP implements Delegable, Chooser, Request
     /**
      * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
      */
-    public void doIt()
+    @Override
+		public void doIt()
     {
         log.debug("Handling PtP chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: " + requestData.getSURL());
         if(!verifySurlStatusTransition(requestData.getSURL(), requestData.getRequestToken()))
@@ -341,7 +344,7 @@ public class PtP implements Delegable, Chooser, Request
             {
                 requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Write access to " + requestData.getSURL()
                         + " denied!");
-                failure = true; // gsm.failedChunk(chunkData);
+                failure = true; 
                 log.debug("Write access to " + requestData.getSURL() + " for user "
                         + DataHelper.getRequestor(requestData) + " denied!");
             }
@@ -375,7 +378,7 @@ public class PtP implements Delegable, Chooser, Request
         {
             requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access for " + requestData.getSURL()
                     + " in Storage Area: " + token + " denied!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.debug("Create/Write access for " + requestData.getSURL() + " in Storage Area: " + token
                     + " denied!");
             return;
@@ -388,20 +391,20 @@ public class PtP implements Delegable, Chooser, Request
         catch(IllegalArgumentException e)
         {
             requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! Null TURLPrefix in PtPChunkData caused StoRI to be unable to establish TTURL! IllegalArgumentException: "
                     + e);
             return;
         } catch(InvalidGetTURLProtocolException e)
         {
             requestData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with specified transfer protocols!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! No valid transfer protocol found.");
             return;
         } catch(TURLBuildingException e)
         {
             requestData.changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! There was a failure building the TURL. : TURLBuildingException "
                     + e);
             return;
@@ -448,7 +451,7 @@ public class PtP implements Delegable, Chooser, Request
                             + fileStoRI.getAbsolutePath());
                     requestData.setTransferURL(auxTURL);
                     requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
-                    failure = false; // gsm.successfulChunk(chunkData);
+                    failure = false; 
                     if (requestData.fileStorageType() == TFileStorageType.VOLATILE)
                     {
                         VolatileAndJiTCatalog.getInstance().trackVolatile(fileStoRI.getPFN(),
@@ -540,7 +543,7 @@ public class PtP implements Delegable, Chooser, Request
             {
                 log.warn("Unable to perform directory preparation step on parent file "
                         + parentFile.getAbsolutePath());
-                failure = true; // gsm.failedChunk(chunkData);
+                failure = true; 
                 return false;
             }
             else
@@ -576,7 +579,7 @@ public class PtP implements Delegable, Chooser, Request
         if ((!f.exists()) && (!canCreate))
         {
             requestData.changeStatusSRM_INVALID_PATH("Directory structure as specified in SURL does not exist!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.debug("ATTENTION in PtPChunk! Directory structure as specified in "
                     + f
                     + " does not exist, and automatic directory creation is disbaled! Failing this chunk of request!"); // info
@@ -589,7 +592,7 @@ public class PtP implements Delegable, Chooser, Request
                 if (f.mkdirs())
                 {
                     requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem error: could not crete directory!");
-                    failure = true; // gsm.failedChunk(chunkData);
+                    failure = true; 
                     log.error("ERROR in PtPChunk! Filesystem was unable to successfully create directory: "
                             + f.toString());
                     return false;
@@ -675,7 +678,7 @@ public class PtP implements Delegable, Chooser, Request
             return false;
         }
         boolean response;
-//      parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+
         FilesystemPermission fp = fileStori.getLocalFile().getEffectiveUserPermission(localUser);
         if(fp != null)
         {
@@ -718,7 +721,7 @@ public class PtP implements Delegable, Chooser, Request
             return false;
         }
         boolean response;        
-//      parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+
         FilesystemPermission fp = fileStori.getLocalFile().getEffectiveGroupPermission(localUser);
         if(fp != null)
         {
@@ -819,7 +822,7 @@ public class PtP implements Delegable, Chooser, Request
                     {
                         log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
                         requestData.changeStatusSRM_FAILURE("No free space on Storage Area");
-                        failure = true; // gsm.failedChunk(chunkData);
+                        failure = true; 
                         return false;
                     }
                 }
@@ -881,7 +884,7 @@ public class PtP implements Delegable, Chooser, Request
                     //
                     // fail request with SRM_FILE_BUSY
                     requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
-                    failure = true; // gsm.failedChunk(chunkData);
+                    failure = true; 
                     log.debug("ATTENTION in PtPChunk! PtPChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
                     return false;
                 }
@@ -941,7 +944,7 @@ public class PtP implements Delegable, Chooser, Request
             // who applied a strict local policy, and policies as specified by
             // the PolicyCollector!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true;
             log.error("ERROR in PtPChunk! During space reservation step in PtP, could not create file: "
                     + localFile.toString() + "; Java s SecurityManager does not allow writing the file! " + e);
             return false;
@@ -950,7 +953,7 @@ public class PtP implements Delegable, Chooser, Request
             // file.createNewFile could not create file because of a local IO
             // Error!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! During space reservation step in PtP, an error occured while trying to create the file:"
                     + localFile.toString() + "; error: " + e);
             return false;
@@ -959,7 +962,7 @@ public class PtP implements Delegable, Chooser, Request
             // I haven t got the right to create a file as StoRM user!
             // This is thrown when executing createNewFile method!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! During space reservation step in PtP, an attempt to create file "
                     + localFile.toString()
                     + " failed because StoRM lacks the privileges to do so! Exception follows: " + e);
@@ -968,14 +971,14 @@ public class PtP implements Delegable, Chooser, Request
         {
             // Something went wrong while using space reservation component!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk! Space component failed! Exception follows: " + e);
             return false;
         } catch(ExpiredSpaceTokenException e)
         {
             // The supplied space token is expired
             requestData.changeStatusSRM_SPACE_LIFETIME_EXPIRED("The provided Space Token has expired its lifetime");
-            spacefailure = true; // gsm.expiredSpaceLifetimeChunk(chunkData);
+            spacefailure = true; 
             log.info("PtPChunk execution failed. ExpiredSpaceTokenException : " + e.getMessage());
             return false;
         } catch(Exception e)
@@ -985,7 +988,7 @@ public class PtP implements Delegable, Chooser, Request
             // but I do not know exactly how java.io.File behaves with an ACL
             // capable filesystem!!
             requestData.changeStatusSRM_FAILURE("Space Management step in srmPrepareToPut failed!");
-            failure = true; // gsm.failedChunk(chunkData);
+            failure = true; 
             log.error("ERROR in PtPChunk - space Step! Unexpected error in reserve space step of PtP for file "
                     + localFile.toString() + "! Exception follows: " + e);
             log.error("Complete error stack trace follows: ");
@@ -1044,8 +1047,7 @@ public class PtP implements Delegable, Chooser, Request
                         log.warn("Unable to setting up the ACL. ACl entry permission is null!");
                     }
                     else
-                    {
-                      //localFile.grantGroupPermission(u, ace.getFilesystemPermission());
+                    {                      
                         try
                         {
                             AclManagerFSAndHTTPS.getInstance().grantGroupPermission(fileStoRI.getLocalFile(), u, ace.getFilesystemPermission());
@@ -1082,7 +1084,7 @@ public class PtP implements Delegable, Chooser, Request
     {
         requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access to " + requestData.getSURL()
                 + " denied!");
-        failure = true; // gsm.failedChunk(chunkData);
+        failure = true; 
         log.debug("Create/Write access to " + requestData.getSURL() + " for user " + DataHelper.getRequestor(requestData)
                 + " denied!"); // info
     }
@@ -1133,7 +1135,8 @@ public class PtP implements Delegable, Chooser, Request
      * request token
      * and the SURL asked for in This request.
      */
-    public String getName()
+    @Override
+		public String getName()
     {
         return "PtP for SURL " + requestData.getSURL();
     }
@@ -1141,7 +1144,8 @@ public class PtP implements Delegable, Chooser, Request
     /**
      * Method used in a callback fashion in the scheduler for separately handling PtG, PtP and Copy chunks.
      */
-    public void choose(Streets s)
+    @Override
+		public void choose(Streets s)
     {
         s.ptpStreet(this);
     }

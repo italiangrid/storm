@@ -13,12 +13,6 @@
 
 package it.grid.storm.asynch;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -63,6 +57,14 @@ import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PtG implements Delegable, Chooser, Request, Suspendedable
 {
@@ -114,7 +116,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
       /**
      * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
      */
-    public void doIt() {
+    @Override
+		public void doIt() {
 
         log.debug("Handling PtG chunk for user DN: " + DataHelper.getRequestor(requestData) + "; for SURL: "
             + requestData.getSURL());
@@ -127,15 +130,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             printRequestOutcome(requestData);
             return;
         }
-//        if(PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
-//        {
-//            /* fail request with SRM_FILE_BUSY */
-//            requestData.changeStatusSRM_FILE_BUSY("Requested file is"
-//                + " still in SRM_SPACE_AVAILABLE state!");
-//            failure = true;
-//            log.debug("ATTENTION in PtGChunk! PtGChunk received r"
-//                + "equest for SURL that is still in SRM_SPACE_AVAILABLE state!");
-//        }
+
         else
         {
             /* proceed normally! */
@@ -143,7 +138,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             boolean unapprochableSurl = false;
             try
             {
-// fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL(), gu);
                 if (!downgradedToAnonymous && requestData instanceof IdentityInputData)
                 {
                     try
@@ -182,7 +176,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             }
             if (!failure)
             {
-//                    AuthzDecision ptgAuthz = AuthzDirector.getPathAuthz().authorize(gu, SRMFileRequest.PTG, fileStoRI);
                 AuthzDecision ptgAuthz;
                 if(!unapprochableSurl)
                 {
@@ -682,7 +675,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             return false;
         }
         boolean response;
-//      parentFile.grantUserPermission(localUser, FilesystemPermission.Traverse);
+
         FilesystemPermission fp = fileStori.getLocalFile().getEffectiveUserPermission(localUser);
         if(fp != null)
         {
@@ -726,7 +719,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
             return false;
         }
         boolean response;        
-//      parentFile.grantGroupPermission(localUser, FilesystemPermission.Traverse);
+
         FilesystemPermission fp = fileStori.getLocalFile().getEffectiveGroupPermission(localUser);
         if(fp != null)
         {
@@ -812,7 +805,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
                             log.error("Unable to grant group permissions on the file. IllegalArgumentException: " + e.getMessage());
                         }
                     }
-//                  localFile.grantGroupPermission(u, ace.getFilesystemPermission());
                 }
             }
         }
@@ -854,14 +846,16 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
      * Method that supplies a String describing this PtGChunk - for scheduler Log purposes! It returns the request token
      * and the SURL that was asked for.
      */
-    public String getName() {
+    @Override
+		public String getName() {
         return "PtGChunk for SURL " + requestData.getSURL();
     }
     
     /**
      * Method used in a callback fashion in the scheduler for separately handling PtG, PtP and Copy chunks.
      */
-    public void choose(Streets s) {
+    @Override
+		public void choose(Streets s) {
 
         s.ptgStreet(this);
     }
@@ -929,23 +923,27 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable
     /* (non-Javadoc)
      * @see it.grid.storm.asynch.Suspendedable#getRequestData()
      */
-    public PtGData getRequestData()
+    @Override
+		public PtGData getRequestData()
     {
         return requestData;
     }
 
-    public String getSURL() {
+    @Override
+		public String getSURL() {
         return requestData.getSURL().toString();
     }
 
-    public String getUserDN() {
+    @Override
+		public String getUserDN() {
         return DataHelper.getRequestor(requestData);
     }
 
     /**
      * @return
      */
-    public boolean isResultSuccess() {
+    @Override
+		public boolean isResultSuccess() {
 
         boolean result = false;
         TStatusCode statusCode = requestData.getStatus().getStatusCode();
