@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -141,16 +142,17 @@ public class StoRMCommandServer {
 	private void startCommandServer() {
 
 		try {
-			//
-			// set listening port
-			server = new ServerSocket(listeningPort);
+			
+			InetAddress loopbackAddress = InetAddress.getByName("localhost");
+			server = new ServerSocket(listeningPort,0,loopbackAddress);
+			
 		} catch (IOException e) {
-			// could not bind to listeningPort!
+
 			log.error("UNEXPECTED ERROR! Could not bind to listeningPort! " + e);
 			System.exit(1);
 		}
-		//
-		// start new thread for ServerSocket listening!
+
+
 		new Thread() {
 
 			@Override
@@ -158,12 +160,11 @@ public class StoRMCommandServer {
 
 				try {
 					while (true) {
-						// when a new connection is received, handle it in a different
-						// thread! This is a multithreaded command server!
+	
 						new CommandExecuterThread(server.accept(), storm).start();
 					}
 				} catch (IOException e) {
-					// something went wrong with server.accept()!
+	
 					log
 						.error("UNEXPECTED ERROR! Something went wrong with server.accept()! "
 							+ e);
