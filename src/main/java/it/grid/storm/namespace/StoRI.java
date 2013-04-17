@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.namespace;
@@ -27,98 +27,102 @@ import it.grid.storm.namespace.ExpiredSpaceTokenException;
 
 public interface StoRI {
 
-    /*****************************************************************************
-     *  BUILDING METHODs
-     ****************************************************************************/
+	/*****************************************************************************
+	 * BUILDING METHODs
+	 ****************************************************************************/
 
-    public void setStoRIType(StoRIType type);
+	public void setStoRIType(StoRIType type);
 
-    /*****************************************************************************
-     *  READ METHODs
-     ***************************************************************************/
+	/*****************************************************************************
+	 * READ METHODs
+	 ***************************************************************************/
 
+	/**
+	 * getTURL
+	 * 
+	 * Create new Transport URL selecting correct protocol between
+	 * TransferProtocols specified by input parameter and TransferProtocol
+	 * assigned at Virtual Organization at Creation time. *
+	 * 
+	 * @param prefixOfAcceptedTransferProtocols
+	 *          TURLPrefix Collection of @link TransferProcol specified in SRM
+	 *          Request.
+	 * @return TTURL : TransportURL for StoRI.
+	 * @throws InvalidGetTURLNullPrefixAttributeException
+	 * @throws Exception
+	 */
+	public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols)
+		throws IllegalArgumentException, InvalidGetTURLProtocolException,
+		TURLBuildingException;
 
-    /**
-     * getTURL
-     *
-     * Create new Transport URL selecting correct protocol between TransferProtocols
-     * specified by input parameter and TransferProtocol assigned at Virtual Organization at Creation time.   *
-     *
-     * @param prefixOfAcceptedTransferProtocols TURLPrefix  Collection of @link TransferProcol specified in SRM Request.
-     * @return TTURL : TransportURL for StoRI.
-     * @throws InvalidGetTURLNullPrefixAttributeException
-     * @throws Exception 
-     */
-    public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols) throws
-        IllegalArgumentException, InvalidGetTURLProtocolException, TURLBuildingException;
+	public TSURL getSURL();
 
+	public PFN getPFN();
 
-    public TSURL getSURL();
+	public StFN getStFN();
 
-    public PFN getPFN();
+	public String getRelativePath();
 
-    public StFN getStFN();
+	public String getRelativeStFN();
 
-    public String getRelativePath();
+	public TLifeTimeInSeconds getFileLifeTime();
 
-    public String getRelativeStFN();
+	public Date getFileStartTime();
 
-    public TLifeTimeInSeconds getFileLifeTime();
+	public StoRIType getStoRIType();
 
-    public Date getFileStartTime();
+	public Space getSpace();
 
-    public StoRIType getStoRIType();
+	public void setSpace(Space space);
 
-    public Space getSpace();
+	public LocalFile getLocalFile();
 
-    public void setSpace(Space space);
+	public VirtualFSInterface getVirtualFileSystem();
 
-    public LocalFile getLocalFile();
+	public String getStFNRoot();
 
-    public VirtualFSInterface getVirtualFileSystem();
+	public String getStFNPath();
 
-    public String getStFNRoot();
+	public String getFilename();
 
-    public String getStFNPath();
+	public void setStFNRoot(String stfnRoot);
 
-    public String getFilename();
+	public void setMappingRule(MappingRule winnerRule);
 
-    public void setStFNRoot(String stfnRoot);
+	public void setGroupTapeRead();
 
-    public void setMappingRule(MappingRule winnerRule);
-    
-    public void setGroupTapeRead();
-    
-    public void setGroupTapeWrite();
+	public void setGroupTapeWrite();
 
-    public MappingRule getMappingRule();
+	public MappingRule getMappingRule();
 
-    /*****************************************************************************
-     *  BUSINESS METHODs
-     ****************************************************************************/
+	/*****************************************************************************
+	 * BUSINESS METHODs
+	 ****************************************************************************/
 
-    public ArrayList<StoRI> getChildren(TDirOption dirOption) throws
-       InvalidDescendantsEmptyRequestException, InvalidDescendantsAuthRequestException,
-       InvalidDescendantsPathRequestException, InvalidDescendantsFileRequestException;
+	public ArrayList<StoRI> getChildren(TDirOption dirOption)
+		throws InvalidDescendantsEmptyRequestException,
+		InvalidDescendantsAuthRequestException,
+		InvalidDescendantsPathRequestException,
+		InvalidDescendantsFileRequestException;
 
-    public String getAbsolutePath();
+	public String getAbsolutePath();
 
-    public boolean hasJustInTimeACLs();
+	public boolean hasJustInTimeACLs();
 
+	/**
+	 * Method that returns an ordered list of parent StoRI objects, starting from
+	 * the root and excluding the StoRI itself. If no parents are present, an
+	 * empty List is returned instead.
+	 */
+	public List<StoRI> getParents();
 
-    /**
-     * Method that returns an ordered list of parent StoRI objects, starting from
-     * the root and excluding the StoRI itself. If no parents are present, an empty
-     * List is returned instead.
-     */
-    public List<StoRI> getParents();
+	public void allotSpaceForFile(TSizeInBytes totSize)
+		throws ReservationException;
 
-    public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException;
+	public void allotSpaceByToken(TSpaceToken token) throws ReservationException,
+		ExpiredSpaceTokenException;
 
-    public void allotSpaceByToken(TSpaceToken token) throws ReservationException, ExpiredSpaceTokenException;
-
-    public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize) throws ReservationException, ExpiredSpaceTokenException;
-
-
+	public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize)
+		throws ReservationException, ExpiredSpaceTokenException;
 
 }

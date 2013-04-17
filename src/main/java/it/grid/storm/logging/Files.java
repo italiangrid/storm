@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.logging;
@@ -24,94 +24,114 @@ import java.io.IOException;
 /** A utility class for working with files. */
 public final class Files {
 
-    /** Constructor. */
-    private Files() {
-    }
+	/** Constructor. */
+	private Files() {
 
-    /**
-     * A convenience method for getting a file and requiring it to be a readable file. This is equivalent to calling
-     * <code>getFile(filePath, true, true, true, false)</code>.
-     * 
-     * @param filePath the path to the file
-     * 
-     * @return the file
-     * 
-     * @throws IOException thrown if the file is a directory, does not exist, or can not be read
-     */
-    public static File getReadableFile(String filePath) throws IOException {
-        return getFile(filePath, true, true, true, false);
-    }
+	}
 
-    /**
-     * Gets the file object associated with the path.
-     * 
-     * @param filePath the file path
-     * @param requireFile whether the given path is required to be a file instead of a directory
-     * @param requireExistance whether the given file/directory must exist already
-     * @param requireReadable whether the given file/directory must be readable
-     * @param requireWritable whether the given file/directory must be writable
-     * 
-     * @return the created file
-     * 
-     * @throws IOException thrown if existance, reabability, or writability is required but not met
-     */
-    public static File getFile(String filePath, boolean requireFile, boolean requireExistance, boolean requireReadable,
-            boolean requireWritable) throws IOException {
-        String path = Strings.safeTrimOrNullString(filePath);
-        if (path == null) {
-            throw new IOException("The file path may not be empty");
-        }
+	/**
+	 * A convenience method for getting a file and requiring it to be a readable
+	 * file. This is equivalent to calling
+	 * <code>getFile(filePath, true, true, true, false)</code>.
+	 * 
+	 * @param filePath
+	 *          the path to the file
+	 * 
+	 * @return the file
+	 * 
+	 * @throws IOException
+	 *           thrown if the file is a directory, does not exist, or can not be
+	 *           read
+	 */
+	public static File getReadableFile(String filePath) throws IOException {
 
-        File file = new File(filePath);
+		return getFile(filePath, true, true, true, false);
+	}
 
-        if (requireExistance && !file.exists()) {
-            throw new IOException("The file '" + filePath + "' does not exist.");
-        }
+	/**
+	 * Gets the file object associated with the path.
+	 * 
+	 * @param filePath
+	 *          the file path
+	 * @param requireFile
+	 *          whether the given path is required to be a file instead of a
+	 *          directory
+	 * @param requireExistance
+	 *          whether the given file/directory must exist already
+	 * @param requireReadable
+	 *          whether the given file/directory must be readable
+	 * @param requireWritable
+	 *          whether the given file/directory must be writable
+	 * 
+	 * @return the created file
+	 * 
+	 * @throws IOException
+	 *           thrown if existance, reabability, or writability is required but
+	 *           not met
+	 */
+	public static File getFile(String filePath, boolean requireFile,
+		boolean requireExistance, boolean requireReadable, boolean requireWritable)
+		throws IOException {
 
-        if (requireFile && !file.isFile()) {
-            throw new IOException("The path '" + filePath + "' is a directory not a file");
-        }
+		String path = Strings.safeTrimOrNullString(filePath);
+		if (path == null) {
+			throw new IOException("The file path may not be empty");
+		}
 
-        if (requireReadable && !file.canRead()) {
-            throw new IOException("The file '" + filePath + "' is not readable.");
-        }
+		File file = new File(filePath);
 
-        if (requireWritable && !file.canWrite()) {
-            throw new IOException("The file '" + filePath + "' is not writable.");
-        }
+		if (requireExistance && !file.exists()) {
+			throw new IOException("The file '" + filePath + "' does not exist.");
+		}
 
-        return file;
-    }
+		if (requireFile && !file.isFile()) {
+			throw new IOException("The path '" + filePath
+				+ "' is a directory not a file");
+		}
 
-    /**
-     * Reads the contents of a file in to a byte array.
-     * 
-     * @param file file to read
-     * @return the byte contents of the file
-     * 
-     * @throws IOException throw if there is a problem reading the file in to the byte array
-     */
-    public static byte[] fileToByteArray(File file) throws IOException {
-        long numOfBytes = file.length();
+		if (requireReadable && !file.canRead()) {
+			throw new IOException("The file '" + filePath + "' is not readable.");
+		}
 
-        if (numOfBytes > Integer.MAX_VALUE) {
-            throw new IOException("File is to large to be read in to a byte array");
-        }
+		if (requireWritable && !file.canWrite()) {
+			throw new IOException("The file '" + filePath + "' is not writable.");
+		}
 
-        byte[] bytes = new byte[(int) numOfBytes];
-        FileInputStream ins = new FileInputStream(file);
-        int offset = 0;
-        int numRead = 0;
-        do {
-            numRead = ins.read(bytes, offset, bytes.length - offset);
-            offset += numRead;
-        } while (offset < bytes.length && numRead >= 0);
+		return file;
+	}
 
-        if (offset < bytes.length) {
-            throw new IOException("Could not completely read file " + file.getName());
-        }
+	/**
+	 * Reads the contents of a file in to a byte array.
+	 * 
+	 * @param file
+	 *          file to read
+	 * @return the byte contents of the file
+	 * 
+	 * @throws IOException
+	 *           throw if there is a problem reading the file in to the byte array
+	 */
+	public static byte[] fileToByteArray(File file) throws IOException {
 
-        ins.close();
-        return bytes;
-    }
+		long numOfBytes = file.length();
+
+		if (numOfBytes > Integer.MAX_VALUE) {
+			throw new IOException("File is to large to be read in to a byte array");
+		}
+
+		byte[] bytes = new byte[(int) numOfBytes];
+		FileInputStream ins = new FileInputStream(file);
+		int offset = 0;
+		int numRead = 0;
+		do {
+			numRead = ins.read(bytes, offset, bytes.length - offset);
+			offset += numRead;
+		} while (offset < bytes.length && numRead >= 0);
+
+		if (offset < bytes.length) {
+			throw new IOException("Could not completely read file " + file.getName());
+		}
+
+		ins.close();
+		return bytes;
+	}
 }

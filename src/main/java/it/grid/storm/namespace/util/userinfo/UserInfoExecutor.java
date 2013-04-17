@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.namespace.util.userinfo;
@@ -23,59 +23,59 @@ import java.util.Map;
 
 public class UserInfoExecutor {
 
-    public UserInfoExecutor() {
-        super();
-    }
+	public UserInfoExecutor() {
 
-    
-    public static int retrieveGroupID_ETC(String groupName) throws UserInfoException {
-        int groupId = 0;
+		super();
+	}
 
-        //Retrieve Device
-        String param1 = "-r";
-        String param2 = "-g";
-        String param3 = groupName + "001"; //Be Carefull!
+	public static int retrieveGroupID_ETC(String groupName)
+		throws UserInfoException {
 
+		int groupId = 0;
 
-        UserInfoCommand userInfoCommand = new UserInfoCommand();
-        ArrayList<String> params = new ArrayList<String> ();
+		// Retrieve Device
+		String param1 = "-r";
+		String param2 = "-g";
+		String param3 = groupName + "001"; // Be Carefull!
 
-        params.add(0, param1);
-        params.add(1, param2);
-        params.add(2, param3);
-        UserInfoParameters userInfoParameters = new UserInfoParameters(params);
+		UserInfoCommand userInfoCommand = new UserInfoCommand();
+		ArrayList<String> params = new ArrayList<String>();
 
-        groupId = userInfoCommand.retrieveGroupID(userInfoParameters);
+		params.add(0, param1);
+		params.add(1, param2);
+		params.add(2, param3);
+		UserInfoParameters userInfoParameters = new UserInfoParameters(params);
 
-        return groupId;
-    }
+		groupId = userInfoCommand.retrieveGroupID(userInfoParameters);
 
-    
-    public static int retrieveGroupID(String groupName) throws UserInfoException {
+		return groupId;
+	}
 
-        int groupId = 0;
+	public static int retrieveGroupID(String groupName) throws UserInfoException {
 
-        //Retrieve Device
-        String param1 = groupName;
+		int groupId = 0;
 
-        UserInfoCommand userInfoCommand = new UserInfoCommand();
-        ArrayList<String> params = new ArrayList<String> ();
+		// Retrieve Device
+		String param1 = groupName;
 
-        params.add(0, param1);
+		UserInfoCommand userInfoCommand = new UserInfoCommand();
+		ArrayList<String> params = new ArrayList<String>();
 
-        UserInfoParameters userInfoParameters = new UserInfoParameters(params);
+		params.add(0, param1);
 
-        groupId = userInfoCommand.retrieveGroupID(userInfoParameters);
-      
-        return groupId;
-    }
+		UserInfoParameters userInfoParameters = new UserInfoParameters(params);
 
-    public static Map<String,Integer> digestGroupDatabase(){
-        Map<String,Integer> groupsDb = new HashMap<String, Integer>();
-        UserInfoCommand userInfoCommand = new UserInfoCommand();
-        groupsDb = userInfoCommand.retrieveGroupDb();
-        return groupsDb;
-    }
-    
+		groupId = userInfoCommand.retrieveGroupID(userInfoParameters);
+
+		return groupId;
+	}
+
+	public static Map<String, Integer> digestGroupDatabase() {
+
+		Map<String, Integer> groupsDb = new HashMap<String, Integer>();
+		UserInfoCommand userInfoCommand = new UserInfoCommand();
+		groupsDb = userInfoCommand.retrieveGroupDb();
+		return groupsDb;
+	}
 
 }

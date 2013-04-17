@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.srm.types;
@@ -23,141 +23,138 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+
 /**
  * This class represents a Request Token
- *
- * @author  Magnoni Luca
+ * 
+ * @author Magnoni Luca
  * 
  */
 
+public class TRequestToken implements Serializable {
 
-public class TRequestToken implements Serializable 
-{
-    private static final long serialVersionUID = -6926632390881024529L;
+	private static final long serialVersionUID = -6926632390881024529L;
 
-    public static final String PNAME_REQUESTOKEN = "requestToken";
+	public static final String PNAME_REQUESTOKEN = "requestToken";
 
-    private final String token;
-    
-    private final Calendar expiration;
-    
-    private static final long REQUEST_LIFETIME = Configuration.getInstance().getExpiredRequestTime() * 1000;
+	private final String token;
 
-    public TRequestToken(String requestToken, Date timestamp) throws InvalidTRequestTokenAttributesException
-    {
-        if (requestToken == null || requestToken.trim().isEmpty())
-        {
-            throw new InvalidTRequestTokenAttributesException(requestToken);
-        }
-        this.token = requestToken;
-        Calendar expiration = null;
-        if(timestamp != null)
-        {
-            expiration = Calendar.getInstance();
-            expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
-        }
-        this.expiration = expiration;
-    }
+	private final Calendar expiration;
 
-    public static TRequestToken getRandom(){
-        UUID token = UUID.randomUUID();
-        try
-        {
-            return new TRequestToken(token.toString(), Calendar.getInstance().getTime());
-        } catch(InvalidTRequestTokenAttributesException e)
-        {
-            //never thrown
-            throw new IllegalStateException("Unexpected InvalidTRequestTokenAttributesException", e);
-        }
-    }
-    
-    public boolean hasExpirationDate()
-    {
-        return expiration != null;
-    }
-    
-    public boolean isExpired() throws IllegalStateException
-    {
-        if(!hasExpirationDate())
-        {
-            throw new IllegalStateException("Unable to check expiration, the token han not an expiration date");
-        }
-        return expiration.before(Calendar.getInstance());
-    }
-    
-    /**
-     * @return the expiration
-     */
-    public Calendar getExpiration()
-    {
-        return expiration;
-    }
-    
-    public void updateExpiration(Date expiration)
-    {
-        this.expiration.setTime(expiration);
-    }
+	private static final long REQUEST_LIFETIME = Configuration.getInstance()
+		.getExpiredRequestTime() * 1000;
 
-    public String getValue()
-    {
-        return token;
-    }
+	public TRequestToken(String requestToken, Date timestamp)
+		throws InvalidTRequestTokenAttributesException {
 
-    public String toString()
-    {
-        return token;
-    }
-    
-    public static TRequestToken decode(Map<String,Object> inputParam, String fieldName)
-            throws InvalidTRequestTokenAttributesException
-    {
-        return new TRequestToken((String) inputParam.get(fieldName), null);
-    }
+		if (requestToken == null || requestToken.trim().isEmpty()) {
+			throw new InvalidTRequestTokenAttributesException(requestToken);
+		}
+		this.token = requestToken;
+		Calendar expiration = null;
+		if (timestamp != null) {
+			expiration = Calendar.getInstance();
+			expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
+		}
+		this.expiration = expiration;
+	}
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((token == null) ? 0 : token.hashCode());
-        return result;
-    }
+	public static TRequestToken getRandom() {
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        if (getClass() != obj.getClass())
-        {
-            return false;
-        }
-        TRequestToken other = (TRequestToken) obj;
-        if (token == null)
-        {
-            if (other.token != null)
-            {
-                return false;
-            }
-        }
-        else
-            if (!token.equals(other.token))
-            {
-                return false;
-            }
-        return true;
-    }
+		UUID token = UUID.randomUUID();
+		try {
+			return new TRequestToken(token.toString(), Calendar.getInstance()
+				.getTime());
+		} catch (InvalidTRequestTokenAttributesException e) {
+			// never thrown
+			throw new IllegalStateException(
+				"Unexpected InvalidTRequestTokenAttributesException", e);
+		}
+	}
+
+	public boolean hasExpirationDate() {
+
+		return expiration != null;
+	}
+
+	public boolean isExpired() throws IllegalStateException {
+
+		if (!hasExpirationDate()) {
+			throw new IllegalStateException(
+				"Unable to check expiration, the token han not an expiration date");
+		}
+		return expiration.before(Calendar.getInstance());
+	}
+
+	/**
+	 * @return the expiration
+	 */
+	public Calendar getExpiration() {
+
+		return expiration;
+	}
+
+	public void updateExpiration(Date expiration) {
+
+		this.expiration.setTime(expiration);
+	}
+
+	public String getValue() {
+
+		return token;
+	}
+
+	public String toString() {
+
+		return token;
+	}
+
+	public static TRequestToken decode(Map<String, Object> inputParam,
+		String fieldName) throws InvalidTRequestTokenAttributesException {
+
+		return new TRequestToken((String) inputParam.get(fieldName), null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((token == null) ? 0 : token.hashCode());
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		TRequestToken other = (TRequestToken) obj;
+		if (token == null) {
+			if (other.token != null) {
+				return false;
+			}
+		} else if (!token.equals(other.token)) {
+			return false;
+		}
+		return true;
+	}
 
 }

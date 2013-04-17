@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.persistence;
@@ -40,167 +40,187 @@ import org.slf4j.LoggerFactory;
 
 public class MySqlDAOFactory implements DAOFactory {
 
-    public static final String factoryName = "JDBC - MySQL DAO Factory";
+	public static final String factoryName = "JDBC - MySQL DAO Factory";
 
-    private static final Logger log = LoggerFactory.getLogger(MySqlDAOFactory.class);
-    private static final DataBaseStrategy datasource = DataBaseStrategy.MYSQL;
-    private static DataSourceConnectionFactory connFactory = null;
-    private static MySqlDAOFactory factory = new MySqlDAOFactory();
+	private static final Logger log = LoggerFactory
+		.getLogger(MySqlDAOFactory.class);
+	private static final DataBaseStrategy datasource = DataBaseStrategy.MYSQL;
+	private static DataSourceConnectionFactory connFactory = null;
+	private static MySqlDAOFactory factory = new MySqlDAOFactory();
 
-    static {
-        MySqlDAOFactory.initializeDataSource();
-    }
+	static {
+		MySqlDAOFactory.initializeDataSource();
+	}
 
-    /**
+	/**
      *
      */
-    private MySqlDAOFactory() {
-        super();
-        MySqlDAOFactory.log.info("Choose " + MySqlDAOFactory.factoryName);
-    }
+	private MySqlDAOFactory() {
 
-    public static MySqlDAOFactory getInstance() {
-        return MySqlDAOFactory.factory;
-    }
+		super();
+		MySqlDAOFactory.log.info("Choose " + MySqlDAOFactory.factoryName);
+	}
 
-    private static void initializeDataSource() {
-        Configuration config = Configuration.getInstance();
-        MySqlDAOFactory.datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
-        MySqlDAOFactory.datasource.setDbName(config.getBEPersistenceDBName());
-        MySqlDAOFactory.datasource.setDbUsr(config.getBEPersistenceDBUserName());
-        MySqlDAOFactory.datasource.setDbPwd(config.getBEPersistenceDBPassword());
+	public static MySqlDAOFactory getInstance() {
 
-        boolean pool = config.getBEPersistencePoolDB();
-        if (pool) {
-            int maxActive = config.getBEPersistencePoolDBMaxActive();
-            int maxWait = config.getBEPersistencePoolDBMaxWait();
-            try {
-                DBConnectionPool.initPool(MySqlDAOFactory.datasource, maxActive, maxWait);
-            } catch (PersistenceException ex) {
-                MySqlDAOFactory.log.error("Exception while setting up Pool", ex);
-            }
-            MySqlDAOFactory.connFactory = DBConnectionPool.getPoolInstance();
-        } else {
-            try {
-                MySqlDAOFactory.connFactory = new DBConnection(MySqlDAOFactory.datasource);
-            } catch (PersistenceException ex1) {
-                MySqlDAOFactory.log.error("Exception while setting up DB connection", ex1);
-            }
-        }
-        log.debug("RECALL TABLE Catalog/DAO ");
+		return MySqlDAOFactory.factory;
+	}
 
-    }
+	private static void initializeDataSource() {
 
-    /**
-     * Returns an implementation of StorageSpaceCatalog, specific to a particular datastore.
-     * 
-     * @throws DataAccessException
-     * @return StorageSpaceDAO
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public StorageSpaceDAO getStorageSpaceDAO() throws DataAccessException {
-        return new StorageSpaceDAOMySql();
-    }
+		Configuration config = Configuration.getInstance();
+		MySqlDAOFactory.datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
+		MySqlDAOFactory.datasource.setDbName(config.getBEPersistenceDBName());
+		MySqlDAOFactory.datasource.setDbUsr(config.getBEPersistenceDBUserName());
+		MySqlDAOFactory.datasource.setDbPwd(config.getBEPersistenceDBPassword());
 
-    /**
-     * Returns an implementation of TapeRecallCatalog, specific to a particular datastore.
-     * 
-     * @throws DataAccessException
-     * @return TapeReallDAO
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public TapeRecallDAO getTapeRecallDAO() {
-        return new TapeRecallDAOMySql();
-    }
+		boolean pool = config.getBEPersistencePoolDB();
+		if (pool) {
+			int maxActive = config.getBEPersistencePoolDBMaxActive();
+			int maxWait = config.getBEPersistencePoolDBMaxWait();
+			try {
+				DBConnectionPool.initPool(MySqlDAOFactory.datasource, maxActive,
+					maxWait);
+			} catch (PersistenceException ex) {
+				MySqlDAOFactory.log.error("Exception while setting up Pool", ex);
+			}
+			MySqlDAOFactory.connFactory = DBConnectionPool.getPoolInstance();
+		} else {
+			try {
+				MySqlDAOFactory.connFactory = new DBConnection(
+					MySqlDAOFactory.datasource);
+			} catch (PersistenceException ex1) {
+				MySqlDAOFactory.log.error("Exception while setting up DB connection",
+					ex1);
+			}
+		}
+		log.debug("RECALL TABLE Catalog/DAO ");
 
-    /**
-     * @return String
-     */
-    @Override
-    public String toString() {
-        return MySqlDAOFactory.factoryName;
-    }
+	}
 
-    /**
-     * NOT IMPLEMENTED!
-     */
+	/**
+	 * Returns an implementation of StorageSpaceCatalog, specific to a particular
+	 * datastore.
+	 * 
+	 * @throws DataAccessException
+	 * @return StorageSpaceDAO
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public StorageSpaceDAO getStorageSpaceDAO() throws DataAccessException {
 
-    /**
-     * getCopyChunkDAO
-     * 
-     * @return CopyChunkDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public CopyChunkDAO getCopyChunkDAO() throws DataAccessException {
-        return null;
-    }
+		return new StorageSpaceDAOMySql();
+	}
 
-    /**
-     * getPermissionDAO
-     * 
-     * @return PermissionDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public PermissionDAO getPermissionDAO() throws DataAccessException {
-        return null;
-    }
+	/**
+	 * Returns an implementation of TapeRecallCatalog, specific to a particular
+	 * datastore.
+	 * 
+	 * @throws DataAccessException
+	 * @return TapeReallDAO
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public TapeRecallDAO getTapeRecallDAO() {
 
-    /**
-     * getPtGChunkDAO
-     * 
-     * @return PtGChunkDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public PtGChunkDAO getPtGChunkDAO() throws DataAccessException {
-        return null;
-    }
+		return new TapeRecallDAOMySql();
+	}
 
-    /**
-     * getPtPChunkDAO
-     * 
-     * @return PtPChunkDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public PtPChunkDAO getPtPChunkDAO() throws DataAccessException {
-        return null;
-    }
+	/**
+	 * @return String
+	 */
+	@Override
+	public String toString() {
 
-    /**
-     * getRequestSummaryDAO
-     * 
-     * @return RequestSummaryDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public RequestSummaryDAO getRequestSummaryDAO() throws DataAccessException {
-        return null;
-    }
+		return MySqlDAOFactory.factoryName;
+	}
 
-    /**
-     * getStorageAreaDAO
-     * 
-     * @return StorageAreaDAO
-     * @throws DataAccessException
-     * @todo Implement this it.grid.storm.persistence.DAOFactory method
-     */
-    public StorageAreaDAO getStorageAreaDAO() throws DataAccessException {
-        return null;
-    }
+	/**
+	 * NOT IMPLEMENTED!
+	 */
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.DAOFactory#getTapeRecallDAO(boolean)
-     */
-    public TapeRecallDAO getTapeRecallDAO(boolean test) throws DataAccessException {
-        if (!test) {
-            return new TapeRecallDAOMySql();
-        }
-        return new TapeRecallDAOProperties(test);
-    }
+	/**
+	 * getCopyChunkDAO
+	 * 
+	 * @return CopyChunkDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public CopyChunkDAO getCopyChunkDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/**
+	 * getPermissionDAO
+	 * 
+	 * @return PermissionDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public PermissionDAO getPermissionDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/**
+	 * getPtGChunkDAO
+	 * 
+	 * @return PtGChunkDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public PtGChunkDAO getPtGChunkDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/**
+	 * getPtPChunkDAO
+	 * 
+	 * @return PtPChunkDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public PtPChunkDAO getPtPChunkDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/**
+	 * getRequestSummaryDAO
+	 * 
+	 * @return RequestSummaryDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public RequestSummaryDAO getRequestSummaryDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/**
+	 * getStorageAreaDAO
+	 * 
+	 * @return StorageAreaDAO
+	 * @throws DataAccessException
+	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
+	 */
+	public StorageAreaDAO getStorageAreaDAO() throws DataAccessException {
+
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.grid.storm.persistence.DAOFactory#getTapeRecallDAO(boolean)
+	 */
+	public TapeRecallDAO getTapeRecallDAO(boolean test)
+		throws DataAccessException {
+
+		if (!test) {
+			return new TapeRecallDAOMySql();
+		}
+		return new TapeRecallDAOProperties(test);
+	}
 
 }

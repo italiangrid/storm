@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.space.quota;
@@ -22,272 +22,309 @@ import it.grid.storm.namespace.model.*;
 
 public abstract class QuotaInfoAbstract implements QuotaInfoInterface {
 
-  private String filesystemName = null;
-  private QuotaType quotaType = null;
-  private long blockUsage = -1L;
-  private long blockHardLimit = -1L;
-  private long blockSoftLimit = -1L;
-  private long blockGraceTime = -1L;
-  private long iNodeUsage = -1L;
-  private long iNodeHardLimit = -1L;
-  private long iNodeSoftLimit = -1L;
-  private long iNodeGraceTime = -1L;
-  private SizeUnit sizeUnit = SizeUnit.KILOBYTES;  //Default values for Blocks
-  private TimeUnit iNodeTimeUnit = TimeUnit.DAYS;  //Default values is 7 days = 168 hours
-  private TimeUnit sizeTimeUnit = TimeUnit.DAYS;  //Default values is 7 days = 168 hours
+	private String filesystemName = null;
+	private QuotaType quotaType = null;
+	private long blockUsage = -1L;
+	private long blockHardLimit = -1L;
+	private long blockSoftLimit = -1L;
+	private long blockGraceTime = -1L;
+	private long iNodeUsage = -1L;
+	private long iNodeHardLimit = -1L;
+	private long iNodeSoftLimit = -1L;
+	private long iNodeGraceTime = -1L;
+	private SizeUnit sizeUnit = SizeUnit.KILOBYTES; // Default values for Blocks
+	private TimeUnit iNodeTimeUnit = TimeUnit.DAYS; // Default values is 7 days =
+																									// 168 hours
+	private TimeUnit sizeTimeUnit = TimeUnit.DAYS; // Default values is 7 days =
+																									// 168 hours
 
+	/**
+	 * getBlockGraceTime
+	 * 
+	 * @return long
+	 */
+	public long getBlockGraceTime() {
 
-  /**
-   * getBlockGraceTime
-   *
-   * @return long
-   */
-  public long getBlockGraceTime() {
-    return this.blockGraceTime;
-  }
+		return this.blockGraceTime;
+	}
 
-  /**
-   * getBlockHardLimit
-   *
-   * @return long
-   */
-  public long getBlockHardLimit() {
-    return this.blockHardLimit;
-  }
+	/**
+	 * getBlockHardLimit
+	 * 
+	 * @return long
+	 */
+	public long getBlockHardLimit() {
 
-  /**
-   * getBlockSoftLimit
-   *
-   * @return long
-   */
-  public long getBlockSoftLimit() {
-    return this.blockSoftLimit;
-  }
+		return this.blockHardLimit;
+	}
 
-  /**
-   * getBlockUsage
-   *
-   * @return long
-   */
-  public long getBlockUsage() {
-    return this.blockUsage;
-  }
+	/**
+	 * getBlockSoftLimit
+	 * 
+	 * @return long
+	 */
+	public long getBlockSoftLimit() {
 
-  /**
-   * getFilesystemName
-   *
-   * @return String
-   */
-  public String getFilesystemName() {
-    return this.filesystemName;
-  }
+		return this.blockSoftLimit;
+	}
 
-  /**
-   * getINodeGraceTime
-   *
-   * @return long
-   */
-  public long getINodeGraceTime() {
-    return this.iNodeGraceTime;
-  }
+	/**
+	 * getBlockUsage
+	 * 
+	 * @return long
+	 */
+	public long getBlockUsage() {
 
-  /**
-   * getINodeHardLimit
-   *
-   * @return long
-   */
-  public long getINodeHardLimit() {
-    return this.iNodeHardLimit;
-  }
+		return this.blockUsage;
+	}
 
-  /**
-   * getINodeSoftLimit
-   *
-   * @return long
-   */
-  public long getINodeSoftLimit() {
-    return this.iNodeSoftLimit;
-  }
+	/**
+	 * getFilesystemName
+	 * 
+	 * @return String
+	 */
+	public String getFilesystemName() {
 
-  /**
-   * getINodeUsage
-   *
-   * @return long
-   */
-  public long getINodeUsage() {
-    return this.iNodeUsage;
-  }
+		return this.filesystemName;
+	}
 
-  /**
-   * getQuotaType
-   *
-   * @return QuotaType
-   */
-  public QuotaType getQuotaType() {
-    return this.quotaType;
-  }
+	/**
+	 * getINodeGraceTime
+	 * 
+	 * @return long
+	 */
+	public long getINodeGraceTime() {
 
-  /**
-   * getSizeUnit
-   *
-   * @return SizeUnit
-   */
-  public SizeUnit getSizeUnit() {
-    return this.sizeUnit;
-  }
+		return this.iNodeGraceTime;
+	}
 
+	/**
+	 * getINodeHardLimit
+	 * 
+	 * @return long
+	 */
+	public long getINodeHardLimit() {
 
-  /**
-   * getINodeTimeUnit
-   *
-   * @return TimeUnit
-   */
-  public TimeUnit getINodeTimeUnit() {
-    return this.iNodeTimeUnit;
-  }
+		return this.iNodeHardLimit;
+	}
 
-  /**
-   * getSizeTimeUnit
-   *
-   * @return TimeUnit
-   */
-  public TimeUnit getSizeTimeUnit() {
-    return this.sizeTimeUnit;
-  }
+	/**
+	 * getINodeSoftLimit
+	 * 
+	 * @return long
+	 */
+	public long getINodeSoftLimit() {
 
-  /**
-   * setBlockGraceTime
-   *
-   * @param blockGraceTime long
-   */
-  public void setBlockGraceTime(String blockGraceTime) {
-    long graceTime = -1;
-    try {
-      graceTime = Long.parseLong(blockGraceTime);
-    } catch (NumberFormatException nfe) {
-      graceTime = 0;
-      this.sizeTimeUnit = TimeUnit.EMPTY;
-    }
+		return this.iNodeSoftLimit;
+	}
 
-    this.blockGraceTime = graceTime;
-  }
+	/**
+	 * getINodeUsage
+	 * 
+	 * @return long
+	 */
+	public long getINodeUsage() {
 
-  /**
-   * setBlockHardLimit
-   *
-   * @param blockHardLimit long
-   */
-  public void setBlockHardLimit(long blockHardLimit) {
-    this.blockHardLimit = blockHardLimit;
-  }
+		return this.iNodeUsage;
+	}
 
-  /**
-   * setBlockSoftLimit
-   *
-   * @param blockSoftLimit long
-   */
-  public void setBlockSoftLimit(long blockSoftLimit) {
-    this.blockSoftLimit = blockSoftLimit;
-  }
+	/**
+	 * getQuotaType
+	 * 
+	 * @return QuotaType
+	 */
+	public QuotaType getQuotaType() {
 
-  /**
-   * setBlockUsage
-   *
-   * @param blockUsage long
-   */
-  public void setBlockUsage(long blockUsage) {
-    this.blockUsage = blockUsage;
-  }
+		return this.quotaType;
+	}
 
-  /**
-   * setFilesystemName
-   *
-   * @param fileSystemName String
-   */
-  public void setFilesystemName(String fileSystemName) {
-    this.filesystemName = fileSystemName;
-  }
+	/**
+	 * getSizeUnit
+	 * 
+	 * @return SizeUnit
+	 */
+	public SizeUnit getSizeUnit() {
 
-  /**
-   * setINodeGraceTime
-   *
-   * @param iNodeGraceTime long
-   */
-  public void setINodeGraceTime(String iNodeGraceTime) {
-    long graceTime = -1;
-    try {
-      graceTime = Long.parseLong(iNodeGraceTime);
-    } catch (NumberFormatException nfe) {
-      graceTime = 0;
-      this.iNodeTimeUnit = TimeUnit.EMPTY;
-    }
+		return this.sizeUnit;
+	}
 
-    this.iNodeGraceTime = graceTime;
-  }
+	/**
+	 * getINodeTimeUnit
+	 * 
+	 * @return TimeUnit
+	 */
+	public TimeUnit getINodeTimeUnit() {
 
-  /**
-   * setINodeHardLimit
-   *
-   * @param iNodeHardLimit long
-   */
-  public void setINodeHardLimit(long iNodeHardLimit) {
-    this.iNodeHardLimit = iNodeHardLimit;
-  }
+		return this.iNodeTimeUnit;
+	}
 
+	/**
+	 * getSizeTimeUnit
+	 * 
+	 * @return TimeUnit
+	 */
+	public TimeUnit getSizeTimeUnit() {
 
-  /**
-   * setINodeSoftLimit
-   *
-   * @param iNodeSoftLimit long
-   */
-  public void setINodeSoftLimit(long iNodeSoftLimit) {
-    this.iNodeSoftLimit = iNodeSoftLimit;
-  }
+		return this.sizeTimeUnit;
+	}
 
-  /**
-   * setINodeUsage
-   *
-   * @param iNodeUsage long
-   */
-  public void setINodeUsage(long iNodeUsage) {
-     this.iNodeUsage = iNodeUsage;
-  }
+	/**
+	 * setBlockGraceTime
+	 * 
+	 * @param blockGraceTime
+	 *          long
+	 */
+	public void setBlockGraceTime(String blockGraceTime) {
 
-  /**
-   * setQuotaType
-   *
-   * @param quotaType QuotaType
-   */
-  public void setQuotaType(QuotaType quotaType) {
-     this.quotaType = quotaType;
-  }
+		long graceTime = -1;
+		try {
+			graceTime = Long.parseLong(blockGraceTime);
+		} catch (NumberFormatException nfe) {
+			graceTime = 0;
+			this.sizeTimeUnit = TimeUnit.EMPTY;
+		}
 
-  /**
-   * setSizeUnit
-   *
-   * @param sizeUnit String
-   */
-  public void setSizeUnit(String sizeUnit) {
-    this.sizeUnit = SizeUnit.createSizeUnit(sizeUnit);
-  }
+		this.blockGraceTime = graceTime;
+	}
 
-  /**
-   * setTimeUnit
-   *
-   * @param timeUnit String
-   */
-  public void setINodeTimeUnit(String timeUnit) {
-    this.iNodeTimeUnit = TimeUnit.createTimeUnit(timeUnit);
-  }
+	/**
+	 * setBlockHardLimit
+	 * 
+	 * @param blockHardLimit
+	 *          long
+	 */
+	public void setBlockHardLimit(long blockHardLimit) {
 
-  /**
-   * setTimeUnit
-   *
-   * @param timeUnit String
-   */
-  public void setSizeTimeUnit(String timeUnit) {
-    this.sizeTimeUnit = TimeUnit.createTimeUnit(timeUnit);
-  }
+		this.blockHardLimit = blockHardLimit;
+	}
 
+	/**
+	 * setBlockSoftLimit
+	 * 
+	 * @param blockSoftLimit
+	 *          long
+	 */
+	public void setBlockSoftLimit(long blockSoftLimit) {
+
+		this.blockSoftLimit = blockSoftLimit;
+	}
+
+	/**
+	 * setBlockUsage
+	 * 
+	 * @param blockUsage
+	 *          long
+	 */
+	public void setBlockUsage(long blockUsage) {
+
+		this.blockUsage = blockUsage;
+	}
+
+	/**
+	 * setFilesystemName
+	 * 
+	 * @param fileSystemName
+	 *          String
+	 */
+	public void setFilesystemName(String fileSystemName) {
+
+		this.filesystemName = fileSystemName;
+	}
+
+	/**
+	 * setINodeGraceTime
+	 * 
+	 * @param iNodeGraceTime
+	 *          long
+	 */
+	public void setINodeGraceTime(String iNodeGraceTime) {
+
+		long graceTime = -1;
+		try {
+			graceTime = Long.parseLong(iNodeGraceTime);
+		} catch (NumberFormatException nfe) {
+			graceTime = 0;
+			this.iNodeTimeUnit = TimeUnit.EMPTY;
+		}
+
+		this.iNodeGraceTime = graceTime;
+	}
+
+	/**
+	 * setINodeHardLimit
+	 * 
+	 * @param iNodeHardLimit
+	 *          long
+	 */
+	public void setINodeHardLimit(long iNodeHardLimit) {
+
+		this.iNodeHardLimit = iNodeHardLimit;
+	}
+
+	/**
+	 * setINodeSoftLimit
+	 * 
+	 * @param iNodeSoftLimit
+	 *          long
+	 */
+	public void setINodeSoftLimit(long iNodeSoftLimit) {
+
+		this.iNodeSoftLimit = iNodeSoftLimit;
+	}
+
+	/**
+	 * setINodeUsage
+	 * 
+	 * @param iNodeUsage
+	 *          long
+	 */
+	public void setINodeUsage(long iNodeUsage) {
+
+		this.iNodeUsage = iNodeUsage;
+	}
+
+	/**
+	 * setQuotaType
+	 * 
+	 * @param quotaType
+	 *          QuotaType
+	 */
+	public void setQuotaType(QuotaType quotaType) {
+
+		this.quotaType = quotaType;
+	}
+
+	/**
+	 * setSizeUnit
+	 * 
+	 * @param sizeUnit
+	 *          String
+	 */
+	public void setSizeUnit(String sizeUnit) {
+
+		this.sizeUnit = SizeUnit.createSizeUnit(sizeUnit);
+	}
+
+	/**
+	 * setTimeUnit
+	 * 
+	 * @param timeUnit
+	 *          String
+	 */
+	public void setINodeTimeUnit(String timeUnit) {
+
+		this.iNodeTimeUnit = TimeUnit.createTimeUnit(timeUnit);
+	}
+
+	/**
+	 * setTimeUnit
+	 * 
+	 * @param timeUnit
+	 *          String
+	 */
+	public void setSizeTimeUnit(String timeUnit) {
+
+		this.sizeTimeUnit = TimeUnit.createTimeUnit(timeUnit);
+	}
 
 }

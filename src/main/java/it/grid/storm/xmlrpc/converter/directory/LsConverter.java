@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.xmlrpc.converter.directory;
@@ -40,124 +40,126 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- *
- * This class is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
+ * 
+ * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- *
- * This class represents the Type Converter for LS function .
- * This class have get an input data from xmlrpc call anc convert it into a
- * StoRM Type that can be used to invoke the LSManager
- *
- *
+ * 
+ * This class represents the Type Converter for LS function . This class have
+ * get an input data from xmlrpc call anc convert it into a StoRM Type that can
+ * be used to invoke the LSManager
+ * 
+ * 
  * Authors:
- *     @author=lucamag luca.magnoniATcnaf.infn.it
- *
+ * 
+ * @author=lucamag luca.magnoniATcnaf.infn.it
+ * 
  * @date = Oct 9, 2008
- *
+ * 
  */
 
-public class LsConverter implements Converter
-{
-    /**
-     * Logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(LsConverter.class);
+public class LsConverter implements Converter {
 
-    public LsConverter()
-    {
-    };
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LoggerFactory.getLogger(LsConverter.class);
 
-    /** This method return a LSInputData created from input Hashtable structure of an xmlrpc spaceReservation v2.1 call.
-     *  SpaceResData can be used to invoke LS method of Directory Functions Manager
-     */
-    public InputData convertToInputData(Map inputParam)
-    {
-        log.debug("SrmLs: LSConverter :Call received :Creation of SpaceResData = " + inputParam.size());
-        log.debug("SrmLs: LSConverter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
+	public LsConverter() {
 
+	};
 
-        // Member name definition for inputParam struct , from SRM V2.2
-        String member_fullDL = new String("fullDetailedList");
-        String member_allLR = new String("allLevelRecursive");
-        String member_numOL = new String("numOfLevels");
-        String member_offset = new String("offset");
-        String member_count = new String("count");
+	/**
+	 * This method return a LSInputData created from input Hashtable structure of
+	 * an xmlrpc spaceReservation v2.1 call. SpaceResData can be used to invoke LS
+	 * method of Directory Functions Manager
+	 */
+	public InputData convertToInputData(Map inputParam) {
 
-        /* Creation of VomsGridUser */
-        GridUserInterface guser = GridUserManager.decode(inputParam);
+		log.debug("SrmLs: LSConverter :Call received :Creation of SpaceResData = "
+			+ inputParam.size());
+		log.debug("SrmLs: LSConverter: Input Structure toString: "
+			+ ParameterDisplayHelper.display(inputParam));
 
-        /* (2) anyURI[] arrayOfSURLs */
-        ArrayOfSURLs surlArray = null;
-        try {
-            surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
-        } catch (InvalidArrayOfSURLsAttributeException e2) {
-            log.debug("SrmLs: Empty surlArray found!");
-            surlArray = null;
-        }
+		// Member name definition for inputParam struct , from SRM V2.2
+		String member_fullDL = new String("fullDetailedList");
+		String member_allLR = new String("allLevelRecursive");
+		String member_numOL = new String("numOfLevels");
+		String member_offset = new String("offset");
+		String member_count = new String("count");
 
-        TFileStorageType fileStorageType = TFileStorageType.decode(inputParam, TFileStorageType.PNAME_FILESTORAGETYPE);
-        log.debug("fileType: " + fileStorageType);
+		/* Creation of VomsGridUser */
+		GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        /* (5) fullDetailedList */
-        Boolean fullDL = (Boolean) inputParam.get(member_fullDL);
-        log.debug("fullDetailedList: " + fullDL);
+		/* (2) anyURI[] arrayOfSURLs */
+		ArrayOfSURLs surlArray = null;
+		try {
+			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+		} catch (InvalidArrayOfSURLsAttributeException e2) {
+			log.debug("SrmLs: Empty surlArray found!");
+			surlArray = null;
+		}
 
-        /* (6) allLevelRecursive */
-        Boolean allLR = (Boolean) inputParam.get(member_allLR);
-        log.debug("allLevelRecursive: " + allLR);
+		TFileStorageType fileStorageType = TFileStorageType.decode(inputParam,
+			TFileStorageType.PNAME_FILESTORAGETYPE);
+		log.debug("fileType: " + fileStorageType);
 
-        /* (7) numOfLevels */
-        Integer numOL = (Integer) inputParam.get(member_numOL);
-        log.debug("numOfLevels: " + numOL);
+		/* (5) fullDetailedList */
+		Boolean fullDL = (Boolean) inputParam.get(member_fullDL);
+		log.debug("fullDetailedList: " + fullDL);
 
-        /* (8) offset */
-        Integer offset = (Integer) inputParam.get(member_offset);
-        log.debug("offset: " + offset);
+		/* (6) allLevelRecursive */
+		Boolean allLR = (Boolean) inputParam.get(member_allLR);
+		log.debug("allLevelRecursive: " + allLR);
 
-        /* (9) count */
-        Integer count = (Integer) inputParam.get(member_count);
-        log.debug("count: " + count);
+		/* (7) numOfLevels */
+		Integer numOL = (Integer) inputParam.get(member_numOL);
+		log.debug("numOfLevels: " + numOL);
 
-        LSInputData inputData;
-        if(guser != null)
-        {
-            inputData = new IdentityLSInputData(guser, surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);            
-        }
-        else
-        {
-            inputData = new AnonymousLSInputData(surlArray, fileStorageType, fullDL, allLR, numOL, offset, count);
-        }
-        return inputData;
-    }
+		/* (8) offset */
+		Integer offset = (Integer) inputParam.get(member_offset);
+		log.debug("offset: " + offset);
 
-    public Hashtable convertFromOutputData(OutputData data)
-    {
-        // Creation of new Hashtable to return
-        Hashtable outputParam = new Hashtable();
-        LSOutputData outputData = (LSOutputData) data;
+		/* (9) count */
+		Integer count = (Integer) inputParam.get(member_count);
+		log.debug("count: " + count);
 
-        /* (1) TReturnStatus */
-        TReturnStatus globStatus = outputData.getStatus();
-        if (globStatus != null) {
-            globStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        }
+		LSInputData inputData;
+		if (guser != null) {
+			inputData = new IdentityLSInputData(guser, surlArray, fileStorageType,
+				fullDL, allLR, numOL, offset, count);
+		} else {
+			inputData = new AnonymousLSInputData(surlArray, fileStorageType, fullDL,
+				allLR, numOL, offset, count);
+		}
+		return inputData;
+	}
 
-        /* (2) TRequestToken */
-        TRequestToken requestToken = outputData.getRequestToken();
-        if (requestToken != null) {
-            outputParam.put("requestToken", requestToken.toString());
-        }
+	public Hashtable convertFromOutputData(OutputData data) {
 
-        /* (3) ArrayOfTMetaDataPathDetail details*/
-        ArrayOfTMetaDataPathDetail details = outputData.getDetails();
-        if (details != null) {
-            details.encode(outputParam, ArrayOfTMetaDataPathDetail.PNAME_DETAILS);
-        }
+		// Creation of new Hashtable to return
+		Hashtable outputParam = new Hashtable();
+		LSOutputData outputData = (LSOutputData) data;
 
-        // Return global structure.
-        return outputParam;
-    }
+		/* (1) TReturnStatus */
+		TReturnStatus globStatus = outputData.getStatus();
+		if (globStatus != null) {
+			globStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+		}
+
+		/* (2) TRequestToken */
+		TRequestToken requestToken = outputData.getRequestToken();
+		if (requestToken != null) {
+			outputParam.put("requestToken", requestToken.toString());
+		}
+
+		/* (3) ArrayOfTMetaDataPathDetail details */
+		ArrayOfTMetaDataPathDetail details = outputData.getDetails();
+		if (details != null) {
+			details.encode(outputParam, ArrayOfTMetaDataPathDetail.PNAME_DETAILS);
+		}
+
+		// Return global structure.
+		return outputParam;
+	}
 }

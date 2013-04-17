@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
@@ -32,67 +32,62 @@ import org.slf4j.LoggerFactory;
 
 public class PathCreator {
 
-    /**
-     * Logger.
-     */
-    private static final Logger log = LoggerFactory.getLogger(PathCreator.class);
+	/**
+	 * Logger.
+	 */
+	private static final Logger log = LoggerFactory.getLogger(PathCreator.class);
 
-    private File file;
-    private boolean recursive;
-    private int level;
+	private File file;
+	private boolean recursive;
+	private int level;
 
-    public PathCreator(File file, boolean recursive, int level) {
-        this.file = file;
-        log.debug("<PathCreator>: New Path Created: " + file.toString());
-        this.recursive = recursive;
-        this.level = level;
+	public PathCreator(File file, boolean recursive, int level) {
 
-    }
+		this.file = file;
+		log.debug("<PathCreator>: New Path Created: " + file.toString());
+		this.recursive = recursive;
+		this.level = level;
 
-    public Collection<String> generateChildrenNoFolders() {
-    	return generateChildrenNoFolders(this.file , this.recursive , this.level);
-    }
-    
-    /**
-     * If file is a directory returns the list of files contained 
-     * in the directory, then on each subfolder if recursive is true or level is greater than zero 
-     * call itself recursively on it decreasing the level.
-     * If file is file returns the file itself
-     * 
-     * @param file
-     * @param recursive
-     * @param level
-     * @return
-     */
-	private Collection<String> generateChildrenNoFolders(File file, boolean recursive, int level) {
+	}
+
+	public Collection<String> generateChildrenNoFolders() {
+
+		return generateChildrenNoFolders(this.file, this.recursive, this.level);
+	}
+
+	/**
+	 * If file is a directory returns the list of files contained in the
+	 * directory, then on each subfolder if recursive is true or level is greater
+	 * than zero call itself recursively on it decreasing the level. If file is
+	 * file returns the file itself
+	 * 
+	 * @param file
+	 * @param recursive
+	 * @param level
+	 * @return
+	 */
+	private Collection<String> generateChildrenNoFolders(File file,
+		boolean recursive, int level) {
 
 		ArrayList<String> children = new ArrayList<String>();
-		log.debug("Generating children of = " + file + " with recursive option = " + recursive
-			+ " and recursion level = " + level);
-		if(file.isDirectory())
-		{
+		log.debug("Generating children of = " + file + " with recursive option = "
+			+ recursive + " and recursion level = " + level);
+		if (file.isDirectory()) {
 			log.debug("Is a directory");
-			if(recursive || (level > 0))
-			{
+			if (recursive || (level > 0)) {
 				log.debug("Recursion permitted. Inspectiong the content");
 				String[] arrayOfNames = file.list();
-				if(arrayOfNames != null)
-				{
-					for(String filePath : arrayOfNames)
-					{
+				if (arrayOfNames != null) {
+					for (String filePath : arrayOfNames) {
 						log.debug("Analizing child = " + filePath);
-						if(!(filePath.startsWith(".")))
-						{
+						if (!(filePath.startsWith("."))) {
 							File child = new File(file, filePath);
-							if(child.isDirectory())
-							{
+							if (child.isDirectory()) {
 								log.debug("It's a directory, calling recursive procedure"
 									+ " with level " + (level - 1));
 								children.addAll(generateChildrenNoFolders(child, recursive,
 									level - 1));
-							}
-							else
-							{
+							} else {
 								log.debug("It is a file. Reached a leaf");
 								children.add(child.toString());
 							}
@@ -100,15 +95,12 @@ public class PathCreator {
 					}
 				}
 			}
-		}
-		else
-		{
+		} else {
 			log.debug("It's a file, adding to the return collection");
 			children.add(file.toString());
 		}
 		return children;
 	}
-
 
 	/**
 	 * @param list
@@ -118,29 +110,24 @@ public class PathCreator {
 
 		ArrayList<String> children = new ArrayList<String>();
 		String[] arrayOfNames = null;
-		log.debug("Generating children of = " + file + " with recursive option = " + recursive + " and recursion level = " + level);
-		if(file.isDirectory() && (recursive || level > 0))
-		{
-			log.debug("Is a directory with recursion permitted. Inspectiong the content");
+		log.debug("Generating children of = " + file + " with recursive option = "
+			+ recursive + " and recursion level = " + level);
+		if (file.isDirectory() && (recursive || level > 0)) {
+			log
+				.debug("Is a directory with recursion permitted. Inspectiong the content");
 			arrayOfNames = file.list();
-			if(arrayOfNames != null)
-			{
-				for(String filePath : arrayOfNames)
-				{
+			if (arrayOfNames != null) {
+				for (String filePath : arrayOfNames) {
 					log.debug("Analizing child = " + filePath);
-					if(!(filePath.startsWith(".")))
-					{
-						PathCreator path =
-										   new PathCreator(new File(file, filePath), recursive,
-											   level - 1);
+					if (!(filePath.startsWith("."))) {
+						PathCreator path = new PathCreator(new File(file, filePath),
+							recursive, level - 1);
 						children.addAll(path.generateChildren());
 					}
 				}
 			}
 
-		}
-		else
-		{
+		} else {
 			children.add(file.toString());
 		}
 		return children;

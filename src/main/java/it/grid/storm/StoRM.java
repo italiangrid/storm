@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm;
@@ -43,8 +43,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a StoRM as a whole: it sets the configuration file which contains properties necessary for
- * other classes of StoRM, it sets up logging, as well as the advanced picker.
+ * This class represents a StoRM as a whole: it sets the configuration file
+ * which contains properties necessary for other classes of StoRM, it sets up
+ * logging, as well as the advanced picker.
  * 
  * @author EGRID - ICTP Trieste; INFN - CNAF Bologna
  * @date March 28th, 2005
@@ -53,266 +54,305 @@ import org.slf4j.LoggerFactory;
 
 public class StoRM {
 
-    private AdvancedPicker picker = null; // Picker of StoRM
+	private AdvancedPicker picker = null; // Picker of StoRM
 
-    private XMLRPCHttpServer xmlrpcServer = null;
+	private XMLRPCHttpServer xmlrpcServer = null;
 
-    private final String welcome = WelcomeMessage.getWelcomeMessage(); // Text that displays general info about StoRM project
+	private final String welcome = WelcomeMessage.getWelcomeMessage(); // Text
+																																			// that
+																																			// displays
+																																			// general
+																																			// info
+																																			// about
+																																			// StoRM
+																																			// project
 
-    private static Logger log;
+	private static Logger log;
 
-    private final Timer GC = new Timer(); // Timer object in charge to call periodically the Space Garbace Collector
-    private final ReservedSpaceCatalog spaceCatalog;
-    private TimerTask cleaningTask = null;
-    private boolean isPickerRunning = false;
-    private boolean isXmlrpcServerRunning = false;
-    private boolean isRestServerRunning = false;
-    private boolean isSpaceGCRunning = false;
-    
-    /**
-     * Public constructor that requires a String containing the complete pathname to the configuration file, as well as
-     * the desired refresh rate in seconds for changes in configuration. Beware that by pathname it is meant the
-     * complete path starting from root, including the name of the file itself! If pathname is empty or null, then an
-     * attempt will be made to read properties off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows
-     * installations this attempt _will_ fail! In any case, failure to read the configuratin file causes StoRM to use
-     * hardcoded default values.
-     */
-    public StoRM(String configurationPathname, int refresh) {
-        // verifying supplied configurationPathname and print to screen...
-        if ((configurationPathname == null) || (configurationPathname.equals(""))) {
-            // built-in configuration file to be used if nothing gets specified!
-            configurationPathname = "/opt/storm/backend/etc/storm.properties";
-            System.out.print("This instance of StoRM Backend was invoked without explicitly specifying ");
-            System.out.print("a configuration file. Looking for the standard one in ");
-            System.out.println(configurationPathname);
-        } else {
-            // look for given configuration file...
-            System.out.print("Looking for configuration file ");
-            System.out.println(configurationPathname);
-        }
+	private final Timer GC = new Timer(); // Timer object in charge to call
+																				// periodically the Space Garbace
+																				// Collector
+	private final ReservedSpaceCatalog spaceCatalog;
+	private TimerTask cleaningTask = null;
+	private boolean isPickerRunning = false;
+	private boolean isXmlrpcServerRunning = false;
+	private boolean isRestServerRunning = false;
+	private boolean isSpaceGCRunning = false;
 
-        // load properties from configuration...
-        Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname, refresh));
+	/**
+	 * Public constructor that requires a String containing the complete pathname
+	 * to the configuration file, as well as the desired refresh rate in seconds
+	 * for changes in configuration. Beware that by pathname it is meant the
+	 * complete path starting from root, including the name of the file itself! If
+	 * pathname is empty or null, then an attempt will be made to read properties
+	 * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
+	 * this attempt _will_ fail! In any case, failure to read the configuratin
+	 * file causes StoRM to use hardcoded default values.
+	 */
+	public StoRM(String configurationPathname, int refresh) {
 
-        // set and print current configuration string...
-        String currentConfig = "\nCurrent configuration:\n" + Configuration.getInstance().toString();
-        System.out.println(currentConfig);
-        // print welcome
-        System.out.println("\n" + welcome);
-        
-        /* Now that configuration file has been loaded create the catalog instance*/
-        spaceCatalog = new ReservedSpaceCatalog();
-        
-        /**
-         * INIT LOGGING COMPONENT
-         */
-        String configurationDir = Configuration.getInstance().configurationDir();
-        String logFile = configurationDir + "logging.xml";
-        Bootstrap.initializeLogging(logFile);
+		// verifying supplied configurationPathname and print to screen...
+		if ((configurationPathname == null) || (configurationPathname.equals(""))) {
+			// built-in configuration file to be used if nothing gets specified!
+			configurationPathname = "/opt/storm/backend/etc/storm.properties";
+			System.out
+				.print("This instance of StoRM Backend was invoked without explicitly specifying ");
+			System.out
+				.print("a configuration file. Looking for the standard one in ");
+			System.out.println(configurationPathname);
+		} else {
+			// look for given configuration file...
+			System.out.print("Looking for configuration file ");
+			System.out.println(configurationPathname);
+		}
 
-        StoRM.log = LoggerFactory.getLogger(StoRM.class);
+		// load properties from configuration...
+		Configuration.getInstance().setConfigReader(
+			new ConfigReader(configurationPathname, refresh));
 
-        //
-        log.warn(welcome); // log welcome string!
-        log.info(currentConfig); // log actually used values!
+		// set and print current configuration string...
+		String currentConfig = "\nCurrent configuration:\n"
+			+ Configuration.getInstance().toString();
+		System.out.println(currentConfig);
+		// print welcome
+		System.out.println("\n" + welcome);
 
-        // Force the loadind and the parsing of Namespace configuration
-        boolean verboseMode = false; // true generates verbose logging
-        boolean testingMode = false; // True if you wants testing namespace
-        NamespaceDirector.initializeDirector(verboseMode, testingMode);
+		/* Now that configuration file has been loaded create the catalog instance */
+		spaceCatalog = new ReservedSpaceCatalog();
 
-        HealthDirector.initializeDirector(false);
+		/**
+		 * INIT LOGGING COMPONENT
+		 */
+		String configurationDir = Configuration.getInstance().configurationDir();
+		String logFile = configurationDir + "logging.xml";
+		Bootstrap.initializeLogging(logFile);
 
-        String pathAuthzDBFileName = configurationDir + "path-authz.db";
-        try
-        {
-            Bootstrap.initializePathAuthz(pathAuthzDBFileName);
-        } catch(BootstrapException e)
-        {
-            log.error("Unable to initialize the Path Authorization manager. BootstrapException: " + e.getMessage());
-            throw new RuntimeException("Unable to initialize the Path Authorization manager");
-        }
+		StoRM.log = LoggerFactory.getLogger(StoRM.class);
 
-        // Initialize Used Space
-        Bootstrap.initializeUsedSpace();
-        
-        if(Configuration.getInstance().getGridhttpsEnabled())
-        {
-            log.info("Initializing the https plugin");
-            String httpsFactoryName = Configuration.getInstance().getGRIDHTTPSPluginClassName();
-            Bootstrap.initializeAclManager(httpsFactoryName, LoggerFactory.getLogger(Bootstrap.class));
-        }
-        
-        //
-        picker = new AdvancedPicker();
-        try
-        {
-            xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort(), Configuration.getInstance().getMaxXMLRPCThread());
-        } catch(StoRMXmlRpcException e)
-        {
-            log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: " + e.getMessage());
-            throw new RuntimeException("Unable to create the XML-RPC Server");
-        }
-        
-        if(Configuration.getInstance().getSanityCheckEnabled())
-        {
-            //Execute checks
-            CheckManager checkManager = new SimpleCheckManager();
-            checkManager.init();
-            CheckResponse checkResponse = checkManager.lauchChecks();
-            if(checkResponse.isSuccessfull())
-            {
-                log.info("Check suite executed successfully");
-            }
-            else
-            {
-                if(checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE))
-                {
-                    log.error("Storm Check suite is failed for some critical checks!");
-                    StoRMLoggers.getStderrLogger().error("Storm Check suite is failed for some critical checks! Please check the log for more details");
-                    throw new RuntimeException("Storm Check suite is failed for some critical checks! Please check the log for more details");
-                }
-                else
-                {
-                    log.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
-                    StoRMLoggers.getStderrLogger().error("Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
-                }
-            }
-        }
-        else
-        {
-            log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
-        }
-    }
+		//
+		log.warn(welcome); // log welcome string!
+		log.info(currentConfig); // log actually used values!
 
-    /**
-     * Method used to start the picker.
-     */
-    synchronized public void startPicker() {
-        picker.startIt();
-        this.isPickerRunning = true;
-    }
+		// Force the loadind and the parsing of Namespace configuration
+		boolean verboseMode = false; // true generates verbose logging
+		boolean testingMode = false; // True if you wants testing namespace
+		NamespaceDirector.initializeDirector(verboseMode, testingMode);
 
-    /**
-     * Method used to stop the picker.
-     */
-    synchronized public void stopPicker() {
-        picker.stopIt();
-        this.isPickerRunning = false;
-    }
+		HealthDirector.initializeDirector(false);
 
-    /**
-     * @return
-     */
-    public synchronized boolean pickerIsRunning()
-    {
-        return this.isPickerRunning;
-    }
-    /**
-     * Method used to start xmlrpcServer.
-     * @throws Exception 
-     */
-    synchronized public void startXmlRpcServer() throws Exception {
-        xmlrpcServer.start();
-        this.isXmlrpcServerRunning = true;
-    }
+		String pathAuthzDBFileName = configurationDir + "path-authz.db";
+		try {
+			Bootstrap.initializePathAuthz(pathAuthzDBFileName);
+		} catch (BootstrapException e) {
+			log
+				.error("Unable to initialize the Path Authorization manager. BootstrapException: "
+					+ e.getMessage());
+			throw new RuntimeException(
+				"Unable to initialize the Path Authorization manager");
+		}
 
-    /**
-     * Method used to stop xmlrpcServer.
-     */
-    synchronized public void stopXmlRpcServer() {
-        xmlrpcServer.stop();
-        this.isXmlrpcServerRunning = false;
-    }
-    
-    /**
-     * @return
-     */
-    public synchronized boolean xmlRpcServerIsRunning()
-    {
-        return this.isXmlrpcServerRunning;
-    }
-    
-    /**
-     * RESTFul Service Start-up
-     */
-    synchronized public void startRestServer() throws Exception
-    {
-        try
-        {
-            RestService.startServer();
-        }
-        catch (IOException e)
-        {
-            System.err.println("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
-            throw new Exception("Unable to start internal HTTP Server listening for RESTFul services. IOException : " + e.getMessage());
-        }
-        this.isRestServerRunning = true;
-    }
-    
-    /**
-     * @throws Exception
-     */
-    synchronized public void stopRestServer() 
-    {
-            try {
-				
-            	RestService.stop();
-			
-            } catch (Exception e) {
-				
-            	System.err.println("Unable to stop internal HTTP Server listening for RESTFul services: " + e.getMessage());
+		// Initialize Used Space
+		Bootstrap.initializeUsedSpace();
+
+		if (Configuration.getInstance().getGridhttpsEnabled()) {
+			log.info("Initializing the https plugin");
+			String httpsFactoryName = Configuration.getInstance()
+				.getGRIDHTTPSPluginClassName();
+			Bootstrap.initializeAclManager(httpsFactoryName,
+				LoggerFactory.getLogger(Bootstrap.class));
+		}
+
+		//
+		picker = new AdvancedPicker();
+		try {
+			xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance()
+				.getXmlRpcServerPort(), Configuration.getInstance()
+				.getMaxXMLRPCThread());
+		} catch (StoRMXmlRpcException e) {
+			log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: "
+				+ e.getMessage());
+			throw new RuntimeException("Unable to create the XML-RPC Server");
+		}
+
+		if (Configuration.getInstance().getSanityCheckEnabled()) {
+			// Execute checks
+			CheckManager checkManager = new SimpleCheckManager();
+			checkManager.init();
+			CheckResponse checkResponse = checkManager.lauchChecks();
+			if (checkResponse.isSuccessfull()) {
+				log.info("Check suite executed successfully");
+			} else {
+				if (checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE)) {
+					log.error("Storm Check suite is failed for some critical checks!");
+					StoRMLoggers
+						.getStderrLogger()
+						.error(
+							"Storm Check suite is failed for some critical checks! Please check the log for more details");
+					throw new RuntimeException(
+						"Storm Check suite is failed for some critical checks! Please check the log for more details");
+				} else {
+					log
+						.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
+					StoRMLoggers
+						.getStderrLogger()
+						.error(
+							"Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
+				}
 			}
-            
-            this.isRestServerRunning = false;
-    }
-    
-    /**
-     * @return
-     */
-    public synchronized boolean restServerIsRunning()
-    {
-        return this.isRestServerRunning;
-    }
-    
-    /**
-     * Method use to start the space Garbage Collection Thread.
-     */
-    synchronized public void startSpaceGC() {
-        StoRM.log.debug("Starting Space GC.");
-        long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay time before starting
-        // cleaning thread! Set to 1 minute
-        long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period of execution of cleaning!
-        // Set to 1 hour
-        cleaningTask = new TimerTask() {
-            @Override
-            public void run() {
-                spaceCatalog.purge();
-            }
-        };
-        GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
-        this.isSpaceGCRunning = true;
-        StoRM.log.debug("Space GC started.");
-    }
+		} else {
+			log
+				.warn("Sanity checks disabled. Unable to determine if the environment is sane");
+		}
+	}
 
-    /**
+	/**
+	 * Method used to start the picker.
+	 */
+	synchronized public void startPicker() {
+
+		picker.startIt();
+		this.isPickerRunning = true;
+	}
+
+	/**
+	 * Method used to stop the picker.
+	 */
+	synchronized public void stopPicker() {
+
+		picker.stopIt();
+		this.isPickerRunning = false;
+	}
+
+	/**
+	 * @return
+	 */
+	public synchronized boolean pickerIsRunning() {
+
+		return this.isPickerRunning;
+	}
+
+	/**
+	 * Method used to start xmlrpcServer.
+	 * 
+	 * @throws Exception
+	 */
+	synchronized public void startXmlRpcServer() throws Exception {
+
+		xmlrpcServer.start();
+		this.isXmlrpcServerRunning = true;
+	}
+
+	/**
+	 * Method used to stop xmlrpcServer.
+	 */
+	synchronized public void stopXmlRpcServer() {
+
+		xmlrpcServer.stop();
+		this.isXmlrpcServerRunning = false;
+	}
+
+	/**
+	 * @return
+	 */
+	public synchronized boolean xmlRpcServerIsRunning() {
+
+		return this.isXmlrpcServerRunning;
+	}
+
+	/**
+	 * RESTFul Service Start-up
+	 */
+	synchronized public void startRestServer() throws Exception {
+
+		try {
+			RestService.startServer();
+		} catch (IOException e) {
+			System.err
+				.println("Unable to start internal HTTP Server listening for RESTFul services. IOException : "
+					+ e.getMessage());
+			throw new Exception(
+				"Unable to start internal HTTP Server listening for RESTFul services. IOException : "
+					+ e.getMessage());
+		}
+		this.isRestServerRunning = true;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	synchronized public void stopRestServer() {
+
+		try {
+
+			RestService.stop();
+
+		} catch (Exception e) {
+
+			System.err
+				.println("Unable to stop internal HTTP Server listening for RESTFul services: "
+					+ e.getMessage());
+		}
+
+		this.isRestServerRunning = false;
+	}
+
+	/**
+	 * @return
+	 */
+	public synchronized boolean restServerIsRunning() {
+
+		return this.isRestServerRunning;
+	}
+
+	/**
+	 * Method use to start the space Garbage Collection Thread.
+	 */
+	synchronized public void startSpaceGC() {
+
+		StoRM.log.debug("Starting Space GC.");
+		long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay
+																																								// time
+																																								// before
+																																								// starting
+		// cleaning thread! Set to 1 minute
+		long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period
+																																								// of
+																																								// execution
+																																								// of
+																																								// cleaning!
+		// Set to 1 hour
+		cleaningTask = new TimerTask() {
+
+			@Override
+			public void run() {
+
+				spaceCatalog.purge();
+			}
+		};
+		GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
+		this.isSpaceGCRunning = true;
+		StoRM.log.debug("Space GC started.");
+	}
+
+	/**
      * 
      */
-    synchronized public void stopSpaceGC() {
-        StoRM.log.debug("Stopping Space GC.");
-        if (cleaningTask != null) {
-            cleaningTask.cancel();
-            GC.purge();
-        }
-        StoRM.log.debug("Space GC stopped.");
-        this.isSpaceGCRunning = false;
-    }
+	synchronized public void stopSpaceGC() {
 
-    /**
-     * @return
-     */
-    public synchronized boolean spaceGCIsRunning()
-    {
-        return this.isSpaceGCRunning;
-    }
+		StoRM.log.debug("Stopping Space GC.");
+		if (cleaningTask != null) {
+			cleaningTask.cancel();
+			GC.purge();
+		}
+		StoRM.log.debug("Space GC stopped.");
+		this.isSpaceGCRunning = false;
+	}
+
+	/**
+	 * @return
+	 */
+	public synchronized boolean spaceGCIsRunning() {
+
+		return this.isSpaceGCRunning;
+	}
 }

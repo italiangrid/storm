@@ -1,28 +1,28 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
- * This class represents the Type Converter for GetSpaceTokens function.
- * This class gets input data from xmlrpc call and converts it into a
- * StoRM Type that can be used to invoke the GetSpaceTokensExecutor
- *
- * @author  Alberto Forti
- * @author  CNAF -INFN Bologna
- * @date    November 2006
+ * This class represents the Type Converter for GetSpaceTokens function. This
+ * class gets input data from xmlrpc call and converts it into a StoRM Type that
+ * can be used to invoke the GetSpaceTokensExecutor
+ * 
+ * @author Alberto Forti
+ * @author CNAF -INFN Bologna
+ * @date November 2006
  * @version 1.0
  */
 
@@ -46,65 +46,67 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetSpaceTokensConverter implements Converter
-{
-    // Logger
-    private static final Logger log = LoggerFactory.getLogger(GetSpaceTokensConverter.class);
+public class GetSpaceTokensConverter implements Converter {
 
-    public GetSpaceTokensConverter() {};
+	// Logger
+	private static final Logger log = LoggerFactory
+		.getLogger(GetSpaceTokensConverter.class);
 
-    /**
-     * Returns an instance of GetSpaceTokenInputData from a Hashtable structure
-     * created by a xmlrpc GetSpaceTokens v2.2 call.
-     */
-    public InputData convertToInputData(Map inputParam)
-    {
+	public GetSpaceTokensConverter() {
 
-        String memberName = new String("authorizationID");
+	};
 
-        GridUserInterface guser = GridUserManager.decode(inputParam);
+	/**
+	 * Returns an instance of GetSpaceTokenInputData from a Hashtable structure
+	 * created by a xmlrpc GetSpaceTokens v2.2 call.
+	 */
+	public InputData convertToInputData(Map inputParam) {
 
-        /* (1) authorizationID (never used) */
-        String authID = (String) inputParam.get(memberName);
+		String memberName = new String("authorizationID");
 
-        memberName = new String("userSpaceTokenDescription");
-        String userSpaceTokenDescription = (String) inputParam.get(memberName);
-        GetSpaceTokensInputData inputData;
-        if(guser != null)
-        {
-            inputData = new IdentityGetSpaceTokensInputData(guser, userSpaceTokenDescription);         
-        }
-        else
-        {
-            inputData = new AnonymousGetSpaceTokensInputData(userSpaceTokenDescription);
-        }
-        return inputData;
-    }
+		GridUserInterface guser = GridUserManager.decode(inputParam);
 
-    public Map convertFromOutputData(OutputData data)
-    {
-        log.debug("GetSpaceTokensConverter. Creation of XMLRPC Output Structure! ");
+		/* (1) authorizationID (never used) */
+		String authID = (String) inputParam.get(memberName);
 
-        // Creation of new Hashtable to return
-        Hashtable outputParam = new Hashtable();
+		memberName = new String("userSpaceTokenDescription");
+		String userSpaceTokenDescription = (String) inputParam.get(memberName);
+		GetSpaceTokensInputData inputData;
+		if (guser != null) {
+			inputData = new IdentityGetSpaceTokensInputData(guser,
+				userSpaceTokenDescription);
+		} else {
+			inputData = new AnonymousGetSpaceTokensInputData(
+				userSpaceTokenDescription);
+		}
+		return inputData;
+	}
 
-        GetSpaceTokensOutputData outputData = (GetSpaceTokensOutputData) data;
+	public Map convertFromOutputData(OutputData data) {
 
-        /* (1) returnStatus */
-        TReturnStatus returnStatus = outputData.getStatus();
-        if (returnStatus != null) {
-            returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        }
+		log.debug("GetSpaceTokensConverter. Creation of XMLRPC Output Structure! ");
 
-        /* (2) arrayOfSpaceTokens */
-        ArrayOfTSpaceToken arrayOfSpaceTokens = outputData.getArrayOfSpaceTokens();
-        if (arrayOfSpaceTokens != null) {
-            arrayOfSpaceTokens.encode(outputParam, ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
-        }
+		// Creation of new Hashtable to return
+		Hashtable outputParam = new Hashtable();
 
-        log.debug("Sending: " + outputParam.toString());
+		GetSpaceTokensOutputData outputData = (GetSpaceTokensOutputData) data;
 
-        //Return output Parameter structure
-        return outputParam;
-    }
+		/* (1) returnStatus */
+		TReturnStatus returnStatus = outputData.getStatus();
+		if (returnStatus != null) {
+			returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+		}
+
+		/* (2) arrayOfSpaceTokens */
+		ArrayOfTSpaceToken arrayOfSpaceTokens = outputData.getArrayOfSpaceTokens();
+		if (arrayOfSpaceTokens != null) {
+			arrayOfSpaceTokens.encode(outputParam,
+				ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
+		}
+
+		log.debug("Sending: " + outputParam.toString());
+
+		// Return output Parameter structure
+		return outputParam;
+	}
 }

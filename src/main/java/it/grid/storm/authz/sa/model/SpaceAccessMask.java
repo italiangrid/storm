@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
@@ -25,38 +25,43 @@ import java.util.List;
 
 /**
  * @author zappi
- *
+ * 
  */
 public class SpaceAccessMask {
-    
-    private List<SpaceOperation> spAccessMask; 
 
-    public SpaceAccessMask() {
-        spAccessMask = new ArrayList<SpaceOperation>();
-    }
+	private List<SpaceOperation> spAccessMask;
 
-    public void addSpaceOperation(SpaceOperation spOp) {
-        spAccessMask.add(spOp);
-    }
+	public SpaceAccessMask() {
 
-    public boolean containsSpaceOperation(SpaceOperation spOp) {
-        return spAccessMask.contains(spOp);
-    }
+		spAccessMask = new ArrayList<SpaceOperation>();
+	}
 
-    public List<SpaceOperation> getSpaceOperations() {
-        return spAccessMask;
-    }
-    
-    public String toString() {
-        String spacePermissionStr = "";
-        for (SpaceOperation spOp : SpaceOperation.values()) {
-            if (spAccessMask.contains(spOp)) {
-                spacePermissionStr += spOp.getSpaceOperationValue();
-            } else {
-                spacePermissionStr += "-";
-            }
-        }
-        return spacePermissionStr;
-    }
-    
+	public void addSpaceOperation(SpaceOperation spOp) {
+
+		spAccessMask.add(spOp);
+	}
+
+	public boolean containsSpaceOperation(SpaceOperation spOp) {
+
+		return spAccessMask.contains(spOp);
+	}
+
+	public List<SpaceOperation> getSpaceOperations() {
+
+		return spAccessMask;
+	}
+
+	public String toString() {
+
+		String spacePermissionStr = "";
+		for (SpaceOperation spOp : SpaceOperation.values()) {
+			if (spAccessMask.contains(spOp)) {
+				spacePermissionStr += spOp.getSpaceOperationValue();
+			} else {
+				spacePermissionStr += "-";
+			}
+		}
+		return spacePermissionStr;
+	}
+
 }

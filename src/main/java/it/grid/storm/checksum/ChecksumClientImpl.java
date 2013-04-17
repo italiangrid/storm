@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.checksum;
@@ -32,196 +32,208 @@ import org.slf4j.LoggerFactory;
 
 public class ChecksumClientImpl implements ChecksumClient {
 
-    private static Logger log = LoggerFactory.getLogger(ChecksumClientImpl.class);
-    
-    private static final String GET_CHECKSUM_SERVICE = "storm/checksum.json";
-    private static final String PING_SERVICE = "storm/ping.json";
-    private static final String STATUS_SERVICE = "status";
+	private static Logger log = LoggerFactory.getLogger(ChecksumClientImpl.class);
 
-    private String endpoint = null;
+	private static final String GET_CHECKSUM_SERVICE = "storm/checksum.json";
+	private static final String PING_SERVICE = "storm/ping.json";
+	private static final String STATUS_SERVICE = "status";
 
-    public ChecksumClientImpl() {
-    }
+	private String endpoint = null;
 
-    public ChecksumClientImpl(String endpoint) throws MalformedURLException {
-        setEndpoint(endpoint);
-    }
+	public ChecksumClientImpl() {
 
-    /*
-     * (non-Javadoc)
-     * @see it.grid.storm.checksum.ChecksumClient#getChecksum(java.lang.String, java.lang.String)
-     */
-    public String getChecksum(String fileAbsolutePath, String algorithm) throws IOException {
+	}
 
-        String body = "filePath=" + fileAbsolutePath + "&algorithm=" + algorithm;
+	public ChecksumClientImpl(String endpoint) throws MalformedURLException {
 
-        URL url = new URL(endpoint + GET_CHECKSUM_SERVICE);
+		setEndpoint(endpoint);
+	}
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setReadTimeout(0);
-        connection.setDoOutput(true);
-        
-        OutputStream output = connection.getOutputStream();
-        output.write(body.getBytes());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.grid.storm.checksum.ChecksumClient#getChecksum(java.lang.String,
+	 * java.lang.String)
+	 */
+	public String getChecksum(String fileAbsolutePath, String algorithm)
+		throws IOException {
 
-        connection.connect();
+		String body = "filePath=" + fileAbsolutePath + "&algorithm=" + algorithm;
 
-        String responseBody = getResponse(connection);
+		URL url = new URL(endpoint + GET_CHECKSUM_SERVICE);
 
-        connection.disconnect();
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("POST");
+		connection.setReadTimeout(0);
+		connection.setDoOutput(true);
 
-        if (connection.getResponseCode() != 201) {
-            throw new IOException("Cannot retrieve checksum from URL: " + url.toString());
-        }
+		OutputStream output = connection.getOutputStream();
+		output.write(body.getBytes());
 
-        JSONObject jsonResponse;
+		connection.connect();
 
-        try {
-            jsonResponse = new JSONObject(responseBody);
-            int status = jsonResponse.getInt("status");
+		String responseBody = getResponse(connection);
 
-            if (status == 0) {
-                return jsonResponse.getString("checksum");
-            }
+		connection.disconnect();
 
-            throw new ChecksumRuntimeException("Error computing checksum (" + url.toString() + "): "
-                    + jsonResponse.getString("explanation"));
+		if (connection.getResponseCode() != 201) {
+			throw new IOException("Cannot retrieve checksum from URL: "
+				+ url.toString());
+		}
 
-        } catch (JSONException e) {
-            throw new ChecksumRuntimeException("Malformed result from URL: " + url.toString() + " Response="
-                    + responseBody);
-        }
-    }
+		JSONObject jsonResponse;
 
-    private String getResponse(HttpURLConnection connection) throws IOException {
+		try {
+			jsonResponse = new JSONObject(responseBody);
+			int status = jsonResponse.getInt("status");
 
-        InputStream responseBodyStream = connection.getInputStream();
-        StringBuffer responseBody = new StringBuffer();
+			if (status == 0) {
+				return jsonResponse.getString("checksum");
+			}
 
-        byte buffer[] = new byte[connection.getContentLength()];
-        int read = 0;
-        while ((read = responseBodyStream.read(buffer)) != -1) {
-            responseBody.append(new String(buffer, 0, read));
-        }
+			throw new ChecksumRuntimeException("Error computing checksum ("
+				+ url.toString() + "): " + jsonResponse.getString("explanation"));
 
-        return responseBody.toString();
-    }
+		} catch (JSONException e) {
+			throw new ChecksumRuntimeException("Malformed result from URL: "
+				+ url.toString() + " Response=" + responseBody);
+		}
+	}
 
-    public ChecksumServerStatus getStatus(String filePath) throws IOException {
-        
-        String input = "";
-        
-        if (filePath != null) {
-            input = "?filePath=" + filePath;
-        }
-        URL url = new URL(endpoint + STATUS_SERVICE + input);
+	private String getResponse(HttpURLConnection connection) throws IOException {
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
+		InputStream responseBodyStream = connection.getInputStream();
+		StringBuffer responseBody = new StringBuffer();
 
-        connection.connect();
+		byte buffer[] = new byte[connection.getContentLength()];
+		int read = 0;
+		while ((read = responseBodyStream.read(buffer)) != -1) {
+			responseBody.append(new String(buffer, 0, read));
+		}
 
-        String responseBody = getResponse(connection);
+		return responseBody.toString();
+	}
 
-        connection.disconnect();
-        
-        log.trace("Checksum server status response: " + responseBody);
+	public ChecksumServerStatus getStatus(String filePath) throws IOException {
 
-        if (connection.getResponseCode() != 200) {
-            return new ChecksumServerStatus(false, "HTML error: " + connection.getResponseCode(), -1, -1);
-        }
+		String input = "";
 
-        try {
-            JSONObject jsonServerStatus = (new JSONObject(responseBody)).getJSONObject("ChecksumServerStatus");
-            
-            ChecksumServerStatus serverStatus = new ChecksumServerStatus(true);
-            
-            serverStatus.setStatusString(jsonServerStatus.getString(ChecksumServerStatus.STATUS_STRING_KEY));
-            serverStatus.setRequestQueue(jsonServerStatus.getInt(ChecksumServerStatus.REQUEST_QUEUE_KEY));
-            serverStatus.setIdleThreads(jsonServerStatus.getInt(ChecksumServerStatus.IDLE_THREADS_KEY));
-            
-            return serverStatus;
+		if (filePath != null) {
+			input = "?filePath=" + filePath;
+		}
+		URL url = new URL(endpoint + STATUS_SERVICE + input);
 
-        } catch (JSONException e) {
-            throw new ChecksumRuntimeException("Malformed result from URL: " + url.toString() + " Response="
-                    + responseBody);
-        }
-    }
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("GET");
 
-    public String[] getSupportedAlgorithms() throws IOException {
+		connection.connect();
 
-        URL url = new URL(endpoint + GET_CHECKSUM_SERVICE);
+		String responseBody = getResponse(connection);
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
+		connection.disconnect();
 
-        connection.connect();
+		log.trace("Checksum server status response: " + responseBody);
 
-        String responseBody = getResponse(connection);
+		if (connection.getResponseCode() != 200) {
+			return new ChecksumServerStatus(false, "HTML error: "
+				+ connection.getResponseCode(), -1, -1);
+		}
 
-        connection.disconnect();
+		try {
+			JSONObject jsonServerStatus = (new JSONObject(responseBody))
+				.getJSONObject("ChecksumServerStatus");
 
-        if (connection.getResponseCode() != 200) {
-            throw new IOException("Cannot retrieve supported algorithms from URL: " + url.toString());
-        }
+			ChecksumServerStatus serverStatus = new ChecksumServerStatus(true);
 
-        try {
-            JSONArray jsonArray = (new JSONObject(responseBody)).getJSONArray(null);
-            
-            String[] algArray = new String[jsonArray.length()];
-            
-            for (int i=0; i<jsonArray.length(); i++) {
-                algArray[i] = jsonArray.getString(i);
-            }
-            
-            return algArray;
+			serverStatus.setStatusString(jsonServerStatus
+				.getString(ChecksumServerStatus.STATUS_STRING_KEY));
+			serverStatus.setRequestQueue(jsonServerStatus
+				.getInt(ChecksumServerStatus.REQUEST_QUEUE_KEY));
+			serverStatus.setIdleThreads(jsonServerStatus
+				.getInt(ChecksumServerStatus.IDLE_THREADS_KEY));
 
-        } catch (JSONException e) {
-            throw new ChecksumRuntimeException("Malformed result from URL: " + url.toString() + " Response="
-                    + responseBody);
-        }
-    }
+			return serverStatus;
 
-    public boolean ping() {
-        
-        URL url;
-        try {
-            url = new URL(endpoint + PING_SERVICE);
-        } catch (MalformedURLException e) {
-            // Never thrown...
-            return false;
-        }
+		} catch (JSONException e) {
+			throw new ChecksumRuntimeException("Malformed result from URL: "
+				+ url.toString() + " Response=" + responseBody);
+		}
+	}
 
-        HttpURLConnection connection;
-        try {
-            
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
-            connection.disconnect();
-            
-            if (connection.getResponseCode() != 200) {
-                return false;
-            }
-            
-            return true;
-            
-        } catch (IOException e) {
-            return false;
-        }
-    }
+	public String[] getSupportedAlgorithms() throws IOException {
 
-    public void setEndpoint(String endpoint) throws MalformedURLException {
+		URL url = new URL(endpoint + GET_CHECKSUM_SERVICE);
 
-        // Check for malformed URL
-        @SuppressWarnings("unused")
-        URL url = new URL(endpoint);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("GET");
 
-        if (endpoint.endsWith("/")) {
-            this.endpoint = endpoint;
-        } else {
-            this.endpoint = endpoint + "/";
-        }
-    }
+		connection.connect();
+
+		String responseBody = getResponse(connection);
+
+		connection.disconnect();
+
+		if (connection.getResponseCode() != 200) {
+			throw new IOException("Cannot retrieve supported algorithms from URL: "
+				+ url.toString());
+		}
+
+		try {
+			JSONArray jsonArray = (new JSONObject(responseBody)).getJSONArray(null);
+
+			String[] algArray = new String[jsonArray.length()];
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				algArray[i] = jsonArray.getString(i);
+			}
+
+			return algArray;
+
+		} catch (JSONException e) {
+			throw new ChecksumRuntimeException("Malformed result from URL: "
+				+ url.toString() + " Response=" + responseBody);
+		}
+	}
+
+	public boolean ping() {
+
+		URL url;
+		try {
+			url = new URL(endpoint + PING_SERVICE);
+		} catch (MalformedURLException e) {
+			// Never thrown...
+			return false;
+		}
+
+		HttpURLConnection connection;
+		try {
+
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			connection.disconnect();
+
+			if (connection.getResponseCode() != 200) {
+				return false;
+			}
+
+			return true;
+
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	public void setEndpoint(String endpoint) throws MalformedURLException {
+
+		// Check for malformed URL
+		@SuppressWarnings("unused")
+		URL url = new URL(endpoint);
+
+		if (endpoint.endsWith("/")) {
+			this.endpoint = endpoint;
+		} else {
+			this.endpoint = endpoint + "/";
+		}
+	}
 }

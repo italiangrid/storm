@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.catalogs;
@@ -31,125 +31,132 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a BringOnLineChunkData, that is part of a multifile BringOnLine srm
- * request. It contains data about: the requestToken, the fromSURL, the requested lifeTime of
- * pinning, the TDirOption which tells whether the requested SURL is a directory and if it must be
- * recursed at all levels, as well as the desired number of levels to recurse, the desired
- * transferProtocols in order of preference, the fileSize, and the transferURL for the supplied
- * SURL.
+ * This class represents a BringOnLineChunkData, that is part of a multifile
+ * BringOnLine srm request. It contains data about: the requestToken, the
+ * fromSURL, the requested lifeTime of pinning, the TDirOption which tells
+ * whether the requested SURL is a directory and if it must be recursed at all
+ * levels, as well as the desired number of levels to recurse, the desired
+ * transferProtocols in order of preference, the fileSize, and the transferURL
+ * for the supplied SURL.
  * 
  * @author CNAF
  * @version 1.0
  * @date Aug 2009
  */
 public class BoLData extends AnonymousFileTransferData {
-    private static final Logger log = LoggerFactory.getLogger(BoLData.class);
 
-    /**
-     * requested lifetime of TURL: it is the pin time!
-     */
-    private TLifeTimeInSeconds lifeTime;
-    
-    /**
-     * specifies if the request regards a directory and related info
-     */
-    private TDirOption dirOption;
-    
-    /**
-     * size of file
-     */
-    private TSizeInBytes fileSize;
-    
-    /**
-     * how many seconds to wait before to make the lifeTime start consuming
-     */
-    private int deferredStartTime = 0; 
+	private static final Logger log = LoggerFactory.getLogger(BoLData.class);
 
-    public BoLData(TSURL fromSURL, TLifeTimeInSeconds lifeTime,
-            TDirOption dirOption, TURLPrefix desiredProtocols, TSizeInBytes fileSize, TReturnStatus status,
-            TTURL transferURL, int deferredStartTime) throws InvalidFileTransferDataAttributesException, InvalidBoLDataAttributesException, InvalidSurlRequestDataAttributesException {
-        super(fromSURL, desiredProtocols, status, transferURL);
-        if (lifeTime == null || dirOption == null
-                || fileSize == null) {
-            throw new InvalidBoLDataAttributesException(fromSURL,
-                                                             lifeTime,
-                                                             dirOption,
-                                                             desiredProtocols,
-                                                             fileSize,
-                                                             status,
-                                                             transferURL);
-        }
-        this.lifeTime = lifeTime;
-        this.dirOption = dirOption;
-        this.fileSize = fileSize;
-        this.deferredStartTime = deferredStartTime;
-    }
+	/**
+	 * requested lifetime of TURL: it is the pin time!
+	 */
+	private TLifeTimeInSeconds lifeTime;
 
-    /**
-     * Method that sets the status of this request to SRM_FILE_PINNED; it needs the explanation
-     * String which describes the situation in greater detail; if a null is passed, then an empty
-     * String is used as explanation.
-     */
-    public void changeStatusSRM_FILE_PINNED(String explanation) {
-        setStatus(TStatusCode.SRM_FILE_PINNED,explanation);
-    }
+	/**
+	 * specifies if the request regards a directory and related info
+	 */
+	private TDirOption dirOption;
 
-    
-    public int getDeferredStartTime() {
-        return deferredStartTime;
-    }
+	/**
+	 * size of file
+	 */
+	private TSizeInBytes fileSize;
 
-    /**
-     * Method that returns the dirOption specified in the srm request.
-     */
-    public TDirOption getDirOption() {
-        return dirOption;
-    }
+	/**
+	 * how many seconds to wait before to make the lifeTime start consuming
+	 */
+	private int deferredStartTime = 0;
 
-    /**
-     * Method that returns the file size for this chunk of the srm request.
-     */
-    public TSizeInBytes getFileSize() {
-        return fileSize;
-    }
+	public BoLData(TSURL fromSURL, TLifeTimeInSeconds lifeTime,
+		TDirOption dirOption, TURLPrefix desiredProtocols, TSizeInBytes fileSize,
+		TReturnStatus status, TTURL transferURL, int deferredStartTime)
+		throws InvalidFileTransferDataAttributesException,
+		InvalidBoLDataAttributesException,
+		InvalidSurlRequestDataAttributesException {
 
-    /**
-     * Method that returns the requested pin life time for this chunk of the srm request.
-     */
-    public TLifeTimeInSeconds getLifeTime() {
-        return lifeTime;
-    }
+		super(fromSURL, desiredProtocols, status, transferURL);
+		if (lifeTime == null || dirOption == null || fileSize == null) {
+			throw new InvalidBoLDataAttributesException(fromSURL, lifeTime,
+				dirOption, desiredProtocols, fileSize, status, transferURL);
+		}
+		this.lifeTime = lifeTime;
+		this.dirOption = dirOption;
+		this.fileSize = fileSize;
+		this.deferredStartTime = deferredStartTime;
+	}
 
-    public void setDeferredStartTime(int deferredStartTime) {
-        this.deferredStartTime = deferredStartTime;
-    }
+	/**
+	 * Method that sets the status of this request to SRM_FILE_PINNED; it needs
+	 * the explanation String which describes the situation in greater detail; if
+	 * a null is passed, then an empty String is used as explanation.
+	 */
+	public void changeStatusSRM_FILE_PINNED(String explanation) {
 
-    /**
-     * Method used to set the size of the file corresponding to the requested SURL. If the supplied
-     * TSizeInByte is null, then nothing gets set!
-     */
-    public void setFileSize(TSizeInBytes size) {
-        if (size != null) {
-            fileSize = size;
-        }
-    }
+		setStatus(TStatusCode.SRM_FILE_PINNED, explanation);
+	}
 
-    public void setLifeTime(long lifeTimeInSeconds) {
-        
-        TLifeTimeInSeconds lifeTime;
-        try {
-            lifeTime = TLifeTimeInSeconds.make(lifeTimeInSeconds, TimeUnit.SECONDS);
-        } catch (IllegalArgumentException e) {
-            return;
-        }
-        
-        this.lifeTime = lifeTime;  
-    }
+	public int getDeferredStartTime() {
 
-    @Override
-    protected Logger getLog()
-    {
-        return BoLData.log;
-    }
-    
+		return deferredStartTime;
+	}
+
+	/**
+	 * Method that returns the dirOption specified in the srm request.
+	 */
+	public TDirOption getDirOption() {
+
+		return dirOption;
+	}
+
+	/**
+	 * Method that returns the file size for this chunk of the srm request.
+	 */
+	public TSizeInBytes getFileSize() {
+
+		return fileSize;
+	}
+
+	/**
+	 * Method that returns the requested pin life time for this chunk of the srm
+	 * request.
+	 */
+	public TLifeTimeInSeconds getLifeTime() {
+
+		return lifeTime;
+	}
+
+	public void setDeferredStartTime(int deferredStartTime) {
+
+		this.deferredStartTime = deferredStartTime;
+	}
+
+	/**
+	 * Method used to set the size of the file corresponding to the requested
+	 * SURL. If the supplied TSizeInByte is null, then nothing gets set!
+	 */
+	public void setFileSize(TSizeInBytes size) {
+
+		if (size != null) {
+			fileSize = size;
+		}
+	}
+
+	public void setLifeTime(long lifeTimeInSeconds) {
+
+		TLifeTimeInSeconds lifeTime;
+		try {
+			lifeTime = TLifeTimeInSeconds.make(lifeTimeInSeconds, TimeUnit.SECONDS);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+
+		this.lifeTime = lifeTime;
+	}
+
+	@Override
+	protected Logger getLog() {
+
+		return BoLData.log;
+	}
+
 }

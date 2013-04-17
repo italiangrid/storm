@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
@@ -35,155 +35,168 @@ import org.slf4j.Logger;
  */
 public class SpaceDBAuthz extends SpaceAuthz {
 
-    private final Logger log = AuthzDirector.getLogger();
-    public final static String UNDEF = "undef-SpaceAuthzDB";
-    private String spaceAuthzDBID = "not-defined";
-    private static String configurationPATH;
-    private String dbFileName;
-    private FileAuthzDB authzDB;
+	private final Logger log = AuthzDirector.getLogger();
+	public final static String UNDEF = "undef-SpaceAuthzDB";
+	private String spaceAuthzDBID = "not-defined";
+	private static String configurationPATH;
+	private String dbFileName;
+	private FileAuthzDB authzDB;
 
-    public SpaceDBAuthz() {
+	public SpaceDBAuthz() {
 
-    }
+	}
 
-    /**
-     * @return
-     */
-    public static SpaceDBAuthz makeEmpty() {
-        SpaceDBAuthz result = new SpaceDBAuthz();
-        result.setSpaceAuthzDBID("default-SpaceAuthzDB");
-        // * @todo other assignments
-        return result;
-    }
+	/**
+	 * @return
+	 */
+	public static SpaceDBAuthz makeEmpty() {
 
-    public SpaceDBAuthz(String dbFileName) {
-        Configuration config = Configuration.getInstance();
-        configurationPATH = config.namespaceConfigPath();
-        if (existsAuthzDBFile(dbFileName)) {
-            this.dbFileName = dbFileName;
-            spaceAuthzDBID = dbFileName;
-        }
-    }
+		SpaceDBAuthz result = new SpaceDBAuthz();
+		result.setSpaceAuthzDBID("default-SpaceAuthzDB");
+		// * @todo other assignments
+		return result;
+	}
 
-    /**
-     * @param string
-     */
-    void setSpaceAuthzDBID(String id) {
-        spaceAuthzDBID = id;
-    }
+	public SpaceDBAuthz(String dbFileName) {
 
-    /**
+		Configuration config = Configuration.getInstance();
+		configurationPATH = config.namespaceConfigPath();
+		if (existsAuthzDBFile(dbFileName)) {
+			this.dbFileName = dbFileName;
+			spaceAuthzDBID = dbFileName;
+		}
+	}
+
+	/**
+	 * @param string
+	 */
+	void setSpaceAuthzDBID(String id) {
+
+		spaceAuthzDBID = id;
+	}
+
+	/**
      * 
      */
-    @Override
-    public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
-        // TODO Auto-generated method stub
+	@Override
+	public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
 
-        // Check if the Cache is Locked (in the case, skip the use of the cache)
+		// TODO Auto-generated method stub
 
-        // Check the presence of guser in the Cache
+		// Check if the Cache is Locked (in the case, skip the use of the cache)
 
-        // If requestor is present in the AuthzCache, retrieve the response for
-        // the SpaceOp
+		// Check the presence of guser in the Cache
 
-        // Else, compute the Authz Answer for ALL the SpaceOp and insert into
-        // the cache
+		// If requestor is present in the AuthzCache, retrieve the response for
+		// the SpaceOp
 
-        // Return the result
-        return false;
-    }
-    
-    @Override
-    public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp)
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
+		// Else, compute the Authz Answer for ALL the SpaceOp and insert into
+		// the cache
 
-    /**********************************************************************
-     * AUTHZ Algorithm
-     */
+		// Return the result
+		return false;
+	}
 
-    /**
-     * Implementation of NFSv4.1 ACL evaluation algorithm - simplified version:
-     * http://tools.ietf.org/html/draft-ietf-nfsv4-acl-mapping-02#section-2 - full version:
-     * http://tools.ietf.org/html/rfc3530#section-5.11.2
-     */
-    private boolean nfs4AuthzAlgorithm(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
-        return false;
-    }
+	@Override
+	public boolean authorizeAnonymous(SRMSpaceRequest srmSpaceOp) {
 
-    /**********************************************************************
-     * CACHE mechanism
-     */
+		// TODO Auto-generated method stub
+		return false;
+	}
 
-    /**
-     * Method to check the presence of Requestor within the Cache
-     * 
-     * @param guser
-     * @return
-     */
-    private boolean isPresent(GridUserInterface guser) {
-        return false;
-    }
+	/**********************************************************************
+	 * AUTHZ Algorithm
+	 */
 
-    /**
-     * Method to add (and store somewhere) a new Requestor
-     * 
-     * @param guser
-     */
-    private void addRequestorToCache(GridUserInterface guser) {
+	/**
+	 * Implementation of NFSv4.1 ACL evaluation algorithm - simplified version:
+	 * http://tools.ietf.org/html/draft-ietf-nfsv4-acl-mapping-02#section-2 - full
+	 * version: http://tools.ietf.org/html/rfc3530#section-5.11.2
+	 */
+	private boolean nfs4AuthzAlgorithm(GridUserInterface guser,
+		SRMSpaceRequest srmSpaceOp) {
 
-    }
+		return false;
+	}
 
-    private void refreshCache() {
-        // Take the LOCK on the Cache
+	/**********************************************************************
+	 * CACHE mechanism
+	 */
 
-        // At the end, release the LOCK on the Cache
-    }
+	/**
+	 * Method to check the presence of Requestor within the Cache
+	 * 
+	 * @param guser
+	 * @return
+	 */
+	private boolean isPresent(GridUserInterface guser) {
 
-    /**********************************************************************
-     * BUILDINGs METHODS
-     */
+		return false;
+	}
 
-    /**
-     * Check the existence of the AuthzDB file
-     */
-    private boolean existsAuthzDBFile(String dbFileName) {
-        String fileName = configurationPATH + File.separator + dbFileName;
-        boolean exists = (new File(fileName)).exists();
-        if (!(exists)) {
-            log.error("The AuthzDB File '" + dbFileName + "' does not exists");
-        }
-        return exists;
-    }
+	/**
+	 * Method to add (and store somewhere) a new Requestor
+	 * 
+	 * @param guser
+	 */
+	private void addRequestorToCache(GridUserInterface guser) {
 
-    /**
-     * Return the AuthzDB FileName
-     * 
-     * @return
-     */
-    String getAuthzDBFileName() {
-        return dbFileName;
-    }
+	}
 
-    /**
-     * @param authzDB
-     */
-    void setAuthzDB(FileAuthzDB authzDB) {
-        // Refresh the cache
+	private void refreshCache() {
 
-        // Set the updated authzDB
-        this.authzDB = authzDB;
-    }
+		// Take the LOCK on the Cache
 
-    public String getSpaceAuthzID() {
-        return spaceAuthzDBID;
-    }
+		// At the end, release the LOCK on the Cache
+	}
 
-    public void refresh() {
-        // TODO Auto-generated method stub
+	/**********************************************************************
+	 * BUILDINGs METHODS
+	 */
 
-    }
+	/**
+	 * Check the existence of the AuthzDB file
+	 */
+	private boolean existsAuthzDBFile(String dbFileName) {
+
+		String fileName = configurationPATH + File.separator + dbFileName;
+		boolean exists = (new File(fileName)).exists();
+		if (!(exists)) {
+			log.error("The AuthzDB File '" + dbFileName + "' does not exists");
+		}
+		return exists;
+	}
+
+	/**
+	 * Return the AuthzDB FileName
+	 * 
+	 * @return
+	 */
+	String getAuthzDBFileName() {
+
+		return dbFileName;
+	}
+
+	/**
+	 * @param authzDB
+	 */
+	void setAuthzDB(FileAuthzDB authzDB) {
+
+		// Refresh the cache
+
+		// Set the updated authzDB
+		this.authzDB = authzDB;
+	}
+
+	public String getSpaceAuthzID() {
+
+		return spaceAuthzDBID;
+	}
+
+	public void refresh() {
+
+		// TODO Auto-generated method stub
+
+	}
 
 }

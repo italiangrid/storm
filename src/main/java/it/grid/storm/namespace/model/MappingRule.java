@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.namespace.model;
@@ -20,57 +20,73 @@ package it.grid.storm.namespace.model;
 import it.grid.storm.namespace.VirtualFSInterface;
 
 /**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: INFN-CNAF and ICTP/eGrid project</p>
- *
+ * <p>
+ * Title:
+ * </p>
+ * 
+ * <p>
+ * Description:
+ * </p>
+ * 
+ * <p>
+ * Copyright: Copyright (c) 2006
+ * </p>
+ * 
+ * <p>
+ * Company: INFN-CNAF and ICTP/eGrid project
+ * </p>
+ * 
  * @author Riccardo Zappi
  * @version 1.0
  */
 public class MappingRule {
 
-    private final String ruleName;
-    private final String stfnRoot;
-    private final VirtualFSInterface mappedFS;
+	private final String ruleName;
+	private final String stfnRoot;
+	private final VirtualFSInterface mappedFS;
 
-    /**
-     * Constructor
-     *
-     * @param ruleName String
-     * @param stfn_root String
-     * @param vfs 
-     * @param mapped_fs String
-     */
-    public MappingRule(String ruleName, String stfn_root/*, String mapped_fs*/, VirtualFSInterface vfs) {
-        this.ruleName = ruleName;
-        this.stfnRoot = stfn_root;
-        this.mappedFS = vfs;
-    }
+	/**
+	 * Constructor
+	 * 
+	 * @param ruleName
+	 *          String
+	 * @param stfn_root
+	 *          String
+	 * @param vfs
+	 * @param mapped_fs
+	 *          String
+	 */
+	public MappingRule(String ruleName, String stfn_root/* , String mapped_fs */,
+		VirtualFSInterface vfs) {
 
-    public String getRuleName() {
-        return this.ruleName;
-    }
+		this.ruleName = ruleName;
+		this.stfnRoot = stfn_root;
+		this.mappedFS = vfs;
+	}
 
-    public String getStFNRoot() {
-        return this.stfnRoot;
-    }
+	public String getRuleName() {
 
-    public VirtualFSInterface getMappedFS()
-    {
-        return this.mappedFS;
-    }
-    
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        String sep = System.getProperty("line.separator");
-        sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
-        sb.append("      StFN-Root            : " + this.stfnRoot + sep);
-        sb.append("      mapped-FS             : " + this.mappedFS + sep);
-        return sb.toString();
-    }
+		return this.ruleName;
+	}
+
+	public String getStFNRoot() {
+
+		return this.stfnRoot;
+	}
+
+	public VirtualFSInterface getMappedFS() {
+
+		return this.mappedFS;
+	}
+
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		String sep = System.getProperty("line.separator");
+		sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
+		sb.append("      StFN-Root            : " + this.stfnRoot + sep);
+		sb.append("      mapped-FS             : " + this.mappedFS + sep);
+		return sb.toString();
+	}
 
 }

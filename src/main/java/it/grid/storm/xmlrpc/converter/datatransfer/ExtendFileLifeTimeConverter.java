@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.xmlrpc.converter.datatransfer;
@@ -41,99 +41,107 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * This class is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
+ * 
+ * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- *
+ * 
  * This class represents the Type Converter for ExtendFileLifeTime function.
  * This class receives input datas from xmlrpc call and converts these datas
  * into a StoRM Type that can be used to invoke the ExtendFileLifeTimeManager.
- *
+ * 
  * Authors:
- *     @author lucamag luca.magnoniATcnaf.infn.it
- *     @author Alberto Forti
- *
+ * 
+ * @author lucamag luca.magnoniATcnaf.infn.it
+ * @author Alberto Forti
+ * 
  * @date = Oct 10, 2008
- *
+ * 
  */
 
-public class ExtendFileLifeTimeConverter implements Converter
-{
-    private static final Logger log = LoggerFactory.getLogger(ExtendFileLifeTimeConverter.class);
+public class ExtendFileLifeTimeConverter implements Converter {
 
-    public ExtendFileLifeTimeConverter() {}
+	private static final Logger log = LoggerFactory
+		.getLogger(ExtendFileLifeTimeConverter.class);
 
-    /**
-     * This method returns a ExtendFileLifeTimeInputData created from the input Hashtable structure
-     * of a xmlrpc srmExtendFileLifeTime() v2.2 call.
-     * @param inputParam Hashtable containing the input data
-     * @return ExtendFileLifeTimeInputData
-     */
-    public InputData convertToInputData(Map inputParam)
-    {
-        GridUserInterface guser = GridUserManager.decode(inputParam);
+	public ExtendFileLifeTimeConverter() {
 
-        String authID = (String) inputParam.get("authorizationID");
+	}
 
-        TRequestToken requestToken;
-        try {
-            requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
-            log.debug("requestToken=" + requestToken.toString());
-        } catch (InvalidTRequestTokenAttributesException e) {
-            requestToken = null;
-            log.error("requestToken=NULL");
-        }
+	/**
+	 * This method returns a ExtendFileLifeTimeInputData created from the input
+	 * Hashtable structure of a xmlrpc srmExtendFileLifeTime() v2.2 call.
+	 * 
+	 * @param inputParam
+	 *          Hashtable containing the input data
+	 * @return ExtendFileLifeTimeInputData
+	 */
+	public InputData convertToInputData(Map inputParam) {
 
-        ArrayOfSURLs arrayOfSURLs;
-        try {
-            arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
-        } catch (InvalidArrayOfSURLsAttributeException e) {
-            log.error("Empty surlArray!");
-            arrayOfSURLs = null;
-        }
+		GridUserInterface guser = GridUserManager.decode(inputParam);
 
-        TLifeTimeInSeconds newFileLifetime = TLifeTimeInSeconds.decode(inputParam,
-                TLifeTimeInSeconds.PNAME_FILELIFETIME);
+		String authID = (String) inputParam.get("authorizationID");
 
-        TLifeTimeInSeconds newPinLifetime = TLifeTimeInSeconds.decode(inputParam, TLifeTimeInSeconds.PNAME_PINLIFETIME);
+		TRequestToken requestToken;
+		try {
+			requestToken = TRequestToken.decode(inputParam,
+				TRequestToken.PNAME_REQUESTOKEN);
+			log.debug("requestToken=" + requestToken.toString());
+		} catch (InvalidTRequestTokenAttributesException e) {
+			requestToken = null;
+			log.error("requestToken=NULL");
+		}
 
-        ExtendFileLifeTimeInputData inputData;
-        if (guser != null)
-        {
-            inputData = new IdentityExtendFileLifeTimeInputData(guser, requestToken, arrayOfSURLs,
-                                                                newFileLifetime, newPinLifetime);
-        }
-        else
-        {
-            inputData = new AnonymousExtendFileLifeTimeInputData(requestToken, arrayOfSURLs, newFileLifetime,
-                                                                 newPinLifetime);
-        }
-        return inputData;
-    }
+		ArrayOfSURLs arrayOfSURLs;
+		try {
+			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+		} catch (InvalidArrayOfSURLsAttributeException e) {
+			log.error("Empty surlArray!");
+			arrayOfSURLs = null;
+		}
 
-    public Hashtable convertFromOutputData(OutputData data)
-    {
-        log.debug("ExtendFileLifeTimeOutputData - Creation of XMLRPC Output Structure!");
+		TLifeTimeInSeconds newFileLifetime = TLifeTimeInSeconds.decode(inputParam,
+			TLifeTimeInSeconds.PNAME_FILELIFETIME);
 
-        Hashtable outputParam = new Hashtable();
-        ExtendFileLifeTimeOutputData outputData = (ExtendFileLifeTimeOutputData) data;
+		TLifeTimeInSeconds newPinLifetime = TLifeTimeInSeconds.decode(inputParam,
+			TLifeTimeInSeconds.PNAME_PINLIFETIME);
 
-        // (1) returnStatus
-        TReturnStatus returnStatus = outputData.getReturnStatus();
-        if (returnStatus != null) {
-            returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-        }
+		ExtendFileLifeTimeInputData inputData;
+		if (guser != null) {
+			inputData = new IdentityExtendFileLifeTimeInputData(guser, requestToken,
+				arrayOfSURLs, newFileLifetime, newPinLifetime);
+		} else {
+			inputData = new AnonymousExtendFileLifeTimeInputData(requestToken,
+				arrayOfSURLs, newFileLifetime, newPinLifetime);
+		}
+		return inputData;
+	}
 
-        // (2) arrayOfFileStatuses
-        ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses = outputData.getArrayOfFileStatuses();
-        if (arrayOfFileStatuses != null) {
-            arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLLifetimeReturnStatus.PNAME_ARRAYOFFILESTATUSES);
-        }
+	public Hashtable convertFromOutputData(OutputData data) {
 
-        log.debug("ExtendFileLifeTimeConverter - Sending: " + outputParam.toString());
+		log
+			.debug("ExtendFileLifeTimeOutputData - Creation of XMLRPC Output Structure!");
 
-        // Return global structure.
-        return outputParam;
-    }
+		Hashtable outputParam = new Hashtable();
+		ExtendFileLifeTimeOutputData outputData = (ExtendFileLifeTimeOutputData) data;
+
+		// (1) returnStatus
+		TReturnStatus returnStatus = outputData.getReturnStatus();
+		if (returnStatus != null) {
+			returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+		}
+
+		// (2) arrayOfFileStatuses
+		ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses = outputData
+			.getArrayOfFileStatuses();
+		if (arrayOfFileStatuses != null) {
+			arrayOfFileStatuses.encode(outputParam,
+				ArrayOfTSURLLifetimeReturnStatus.PNAME_ARRAYOFFILESTATUSES);
+		}
+
+		log.debug("ExtendFileLifeTimeConverter - Sending: "
+			+ outputParam.toString());
+
+		// Return global structure.
+		return outputParam;
+	}
 }

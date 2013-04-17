@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.synchcall.command.space;
@@ -54,250 +54,253 @@ import org.slf4j.LoggerFactory;
 
 public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
-    private final ReservedSpaceCatalog catalog;
+	private final ReservedSpaceCatalog catalog;
 
-    /**
-     * Logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(ReleaseSpaceCommand.class);
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LoggerFactory
+		.getLogger(ReleaseSpaceCommand.class);
 
-    private static final String SRM_COMMAND = "srmReleaseSpace";
+	private static final String SRM_COMMAND = "srmReleaseSpace";
 
-    public ReleaseSpaceCommand() {
-        catalog = new ReservedSpaceCatalog();
-    };
+	public ReleaseSpaceCommand() {
 
-    public OutputData execute(InputData indata) {
-        ReleaseSpaceOutputData outputData = new ReleaseSpaceOutputData();
-        IdentityReleaseSpaceInputData inputData;
-        if (indata instanceof IdentityInputData)
-        {
-            inputData = (IdentityReleaseSpaceInputData) indata;
-        }
-        else
-        {
-            outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
-            printRequestOutcome(outputData.getStatus(), (ReleaseSpaceInputData) indata);
-            return outputData;
-        }
-        TReturnStatus returnStatus = null;
+		catalog = new ReservedSpaceCatalog();
+	};
 
-        /**
-         * Check input parameter.
-         * 
-         * Validate ReleaseSpaceInputData. The check is done at this level to
-         * separate internal StoRM logic from xmlrpc specific operation.
-         */
+	public OutputData execute(InputData indata) {
 
-        if ((inputData == null)
-                || ((inputData != null) && (inputData.getSpaceToken() == null))) {
-            ReleaseSpaceCommand.log.error("ReleaseSpace : Invalid input parameter specified");
-            returnStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "SpaceToken is empty.");
-            outputData.setStatus(returnStatus);
-            return outputData;
-        }
+		ReleaseSpaceOutputData outputData = new ReleaseSpaceOutputData();
+		IdentityReleaseSpaceInputData inputData;
+		if (indata instanceof IdentityInputData) {
+			inputData = (IdentityReleaseSpaceInputData) indata;
+		} else {
+			outputData.setStatus(CommandHelper.buildStatus(
+				TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform"
+					+ SRM_COMMAND));
+			printRequestOutcome(outputData.getStatus(),
+				(ReleaseSpaceInputData) indata);
+			return outputData;
+		}
+		TReturnStatus returnStatus = null;
 
-        /**
-         * Check if GridUser in InputData is not null, otherwise return with an
-         * error message.
-         */
-        GridUserInterface user = inputData.getUser();
-        if (user == null) {
-            ReleaseSpaceCommand.log.debug("Release Space: Unable to get user credential. ");
-            returnStatus = manageStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-            "Unable to get user credential");
-            outputData.setStatus(returnStatus);
-            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
-                    + "] failed with: [status:" + returnStatus + "]");
-            return outputData;
-        }
+		/**
+		 * Check input parameter.
+		 * 
+		 * Validate ReleaseSpaceInputData. The check is done at this level to
+		 * separate internal StoRM logic from xmlrpc specific operation.
+		 */
 
-        ReleaseSpaceCommand.log.debug("INPUT data not null");
+		if ((inputData == null)
+			|| ((inputData != null) && (inputData.getSpaceToken() == null))) {
+			ReleaseSpaceCommand.log
+				.error("ReleaseSpace : Invalid input parameter specified");
+			returnStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+				"SpaceToken is empty.");
+			outputData.setStatus(returnStatus);
+			return outputData;
+		}
 
-        boolean forceFileRelease = inputData.isForceFileRelease();
-        boolean nopinned = true;
-        boolean failure = false;
-        String explanation = "";
-        TStatusCode statusCode = null;
+		/**
+		 * Check if GridUser in InputData is not null, otherwise return with an
+		 * error message.
+		 */
+		GridUserInterface user = inputData.getUser();
+		if (user == null) {
+			ReleaseSpaceCommand.log
+				.debug("Release Space: Unable to get user credential. ");
+			returnStatus = manageStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
+				"Unable to get user credential");
+			outputData.setStatus(returnStatus);
+			ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] failed with: [status:" + returnStatus + "]");
+			return outputData;
+		}
 
-        /**
-         * Get StorageSpaceData linked with the specified space Token.
-         */
-        StorageSpaceData data;
-        try
-        {
-            data = catalog.getStorageSpace(inputData
-                                                .getSpaceToken());
-        } catch(TransferObjectDecodingException e)
-        {
-            log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-                    + e.getMessage());
-            failure = true;
-            explanation = "Error building space data from row DB data.";
-            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-            returnStatus = manageStatus(statusCode, explanation);
-            outputData.setStatus(returnStatus);
-            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
-                    + "] for failed with: [status:" + returnStatus + "]");
-            return outputData;
+		ReleaseSpaceCommand.log.debug("INPUT data not null");
 
-        } catch(DataAccessException e)
-        {
-            log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
-            failure = true;
-            explanation = "Error retrieving row space token data from DB.";
-            statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-            returnStatus = manageStatus(statusCode, explanation);
-            outputData.setStatus(returnStatus);
-            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
-                    + "] for failed with: [status:" + returnStatus + "]");
-            return outputData;
-        }
+		boolean forceFileRelease = inputData.isForceFileRelease();
+		boolean nopinned = true;
+		boolean failure = false;
+		String explanation = "";
+		TStatusCode statusCode = null;
 
-        if (data == null) {
-            failure = true;
-            explanation = "SpaceToken does not refers to an existing space.";
-            statusCode = TStatusCode.SRM_INVALID_REQUEST;
-            returnStatus = manageStatus(statusCode, explanation);
-            outputData.setStatus(returnStatus);
-            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
-                    + "] for failed with: [status:" + returnStatus + "]");
-            return outputData;
+		/**
+		 * Get StorageSpaceData linked with the specified space Token.
+		 */
+		StorageSpaceData data;
+		try {
+			data = catalog.getStorageSpace(inputData.getSpaceToken());
+		} catch (TransferObjectDecodingException e) {
+			log
+				.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+					+ e.getMessage());
+			failure = true;
+			explanation = "Error building space data from row DB data.";
+			statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+			returnStatus = manageStatus(statusCode, explanation);
+			outputData.setStatus(returnStatus);
+			ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] for failed with: [status:" + returnStatus + "]");
+			return outputData;
 
-        }
+		} catch (DataAccessException e) {
+			log.error("Unable to build get StorageSpaceTO. DataAccessException: "
+				+ e.getMessage());
+			failure = true;
+			explanation = "Error retrieving row space token data from DB.";
+			statusCode = TStatusCode.SRM_INTERNAL_ERROR;
+			returnStatus = manageStatus(statusCode, explanation);
+			outputData.setStatus(returnStatus);
+			ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] for failed with: [status:" + returnStatus + "]");
+			return outputData;
+		}
 
-        ReleaseSpaceCommand.log.debug("ReleaseExecutor: space data not null retrieved.");
+		if (data == null) {
+			failure = true;
+			explanation = "SpaceToken does not refers to an existing space.";
+			statusCode = TStatusCode.SRM_INVALID_REQUEST;
+			returnStatus = manageStatus(statusCode, explanation);
+			outputData.setStatus(returnStatus);
+			ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] for failed with: [status:" + returnStatus + "]");
+			return outputData;
 
-        /**
-         * With forceFileRelease = false, the space is not released if there are
-         * still file pinned on it.
-         */
-        if (!forceFileRelease) {
-            /**
-             * @todo Verify if there are still pinned files...
-             */
-            nopinned = true;
-        }
+		}
 
-        if ((forceFileRelease) || (nopinned)) {
-            // Verify if the requester is the owner of the token
-            if (data.getOwner().getDn().equals(user.getDn())) {
-                // This is an authorized request of ReleaseSpace.
-                // The user that perform the ReleaseSpace is the owner of the
-                // SpaceToken.
-                ReleaseSpaceCommand.log
-                .debug("ReleaseCommand: Authorized Release Space for user: "
-                        + data.getOwner());
-                returnStatus = manageAuthorizedReleaseSpace(data, user);
-            } else {
-                ReleaseSpaceCommand.log.debug("ReleaseCommand: Unauthorized ReleaseSpaceRequest!");
-                failure = true;
-                explanation = "User is not authorized to release this token";
-                statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
-                returnStatus = manageStatus(statusCode, explanation);
-            }
+		ReleaseSpaceCommand.log
+			.debug("ReleaseExecutor: space data not null retrieved.");
 
-        } else {
-            ReleaseSpaceCommand.log.debug("ReleaseCommand: Space still contains pinned files!");
-            failure = true;
-            explanation = "Space still contains pinned files. ";
-            statusCode = TStatusCode.SRM_FAILURE;
-            returnStatus = manageStatus(statusCode, explanation);
-        }
+		/**
+		 * With forceFileRelease = false, the space is not released if there are
+		 * still file pinned on it.
+		 */
+		if (!forceFileRelease) {
+			/**
+			 * @todo Verify if there are still pinned files...
+			 */
+			nopinned = true;
+		}
 
-        // if (failure) {
-        // returnStatus = manageStatus(statusCode, explanation);
-        // }
-        ReleaseSpaceCommand.log.debug("ReleaseCommand:return outputData");
-        outputData.setStatus(returnStatus);
-        if (returnStatus.isSRM_SUCCESS()) {
-            ReleaseSpaceCommand.log
-            .info("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:"
-                    + inputData.getSpaceToken()
-                    + "] successfully done with: [status:"
-                    + returnStatus + "]");
-        } else {
-            ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
-                    + "> Request for [spacetoken:" + inputData.getSpaceToken()
-                    + "] for failed with: [status:" + returnStatus + "]");
-        }
+		if ((forceFileRelease) || (nopinned)) {
+			// Verify if the requester is the owner of the token
+			if (data.getOwner().getDn().equals(user.getDn())) {
+				// This is an authorized request of ReleaseSpace.
+				// The user that perform the ReleaseSpace is the owner of the
+				// SpaceToken.
+				ReleaseSpaceCommand.log
+					.debug("ReleaseCommand: Authorized Release Space for user: "
+						+ data.getOwner());
+				returnStatus = manageAuthorizedReleaseSpace(data, user);
+			} else {
+				ReleaseSpaceCommand.log
+					.debug("ReleaseCommand: Unauthorized ReleaseSpaceRequest!");
+				failure = true;
+				explanation = "User is not authorized to release this token";
+				statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
+				returnStatus = manageStatus(statusCode, explanation);
+			}
 
-        return outputData;
-    }
+		} else {
+			ReleaseSpaceCommand.log
+				.debug("ReleaseCommand: Space still contains pinned files!");
+			failure = true;
+			explanation = "Space still contains pinned files. ";
+			statusCode = TStatusCode.SRM_FAILURE;
+			returnStatus = manageStatus(statusCode, explanation);
+		}
 
-    /**
-     * 
-     * @param user
-     *            GridUserInterface
-     * @param data
-     *            StorageSpaceData
-     * @return TReturnStatus
-     */
-    private TReturnStatus manageAuthorizedReleaseSpace(StorageSpaceData data,
-            GridUserInterface user) {
-        // Get Space File name
-        String spaceFileName;
-        PFN pfn = data.getSpaceFileName();
-        ReleaseSpaceCommand.log.debug("ReleaseCommand: manageAuthorizedReleaseSpace");
+		// if (failure) {
+		// returnStatus = manageStatus(statusCode, explanation);
+		// }
+		ReleaseSpaceCommand.log.debug("ReleaseCommand:return outputData");
+		outputData.setStatus(returnStatus);
+		if (returnStatus.isSRM_SUCCESS()) {
+			ReleaseSpaceCommand.log.info("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] successfully done with: [status:" + returnStatus + "]");
+		} else {
+			ReleaseSpaceCommand.log.error("srmReleaseSpace: <" + user
+				+ "> Request for [spacetoken:" + inputData.getSpaceToken()
+				+ "] for failed with: [status:" + returnStatus + "]");
+		}
 
-        if (pfn != null) {
-            spaceFileName = pfn.getValue();
-            ReleaseSpaceCommand.log.debug("ReleaseCommand: spaceFileName: " + spaceFileName);
-            File spaceFile = new File(spaceFileName);
-            if (spaceFile.delete()) {
-                // Remove spaceData from presistence
-                if (catalog.release(user, data.getSpaceToken())) {
-                    return manageStatus(TStatusCode.SRM_SUCCESS,
-                    "Space Released.");
-                } else {
-                    return manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
-                    "Space removed, but spaceToken was not found in the DB");
-                }
-            } else {
-                return manageStatus(TStatusCode.SRM_FAILURE,
-                "Space can not be removed by StoRM!");
-            }
-        } else {
-            return manageStatus(TStatusCode.SRM_FAILURE,
-            "SRM Internal failure.");
-        }
-    }
+		return outputData;
+	}
 
-    /**
-     * 
-     * @param statusCode
-     *            statusCode
-     * @param explanation
-     *            explanation string
-     * @return returnStatus returnStatus
-     */
-    private TReturnStatus manageStatus(TStatusCode statusCode,
-            String explanation) {
-        TReturnStatus returnStatus = null;
-        try {
-            returnStatus = new TReturnStatus(statusCode, explanation);
-        } catch (InvalidTReturnStatusAttributeException ex1) {
-            ReleaseSpaceCommand.log.debug("ReleaseFile : Error creating returnStatus " + ex1);
-        }
-        return returnStatus;
-    }
+	/**
+	 * 
+	 * @param user
+	 *          GridUserInterface
+	 * @param data
+	 *          StorageSpaceData
+	 * @return TReturnStatus
+	 */
+	private TReturnStatus manageAuthorizedReleaseSpace(StorageSpaceData data,
+		GridUserInterface user) {
 
-    private void printRequestOutcome(TReturnStatus status, ReleaseSpaceInputData indata)
-    {
-        if(indata != null)
-        {
-            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, indata);
-        }
-        else
-        {
-            CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
-        }
-    }
-    
+		// Get Space File name
+		String spaceFileName;
+		PFN pfn = data.getSpaceFileName();
+		ReleaseSpaceCommand.log
+			.debug("ReleaseCommand: manageAuthorizedReleaseSpace");
+
+		if (pfn != null) {
+			spaceFileName = pfn.getValue();
+			ReleaseSpaceCommand.log.debug("ReleaseCommand: spaceFileName: "
+				+ spaceFileName);
+			File spaceFile = new File(spaceFileName);
+			if (spaceFile.delete()) {
+				// Remove spaceData from presistence
+				if (catalog.release(user, data.getSpaceToken())) {
+					return manageStatus(TStatusCode.SRM_SUCCESS, "Space Released.");
+				} else {
+					return manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
+						"Space removed, but spaceToken was not found in the DB");
+				}
+			} else {
+				return manageStatus(TStatusCode.SRM_FAILURE,
+					"Space can not be removed by StoRM!");
+			}
+		} else {
+			return manageStatus(TStatusCode.SRM_FAILURE, "SRM Internal failure.");
+		}
+	}
+
+	/**
+	 * 
+	 * @param statusCode
+	 *          statusCode
+	 * @param explanation
+	 *          explanation string
+	 * @return returnStatus returnStatus
+	 */
+	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
+
+		TReturnStatus returnStatus = null;
+		try {
+			returnStatus = new TReturnStatus(statusCode, explanation);
+		} catch (InvalidTReturnStatusAttributeException ex1) {
+			ReleaseSpaceCommand.log
+				.debug("ReleaseFile : Error creating returnStatus " + ex1);
+		}
+		return returnStatus;
+	}
+
+	private void printRequestOutcome(TReturnStatus status,
+		ReleaseSpaceInputData indata) {
+
+		if (indata != null) {
+			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, indata);
+		} else {
+			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+		}
+	}
+
 }

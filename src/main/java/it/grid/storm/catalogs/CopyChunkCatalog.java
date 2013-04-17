@@ -1,26 +1,25 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
-
 
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.griduser.GridUserInterface;
-//import it.grid.storm.namespace.SurlStatusStore;
+// import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -51,294 +50,291 @@ import org.slf4j.LoggerFactory;
  * @date september, 2005
  * @version 2.0
  */
-public class CopyChunkCatalog
-{
-	private static final Logger log = LoggerFactory.getLogger(CopyChunkCatalog.class);
-	
+public class CopyChunkCatalog {
+
+	private static final Logger log = LoggerFactory
+		.getLogger(CopyChunkCatalog.class);
+
 	/* only instance of CopyChunkCatalog present in StoRM! */
 	private static final CopyChunkCatalog cat = new CopyChunkCatalog();
 	/* WARNING!!! TO BE MODIFIED WITH FACTORY!!! */
 	private CopyChunkDAO dao = CopyChunkDAO.getInstance();
 
 	private CopyChunkCatalog() {
+
 	}
 
-    /**
-     * Method that returns the only instance of PtPChunkCatalog available.
-     */
-    public static CopyChunkCatalog getInstance() {
-        return cat;
-    }
-    
-    /**
-     * Method used to update into Persistence a retrieved CopyChunkData. In case
-     * any error occurs, the operation does not proceed and no Exception is
-     * thrown.
-     *
-     * Beware that the only fields updated into persistence are the StatusCode and
-     * the errorString.
-     */
+	/**
+	 * Method that returns the only instance of PtPChunkCatalog available.
+	 */
+	public static CopyChunkCatalog getInstance() {
+
+		return cat;
+	}
+
+	/**
+	 * Method used to update into Persistence a retrieved CopyChunkData. In case
+	 * any error occurs, the operation does not proceed and no Exception is
+	 * thrown.
+	 * 
+	 * Beware that the only fields updated into persistence are the StatusCode and
+	 * the errorString.
+	 */
 	synchronized public void update(CopyPersistentChunkData cd) {
 
 		CopyChunkDataTO to = new CopyChunkDataTO();
 		/* primary key needed by DAO Object */
 		to.setPrimaryKey(cd.getPrimaryKey());
-		to.setLifeTime(FileLifetimeConverter.getInstance().toDB(cd.getLifetime().value()));
-		to.setStatus(StatusCodeConverter.getInstance().toDB(cd.getStatus().getStatusCode()));
+		to.setLifeTime(FileLifetimeConverter.getInstance().toDB(
+			cd.getLifetime().value()));
+		to.setStatus(StatusCodeConverter.getInstance().toDB(
+			cd.getStatus().getStatusCode()));
 		to.setErrString(cd.getStatus().getExplanation());
-		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(cd.getFileStorageType()));
-		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(cd.getOverwriteOption()));
+		to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(
+			cd.getFileStorageType()));
+		to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(
+			cd.getOverwriteOption()));
 		to.setNormalizedSourceStFN(cd.getSURL().normalizedStFN());
 		to.setSourceSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
 		to.setNormalizedTargetStFN(cd.getDestinationSURL().normalizedStFN());
 		to.setTargetSurlUniqueID(new Integer(cd.getDestinationSURL().uniqueId()));
-		
+
 		dao.update(to);
 		// TODO MICHELE SURL STORE
-//		SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(), cd.getStatus().getStatusCode());
+		// SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(),
+		// cd.getStatus().getStatusCode());
 	}
 
-    /**
-     * Method that returns a Collection of CopyChunkData Objects matching the
-     * supplied TRequestToken.
-     *
-     * If any of the data associated to the TRequestToken is not well formed and
-     * so does not allow a CopyChunkData Object to be created, then that part of
-     * the request is dropped and gets logged, and the processing continues with
-     * the next part. All valid chunks get returned: the others get dropped.
-     *
-     * If there are no chunks to process then an empty Collection is returned,
-     * and a messagge gets logged.
-     */
-	synchronized public Collection<CopyPersistentChunkData> lookup(TRequestToken rt) {
-		
+	/**
+	 * Method that returns a Collection of CopyChunkData Objects matching the
+	 * supplied TRequestToken.
+	 * 
+	 * If any of the data associated to the TRequestToken is not well formed and
+	 * so does not allow a CopyChunkData Object to be created, then that part of
+	 * the request is dropped and gets logged, and the processing continues with
+	 * the next part. All valid chunks get returned: the others get dropped.
+	 * 
+	 * If there are no chunks to process then an empty Collection is returned, and
+	 * a messagge gets logged.
+	 */
+	synchronized public Collection<CopyPersistentChunkData> lookup(
+		TRequestToken rt) {
+
 		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(rt);
 		log.debug("COPY CHUNK CATALOG: retrieved data " + chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs, rt);
-//		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
-//		if(chunkDataTOs.isEmpty())
-//		{
-//			log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
-//				+ rt);
-//		}
-//		else
-//		{
-//			CopyPersistentChunkData chunk;
-//			for(CopyChunkDataTO chunkTO : chunkDataTOs)
-//			{
-//				chunk = makeOne(chunkTO, rt);
-//				if(chunk != null)
-//				{
-//					list.add(chunk);
-//					// TODO MICHELE SURL STORE
-////					SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
-//					if(!this.isComplete(chunkTO))
-//					{
-//						try
-//						{
-//							dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-//						} catch(InvalidReducedCopyChunkDataAttributesException e)
-//						{
-//							log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: " + e);
-//						}
-//					}
-//				}
-//			}
-//		}
-//		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
-//		return list;
+		// ArrayList<CopyPersistentChunkData> list = new
+		// ArrayList<CopyPersistentChunkData>();
+		// if(chunkDataTOs.isEmpty())
+		// {
+		// log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
+		// + rt);
+		// }
+		// else
+		// {
+		// CopyPersistentChunkData chunk;
+		// for(CopyChunkDataTO chunkTO : chunkDataTOs)
+		// {
+		// chunk = makeOne(chunkTO, rt);
+		// if(chunk != null)
+		// {
+		// list.add(chunk);
+		// // TODO MICHELE SURL STORE
+		// // SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
+		// chunk.getStatus().getStatusCode());
+		// if(!this.isComplete(chunkTO))
+		// {
+		// try
+		// {
+		// dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+		// } catch(InvalidReducedCopyChunkDataAttributesException e)
+		// {
+		// log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+		// + e);
+		// }
+		// }
+		// }
+		// }
+		// }
+		// log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+		// return list;
 	}
 
-    private Collection<CopyPersistentChunkData> buildChunkDataList(Collection<CopyChunkDataTO> chunkDataTOs,
-            TRequestToken rt)
-    {
-        ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
-        CopyPersistentChunkData chunk;
-        for (CopyChunkDataTO chunkTO : chunkDataTOs)
-        {
-            chunk = makeOne(chunkTO, rt);
-            if (chunk != null)
-            {
-                list.add(chunk);
-                // TODO MICHELE SURL STORE
-// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(), chunk.getStatus().getStatusCode());
-                if (!this.isComplete(chunkTO))
-                {
-                    try
-                    {
-                        dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-                    } catch(InvalidReducedCopyChunkDataAttributesException e)
-                    {
-                        log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-                                + e);
-                    }
-                }
-            }
-        }
-        log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
-        return list;
-    }
-    
-    private Collection<CopyPersistentChunkData> buildChunkDataList(Collection<CopyChunkDataTO> chunkDataTOs)
-    {
-        ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
-        CopyPersistentChunkData chunk;
-        for (CopyChunkDataTO chunkTO : chunkDataTOs)
-        {
-            chunk = makeOne(chunkTO);
-            if (chunk != null)
-            {
-                list.add(chunk);
-                // TODO MICHELE SURL STORE
-                // SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-// chunk.getStatus().getStatusCode());
-                if (!this.isComplete(chunkTO))
-                {
-                    try
-                    {
-                        dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-                    } catch(InvalidReducedCopyChunkDataAttributesException e)
-                    {
-                        log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-                                + e);
-                    }
-                }
-            }
-        }
-        log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
-        return list;
-    }
+	private Collection<CopyPersistentChunkData> buildChunkDataList(
+		Collection<CopyChunkDataTO> chunkDataTOs, TRequestToken rt) {
 
-    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TRequestToken requestToken,
-                                                                   Collection<TSURL> surls)
-    {
-        int[] surlsUniqueIDs = new int[surls.size()];
-        String[] surlsArray = new String[surls.size()];
-        int index = 0;
-        for (TSURL tsurl : surls)
-        {
-            surlsUniqueIDs[index] = tsurl.uniqueId();
-            surlsArray[index] = tsurl.rawSurl();
-            index++;
-        }
-        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(requestToken, surlsUniqueIDs,
-                                                                                  surlsArray);
-        return buildChunkDataList(chunkDataTOs, requestToken);
-    }
-    
-    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl, GridUserInterface user)
-    {
-        return lookupCopyChunkData(Arrays.asList(new TSURL[]{surl}), user);
-    }
-    
-    public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl)
-    {
-        return lookupCopyChunkData(Arrays.asList(new TSURL[]{surl}));
-    }
+		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
+		CopyPersistentChunkData chunk;
+		for (CopyChunkDataTO chunkTO : chunkDataTOs) {
+			chunk = makeOne(chunkTO, rt);
+			if (chunk != null) {
+				list.add(chunk);
+				// TODO MICHELE SURL STORE
+				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
+				// chunk.getStatus().getStatusCode());
+				if (!this.isComplete(chunkTO)) {
+					try {
+						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+					} catch (InvalidReducedCopyChunkDataAttributesException e) {
+						log
+							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+								+ e);
+					}
+				}
+			}
+		}
+		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+		return list;
+	}
 
-    private Collection<CopyPersistentChunkData> lookupCopyChunkData(List<TSURL> surls, GridUserInterface user)
-    {
-        int[] surlsUniqueIDs = new int[surls.size()];
-        String[] surlsArray = new String[surls.size()];
-        int index = 0;
-        for (TSURL tsurl : surls)
-        {
-            surlsUniqueIDs[index] = tsurl.uniqueId();
-            surlsArray[index] = tsurl.rawSurl();
-            index++;
-        }
-        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs, surlsArray, user.getDn());
-        return buildChunkDataList(chunkDataTOs);
-    }
+	private Collection<CopyPersistentChunkData> buildChunkDataList(
+		Collection<CopyChunkDataTO> chunkDataTOs) {
 
-    public Collection<CopyPersistentChunkData> lookupCopyChunkData(List<TSURL> surls)
-    {
-        int[] surlsUniqueIDs = new int[surls.size()];
-        String[] surlsArray = new String[surls.size()];
-        int index = 0;
-        for (TSURL tsurl : surls)
-        {
-            surlsUniqueIDs[index] = tsurl.uniqueId();
-            surlsArray[index] = tsurl.rawSurl();
-            index++;
-        }
-        Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs, surlsArray);
-        return buildChunkDataList(chunkDataTOs);
-    }
+		ArrayList<CopyPersistentChunkData> list = new ArrayList<CopyPersistentChunkData>();
+		CopyPersistentChunkData chunk;
+		for (CopyChunkDataTO chunkTO : chunkDataTOs) {
+			chunk = makeOne(chunkTO);
+			if (chunk != null) {
+				list.add(chunk);
+				// TODO MICHELE SURL STORE
+				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
+				// chunk.getStatus().getStatusCode());
+				if (!this.isComplete(chunkTO)) {
+					try {
+						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+					} catch (InvalidReducedCopyChunkDataAttributesException e) {
+						log
+							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
+								+ e);
+					}
+				}
+			}
+		}
+		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+		return list;
+	}
 
-    private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkTO)
-    {
-        try
-        {
-            return makeOne(chunkTO, new TRequestToken(chunkTO.requestToken(), chunkTO.timeStamp()));
-        } catch(InvalidTRequestTokenAttributesException e)
-        {
-            throw new IllegalStateException("Unexpected InvalidTRequestTokenAttributesException in TRequestToken: " + e);
-        }
-    }
-    
-    /**
-     * Generates a CopyChunkData from the received CopyChunkDataTO
-     * 
-     * @param chunkDataTO
-     * @param rt
-     * @return
-     */
-	private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkDataTO, TRequestToken rt) {
+	public Collection<CopyPersistentChunkData> lookupCopyChunkData(
+		TRequestToken requestToken, Collection<TSURL> surls) {
+
+		int[] surlsUniqueIDs = new int[surls.size()];
+		String[] surlsArray = new String[surls.size()];
+		int index = 0;
+		for (TSURL tsurl : surls) {
+			surlsUniqueIDs[index] = tsurl.uniqueId();
+			surlsArray[index] = tsurl.rawSurl();
+			index++;
+		}
+		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(requestToken,
+			surlsUniqueIDs, surlsArray);
+		return buildChunkDataList(chunkDataTOs, requestToken);
+	}
+
+	public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl,
+		GridUserInterface user) {
+
+		return lookupCopyChunkData(Arrays.asList(new TSURL[] { surl }), user);
+	}
+
+	public Collection<CopyPersistentChunkData> lookupCopyChunkData(TSURL surl) {
+
+		return lookupCopyChunkData(Arrays.asList(new TSURL[] { surl }));
+	}
+
+	private Collection<CopyPersistentChunkData> lookupCopyChunkData(
+		List<TSURL> surls, GridUserInterface user) {
+
+		int[] surlsUniqueIDs = new int[surls.size()];
+		String[] surlsArray = new String[surls.size()];
+		int index = 0;
+		for (TSURL tsurl : surls) {
+			surlsUniqueIDs[index] = tsurl.uniqueId();
+			surlsArray[index] = tsurl.rawSurl();
+			index++;
+		}
+		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
+			surlsArray, user.getDn());
+		return buildChunkDataList(chunkDataTOs);
+	}
+
+	public Collection<CopyPersistentChunkData> lookupCopyChunkData(
+		List<TSURL> surls) {
+
+		int[] surlsUniqueIDs = new int[surls.size()];
+		String[] surlsArray = new String[surls.size()];
+		int index = 0;
+		for (TSURL tsurl : surls) {
+			surlsUniqueIDs[index] = tsurl.uniqueId();
+			surlsArray[index] = tsurl.rawSurl();
+			index++;
+		}
+		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
+			surlsArray);
+		return buildChunkDataList(chunkDataTOs);
+	}
+
+	private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkTO) {
+
+		try {
+			return makeOne(chunkTO,
+				new TRequestToken(chunkTO.requestToken(), chunkTO.timeStamp()));
+		} catch (InvalidTRequestTokenAttributesException e) {
+			throw new IllegalStateException(
+				"Unexpected InvalidTRequestTokenAttributesException in TRequestToken: "
+					+ e);
+		}
+	}
+
+	/**
+	 * Generates a CopyChunkData from the received CopyChunkDataTO
+	 * 
+	 * @param chunkDataTO
+	 * @param rt
+	 * @return
+	 */
+	private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkDataTO,
+		TRequestToken rt) {
 
 		StringBuffer errorSb = new StringBuffer();
 		// fromSURL
 		TSURL fromSURL = null;
-		try
-		{
+		try {
 			fromSURL = TSURL.makeFromStringValidate(chunkDataTO.fromSURL());
-		} catch(InvalidTSURLAttributesException e)
-		{
+		} catch (InvalidTSURLAttributesException e) {
 			errorSb.append(e);
 		}
-		if(chunkDataTO.normalizedSourceStFN() != null)
-		{
+		if (chunkDataTO.normalizedSourceStFN() != null) {
 			fromSURL.setNormalizedStFN(chunkDataTO.normalizedSourceStFN());
 		}
-		if(chunkDataTO.sourceSurlUniqueID() != null)
-		{
+		if (chunkDataTO.sourceSurlUniqueID() != null) {
 			fromSURL.setUniqueID(chunkDataTO.sourceSurlUniqueID().intValue());
 		}
 		// toSURL
 		TSURL toSURL = null;
-		try
-		{
+		try {
 			toSURL = TSURL.makeFromStringValidate(chunkDataTO.toSURL());
-		} catch(InvalidTSURLAttributesException e)
-		{
+		} catch (InvalidTSURLAttributesException e) {
 			errorSb.append(e);
 		}
-		if(chunkDataTO.normalizedTargetStFN() != null)
-		{
+		if (chunkDataTO.normalizedTargetStFN() != null) {
 			toSURL.setNormalizedStFN(chunkDataTO.normalizedTargetStFN());
 		}
-		if(chunkDataTO.targetSurlUniqueID() != null)
-		{
+		if (chunkDataTO.targetSurlUniqueID() != null) {
 			toSURL.setUniqueID(chunkDataTO.targetSurlUniqueID().intValue());
 		}
 		// lifeTime
 		TLifeTimeInSeconds lifeTime = null;
-		try
-		{
-			lifeTime =
-					   TLifeTimeInSeconds.make(FileLifetimeConverter.getInstance().toStoRM(
-						   chunkDataTO.lifeTime()), TimeUnit.SECONDS);
-		} catch(IllegalArgumentException e)
-		{
+		try {
+			lifeTime = TLifeTimeInSeconds.make(FileLifetimeConverter.getInstance()
+				.toStoRM(chunkDataTO.lifeTime()), TimeUnit.SECONDS);
+		} catch (IllegalArgumentException e) {
 			errorSb.append("\n");
 			errorSb.append(e);
 		}
 		// fileStorageType
-		TFileStorageType fileStorageType =
-										   FileStorageTypeConverter.getInstance().toSTORM(
-											   chunkDataTO.fileStorageType());
-		if(fileStorageType == TFileStorageType.EMPTY)
-		{
+		TFileStorageType fileStorageType = FileStorageTypeConverter.getInstance()
+			.toSTORM(chunkDataTO.fileStorageType());
+		if (fileStorageType == TFileStorageType.EMPTY) {
 			log.error("\nTFileStorageType could not be "
 				+ "translated from its String representation! String: "
 				+ chunkDataTO.fileStorageType());
@@ -355,30 +351,22 @@ public class CopyChunkCatalog
 		TSpaceToken spaceToken = null;
 		TSpaceToken emptyToken = TSpaceToken.makeEmpty();
 		// convert empty string representation of DPM into StoRM representation;
-		String spaceTokenTranslation =
-									   SpaceTokenStringConverter.getInstance().toStoRM(
-										   chunkDataTO.spaceToken());
-		if(emptyToken.toString().equals(spaceTokenTranslation))
-		{
+		String spaceTokenTranslation = SpaceTokenStringConverter.getInstance()
+			.toStoRM(chunkDataTO.spaceToken());
+		if (emptyToken.toString().equals(spaceTokenTranslation)) {
 			spaceToken = emptyToken;
-		}
-		else
-		{
-			try
-			{
+		} else {
+			try {
 				spaceToken = TSpaceToken.make(spaceTokenTranslation);
-			} catch(InvalidTSpaceTokenAttributesException e)
-			{
+			} catch (InvalidTSpaceTokenAttributesException e) {
 				errorSb.append("\n");
 				errorSb.append(e);
 			}
 		}
 		// overwriteOption!
-		TOverwriteMode globalOverwriteOption =
-											   OverwriteModeConverter.getInstance().toSTORM(
-												   chunkDataTO.overwriteOption());
-		if(globalOverwriteOption == TOverwriteMode.EMPTY)
-		{
+		TOverwriteMode globalOverwriteOption = OverwriteModeConverter.getInstance()
+			.toSTORM(chunkDataTO.overwriteOption());
+		if (globalOverwriteOption == TOverwriteMode.EMPTY) {
 			errorSb.append("\nTOverwriteMode could not be "
 				+ "translated from its String representation! String: "
 				+ chunkDataTO.overwriteOption());
@@ -386,32 +374,26 @@ public class CopyChunkCatalog
 		}
 		// status
 		TReturnStatus status = null;
-		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(chunkDataTO.status());
-		if(code == TStatusCode.EMPTY)
-		{
-			errorSb.append("\nRetrieved StatusCode was not recognised: " + chunkDataTO.status());
-		}
-		else
-		{
-			try
-			{
+		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(
+			chunkDataTO.status());
+		if (code == TStatusCode.EMPTY) {
+			errorSb.append("\nRetrieved StatusCode was not recognised: "
+				+ chunkDataTO.status());
+		} else {
+			try {
 				status = new TReturnStatus(code, chunkDataTO.errString());
-			} catch(InvalidTReturnStatusAttributeException e)
-			{
+			} catch (InvalidTReturnStatusAttributeException e) {
 				errorSb.append("\n");
 				errorSb.append(e);
 			}
 		}
 		// make CopyChunkData
 		CopyPersistentChunkData aux = null;
-		try
-		{
-			aux =
-				  new CopyPersistentChunkData(rt, fromSURL, toSURL, lifeTime, fileStorageType, spaceToken,
-					  globalOverwriteOption, status);
+		try {
+			aux = new CopyPersistentChunkData(rt, fromSURL, toSURL, lifeTime,
+				fileStorageType, spaceToken, globalOverwriteOption, status);
 			aux.setPrimaryKey(chunkDataTO.primaryKey());
-		} catch(InvalidSurlRequestDataAttributesException e)
-		{
+		} catch (InvalidSurlRequestDataAttributesException e) {
 			dao.signalMalformedCopyChunk(chunkDataTO);
 			log.warn("COPY CHUNK CATALOG! Retrieved malformed Copy"
 				+ " chunk data from persistence. Dropping chunk from request: " + rt);
@@ -421,16 +403,18 @@ public class CopyChunkCatalog
 		// end...
 		return aux;
 	}
-    
-    /**
+
+	/**
 	 * 
-	 * Adds to the received CopyChunkDataTO the normalized StFN and the SURL unique ID taken from the CopyChunkData
-	 *  
+	 * Adds to the received CopyChunkDataTO the normalized StFN and the SURL
+	 * unique ID taken from the CopyChunkData
+	 * 
 	 * @param chunkTO
 	 * @param chunk
 	 */
-	private void completeTO(ReducedCopyChunkDataTO chunkTO, final ReducedCopyChunkData chunk) {
-		
+	private void completeTO(ReducedCopyChunkDataTO chunkTO,
+		final ReducedCopyChunkData chunk) {
+
 		chunkTO.setNormalizedSourceStFN(chunk.fromSURL().normalizedStFN());
 		chunkTO.setSourceSurlUniqueID(new Integer(chunk.fromSURL().uniqueId()));
 		chunkTO.setNormalizedTargetStFN(chunk.toSURL().normalizedStFN());
@@ -440,36 +424,43 @@ public class CopyChunkCatalog
 	/**
 	 * 
 	 * Creates a ReducedCopyChunkDataTO from the received CopyChunkDataTO and
-	 * completes it with the normalized StFN and the SURL unique ID taken from
-	 * the PtGChunkData
+	 * completes it with the normalized StFN and the SURL unique ID taken from the
+	 * PtGChunkData
 	 * 
 	 * @param chunkTO
 	 * @param chunk
 	 * @return
 	 * @throws InvalidReducedCopyChunkDataAttributesException
 	 */
-	private ReducedCopyChunkDataTO completeTO(CopyChunkDataTO chunkTO, final CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
+	private ReducedCopyChunkDataTO completeTO(CopyChunkDataTO chunkTO,
+		final CopyPersistentChunkData chunk)
+		throws InvalidReducedCopyChunkDataAttributesException {
+
 		ReducedCopyChunkDataTO reducedChunkTO = this.reduce(chunkTO);
 		this.completeTO(reducedChunkTO, this.reduce(chunk));
 		return reducedChunkTO;
 	}
-	
+
 	/**
-	 * Creates a ReducedCopyChunkData from the data contained in the received CopyChunkData
+	 * Creates a ReducedCopyChunkData from the data contained in the received
+	 * CopyChunkData
 	 * 
 	 * @param chunk
 	 * @return
 	 * @throws InvalidReducedPtGChunkDataAttributesException
 	 */
-	private ReducedCopyChunkData reduce(CopyPersistentChunkData chunk) throws InvalidReducedCopyChunkDataAttributesException {
+	private ReducedCopyChunkData reduce(CopyPersistentChunkData chunk)
+		throws InvalidReducedCopyChunkDataAttributesException {
 
-		ReducedCopyChunkData reducedChunk = new ReducedCopyChunkData(chunk.getSURL(), chunk.getDestinationSURL(), chunk.getStatus());
+		ReducedCopyChunkData reducedChunk = new ReducedCopyChunkData(
+			chunk.getSURL(), chunk.getDestinationSURL(), chunk.getStatus());
 		reducedChunk.setPrimaryKey(chunk.getPrimaryKey());
 		return reducedChunk;
 	}
 
 	/**
-	 * Creates a ReducedCopyChunkDataTO from the data contained in the received CopyChunkDataTO
+	 * Creates a ReducedCopyChunkDataTO from the data contained in the received
+	 * CopyChunkDataTO
 	 * 
 	 * @param chunkTO
 	 * @return
@@ -490,54 +481,58 @@ public class CopyChunkCatalog
 	}
 
 	/**
-     * Checks if the received CopyChunkDataTO contains the fields not set by the front end
-     * but required
-     * 
-     * @param chunkTO
-     * @return
-     */
+	 * Checks if the received CopyChunkDataTO contains the fields not set by the
+	 * front end but required
+	 * 
+	 * @param chunkTO
+	 * @return
+	 */
 	private boolean isComplete(CopyChunkDataTO chunkTO) {
 
 		return (chunkTO.normalizedSourceStFN() != null)
-			&& (chunkTO.sourceSurlUniqueID() != null && chunkTO.normalizedTargetStFN() != null)
+			&& (chunkTO.sourceSurlUniqueID() != null && chunkTO
+				.normalizedTargetStFN() != null)
 			&& (chunkTO.targetSurlUniqueID() != null);
 	}
-    
-    /**
-     * Checks if the received ReducedPtGChunkDataTO contains the fields not set by the front end
-     * but required
-     * 
-     * @param reducedChunkTO
-     * @return
-     */
-    @SuppressWarnings("unused")
+
+	/**
+	 * Checks if the received ReducedPtGChunkDataTO contains the fields not set by
+	 * the front end but required
+	 * 
+	 * @param reducedChunkTO
+	 * @return
+	 */
+	@SuppressWarnings("unused")
 	private boolean isComplete(ReducedCopyChunkDataTO reducedChunkTO) {
 
-    	return (reducedChunkTO.normalizedSourceStFN() != null) && (reducedChunkTO.sourceSurlUniqueID() != null
-    			&& reducedChunkTO.normalizedTargetStFN() != null) && (reducedChunkTO.targetSurlUniqueID() != null);
+		return (reducedChunkTO.normalizedSourceStFN() != null)
+			&& (reducedChunkTO.sourceSurlUniqueID() != null && reducedChunkTO
+				.normalizedTargetStFN() != null)
+			&& (reducedChunkTO.targetSurlUniqueID() != null);
 	}
 
-    public void updateFromPreviousStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
-            TStatusCode newStatusCode, String explanation)
-    {
-        dao.updateStatusOnMatchingStatus(requestToken, expectedStatusCode, newStatusCode, explanation);
-    }
-    
-    public void updateFromPreviousStatus(TRequestToken requestToken, List<TSURL> surlList,
-            TStatusCode expectedStatusCode, TStatusCode newStatusCode)
-    {
-        int[] surlsUniqueIDs = new int[surlList.size()];
-        String[] surls = new String[surlList.size()];
-        int index = 0;
-        for(TSURL tsurl : surlList)
-        {
-            surlsUniqueIDs[index] = tsurl.uniqueId();
-            surls[index] = tsurl.rawSurl();
-            index++;
-        }
-        dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
-                                         expectedStatusCode, newStatusCode);
-    }
+	public void updateFromPreviousStatus(TRequestToken requestToken,
+		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
+		String explanation) {
+
+		dao.updateStatusOnMatchingStatus(requestToken, expectedStatusCode,
+			newStatusCode, explanation);
+	}
+
+	public void updateFromPreviousStatus(TRequestToken requestToken,
+		List<TSURL> surlList, TStatusCode expectedStatusCode,
+		TStatusCode newStatusCode) {
+
+		int[] surlsUniqueIDs = new int[surlList.size()];
+		String[] surls = new String[surlList.size()];
+		int index = 0;
+		for (TSURL tsurl : surlList) {
+			surlsUniqueIDs[index] = tsurl.uniqueId();
+			surls[index] = tsurl.rawSurl();
+			index++;
+		}
+		dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
+			expectedStatusCode, newStatusCode);
+	}
 
 }
-

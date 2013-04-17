@@ -25,88 +25,95 @@ import org.slf4j.LoggerFactory;
 
 public class CatalogUpdater {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CatalogUpdater.class);
-    private final ExecutorService saver = Executors.newFixedThreadPool(1, new NamedThreadFactory("CatalogSaver"));   
-    
-    //Reference to the Catalog
-    private static final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
-    
-    public Future<?> saveData(TSpaceToken token, DUResult duResult) throws SAInfoException {
-    	Future<?> saverFuture = null;
-    	try {
-            saverFuture = saver.submit(new NamedThread(new SaveSA(token, duResult),"SaverThread"));        
-        } catch (RejectedExecutionException rej) {
-            LOG.error("Unable to start Saver tasks."+rej.getMessage());
-        } 
-        return saverFuture;
-    }
-    
-    public void stopSaver() {
-        try {
-            shutdown(false, 1000);
-        } catch (InterruptedException ex) {
-            LOG.debug("DU Info SAVER is interrupted.");
-        }
-    }
-    
-    private void shutdown(boolean interrupt, long waitMillis) throws InterruptedException {
-        if (interrupt) {
-            LOG.debug("Tasks killed: " + saver.shutdownNow().size());
-        } else {
-            saver.shutdown();
-        }
-        try {
-            saver.awaitTermination(waitMillis, TimeUnit.MILLISECONDS);
-        } finally {
-            LOG.debug("Tasks killed: " + saver.shutdownNow().size());
-        }
-        LOG.debug("SAVER is terminated? : " + saver.isTerminated());
-    }
-    
-    
-    private class SaveSA implements Runnable {
+	private static final Logger LOG = LoggerFactory
+		.getLogger(CatalogUpdater.class);
+	private final ExecutorService saver = Executors.newFixedThreadPool(1,
+		new NamedThreadFactory("CatalogSaver"));
 
-        private DUResult duResult;
-    	private TSpaceToken sT;
-             
+	// Reference to the Catalog
+	private static final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+
+	public Future<?> saveData(TSpaceToken token, DUResult duResult)
+		throws SAInfoException {
+
+		Future<?> saverFuture = null;
+		try {
+			saverFuture = saver.submit(new NamedThread(new SaveSA(token, duResult),
+				"SaverThread"));
+		} catch (RejectedExecutionException rej) {
+			LOG.error("Unable to start Saver tasks." + rej.getMessage());
+		}
+		return saverFuture;
+	}
+
+	public void stopSaver() {
+
+		try {
+			shutdown(false, 1000);
+		} catch (InterruptedException ex) {
+			LOG.debug("DU Info SAVER is interrupted.");
+		}
+	}
+
+	private void shutdown(boolean interrupt, long waitMillis)
+		throws InterruptedException {
+
+		if (interrupt) {
+			LOG.debug("Tasks killed: " + saver.shutdownNow().size());
+		} else {
+			saver.shutdown();
+		}
+		try {
+			saver.awaitTermination(waitMillis, TimeUnit.MILLISECONDS);
+		} finally {
+			LOG.debug("Tasks killed: " + saver.shutdownNow().size());
+		}
+		LOG.debug("SAVER is terminated? : " + saver.isTerminated());
+	}
+
+	private class SaveSA implements Runnable {
+
+		private DUResult duResult;
+		private TSpaceToken sT;
+
 		public SaveSA(TSpaceToken spaceToken, DUResult duResult) {
+
 			super();
 			this.duResult = duResult;
 			sT = spaceToken;
 		}
 
 		public void run() {
-            // TODO errors are not managed in this function
-		    LOG.debug("Saving info into DB... ");
-		    StorageSpaceData ssd = null;
-		    if (SpaceInfoManager.getInstance().testMode.get()) {
-		        // this IS a TEST!
-                // Create a fake SSD
-		        ssd = new StorageSpaceData();
-                try {
-                    PFN spaceFN = PFN.make(duResult.getAbsRootPath());
-                    ssd.setSpaceToken(sT);
-                    ssd.setSpaceFileName(spaceFN);
-                } catch (InvalidPFNAttributeException e) {
-                    LOG.error("Unable to create PFN. "+e);
-                }
-          
-		    } else {
-		        // This is not a TEST!
-		        // Retrieve SA from Catalog
-	            try
-                {
-                    ssd = spaceCatalog.getStorageSpace(sT);
-                } catch(TransferObjectDecodingException e)
-                {
-                    LOG.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-                              + e.getMessage());
-                } catch(DataAccessException e)
-                {
-                    LOG.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
-                }    
-		    }
-			
+
+			// TODO errors are not managed in this function
+			LOG.debug("Saving info into DB... ");
+			StorageSpaceData ssd = null;
+			if (SpaceInfoManager.getInstance().testMode.get()) {
+				// this IS a TEST!
+				// Create a fake SSD
+				ssd = new StorageSpaceData();
+				try {
+					PFN spaceFN = PFN.make(duResult.getAbsRootPath());
+					ssd.setSpaceToken(sT);
+					ssd.setSpaceFileName(spaceFN);
+				} catch (InvalidPFNAttributeException e) {
+					LOG.error("Unable to create PFN. " + e);
+				}
+
+			} else {
+				// This is not a TEST!
+				// Retrieve SA from Catalog
+				try {
+					ssd = spaceCatalog.getStorageSpace(sT);
+				} catch (TransferObjectDecodingException e) {
+					LOG
+						.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+							+ e.getMessage());
+				} catch (DataAccessException e) {
+					LOG.error("Unable to build get StorageSpaceTO. DataAccessException: "
+						+ e.getMessage());
+				}
+			}
 
 			long usedSize = duResult.getSize();
 
@@ -117,18 +124,19 @@ public class CatalogUpdater {
 				LOG.error("Negative size?");
 			}
 			if (SpaceInfoManager.getInstance().testMode.get()) {
-                // this IS a TEST!
-			    LOG.debug("Saved SSD info into the DB ");
+				// this IS a TEST!
+				LOG.debug("Saved SSD info into the DB ");
 			} else {
-			    // This is not a TEST!
-			    // Update the SSD into the DB
-			    spaceCatalog.updateStorageSpace(ssd);
+				// This is not a TEST!
+				// Update the SSD into the DB
+				spaceCatalog.updateStorageSpace(ssd);
 			}
-			
-			//Notify the manager about the saving was success
+
+			// Notify the manager about the saving was success
 			SpaceInfoManager.getInstance().savedSA(duResult);
-			LOG.debug(String.format("DU info of %s is saved into DB.",duResult.getAbsRootPath()));
+			LOG.debug(String.format("DU info of %s is saved into DB.",
+				duResult.getAbsRootPath()));
 		}
-        
-    }
+
+	}
 }

@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.asynch;
@@ -42,70 +42,76 @@ import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
 
 /**
  * @author Michele Dibenedetto
- *
+ * 
  */
-public class PtPBuilder
-{
-    private static Logger log = LoggerFactory.getLogger(PtPBuilder.class);
+public class PtPBuilder {
 
-    public static PtP build(PrepareToPutInputData inputData) throws BuilderException
-    {
-        TSURL toSURL = inputData.getSurl();
-        TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
-        TLifeTimeInSeconds fileLifetime = inputData.getDesiredFileLifetime();
-        TFileStorageType fileStorageType = TFileStorageType.getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
-        TSpaceToken spaceToken = inputData.getTargetSpaceToken();
-        TSizeInBytes expectedFileSize = inputData.getFileSize();
-        TURLPrefix transferProtocols = inputData.getTransferProtocols();
-        TOverwriteMode overwriteOption = TOverwriteMode.ALWAYS;
-        TReturnStatus status;
-        try
-        {
-            status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,"Synchronous request created");
-        } catch(InvalidTReturnStatusAttributeException e)
-        {
-            log.error("Unable to build TReturnStatus. InvalidTReturnStatusAttributeException: " + e.getMessage());
-            throw new BuilderException("Error building PtP TReturnStatus. Building failed");
-        };
-        TTURL transferURL = TTURL.makeEmpty();
-        PtPData data;
-        try
-        {
-            if (inputData instanceof IdentityInputData)
-            {
-                data = new IdentityPtPData(((IdentityInputData)inputData).getUser(), toSURL, pinLifetime,
-                                           fileLifetime, fileStorageType, spaceToken,
-                                           expectedFileSize, transferProtocols, overwriteOption,
-                                           status, transferURL);
-            }
-            else
-            {
-                data = new AnonymousPtPData(toSURL, pinLifetime,
-                                            fileLifetime, fileStorageType, spaceToken,
-                                            expectedFileSize, transferProtocols, overwriteOption,
-                                            status, transferURL);
-            }
-            data.store();
-        } catch(InvalidPtPDataAttributesException e)
-        {
-            log.error("Unable to build PtPChunkData. InvalidPtPChunkDataAttributesException: " + e.getMessage());
-            throw new BuilderException("Error building PtP PtPChunkData. Building failed");
-        } catch(InvalidFileTransferDataAttributesException e)
-        {
-            log.error("Unable to build PtPChunkData. InvalidFileTransferChunkDataAttributesException: " + e.getMessage());
-            throw new BuilderException("Error building PtP PtPChunkData. Building failed");
-        } catch(InvalidSurlRequestDataAttributesException e)
-        {
-            log.error("Unable to build PtPChunkData. InvalidSurlRequestDataAttributesException: " + e.getMessage());
-            throw new BuilderException("Error building PtP PtPChunkData. Building failed");
-        }
-        try
-        {
-            return new PtP(data);
-        } catch(InvalidRequestAttributesException e)
-        {
-            log.error("Unable to build PtP. InvalidRequestAttributesException: " + e.getMessage());
-            throw new BuilderException("Error building PtP. Building failed");
-        }
-    }
+	private static Logger log = LoggerFactory.getLogger(PtPBuilder.class);
+
+	public static PtP build(PrepareToPutInputData inputData)
+		throws BuilderException {
+
+		TSURL toSURL = inputData.getSurl();
+		TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
+		TLifeTimeInSeconds fileLifetime = inputData.getDesiredFileLifetime();
+		TFileStorageType fileStorageType = TFileStorageType
+			.getTFileStorageType(Configuration.getInstance()
+				.getDefaultFileStorageType());
+		TSpaceToken spaceToken = inputData.getTargetSpaceToken();
+		TSizeInBytes expectedFileSize = inputData.getFileSize();
+		TURLPrefix transferProtocols = inputData.getTransferProtocols();
+		TOverwriteMode overwriteOption = TOverwriteMode.ALWAYS;
+		TReturnStatus status;
+		try {
+			status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,
+				"Synchronous request created");
+		} catch (InvalidTReturnStatusAttributeException e) {
+			log
+				.error("Unable to build TReturnStatus. InvalidTReturnStatusAttributeException: "
+					+ e.getMessage());
+			throw new BuilderException(
+				"Error building PtP TReturnStatus. Building failed");
+		}
+		;
+		TTURL transferURL = TTURL.makeEmpty();
+		PtPData data;
+		try {
+			if (inputData instanceof IdentityInputData) {
+				data = new IdentityPtPData(((IdentityInputData) inputData).getUser(),
+					toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken,
+					expectedFileSize, transferProtocols, overwriteOption, status,
+					transferURL);
+			} else {
+				data = new AnonymousPtPData(toSURL, pinLifetime, fileLifetime,
+					fileStorageType, spaceToken, expectedFileSize, transferProtocols,
+					overwriteOption, status, transferURL);
+			}
+			data.store();
+		} catch (InvalidPtPDataAttributesException e) {
+			log
+				.error("Unable to build PtPChunkData. InvalidPtPChunkDataAttributesException: "
+					+ e.getMessage());
+			throw new BuilderException(
+				"Error building PtP PtPChunkData. Building failed");
+		} catch (InvalidFileTransferDataAttributesException e) {
+			log
+				.error("Unable to build PtPChunkData. InvalidFileTransferChunkDataAttributesException: "
+					+ e.getMessage());
+			throw new BuilderException(
+				"Error building PtP PtPChunkData. Building failed");
+		} catch (InvalidSurlRequestDataAttributesException e) {
+			log
+				.error("Unable to build PtPChunkData. InvalidSurlRequestDataAttributesException: "
+					+ e.getMessage());
+			throw new BuilderException(
+				"Error building PtP PtPChunkData. Building failed");
+		}
+		try {
+			return new PtP(data);
+		} catch (InvalidRequestAttributesException e) {
+			log.error("Unable to build PtP. InvalidRequestAttributesException: "
+				+ e.getMessage());
+			throw new BuilderException("Error building PtP. Building failed");
+		}
+	}
 }

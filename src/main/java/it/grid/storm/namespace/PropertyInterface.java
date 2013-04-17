@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.namespace;
@@ -23,47 +23,45 @@ import it.grid.storm.namespace.model.ExpirationMode;
 import it.grid.storm.namespace.model.AccessLatency;
 
 public interface PropertyInterface {
-  /**
-  <properties>
-    <RetentionPolicy>custodial</RetentionPolicy>
-    <AccessLatency>online</AccessLatency>
-    <ExpirationMode>neverExpire</ExpirationMode>
-    <TotalOnlineSize unit="GB">500</TotalOnlineSize>
-    <TotalNearlineSize unit="GB">0</TotalNearlineSize>
-  </properties>
-  **/
 
-  //public Collection getManagedSpaceTypes();
+	/**
+	 * <properties> <RetentionPolicy>custodial</RetentionPolicy>
+	 * <AccessLatency>online</AccessLatency>
+	 * <ExpirationMode>neverExpire</ExpirationMode> <TotalOnlineSize
+	 * unit="GB">500</TotalOnlineSize> <TotalNearlineSize
+	 * unit="GB">0</TotalNearlineSize> </properties>
+	 **/
 
-  //public Collection getManagedFileTypes();
+	// public Collection getManagedSpaceTypes();
 
-  public TSizeInBytes getTotalOnlineSize();
+	// public Collection getManagedFileTypes();
 
-  public TSizeInBytes getTotalNearlineSize();
+	public TSizeInBytes getTotalOnlineSize();
 
-  public RetentionPolicy getRetentionPolicy();
+	public TSizeInBytes getTotalNearlineSize();
 
-  public ExpirationMode getExpirationMode();
+	public RetentionPolicy getRetentionPolicy();
 
-  public AccessLatency getAccessLatency();
+	public ExpirationMode getExpirationMode();
 
-  /**************************************************
-   *    VERSION 1.4
-   **************************************************/
+	public AccessLatency getAccessLatency();
 
-  public boolean isOnlineSpaceLimited();
+	/**************************************************
+	 * VERSION 1.4
+	 **************************************************/
 
-  public boolean hasLimitedSize();
+	public boolean isOnlineSpaceLimited();
 
+	public boolean hasLimitedSize();
 
-  //public TLifeTimeInSeconds getSpaceLifeTimeMAX();
+	// public TLifeTimeInSeconds getSpaceLifeTimeMAX();
 
-  //public TSizeInBytes getTotalSpaceSizeMAX();
+	// public TSizeInBytes getTotalSpaceSizeMAX();
 
-  //public TLifeTimeInSeconds getFileLifeTimeMAX();
+	// public TLifeTimeInSeconds getFileLifeTimeMAX();
 
-  //public boolean isAllowedFileType(TFileStorageType fileType);
+	// public boolean isAllowedFileType(TFileStorageType fileType);
 
-  //public boolean isAllowedSpaceType(TSpaceType spaceType);
+	// public boolean isAllowedSpaceType(TSpaceType spaceType);
 
 }

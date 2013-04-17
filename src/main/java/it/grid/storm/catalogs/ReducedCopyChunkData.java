@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.catalogs;
@@ -21,28 +21,27 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 
 /**
- * This class represents a ReducedCopyChunkData, that is part of a multifile Copy srm
- * request. It contains data about: the requestToken, the fromSURL, the toSURL,
- * return status of the file together with its error string.
- *
- * @author  Michele Dibenedetto
+ * This class represents a ReducedCopyChunkData, that is part of a multifile
+ * Copy srm request. It contains data about: the requestToken, the fromSURL, the
+ * toSURL, return status of the file together with its error string.
+ * 
+ * @author Michele Dibenedetto
  */
-public class ReducedCopyChunkData{
+public class ReducedCopyChunkData {
 
-    /* long representing the primary key for the persistence layer! */
-    private long primaryKey = -1;
-    /* SURL from which the srmCopy will get the file */
-    private TSURL fromSURL;              
-    /* SURL to which the srmCopy will put the file */
-    private TSURL toSURL;
-    /* Return status for this chunk of request */
-    private TReturnStatus status;
+	/* long representing the primary key for the persistence layer! */
+	private long primaryKey = -1;
+	/* SURL from which the srmCopy will get the file */
+	private TSURL fromSURL;
+	/* SURL to which the srmCopy will put the file */
+	private TSURL toSURL;
+	/* Return status for this chunk of request */
+	private TReturnStatus status;
 
-	public ReducedCopyChunkData(TSURL fromSURL, TSURL toSURL,
-			TReturnStatus status) throws InvalidReducedCopyChunkDataAttributesException {
+	public ReducedCopyChunkData(TSURL fromSURL, TSURL toSURL, TReturnStatus status)
+		throws InvalidReducedCopyChunkDataAttributesException {
 
-		if(fromSURL == null || toSURL == null || status == null)
-		{
+		if (fromSURL == null || toSURL == null || status == null) {
 			throw new InvalidReducedCopyChunkDataAttributesException(fromSURL,
 				toSURL, status);
 		}
@@ -129,12 +128,10 @@ public class ReducedCopyChunkData{
 	@Override
 	public boolean equals(Object o) {
 
-		if(o == this)
-		{
+		if (o == this) {
 			return true;
 		}
-		if(!(o instanceof ReducedCopyChunkData))
-		{
+		if (!(o instanceof ReducedCopyChunkData)) {
 			return false;
 		}
 		ReducedCopyChunkData cd = (ReducedCopyChunkData) o;

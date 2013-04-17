@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.catalogs;
@@ -23,57 +23,66 @@ import it.grid.storm.srm.types.TStatusCode;
  * Class that represents some of the fields in a row in the Persistence Layer:
  * this is all raw data referring to the ReducedBoLChunkData proper, that is
  * String and primitive types.
- *
- * @author  EGRID ICTP
+ * 
+ * @author EGRID ICTP
  * @version 1.0
- * @date    November, 2006
+ * @date November, 2006
  */
 public class ReducedBoLChunkDataTO {
-    private long primaryKey = -1; //ID primary key of record in DB
-    private String fromSURL = " ";
-//  TODO MICHELE USER_SURL added new fields
-    private String normalizedStFN = null;
-    private Integer surlUniqueID = null;
-    
-    private int status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
-    private String errString = " ";
 
+	private long primaryKey = -1; // ID primary key of record in DB
+	private String fromSURL = " ";
+	// TODO MICHELE USER_SURL added new fields
+	private String normalizedStFN = null;
+	private Integer surlUniqueID = null;
 
-    public String errString() {
-        return errString;
-    }
+	private int status = StatusCodeConverter.getInstance().toDB(
+		TStatusCode.SRM_REQUEST_QUEUED);
+	private String errString = " ";
 
-    public String fromSURL() {
-        return fromSURL;
-    }
+	public String errString() {
 
-    public long primaryKey() {
-        return primaryKey;
-    }
+		return errString;
+	}
 
-    public void setErrString(String s) {
-        errString = s;
-    }
+	public String fromSURL() {
 
+		return fromSURL;
+	}
 
-    public void setFromSURL(String s) {
-        fromSURL=s;
-    }
+	public long primaryKey() {
 
-    public void setPrimaryKey(long n) {
-        primaryKey = n;
-    }
+		return primaryKey;
+	}
 
-    public void setStatus(int n) {
-        status = n;
-    }
+	public void setErrString(String s) {
 
-    public int status() {
-        return status;
-    }
+		errString = s;
+	}
 
-    /**
-	 * @param normalizedStFN the normalizedStFN to set
+	public void setFromSURL(String s) {
+
+		fromSURL = s;
+	}
+
+	public void setPrimaryKey(long n) {
+
+		primaryKey = n;
+	}
+
+	public void setStatus(int n) {
+
+		status = n;
+	}
+
+	public int status() {
+
+		return status;
+	}
+
+	/**
+	 * @param normalizedStFN
+	 *          the normalizedStFN to set
 	 */
 	public void setNormalizedStFN(String normalizedStFN) {
 
@@ -89,7 +98,8 @@ public class ReducedBoLChunkDataTO {
 	}
 
 	/**
-	 * @param surlUniqueID the sURLUniqueID to set
+	 * @param surlUniqueID
+	 *          the sURLUniqueID to set
 	 */
 	public void setSurlUniqueID(Integer surlUniqueID) {
 
@@ -103,7 +113,7 @@ public class ReducedBoLChunkDataTO {
 
 		return surlUniqueID;
 	}
-    
+
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();

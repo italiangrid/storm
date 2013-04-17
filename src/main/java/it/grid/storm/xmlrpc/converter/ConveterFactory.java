@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package it.grid.storm.xmlrpc.converter;
-
 
 import it.grid.storm.common.OperationType;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
@@ -37,17 +34,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ************************************************************************
- * This file is part of the StoRM project.
- * Copyright (c) 2008 INFN-CNAF.
+ * ************************************************************************ This
+ * file is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
- * OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
- * limitations under the License. ************************************************************************
- * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ * ************************************************************************ This
+ * class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
  * <p>
  * Authors:
  * 
@@ -55,66 +53,66 @@ import org.slf4j.LoggerFactory;
  * @date = Oct 9, 2008
  */
 
-public class ConveterFactory
-{
-    
-    private static final Logger log = LoggerFactory.getLogger(ConveterFactory.class);
+public class ConveterFactory {
 
-    /**
-     * @param type
-     * @return null if no converter is available for the provided OperationType
-     */
-    public static Converter getConverter(OperationType type) throws StoRMXmlRpcException
-    {
+	private static final Logger log = LoggerFactory
+		.getLogger(ConveterFactory.class);
 
-        switch (type)
-        {
-            case RM:
-                return new RmConverter();
-            case RMD:
-                return new RmdirConverter();
-            case MKD:
-                return new MkdirConverter();
-            case MV:
-                return new MvConverter();
-            case LS:
-                return new LsConverter();
+	/**
+	 * @param type
+	 * @return null if no converter is available for the provided OperationType
+	 */
+	public static Converter getConverter(OperationType type)
+		throws StoRMXmlRpcException {
 
-            case PNG:
-                return new PingConverter();
+		switch (type) {
+		case RM:
+			return new RmConverter();
+		case RMD:
+			return new RmdirConverter();
+		case MKD:
+			return new MkdirConverter();
+		case MV:
+			return new MvConverter();
+		case LS:
+			return new LsConverter();
 
-            case GSM:
-                return new GetSpaceMetaDataConverter();
-            case GST:
-                return new GetSpaceTokensConverter();
-            case RESSP:
-                return new ReserveSpaceConverter();
-            case RELSP:
-                return new ReleaseSpaceConverter();
+		case PNG:
+			return new PingConverter();
 
-            case PD:
-                return new PutDoneConverter();
-            case RF:
-                return new ManageFileTransferRequestConverter();
-            case EFL:
-                return new ExtendFileLifeTimeConverter();
-            case AF:
-                return new AbortFilesConverter();
-            case AR:
-                return new AbortRequestConverter();
+		case GSM:
+			return new GetSpaceMetaDataConverter();
+		case GST:
+			return new GetSpaceTokensConverter();
+		case RESSP:
+			return new ReserveSpaceConverter();
+		case RELSP:
+			return new ReleaseSpaceConverter();
 
-            case PTP:
-                return new PrepareToPutRequestConverter();
-            case SPTP:
-                return new ManageFileTransferRequestConverter();
-            case PTG:
-                return new PrepareToGetRequestConverter();
-            case SPTG:
-                return new ManageFileTransferRequestConverter();                
-            default:
-                    log.error("No Converter available for OperationType " + type);
-                    throw new StoRMXmlRpcException("No Converter available for OperationType " + type);
-        }
-    }
+		case PD:
+			return new PutDoneConverter();
+		case RF:
+			return new ManageFileTransferRequestConverter();
+		case EFL:
+			return new ExtendFileLifeTimeConverter();
+		case AF:
+			return new AbortFilesConverter();
+		case AR:
+			return new AbortRequestConverter();
+
+		case PTP:
+			return new PrepareToPutRequestConverter();
+		case SPTP:
+			return new ManageFileTransferRequestConverter();
+		case PTG:
+			return new PrepareToGetRequestConverter();
+		case SPTG:
+			return new ManageFileTransferRequestConverter();
+		default:
+			log.error("No Converter available for OperationType " + type);
+			throw new StoRMXmlRpcException(
+				"No Converter available for OperationType " + type);
+		}
+	}
 
 }

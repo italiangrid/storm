@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.catalogs;
@@ -25,30 +25,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a ReducedPrepareToGetChunkData, that is part of a multifile PrepareToGet srm request.
- * It is closely related to PtGChunkData but it is called Reduced because it only contains the fromSURL, the
- * current TReturnStatus, and the primary key of the request.
+ * This class represents a ReducedPrepareToGetChunkData, that is part of a
+ * multifile PrepareToGet srm request. It is closely related to PtGChunkData but
+ * it is called Reduced because it only contains the fromSURL, the current
+ * TReturnStatus, and the primary key of the request.
  * 
- * This class is intended to be used by srmReleaseFiles, where only a limited amunt of information is needed
- * instead of full blown PtGChunkData.
+ * This class is intended to be used by srmReleaseFiles, where only a limited
+ * amunt of information is needed instead of full blown PtGChunkData.
  * 
  * @author EGRID - ICTP Trieste
  * @date November, 2006
  * @version 1.0
  */
 public class ReducedPtGChunkData implements ReducedChunkData {
-    @SuppressWarnings("unused")
-    private static final Logger log = LoggerFactory.getLogger(ReducedPtGChunkData.class);
 
-    private long primaryKey = -1; //long representing the primary key for the persistence layer!
-    private TSURL fromSURL; //SURL that the srm command wants to get
-    private TReturnStatus status; //return status for this chunk of request
+	@SuppressWarnings("unused")
+	private static final Logger log = LoggerFactory
+		.getLogger(ReducedPtGChunkData.class);
+
+	private long primaryKey = -1; // long representing the primary key for the
+																// persistence layer!
+	private TSURL fromSURL; // SURL that the srm command wants to get
+	private TReturnStatus status; // return status for this chunk of request
 
 	public ReducedPtGChunkData(TSURL fromSURL, TReturnStatus status)
-			throws InvalidReducedPtGChunkDataAttributesException {
+		throws InvalidReducedPtGChunkDataAttributesException {
 
-		if(status == null || fromSURL == null)
-		{
+		if (status == null || fromSURL == null) {
 			throw new InvalidReducedPtGChunkDataAttributesException(fromSURL, status);
 		}
 		this.fromSURL = fromSURL;
@@ -70,14 +73,13 @@ public class ReducedPtGChunkData implements ReducedChunkData {
 		int hash = 17;
 		hash = 37 * hash + new Long(primaryKey).hashCode();
 		hash = 37 * hash + fromSURL.hashCode();
-        hash = 37 * hash + status.hashCode();
-        return hash;
-    }
+		hash = 37 * hash + status.hashCode();
+		return hash;
+	}
 
 	public boolean isPinned() {
 
-		if(status.getStatusCode() == TStatusCode.SRM_FILE_PINNED)
-		{
+		if (status.getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
 			return true;
 		}
 		return false;
@@ -107,7 +109,7 @@ public class ReducedPtGChunkData implements ReducedChunkData {
 		return status;
 	}
 
-    @Override
+	@Override
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();
@@ -124,15 +126,13 @@ public class ReducedPtGChunkData implements ReducedChunkData {
 		return sb.toString();
 	}
 
-    @Override
-    public boolean equals(Object o) {
+	@Override
+	public boolean equals(Object o) {
 
-		if(o == this)
-		{
+		if (o == this) {
 			return true;
 		}
-		if(!(o instanceof ReducedPtGChunkData))
-		{
+		if (!(o instanceof ReducedPtGChunkData)) {
 			return false;
 		}
 		ReducedPtGChunkData cd = (ReducedPtGChunkData) o;

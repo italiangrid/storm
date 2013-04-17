@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.catalogs;
@@ -26,91 +26,98 @@ import it.grid.storm.namespace.model.Protocol;
 /**
  * Class that represents a row in the Persistence Layer: this is all raw data
  * referring to the PtGChunkData proper, that is, String and primitive types.
- *
+ * 
  * Each field is initialized with default values as per SRM 2.2 specification:
- *      protocolList     GSIFTP
- *      dirOption        false
- *      status           SRM_REQUEST_QUEUED
- *
+ * protocolList GSIFTP dirOption false status SRM_REQUEST_QUEUED
+ * 
  * All other fields are 0 if int, or a white space if String.
- *
- * @author  EGRID ICTP
+ * 
+ * @author EGRID ICTP
  * @version 3.0
- * @date    June 2005
+ * @date June 2005
  */
 public class PtGChunkDataTO {
-	
+
 	private static final String FQAN_SEPARATOR = "#";
-    /* Database table request_Get fields BEGIN*/
-    private long primaryKey = -1; //ID primary key of record in DB
-    private boolean dirOption; //initialised in constructor
-    private String fromSURL = " ";
-//  TODO MICHELE USER_SURL added new fields
-    private String normalizedStFN = null;
-    private Integer surlUniqueID = null;
-    /* Database table request_Get fields END*/
-    
-    private String requestToken = " ";
-    private int lifetime = 0;
-    private boolean allLevelRecursive; //initialised in constructor
-    private int numLevel; //initialised in constructor
-    private List<String> protocolList = null; //initialised in constructor
-    private long filesize = 0;
-    private int status; //initialised in constructor
-    private String errString = " ";
-    private String turl = " ";
-    private Timestamp timeStamp;
-    private String clientDN = null;
-    private String vomsAttributes = null;
+	/* Database table request_Get fields BEGIN */
+	private long primaryKey = -1; // ID primary key of record in DB
+	private boolean dirOption; // initialised in constructor
+	private String fromSURL = " ";
+	// TODO MICHELE USER_SURL added new fields
+	private String normalizedStFN = null;
+	private Integer surlUniqueID = null;
+	/* Database table request_Get fields END */
 
-    public PtGChunkDataTO() {
-        TURLPrefix protocolPreferences = new TURLPrefix();
-        protocolPreferences.addProtocol(Protocol.GSIFTP);
-        this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
-        this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
-        //TODO MICHELE why? this field is from the DB like the fromSURL...
-        this.dirOption = false;
-        //
-        this.allLevelRecursive = false;
-        this.numLevel = 0;
-    }
+	private String requestToken = " ";
+	private int lifetime = 0;
+	private boolean allLevelRecursive; // initialised in constructor
+	private int numLevel; // initialised in constructor
+	private List<String> protocolList = null; // initialised in constructor
+	private long filesize = 0;
+	private int status; // initialised in constructor
+	private String errString = " ";
+	private String turl = " ";
+	private Timestamp timeStamp;
+	private String clientDN = null;
+	private String vomsAttributes = null;
 
-    public long primaryKey() {
-        return primaryKey;
-    }
+	public PtGChunkDataTO() {
 
-    public void setPrimaryKey(long n) {
-        primaryKey = n;
-    }
+		TURLPrefix protocolPreferences = new TURLPrefix();
+		protocolPreferences.addProtocol(Protocol.GSIFTP);
+		this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
+		this.status = StatusCodeConverter.getInstance().toDB(
+			TStatusCode.SRM_REQUEST_QUEUED);
+		// TODO MICHELE why? this field is from the DB like the fromSURL...
+		this.dirOption = false;
+		//
+		this.allLevelRecursive = false;
+		this.numLevel = 0;
+	}
 
-    public String requestToken() {
-        return requestToken;
-    }
+	public long primaryKey() {
 
-    public void setRequestToken(String s) {
-        requestToken = s;
-    }
+		return primaryKey;
+	}
 
-    public Timestamp timeStamp()
-    {
-        return timeStamp;
-    }
-    
-    public void setTimeStamp(Timestamp timeStamp)
-    {
-        this.timeStamp = timeStamp;
-    }
-    
-    public String fromSURL() {
-        return fromSURL;
-    }
+	public void setPrimaryKey(long n) {
 
-    public void setFromSURL(String s) {
-        fromSURL=s;
-    }
+		primaryKey = n;
+	}
 
-    /**
-	 * @param normalizedStFN the normalizedStFN to set
+	public String requestToken() {
+
+		return requestToken;
+	}
+
+	public void setRequestToken(String s) {
+
+		requestToken = s;
+	}
+
+	public Timestamp timeStamp() {
+
+		return timeStamp;
+	}
+
+	public void setTimeStamp(Timestamp timeStamp) {
+
+		this.timeStamp = timeStamp;
+	}
+
+	public String fromSURL() {
+
+		return fromSURL;
+	}
+
+	public void setFromSURL(String s) {
+
+		fromSURL = s;
+	}
+
+	/**
+	 * @param normalizedStFN
+	 *          the normalizedStFN to set
 	 */
 	public void setNormalizedStFN(String normalizedStFN) {
 
@@ -124,12 +131,13 @@ public class PtGChunkDataTO {
 
 		return normalizedStFN;
 	}
-	
+
 	/**
-	 * @param sURLUniqueID the sURLUniqueID to set
+	 * @param sURLUniqueID
+	 *          the sURLUniqueID to set
 	 */
 	public void setSurlUniqueID(Integer sURLUniqueID) {
-		
+
 		this.surlUniqueID = sURLUniqueID;
 	}
 
@@ -142,112 +150,133 @@ public class PtGChunkDataTO {
 	}
 
 	public int lifeTime() {
-        return lifetime;
-    }
 
-    public void setLifeTime(int n) {
-        lifetime=n;
-    }
+		return lifetime;
+	}
 
-    public boolean dirOption() {
-        return dirOption;
-    }
+	public void setLifeTime(int n) {
 
-    public void setDirOption(boolean b) {
-        dirOption = b;
-    }
+		lifetime = n;
+	}
 
-    public boolean allLevelRecursive() {
-        return allLevelRecursive;
-    }
+	public boolean dirOption() {
 
-    public void setAllLevelRecursive(boolean b) {
-        allLevelRecursive = b;
-    }
+		return dirOption;
+	}
 
-    public int numLevel() {
-        return numLevel;
-    }
+	public void setDirOption(boolean b) {
 
-    public void setNumLevel(int n) {
-        numLevel = n;
-    }
+		dirOption = b;
+	}
 
-    public List<String> protocolList() {
-        return protocolList;
-    }
+	public boolean allLevelRecursive() {
 
-    public void setProtocolList(List<String> l) {
-        if ((l!=null) && (!l.isEmpty())) protocolList = l;
-    }
+		return allLevelRecursive;
+	}
 
-    public long fileSize() {
-        return filesize;
-    }
+	public void setAllLevelRecursive(boolean b) {
 
-    public void setFileSize(long n) {
-        filesize = n;
-    }
+		allLevelRecursive = b;
+	}
 
-    public int status() {
-        return status;
-    }
+	public int numLevel() {
 
-    public void setStatus(int n) {
-        status = n;
-    }
+		return numLevel;
+	}
 
-    public String errString() {
-        return errString;
-    }
+	public void setNumLevel(int n) {
 
-    public void setErrString(String s) {
-        errString = s;
-    }
+		numLevel = n;
+	}
 
-    public String turl() {
-        return turl;
-    }
+	public List<String> protocolList() {
 
-    public void setTurl(String s) {
-        turl = s;
-    }
+		return protocolList;
+	}
 
-    public String clientDN() {
-        return clientDN;
-    }
+	public void setProtocolList(List<String> l) {
 
-    public void setClientDN(String s) {
-        clientDN = s;
-    }
+		if ((l != null) && (!l.isEmpty()))
+			protocolList = l;
+	}
 
-    public String vomsAttributes() {
-        return vomsAttributes;
-    }
+	public long fileSize() {
 
-    public void setVomsAttributes(String s) {
-        vomsAttributes = s;
-    }
-    
-    public void setVomsAttributes(String[] fqaNsAsString)
-    {
-        vomsAttributes = "";
-        for(int i = 0 ; i < fqaNsAsString.length ; i++)
-        {
-            vomsAttributes += fqaNsAsString[i];
-            if(i < fqaNsAsString.length - 1)
-            {
-                vomsAttributes += FQAN_SEPARATOR;                
-            }
-        }
-        
-    }
-    
-    public String[] vomsAttributesArray()
-    {
-        return vomsAttributes.split(FQAN_SEPARATOR);
-    }
-    
+		return filesize;
+	}
+
+	public void setFileSize(long n) {
+
+		filesize = n;
+	}
+
+	public int status() {
+
+		return status;
+	}
+
+	public void setStatus(int n) {
+
+		status = n;
+	}
+
+	public String errString() {
+
+		return errString;
+	}
+
+	public void setErrString(String s) {
+
+		errString = s;
+	}
+
+	public String turl() {
+
+		return turl;
+	}
+
+	public void setTurl(String s) {
+
+		turl = s;
+	}
+
+	public String clientDN() {
+
+		return clientDN;
+	}
+
+	public void setClientDN(String s) {
+
+		clientDN = s;
+	}
+
+	public String vomsAttributes() {
+
+		return vomsAttributes;
+	}
+
+	public void setVomsAttributes(String s) {
+
+		vomsAttributes = s;
+	}
+
+	public void setVomsAttributes(String[] fqaNsAsString) {
+
+		vomsAttributes = "";
+		for (int i = 0; i < fqaNsAsString.length; i++) {
+			vomsAttributes += fqaNsAsString[i];
+			if (i < fqaNsAsString.length - 1) {
+				vomsAttributes += FQAN_SEPARATOR;
+			}
+		}
+
+	}
+
+	public String[] vomsAttributesArray() {
+
+		return vomsAttributes.split(FQAN_SEPARATOR);
+	}
+
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();
@@ -280,5 +309,5 @@ public class PtGChunkDataTO {
 		sb.append(turl);
 		return sb.toString();
 	}
-   
+
 }

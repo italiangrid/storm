@@ -1,140 +1,179 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
- * This class represents a unit of measure for FileSize; it contains a conversion factor
- * for changing among units.
- *
- * @author  Ezio Corso
- * @author  EGRID - ICTP Trieste
- * @date    March 23rd, 2005
+ * This class represents a unit of measure for FileSize; it contains a
+ * conversion factor for changing among units.
+ * 
+ * @author Ezio Corso
+ * @author EGRID - ICTP Trieste
+ * @date March 23rd, 2005
  * @version 1.0
  */
 package it.grid.storm.common.types;
 
 import java.io.Serializable;
+
 public abstract class SizeUnit implements Serializable {
 
-    public static SizeUnit createSizeUnit(String unit) {
-      String input = unit.toLowerCase();
-      if (input.toLowerCase().equals("byte")) return SizeUnit.BYTES;
-      if (input.toLowerCase().equals("kb")) return SizeUnit.KILOBYTES;
-      if (input.toLowerCase().equals("mb")) return SizeUnit.MEGABYTES;
-      if (input.toLowerCase().equals("gb")) return SizeUnit.GIGABYTES;
-      if (input.toLowerCase().equals("tb")) return SizeUnit.TERABYTES;
-      return SizeUnit.EMPTY;
-    }
+	public static SizeUnit createSizeUnit(String unit) {
 
-    public static final SizeUnit BYTES = new SizeUnit() {
-        public double conversionFactor() {
-            return 1.0;
-        }
+		String input = unit.toLowerCase();
+		if (input.toLowerCase().equals("byte"))
+			return SizeUnit.BYTES;
+		if (input.toLowerCase().equals("kb"))
+			return SizeUnit.KILOBYTES;
+		if (input.toLowerCase().equals("mb"))
+			return SizeUnit.MEGABYTES;
+		if (input.toLowerCase().equals("gb"))
+			return SizeUnit.GIGABYTES;
+		if (input.toLowerCase().equals("tb"))
+			return SizeUnit.TERABYTES;
+		return SizeUnit.EMPTY;
+	}
 
-        public String toString() {
-            return "Bytes";
-        }
+	public static final SizeUnit BYTES = new SizeUnit() {
 
-        public int hashCode() {
-            return 1;
-        }
-    };
+		public double conversionFactor() {
 
-    public static final SizeUnit KILOBYTES = new SizeUnit() {
-        public double conversionFactor() {
-            return 1000.0;
-        }
+			return 1.0;
+		}
 
-        public String toString() {
-            return "KB";
-        }
+		public String toString() {
 
-        public int hashCode() {
-            return 2;
-        }
-    };
+			return "Bytes";
+		}
 
-    public static final SizeUnit MEGABYTES = new SizeUnit() {
-        public double conversionFactor() {
-            return 1000000.0;
-        }
+		public int hashCode() {
 
-        public String toString() {
-            return "MB";
-        }
+			return 1;
+		}
+	};
 
-        public int hashCode() {
-            return 3;
-        }
-    };
+	public static final SizeUnit KILOBYTES = new SizeUnit() {
 
-    public static final SizeUnit GIGABYTES = new SizeUnit() {
-        public double conversionFactor() {
-            return SizeUnit.MEGABYTES.conversionFactor()*1000;
-        }
+		public double conversionFactor() {
 
-        public String toString() {
-            return "GB";
-        }
+			return 1000.0;
+		}
 
-        public int hashCode() {
-            return 4;
-        }
-    };
+		public String toString() {
 
-    public static final SizeUnit TERABYTES = new SizeUnit() {
-    public double conversionFactor() {
-        return SizeUnit.GIGABYTES.conversionFactor()*1000;
-    }
+			return "KB";
+		}
 
-    public String toString() {
-        return "TB";
-    }
+		public int hashCode() {
 
-    public int hashCode() {
-        return 5;
-    }
-};
+			return 2;
+		}
+	};
 
+	public static final SizeUnit MEGABYTES = new SizeUnit() {
 
-    public static final SizeUnit EMPTY = new SizeUnit() {
-        public double conversionFactor() {
-            return 0.0;
-        }
+		public double conversionFactor() {
 
-        public String toString() {
-            return "EMPTY";
-        }
+			return 1000000.0;
+		}
 
-        public int hashCode() {
-            return 0;
-        }
-    };
+		public String toString() {
 
-    private SizeUnit() {}
+			return "MB";
+		}
 
-    /**
-     * This method returns a converson factor: the amout of bytes present in
-     * 1 unit of this.
-     */
-    public abstract double conversionFactor();
-/*
-    public static void main(String[] args) {
-        System.out.println("bytes: "+SizeUnit.BYTES+"; hash="+SizeUnit.BYTES.hashCode()+"; conversion-factor="+SizeUnit.BYTES.conversionFactor());
-        System.out.println("kilobytes: "+SizeUnit.KILOBYTES+"; hash="+SizeUnit.KILOBYTES.hashCode()+"; conversion-factor="+SizeUnit.KILOBYTES.conversionFactor());
-        System.out.println("megabytes: "+SizeUnit.MEGABYTES+"; hash="+SizeUnit.MEGABYTES.hashCode()+"; conversion-factor="+SizeUnit.MEGABYTES.conversionFactor());
-    }*/
+		public int hashCode() {
+
+			return 3;
+		}
+	};
+
+	public static final SizeUnit GIGABYTES = new SizeUnit() {
+
+		public double conversionFactor() {
+
+			return SizeUnit.MEGABYTES.conversionFactor() * 1000;
+		}
+
+		public String toString() {
+
+			return "GB";
+		}
+
+		public int hashCode() {
+
+			return 4;
+		}
+	};
+
+	public static final SizeUnit TERABYTES = new SizeUnit() {
+
+		public double conversionFactor() {
+
+			return SizeUnit.GIGABYTES.conversionFactor() * 1000;
+		}
+
+		public String toString() {
+
+			return "TB";
+		}
+
+		public int hashCode() {
+
+			return 5;
+		}
+	};
+
+	public static final SizeUnit EMPTY = new SizeUnit() {
+
+		public double conversionFactor() {
+
+			return 0.0;
+		}
+
+		public String toString() {
+
+			return "EMPTY";
+		}
+
+		public int hashCode() {
+
+			return 0;
+		}
+	};
+
+	private SizeUnit() {
+
+	}
+
+	/**
+	 * This method returns a converson factor: the amout of bytes present in 1
+	 * unit of this.
+	 */
+	public abstract double conversionFactor();
+	/*
+	 * public static void main(String[] args) {
+	 * System.out.println("bytes: "+SizeUnit
+	 * .BYTES+"; hash="+SizeUnit.BYTES.hashCode
+	 * ()+"; conversion-factor="+SizeUnit.BYTES.conversionFactor());
+	 * System.out.println
+	 * ("kilobytes: "+SizeUnit.KILOBYTES+"; hash="+SizeUnit.KILOBYTES
+	 * .hashCode()+"; conversion-factor="+SizeUnit.KILOBYTES.conversionFactor());
+	 * System
+	 * .out.println("megabytes: "+SizeUnit.MEGABYTES+"; hash="+SizeUnit.MEGABYTES
+	 * .hashCode()+"; conversion-factor="+SizeUnit.MEGABYTES.conversionFactor());
+	 * }
+	 */
 }

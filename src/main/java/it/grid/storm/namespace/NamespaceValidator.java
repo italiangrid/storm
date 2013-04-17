@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.namespace;
@@ -28,119 +28,142 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: INFN-CNAF and ICTP/eGrid project</p>
- *
+ * <p>
+ * Title:
+ * </p>
+ * 
+ * <p>
+ * Description:
+ * </p>
+ * 
+ * <p>
+ * Copyright: Copyright (c) 2006
+ * </p>
+ * 
+ * <p>
+ * Company: INFN-CNAF and ICTP/eGrid project
+ * </p>
+ * 
  * @author Riccardo Zappi
  * @version 1.0
  */
 public class NamespaceValidator {
 
-    private static String schemaURL;
-    private static String namespaceFile;
-    private Logger log = NamespaceDirector.getLogger();
+	private static String schemaURL;
+	private static String namespaceFile;
+	private Logger log = NamespaceDirector.getLogger();
 
-    public NamespaceValidator() {
-        //String configPath = Configuration.getInstance().getNamespaceConfigPath() + File.separator;
-        String configPath = System.getProperty("user.dir") + File.separator + "etc" + File.separator;
-        schemaURL = configPath + "namespace.xsd";
-        namespaceFile = configPath + Configuration.getInstance().getNamespaceConfigFilename();
-        /**
-             log.debug("CONFIG PATH        : "+configPath);
-             log.debug("SCHEMA URL         : "+schemaURL);
-             log.debug("NAMESPACE FILENAME : "+namespaceFile);
-         **/
-    }
+	public NamespaceValidator() {
 
-    public boolean validateSchema(String SchemaUrl, String XmlDocumentUrl) {
-        boolean valid = false;
-        SAXParser parser = new SAXParser();
-        try {
-            parser.setFeature("http://xml.org/sax/features/validation", true);
-            parser.setFeature("http://apache.org/xml/features/validation/schema", true);
-            parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
-            parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", SchemaUrl);
-            Validator handler = new Validator();
-            parser.setErrorHandler(handler);
-            parser.parse(XmlDocumentUrl);
-            if (handler.validationError == true) {
-                manageErrorWithinNamespace(handler);
-            }
-            else {
-                log.info("Namespace Document is valid with Schema");
-                valid = true;
-            }
-        }
-        catch (java.io.IOException ioe) {
-            log.error("IOException" + ioe.getMessage());
-        }
-        catch (SAXException e) {
-            log.error("SAXException" + e.getMessage());
-        }
-        return valid;
-    }
+		// String configPath = Configuration.getInstance().getNamespaceConfigPath()
+		// + File.separator;
+		String configPath = System.getProperty("user.dir") + File.separator + "etc"
+			+ File.separator;
+		schemaURL = configPath + "namespace.xsd";
+		namespaceFile = configPath
+			+ Configuration.getInstance().getNamespaceConfigFilename();
+		/**
+		 * log.debug("CONFIG PATH        : "+configPath);
+		 * log.debug("SCHEMA URL         : "+schemaURL);
+		 * log.debug("NAMESPACE FILENAME : "+namespaceFile);
+		 **/
+	}
 
-    /**
-     * manageErrorWithinNamespace
-     *
-     * @param handler Validator
-     */
-    private void manageErrorWithinNamespace(it.grid.storm.namespace.NamespaceValidator.Validator handler) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("##############################################" + "\n");
-        System.out.println();
-        sb.append("###   WARNING :  namespace.xml   INVALID   ###" + "\n");
-        sb.append("##############################################" + "\n");
-        sb.append("# Please check it. " + "\n");
-        sb.append("# The error is : " + handler.saxParseException.getMessage() + "\n");
-        sb.append("#   at line : " + handler.saxParseException.getLineNumber() +
-                ", column " + handler.saxParseException.getColumnNumber() + "\n");
-        sb.append("#   in entity : " + handler.saxParseException.getSystemId() + "\n");
-        sb.append("##############################################" + "\n");
-        System.out.println(sb.toString());
-        log.error(sb.toString());
+	public boolean validateSchema(String SchemaUrl, String XmlDocumentUrl) {
 
-    }
+		boolean valid = false;
+		SAXParser parser = new SAXParser();
+		try {
+			parser.setFeature("http://xml.org/sax/features/validation", true);
+			parser.setFeature("http://apache.org/xml/features/validation/schema",
+				true);
+			parser.setFeature(
+				"http://apache.org/xml/features/validation/schema-full-checking", true);
+			parser
+				.setProperty(
+					"http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation",
+					SchemaUrl);
+			Validator handler = new Validator();
+			parser.setErrorHandler(handler);
+			parser.parse(XmlDocumentUrl);
+			if (handler.validationError == true) {
+				manageErrorWithinNamespace(handler);
+			} else {
+				log.info("Namespace Document is valid with Schema");
+				valid = true;
+			}
+		} catch (java.io.IOException ioe) {
+			log.error("IOException" + ioe.getMessage());
+		} catch (SAXException e) {
+			log.error("SAXException" + e.getMessage());
+		}
+		return valid;
+	}
 
-    private class Validator
-    extends DefaultHandler {
-        public boolean validationError = false;
-        public SAXParseException saxParseException = null;
+	/**
+	 * manageErrorWithinNamespace
+	 * 
+	 * @param handler
+	 *          Validator
+	 */
+	private void manageErrorWithinNamespace(
+		it.grid.storm.namespace.NamespaceValidator.Validator handler) {
 
-        @Override
-        public void error(SAXParseException exception) throws SAXException {
+		StringBuffer sb = new StringBuffer();
+		sb.append("##############################################" + "\n");
+		System.out.println();
+		sb.append("###   WARNING :  namespace.xml   INVALID   ###" + "\n");
+		sb.append("##############################################" + "\n");
+		sb.append("# Please check it. " + "\n");
+		sb.append("# The error is : " + handler.saxParseException.getMessage()
+			+ "\n");
+		sb.append("#   at line : " + handler.saxParseException.getLineNumber()
+			+ ", column " + handler.saxParseException.getColumnNumber() + "\n");
+		sb.append("#   in entity : " + handler.saxParseException.getSystemId()
+			+ "\n");
+		sb.append("##############################################" + "\n");
+		System.out.println(sb.toString());
+		log.error(sb.toString());
 
-            log.error("ERROR : " + exception.getMessage());
-            log.error(" at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber());
-            log.error(" in entity " + exception.getSystemId());
+	}
 
-            validationError = true;
-            saxParseException = exception;
-        }
+	private class Validator extends DefaultHandler {
 
-        @Override
-        public void fatalError(SAXParseException exception) throws SAXException {
+		public boolean validationError = false;
+		public SAXParseException saxParseException = null;
 
-            log.error("FATAL ERROR: " + exception.getMessage());
-            log.error(" at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber());
-            log.error(" in entity " + exception.getSystemId());
+		@Override
+		public void error(SAXParseException exception) throws SAXException {
 
-            validationError = true;
-            saxParseException = exception;
-        }
+			log.error("ERROR : " + exception.getMessage());
+			log.error(" at line " + exception.getLineNumber() + ", column "
+				+ exception.getColumnNumber());
+			log.error(" in entity " + exception.getSystemId());
 
-        @Override
-        public void warning(SAXParseException exception) throws SAXException {
+			validationError = true;
+			saxParseException = exception;
+		}
 
-            log.error("Warning: " + exception.getMessage());
-            log.error(" at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber());
-            log.error(" in entity " + exception.getSystemId());
+		@Override
+		public void fatalError(SAXParseException exception) throws SAXException {
 
-        }
-    }
+			log.error("FATAL ERROR: " + exception.getMessage());
+			log.error(" at line " + exception.getLineNumber() + ", column "
+				+ exception.getColumnNumber());
+			log.error(" in entity " + exception.getSystemId());
+
+			validationError = true;
+			saxParseException = exception;
+		}
+
+		@Override
+		public void warning(SAXParseException exception) throws SAXException {
+
+			log.error("Warning: " + exception.getMessage());
+			log.error(" at line " + exception.getLineNumber() + ", column "
+				+ exception.getColumnNumber());
+			log.error(" in entity " + exception.getSystemId());
+
+		}
+	}
 }

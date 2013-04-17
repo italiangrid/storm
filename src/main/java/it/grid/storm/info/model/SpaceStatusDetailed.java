@@ -9,8 +9,10 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	private long nrMaxFilesPerDir;
 	private long nrMedFilesPerDir;
 	private long oldestAccessedFile;
-	
-	public SpaceStatusDetailed(String saAlias, long spaceTotal) throws IllegalArgumentException{
+
+	public SpaceStatusDetailed(String saAlias, long spaceTotal)
+		throws IllegalArgumentException {
+
 		super(saAlias, spaceTotal);
 	}
 
@@ -18,6 +20,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the nrDir
 	 */
 	public long getNrDir() {
+
 		return nrDir;
 	}
 
@@ -25,6 +28,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the nrFiles
 	 */
 	public long getNrFiles() {
+
 		return nrFiles;
 	}
 
@@ -32,6 +36,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the levelMax
 	 */
 	public int getLevelMax() {
+
 		return levelMax;
 	}
 
@@ -39,6 +44,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the levelMedian
 	 */
 	public int getLevelMedian() {
+
 		return levelMedian;
 	}
 
@@ -46,6 +52,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the nrMaxFilesPerDir
 	 */
 	public long getNrMaxFilesPerDir() {
+
 		return nrMaxFilesPerDir;
 	}
 
@@ -53,6 +60,7 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the nrMedFilesPerDir
 	 */
 	public long getNrMedFilesPerDir() {
+
 		return nrMedFilesPerDir;
 	}
 
@@ -60,57 +68,71 @@ public class SpaceStatusDetailed extends SpaceStatusSummary {
 	 * @return the oldestAccessedFile
 	 */
 	public long getOldestAccessedFile() {
+
 		return oldestAccessedFile;
 	}
 
 	/**
-	 * @param nrDir the nrDir to set
+	 * @param nrDir
+	 *          the nrDir to set
 	 */
 	public void setNrDir(long nrDir) {
+
 		this.nrDir = nrDir;
 	}
 
 	/**
-	 * @param nrFiles the nrFiles to set
+	 * @param nrFiles
+	 *          the nrFiles to set
 	 */
 	public void setNrFiles(long nrFiles) {
+
 		this.nrFiles = nrFiles;
 	}
 
 	/**
-	 * @param levelMax the levelMax to set
+	 * @param levelMax
+	 *          the levelMax to set
 	 */
 	public void setLevelMax(int levelMax) {
+
 		this.levelMax = levelMax;
 	}
 
 	/**
-	 * @param levelMedian the levelMedian to set
+	 * @param levelMedian
+	 *          the levelMedian to set
 	 */
 	public void setLevelMedian(int levelMedian) {
+
 		this.levelMedian = levelMedian;
 	}
 
 	/**
-	 * @param nrMaxFilesPerDir the nrMaxFilesPerDir to set
+	 * @param nrMaxFilesPerDir
+	 *          the nrMaxFilesPerDir to set
 	 */
 	public void setNrMaxFilesPerDir(long nrMaxFilesPerDir) {
+
 		this.nrMaxFilesPerDir = nrMaxFilesPerDir;
 	}
 
 	/**
-	 * @param nrMedFilesPerDir the nrMedFilesPerDir to set
+	 * @param nrMedFilesPerDir
+	 *          the nrMedFilesPerDir to set
 	 */
 	public void setNrMedFilesPerDir(long nrMedFilesPerDir) {
+
 		this.nrMedFilesPerDir = nrMedFilesPerDir;
 	}
 
 	/**
-	 * @param oldestAccessedFile the oldestAccessedFile to set
+	 * @param oldestAccessedFile
+	 *          the oldestAccessedFile to set
 	 */
 	public void setOldestAccessedFile(long oldestAccessedFile) {
+
 		this.oldestAccessedFile = oldestAccessedFile;
 	}
 
-	
 }

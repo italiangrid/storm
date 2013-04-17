@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.persistence.util.db;
@@ -22,122 +22,144 @@ import java.util.Map;
 
 public class DataBaseStrategy {
 
-    private final String dbmsVendor;
-    private final String driverName;
-    private final String jdbcPrefix;
-    private String dbName;
-    private String dbPrefix;
-    private String dbUrl;
-    private String dbUsr;
-    private String dbPwd;
-    private SQLFormat formatter;
-    // public static final DataBaseStrategy HSQL = new DataBaseStrategy("hsql", "org.hsqldb.jdbcDriver",
-    // "jdbc:hsqldb://", null);
-    public static final DataBaseStrategy MYSQL = new DataBaseStrategy("mysql",
-                                                                      "com.mysql.jdbc.Driver",
-                                                                      "jdbc:mysql://",
-                                                                      new MySqlFormat());
-    private static final Map<String, DataBaseStrategy> DATABASES = new HashMap<String, DataBaseStrategy>();
+	private final String dbmsVendor;
+	private final String driverName;
+	private final String jdbcPrefix;
+	private String dbName;
+	private String dbPrefix;
+	private String dbUrl;
+	private String dbUsr;
+	private String dbPwd;
+	private SQLFormat formatter;
+	// public static final DataBaseStrategy HSQL = new DataBaseStrategy("hsql",
+	// "org.hsqldb.jdbcDriver",
+	// "jdbc:hsqldb://", null);
+	public static final DataBaseStrategy MYSQL = new DataBaseStrategy("mysql",
+		"com.mysql.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
+	private static final Map<String, DataBaseStrategy> DATABASES = new HashMap<String, DataBaseStrategy>();
 
-    static {
-        DataBaseStrategy.DATABASES.put(DataBaseStrategy.MYSQL.toString(), DataBaseStrategy.MYSQL);
-        // DATABASES.put(HSQL.toString(), HSQL);
-    }
+	static {
+		DataBaseStrategy.DATABASES.put(DataBaseStrategy.MYSQL.toString(),
+			DataBaseStrategy.MYSQL);
+		// DATABASES.put(HSQL.toString(), HSQL);
+	}
 
-    /**
-     * Prevent instantiation and subclassing with a private constructor.
-     */
-    private DataBaseStrategy(String dbmsVendor, String driverName, String prefix, SQLFormat formatter) {
-        this.dbmsVendor = dbmsVendor;
-        this.driverName = driverName;
-        jdbcPrefix = prefix;
-        this.formatter = formatter;
-    }
+	/**
+	 * Prevent instantiation and subclassing with a private constructor.
+	 */
+	private DataBaseStrategy(String dbmsVendor, String driverName, String prefix,
+		SQLFormat formatter) {
 
-    // ********************** Common Methods ********************** //
+		this.dbmsVendor = dbmsVendor;
+		this.driverName = driverName;
+		jdbcPrefix = prefix;
+		this.formatter = formatter;
+	}
 
-    public String getDbmsVendor() {
-        return dbmsVendor;
-    }
+	// ********************** Common Methods ********************** //
 
-    public String getDriverName() {
-        return driverName;
-    }
+	public String getDbmsVendor() {
 
-    public String getJdbcPrefix() {
-        return jdbcPrefix;
-    }
+		return dbmsVendor;
+	}
 
-    public void setDbUsr(String usrDb) {
-        dbUsr = usrDb;
-    }
+	public String getDriverName() {
 
-    public String getDbUsr() {
-        return dbUsr;
-    }
+		return driverName;
+	}
 
-    public void setDbPwd(String pwd) {
-        dbPwd = pwd;
-    }
+	public String getJdbcPrefix() {
 
-    public String getDbPwd() {
-        return dbPwd;
-    }
+		return jdbcPrefix;
+	}
 
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
-    }
+	public void setDbUsr(String usrDb) {
 
-    public String getDbName() {
-        return dbName;
-    }
+		dbUsr = usrDb;
+	}
 
-    public void setDbPrefix(String dbName) {
-        dbPrefix = dbName;
-    }
+	public String getDbUsr() {
 
-    public String getDbPrefix() {
-        return dbPrefix;
-    }
+		return dbUsr;
+	}
 
-    public void setDbUrl(String url) {
-        dbUrl = url;
-    }
+	public void setDbPwd(String pwd) {
 
-    public String getDbUrl() {
-        return dbUrl;
-    }
+		dbPwd = pwd;
+	}
 
-    public String getConnectionString() {
-        String connStr;
-        connStr = jdbcPrefix + dbUrl + "/" + dbName;
-        return connStr;
-    }
+	public String getDbPwd() {
 
-    public void setFormatter(SQLFormat formatter) {
-        this.formatter = formatter;
-    }
+		return dbPwd;
+	}
 
-    public SQLFormat getFormatter() {
-        return formatter;
-    }
+	public void setDbName(String dbName) {
 
-    @Override
-    public String toString() {
-        return dbmsVendor;
-    }
+		this.dbName = dbName;
+	}
 
-    // ********************** Common CLASS Methods ********************** //
+	public String getDbName() {
 
-    public static DataBaseStrategy getInstance(String vendor) {
-        return DataBaseStrategy.DATABASES.get(vendor);
-    }
+		return dbName;
+	}
 
-    public static String getDriverName(String vendor) {
-        return (DataBaseStrategy.getInstance(vendor)).driverName;
-    }
+	public void setDbPrefix(String dbName) {
 
-    public static String getJdbcPrefix(String vendor) {
-        return (DataBaseStrategy.getInstance(vendor)).jdbcPrefix;
-    }
+		dbPrefix = dbName;
+	}
+
+	public String getDbPrefix() {
+
+		return dbPrefix;
+	}
+
+	public void setDbUrl(String url) {
+
+		dbUrl = url;
+	}
+
+	public String getDbUrl() {
+
+		return dbUrl;
+	}
+
+	public String getConnectionString() {
+
+		String connStr;
+		connStr = jdbcPrefix + dbUrl + "/" + dbName;
+		return connStr;
+	}
+
+	public void setFormatter(SQLFormat formatter) {
+
+		this.formatter = formatter;
+	}
+
+	public SQLFormat getFormatter() {
+
+		return formatter;
+	}
+
+	@Override
+	public String toString() {
+
+		return dbmsVendor;
+	}
+
+	// ********************** Common CLASS Methods ********************** //
+
+	public static DataBaseStrategy getInstance(String vendor) {
+
+		return DataBaseStrategy.DATABASES.get(vendor);
+	}
+
+	public static String getDriverName(String vendor) {
+
+		return (DataBaseStrategy.getInstance(vendor)).driverName;
+	}
+
+	public static String getJdbcPrefix(String vendor) {
+
+		return (DataBaseStrategy.getInstance(vendor)).jdbcPrefix;
+	}
 }

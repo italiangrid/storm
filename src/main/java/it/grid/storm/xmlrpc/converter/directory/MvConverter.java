@@ -1,18 +1,18 @@
 /*
- *
- *  Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package it.grid.storm.xmlrpc.converter.directory;
@@ -38,80 +38,79 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is part of the StoRM project.
- * Copyright: Copyright (c) 2008
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
- *
- * This class represents the Type Converter for SrmMv function .
- * This class have get an input data from xmlrpc call anc convert it into a
- * StoRM Type that can be used to invoke the MvExecutor.
- *
+ * 
+ * This class represents the Type Converter for SrmMv function . This class have
+ * get an input data from xmlrpc call anc convert it into a StoRM Type that can
+ * be used to invoke the MvExecutor.
+ * 
  * @author lucamag
  * @date May 28, 2008
- *
+ * 
  */
 
-public class MvConverter implements Converter
-{
-    /**
-     * Logger
-     */
-    private static final Logger log = LoggerFactory.getLogger(MvConverter.class);
+public class MvConverter implements Converter {
 
-    public MvConverter()
-    {
-    };
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LoggerFactory.getLogger(MvConverter.class);
 
-    /**
-     * This method return a MvInputData created from input Map
-     * structure of an xmlrpc SrmMv v2.2 call.
-     */
-    public InputData convertToInputData(Map inputParam)
-    {
-        log.debug("SrmMv: Converter :Call received :Creation of MvInputData = " + inputParam.size());
-        log.debug("SrmMv: Converter: Input Structure toString: " + ParameterDisplayHelper.display(inputParam));
+	public MvConverter() {
 
-        GridUserInterface guser = GridUserManager.decode(inputParam);
+	};
 
-        /* (2) fromSURL*/
-        TSURL fromSURL = null;
-        try {
-            fromSURL = TSURL.decode(inputParam, TSURL.PNAME_FROMSURL);
-        } catch (InvalidTSURLAttributesException e1) {
-            log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
-        }
+	/**
+	 * This method return a MvInputData created from input Map structure of an
+	 * xmlrpc SrmMv v2.2 call.
+	 */
+	public InputData convertToInputData(Map inputParam) {
 
-        /* (3) toSURL*/
-        TSURL toSURL = null;
-        try {
-            toSURL = TSURL.decode(inputParam, TSURL.PNAME_TOSURL);
-        } catch (InvalidTSURLAttributesException e1) {
-            log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
-        }
+		log.debug("SrmMv: Converter :Call received :Creation of MvInputData = "
+			+ inputParam.size());
+		log.debug("SrmMv: Converter: Input Structure toString: "
+			+ ParameterDisplayHelper.display(inputParam));
 
-        MvInputData inputData;
-        if(guser != null)
-        {
-            inputData = new IdentityMvInputData(guser, fromSURL, toSURL);            
-        }
-        else
-        {
-            inputData = new AnonymousMvInputData(fromSURL, toSURL);
-        }
-        return inputData;
+		GridUserInterface guser = GridUserManager.decode(inputParam);
 
-    }
+		/* (2) fromSURL */
+		TSURL fromSURL = null;
+		try {
+			fromSURL = TSURL.decode(inputParam, TSURL.PNAME_FROMSURL);
+		} catch (InvalidTSURLAttributesException e1) {
+			log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
+		}
 
-    public Map convertFromOutputData(OutputData data)
-    {
-        log.debug("SrmMv: Converter :Call received :Creation of XMLRPC Output Structure! ");
-        // Output structure to return to xmlrpc client
-        Map outputParam = new HashMap();
-        MvOutputData outputData = (MvOutputData) data;
-        TReturnStatus status = outputData.getStatus();
-        status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+		/* (3) toSURL */
+		TSURL toSURL = null;
+		try {
+			toSURL = TSURL.decode(inputParam, TSURL.PNAME_TOSURL);
+		} catch (InvalidTSURLAttributesException e1) {
+			log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
+		}
 
-        //Return Output Structure
-        return outputParam;
-    }
+		MvInputData inputData;
+		if (guser != null) {
+			inputData = new IdentityMvInputData(guser, fromSURL, toSURL);
+		} else {
+			inputData = new AnonymousMvInputData(fromSURL, toSURL);
+		}
+		return inputData;
+
+	}
+
+	public Map convertFromOutputData(OutputData data) {
+
+		log
+			.debug("SrmMv: Converter :Call received :Creation of XMLRPC Output Structure! ");
+		// Output structure to return to xmlrpc client
+		Map outputParam = new HashMap();
+		MvOutputData outputData = (MvOutputData) data;
+		TReturnStatus status = outputData.getStatus();
+		status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+
+		// Return Output Structure
+		return outputParam;
+	}
 }
