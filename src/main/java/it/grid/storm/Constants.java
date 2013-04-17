@@ -22,9 +22,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Properties;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,100 +32,29 @@ public class Constants {
 
 	private static final Logger log = LoggerFactory.getLogger(Constants.class);
 	
-	public static Entry BE_VERSION = new Entry("BE-Version", ">=1.5.3 (manual building)");
-    public static final Entry NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
-    public static final Entry BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
-    public static final Entry BE_OS_PLATFORM = new Entry("BE-OS-Platform", getPlatform());
-    public static final Entry BE_OS_KERNEL_RELEASE = new Entry("BE-OS-Kernel-Release", getKernelRelease());
-    private static String distribution = null;
-    private static String platform = null;
-    private static String kernelRelease = null;
-    private static final String notAvailable = "N/A";
+	public static final Entry BE_VERSION;
+  public static final Entry NAMESPACE_VERSION;
+  public static final Entry BE_OS_DISTRIBUTION;
+  public static final Entry BE_OS_PLATFORM;
+  public static final Entry BE_OS_KERNEL_RELEASE;
+  
+  private static final String notAvailable = "N/A";
     
 	static
 	{
-		ClassLoader loader = Constants.class.getClassLoader();
-		if(loader == null)
-		{
-			loader = ClassLoader.getSystemClassLoader();
-		}
-		String VERSIONResourcePath =
-									 "it" + File.separatorChar + "grid"
-										 + File.separatorChar + "storm"
-										 + File.separatorChar + "VERSION";
-		InputStream inStream = loader.getResourceAsStream(VERSIONResourcePath);
-		if(inStream == null)
-		{
-            log.warn("No "
-                    + VERSIONResourcePath
-                    + " file available in resource path. Using the default values (NOT IN PRODUCTION!). Maybe you are using StoRM built without the original ANT.");
+		BE_VERSION = new Entry("BE-Version", Constants.class.getPackage().getImplementationVersion());
+		NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
+		BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
+		HashMap<String,String> map = getPlatformKernel();
+		BE_OS_PLATFORM = new Entry("BE-OS-Platform", map.get("platform"));
+		BE_OS_KERNEL_RELEASE = new Entry("BE-OS-Kernel-Release", map.get("kernelRelease"));
 	}
-		else
-		{
-			Properties versioningroperties = new Properties();
-			try
-			{
-				versioningroperties.load(inStream);
-			} catch(IOException e)
-			{
-				log.warn("Unable to retrieve the VERSION property file.");
-			}
-			parseVersionInStream(versioningroperties);
-		}
-	}
-    
-    private static void parseVersionInStream(Properties prop)
-    {
-        String version = prop.getProperty("VERSION","N/A");
-        String age = prop.getProperty("RELEASE","N/A");
-        String svnRevision = prop.getProperty("svn.revision.number","N/A");
-        String buildDate = prop.getProperty("build.date","N/A");
-    	BE_VERSION = new Entry("BE-Version", version+"-"+age);
-    	log.debug("SVN-Revision : "+svnRevision);
-    	log.debug("Build Date   : "+buildDate);
-    }
-    
-    /**
-     * @return
-     */
-    public static String getDistribution()
-    {
-    	if(distribution == null)
-    	{
-    		populateDistribution();
-    	}
-    	return distribution;
-    }
-    
-    /**
-     * @return
-     */
-    public static String getPlatform()
-    {
-    	if(platform == null)
-    	{
-    		populatePlatformKernel();
-    	}
-    	return platform;
-    }
-    
-    /**
-     * @return
-     */
-    public static String getKernelRelease()
-    {
-    	if(kernelRelease == null)
-    	{
-    		populatePlatformKernel();
-    	}
-    	return kernelRelease;
-    }
     
     /**
      * 
      */
-    private static void populateDistribution() {
-        distribution = notAvailable;
+    private static String getDistribution() {
+        String distribution = notAvailable;
         String issuePath = File.separatorChar + "etc" + File.separatorChar + "issue";
         File issueFile = new File(issuePath);
         if (!issueFile.exists() || !issueFile.isFile() || !issueFile.canRead()) {
@@ -140,19 +68,23 @@ public class Constants {
                 } else {
                     distribution = output;
                 }
+                issueReader.close();
             } catch (FileNotFoundException e) {
                 log.error("Unable to read file '" + issueFile.getAbsolutePath() + "'. " + e);
             } catch (IOException e) {
                 log.error("Unable to read file '" + issueFile.getAbsolutePath() + "'." + e);
             }
         }
+        return distribution;
     }
     
     /**
      * 
      */
-    private static void populatePlatformKernel() {
-
+    private static HashMap<String,String> getPlatformKernel() {
+    		HashMap<String,String> map = new HashMap<String,String>();
+    		map.put("kernelRelease", notAvailable);
+        map.put("platform", notAvailable);
         try {
             Process p = Runtime.getRuntime().exec("uname -ri");
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -167,38 +99,31 @@ public class Constants {
                 log.error("Unable to invoke \'uname -ri\' . Standard error : " + error);
             } else {
                 String[] fields = output.trim().split(" ");
-                kernelRelease = fields[0];
-                platform = fields[1];
+                map.put("kernelRelease", fields[0]);
+                map.put("platform", fields[1]);
             }
         } catch (IOException e) {
             log.error("Unable to invoke \'uname -ri\' . IOException " + e);
-        } finally {
-            if (distribution == null) {
-                platform = notAvailable;
-                kernelRelease = notAvailable;
-            }
         }
+        return map;
     }
     
     
-    public static class Entry
-	{
+	public static class Entry {
+
 		private final String key;
 		private final String value;
 
 		private Entry(String key, String value) {
-
 			this.key = key;
 			this.value = value;
 		}
 
 		public String getKey() {
-
 			return key;
 		}
 
 		public String getValue() {
-
 			return value;
 		}
 	}
