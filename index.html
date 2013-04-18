@@ -3,6 +3,26 @@ layout: default
 title: StoRM Storage Resource Manager
 ---
 
-<h1>StoRM</h1>
-
-<p>StoRM (STOrage Resource Manager) is a light, scalable, flexible, high-performance, file system independent, storage manager service (SRM) for generic disk based storage system, compliant with the standard SRM interface version 2.2. StoRM provides data management capabilities in a Grid environment to share, access and transfer data among heterogeneous and geographically distributed data centres.In particular, StoRM works on each POSIX filesystems (ext3, ext4, xfs, basically on everything than can be mounted on a Linux machine) but it also brings in Grid the advantages of high performance storage systems based on cluster file system (such as GPFS from IBM or Lustre from Sun Microsystems) supporting direct access (native POSIX I/O call) to shared files and directories, as well as other standard Grid access protocols. StoRM is adopted in the context of WLCG computational Grid framework.</p>
+<div class="row">
+	<div class="span8">
+		<div class="marketing">
+			<h1>StoRM</h1>
+			<p class=lead>StoRM (STOrage Resource Manager) is a light, scalable, flexible, high-performance, file system independent, storage manager service (SRM) for generic disk based storage system, compliant with the standard SRM interface version 2.2.</p> 
+			<p>StoRM provides data management capabilities in a Grid environment to share, access and transfer data among heterogeneous and geographically distributed data centres.In particular, StoRM works on each POSIX filesystems (ext3, ext4, xfs, basically on everything than can be mounted on a Linux machine) but it also brings in Grid the advantages of high performance storage systems based on cluster file system (such as GPFS from IBM or Lustre from Sun Microsystems) supporting direct access (native POSIX I/O call) to shared files and directories, as well as other standard Grid access protocols. StoRM is adopted in the context of WLCG computational Grid framework.
+			</p>
+		</div>
+	</div>
+	<div class="span4 marketing">
+		<h3>News</h3>
+			<ul class="unstyled">
+			{% for post in site.categories.news limit:5 %}
+				<li>
+					<h4><a href="{{ post.url }}">{{ post.title }}</a></h4>
+					<p> {{ post.content | truncate: 100 }}</p>
+				</li>
+			{% endfor %}
+			</ul>
+			<a class="btn btn-warning" type="button" href="/atom.xml"><img src="/assets/images/rss.png"> RSS Feed</a>
+		</div>
+	</div>
+</div>
