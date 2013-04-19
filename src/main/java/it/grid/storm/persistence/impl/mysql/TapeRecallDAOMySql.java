@@ -529,6 +529,55 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		return taskList;
 	}
 
+	@Override
+	public List<TapeRecallTO> getAllInProgressTasks(int numberOfTaks)
+		throws DataAccessException {
+
+		String query = sqlHelper.getQueryGetAllTasksInProgress(numberOfTaks);
+		
+		Connection dbConnection = getConnection();
+		
+		Statement statment = null;
+		ResultSet res = null;
+		
+		List<TapeRecallTO> taskList = new ArrayList<TapeRecallTO>();
+		
+		try {
+			
+			statment = getStatement(dbConnection);
+			
+			log.debug("getAllInProgressTasks query: " + query);
+			
+			res = statment.executeQuery(query);
+			
+			boolean emptyResultSet = true;
+			
+			while (res.next()) {
+			
+				emptyResultSet = false;
+				TapeRecallTO task = new TapeRecallTO();
+				setTaskInfo(task, res);
+				taskList.add(task);
+			}
+			
+			if (emptyResultSet) {
+			
+				log.debug("No in progress recall tasks found.");
+			}
+		
+		} catch (Exception e) {
+			
+			log.error("Error executing query: {}", query, e);
+			throw new DataAccessException("Error executing query: " + query, e);
+		
+		} finally {
+		
+			releaseConnection(res, statment, dbConnection);
+		}
+		
+		return taskList;
+	}
+
 	private void setTaskInfo(TapeRecallTO task, ResultSet res)
 		throws DataAccessException {
 

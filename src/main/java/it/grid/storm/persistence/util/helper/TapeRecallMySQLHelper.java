@@ -296,6 +296,22 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	}
 
 	/**
+	 * Creates the query string for looking up all the information related to
+	 * in progress tasks in the recall database.
+	 * 
+	 * @param numberOfTasks the maximum number of task returned
+	 * @return the query string
+	 */
+	public String getQueryGetAllTasksInProgress(int numberOfTasks) {
+
+		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS
+			+ "=" + TapeRecallStatus.IN_PROGRESS.getStatusId() + " ORDER BY "
+			+ COL_IN_PROGRESS_DATE + " ASC LIMIT " + numberOfTasks;
+		
+		return queryFormat;
+	}
+
+	/**
 	 * @param taskList
 	 * @param date
 	 * @param j
@@ -405,4 +421,5 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		return queryFormat;
 	}
+
 }

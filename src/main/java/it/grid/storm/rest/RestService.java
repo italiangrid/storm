@@ -94,6 +94,7 @@ public class RestService {
 		holder.setInitParameter(
 			"com.sun.jersey.config.property.packages",
 			"it.grid.storm.tape.recalltable.resources,"
+				+ "it.grid.storm.tape.recalltable.providers,"
 				+ "it.grid.storm.authz.remote.resource,"
 				+ "it.grid.storm.namespace.remote.resource,"
 				+ "it.grid.storm.ea.remote.resource,"

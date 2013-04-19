@@ -33,6 +33,7 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -47,8 +48,9 @@ import org.slf4j.LoggerFactory;
  */
 public class TapeRecallCatalog {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(TapeRecallCatalog.class);
+	private static final Logger log = LoggerFactory.
+		getLogger(TapeRecallCatalog.class);
+
 	private final TapeRecallDAO tapeRecallDAO;
 
 	private static ConcurrentHashMap<UUID, Collection<Suspendedable>> recallBuckets = new ConcurrentHashMap<UUID, Collection<Suspendedable>>();
@@ -281,6 +283,27 @@ public class TapeRecallCatalog {
 		return taskList;
 	}
 
+	/**
+	 * @param numberOfTasks
+	 * @return
+	 */
+	public List<TapeRecallTO> getAllInProgressTasks(int numberOfTaks) {
+
+		List<TapeRecallTO> taskList;
+		
+		try {
+		
+			taskList = tapeRecallDAO.getAllInProgressTasks(numberOfTaks);
+		
+		} catch (DataAccessException e) {
+			
+			log.error(e.getMessage(), e);
+			taskList = Collections.emptyList();
+		}
+		
+		return taskList;
+	}	
+	
 	/**
 	 * @return
 	 */

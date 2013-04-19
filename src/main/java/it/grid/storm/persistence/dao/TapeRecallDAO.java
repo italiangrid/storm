@@ -187,4 +187,13 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 	public abstract boolean setGroupTaskStatus(UUID groupTaskId, int statusId,
 		Date timestamp) throws DataAccessException;
 
+	/**
+	 * 
+	 * @param numberOfTaks
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public abstract List<TapeRecallTO> getAllInProgressTasks(int numberOfTaks)
+		throws DataAccessException;
+	
 }

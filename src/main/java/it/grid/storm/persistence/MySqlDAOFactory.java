@@ -33,7 +33,6 @@ import it.grid.storm.persistence.impl.mysql.TapeRecallDAOMySql;
 import it.grid.storm.persistence.util.db.DBConnection;
 import it.grid.storm.persistence.util.db.DBConnectionPool;
 import it.grid.storm.persistence.util.db.DataBaseStrategy;
-import it.grid.storm.tape.recalltable.persistence.TapeRecallDAOProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,10 +216,7 @@ public class MySqlDAOFactory implements DAOFactory {
 	public TapeRecallDAO getTapeRecallDAO(boolean test)
 		throws DataAccessException {
 
-		if (!test) {
-			return new TapeRecallDAOMySql();
-		}
-		return new TapeRecallDAOProperties(test);
+		return new TapeRecallDAOMySql();
 	}
 
 }
