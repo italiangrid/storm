@@ -522,18 +522,13 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 		throws Exception {
 
 		String relativeSpaceFN = null;
-		try {
-			log.debug("ExtraceRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
-				+ spaceFN);
-			relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-				spaceFN);
-			log.debug("relativeSpaceFN:" + relativeSpaceFN);
-		} catch (NamespaceException ex3) {
-			log.debug("Unable to retrieve the relative space file name ", ex3);
-			statusCode = TStatusCode.SRM_INVALID_REQUEST;
-			explanation = "Unable to retrieve the relative space file name \n" + ex3;
-			throw new Exception(explanation);
-		}
+
+		log.debug("ExtraceRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
+			+ spaceFN);
+		relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
+			spaceFN);
+		log.debug("relativeSpaceFN:" + relativeSpaceFN);
+
 		return relativeSpaceFN;
 	}
 
@@ -762,18 +757,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 		}
 
 		String relativeSpaceFN = null;
-		try {
-			log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
-				+ spaceFN);
-			relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-				spaceFN);
-			log.debug("relativeSpaceFN:" + relativeSpaceFN);
-		} catch (NamespaceException ex3) {
-			log.debug("Unable to retrieve the relative space file name ", ex3);
-			statusCode = TStatusCode.SRM_INVALID_REQUEST;
-			explanation = "Unable to retrieve the relative space file name \n" + ex3;
-			return manageErrorStatus(statusCode, explanation);
-		}
+
+		log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
+			+ spaceFN);
+		relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
+			spaceFN);
+		log.debug("relativeSpaceFN:" + relativeSpaceFN);
 
 		// ************ RETRIEVE THE SIZEs OF SPACE from DB********************
 		TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
@@ -999,18 +988,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 		}
 
 		String relativeSpaceFN = null;
-		try {
-			log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
-				+ spaceFN);
-			relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-				spaceFN);
-			log.debug("relativeSpaceFN:" + relativeSpaceFN);
-		} catch (NamespaceException ex3) {
-			log.debug("Unable to retrieve the relative space file name ", ex3);
-			statusCode = TStatusCode.SRM_INVALID_REQUEST;
-			explanation = "Unable to retrieve the relative space file name \n" + ex3;
-			return manageErrorStatus(statusCode, explanation);
-		}
+
+		log.debug("ExtractRelativeSpace: root:" + vfs.getRootPath() + " spaceFN:"
+			+ spaceFN);
+		relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
+			spaceFN);
+		log.debug("relativeSpaceFN:" + relativeSpaceFN);
 
 		// ************ RETRIEVE THE SIZEs OF SPACE from DB********************
 		TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();

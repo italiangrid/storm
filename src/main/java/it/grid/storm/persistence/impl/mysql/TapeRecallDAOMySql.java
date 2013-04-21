@@ -636,14 +636,13 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			task.setUserID(res.getString(TapeRecallMySQLHelper.COL_USER_ID));
 			task.setRetryAttempt(res.getInt(TapeRecallMySQLHelper.COL_RETRY_ATTEMPT));
 			Calendar calendar = new GregorianCalendar();
-			task.setDeferredRecallInstant(res.getDate(
-				TapeRecallMySQLHelper.COL_DEFERRED_STARTTIME, calendar));
-			task.setInsertionInstant(res.getDate(TapeRecallMySQLHelper.COL_DATE,
+			task.setDeferredRecallInstant(res.getTimestamp(TapeRecallMySQLHelper.COL_DEFERRED_STARTTIME,calendar));
+			task.setInsertionInstant(res.getTimestamp(TapeRecallMySQLHelper.COL_DATE,
 				calendar));
 			try {
 				task.forceStatusUpdateInstants(
-					res.getDate(TapeRecallMySQLHelper.COL_IN_PROGRESS_DATE, calendar),
-					res.getDate(TapeRecallMySQLHelper.COL_FINAL_STATUS_DATE, calendar));
+					res.getTimestamp(TapeRecallMySQLHelper.COL_IN_PROGRESS_DATE, calendar),
+					res.getTimestamp(TapeRecallMySQLHelper.COL_FINAL_STATUS_DATE, calendar));
 			} catch (IllegalArgumentException e) {
 				log.error("Unable to set status update timestamps on the coned task");
 			}

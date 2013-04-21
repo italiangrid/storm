@@ -222,7 +222,7 @@ public class ChunkScheduler implements Scheduler, Streets {
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			ptg_workers.submit(chunkTask);
-			log.debug("PtG Worker Pool SIZE = "
+			log.debug("PtG QuotaJobResultsHandler Pool SIZE = "
 				+ getStatus(Scheduler.PtG_WorkerPoolType).getPoolSize());
 		} catch (SchedulerException ex) {
 			log.error("PrepareToGet_Street", ex);
@@ -240,7 +240,7 @@ public class ChunkScheduler implements Scheduler, Streets {
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			ptp_workers.submit(chunkTask);
-			log.debug("PtP Worker Pool SIZE = "
+			log.debug("PtP QuotaJobResultsHandler Pool SIZE = "
 				+ getStatus(Scheduler.PtP_WorkerPoolType).getPoolSize());
 		} catch (SchedulerException ex) {
 			log.error("PrepareToPut_Street submission error", ex);
@@ -259,7 +259,7 @@ public class ChunkScheduler implements Scheduler, Streets {
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			copy_workers.submit(chunkTask);
-			log.debug("Copy Worker Pool SIZE = "
+			log.debug("Copy QuotaJobResultsHandler Pool SIZE = "
 				+ getStatus(Scheduler.Copy_WorkerPoolType).getPoolSize());
 		} catch (SchedulerException ex) {
 			log.error("Copy_Street", ex);
@@ -277,7 +277,7 @@ public class ChunkScheduler implements Scheduler, Streets {
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			bol_workers.submit(chunkTask);
-			log.debug("BoL Worker Pool SIZE = "
+			log.debug("BoL QuotaJobResultsHandler Pool SIZE = "
 				+ getStatus(Scheduler.BoL_WorkerPoolType).getPoolSize());
 		} catch (SchedulerException ex) {
 			log.error("BoL_Street", ex);

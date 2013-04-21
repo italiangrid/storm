@@ -17,20 +17,10 @@
 
 package it.grid.storm.info;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.info.BackgroundDUTasks.BgDUTask;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -42,14 +32,22 @@ import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.ExitCode;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.space.init.UsedSpaceFile;
 import it.grid.storm.space.init.UsedSpaceFile.SaUsedSize;
-import it.grid.storm.space.quota.BackgroundGPFSQuota;
-import it.grid.storm.space.quota.QuotaManager;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -136,12 +134,10 @@ public class SpaceInfoManager {
 		return result;
 	}
 
-	public int updateSpaceUsed() {
+	public void updateSpaceUsed() {
 
-		int quotaFailures = 0;
-		quotaFailures = execGPFSQuota(false, true);
+		GPFSQuotaManager.INSTANCE.start();
 		startBackGroundDU();
-		return quotaFailures;
 	}
 
 	public static int howManyBackgroundDU() {
@@ -149,39 +145,10 @@ public class SpaceInfoManager {
 		return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
 	}
 
-	public int howManyQuotas() {
 
-		return this.quotas;
-	}
-
-	public int execGPFSQuota(boolean test, boolean bootstrap) {
-
-		int result = 0;
-		boolean synchronousQuotaCheck = Configuration.getInstance()
-			.getSynchronousQuotaCheckEnabled();
-		if (bootstrap) {
-			// Check if it is "fast-bootstrap"
-			boolean fastBootstrapEnabled = Configuration.getInstance()
-				.getFastBootstrapEnabled();
-			if (!fastBootstrapEnabled) {
-				QuotaManager.getInstance().updateSAwithQuotaSynch(test);
-				quotas = QuotaManager.getInstance().getHowmanyQuotas();
-				LOG.info("Executed '" + quotas
-					+ " mmlsquota in order to update related SAs");
-			} else {
-				BackgroundGPFSQuota.getInstance().submitGPFSQuota();
-				LOG.info("Submitted an asynchronous GPFS Quota job");
-			}
-		} else if (synchronousQuotaCheck) {
-			QuotaManager.getInstance().updateSAwithQuotaSynch(test);
-			quotas = QuotaManager.getInstance().getHowmanyQuotas();
-			LOG.info("Executed \'" + quotas + "\'  check");
-		} else {
-			LOG.debug("Quota Check is disabled. Submit GPFS Quota job.");
-			BackgroundGPFSQuota.getInstance().submitGPFSQuota();
-		}
-
-		return result;
+	public void execGPFSQuota() {
+		
+		GPFSQuotaManager.INSTANCE.start();
 	}
 
 	private int startBackGroundDU() {
@@ -231,16 +198,10 @@ public class SpaceInfoManager {
 		List<VirtualFSInterface> vfsSet = retrieveSAtoInitializeWithQuota();
 		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
 		for (VirtualFSInterface vfsEntry : vfsSet) {
-			try {
 				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
 				StorageSpaceData ssd = ssdCatalog
 					.getStorageSpaceByAlias(spaceTokenDesc);
 				ssdSet.add(ssd);
-			} catch (NamespaceException e) {
-				LOG
-					.error("Unable to retrieve virtual file system list. NamespaceException : "
-						+ e.getMessage());
-			}
 		}
 		return ssdSet;
 	}
@@ -251,18 +212,12 @@ public class SpaceInfoManager {
 		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
 		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
 		for (VirtualFSInterface vfsEntry : vfsList) {
-			try {
 				String qName = vfsEntry.getCapabilities().getQuota()
 					.getQuotaElementName();
 				if (qName.equals(quotaName)) {
 					String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
 					ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
 				}
-			} catch (NamespaceException e) {
-				LOG
-					.error("Unable to retrieve virtual file system list. NamespaceException : "
-						+ e.getMessage());
-			}
 		}
 		return ssd;
 	}
@@ -332,25 +287,6 @@ public class SpaceInfoManager {
 		}
 		return result;
 	}
-
-	/**
-	 * @return
-	 */
-	// private List<VirtualFSInterface> getAllVFS() {
-	// Collection<VirtualFSInterface> vfsCollection = null ;
-	// try {
-	// vfsCollection = new
-	// ArrayList<VirtualFSInterface>(NamespaceDirector.getNamespace().getAllDefinedVFS());
-	// }
-	// catch (NamespaceException e) {
-	// LOG.error("Unable to retrieve virtual file system list. NamespaceException : "
-	// + e.getMessage());
-	//
-	// }
-	// LOG.debug("Found '"+vfsCollection.size()+"' VFS defined in Namespace.xml"
-	// );
-	// return (List<VirtualFSInterface>) vfsCollection;
-	// }
 
 	/**
 	 * Populate with DU tasks

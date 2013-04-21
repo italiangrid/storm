@@ -131,13 +131,6 @@ public class StorageSpaceData {
 		this.usedSpaceSize = TSizeInBytes.makeEmpty();
 		this.reservedSpaceSize = TSizeInBytes.makeEmpty();
 		this.unavailableSpaceSize = TSizeInBytes.makeEmpty();
-
-		// this.availableSpaceSize = totalDesiredSize;
-		// this.busySpaceSize = TSizeInBytes.makeEmpty();
-		// //Update Busy Space
-		// updateBusySpaceSize();
-		// //Update Free Space
-		// updateFreeSpaceSize();
 	}
 
 	/**
@@ -296,13 +289,9 @@ public class StorageSpaceData {
 			this.forceFreeSpaceSize(TSizeInBytes.makeEmpty());
 			if (ssTO.getFreeSize() >= 0) {
 				try {
-					// TODO GUARANTED
-					// this.availableSpaceSize = TSizeInBytes.make(ssTO.getFreeSize(),
-					// SizeUnit.BYTES);
+					
 					this.forceFreeSpaceSize(TSizeInBytes.make(ssTO.getFreeSize(),
 						SizeUnit.BYTES));
-					// log.debug("StorageSpaceData - FREE (= available + unavailable) size : "
-					// + this.availableSpaceSize);
 					log
 						.trace("StorageSpaceData - FREE (= available + unavailable) size : "
 							+ this.getFreeSpaceSize());
@@ -376,9 +365,6 @@ public class StorageSpaceData {
 			this.reservedSpaceSize = TSizeInBytes.makeEmpty();
 			if (ssTO.getReservedSize() >= 0) {
 				try {
-					// TODO GUARANTED
-					// this.reservedSpaceSize =
-					// TSizeInBytes.make(ssTO.getGuaranteedSize(), SizeUnit.BYTES);
 					this.reservedSpaceSize = TSizeInBytes.make(ssTO.getReservedSize(),
 						SizeUnit.BYTES);
 					log.trace("StorageSpaceData - TotalSize (reserved): "

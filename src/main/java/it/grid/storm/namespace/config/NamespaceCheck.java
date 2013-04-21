@@ -161,7 +161,7 @@ public class NamespaceCheck {
 
 			while (scan.hasNext()) {
 				VirtualFSInterface vfs = scan.next();
-				try {
+				
 					String aliasName = vfs.getAliasName();
 					log.debug("VFS named '" + aliasName + "' found.");
 					String root = vfs.getRootPath();
@@ -172,10 +172,6 @@ public class NamespaceCheck {
 							+ "' does not have a valid root :'" + root + "'");
 						result = false;
 					}
-				} catch (NamespaceException ex) {
-					log.error("Error while checking VFS.", ex);
-					result = false;
-				}
 			}
 		}
 		if (result) {

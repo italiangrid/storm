@@ -119,13 +119,8 @@ public class SpaceHelper {
 
 		// Get StorageSpaceData from the database
 		StorageSpaceData spaceData = null;
-		try {
-			spaceData = catalog.getStorageSpaceByAlias(fs.getSpaceTokenDescription());
 
-		} catch (NamespaceException e1) {
-			log.error("Unable to create storage space data", e1);
-			return;
-		}
+		spaceData = catalog.getStorageSpaceByAlias(fs.getSpaceTokenDescription());
 
 		// Get the localELement to know the real file size, if exists
 		LocalFile localElement = stori.getLocalFile();
@@ -274,14 +269,8 @@ public class SpaceHelper {
 		String SSDesc;
 		StorageSpaceData spaceData = null;
 
-		try {
-			SSDesc = fs.getSpaceTokenDescription();
-			spaceData = catalog.getStorageSpaceByAlias(SSDesc);
-
-		} catch (NamespaceException e1) {
-			log.error("Unable to create storage space data", e1);
-			return false;
-		}
+		SSDesc = fs.getSpaceTokenDescription();
+		spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
 		if ((spaceData != null) && (spaceData.getAvailableSpaceSize().value() == 0)) {
 			log.debug("AvailableSize=" + spaceData.getAvailableSpaceSize().value());
@@ -303,14 +292,8 @@ public class SpaceHelper {
 		String SSDesc;
 		StorageSpaceData spaceData = null;
 
-		try {
-			SSDesc = fs.getSpaceTokenDescription();
-			spaceData = catalog.getStorageSpaceByAlias(SSDesc);
-
-		} catch (NamespaceException e1) {
-			log.error("Unable to create storage space data", e1);
-			return -1;
-		}
+		SSDesc = fs.getSpaceTokenDescription();
+		spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
 		if (spaceData != null) {
 			return spaceData.getAvailableSpaceSize().value();
@@ -342,15 +325,9 @@ public class SpaceHelper {
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 		// Get StorageSpaceData from the database
 		String SSDesc;
-		try {
-			SSDesc = fs.getSpaceTokenDescription();
-		} catch (NamespaceException e) {
-			// will never happen
-			log.error(
-				"NamespaceException during VirtualFSInterface.getSpaceTokenDescription(). "
-					+ "This is impossible, this exception is never thrown", e);
-			return false;
-		}
+
+		SSDesc = fs.getSpaceTokenDescription();
+
 		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 		if (spaceData != null && !(spaceData.getUsedSpaceSize() == null)
 			&& !spaceData.getUsedSpaceSize().isEmpty()

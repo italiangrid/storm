@@ -22,7 +22,7 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.space.quota.BackgroundGPFSQuota;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTMetaDataSpaceAttributeException;
@@ -40,8 +40,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataOutputAttributeException;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataInputData;
-import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
+import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -86,7 +86,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
 		log.debug("<GetSpaceMetaData Start!>");
 		log.debug(" Updating SA with GPFS quotas results");
-		BackgroundGPFSQuota.getInstance().submitGPFSQuota();
+		GPFSQuotaManager.INSTANCE.triggerComputeQuotas();
 
 		IdentityGetSpaceMetaDataInputData data;
 		if (indata instanceof IdentityInputData) {

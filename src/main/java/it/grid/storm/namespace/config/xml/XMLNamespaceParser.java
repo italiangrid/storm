@@ -48,9 +48,9 @@ import it.grid.storm.namespace.model.SubjectRules;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.space.quota.GPFSMMLSQuotaCommand;
-import it.grid.storm.space.quota.GPFSQuotaCommandResult;
-import it.grid.storm.space.quota.GPFSQuotaInfo;
+import it.grid.storm.space.gpfsquota.GPFSFilesetQuotaInfo;
+import it.grid.storm.space.gpfsquota.GPFSQuotaInfo;
+import it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.util.GPFSSizeHelper;
@@ -67,13 +67,12 @@ import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
-
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * <p>
@@ -343,14 +342,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			VirtualFSInterface storageArea = entry.getValue();
 			if (SupportedFSType.parseFS(storageArea.getFSType()) == SupportedFSType.GPFS) {
 				Quota quota = storageArea.getCapabilities().getQuota();
-				if (quota != null) {
-					GPFSQuotaInfo quotaInfo = getGPFSQuotaInfo(storageAreaName, quota);
-					if (quotaInfo == null) {
-						log
-							.warn(
-								"Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
-									+ "for Storage Area {}.", storageAreaName);
-					} else {
+				if (quota != null && quota.getEnabled()) {
+
+					GPFSFilesetQuotaInfo quotaInfo = getGPFSQuotaInfo(storageArea);
+					if (quotaInfo != null) {
 						updateTotalOnlineSizeFromGPFSQuota(storageAreaName, storageArea,
 							quotaInfo);
 					}
@@ -359,29 +354,28 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		}
 	}
 
-	private GPFSQuotaInfo getGPFSQuotaInfo(String storageAreaName, Quota quota) {
+	private GPFSFilesetQuotaInfo getGPFSQuotaInfo(VirtualFSInterface storageArea) {
 
-		if (quota.getEnabled()) {
-			GPFSQuotaCommandResult quotaCommandResult = new GPFSMMLSQuotaCommand()
-				.executeGetQuotaInfo(quota, false);
-			List<GPFSQuotaInfo> quotaResults = quotaCommandResult.getQuotaResults();
-			if (quotaResults == null || quotaResults.isEmpty()) {
-				log
-					.warn(
-						"Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
-							+ "for Storage Area {}.", storageAreaName);
-				return null;
-			}
-			return quotaResults.get(0);
+		GetGPFSFilesetQuotaInfoCommand cmd = new GetGPFSFilesetQuotaInfoCommand(
+			storageArea);
+
+		try {
+			return cmd.call();
+		} catch (Throwable t) {
+			log
+				.warn(
+					"Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+						+ "for Storage Area {}. Reason: {}", storageArea.getAliasName(),
+					t.getMessage());
+			return null;
 		}
-		return null;
 	}
 
 	private void updateTotalOnlineSizeFromGPFSQuota(String storageAreaName,
-		VirtualFSInterface storageArea, GPFSQuotaInfo quotaInfo) {
+		VirtualFSInterface storageArea, GPFSFilesetQuotaInfo quotaInfo) {
 
 		long gpfsTotalOnlineSize = GPFSSizeHelper.getBytesFromKIB(quotaInfo
-			.getSoftBlocksLimit());
+			.getBlockSoftLimit());
 		Property newProperties = Property.from(storageArea.getProperties());
 		try {
 			newProperties.setTotalOnlineSize(SizeUnitType.BYTE.getTypeName(),
@@ -928,11 +922,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		Iterator<VirtualFSInterface> scan = elem.iterator();
 		while (scan.hasNext()) {
 			String root = null;
-			try {
-				root = scan.next().getRootPath();
-			} catch (NamespaceException ex) {
-				log.error("Error while retrieving all StFN roots of VFSs", ex);
-			}
+			root = scan.next().getRootPath();
 			roots.add(root);
 		}
 		return roots;
@@ -946,11 +936,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		while (scan.hasNext()) {
 			String root = null;
 			VirtualFSInterface vfs = scan.next();
-			try {
-				root = vfs.getRootPath();
-			} catch (NamespaceException ex) {
-				log.error("Error while retrieving all StFN roots of VFSs", ex);
-			}
+			root = vfs.getRootPath();
 			result.put(root, vfs);
 		}
 		return result;

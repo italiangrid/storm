@@ -24,18 +24,6 @@ import it.grid.storm.namespace.model.AccessLatency;
 
 public interface PropertyInterface {
 
-	/**
-	 * <properties> <RetentionPolicy>custodial</RetentionPolicy>
-	 * <AccessLatency>online</AccessLatency>
-	 * <ExpirationMode>neverExpire</ExpirationMode> <TotalOnlineSize
-	 * unit="GB">500</TotalOnlineSize> <TotalNearlineSize
-	 * unit="GB">0</TotalNearlineSize> </properties>
-	 **/
-
-	// public Collection getManagedSpaceTypes();
-
-	// public Collection getManagedFileTypes();
-
 	public TSizeInBytes getTotalOnlineSize();
 
 	public TSizeInBytes getTotalNearlineSize();
@@ -46,22 +34,8 @@ public interface PropertyInterface {
 
 	public AccessLatency getAccessLatency();
 
-	/**************************************************
-	 * VERSION 1.4
-	 **************************************************/
-
 	public boolean isOnlineSpaceLimited();
 
 	public boolean hasLimitedSize();
-
-	// public TLifeTimeInSeconds getSpaceLifeTimeMAX();
-
-	// public TSizeInBytes getTotalSpaceSizeMAX();
-
-	// public TLifeTimeInSeconds getFileLifeTimeMAX();
-
-	// public boolean isAllowedFileType(TFileStorageType fileType);
-
-	// public boolean isAllowedSpaceType(TSpaceType spaceType);
 
 }

@@ -115,15 +115,12 @@ public class NamespaceUtil {
 		for (VirtualFSInterface vfs : vfsSet) {
 			String vfsRootPath;
 			boolean enclosed;
-			try {
+			
 				vfsRootPath = vfs.getRootPath();
 				enclosed = NamespaceUtil.isEnclosed(mountPointPath, vfsRootPath);
 				if (!enclosed) {
 					vfsSet.remove(vfs);
 				}
-			} catch (NamespaceException e) {
-				log.debug("Skipped vfs while retrieving resident VFS");
-			}
 		}
 		return vfsSet;
 	}

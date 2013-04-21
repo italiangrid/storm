@@ -11,17 +11,18 @@
 
 package it.grid.storm.info.remote.resources;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.space.quota.BackgroundGPFSQuota;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,8 +58,7 @@ public class SpaceStatusResource {
 		int quotaDefined = SpaceInfoManager.getInstance().getQuotasDefined();
 		if (quotaDefined > 0) {
 			// Update SA used space using quota defined..
-			BackgroundGPFSQuota.getInstance().submitGPFSQuota();
-			log.info("Submitted an asynchronous GPFS Quota job");
+			GPFSQuotaManager.INSTANCE.triggerComputeQuotas();
 		}
 
 		// Load SA values

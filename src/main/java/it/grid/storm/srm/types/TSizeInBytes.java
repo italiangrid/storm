@@ -201,34 +201,4 @@ public class TSizeInBytes implements Serializable {
 		hash = 37 * hash + unit.hashCode();
 		return hash;
 	}
-
-	/*
-	 * public static void main(String[] args) {
-	 * System.out.print("Testing TSizeInBytes...\n\ns10 is 10 bytes:"); try {
-	 * TSizeInBytes s10 = new TSizeInBytes(10,SizeUnit.BYTES);
-	 * System.out.println(s10+"; hashCode="+s10.hashCode()); TSizeInBytes s20 =
-	 * new TSizeInBytes(20,SizeUnit.BYTES);
-	 * System.out.println("s20 is 20 bytes: "+s20+"; hashCode="+s20.hashCode());
-	 * TSizeInBytes a10 = new TSizeInBytes(10,SizeUnit.BYTES);
-	 * System.out.println("a10 is 10 bytes: "+a10+"; hashCode="+a10.hashCode());
-	 * System.out.println("s10.equals(s20) false:"+s10.equals(s20)+
-	 * "; s20.equals(s10) false:"+s20.equals(s10));
-	 * System.out.println("s10.equals(a10) true:"
-	 * +s10.equals(a10)+"; a10.equals(s10) true:"+a10.equals(s10));
-	 * System.out.println("s10 Value: "+s10.value()+"; s10 Unit: "+s10.unit());
-	 * System
-	 * .out.println("Corresponding to kilobytes (0.00977): "+s10.getSizeIn(SizeUnit
-	 * .
-	 * KILOBYTES)+"; and to hours (0.00000954):"+s10.getSizeIn(SizeUnit.MEGABYTES)
-	 * ); } catch (Exception e) { System.out.println("Should not see this! "+e); }
-	 * //Testing Exceptions
-	 * System.out.println("\n\nTesting Exception throwing..."); try { TSizeInBytes
-	 * s10 = new TSizeInBytes(10,SizeUnit.BYTES);
-	 * System.out.println("Successfully created: "+s10);
-	 * System.out.print("Attempting creation with null SizeUnit: "); try { new
-	 * TSizeInBytes(10,null); System.out.println("Should not see this!"); } catch
-	 * (InvalidTSizeAttributesException e) {
-	 * System.out.println(" creation failed as expected. "+e); } } catch
-	 * (Exception e) { System.out.println("Should not see this!"); } }
-	 */
 }

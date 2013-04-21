@@ -17,37 +17,18 @@
 
 package it.grid.storm.namespace;
 
-import java.util.*;
-
-import it.grid.storm.namespace.model.Capability.*;
+import it.grid.storm.balancer.BalancingStrategy;
+import it.grid.storm.balancer.Node;
+import it.grid.storm.namespace.model.Capability.ACLMode;
+import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.ProtocolPool;
 import it.grid.storm.namespace.model.Quota;
-import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.TransportProtocol;
-import it.grid.storm.balancer.Node;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company:
- * </p>
- * 
- * @author not attributable
- * @version 1.0
- */
+import java.util.List;
+
+
 public interface CapabilityInterface {
 
 	public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol);
@@ -64,22 +45,6 @@ public interface CapabilityInterface {
 	public TransportProtocol getProtocolByID(int id);
 
 	public ACLMode getACLMode();
-
-	// public Collection getManagedSpaceTypes();
-
-	// public Collection getManagedFileTypes();
-
-	// public TSizeInBytes getGuaranteedSpaceSizeMax();
-
-	// public TLifeTimeInSeconds getSpaceLifeTimeMAX();
-
-	// public TSizeInBytes getTotalSpaceSizeMAX();
-
-	// public TLifeTimeInSeconds getFileLifeTimeMAX();
-
-	// public boolean isAllowedFileType(TFileStorageType fileType);
-
-	// public boolean isAllowedSpaceType(TSpaceType spaceType);
 
 	public boolean isAllowedProtocol(String protocolName);
 

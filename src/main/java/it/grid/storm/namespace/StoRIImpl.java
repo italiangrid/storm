@@ -129,11 +129,9 @@ public class StoRIImpl implements StoRI {
 		if (winnerRule != null) {
 			this.stfnRoot = winnerRule.getStFNRoot();
 			this.stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
-			try {
-				this.vfsRoot = vfs.getRootPath();
-			} catch (NamespaceException ex) {
-				log.error("VFS is not setted.", ex);
-			}
+			
+			this.vfsRoot = vfs.getRootPath();
+			
 			this.relativeStFN = relativeStFN;
 
 			this.stfnPath = NamespaceUtil.getStFNPath(stfn);
@@ -304,13 +302,7 @@ public class StoRIImpl implements StoRI {
 	}
 
 	public String getAbsolutePath() {
-
-		try {
-			return vfs.getRootPath() + NamingConst.SEPARATOR + relativeStFN;
-		} catch (NamespaceException ex) {
-			log.error("VFS Root path error", ex);
-			return null;
-		}
+		return vfs.getRootPath() + NamingConst.SEPARATOR + relativeStFN;
 	}
 
 	/*****************************************************************************

@@ -96,13 +96,9 @@ public class NamespaceFSAssociationCheck implements Check {
 				log.info("The vfs " + vfs.getAliasName() + " has null FSType");
 				return false;
 			}
-			try {
-				if (vfs.getRootPath() == null) {
-					log.info("The vfs " + vfs.getAliasName() + " has null rootPath");
-					return false;
-				}
-			} catch (NamespaceException e) {
-				log.info("Unable to get rootPath from vfs " + vfs);
+
+			if (vfs.getRootPath() == null) {
+				log.info("The vfs " + vfs.getAliasName() + " has null rootPath");
 				return false;
 			}
 
@@ -141,35 +137,28 @@ public class NamespaceFSAssociationCheck implements Check {
 
 		CheckStatus status = CheckStatus.SUCCESS;
 		String errorMessage = "";
-		try {
-			for (VirtualFSInterface vfs : vfsSet) {
-				// check if is simple posix FS
-				boolean currentResponse = verifyPosixDeclaredFS(vfs.getFSType());
-				if (!currentResponse) {
-					// check their association against mtab
-					currentResponse = this.check(vfs.getRootPath(), vfs.getFSType(),
-						mountPoints);
-				}
-				if (!currentResponse) {
-					log.error("Check on VFS " + vfs.getAliasName() + " failed. Type ="
-						+ vfs.getFSType() + " , root path =" + vfs.getRootPath());
-					errorMessage += "Check on VFS " + vfs.getAliasName()
-						+ " failed. Type =" + vfs.getFSType() + " , root path ="
-						+ vfs.getRootPath();
-				}
-				log.debug("Check response for path " + vfs.getRootPath() + " is "
-					+ (currentResponse ? "success" : "failure"));
-				status = CheckStatus.and(status, currentResponse);
-				log.debug("Partial result is " + status.toString());
+
+		for (VirtualFSInterface vfs : vfsSet) {
+			// check if is simple posix FS
+			boolean currentResponse = verifyPosixDeclaredFS(vfs.getFSType());
+			if (!currentResponse) {
+				// check their association against mtab
+				currentResponse = this.check(vfs.getRootPath(), vfs.getFSType(),
+					mountPoints);
 			}
-		} catch (NamespaceException e) {
-			// NOTE: this exception is never thrown
-			log.warn("Unexpected NamespaceException, unable to proceede : "
-				+ e.getMessage());
-			errorMessage += "Unable to proceede received a NamespaceException : "
-				+ e.getMessage() + "; ";
-			status = CheckStatus.INDETERMINATE;
+			if (!currentResponse) {
+				log.error("Check on VFS " + vfs.getAliasName() + " failed. Type ="
+					+ vfs.getFSType() + " , root path =" + vfs.getRootPath());
+				errorMessage += "Check on VFS " + vfs.getAliasName()
+					+ " failed. Type =" + vfs.getFSType() + " , root path ="
+					+ vfs.getRootPath();
+			}
+			log.debug("Check response for path " + vfs.getRootPath() + " is "
+				+ (currentResponse ? "success" : "failure"));
+			status = CheckStatus.and(status, currentResponse);
+			log.debug("Partial result is " + status.toString());
 		}
+
 		return new CheckResponse(status, errorMessage);
 	}
 

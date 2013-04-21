@@ -18,6 +18,7 @@
 package it.grid.storm;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -362,12 +363,15 @@ public class StoRMCommandServer {
 		 */
 		private boolean stopServices() {
 
-			boolean response = true;
+			
 			storm.stopPicker();
 			storm.stopXmlRpcServer();
 			storm.stopRestServer();
 			storm.stopSpaceGC();
-			return response;
+			
+			GPFSQuotaManager.INSTANCE.shutdown();
+			
+			return true;
 		}
 
 		/**

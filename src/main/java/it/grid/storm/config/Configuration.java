@@ -1143,7 +1143,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Core Poolsize for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Poolsize for
 	 * the srmPrepareToPut management. Scheduler component uses a thread pool.
 	 * Scheduler pool will automatically adjust the pool size according to the
 	 * bounds set by corePoolSize and maximumPoolSize. When a new task is
@@ -1169,7 +1169,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Max Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for
 	 * the srmPrepareToPut management. Scheduler component uses a thread pool.
 	 * Scheduler pool will automatically adjust the pool size according to the
 	 * bounds set by corePoolSize and maximumPoolSize. When a new task is
@@ -1222,7 +1222,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Core Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for
 	 * the srmPrepareToGet management. If no value is found in the configuration
 	 * medium, then the default value is returned instead. Scheduler component
 	 * uses a thread pool. Scheduler pool will automatically adjust the pool size
@@ -1248,7 +1248,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Max Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for
 	 * the srmPrepareToGet management. If no value is found in the configuration
 	 * medium, then the default value is returned instead. Scheduler component
 	 * uses a thread pool. Scheduler pool will automatically adjust the pool size
@@ -1301,7 +1301,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Core Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for
 	 * the srmCopy management. If no value is found in the configuration medium,
 	 * then the default value is returned instead. Scheduler component uses a
 	 * thread pool. Scheduler pool will automatically adjust the pool size
@@ -1327,7 +1327,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Max Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for
 	 * the srmCopy management. If no value is found in the configuration medium,
 	 * then the default value is returned instead. Scheduler component uses a
 	 * thread pool. Scheduler pool will automatically adjust the pool size
@@ -1380,7 +1380,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Core Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for
 	 * the srmBoL management. If no value is found in the configuration medium,
 	 * then the default value is returned instead. Scheduler component uses a
 	 * thread pool. Scheduler pool will automatically adjust the pool size
@@ -1406,7 +1406,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Max Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for
 	 * the srmBoL management. If no value is found in the configuration medium,
 	 * then the default value is returned instead. Scheduler component uses a
 	 * thread pool. Scheduler pool will automatically adjust the pool size
@@ -1458,7 +1458,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Core Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for
 	 * the Crusher. If no value is found in the configuration medium, then the
 	 * default value is returned instead. Scheduler component uses a thread pool.
 	 * Scheduler pool will automatically adjust the pool size according to the
@@ -1484,7 +1484,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Method used by the Scheduler Component to get the Worker Max Pool Size for
+	 * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for
 	 * the Crisher. If no value is found in the configuration medium, then the
 	 * default value is returned instead. Scheduler component uses a thread pool.
 	 * Scheduler pool will automatically adjust the pool size according to the

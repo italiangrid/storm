@@ -73,15 +73,11 @@ public class Bootstrap {
 
 		int numberOfSpaceInitializated = SpaceInfoManager.getInstance()
 			.initSpaceFromINIFile();
+		
 		log.info("Initializated '" + numberOfSpaceInitializated
 			+ "' SA from 'used-space.ini'");
-
-		int failures = SpaceInfoManager.getInstance().updateSpaceUsed();
-		int numberQuotas = SpaceInfoManager.getInstance().howManyQuotas();
-		log.info("Computed '" + numberQuotas + "' GPFS quotas.");
-		if (failures > 0) {
-			log.error("Some QUOTA was failed! Check logs!");
-		}
+		SpaceInfoManager.getInstance().updateSpaceUsed();
+		
 		int numberOfBgDU = SpaceInfoManager.howManyBackgroundDU();
 		log.info("Submitted '" + numberOfBgDU + "' background DU tasks.");
 	}

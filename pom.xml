@@ -180,6 +180,7 @@
 							<toDir>/etc/logrotate.d</toDir>
 						</configuration>
 					</execution>
+                    
 					<execution>
 						<id>upload-deps</id>
 						<phase>deploy</phase>
@@ -194,6 +195,7 @@
 							<toDir>/usr/share/java/storm-backend-server</toDir>
 						</configuration>
 					</execution>
+                    
 					<execution>
 						<id>upload-jar</id>
 						<phase>deploy</phase>
@@ -246,7 +248,6 @@
 				<version>1.0</version>
 			</extension>
 		</extensions>
-
 	</build>
 
 	<dependencies>

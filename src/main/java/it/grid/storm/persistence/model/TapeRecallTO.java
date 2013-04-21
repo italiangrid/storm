@@ -334,6 +334,13 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		sb.append(pinLifetime);
 		sb.append(sepChar);
 		sb.append(requestToken);
+		sb.append(sepChar);
+		
+		if (inProgressInstant != null)
+			sb.append(formatter.format(inProgressInstant));
+		else
+			sb.append("null");
+		
 		return sb.toString();
 	}
 

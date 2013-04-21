@@ -28,8 +28,13 @@ package it.grid.storm.srm.types;
  */
 import it.grid.storm.common.types.SizeUnit;
 
-public class InvalidTSizeAttributesException extends Exception {
+public class InvalidTSizeAttributesException extends RuntimeException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private boolean negativeSize;
 	private boolean nullUnit;
 

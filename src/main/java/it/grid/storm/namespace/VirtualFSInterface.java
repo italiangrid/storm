@@ -59,11 +59,11 @@ public interface VirtualFSInterface {
 
 	public String getFSType();
 
-	public String getSpaceTokenDescription() throws NamespaceException;
+	public String getSpaceTokenDescription();
 
 	public StorageClassType getStorageClassType();
 
-	public String getRootPath() throws NamespaceException;
+	public String getRootPath();
 
 	public StoRI getRoot() throws NamespaceException;
 
@@ -78,8 +78,6 @@ public interface VirtualFSInterface {
 	public Class getSpaceSystemDriver() throws NamespaceException;
 
 	public SpaceSystem getSpaceSystemDriverInstance() throws NamespaceException;
-
-	// public String getStorageAreaAuthz() throws NamespaceException;
 
 	public boolean isApproachableByUser(GridUserInterface user);
 
@@ -136,10 +134,6 @@ public interface VirtualFSInterface {
 	public void useAllSpaceForFile(TSpaceToken token, StoRI file)
 		throws ExpiredSpaceTokenException, NamespaceException;
 
-	/**
-	 * NOT USED!! //Associate the file with a space file public void
-	 * bindSpaceToFile(StoRI space, StoRI file) throws NamespaceException;
-	 **/
 
 	/**************************************************
 	 * Methods Used for EXPLICIT space reservation
@@ -179,10 +173,6 @@ public interface VirtualFSInterface {
 	public StoRI createDefaultStoRI() throws NamespaceException;
 
 	public long getCreationTime();
-
-	/**************************************************
-	 * VERSION 1.4
-	 **************************************************/
 
 	public TSpaceToken getSpaceToken() throws NamespaceException;
 
