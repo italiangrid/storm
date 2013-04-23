@@ -138,7 +138,9 @@ public class TaskResource {
 	}
 
 	/**
-	 * Method called by GEMSS
+	 * Updates the status or retry value of a recall task. Called by GEMSS
+	 * after a recall tasks is finished.
+	 * 
 	 */
 	@PUT
 	@Path("/{groupTaskId}")
