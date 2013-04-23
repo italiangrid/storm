@@ -29,7 +29,7 @@ POST /recalltable/task
 
 Is this used?
 
-## Check whether a recall task has been completed, and eventually set its status accordingly 
+## Check whether a recall task has been completed
 
 PUT /recalltable/task
 
@@ -114,7 +114,7 @@ and the corresponding response would be
 
 	0
 
-## Get recall tasks that are ready for being taken over, and set their status to in progress
+## Get recall tasks that are ready for being taken over
 
 This method can be used to get the recall tasks that are ready for being taken over. The status of the tasks returned is set to in progress. The method needs to be passed the maximum number of result that are to be returned. This have to be passed in the body of the request, as in
 
