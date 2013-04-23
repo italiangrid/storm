@@ -47,7 +47,8 @@ A sample request is
 	Content-Type:text/plain
 	Content-Length: 7
 
-	first=2
+	requestToken=abc
+	surl=srm://example.org/etc
 
 and the corresponding response would be
 
