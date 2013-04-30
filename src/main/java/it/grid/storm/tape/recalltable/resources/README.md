@@ -3,13 +3,36 @@
 
 This interface expose operations on recall tasks.
 
+Recall tasks have the following fields
+
+- groupTaskId
+- insertionInstant  the time at which the task was created
+- requestType  the type of request that originated the recall task, either bol or ptg
+- fileName  the local path of the file to recall
+- voName  the virtual organization
+- userID
+- retryAttempt  the number of times GEMMS will retry to recall the file in case of failure
+- status  the status of the recall task, either 0 (success), 1 (queued), 2 (in-progress), 3 (error), 4 (aborted), 5 (undefined)
+- deferredRecallInstant
+- pinLifetime
+- requestToken  the token of the request (the bol or ptg) that originated the recall task
+- inProgressInstant  the time at which the task status was changed to in progress 
+
+Recall tasks are transferred using a text/plain representation. Fields are separated by a tab, recall tasks are separated by a #, and all tasks are included by curly brackets as in
+
+	{16f73913-719c-4cbd-bc7a-123be47444fc	19-04-2013 00.00.00	bol	/gpfs_omni/testbed_1.11_sl6/storage/tape/adir/afile	testers.eu-emi.eu	null	0	in-progress	19-04-2013 00.00.00	259200	14ab0086-cd62-4722-9b5d-e6665432a6aa # }
+
+or
+
+	{16f73913-719c-4cbd-bc7a-123be47444fc	19-04-2013 00.00.00	bol	/gpfs_omni/testbed_1.11_sl6/storage/tape/adir/afile	testers.eu-emi.eu	null	0	in-progress	19-04-2013 00.00.00	259200	14ab0086-cd62-4722-9b5d-e6665432a6aa # f656310a-ecc2-4c08-89c4-b026193a3c8d	19-04-2013 00.00.00	bol	/gpfs_omni/testbed_1.11_sl6/storage/tape/adir/anotherfile	testers.eu-emi.eu	null	0	in-progress	19-04-2013 00.00.00	259200	606385d4-16a9-4704-8720-091946cf4a5d # }
+
 All methods consume or produce text/plain, so issuing a request with an incompatible Accept or Content-Type will result in an error.
 
-## Get recall tasks that are in progress
+## GET /recalltable/task
 
-GET /recalltable/task
+Get the recall tasks that are currently in progress. 
 
-This method can be used to get the recall tasks that are currently in progress. It takes a query parameter named maxResults that sets the maximum number of result that will be returned in the response. The method returns a list of recall tasks.
+This method takes a query parameter named maxResults that sets the maximum number of result that will be returned in the response. The method returns a list of recall tasks.
 
 A sample request is
 
@@ -23,17 +46,15 @@ and the corresponding response would be
 	Content-Length: 440
 	{16f73913-719c-4cbd-bc7a-123be47444fc	19-04-2013 00.00.00	bol	/gpfs_omni/testbed_1.11_sl6/storage/tape/adir/afile	testers.eu-emi.eu	null	0	in-progress	19-04-2013 00.00.00	259200	14ab0086-cd62-4722-9b5d-e6665432a6aa # f656310a-ecc2-4c08-89c4-b026193a3c8d	19-04-2013 00.00.00	bol	/gpfs_omni/testbed_1.11_sl6/storage/tape/adir/anotherfile	testers.eu-emi.eu	null	0	in-progress	19-04-2013 00.00.00	259200	606385d4-16a9-4704-8720-091946cf4a5d # }
 
-## Create a new recall task
+## POST /recalltable/task
 
-POST /recalltable/task
+Create a new recall task. Is this used?
 
-Is this used?
+## PUT /recalltable/task
 
-## Check whether a recall task has been completed
+Check whether a recall task has been completed.
 
-PUT /recalltable/task
-
-This method takes a request token and a surl in the body of the PUT request as follows
+This method takes a request token and a surl in the body of the PUT request encoded as follows
 
 	requestToken=abc
 	surl=srm://example.org/etc
@@ -58,13 +79,15 @@ and the corresponding response would be
 
 	true
 
-## Update a recall task status
+## PUT  /recalltable/task/{groupTaskId}
 
-PUT  /recalltable/task/{groupTaskId}
+Update a recall task status.
 
-This method updates a recall task status. The status is passed in the boyd of the PUT request encoded as follows
+The status is passed in the body of the PUT request encoded as follows
 
- status=0
+	status=0
+
+See the description of the recall tasks fields for the values. 
 
 A sample request is 
 
@@ -79,11 +102,9 @@ and the corresponding response would be
 
 	HTTP/1.1 200 OK
 
-## Get the number of tasks that are queued
+## GET /recalltable/cardinality/tasks/queued 
 
-GET /recalltable/cardinality/tasks/queued
-
-This method returns the number of tasks that are queued. 
+Get the number of tasks that are queued.
 
 A sample request is 
 
@@ -97,11 +118,9 @@ and the corresponding response would be
 
 	0
 
-## Get the number of tasks that are ready for being taken over
+## GET /recalltable/cardinality/tasks/readyTakeOver
 
-GET /recalltable/cardinality/tasks/readyTakeOver
-
-This method returns the number of tasks that are ready for being taken over.
+Get the number of tasks that are ready for being taken over.
 
 A sample request is 
 
@@ -115,13 +134,13 @@ and the corresponding response would be
 
 	0
 
-## Get recall tasks that are ready for being taken over
+## PUT /recalltable/tasks
 
-This method can be used to get the recall tasks that are ready for being taken over. The status of the tasks returned is set to in progress. The method needs to be passed the maximum number of result that are to be returned. This have to be passed in the body of the request, as in
+Get recall tasks that are ready for being taken over. The status of the tasks returned is set to in progress. 
+
+The method needs to be passed the maximum number of result that are to be returned. This have to be passed in the body of the request, as in
 
 	first=1
-
-The method consumes a text/plain content, so issuing the request with an incompatible Content-Type will result in an error. The method returns a list of recall tasks.
 
 A sample request is 
 
