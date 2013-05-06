@@ -67,7 +67,6 @@ public class TasksResource {
 	 * @throws TapeRecallException
 	 */
 	@PUT
-	@Path("/")
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	public Response putTakeoverTasks(InputStream input) throws TapeRecallException {

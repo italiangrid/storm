@@ -102,7 +102,6 @@ public class TaskResource {
 	 * StoRM database. (for both tape enabled and disk only SA).
 	 */
 	@PUT
-	@Path("/")
 	@Consumes("text/plain")
 	public Response putTaskStatus(InputStream input) {
 
@@ -253,7 +252,6 @@ public class TaskResource {
 	 * 
 	 */
 	@POST
-	@Path("/")
 	@Consumes("text/plain")
 	public Response postNewTask(TapeRecallTO task) {
 
