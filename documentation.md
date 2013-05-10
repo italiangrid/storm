@@ -4,7 +4,6 @@ title: StoRM Storage Resource Manager
 sys_admin_guide: assets/images/sys-admin-guide.png
 ---
 
-<img src="{{ page.sys_admin_guide }}" style="float: left; margin-top: 8px; margin-left: -65px; padding-top: 4px; margin-right: 10px;" width="48"/>
 ## [System administrator guide](sysadmin-guide.html)
 
 Guide for install and configure StoRM components on a single or distributed scenario.
