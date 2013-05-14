@@ -10,7 +10,6 @@ title: StoRM Storage Resource Manager - FAQ
 
 StoRM is able to manage files on every POSIX file system. (GPFS, Lustre, xfs, ext3, ext4, reiserFS, etc.) 
 Nevertheless, StoRM is able to leverage on advanced functionalities provided by GPFS, Lustre and other cluster file system. 
-There are also some work in progress to make a StoRM cloud… (Amazon S3 LINK)
 
 <a name="lustre">&nbsp;</a>
 ### StoRM works better on GPFS than Lustre?
@@ -35,7 +34,7 @@ x86-64 version is not yet available.
 <a name="local_data">&nbsp;</a>
 ### I have some local data, can I make them available in Grid via SRM using StoRM?
 
-Yes, and it's really easy. The procedure is pretty much the same that migrating from a classic storage element (a pure GridFTP server) to an SRM based one. Have a look here.
+Yes, and it's really easy. The procedure is pretty much the same that migrating from a classic storage element (a pure GridFTP server) to an SRM based one.
 
 <a name="fprotocol_support">&nbsp;</a>
 ### What does it means StoRM support ''file'' protocol?
