@@ -1,5 +1,5 @@
 ---
-layout: sysadmin
+layout: default
 title: StoRM Storage Resource Manager - System Administration Guide
 sys_admin_guide: assets/images/sys-admin-guide.png
 storm_architecture: assets/images/storm_architecture.png
@@ -8,8 +8,33 @@ surl_turl_schema: assets/images/surl-turl-schema.png
 namespace_structure: assets/images/namespace-structure.png
 ---
 
-<img src="{{ page.sys_admin_guide }}" style="float: left; margin-top: 8px; margin-left: -65px; padding-top: 4px; margin-right: 10px;" width="48"/>
 # System Administration Guide
+
+## Table of contents
+* [Introduction](#introduction)
+ * [Service Architecture](#servicearchitecture)
+* [Installation Prerequisites](##installprereq)
+ * [General EMI 3 installation instructions](#emi3instructions)
+ * [System users](#systemusers)
+ * [ACL support](#aclsupport)
+ * [Extended Attribute support](#easupport)
+* [Installation guide](##installationguide)
+ * [Repository settings](#reposettings)
+ * (#stormnodes)[Install StoRM nodes]
+* [Configuration](#configuration)
+ * [General YAIM variables](#yaimvariables)
+ * [Front-End configuration](#feconf)
+ * [Back-End configuration](#beconf)
+ * [GridHTTPs configuration](#ghttpconf)
+ * [Launching YAIM configuration](#launchyaim)
+* [Advanced Configuration](#advconf)
+ * [Front-End Advanced Configuration](#fe_advconf)
+ * [Back-End Advanced Configuration](#be_advconf)
+ * [GridFTP Advanced Configuration](#gftp_advconf)
+ * [GridHTTPs Advanced Configuration](#ghttp_advconf)
+ * [StoRM EMIR Configuration](#emir_advconf)
+* [Appendix A](#AppendixA)
+
 <a name="introduction">&nbsp;</a>
 ## 1. Introduction
 
