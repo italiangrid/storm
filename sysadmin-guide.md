@@ -20,7 +20,7 @@ namespace_structure: assets/images/namespace-structure.png
  * [Extended Attribute support](#easupport)
 * [Installation guide](##installationguide)
  * [Repository settings](#reposettings)
- * (#stormnodes)[Install StoRM nodes]
+ * [Install StoRM nodes](#stormnodes)
 * [Configuration](#configuration)
  * [General YAIM variables](#yaimvariables)
  * [Front-End configuration](#feconf)
