@@ -12,36 +12,30 @@ namespace_structure: assets/images/namespace-structure.png
 
 ## Table of contents
 * [Introduction](#introduction)
- * [Service Architecture](#servicearchitecture)
 * [Installation Prerequisites](##installprereq)
- * [General EMI 3 installation instructions](#emi3instructions)
- * [System users](#systemusers)
- * [ACL support](#aclsupport)
- * [Extended Attribute support](#easupport)
+  * [General EMI 3 installation instructions](#emi3instructions)
+  * [System users](#systemusers)
+  * [ACL support](#aclsupport)
+  * [Extended Attribute support](#easupport)
 * [Installation guide](##installationguide)
- * [Repository settings](#reposettings)
- * [Install StoRM nodes](#stormnodes)
+  * [Repository settings](#reposettings)
+  * [Install StoRM nodes](#stormnodes)
 * [Configuration](#configuration)
- * [General YAIM variables](#yaimvariables)
- * [Front-End configuration](#feconf)
- * [Back-End configuration](#beconf)
- * [GridHTTPs configuration](#ghttpconf)
- * [Launching YAIM configuration](#launchyaim)
+  * [General YAIM variables](#yaimvariables)
+  * [Front-End configuration](#feconf)
+  * [Back-End configuration](#beconf)
+  * [GridHTTPs configuration](#ghttpconf)
+  * [Launching YAIM configuration](#launchyaim)
 * [Advanced Configuration](#advconf)
- * [Front-End Advanced Configuration](#fe_advconf)
- * [Back-End Advanced Configuration](#be_advconf)
- * [GridFTP Advanced Configuration](#gftp_advconf)
- * [GridHTTPs Advanced Configuration](#ghttp_advconf)
- * [StoRM EMIR Configuration](#emir_advconf)
+  * [Front-End Advanced Configuration](#fe_advconf)
+  * [Back-End Advanced Configuration](#be_advconf)
+  * [GridFTP Advanced Configuration](#gftp_advconf)
+  * [GridHTTPs Advanced Configuration](#ghttp_advconf)
+  * [StoRM EMIR Configuration](#emir_advconf)
 * [Appendix A](#AppendixA)
 
 <a name="introduction">&nbsp;</a>
 ## 1. Introduction
-
-This document is addressed to Site Administrators responsible for the StoRM installation and configuration.
-
-<a name="servicearchitecture">&nbsp;</a>
-### 1.1 Service Architecture
 
 StoRM has a multi-layer architecture (Fig.1) made by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
 
