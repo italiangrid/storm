@@ -89,3 +89,7 @@ table th {
 pre {
 	margin-top: 5px;
 }
+
+li p {
+	margin: 0 0;
+}

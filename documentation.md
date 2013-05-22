@@ -20,4 +20,4 @@ Questions from the StoRM user community
 
 ## [WebDAV guide](webdav-guide.html)
 
-Questions from the StoRM user community
+## [StoRM clientSRM user guide](clientSRM-guide.html)
