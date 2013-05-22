@@ -85,3 +85,7 @@ table th {
 	text-decoration: none;
 	color: white;
 }
+
+pre {
+	margin-top: 5px;
+}

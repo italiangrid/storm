@@ -16,3 +16,8 @@ Explains how to use the StoRM SRM client ante arcu, rhoncus non convallis ac, au
 ## [Frequently asked questions](faq.html)
 
 Questions from the StoRM user community
+
+
+## [WebDAV guide](webdav-guide.html)
+
+Questions from the StoRM user community
