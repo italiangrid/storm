@@ -1,1 +1,5 @@
 _site
+.DS_Store
+_layouts/.DS_Store
+assets/.DS_Store
+assets/images/.DS_Store

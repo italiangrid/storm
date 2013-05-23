@@ -21,3 +21,5 @@ Questions from the StoRM user community
 ## [WebDAV guide](webdav-guide.html)
 
 ## [StoRM clientSRM user guide](clientSRM-guide.html)
+
+## [Troubleshooting - StoRM common issues: analysis and solution](troubleshooting.html)
