@@ -111,15 +111,22 @@ StoRM GridHTTPs maps HTTP/WebDAV methods with SRM operations as shown by the fol
 <a name="installconf">&nbsp;</a>
 ### Service installation and configuration
 
-The WebDAV interface is provided by StoRM GridHTTPs component so, if you want to install a WebDAV access point to your data, you have to install it. StoRM GridHTTPs has to be installed on a node that has direct access to the disk with your storage data. If you need, you can install StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf)).
-<br/>
-To install GridHTTPs component, first of all satisfy all the [pre-requisites shown in the sys-admin guide](sysadmin-guide.html#installationguide). Then, install the component with the follow command:
+The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (don't forget to satisfy all the [pre-requisites shown in the sys-admin guide](sysadmin-guide.html#installationguide) before):
 
 	  [~]# yum install emi-storm-gridhttps-mp
 
-To configure StoRM GridHTTPs at your own, refer to the [basic](sysadmin-guide.html#ghttpconf) and [advanced](sysadmin-guide.html#ghttp_advconf) StoRM GridHTTPs sys-admin configuration guides. Then, start the service:
+To configure storm-gridhttps-server you need to fill the requested YAIM variables as described in the [basic](sysadmin-guide.html#ghttpconf) and [advanced](sysadmin-guide.html#ghttp_advconf) StoRM GridHTTPs sys-admin configuration guides. 
+A good explanation of the required YAIM variable is available in:
+
+	/opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
+
+The service uses (by default) ports 8443 and 8085, so open them on your firewall.
+
+The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf)).
+To start the service:
 
 	  [~]# service storm-gridhttps-server start
+
 
 <a name="usingwebdav">&nbsp;</a>
 ### Using WebDAV

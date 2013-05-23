@@ -7,30 +7,36 @@ title: StoRM clientSRM user guide
 
 ### Table of contents
 
-* [StoRM SRM clients](#srmclients)
+* [SRM clients](#srmclients)
 
   * [Basic concepts](#basicconcepts)
 
-* [SRM services: examples](#srmservicesexamples)
+    * [SRM endpoint](#srmendpoint)
+    * [SURL](#surl)
 
-  * [srmPing](#srmPing)
-  * [srmMkdir](#srmMkdir)
-  * [srmRmdir](#srmRmdir)
-  * [srmRm](#srmRm)
-  * [srmLs](#srmLs)
-  * [srmMv](#srmMv)
-  * [srmReserveSpace](#srmReserveSpace)
-  * [srmGetSpaceMetadata](#srmGetSpaceMetadata)
-  * [srmPrepareToPut](#srmPrepareToPut)
-  * [srmPutDone](#srmPutDone)
-  * [srmStatusOfPrepareToPutRequest](#srmStatusOfPrepareToPutRequest)
-  * [srmPrepareToGet](#srmPrepareToGet)
-  * [srmStatusOfGetRequest](#srmStatusOfGetRequest)
-  * [srmCopy](#srmCopy)
-  * [srmStatusOfCopy](#srmStatusOfCopy)
+* [StoRM ClientSRM](#clientSRM)
+
+  * [Installation](#clientSRMinstall)
+  * [Examples](#clientSRMexamples)
+
+    * [srmPing](#srmPing)
+    * [srmMkdir](#srmMkdir)
+    * [srmRmdir](#srmRmdir)
+    * [srmRm](#srmRm)
+    * [srmLs](#srmLs)
+    * [srmMv](#srmMv)
+    * [srmReserveSpace](#srmReserveSpace)
+    * [srmGetSpaceMetadata](#srmGetSpaceMetadata)
+    * [srmPrepareToPut](#srmPrepareToPut)
+    * [srmPutDone](#srmPutDone)
+    * [srmStatusOfPrepareToPutRequest](#srmStatusOfPrepareToPutRequest)
+    * [srmPrepareToGet](#srmPrepareToGet)
+    * [srmStatusOfGetRequest](#srmStatusOfGetRequest)
+    * [srmCopy](#srmCopy)
+    * [srmStatusOfCopy](#srmStatusOfCopy)
 
 <a name="srmclients">&nbsp;</a>
-### StoRM SRM clients
+### SRM clients
 
 StoRM distributes clients for contacting SRM services. These clients are not StoRM clients but general purpose SRM clients and can be use to contact any Web Service implementing the SRM interface. This document describes usage examples for the main functionalities of the SRM specification v2.2.
 
@@ -78,11 +84,26 @@ According to the last example the SRM endpoint should be:
 
 	httpg://ibm139.cnaf.infn.it:8444/srm/managerv2
 
-<a name="srmservicesexamples">&nbsp;</a>
-### SRM services: examples
+
+<a name="clientSRM">&nbsp;</a>
+### StoRM clientSRM
+
+The clientSRM is the binary of the SRM v2.2 Command Line Client. The client can be used to interact with any SRM v2.2 endpoint. 
+
+<a name="clientSRMinstall">&nbsp;</a>
+#### Installation
+
+To install storm-srm-client, install its metapackage RPM: *emi-storm-srm-client-mp*
+
+	  [~]# yum install emi-storm-srm-client-mp
+
+<a name="clientSRMexamples">&nbsp;</a>
+#### Examples
+
+The following are several clientSRM use examples.
 
 <a name="srmPing">&nbsp;</a>
-#### srmPing
+##### srmPing
 
 This function is used to check the state of the SRM and it works as an “are you alive” type of call. The version of the SRM specification implemented by the server is returned.
 
@@ -103,7 +124,7 @@ The server responds with the implemented SRM version:
 	============================================================
 
 <a name="srmMkdir">&nbsp;</a>
-#### srmMkdir
+##### srmMkdir
 
 Create a directory in a local SRM space.
 
@@ -120,7 +141,7 @@ And you will get something like this:
 	============================================================
 
 <a name="srmRmdir">&nbsp;</a>
-#### srmRmdir
+##### srmRmdir
 
 Removes an empty directory in a local SRM space.
 
@@ -135,7 +156,7 @@ To remove an empty directory using the provided SRM client type:
 	============================================================
 
 <a name="srmRm">&nbsp;</a>
-#### srmRm
+##### srmRm
 
 Remove SURLs in the storage system. 
 
@@ -156,7 +177,7 @@ To remove the file test_file.txt inside the directory test_dir type:
 	============================================================
 
 <a name="srmLs">&nbsp;</a>
-#### srmLs
+##### srmLs
 
 Returns a list of files with a basic information. 
 
@@ -187,7 +208,7 @@ To list the content of the directory test_dir together with all its subdirectori
 	============================================================
 
 <a name="srmMv">&nbsp;</a>
-#### srmMv
+##### srmMv
 
 Move a file from one SRM local path to another SRM local path. 
 
@@ -202,7 +223,7 @@ To move the file test_file00.txt from the directory test_dir to the directory te
 	============================================================
 
 <a name="srmReserveSpace">&nbsp;</a>
-#### srmReserveSpace
+##### srmReserveSpace
 
 This function is used to reserve a space in advance for the upcoming requests to get some guarantee on the file management.
 
@@ -225,7 +246,7 @@ To reserve 10MB of space type:
 The returned space token have to be used in all the requests that work on this reserved space.
 
 <a name="srmGetSpaceMetadata">&nbsp;</a>
-#### srmGetSpaceMetadata
+##### srmGetSpaceMetadata
 
 This function is used to get information of a space, for which a space token must be provided.
 
@@ -252,7 +273,7 @@ For instance, to retrieve information on the space reserved in the previous exam
 	============================================================
 
 <a name="srmPrepareToPut">&nbsp;</a>
-#### srmPrepareToPut
+##### srmPrepareToPut
 
 This function is used to write files into the storage. Upon the client’s request, SRM prepares a TURL so that client can write data into the TURL. Lifetime (pinning expiration time) is assigned on the TURL. When a specified target space token is provided, the files will be located finally in the targeted space associated with the space token. It is an asynchronous operation, and a request token is returned. The status may be checked through srmStatusOfPutRequest with the returned request token. 
 
@@ -282,14 +303,14 @@ To write an empty file of 150000 bytes inside the directory test_dir type:
 Since the srmPrepareToPut operation is asynchronous, the "-p" option forces the client to poll the SRM server until the request is managed. The file can be filled with the desired data using some transfer service, such as gridFTP, and specifying as a destination the returned TURL.
 
 <a name="srmPutDone">&nbsp;</a>
-#### srmPutDone
+##### srmPutDone
 
 After a SrmPrepareToPut, the TURL returned can be used to transfer data using the selected protocol. When the transfer has been successfully executed, the SrmPutDone request has to be done in order to tell the system the transfer is finished. As parameter for the SrmPutDone the SrmPrepareToPut REQUESTTOKEN has to be specified. It can be found in the parameter returned by the SrmPrepareToPut
 
 	# clientSRM pd -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt,150000 -t 122f7d26-6d02-4024-89c3-9921d35b791b
 
 <a name="srmStatusOfPrepareToPutRequest">&nbsp;</a>
-#### srmStatusOfPrepareToPutRequest
+##### srmStatusOfPrepareToPutRequest
 
 This function is used to check the status of the previously requested srmPrepareToPut. Request token from srmPrepareToPut must be provided.
 
@@ -312,7 +333,7 @@ To check the status of the srmPrepareToPut operation of the previous example typ
 	============================================================
 
 <a name="srmPrepareToGet">&nbsp;</a>
-#### srmPrepareToGet
+##### srmPrepareToGet
 
 This function is used to bring files online upon the client’s request and assign TURL so that client can access the file. Lifetime (pinning expiration time) is assigned on the TURL.
 
@@ -343,7 +364,7 @@ An example:
 The file *test\_file01.txt* is pinned and the user can transfer it, out of the SE, by executing a gridFTP specifying the returned *transferURL* as source file.
 
 <a name="srmStatusOfGetRequest">&nbsp;</a>
-#### srmStatusOfGetRequest
+##### srmStatusOfGetRequest
 
 This function is used to check the status of the previously requested srmPrepareToGet. Request token from srmPrepareToGet must be provided.
 
@@ -367,7 +388,7 @@ To check the status of the srmPrepareToGet request of the previous example:
 	============================================================
 
 <a name="srmCopy">&nbsp;</a>
-#### srmCopy
+##### srmCopy
 
 This function is used to copy files from source storage sites into the target storage sites. The source storage site or the target storage site needs to be the SRM itself that the client makes the srmCopy request. If both source and target are local to the SRM, it is performed a local copy. There are two cases for remote copies: 1. Target SRM is where client makes a srmCopy request (PULL case), 2. Source SRM is where client makes a srmCopy request (PUSH case).
 
@@ -402,7 +423,7 @@ In the following example we copy the file *test\_file01.txt* in the directory te
 	============================================================
 
 <a name="srmStatusOfCopy">&nbsp;</a>
-#### srmStatusOfCopy
+##### srmStatusOfCopy
 
 This function is used to check the status of the previously requested srmCopy. Request token from srmCopy must be provided.
 

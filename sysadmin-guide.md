@@ -12,12 +12,12 @@ namespace_structure: assets/images/namespace-structure.png
 
 ## Table of contents
 * [Introduction](#introduction)
-* [Installation Prerequisites](##installprereq)
+* [Installation Prerequisites](#installprereq)
   * [General EMI 3 installation instructions](#emi3instructions)
   * [System users](#systemusers)
   * [ACL support](#aclsupport)
   * [Extended Attribute support](#easupport)
-* [Installation guide](##installationguide)
+* [Installation guide](#installationguide)
   * [Repository settings](#reposettings)
   * [Install StoRM nodes](#stormnodes)
 * [Configuration](#configuration)

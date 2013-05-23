@@ -1,25 +1,30 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager
-sys_admin_guide: assets/images/sys-admin-guide.png
 ---
 
-## [System administrator guide](sysadmin-guide.html)
+<img src="assets/images/documentation.jpg" width="350" style="float: right; margin-top: 140px;"/>
+
+### [System administrator guide](sysadmin-guide.html)
 
 Guide for install and configure StoRM components on a single or distributed scenario.
  
-## StoRM clients guide
+### [StoRM clientSRM user guide](clientSRM-guide.html)
 
-Explains how to use the StoRM SRM client ante arcu, rhoncus non convallis ac, auctor id augue. Nunc malesuada consequat enim, a interdum ligula vestibulum ac. Donec sit amet nulla eget orci pellentesque molestie nec sit amet mauris. Duis elementum mollis consectetur. Suspendisse ut arcu placerat enim sagittis eleifend ut ac sem. Etiam lacinia tortor a augue euismod nec euismod mi fringilla. Aliquam feugiat blandit eros, volutpat rutrum dui bibendum eget.
+Explains how to use the StoRM SRM client.
 
+### [Frequently Asked Questions](faq.html)
 
-## [Frequently asked questions](faq.html)
+Questions from the StoRM user community.
 
-Questions from the StoRM user community
+### [WebDAV service user guide](webdav-guide.html)
 
+Explains the StoRM WebDAV interface, how to install, configure and use it.
 
-## [WebDAV guide](webdav-guide.html)
+### [Troubleshooting](troubleshooting.html)
 
-## [StoRM clientSRM user guide](clientSRM-guide.html)
+Common issues: analysis and solution.
 
-## [Troubleshooting - StoRM common issues: analysis and solution](troubleshooting.html)
+### [Cookbook](cookbook.html)
+
+Useful recipes for StoRM advanced configuration.
