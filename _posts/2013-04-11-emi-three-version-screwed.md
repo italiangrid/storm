@@ -1,7 +1,7 @@
 ---
 layout: post
 title: EMI-3 release failed to pass staged roll-out 
-category: news
+author: valerio
 ---
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque et dolor sem. uscipit dolor sit amet turpis pretium eu rhoncus arcu ornare. Phasellus varius mattis ante sit amet placerat. Curabitur ultrices euismod nisi, vel tristique enim vulputate eget. Duis eleifend posuere arcu, at molestie odio volutpat eu. Vivamus sed enim mi, ut consectetur dui. Proin non metus porta lorem scelerisque feugiat. Vestibulum sit amet lacus nisl. Duis fringilla congue purus euismod placerat. Etiam accumsan, dui a consequat sagittis, sapien dui sollicitudin justo, a molestie metus arcu eu arcu. Fusce sit amet neque lacus, ut venenatis neque. Suspendisse nec lobortis felis. Morbi vel dolor purus.

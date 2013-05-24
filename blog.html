@@ -1,0 +1,24 @@
+---
+layout: default
+title: StoRM Storage Resource Manager
+---
+
+{% assign author = site.authors[page.author] %}
+
+<div class="marketing">
+	<ul class="unstyled">
+	{% for post in site.posts %}
+		<li>
+			<h2><a href="{{ post.url }}">{{ post.title }}</a></h4>
+			<p>Posted on {{ post.date | date_to_string }} by {{ author }}</p>
+			<p>{{ post.content | truncate: 500 }}</p>
+		</li>
+		<a href="{{ post.url }}">Read more</a>
+		<hr class="soften">	
+	{% endfor %}
+	</ul>
+	
+	<a class="btn btn-warning" type="button" href="http://feeds.feedburner.com/github/cuJr"><img src="assets/images/rss.png"> RSS Feed</a>
+
+	</div>
+</div>

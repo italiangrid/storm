@@ -10,7 +10,8 @@ namespace_structure: assets/images/namespace-structure.png
 
 # System Administration Guide
 
-## Table of contents
+<br>
+
 * [Introduction](#introduction)
 * [Installation Prerequisites](#installprereq)
   * [General EMI 3 installation instructions](#emi3instructions)
