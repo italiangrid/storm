@@ -3,7 +3,7 @@ layout: default
 title: StoRM Storage Resource Manager
 ---
 
-<img src="assets/images/documentation.jpg" width="350" style="float: right; margin-top: 140px;"/>
+
 
 ### [System administrator guide](sysadmin-guide.html)
 
