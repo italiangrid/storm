@@ -38,7 +38,7 @@
 		<mailVersion>1.4.6</mailVersion>
 		<jakartaOroVersion>2.0.8</jakartaOroVersion>
 
-		<native-interface.version>1.0.0-SNAPSHOT</native-interface.version>
+		<native-interface.version>1.0.0</native-interface.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 	</properties>
