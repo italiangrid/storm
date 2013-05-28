@@ -19,6 +19,7 @@ namespace_structure: assets/images/namespace-structure.png
   * [ACL support](#aclsupport)
   * [Extended Attribute support](#easupport)
 * [Installation guide](#installationguide)
+  * [StoRM Upgrade to EMI3](#upgradetoemi3)
   * [Repository settings](#reposettings)
   * [Install StoRM nodes](#stormnodes)
 * [Configuration](#configuration)
@@ -33,7 +34,6 @@ namespace_structure: assets/images/namespace-structure.png
   * [GridFTP Advanced Configuration](#gftp_advconf)
   * [GridHTTPs Advanced Configuration](#ghttp_advconf)
   * [StoRM EMIR Configuration](#emir_advconf)
-* [StoRM Upgrade to EMI3](#upgradetoemi3)
 * [Appendix A](#AppendixA)
 
 <a name="introduction">&nbsp;</a>
@@ -223,6 +223,26 @@ Then you need to remount the affected partitions as follows:
 
 <a name="installationguide">&nbsp;</a>
 ## Installation guide
+
+<a name="upgradetoemi3">&nbsp;</a>
+### StoRM Upgrade to EMI3
+
+In order to upgrade your current version of StoRM from EMI1 or EMI2 to EMI3 you need to install the EMI3 repos.<br>
+Depending on your platform, download and install the right EMI release package, as described in the [EMI Repository settings](#emireposettings) section.
+
+Then execute:
+
+	yum clean all
+	yum -y update
+
+
+To configure your StoRM services please read the [Configuration](#configuration) section.
+<br><br>
+An example of yaim usage for configuring all the services on the same host is reported below:
+
+	/opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp -n se_storm_gridhttps
+
+Please take a look at the [Launching YAIM configuration](#launchyaim) section for further details.
 
 <a name="reposettings">&nbsp;</a>
 ### Repository settings
@@ -2019,26 +2039,6 @@ Start the service:
 	sudo service emir-serp start
 
 Verify the pubblication by inspecting this <a href="http://emitbdsr1.cern.ch:9126/services">page</a> searching for an entity with "Name" attribute equal to StoRM YAIM variable "SITE\_NAME". It is recommended to set back the logging level to error and restart the service. Stopping emier-serp will cause the entry to be deleted.
-
-<a name="upgradetoemi3">&nbsp;</a>
-## StoRM Upgrade to EMI3
-
-In order to upgrade your current version of StoRM from EMI1 or EMI2 to EMI3 you need to install the EMI3 repos.<br>
-Depending on your platform, download and install the right EMI release package, as described in the [EMI Repository settings](#emireposettings) section.
-
-Then execute:
-
-	yum clean all
-	yum -y update
-
-
-To configure your StoRM services please read the [Configuration](#configuration) section.
-<br><br>
-An example of yaim usage for configuring all the services on the same host is reported below:
-
-	/opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp -n se_storm_gridhttps
-
-Please take a look at the [Launching YAIM configuration](#launchyaim) section for further details.
 
 <a name="AppendixA">&nbsp;</a>
 ## Appendix A
