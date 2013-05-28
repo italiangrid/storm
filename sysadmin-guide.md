@@ -228,7 +228,7 @@ Then you need to remount the affected partitions as follows:
 ### StoRM Upgrade to EMI3
 
 In order to upgrade your current version of StoRM from EMI1 or EMI2 to EMI3 you need to install the EMI3 repos.<br>
-Depending on your platform, download and install the right EMI release package, as described in the [EMI Repository settings](#emireposettings) section.
+Depending on your platform, download and install the right EMI release package, as described in the [Repository settings](#emireposettings) section.
 
 Then execute:
 
@@ -293,6 +293,17 @@ SL6:
 
 	  [~]# wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl6/x86_64/base/emi-release-3.0.0-2.sl6.noarch.rpm
 	  [~]# yum localinstall --nogpgcheck emi-release-3.0.0-2.sl6.noarch.rpm
+
+#### StoRM Repository settings
+
+StoRM can also be installed from StoRM PT own repositories.
+Note that the StoRM PT repositories only provide the latest version of the certified StoRM packages.
+You still need to install EMI3 repositories (as detailed above) for installations to work as expected.
+
+To install the repository files, run the following commands (as root):
+
+    (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
+    (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 
 <a name="stormnodes">&nbsp;</a>
 ### Install StoRM nodes
