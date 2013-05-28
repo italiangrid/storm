@@ -21,7 +21,7 @@ Follow the [system administration guide](sysadmin-guide.html) for detailed insta
 
 ## Current release
 
-The current release is StoRM v. 1.11.1. See the release notes.
+The current release is [StoRM v. 1.11.1](release-notes-v1_11_1.html).
 
 ## Previous releases
 
