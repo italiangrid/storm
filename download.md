@@ -56,13 +56,13 @@ See the [release notes](http://www.eu-emi.eu/emi-2-matterhorn-products/-/asset_p
 
 ---
 
-# Testing versions
+## Testing versions
 
 We are going provide a repository for testing versions, i.e versions for which the development has finished and can be passed to early adopters for the staged roll-out.
 
 ---
 
-# Development versions
+## Development versions
 
 Development versions are built regularly on our [continuos integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/). 
 
