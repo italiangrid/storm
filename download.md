@@ -5,7 +5,11 @@ title: StoRM Storage Resource Manager
 
 # StoRM releases
 
-Releases are done in the context of the EMI project.
+StoRM packages can be obtained from the EMI repository or from the StoRM produt team package repository.
+
+### Repository configuration 
+
+#### EMI 3 
 
 You can find [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) on the EMI site, but it basically boils down to installing the EMI repository
 
@@ -13,11 +17,18 @@ You can find [general EMI 3 installation instructions](https://twiki.cern.ch/twi
 	wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl5/x86_64/base/emi-release-3.0.0-2.el5.noarch.rpm
 	yum localinstall -y emi-release-3.0.0-2.el5.noarch.rpm
 
-for having the StoRM packages available
-	
-	yum search storm
-
 Follow the [system administration guide](sysadmin-guide.html) for detailed installation instructions.
+
+#### StoRM
+
+Note that the StoRM PT repositories only provide the latest version of the certified StoRM packages.
+You still need to install EMI3 repositories (as detailed above) for installations to work as expected.
+
+To install the repository files, run the following commands (as root):
+
+    (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
+    (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+
 
 ## Current release
 
