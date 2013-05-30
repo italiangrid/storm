@@ -5,7 +5,7 @@ title: StoRM v. 1.11.1
 
 # StoRM v. 1.11.1
 
-This StoRM release provides bug fixes and improvements for the StoRM services.
+This StoRM release provides the bug fixes and improvements for the StoRM services.
 
 ### Bug fixes 
 

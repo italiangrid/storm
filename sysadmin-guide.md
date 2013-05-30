@@ -39,7 +39,7 @@ namespace_structure: assets/images/namespace-structure.png
 <a name="introduction">&nbsp;</a>
 ## Introduction
 
-StoRM has a multi-layer architecture (Fig.1) made by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
+StoRM has a multi-layer architecture (Fig.1) characterized by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
 
 <div style="width: 100%; text-align: center; margin-top: 25px;">
     <img src="{{ page.storm_architecture }}" style="width: 200px;"/>
@@ -48,14 +48,14 @@ StoRM has a multi-layer architecture (Fig.1) made by two main stateless componen
 	</p>
 </div>
 
-Overall, the service is characterized by several components, some mandatory, others are optional:
+The service is characterized by several components, some of which are mandatory, while others are optional:
 
 - **mandatory components**: *FrontEnd* (FE), *BackEnd* (BE), Dynamic Info Provider (DIP);
 
 - **optional components**: *GridFTP*, *GridHTTPs*, *Client*.
 
-A modular architecture decouples StoRM logic from the different file system supported, and plug-in mechanisms allow an easy integration of new file systems. With this approach data centres is able to choose the preferred underlying storage system maintaining the same SRM service. To more details look at Functional Description Guide.
-The modular architecture of StoRM permits that service can be deployed on a multi-node scenario where its components are deployed on different hosts. Pools of FE, GridFTP and GridHTTPs are possible, as you can see from Fig.2.
+A modular architecture decouples the StoRM logic from the different file system supported, and a set of plug-in mechanisms allows an easy integration of new file systems. With this approach data centre is able to choose the preferred underlying storage system maintaining the same SRM service. To more details look at the Functional Description Guide.
+The modular architecture of StoRM permits that service can be deployed on a multi-node scenario where its components are installed and configured on different hosts. Pools of FE, GridFTP and GridHTTPs are possible, as you can see from Fig.2.
 
 <div style="width: 100%; text-align: center; margin-top: 25px;">
     <img src="{{ page.storm_distributed }}" style="width: 100%;"/>
@@ -67,8 +67,8 @@ The modular architecture of StoRM permits that service can be deployed on a mult
 <a name="installprereq">&nbsp;</a>
 ## Installation Prerequisites
 
-All StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and on Scientific Linux SL6/64 (x86_64) both with EPEL as repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
-All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repository respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on BackEnd host.
+All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
+All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on BackEnd host.
 
 <a name="emi3instructions">&nbsp;</a>
 ### General EMI 3 installation instructions
@@ -111,7 +111,7 @@ In particular, check the followings:
 
 	  [~]# service network restart
 
-- Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) must be configured with X.509 certificates signed by a trusted Certification Authority (CA). Usually the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
+- Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**To check**:
 
@@ -131,7 +131,7 @@ In particular, check the followings:
 <a name="systemusers">&nbsp;</a>
 ### System users
 
-StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm* but admins can also configure it (see <a href="#beconf">BackEnd Configuration</a>). If you need a GridHTTPs node, this service has also to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see <a href="#ghttpconf">GridHTTPs Configuration</a>). 
+StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see <a href="#beconf">BackEnd Configuration</a>). If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see <a href="#ghttpconf">GridHTTPs Configuration</a>). 
 It is advisable to manually configure host(s) with this two users before install services. For example, to create *storm* and *gridhttps* users you can launch the following commands:
 
 	  #add storm user (-M means without an home directory)
@@ -139,7 +139,7 @@ It is advisable to manually configure host(s) with this two users before install
 	  #add gridhttps user (specifying storm as group)
 	  useradd gridhttps -M -G storm
 
-or, if needed, you can specify users' UID and GID, as follow:
+or, if needed, you can specify users' UID and GID, as follows:
 
 	  useradd -M storm -u MY_STORM_UID -g MY_STORM_GID
 	  useradd gridhttps -M -G storm -u MY_GHTTPS_UID -g MY_GHTTPS_GID
@@ -149,19 +149,19 @@ Specifying the same UID and GID is nececcary when you are going to install StoRM
 <br/>
 For example, if *storm* is the user that runs BackEnd service on host A and *gridhttps* is the user that runs GridHTTP on host B, both of these hosts **must** have *storm* and *gridhttps* users and groups with respectively **the same GID and UID**.
 To satisfy this requirement you can configure a NIS service for the involved hosts and add the two users to the NIS maps. A tutorial on how to setup a NIS service can be found [here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html).
-Another valid solution to share GID and UID between different hosts and provide a user authentication can be found with a client-server LDAP installation, as described in <a href="#AppendixA">Appendix A</a>.
+Another valid solution to share GID and UID among different hosts and provide a user authentication can be found with a client-server LDAP installation, as described in <a href="#AppendixA">Appendix A</a>.
 
 <a name="aclsupport">&nbsp;</a>
 ### ACL support
 
-StoRM uses the ACLs on files and directories to implement the security model. Doing so, StoRM uses the native access to the file system. Therefore in order to ensure a proper running, ACLs need to be enabled on the underlying file system (sometimes they are enabled by default) and work properly.
+StoRM uses the ACLs on files and directories to implement the security model. In so doing, StoRM uses the native access to the file system. Therefore in order to ensure a proper running, ACLs need to be enabled on the underlying file system (sometimes they are enabled by default) and work properly.
 
 **To check**:
 	
 	  [~]# touch test
 	  [~]# setfacl -m u:storm:rw test
 
-Note: the storm user used to set the ACL entry **must** exist.
+Note: the storm user adopted to set the ACL entry **must** exist.
 
 	  [~]# getfacl test
   	    # file: test
@@ -238,7 +238,7 @@ Then execute:
 
 To configure your StoRM services please read the [Configuration](#configuration) section.
 <br><br>
-An example of yaim usage for configuring all the services on the same host is reported below:
+An example of YAIM use for configuring all the services on the same host is reported below:
 
 	/opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp -n se_storm_gridhttps
 
@@ -247,7 +247,7 @@ Please take a look at the [Launching YAIM configuration](#launchyaim) section fo
 <a name="reposettings">&nbsp;</a>
 ### Repository settings
 
-In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory. They are EPEL, EGI and EMI repository and they have to be installed, as prerequisite, as we have already seen in the paragraph <a href="#emi3instructions">general EMI 3 installation instructions</a>.
+In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory. These are EPEL, EGI and EMI and have to be installed, as prerequisite, as we have already seen in the paragraph <a href="#emi3instructions">general EMI 3 installation instructions</a>.
 
 <a name="commonreposettings">&nbsp;</a>
 #### Common repository settings
@@ -267,7 +267,7 @@ SL6:
 
 To install **EGI Trust Anchors Repository** follow [EGI instructions](https://wiki.egi.eu/wiki/EGI_IGTF_Release#Using_YUM_package_management).
 
-You must disable the **DAG repository** if enabled. To check if it's enabled:
+You must disable the **DAG repository** if enabled. To check if it is enabled:
 	
 	  [~]# grep enabled /etc/yum.repos.d/dag.repo
 	    enabled=0
@@ -323,7 +323,7 @@ Install the StoRM metapackages you need in every node partecipating to the StoRM
 	  [~]# yum install emi-storm-gridhttps-mp
  		...
 
-The storm-srm-client is distributed with UI EMI components, but if you need it on your node you can install it using the command:
+The storm-srm-client is distributed with the UI EMI components, but if you need it on your node you can install it using the command:
 
 	  [~]# yum install emi-storm-srm-client-mp
 
