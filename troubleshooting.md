@@ -22,7 +22,7 @@ title: Troubleshooting - StoRM common issues - analysis and solution
 <a name="sys-behavior-in-case-of-daemons-problem">&nbsp;</a>
 ### System behavior in case of daemons problem
 
-These are the typical error in case one or more StoRM daemons are not running properly on your system. These tests are done with the simple SRMv2.2 Command Line Client available with StoRM (see the [StoRM clientSRM user guide](clientSRM-guide.html)).
+These are the typical errors in case one or more StoRM daemons are not running properly on your system. These tests are done with the simple SRMv2.2 Command Line Client available with StoRM (see the [StoRM clientSRM user guide](clientSRM-guide.html)).
 
 <a name="fe-down">&nbsp;</a>
 #### Frontend down
