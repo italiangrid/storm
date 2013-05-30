@@ -26,3 +26,7 @@ Common issues: analysis and solution.
 #### [Cookbook](cookbook.html)
 
 Useful recipes for StoRM advanced configuration.
+
+#### [Conferences and tutorials](tutorials-conferences-presentations.html)
+
+Conferences, tutorials, presentations and papers.
