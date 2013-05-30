@@ -21,7 +21,7 @@ This guide is about how to configure the gridFTP process monitor in order to bal
 
 #### Client (read data)
 
-The client is the host that read data published by all servers, as retrived from the name server:
+The client is the host that reads data published by all servers, as retrived from the name server:
 
 *  jdim.so have to be included in JAVA\_LIBRARY\_PATH
 *  DIM\_DNS\_NODE have to be setted to the nameserver
@@ -50,7 +50,7 @@ Set also this script to automatically start at boot.
 
 #### Dim DNS server
 
-This is the name server used by DIM client to know the list of servers that publish information:
+This is the name server used by the DIM client to know the list of servers that publishes information:
 
 * install DIM v17
 * edit /etc/sysconfig/dim with: <code>DNS\_DIM\_NODE=`hostname`</code>
@@ -59,5 +59,5 @@ This is the name server used by DIM client to know the list of servers that publ
 #### Extras
 
 * *did*: is a graphical tool to view the information published
-* *psViewer*: is a shell tools on client machine to view what is receiving
-* other FMC modules allow to monitor cpu usage, network status, file systems etc. More investigaion is needed to build interesting monitor on it.
+* *psViewer*: is a shell tools on the client machine to view what it is receiving
+* other FMC modules allow to monitor cpu usage, network status, file systems, and so on. More investigaion is needed to build interesting monitor on it.
