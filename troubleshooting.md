@@ -27,7 +27,7 @@ These are the typical errors in case one or more StoRM daemons are not running p
 <a name="fe-down">&nbsp;</a>
 #### Frontend down
 
-In case the StoRM Frontend, a simple *srmPing* request will fails with the error:
+In case the StoRM Frontend is down, a simple *srmPing* request will fail with the error:
 
 	$clientSRM ping  -e httpg://your_storm_host:8444
 	
@@ -50,7 +50,7 @@ In case the StoRM Frontend, a simple *srmPing* request will fails with the error
 <a name="be-down">&nbsp;</a>
 #### Backend down
 
-In case the Backend daemon is down, you could get different kinds of error depending on the SRM request you are trying:
+In case the Backend daemon is down, you could get different kinds of errors depending on the SRM request you are trying:
 
 **srmPing operation**
 
@@ -104,16 +104,16 @@ In case the Backend daemon is down, you could get different kinds of error depen
 
 Frontend fails to start up if:
 
-* MySQL daemons is down. The Frontend try to open connection with the DB, if the connection fails the FE will remains stopped.
-* MySQL authorization problem in database connection. Please check STORM\_DB\_USER with STORM\_DB\_PASSWORD and STORM\_DB\_HOST can connect to DB.
-* Permission problem on the Frontend installation directory. Please check that everything belongs to STORM\_USER
+* MySQL daemon is down. The Frontend service tries to open a connection with DB: if the connection fails, the FE service will remain stopped.
+* There is a MySQL authorization problem during the database connection. Please check STORM\_DB\_USER with STORM\_DB\_PASSWORD and STORM\_DB\_HOST can connect to DB.
+* There is a permission problem on the Frontend installation directory. Please check that everything belongs to STORM\_USER.
 
 <a name="be-starting-problem">&nbsp;</a>
 #### Backend problem
 
 Backend fails to start up if:
 
-* Storage file system is not mounted.
+* The storage file system is not mounted.
 * The configured storage directory does no exits.
 * The configuration file is not semantically correct.
 * Permission problem on the Backend installation directory. Please check that everything belongs to STORM\_USER
@@ -121,18 +121,18 @@ Backend fails to start up if:
 <a name="auth-problem">&nbsp;</a>
 ### Authorization problem
 
-One of the most common issue for Grid services is to have some kind of misconfiguration in the host machine that produces authorization problem.
+One of the most common issues for Grid services is to have some kinds of misconfigurations in the host machine that produce an authorization problem.
 
 <a name="fe-auth-problem">&nbsp;</a>
 #### Frontend Auth problem
 
 In case the Frontend host machine is not properly configured for what concern authorization, as for:
 
-* Missing Host certificate.
-* User is not present in /etc/grid-security/grid-mapfile.
-* CAs rpm not up to date.
+* missing the host certificate
+* missing user in the file /etc/grid-security/grid-mapfile
+* not updated CA rpms.
 
-You will get the following error message:
+You will get the following error messages:
 
 	$./clientSRM  ping -e httpg://your_storm_fqdn:8444  
 
@@ -165,14 +165,14 @@ Within the file /tmp/tracefile there are also the error messages.
 In case the Backend host machine is not properly configured for what concern authorization, you will have different behaviour depending on the case.
 In case of:
 
-* Missing host certificates.
-* CAs rpm not up to date
+* missing the host certificate
+* not updated CA rpms
 
-the Backend will be able to perform simple SRM requests, but this misconfiguration will cause problem in any case of interaction with other Grid services, as for the srmCopy() operation.
+the Backend service will be able to perform simple SRM requests, but this misconfiguration will cause problem in any case of interaction with other Grid services, as for the srmCopy operation.
 
 But in case of:
 
-* User (or user FQAN ) not present in the /etc/grid-security/gridmapfile and /etc/grid-security/groupmapfile:
+* missing user (or user FQAN ) in the /etc/grid-security/gridmapfile and /etc/grid-security/groupmapfile:
 
 In case of operation that requires ACL set up, as for srmPrepareToPut, srmPrepareToGet, Mkdir, etc, user will get:
 
@@ -201,11 +201,11 @@ In case of operation that requires ACL set up, as for srmPrepareToPut, srmPrepar
 <a name="gftp-server">&nbsp;</a>
 #### GridFTP Server
 
-Is really important that also the GridFTP server host machine has to be properly configured in term of authorization.
+It is really important that also the GridFTP server host machine be properly configured in term of authorization.
 
 In case of:
 
-* Missing host certificates.
+* missing the host certificates
 
 trying a simple file transfer in /tmp will produce:
 
@@ -235,7 +235,7 @@ trying a simple file transfer in /tmp will produce:
 
 and in case of
 
-* CAs rpm not up to date or missing
+* not updated CA rpms
 
 it will produce:
 
@@ -248,9 +248,9 @@ it will produce:
 	530-globus_sysconfig: File does not exist: /etc/grid-security/certificates/ is not a valid   directory
 	530 End.
 
-But the two most significatives error messages a site admin needs to know are:
+But the two most significative error messages a site admin needs to know are:
 
-**User (or user FQAN ) not present in the /etc/grid-security/grid-mapfile**
+**Missing user (or user FQAN ) in the /etc/grid-security/grid-mapfile**
 
 	$ globus-url-copy -vb file:///home/lucamag/clientSRM_sl4/clientSRM    gsiftp://vgrid06.cnaf.infn.it:2811/tmp/prova
 
