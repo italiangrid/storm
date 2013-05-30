@@ -1,3 +1,5 @@
+exclude: [README.md]
+
 authors:
   andrea:
     display_name: Andrea Ceccanti
