@@ -20,16 +20,16 @@ title: StoRM GridHTTPs Server's WebDAV interface
 <a name="introduction">&nbsp;</a>
 ### Introduction
 
-The StoRM GridHTTPs is the component responsible to provide both HTTP(s) file transfer capabilities to a StoRM endpoint and a WebDAV interface. The brand-new WebDAV interface provided, conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
+The StoRM GridHTTPs is the component responsible for providing both HTTP(s) file transfer capabilities to a StoRM endpoint and a WebDAV interface. The brand-new WebDAV interface provided, conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
 
 <a name="whatwebdav">&nbsp;</a>
 ### What is WebDAV?
 
 <img src="assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
 
-Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of methods, headers, and content-types ancillary to HTTP/1.1 for the management of resource properties, creation and management of resource collections, URL namespace manipulation, and resource locking. The purpose of this protocol is to present Web content as a writable medium in addition to being a readable medium. [WebDAV on Wikipedia](http://en.wikipedia.org/wiki/WebDAV) and the [WebDAV website](http://www.webdav.org/) provide information on this protocol.
+Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of methods, headers, and content-types ancillary to HTTP/1.1 for the management of resource properties, creation and management of resource collections, URL namespace manipulation, and resource locking. The purpose of this protocol is to present a Web content as a writable medium in addition to be a readable one. [WebDAV on Wikipedia](http://en.wikipedia.org/wiki/WebDAV) and the [WebDAV website](http://www.webdav.org/) provide information on this protocol.
 
-In a few words, the WebDAV protocol mainly abstracts concepts like resource properties, collections of resources, locks in general, and write locks specifically. These abstractions are manipulated by the WebDAV-specific HTTP methods and the extra HTTP headers used with WebDAV methods. The WebDAV added methods include:
+In a few words, the WebDAV protocol mainly abstracts concepts such as resource properties, collections of resources, locks in general, and write locks specifically. These abstractions are manipulated by the WebDAV-specific HTTP methods and the extra HTTP headers used with WebDAV methods. The WebDAV added methods include:
 
 * PROPFIND — used to retrieve properties, stored as XML, from a web resource. It is also overloaded to allow one to retrieve the collection structure (a.k.a. directory hierarchy) of a remote system.
 * PROPPATCH — used to change and delete multiple properties on a resource in a single atomic act.
@@ -39,26 +39,26 @@ In a few words, the WebDAV protocol mainly abstracts concepts like resource prop
 * LOCK — used to put a lock on a resource. WebDAV supports both shared and exclusive locks.
 * UNLOCK — used to remove a lock from a resource.
 
-While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
+While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so the WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
 WebDAV uses XML for property names and some values, and also uses XML to marshal complicated requests and responses.
 
 <a name="mappingdavsrm">&nbsp;</a>
 #### SRM operations via WebDAV
 
-Starting from EMI3 version, StoRM GridHTTPs Server exposes a WebDAV interface to allow users to access Storage-Areas data via browser or by mounting it from a remote host.
+Starting from EMI3 version, StoRM GridHTTPs server exposes a WebDAV interface to allow users to access Storage-Areas data via browser or by mounting it from a remote host.
 
 
 <img src="assets/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
-GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open source java library those acts as an API and HTTP protocol handler for adding WebDAV support to web applications. *Milton* is not a full server in itself. It is able to expose any existing data source (e.g. CMS, hibernate pojos, etc) through a WebDAV interface.
+GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open source java library that acts as an API and HTTP protocol handler for adding the WebDAV support to web applications. *Milton* is not a full server in itself. It is able to expose any existing data source (e.g. CMS, hibernate pojos, etc) through a WebDAV interface.
 
-As seen in the chapter before, with a WebDAV interface we are allowed to manipulate resources and collections of them. So it's simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one ore more SRM operations that have to be transparent to the final users.
-StoRM GridHTTPs maps HTTP/WebDAV methods with SRM operations as shown by the following table:
+As seen in the chapter before, through a WebDAV interface we are allowed to manipulate resources and collections of them. So it is simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one or more SRM operations that have to be transparent to the final users.
+StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by the following table:
 
 | HTTP/WebDAV Method | Description | SRM Operation | Status codes |
 |:------------------:|:------------|:--------------|:-------------|
 |**GET**
 |GET is defined as "*retrieve whatever information (in the form of an entity) is identified by the Request-URI*" (see [RFC2616](http://tools.ietf.org/html/rfc2616.txt)). GET applied to a file retrieves file's content. GET, when applied to a collection, returns an HTML resource that is a human-readable view of the contents of the collection. 
-|If resource is a file then a ***srmPtg*** and a ***srmRf*** are performed before and after the *file transfer* from server. If resource is a directory then a ***srmLs*** is performed to retrieves its content.
+|If resource is a file then a ***srmPtg*** and a ***srmRf*** are performed before and after the *file transfer* from server. If resource is a directory then a ***srmLs*** is performed to retrieve its content.
 | Success when status code is **OK 200**.
 |
 |**PUT**
@@ -87,17 +87,17 @@ StoRM GridHTTPs maps HTTP/WebDAV methods with SRM operations as shown by the fol
 | Success when status code is **No Content 204**
 |
 | **COPY**
-| The COPY method creates a duplicate of the source resource identified by the Request-URI, in the destination resource identified by the URI in the Destination header. The Destination header MUST be present.
+| The COPY method creates a duplication of the source resource identified by the Request-URI, in the destination resource identified by the URI in the Destination header. The Destination header MUST be present.
 | The COPY of a file has been implemented with a PUT of the file read from request-URI to the request's destination URI. The COPY of a directory has been implemented as a recoursive serie of MKCOL/PUT.
 | Success when status code is **Created 201** or **No Content 204** (already existing destination). **Conflict 409** means that one or more intermediate collections doesn't exist. **Forbidden 403** is a retrived if source and destination URI are the same.
 |
 | **MOVE**
-| The MOVE operation is the logical equivalent of a COPY followed by a delete of the source. All these actions has to be performed in a single operation. The Destination header MUST be present on all MOVE methods
+| The MOVE operation is the logical equivalent of a COPY followed by a delete of the source. All these actions has to be performed in a single operation. The Destination header MUST be present on all MOVE methods.
 | ***srmMv***
 | Success when status code is **Created 201** or **No Content 204** (already existing destination). **Conflict 409** means that one or more intermediate collections doesn't exist. **Forbidden 403** is a retrived if source and destination URI are the same.
 |
 | **PROPFIND**
-| Retrieves, in XML format, the properties defined on the resource identified by the Request-URL. Clients must submit a *Depth* header with a value of "0", "1", or "infinity" (default is "Depth: infinity"). Clients may submit a 'propfind' XML element in the body of the request method describing what information is being requested: a particular property values, by naming the properties desired within the 'prop' element, all property values including additional by using the 'allprop' element (e.g. checksum tyoe and value), the list of names of all the properties defined on the resource by using the 'propname' element.
+| The PROPFIND operation retrieves, in XML format, the properties defined on the resource identified by the Request-URL. Clients must submit a *Depth* header with a value of "0", "1", or "infinity" (default is "Depth: infinity"). Clients may submit a 'propfind' XML element in the body of the request method describing what information is being requested: a particular property values, by naming the properties desired within the 'prop' element, all property values including additional by using the 'allprop' element (e.g. checksum tyoe and value), the list of names of all the properties defined on the resource by using the 'propname' element.
 | ***srmLs*** with ```-l``` (detailed) option
 | Success when status is ***Multi-Status 207***.
 |
@@ -111,7 +111,7 @@ StoRM GridHTTPs maps HTTP/WebDAV methods with SRM operations as shown by the fol
 <a name="installconf">&nbsp;</a>
 ### Service installation and configuration
 
-The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (don't forget to satisfy all the [pre-requisites shown in the sys-admin guide](sysadmin-guide.html#installationguide) before):
+The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide](sysadmin-guide.html#installationguide) before):
 
 	  [~]# yum install emi-storm-gridhttps-mp
 
@@ -122,7 +122,7 @@ A good explanation of the required YAIM variable is available in:
 
 The service uses (by default) ports 8443 and 8085, so open them on your firewall.
 
-The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf)).
+The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install the StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf)).
 To start the service:
 
 	  [~]# service storm-gridhttps-server start
@@ -131,7 +131,7 @@ To start the service:
 <a name="usingwebdav">&nbsp;</a>
 ### Using WebDAV
 
-StoRM GridHTTPs WebDAV server listens on two ports, one for unencrypted HTTP connections and another for the SSL encrypted HTTP requests. Their default values are:
+The StoRM GridHTTPs WebDAV server listens on two ports, one for the unencrypted HTTP connections and another for the SSL encrypted HTTP requests. Their default values are:
 
 * HTTP: **8085**
 * HTTP over SSL: **8443**
@@ -153,7 +153,7 @@ Using a browser, users can navigate through the storage areas' directories and d
 <a name="usingcurls">&nbsp;</a>
 #### cURLs
 
-The best way to use WebDAV service is using cURL command. cURL is a command line tool for transferring data with URL syntax (see [cURL website](http://curl.haxx.se/)). With cURLs we can do anonymous requests or provide our x509 credentials: personal certificate, plain Grid proxy, VOMS proxy. The following examples supposes that user has his personal certificate (*usercert.pem*) and key (*userkey.pem*) in $HOME/.globus directory, and his proxy in $X509\_USER\_PROXY.
+The best way to use the WebDAV service is using cURL command. cURL is a command line tool for transferring data with URL syntax (see [cURL website](http://curl.haxx.se/)). With cURLs we can do anonymous requests or provide our x509 credentials: personal certificate, plain Grid proxy, VOMS proxy. The following examples suppose that user has his/her personal certificate (*usercert.pem*) and key (*userkey.pem*) in $HOME/.globus directory, and his/her proxy in $X509\_USER\_PROXY.
 
 ##### Anonymous cURLs
 
@@ -162,7 +162,7 @@ Assuming that:
 - *ghttps.hostname* is the hostname where your WebDAV endpoint is deployed
 - *free* is the name of a R/W from anonymous Storage Area
 
-and knowing that unencrypted connections has 8085 as default port, the following table show various cURLs, one for each HTTP/WebDAV method.
+and knowing that unencrypted connections have 8085 as default port, the following table show various cURLs, one for each HTTP/WebDAV method.
 
 | Method | cURL | Notes |
 |-------------------:|:----|:------|
