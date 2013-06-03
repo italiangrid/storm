@@ -28,8 +28,7 @@ Writing a specific driver makes sense just if one wants to use advanced Lustre f
 <a name="plat_support">&nbsp;</a>
 ### Which platform are supported by StoRM?
 
-StoRM is released for SL4 32 bit platform.
-x86-64 version is not yet available.
+StoRM is released for SL5 and SL6 platforms.
 
 <a name="local_data">&nbsp;</a>
 ### I have some local data, can I make them available in Grid via SRM using StoRM?
