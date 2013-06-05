@@ -236,6 +236,13 @@ Then execute:
 	yum -y update
 
 
+*IMPORTANT*:
+If you are upgrading a StoRM installation that runs on top of GPFS, be sure to 
+install the `storm-native-libs-gpfs` package after the update has completed, issuing
+the following command:
+
+    yum install storm-native-libs-gpfs
+
 To configure your StoRM services please read the [Configuration](#configuration) section.
 <br><br>
 An example of YAIM use for configuring all the services on the same host is reported below:
