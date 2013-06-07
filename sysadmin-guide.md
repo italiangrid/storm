@@ -666,6 +666,9 @@ You can edit the optional variables summarized in Table 5.
 |STORM\_{SA}\_VONAME
 |Name of the VO that will use the Storage Area (use the complete name, e.g., "lights.infn.it"). This variable becames Mandatory if the value of {SA} is not the name of a VO
 |
+|STORM\_{SA}\_ANONYMOUS\_HTTP\_READ
+|Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
+|
 |STORM\_{SA}\_DN\_C\_REGEX
 |Regular expression specifying the format of C (Country) field of DNs that will use the Storage Area. Optional variable.
 |
