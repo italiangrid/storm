@@ -573,16 +573,18 @@ public class RequestSummaryCatalog {
 	/**
 	 * Method that returns the TRequestType associated to the request with the
 	 * supplied TRequestToken. If no request exists with that token, or the type
-	 * cannot be established from the DB, or the suplied token is null, then an
+	 * cannot be established from the DB, or the supplied token is null, then an
 	 * EMPTY TRequestType is returned.
 	 */
 	synchronized public TRequestType typeOf(TRequestToken rt) {
-
+		TRequestType result = TRequestType.EMPTY;
 		String type = null;
 		if (rt != null) {
 			type = dao.typeOf(rt.toString());
+			if (type != null && !type.isEmpty())
+				result = RequestTypeConverter.getInstance().toSTORM(type);
 		}
-		return RequestTypeConverter.getInstance().toSTORM(type);
+		return result;
 	}
 
 	/**
