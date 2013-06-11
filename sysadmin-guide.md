@@ -293,13 +293,13 @@ To install **EMI repository** download and install the EMI release file:
 
 SL5:
 
-	  [~]# wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl5/x86_64/base/emi-release-3.0.0-2.sl5.noarch.rpm
-	  [~]# yum localinstall --nogpgcheck emi-release-3.0.0-2.sl5.noarch.rpm
+	  [~]# wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl5/x86_64/base/emi-release-3.0.0-2.el5.noarch.rpm
+	  [~]# yum localinstall --nogpgcheck emi-release-3.0.0-2.el5.noarch.rpm
 
 SL6:
 
-	  [~]# wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl6/x86_64/base/emi-release-3.0.0-2.sl6.noarch.rpm
-	  [~]# yum localinstall --nogpgcheck emi-release-3.0.0-2.sl6.noarch.rpm
+	  [~]# wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl6/x86_64/base/emi-release-3.0.0-2.el6.noarch.rpm
+	  [~]# yum localinstall --nogpgcheck emi-release-3.0.0-2.el6.noarch.rpm
 
 #### StoRM Repository settings
 
