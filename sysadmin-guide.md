@@ -241,7 +241,11 @@ If you are upgrading a StoRM installation that runs on top of GPFS, be sure to
 install the `storm-native-libs-gpfs` package after the update has completed, issuing
 the following command:
 
-    yum install storm-native-libs-gpfs
+	yum install storm-native-libs-gpfs
+
+If you are upgrading StoRM GridHTTPs server, after the update you can remove tomcat because it's no more used on EMI3 (if you are not using it for other purposes, of course):
+
+	yum remove tomcat5
 
 To configure your StoRM services please read the [Configuration](#configuration) section.
 <br><br>
@@ -570,7 +574,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
 |
 |STORM\_GRIDHTTPS\_ENABLED
-|If set to true enables the support of http(s) protocols.<br/>Optional variable. Available values: true, false. Default value: **false**
+|If set to true enables the support of http(s) protocols and WebDAV service.<br/>Optional variable. Available values: true, false. Default value: **false**
 |
 |STORM\_GRIDHTTPS\_PLUGIN<br/>\_CLASSNAME
 |GridHTTPs plugin implementation class.<br/>Optional variable. Mandatory to value it.grid.storm.https.GhttpsHTTPSPluginInterface if StoRM GridHTTPs is installed.<br/>Default value: **it.grid.storm.https.HTTPSPluginInterfaceStub**
