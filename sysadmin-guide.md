@@ -243,7 +243,7 @@ the following command:
 
 	yum install storm-native-libs-gpfs
 
-If you are upgrading StoRM GridHTTPs server, after the update you can remove tomcat because it's no more used on EMI3 (if you are not using it for other purposes, of course):
+If you are also upgrading the StoRM GridHTTPs server component, after the installation you can remove tomcat because it’s no more used by EMI3 GridHTTPs. Of course, you can do this if you are not using tomcat for other purposes:
 
 	yum remove tomcat5
 
@@ -573,20 +573,29 @@ and check the other variables to evaluate if you like the default set or if you 
 |STORM\_GRIDFTP\_POOL\_STRATEGY
 |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
 |
+|STORM\_GRIDHTTP\_POOL\_LIST
+|GridHTTPs servers pool list (default value for all Storage Areas). Specify here all the endpoints that BE can use when it builds an HTTP TURL. The endpoint retrieved with the TURL will be builded using STORM\_GRIDHTTP\_HTTP\_PORT as port. _Note_: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDHTTP\_POOL\_LIST variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: STORM\_GRIDHTTP\_POOL\_LIST="host1 weight1, host2 weight2, host3 weight3" Weight has 0-100 range; if not specified, weight will be 100.<br/>Optional variable. Default value: **$STORM_BACKEND_HOST**
+|
+|STORM\_GRIDHTTP\_POOL\_STRATEGY
+|Load balancing strategy for GridHTTPs servers pool, used when the BE builds an HTTP TURL. Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
+|
 |STORM\_GRIDHTTPS\_ENABLED
-|If set to true enables the support of http(s) protocols and WebDAV service.<br/>Optional variable. Available values: true, false. Default value: **false**
+|If set to true enables the support of http(s) protocols.<br/>Optional variable. Available values: true, false. Default value: **false**
 |
 |STORM\_GRIDHTTPS\_PLUGIN<br/>\_CLASSNAME
 |GridHTTPs plugin implementation class.<br/>Optional variable. Mandatory to value it.grid.storm.https.GhttpsHTTPSPluginInterface if StoRM GridHTTPs is installed.<br/>Default value: **it.grid.storm.https.HTTPSPluginInterfaceStub**
 |
+|STORM\_GRIDHTTPS\_POOL\_LIST
+|GridHTTPs servers pool list (default value for all Storage Areas). Specify here all the endpoints that BE can use when it builds an HTTPS TURL. The endpoint retrieved with the TURL will be builded using STORM\_GRIDHTTPS\_HTTPS\_PORT as port. _Note_: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDHTTPS\_POOL\_LIST variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: STORM\_GRIDHTTPS\_POOL\_LIST="host1 weight1, host2 weight2, host3 weight3" Weight has 0-100 range; if not specified, weight will be 100.<br/>Optional variable. Default value: **$STORM_BACKEND_HOST**
+|
+|STORM\_GRIDHTTPS\_POOL\_STRATEGY
+|Load balancing strategy for GridHTTPs servers pool, used when the BE builds an HTTPS TURL. Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
+|
 |STORM\_GRIDHTTPS\_SERVER<br/>\_USER\_UID
-|StoRM GridHTTPs server service user UID. Mandatory if STORM\_GRIDHTTPS\_ENABLED is true
+|StoRM GridHTTPs server service user UID. It's the user id of the user specified by the value of the GridHTTPs' configuration variable STORM\_GRIDHTTPS\_USER. Note: from EMI3 this user id is no more tomcat's user uid **Mandatory if STORM\_GRIDHTTPS\_ENABLED is true**
 |
 |STORM\_GRIDHTTPS\_SERVER<br/>\_GROUP\_GID
-|StoRM GridHTTPs server service user GID. Mandatory if STORM\_GRIDHTTPS\_ENABLED is true
-|
-|STORM\_GRIDHTTPS\_SERVER\_HOST
-|StoRM GridHTTPs server service host Optional variable. Default value: **localhost**
+|StoRM GridHTTPs server service user GID. It's the group id of the user specified by the value of the GridHTTPs' configuration variable STORM\_GRIDHTTPS\_USER. **Mandatory if STORM\_GRIDHTTPS\_ENABLED is true**
 |
 |STORM\_GRIDHTTPS\_HTTP\_PORT
 |StoRM GridHTTPs server mapping service port. Optional variable. Default value: **8086**
