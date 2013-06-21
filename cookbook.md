@@ -12,7 +12,6 @@ title: Cookbook - Useful recipes for StoRM advanced configuration
 * [Cluster configuration guides - DEPRECATED](http://storm.forge.cnaf.infn.it/documentation/cluster_conf)
 * [How to migrate from classicSE to StoRM](#migrate-from-classicSE)
 * [GridFTP process monitor](#gridftp-process-monitor)
-* [Configuration file samples - MISSED](http://storm.forge.cnaf.infn.it/documentation/cookbook)
 
 <a name="migrate-from-classicSE">&nbsp;</a>
 {% include migrate-from-classicSE.md %}
