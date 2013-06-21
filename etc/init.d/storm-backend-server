@@ -38,11 +38,17 @@
 NAME=storm-backend-server
 DESC="storm-backend-server"
 UMASK="077"
-STORM_BE_USER="storm"
 GPFS_PATH=/usr/lpp/mmfs/bin
 PIDFILE=/var/run/${NAME}.pid
 LOCKFOLDER=/var/lock/subsys
 LOCKFILE=${LOCKFOLDER}/${NAME}
+
+source /etc/sysconfig/$NAME
+
+if [ -z $STORM_BE_USER ]; then
+    STORM_BE_USER=storm
+fi
+
 
 ## useful functions
 
