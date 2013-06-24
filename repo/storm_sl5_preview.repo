@@ -1,0 +1,7 @@
+[StoRM-Preview-SL5]
+name=StoRM
+baseurl=https://ci-01.cnaf.infn.it/download/storm/preview/sl5/x86_64
+protect=1
+enabled=1
+priority=1
+gpgcheck=0
