@@ -93,3 +93,8 @@ pre {
 li p {
 	margin: 0 0;
 }
+
+.red {
+	color: red;
+	font-size: 10pt;
+}

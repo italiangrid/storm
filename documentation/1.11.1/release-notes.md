@@ -1,6 +1,8 @@
 ---
 layout: default
 title: StoRM v. 1.11.1
+rootdir: ../..
+assetsdir: ../../assets
 ---
 
 # StoRM v. 1.11.1
@@ -45,8 +47,7 @@ that the correct permissions are set by the system administrator before running 
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [Documentation](documentation.html) section.
-
+You can find information about upgrade, clean installation and configuration of StoRM services in the [Documentation]({{ page.rootdir }}/documentation/1.11.1/index.html) section.
 
 ### Known issues
 

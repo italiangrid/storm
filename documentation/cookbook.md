@@ -1,11 +1,13 @@
 ---
 layout: default
 title: Cookbook - Useful recipes for StoRM advanced configuration
+assetsdir: ../assets
+rootdir: ..
 ---
 
 ## Cookbook
 
-<img src="assets/images/cookbook.jpg" width="180" style="float:right; margin-top: -20px; margin-right: 60px; margin-bottom: 40px;"/>
+<img src="{{ page.assetsdir }}/images/cookbook.jpg" width="180" style="float:right; margin-top: -20px; margin-right: 60px; margin-bottom: 40px;"/>
 
 ### Table of contents
 

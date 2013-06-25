@@ -1,6 +1,8 @@
 ---
 layout: default
 title: StoRM GridHTTPs Server's WebDAV interface
+assetsdir: ../assets
+rootdir: ..
 ---
 
 ## StoRM GridHTTPs Server's WebDAV interface
@@ -25,7 +27,7 @@ The StoRM GridHTTPs is the component responsible for providing both HTTP(s) file
 <a name="whatwebdav">&nbsp;</a>
 ### What is WebDAV?
 
-<img src="assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
+<img src="{{ page.assetsdir }}/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
 
 Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of methods, headers, and content-types ancillary to HTTP/1.1 for the management of resource properties, creation and management of resource collections, URL namespace manipulation, and resource locking. The purpose of this protocol is to present a Web content as a writable medium in addition to be a readable one. [WebDAV on Wikipedia](http://en.wikipedia.org/wiki/WebDAV) and the [WebDAV website](http://www.webdav.org/) provide information on this protocol.
 
@@ -48,7 +50,7 @@ WebDAV uses XML for property names and some values, and also uses XML to marshal
 Starting from EMI3 version, StoRM GridHTTPs server exposes a WebDAV interface to allow users to access Storage-Areas data via browser or by mounting it from a remote host.
 
 
-<img src="assets/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
+<img src="{{ page.assetsdir }}/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
 GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open source java library that acts as an API and HTTP protocol handler for adding the WebDAV support to web applications. *Milton* is not a full server in itself. It is able to expose any existing data source (e.g. CMS, hibernate pojos, etc) through a WebDAV interface.
 
 As seen in the chapter before, through a WebDAV interface we are allowed to manipulate resources and collections of them. So it is simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one or more SRM operations that have to be transparent to the final users.
@@ -141,7 +143,7 @@ User can access storage area data by using a browser, by using cURLs or several 
 <a name="usingbrowsers">&nbsp;</a>
 #### Access data via browser
 
-<img src="assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-right: 50px;"/>
+<img src="{{ page.assetsdir }}/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-right: 50px;"/>
 
 Users can use browsers to easily read data of storage areas that are:
 
@@ -245,7 +247,7 @@ and retrieve the list of file/directories in the root directory of the storage a
 
 There's a useful Firefox plugin, named <a href="https://addons.mozilla.org/it/firefox/addon/restclient/">RESTClient</a>, that can be used as a debugger for RESTful web services. RESTClient supports all HTTP methods <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616</a> (HTTP/1.1) and <a href="http://www.webdav.org/specs/rfc2518.html">RFC2518</a> (WebDAV). You can construct custom HTTP request (custom method with resources URI and HTTP request Body) to directly test requests against a server.
 
-![RESTClient home screenshot](assets/images/restclient.png "RESTClient home screenshot")
+![RESTClient home screenshot]({{ page.assetsdir }}/images/restclient.png "RESTClient home screenshot")
 
 <a name="usingcyberduck">&nbsp;</a>
 #### Cyberduck
@@ -259,4 +261,4 @@ To connect to HTTP readable storage area you can use several clients. One of thi
 
 This configuration is the same for lots of WebDAV clients, alternatives to Cyberduck.
 
-<img src="assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
+<img src="{{ page.assetsdir }}/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>

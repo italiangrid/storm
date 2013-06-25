@@ -1,5 +1,33 @@
 exclude: [README.md]
 
+storm_latest_version: "1.11.2"
+storm_released_versions:
+    - version: "1.11.2"
+      date: "20.07.2013"
+      description: "This was the second update for StoRM in EMI-3"
+      notes: "true"
+      documentation: "true"
+    - version: "1.11.1"
+      date: "03.06.2013"
+      description: "This was the first update for StoRM in EMI-3"
+      notes: "true"
+      documentation: "true"
+    - version: "1.11.0"
+      date: "11.03.2013"
+      description: "This was the StoRM released in EMI-3 - _deprecated_"
+      notes: "http://www.eu-emi.eu/releases/emi-3-montebianco/products/-/asset_publisher/5dKm/content/storm-se-2"
+      documentation: "false"
+    - version: "1.10.0"
+      date: "20.07.2012"
+      description: "This was the first update for StoRM in EMI-2"
+      notes: "http://www.eu-emi.eu/emi-2-matterhorn/updates/-/asset_publisher/9AgN/content/update-1-20-07-2012#StoRM_SE_v_1_10_0_task_30816"
+      documentation: "false"
+    - version: "1.9.0"
+      date: "21.05.2012"
+      description: "This was the StoRM released with EMI-2"
+      notes: "http://www.eu-emi.eu/emi-2-matterhorn-products/-/asset_publisher/B4Rk/content/storm-se-1"
+      documentation: "false"
+
 authors:
   andrea:
     display_name: Andrea Ceccanti
@@ -17,4 +45,5 @@ authors:
   enrico:
     display_name: Enrico Vianello
     email: enrico.vianello@cnaf.infn.it
-  
+    gravatar: 4f496230f3e42d606024e16c5f389611
+    github: enricovianello

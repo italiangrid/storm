@@ -1,11 +1,13 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - System Administration Guide
-sys_admin_guide: assets/images/sys-admin-guide.png
-storm_architecture: assets/images/storm_architecture.png
-storm_distributed: assets/images/storm_distributed.png
-surl_turl_schema: assets/images/surl-turl-schema.png
-namespace_structure: assets/images/namespace-structure.png
+assetsdir: ../../assets
+rootdir: ../..
+sys_admin_guide: ../../assets/images/sys-admin-guide.png
+storm_architecture: ../../assets/images/storm_architecture.png
+storm_distributed: ../../assets/images/storm_distributed.png
+surl_turl_schema: ../../assets/images/surl-turl-schema.png
+namespace_structure: ../../assets/images/namespace-structure.png
 ---
 
 # System Administration Guide
@@ -425,6 +427,12 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |STORM\_BACKEND\_REST\_<br/>SERVICES\_PORT
 |StoRM backend server rest port. Optional variable. Default value: **9998**
 |
+|STORM\_BE\_XMLRPC\_PATH
+|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
+|
+|STORM\_BE\_XMLRPC\_PORT
+|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
+|
 |STORM\_CERT\_DIR
 |Host certificate directory for StoRM Frontend service. Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
 |
@@ -436,15 +444,6 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |
 |STORM\_DB\_USER
 |User for database connection. Default value: **storm**
-|
-|STORM\_FE\_BE\_XMLRPC\_HOST
-|StoRM Backend hostname. Optional variable. Default value: **localhost**
-|
-|STORM\_FE\_BE\_XMLRPC\_PATH
-|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
-|
-|STORM\_FE\_BE\_XMLRPC\_PORT
-|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
 |
 |STORM\_FE\_ENABLE\_MAPPING
 |Enable the check in gridmapfile for client DN. <br/>Optional variable. Available values: true, false. Default value: **false**
@@ -503,6 +502,20 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 		<b>Table 2</b>: Specific StoRM FrontEnd Variables.
 	</p>
 </div>
+
+**NOTE** - **_Variables renamed or deleted with v.1.11.2_**:
+
+|	Var. Name	|	Description	|
+|:--------------|:--------------|
+|STORM\_FE\_BE\_XMLRPC\_HOST
+|**DELETED** It was used to tell to the FrontEnd the XMLRPC endpoint. But this endpoint, for the FrontEnd, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
+|
+|STORM\_FE\_BE\_XMLRPC\_PATH
+|**RENAMED** into STORM\_BE\_XMLRPC\_PATH, see Table 2
+|
+|STORM\_FE\_BE\_XMLRPC\_PORT
+|**RENAMED** into STORM\_BE\_XMLRPC\_PORT, see Table 2
+|
 
 <a name="beconf">&nbsp;</a>
 ### Back-End configuration
