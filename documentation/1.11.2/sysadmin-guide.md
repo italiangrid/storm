@@ -503,7 +503,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 	</p>
 </div>
 
-**NOTE** - **_Variables renamed or deleted with v.1.11.2_**:
+**NOTE** - **_YAIM variables no more used from StoRM v.1.11.2_**:
 
 |	Var. Name	|	Description	|
 |:--------------|:--------------|
