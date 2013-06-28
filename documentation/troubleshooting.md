@@ -1,13 +1,11 @@
 ---
 layout: default
 title: Troubleshooting - StoRM common issues - analysis and solution
-assetsdir: ../assets
-rootdir: ..
 ---
 
 ## Troubleshooting - StoRM common issues: analysis and solution
 
-<img src="{{ page.assetsdir }}/images/troubleshooting.jpeg" width="250" style="float:right;"/>
+<img src="{{ site.baseurl }}/assets/images/troubleshooting.jpeg" width="250" style="float:right;"/>
 ### Table of contents
 
 * [System behavior in case of daemons problem](#sys-behavior-in-case-of-daemons-problem)

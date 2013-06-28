@@ -1,8 +1,6 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - FAQ
-assetsdir: ../assets
-rootdir: ..
 ---
 
 # Frequently asked questions

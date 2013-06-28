@@ -1,24 +1,32 @@
+{% if show_release == "current" %}
+  {% for item in site.storm_released_versions %}
+    {% if item.version == site.storm_latest_version %}
+The current release is **StoRM v.{{ item.version }}**.
 
-### StoRM current release: [{{ site.storm_latest_version }}]({{ page.rootdir }}/documentation/{{ site.storm_latest_version}}/release-notes.html)
+Release notes:
+      {% for note in item.notes %}
+* [{{ note.name }}]({{ site.baseurl }}/release-notes/{{ note.name }}.html)
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+See [documentation]({{ site.baseurl }}/documentation/{{ site.storm_latest_version}}/index.html) for further info.
 
-StoRM current release is [v. {{ site.storm_latest_version }}]({{ page.rootdir }}/documentation/{{ site.storm_latest_version}}/release-notes.html). 
-You can read the release notes [here]({{ page.rootdir }}/documentation/{{ site.storm_latest_version}}/release-notes.html).
-See [documentation]({{ page.rootdir }}/documentation/{{ site.storm_latest_version}}/index.html) for further info.
+{% else if show_release == "previous" %}
 
-#### _Previous releases_:
+  {% for item in site.storm_released_versions %}
+    {% if item.version != site.storm_latest_version %}
+* **StoRM v. {{ item.version }}** - _{{ item.date }}_ - {{ item.description }} - Release notes: {% for note in item.notes %}[{{ note.name }}]({{ site.baseurl }}/release-notes/{{ note.name }}.html){% endfor %} - [Documentation]({{ site.baseurl }}/documentation/{{ item.version }}/index.html) 
+    {% endif %}
+  {% endfor %}
 
-{% for item in site.storm_released_versions %}
- {% if item.notes == "true" %}
-  {% assign noteslink = {{ page.rootdir }}/documentation/{{ item.version }}/release-notes.html %}
- {% else %}
-  {% assign noteslink = {{ item.notes }} %}
- {% endif %}
- {% if item.documentation == "true" %}
-  {% assign doclink = {{ page.rootdir }}/documentation/{{ item.version }}/index.html %}
- {% endif %}
- {% if item.version != site.storm_latest_version %}
-* **StoRM v. {{ item.version }}** - _{{ item.date }}_ - {{ item.description }} - 
-[Release notes]({% if item.notes == "true" %}{{ page.rootdir }}/documentation/{{ item.version }}/release-notes.html{% else %}{{ item.notes }}{% endif %})
-{% if item.documentation == "true" %} [Documentation]({{ page.rootdir }}/documentation/{{ item.version }}/index.html){% endif %}
- {% endif %}
-{% endfor %}
+{% else %}
+
+  {% for item in site.storm_released_versions %}
+* **StoRM v. {{ item.version }}** - _{{ item.date }}_ - {{ item.description }} - Release notes:
+      {% for note in item.notes %}
+[{{ note.name }}]({{ site.baseurl }}/release-notes/{{ note.name }}.html)
+      {% endfor %}
+[Documentation]({{ site.baseurl }}/documentation/{{ item.version }}/index.html) 
+  {% endfor %}
+
+{% endif %}

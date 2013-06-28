@@ -1,3 +1,12 @@
+h2 {
+	color: rgb(51, 51, 51);
+	border-bottom-color: rgb(238, 238, 238);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	margin-bottom: 15px;
+	margin-top: 25px;
+}
+
 hr.soften {
 	margin: 40px 0;
 }
@@ -94,7 +103,3 @@ li p {
 	margin: 0 0;
 }
 
-.red {
-	color: red;
-	font-size: 10pt;
-}

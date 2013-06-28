@@ -1,8 +1,6 @@
 ---
 layout: default
 title: StoRM clientSRM user guide
-assetsdir: ../assets
-rootdir: ..
 ---
 
 ## StoRM clientSRM user guide

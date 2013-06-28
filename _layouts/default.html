@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <title>{{ page.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="shortcut icon" href="{{ page.rootdir }}/favicon.ico" />
+	<link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" />
     <!-- Le styles -->
-    <link href="{{ page.assetsdir }}/css/bootstrap.css" rel="stylesheet">
-    <link href="{{ page.assetsdir }}/css/style.css" rel="stylesheet">
+    <link href="{{ site.baseurl }}/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="{{ site.baseurl }}/assets/css/style.css" rel="stylesheet">
     <style>
       body {
        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -19,13 +19,13 @@
   	<div class="navbar navbar-inverse navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container">
-				<a class="brand" href="{{ page.rootdir }}/index.html">StoRM</a>
+				<a class="brand" href="{{ site.baseurl }}/index.html">StoRM</a>
 				<div class="nav-collapse collapse pull-right">
 					<ul class="nav">
-						<li><a href="{{ page.rootdir }}/index.html">Home</a></li>
-						<li><a href="{{ page.rootdir }}/download.html">Downloads</a></li>
-						<li><a href="{{ page.rootdir }}/documentation/{{ site.storm_latest_version }}/index.html">Documentation</a></li>
-						<li><a href="{{ page.rootdir }}/support.html">Support</a></li>
+						<li><a href="{{ site.baseurl }}/index.html">Home</a></li>
+						<li><a href="{{ site.baseurl }}/download.html">Downloads</a></li>
+						<li><a href="{{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/index.html">Documentation</a></li>
+						<li><a href="{{ site.baseurl }}/support.html">Support</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->

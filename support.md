@@ -1,9 +1,6 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager
-assetsdir: ./assets
-rootdir: .
-latest: 1.11.2
 ---
 
 # Get support
