@@ -99,7 +99,7 @@ public enum GPFSQuotaManager {
 		long refreshPeriod = Configuration.getInstance()
 				.getGPFSQuotaRefreshPeriod();
 		
-		log.info("GPFSQuotaManager refresh period (in seconds): %d",
+		log.info("GPFSQuotaManager refresh period (in seconds): {}",
 			refreshPeriod);
 
 		workerScheduler.scheduleWithFixedDelay(new QuotaJobSubmitter(), 0,
