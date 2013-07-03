@@ -38,10 +38,10 @@ StoRM has a multi-layer architecture (Fig.1) characterized by two main stateless
 
 {% assign image_src="storm_architecture.png" %}
 {% assign image_width="200px" %}
-{% include image.html %}
+{% include documentation/image.html %}
 {% assign label_title="Fig. 1" %}
 {% assign label_description="Simple StoRM Service Architecture schema<br/>with one BackEnd and one FrontEnd." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 The service is characterized by several components, some of which are mandatory, while others are optional:
 
@@ -54,10 +54,10 @@ The modular architecture of StoRM permits that service can be deployed on a mult
 
 {% assign image_src="storm_distributed.png" %}
 {% assign image_width="100%" %}
-{% include image.html %}
+{% include documentation/image.html %}
 {% assign label_title="Fig. 2" %}
 {% assign label_description="Example of distributed StoRM Service Architecture<br/>with one BackEnd, different pools of FrontEnds, GridHTTPs and GridFTPs." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 <a name="installprereq">&nbsp;</a>
 ## Installation Prerequisites
@@ -378,7 +378,7 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 
 {% assign label_title="Table 1" %}
 {% assign label_description="General YAIM Variables." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 <a name="feconf">&nbsp;</a>
 ### Front-End configuration
@@ -393,12 +393,13 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |:--------------------------------------|:--------------|
 |ARGUS\_PEPD\_ENDPOINTS					|The complete service endpoint of Argus PEP server. Mandatory if STORM\_FE\_USER\_BLACKLISTING is true. Example: https://host.domain:8154/authz
 |STORM\_BACKEND\_REST\_SERVICES\_PORT	|StoRM backend server rest port. Optional variable. Default value: **9998**
-|STORM\_BE\_XMLRPC\_PATH				|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
-|STORM\_BE\_XMLRPC\_PORT				|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
 |STORM\_CERT\_DIR						|Host certificate directory for StoRM Frontend service. Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
 |STORM\_DB\_HOST						|Host for database connection. <br/>Optional variable. Default value: **localhost**
 |STORM\_DB\_PWD							|Password for database connection. **Mandatory**.
 |STORM\_DB\_USER						|User for database connection. Default value: **storm**
+|STORM\_FE\_BE\_XMLRPC\_HOST			|StoRM Backend hostname. Optional variable. Default value: **localhost**
+|STORM\_FE\_BE\_XMLRPC\_PATH			|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
+|STORM\_FE\_BE\_XMLRPC\_PORT			|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
 |STORM\_FE\_ENABLE\_MAPPING				|Enable the check in gridmapfile for client DN. <br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM\_FE\_ENABLE\_VOMSCHECK			|Enable the check in gridmapfile for client VOMS attributes. <br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM\_FE\_GSOAP\_MAXPENDING			|Max number of request pending in the GSOAP queue. Optional variable. Default value: **2000**
@@ -419,19 +420,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 
 {% assign label_title="Table 2" %}
 {% assign label_description="Specific StoRM FrontEnd Variables." %}
-{% include label.html %}
-
-**NOTE** - **_The following table contains the YAIM variables no more used from StoRM v.1.11.2_**:
-
-|	Var. Name					|	Description	|
-|:------------------------------|:--------------|
-|STORM\_FE\_BE\_XMLRPC\_HOST	|**DELETED** It was used to tell to the FrontEnd the XMLRPC endpoint. But this endpoint, for the FrontEnd, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
-|STORM\_FE\_BE\_XMLRPC\_PATH	|**RENAMED** into STORM\_BE\_XMLRPC\_PATH, see Table 2
-|STORM\_FE\_BE\_XMLRPC\_PORT	|**RENAMED** into STORM\_BE\_XMLRPC\_PORT, see Table 2
-
-{% assign label_title="Table 3" %}
-{% assign label_description="YAIM variables no more used from StoRM v.1.11.2" %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 <a name="beconf">&nbsp;</a>
 ### Back-End configuration
@@ -500,7 +489,7 @@ and check the other variables to evaluate if you like the default set or if you 
 
 {% assign label_title="Table 4" %}
 {% assign label_description="Specific StoRM BackEnd Variables." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 Then, for each Storage Area listed in the STORM\_STORAGEAREA\_LIST variable, which is not the name of a valid VO, you have to edit the STORM\_{SA}\_VONAME compulsory variable (detailed in Table 5). {SA} has to be written in capital letters as in the other variables included in the **site-info.def** file, otherwise default values will be used.
 
@@ -547,7 +536,7 @@ You can edit the optional variables summarized in Table 5.
 
 {% assign label_title="Table 5" %}
 {% assign label_description="Storage Area Variables." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 <a name="ghttpconf">&nbsp;</a>
 ### GridHTTPs configuration
@@ -582,7 +571,7 @@ and check the other variables to evaluate if you like the default set or if you 
 
 {% assign label_title="Table 6" %}
 {% assign label_description="Specific StoRM GridHTTPs Variables." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 <a name="launchyaim">&nbsp;</a>
 ### Launching YAIM configuration
@@ -809,6 +798,8 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 
 > **_Service information_**
 
+> **_Service information_**
+
 |	Property Name						|	Description		|
 |:--------------------------------------|:------------------|
 |	storm.service.SURL.endpoint			|	List of comma separated strings identifying the StoRM FrontEnd endpoint(s). This is used by StoRM to understand if a SURL is local. E.g. *srm://storm.cnaf.infn.it:8444/srm/managerv2*
@@ -963,10 +954,10 @@ The *mapping functionality* is the process of retrieving or building the transpo
 
 {% assign image_src="surl-turl-schema.png" %}
 {% assign image_width="100%" %}
-{% include image.html %}
+{% include documentation/image.html %}
 {% assign label_title="Fig. 3" %}
 {% assign label_description="Site URL and Transfer URL schema." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 A couple of quick concepts from SRM:
 
@@ -1005,10 +996,10 @@ The Fig.4 shows the main concepts of Namespace Component:
 
 {% assign image_src="namespace-structure.png" %}
 {% assign image_width="80%" %}
-{% include image.html %}
+{% include documentation/image.html %}
 {% assign label_title="Fig. 4" %}
 {% assign label_description="Namespace structure." %}
-{% include label.html %}
+{% include documentation/label.html %}
 
 This is and example of the FS element:
 

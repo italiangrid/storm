@@ -16,26 +16,21 @@
   </head>
 
   <body>
-  	<div class="navbar navbar-inverse navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container">
-				<a class="brand" href="{{ site.baseurl }}/index.html">StoRM</a>
-				<div class="nav-collapse collapse pull-right">
-					<ul class="nav">
-						<li><a href="{{ site.baseurl }}/index.html">Home</a></li>
-						<li><a href="{{ site.baseurl }}/download.html">Downloads</a></li>
-						<li><a href="{{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/index.html">Documentation</a></li>
-						<li><a href="{{ site.baseurl }}/support.html">Support</a></li>
-					</ul>
-				</div>
-				<!--/.nav-collapse -->
-			</div>
+  	<div id="wrap">
+	    {% include github-ribbon.html %}
+  		{% include navbar.html %}
+		<div class="container">
+			{{ content }}
+		</div>
+		<div id="push"></div>
+	</div> <!-- wrap element -->
+	<!-- Footer -->
+	<div id="footer">
+		<div class="container">
 		</div>
 	</div>
-
-			<div class="container">
-				{{ content }}
-			</div>
-			<a href="https://github.com/italiangrid/storm"><img style="position: absolute; top: 40px; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+	<!-- Scripts included at the end  of the page -->
+	<script src="{{ site.baseurl }}/assets/js/jquery.js" type="text/javascript"></script>
+	<script type="text/javascript" src="{{ site.baseurl }}/assets/js/bootstrap.min.js"></script>
   </body>
 </html>

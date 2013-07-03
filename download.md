@@ -30,18 +30,36 @@ To install the repository files, run the following commands (as root):
     (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 
 ## Current release
+{% for release in site.storm_released_versions %}
+  {% if release.version == site.storm_latest_version %}
+    {% assign current=release %}
+  {% endif %}
+{% endfor %}
 
-{% assign show_release="current" %}
-{% include storm-releases.md %}
+The current release is [**{{ current.title }}**]({{ site.baseurl }}/release-notes/{{ current.version }}.html)
+
+{% include download/component-table.html %}
+
+Last release RFCs:
+
+{% assign version_filter=site.storm_latest_version %}
+{% assign type_filter="bug" %}
+{% assign component_filter="all" %}
+{% include filtered-list-rfcs.md %}
 
 ## Previous releases
 
-{% assign show_release="previous" %}
-{% include storm-releases.md %}
+{% for item in site.storm_released_versions %}
+  {% if item.version != site.storm_latest_version %}
+* **{{ item.title }}** - _{{ item.date }}_ - {{ item.description }} - [Release notes]({{ site.baseurl }}/release-notes/{{ item.version }}.html) - [Documentation]({{ site.baseurl }}/documentation/{{ item.version }}/index.html) 
+  {% endif %}
+{% endfor %}
 
 ##### _Older releases_:
 
-{% include storm-old-releases.md %}
+{% for item in site.storm_old_versions %}
+* **StoRM v. {{ item.version }}** - _{{ item.date }}_ - {{ item.description }} - [Release notes]({{ item.notes }}) 
+{% endfor %}
 
 ## Testing versions
 
@@ -58,3 +76,8 @@ Install the development repositories like
 	wget http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo -O /etc/yum.repos.d/storm.repo
 	
 <br/>
+
+[storm-emi3-v1.11.1]: http://www.eu-emi.eu/releases/emi-3-monte-bianco/updates/-/asset_publisher/5Na8/content/update-5-03-06-2013-v-3-3-0-1#STORM_v_1_11_1
+
+
+

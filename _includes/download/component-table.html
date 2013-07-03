@@ -1,0 +1,50 @@
+<!-- Needs "current" release initialized -->
+<table>
+	<thead>
+		<tr>
+			<th align=left>Component</th>
+			<th align=left>Version</th>
+			<th align=left>Repo availability</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for component in site.storm_components %}
+		<tr class="{{ component.visibility }}" {% if component.visibility == "hidden" %} style="display: none;" {% endif %}>
+			<td align=left>
+				{{ component.name }}
+			</td>
+			<td align=left>
+				<a href="{{site.baseurl}}/release-notes/{{ component.package }}/{{ component.latest }}/{{ component.package }}-v{{ component.latest }}.html">{{ component.latest }}</a>
+				{% for item in current.components %}
+               	  {% if item.name == component.package and item.version == component.latest %}
+    				<span class="label label-success">new</span>
+    			  {% endif %}
+    			{% endfor %}	
+			</td>
+			<td align=left>
+				{% if component.repo contains "StoRM" %}
+				<span class="label label-info">StoRM PT</span>
+				{% endif %}
+				{% if component.repo contains "emi" %}
+				<span class="label">emi</span>
+				{% endif %}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<script>
+
+function toggleComponents() {
+	$(".hidden").toggle();
+	if ($("#toggle-components").text() == "Show all the components") {
+		$("#toggle-components").html("Show only main components");
+	} else { 
+		$("#toggle-components").html("Show all the components");
+	}
+}
+
+</script>
+
+<button id="toggle-components" onclick="toggleComponents()">Show all the components</button>

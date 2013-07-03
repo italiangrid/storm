@@ -75,11 +75,11 @@ StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by
 <a name="installconf">&nbsp;</a>
 ### Service installation and configuration
 
-The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide](sysadmin-guide.html#installationguide) before):
+The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide][prereq] before):
 
 	  [~]# yum install emi-storm-gridhttps-mp
 
-To configure storm-gridhttps-server you need to fill the requested YAIM variables as described in the [basic](sysadmin-guide.html#ghttpconf) and [advanced](sysadmin-guide.html#ghttp_advconf) StoRM GridHTTPs sys-admin configuration guides. 
+To configure storm-gridhttps-server you need to fill the requested YAIM variables as described in the [basic][ghttp_basic_conf] and [advanced][ghttp_advanced_conf] StoRM GridHTTPs sys-admin configuration guides. 
 A good explanation of the required YAIM variable is available in:
 
 	/opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
@@ -109,7 +109,7 @@ User can access storage area data by using a browser, by using cURLs or several 
 
 Users can use browsers to easily read data of storage areas that are:
 
-- HTTP readable (see the storage area configuration described in the [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf))
+- HTTP readable (see the storage area configuration described in the [StoRM BackEnd configuration on sys-admin guide][be_conf])
 - not HTTP readable, not associated to a particular VO, eventually access-filtered through users' DN.
 
 Using a browser, users can navigate through the storage areas' directories and download/open files. 
@@ -197,3 +197,10 @@ To connect to HTTP readable storage area you can use several clients. One of thi
 This configuration is the same for lots of WebDAV clients, alternatives to Cyberduck.
 
 <img src="{{ site.baseurl }}/assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
+
+
+
+[ghttp_basic_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#ghttpconf
+[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#ghttp_advconf
+[be_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#beconf
+[prereq]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#installationguide

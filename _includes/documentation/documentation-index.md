@@ -1,15 +1,14 @@
-{% if site.storm_latest_version != page.version %}
-<p style="position: absolute; top: 50px; right: 150px; color: #2f82ff; font-style: italic; background-color: #cbe4ff; border: 2px solid #9ec3ff; width: 500px; padding: 1px 10px;">
-This is not the documentation of the latest version. Go to the latest version <a href="{{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/index.html">here</a>
-</p>
-{% endif %}
+{% for release in site.storm_released_versions %}
+  {% if release.version == page.version %}
+    {% assign selected=release %}
+  {% endif %}
+{% endfor %}
 
-<img src="{{ site.baseurl }}/assets/images/documentation.png" alt="documentation" width="100" style="float: left; padding-right: 26px; margin-left: 2px; margin-top: 24px; background-color: white;"/>
-
-## StoRM Documentation
+# StoRM Documentation
 _Here you can find all the StoRM guides, useful to learn what is StoRM service and how to install and configure it on your system. Follow the user guides to take the most of StoRM's functionalities and see FAQ and Troubleshooting sections if something is wrong._
 
-<br/>
+Updated to release: [**{{ selected.title }}**]({{ site.baseurl }}/release-notes/{{ selected.version }}.html)
+<hr/>
 
 #### [System administrator guide](sysadmin-guide.html)
 - A guide to install and configure StoRM components on a single or distributed scenario.
@@ -34,7 +33,11 @@ _Here you can find all the StoRM guides, useful to learn what is StoRM service a
 
 <hr/>
 
-This is the documentation for: <b>{{ page.release_title }}</b>
-<br/>
-Is not this version you was looking for? Choose another version: {% include versions.md %}
+Is not this version you was looking for? Choose another version:
+{% for item in site.storm_released_versions %}
+ {% if item.version != selected.version %}
+* **[{{ item.title }}]({{ page.rootdir }}/documentation/{{ item.version }}/index.html)**
+ {% endif %}
+{% endfor %}
 
+<br/>
