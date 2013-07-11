@@ -11,16 +11,14 @@ repo_base_url: "https://github.com/italiangrid"
 versions:
     sysadmin_guide: 1.11.2
 
-storm_latest_version: 1.11.2
-
 storm_components:
-    - name: StoRM BackEnd
+    - name: StoRM Backend
       package: storm-backend-server
       latest: 1.11.2
       new: true
       repo: StoRM
       visibility: show
-    - name: StoRM FrontEnd
+    - name: StoRM Frontend
       package: storm-frontend-server
       latest: 1.8.2
       new: true
@@ -44,7 +42,7 @@ storm_components:
       new: true
       repo: StoRM
       visibility: hide
-    - name: StoRM info provider
+    - name: StoRM dynamic info
       package: storm-dynamic-info-provider
       latest: 1.7.6
       new: false

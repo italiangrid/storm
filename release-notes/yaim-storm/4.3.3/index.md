@@ -3,8 +3,8 @@ layout: release_note_component
 title: "YAIM StoRM v.4.3.3 release notes"
 release_date: "20.07.2013"
 release_description: "This was the second update for StoRM in EMI-3."
-release_version: "EMI3-U2"
-release_title: "EMI3 StoRM - 2nd Update"
+release_title: "StoRM v.1.11.2"
+release_version: "StoRM-v1.11.2"
 component:
       name: "YAIM StoRM"
       package: "yaim-storm"

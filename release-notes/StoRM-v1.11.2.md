@@ -1,10 +1,9 @@
 ---
 layout: release_note_release
-title: "EMI3 StoRM - 2nd Update release notes"
+title: "StoRM v.1.11.2 - release notes"
 release_date: "20.07.2013"
-release_description: "This was the second update for StoRM in EMI-3."
-release_version: "EMI3-U2"
-release_title: "EMI3 StoRM - 2nd Update"
+release_description: "This release fixes v.1.11.1 known issues."
+release_title: "StoRM v.1.11.2"
 release_rfcs:
     - id: STOR-259
       type: bug
@@ -22,10 +21,10 @@ release_rfcs:
       type: bug
       title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint
 release_components:
-    - name: StoRM BackEnd
+    - name: StoRM Backend
       package: storm-backend-server
       version: 1.11.2
-    - name: StoRM FrontEnd
+    - name: StoRM Frontend
       package: storm-frontend-server
       version: 1.8.2
     - name: StoRM native libs

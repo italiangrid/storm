@@ -5,23 +5,21 @@ title: Cookbook - Useful recipes for StoRM advanced configuration
 
 ## Cookbook
 
-<img src="{{ site.baseurl }}/assets/images/cookbook.jpg" width="180" style="float:right; margin-top: -30px; margin-right: 0px; margin-bottom: 40px;"/>
+<img src="{{ site.baseurl }}/assets/images/cookbook.jpg" width="180" style="float:right; margin-top: -30px; margin-right: 0px; margin-bottom: 40px;"/>
 
 ### Table of contents
 
-* [Cluster configuration guides - DEPRECATED](http://storm.forge.cnaf.infn.it/documentation/cluster_conf)
 * [How to migrate from classicSE to StoRM](#migrate-from-classicSE)
 * [GridFTP process monitor](#gridftp-process-monitor)
 
-<a name="migrate-from-classicSE">&nbsp;</a>
-### Moving from classicSE to StoRM
+### Moving from classicSE to StoRM <a name="migrate-from-classicSE">&nbsp;</a>
 
 Since StoRM does not use a database to store the location of data into the storage system, moving from a classicSE to StoRM is really easy. There are not migration scripts or special procedures: it only requires to install StoRM on the desired host and all your data will be automatically available in GRID through the SRM interface.
 
 #### Instructions
 
-1. Please have a look to the [StoRM requirements]({{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#installprereq).
-1. Follow the StoRM [installation]({{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#installationguide) and [configuration]({{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#configuration) guides.
+1. Please have a look to the [StoRM requirements]({{site.baseurl}}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/index.html#installprereq).
+1. Follow the StoRM [installation]({{site.baseurl}}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/index.html#installationguide) and [configuration]({{site.baseurl}}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/index.html#configuration) guides.
 1. After launching YAIM, the StoRM services will be up.
 
 #### Information System
@@ -38,21 +36,19 @@ The new StoRM installation can be tested by using one of the following SRM clien
 
 * lcg-utils
 * SAM test
-* download and use our SRM v2.2 Command Line Client: [clientSRM]({{ site.baseurl }}/documentation/clientSRM-guide.html)
+* download and use our SRM v2.2 Command Line Client: [clientSRM]({{site.baseurl}}/documentation/clientsrm-guide/)
 
 #### Troubleshooting
 
 For any problem please refer to **storm-support@cnaf.infn.it**.
 
-
-<a name="gridftp-process-monitor">&nbsp;</a>
-### GridFTP process monitor
+### GridFTP process monitor <a name="gridftp-process-monitor">&nbsp;</a>
 
 This guide is about how to configure the gridFTP process monitor in order to balance the transfer load among multiple gridFTP servers.
 
 #### RPMs
 
-* DIM v17 (–nodeps on SL4)
+* DIM v17 (-nodeps on SL4)
 
   * to avoid forcing the openmotif.i386 package is needed.
   * [RPMs](http://lhcb-daq.web.cern.ch/lhcb-daq/online-rpm-repo/index.html)

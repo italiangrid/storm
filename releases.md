@@ -8,9 +8,9 @@ The following is the list of last StoRM releases, with the released components l
 
 
 <span class="label" style="margin-top: -20px;">20.07.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
-### EMI3 StoRM 2nd Update
+### StoRM v.1.11.2
 
-This was the second update for StoRM in EMI-3.
+This is the latest release for StoRM, available on StoRM repositories.
 
 | Component			| Version	|
 |:------------------|:----------|
@@ -19,12 +19,13 @@ This was the second update for StoRM in EMI-3.
 |StoRM native libs	|[1.0.2]({{site.baseurl}}/release-notes/storm-native-libs/1.0.2/)|
 |YAIM StoRM			|[4.3.3]({{site.baseurl}}/release-notes/yaim-storm/4.3.3/)|
 
-See more details on the [release notes]({{site.baseurl}}/release-notes/EMI3-U2.html).
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.2.html).
 
 ___
 
 <span class="label" style="margin-top: -20px;">03.06.2013</span>
-### EMI-3 StoRM - 1st Update
+### StoRM v.1.11.1
+
 
 This was the first update for StoRM in EMI-3.
 
@@ -36,7 +37,7 @@ This was the first update for StoRM in EMI-3.
 |YAIM StoRM			|[4.3.2]({{site.baseurl}}/release-notes/yaim-storm/4.3.2/)|
 |StoRM dynamic info |[1.7.6]({{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.6/)|
 
-See more details on the [release notes]({{site.baseurl}}/release-notes/EMI3-U1.html).
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.1.html).
 
 ___
 

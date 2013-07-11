@@ -192,7 +192,7 @@ This configuration is the same for lots of WebDAV clients, alternatives to Cyber
 
 
 
-[ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#ghttpconf
-[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#ghttp_advconf
-[be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#beconf
-[prereq]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#installprereq
+[ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttpconf
+[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttp_advconf
+[be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#beconf
+[prereq]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#installprereq
