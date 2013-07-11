@@ -9,17 +9,13 @@
 	</thead>
 	<tbody>
 	{% for component in site.storm_components %}
-		<tr class="{{ component.visibility }}" {% if component.visibility == "hidden" %} style="display: none;" {% endif %}>
+		<tr {% if component.visibility == "hide" %} class="hide" style="display: none;" {% endif %}>
+			<td align=left>{{ component.name }}</td>
 			<td align=left>
-				{{ component.name }}
-			</td>
-			<td align=left>
-				<a href="{{site.baseurl}}/release-notes/{{ component.package }}/{{ component.latest }}/{{ component.package }}-v{{ component.latest }}.html">{{ component.latest }}</a>
-				{% for item in current.components %}
-               	  {% if item.name == component.package and item.version == component.latest %}
-    				<span class="label label-success">new</span>
-    			  {% endif %}
-    			{% endfor %}	
+				<a href="{{site.baseurl}}/release-notes/{{ component.package }}/{{ component.latest }}/">{{ component.latest }}</a>
+			    {% if component.new %}
+    			<span class="label label-success" style="margin-left: 5px;">new</span>
+    		    {% endif %}	
 			</td>
 			<td align=left>
 				{% if component.repo contains "StoRM" %}
@@ -37,7 +33,7 @@
 <script>
 
 function toggleComponents() {
-	$(".hidden").toggle();
+	$(".hide").toggle();
 	if ($("#toggle-components").text() == "Show all the components") {
 		$("#toggle-components").html("Show only main components");
 	} else { 

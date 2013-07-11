@@ -17,7 +17,7 @@ You can find [general EMI 3 installation instructions](https://twiki.cern.ch/twi
 	wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl5/x86_64/base/emi-release-3.0.0-2.el5.noarch.rpm
 	yum localinstall -y emi-release-3.0.0-2.el5.noarch.rpm
 
-Follow the [system administration guide]({{ site.baseurl }}/documentation/{{ site.storm_latest_version}}/sysadmin-guide.html) for detailed installation instructions.
+Follow the [system administration guide]({{ site.baseurl }}/documentation/sysadmin-guide/{{ site.versions.sysadmin-guide}}/) for detailed installation instructions.
 
 #### StoRM
 
@@ -29,43 +29,21 @@ To install the repository files, run the following commands (as root):
     (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
     (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 
-## Current release
-{% for release in site.storm_released_versions %}
-  {% if release.version == site.storm_latest_version %}
-    {% assign current=release %}
-  {% endif %}
-{% endfor %}
+---
 
-The current release is [**{{ current.title }}**]({{ site.baseurl }}/release-notes/{{ current.version }}.html)
+### Current release
 
 {% include download/component-table.html %}
 
-Last release RFCs:
+---
 
-{% assign version_filter=site.storm_latest_version %}
-{% assign type_filter="bug" %}
-{% assign component_filter="all" %}
-{% include filtered-list-rfcs.md %}
+### Previous releases
 
-## Previous releases
+Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
 
-{% for item in site.storm_released_versions %}
-  {% if item.version != site.storm_latest_version %}
-* **{{ item.title }}** - _{{ item.date }}_ - {{ item.description }} - [Release notes]({{ site.baseurl }}/release-notes/{{ item.version }}.html) - [Documentation]({{ site.baseurl }}/documentation/{{ item.version }}/index.html) 
-  {% endif %}
-{% endfor %}
+---
 
-##### _Older releases_:
-
-{% for item in site.storm_old_versions %}
-* **StoRM v. {{ item.version }}** - _{{ item.date }}_ - {{ item.description }} - [Release notes]({{ item.notes }}) 
-{% endfor %}
-
-## Testing versions
-
-We are going provide a repository for testing versions, i.e versions for which the development has finished and can be passed to early adopters for the staged roll-out.
-
-## Development versions
+### Nightly builds
 
 Development versions are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/). 
 
@@ -74,10 +52,20 @@ Artifacts for the last commit can be found on our yum repos for [SL5](http://rad
 Install the development repositories like
 
 	wget http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo -O /etc/yum.repos.d/storm.repo
-	
-<br/>
 
-[storm-emi3-v1.11.1]: http://www.eu-emi.eu/releases/emi-3-monte-bianco/updates/-/asset_publisher/5Na8/content/update-5-03-06-2013-v-3-3-0-1#STORM_v_1_11_1
+---
 
+### Source code
 
+The StoRM source is available on [Github](https://github.com) in the following repositories:
 
+- [StoRM BackEnd](https://github.com/italiangrid/storm)
+- [StoRM FrontEnd](https://github.com/italiangrid/storm-frontend)
+- [StoRM GridHTTPs](https://github.com/italiangrid/storm-gridhttps-server)
+- [StoRM native libs](https://github.com/italiangrid/storm-native-libs)
+- [YAIM StoRM](https://github.com/italiangrid/yaim-storm)
+- [StoRM info provider](https://github.com/italiangrid/storm-info-provider)
+- [StoRM client](https://github.com/italiangrid/storm-client)
+- [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
+- [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
+- [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)

@@ -8,17 +8,12 @@ title: StoRM clientSRM user guide
 ### Table of contents
 
 * [SRM clients](#srmclients)
-
   * [Basic concepts](#basicconcepts)
-
     * [SRM endpoint](#srmendpoint)
     * [SURL](#surl)
-
 * [StoRM ClientSRM](#clientSRM)
-
   * [Installation](#clientSRMinstall)
   * [Examples](#clientSRMexamples)
-
     * [srmPing](#srmPing)
     * [srmMkdir](#srmMkdir)
     * [srmRmdir](#srmRmdir)
@@ -35,13 +30,11 @@ title: StoRM clientSRM user guide
     * [srmCopy](#srmCopy)
     * [srmStatusOfCopy](#srmStatusOfCopy)
 
-<a name="srmclients">&nbsp;</a>
-### SRM clients
+### SRM clients <a name="srmclients">&nbsp;</a>
 
 StoRM distributes clients for contacting SRM services. These clients are not the StoRM clients but the general purpose SRM clients and can be use to contact any Web Service implementing the SRM interface. This document provides some examples of the main functionalities of the SRM specification v2.2.
 
-<a name="basicconcepts">&nbsp;</a>
-#### Basic concepts
+#### Basic concepts <a name="basicconcepts">&nbsp;</a>
 
 In order to use the SRM services you need:
 
@@ -49,8 +42,7 @@ In order to use the SRM services you need:
 - A SRM endpoint to contact.
 - to be authorized to contact the SRM.
 
-<a name="srmendpoint">&nbsp;</a>
-##### SRM endpoint
+##### SRM endpoint <a name="srmendpoint">&nbsp;</a>
 
 Generally a SRM endpoint is in the form:
 
@@ -62,14 +54,13 @@ The endpoint that we use in all the following examples is:
 
 For this endpoint the service path can be left blank.
 
-<a name="surl">&nbsp;</a>
-##### SURL
+##### SURL <a name="surl">&nbsp;</a>
 
 A file (or a directory) is identified by a SURL that has the following format:
 
 	srm://host[:port]/[soap_end_point_path?SFN=]site_file_name
 
-where […] means optional. The sfile ite\_file\_name must begin with a StFN root. The StFN root must be agreed with the SRM administrsator. 
+where [...] means optional. The sfile ite\_file\_name must begin with a StFN root. The StFN root must be agreed with the SRM administrator. 
 An example of SURL is:
 
 	srm://ibm139.cnaf.infn.it:8444/infngrid/test_file.txt
@@ -84,32 +75,29 @@ According to the last example the SRM endpoint should be:
 
 	httpg://ibm139.cnaf.infn.it:8444/srm/managerv2
 
-
-<a name="clientSRM">&nbsp;</a>
-### StoRM clientSRM
+### StoRM clientSRM <a name="clientSRM">&nbsp;</a>
 
 The clientSRM is the binary of the SRM v2.2 Command Line Client. The client can be used to interact with any SRM v2.2 endpoint. 
 
-<a name="clientSRMinstall">&nbsp;</a>
-#### Installation
+#### Installation <a name="clientSRMinstall">&nbsp;</a>
 
 To install storm-srm-client, install its metapackage RPM: *emi-storm-srm-client-mp*
 
-	  [~]# yum install emi-storm-srm-client-mp
+	$ yum install emi-storm-srm-client-mp
 
-<a name="clientSRMexamples">&nbsp;</a>
-#### Examples
+#### Examples <a name="clientSRMexamples">&nbsp;</a>
 
 The following are several examples of clientSRM use.
 
-<a name="srmPing">&nbsp;</a>
-##### srmPing
+##### srmPing <a name="srmPing">&nbsp;</a>
 
 Check the state of the SRM.
 
-This function works as an “are you alive” type of call. The version of the SRM specification implemented by the server is returned. To ping a SRM server using the provided SRM client type: 
+This function works as an "are you alive" type of call. 
+The version of the SRM specification implemented by the server is returned. 
+To ping a SRM server using the provided SRM client type: 
 
-	# clientSRM Ping -e httpg://ibm139.cnaf.infn.it:8444/
+	$ clientSRM Ping -e httpg://ibm139.cnaf.infn.it:8444/
 
 The server responds with the implemented SRM version:
 
@@ -123,8 +111,7 @@ The server responds with the implemented SRM version:
 	  otherInfo=NULL
 	============================================================
 
-<a name="srmMkdir">&nbsp;</a>
-##### srmMkdir
+##### srmMkdir <a name="srmMkdir">&nbsp;</a>
 
 Create a directory in a local SRM space.
 
@@ -140,8 +127,7 @@ And you will get something like this:
 	  explanation="Directory created with success" 
 	============================================================
 
-<a name="srmRmdir">&nbsp;</a>
-##### srmRmdir
+##### srmRmdir <a name="srmRmdir">&nbsp;</a>
 
 Remove an empty directory in a local SRM space.
 
@@ -155,8 +141,7 @@ To remove an empty directory using the provided SRM client type:
 	  explanation="Directory removed with success!"
 	============================================================
 
-<a name="srmRm">&nbsp;</a>
-##### srmRm
+##### srmRm <a name="srmRm">&nbsp;</a>
 
 Remove SURLs in the storage system. 
 
@@ -176,14 +161,13 @@ To remove the file test_file.txt inside the directory test_dir type:
 	                  explanation="File removed"
 	============================================================
 
-<a name="srmLs">&nbsp;</a>
-##### srmLs
+##### srmLs <a name="srmLs">&nbsp;</a>
 
 Return a list of files with a basic information. 
 
-To list the content of the directory test_dir together with all its subdirectories type:
+To list the content of the directory test\_dir together with all its subdirectories type:
 
-	# clientSRM ls -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/ -l
+	$ clientSRM ls -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/ -l
 	
 	============================================================
 	Request status:
@@ -207,14 +191,13 @@ To list the content of the directory test_dir together with all its subdirectori
 	                  explanation="Successful request completion."
 	============================================================
 
-<a name="srmMv">&nbsp;</a>
-##### srmMv
+##### srmMv <a name="srmMv">&nbsp;</a>
 
 Move a file from one SRM local path to another SRM local path. 
 
-To move the file test_file00.txt from the directory test_dir to the directory test_dir/sub_test_dir type:
+To move the file test\_file00.txt from the directory test\_dir to the directory test\_dir/sub\_test\_dir type:
 
-	# clientSRM mv -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt -t srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/sub_test_dir/test_file00.txt
+	$ clientSRM mv -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt -t srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/sub_test_dir/test_file00.txt
 	
 	============================================================
 	Request status:
@@ -222,14 +205,13 @@ To move the file test_file00.txt from the directory test_dir to the directory te
 	  explanation="SURL moved with success"
 	============================================================
 
-<a name="srmReserveSpace">&nbsp;</a>
-##### srmReserveSpace
+##### srmReserveSpace <a name="srmReserveSpace">&nbsp;</a>
 
 Reserve a space in advance for the upcoming requests to get some guarantee on the file management.
 
 To reserve 10MB of space type:
 
-	# clientSRM reservespace -e httpg://ibm139.cnaf.infn.it:8444/ -a 10000000 -b 5000000
+	$ clientSRM reservespace -e httpg://ibm139.cnaf.infn.it:8444/ -a 10000000 -b 5000000
 	
 	============================================================
 	Request status:
@@ -245,14 +227,13 @@ To reserve 10MB of space type:
 
 The returned space token has to be used in all the requests that work on this reserved space.
 
-<a name="srmGetSpaceMetadata">&nbsp;</a>
-##### srmGetSpaceMetadata
+##### srmGetSpaceMetadata <a name="srmGetSpaceMetadata">&nbsp;</a>
 
 Get information of a space, for which a space token must be provided.
 
 For instance, to retrieve information on the space reserved in the previous example we type:
 
-	# clientSRM getspacemetadata -e httpg://ibm139.cnaf.infn.it:8444/ -s 9A5294CB-1201-B2C2-839A-646DDA7D4831
+	$ clientSRM getspacemetadata -e httpg://ibm139.cnaf.infn.it:8444/ -s 9A5294CB-1201-B2C2-839A-646DDA7D4831
 	
 	============================================================
 	Request status:
@@ -272,14 +253,18 @@ For instance, to retrieve information on the space reserved in the previous exam
 	      [0] lifetimeLeft=86180
 	============================================================
 
-<a name="srmPrepareToPut">&nbsp;</a>
-##### srmPrepareToPut
+##### srmPrepareToPut <a name="srmPrepareToPut">&nbsp;</a>
 
 Write files into the storage. 
 
-Upon the client’s request, SRM prepares a TURL so that client can write data into the TURL. Lifetime (pinning expiration time) is assigned on the TURL. When a specified target space token is provided, the files will be located finally in the targeted space associated with the space token. It is an asynchronous operation, and a request token is returned. The status may be checked through srmStatusOfPutRequest with the returned request token. To write an empty file of 150000 bytes inside the directory test_dir type:
+Upon the client's request, SRM prepares a TURL so that client can write data into the TURL. 
+Lifetime (pinning expiration time) is assigned on the TURL. 
+When a specified target space token is provided, the files will be located finally in the targeted space associated with the space token. 
+It is an asynchronous operation, and a request token is returned. 
+The status may be checked through srmStatusOfPutRequest with the returned request token. 
+To write an empty file of 150000 bytes inside the directory test\_dir type:
 
-	# clientSRM ptp -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt,150000 -p
+	$ clientSRM ptp -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt,150000 -p
 	
 	============================================================
 	Polling request status:
@@ -300,25 +285,25 @@ Upon the client’s request, SRM prepares a TURL so that client can write data i
 	      [0] TURL="gsiftp://ibm139.cnaf.infn.it:2811/gpfs/infngrid/test_dir/test_file00.txt"
 	============================================================
 
-Since the srmPrepareToPut operation is asynchronous, the "-p" option forces the client to poll the SRM server until the request is managed. The file can be filled with the desired data using some transfer service, such as gridFTP, and specifying as a destination the returned TURL.
+Since the srmPrepareToPut operation is asynchronous, the "-p" option forces the client to poll the SRM server until the request is managed. 
+The file can be filled with the desired data using some transfer service, such as gridFTP, and specifying as a destination the returned TURL.
 
-<a name="srmPutDone">&nbsp;</a>
-##### srmPutDone
+##### srmPutDone <a name="srmPutDone">&nbsp;</a>
 
 Trigger the data transfering.
 
 After a SrmPrepareToPut, the TURL returned can be used to transfer data using the selected protocol. When the transfer has been successfully executed, the SrmPutDone request has to be done in order to tell the system the transfer is finished. As parameter for the SrmPutDone the SrmPrepareToPut REQUESTTOKEN has to be specified. It can be found in the parameter returned by the SrmPrepareToPut
 
-	# clientSRM pd -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt,150000 -t 122f7d26-6d02-4024-89c3-9921d35b791b
+	$ clientSRM pd -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file00.txt,150000 -t 122f7d26-6d02-4024-89c3-9921d35b791b
 
-<a name="srmStatusOfPrepareToPutRequest">&nbsp;</a>
-##### srmStatusOfPrepareToPutRequest
+##### srmStatusOfPrepareToPutRequest <a name="srmStatusOfPrepareToPutRequest">&nbsp;</a>
 
 Check the status of the previously requested srmPrepareToPut. 
 
-Request token from srmPrepareToPut must be provided. To check the status of the srmPrepareToPut operation of the previous example type:
+Request token from srmPrepareToPut must be provided. 
+To check the status of the srmPrepareToPut operation of the previous example type:
 
-	# clientSRM statusptp -e httpg://ibm139.cnaf.infn.it:8444/ -t 122f7d26-6d02-4024-89c3-9921d35b791b -vN
+	$ clientSRM statusptp -e httpg://ibm139.cnaf.infn.it:8444/ -t 122f7d26-6d02-4024-89c3-9921d35b791b -vN
 	
 	============================================================
 	Request status:
@@ -334,14 +319,13 @@ Request token from srmPrepareToPut must be provided. To check the status of the 
 	      [0] TURL="gsiftp://ibm139.cnaf.infn.it:2811/gpfs/infngrid/test_dir/test_file00.txt"
 	============================================================
 
-<a name="srmPrepareToGet">&nbsp;</a>
-##### srmPrepareToGet
+##### srmPrepareToGet <a name="srmPrepareToGet">&nbsp;</a>
 
-Bring files online upon the client’s request and assign TURL so that client can access the file. 
+Bring files online upon the client's request and assign TURL so that client can access the file. 
 
 Lifetime (pinning expiration time) is assigned on the TURL. An example:
 
-	# clientSRM ptg -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt -p
+	$ clientSRM ptg -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt -p
 	
 	============================================================
 	Polling request status:
@@ -365,14 +349,13 @@ Lifetime (pinning expiration time) is assigned on the TURL. An example:
 
 The file *test\_file01.txt* is pinned and the user can transfer it, out of the SE, by executing a gridFTP specifying the returned *transferURL* as source file.
 
-<a name="srmStatusOfGetRequest">&nbsp;</a>
-##### srmStatusOfGetRequest
+##### srmStatusOfGetRequest <a name="srmStatusOfGetRequest">&nbsp;</a>
 
 Check the status of the previously requested srmPrepareToGet. 
 
 Request token from srmPrepareToGet must be provided. To check the status of the srmPrepareToGet request of the previous example:
 
-	# clientSRM statusptg -e httpg://ibm139.cnaf.infn.it:8444/ -t 51218a32-edc3-4f14-9ae9-89eec2b52146
+	$ clientSRM statusptg -e httpg://ibm139.cnaf.infn.it:8444/ -t 51218a32-edc3-4f14-9ae9-89eec2b52146
 	
 	============================================================
 	Request status:
@@ -389,8 +372,7 @@ Request token from srmPrepareToGet must be provided. To check the status of the 
 	      [0] transferURL="gsiftp://ibm139.cnaf.infn.it:2811/gpfs/infngrid/test_dir/test_file01.txt"
 	============================================================
 
-<a name="srmCopy">&nbsp;</a>
-##### srmCopy
+##### srmCopy <a name="srmCopy">&nbsp;</a>
 
 Copy files from source storage sites into the target storage sites.
 
@@ -405,7 +387,7 @@ Actually StoRM supports the srmCopy operation in PUSH mode.
 
 In the following example we copy the file *test\_file01.txt* in the directory test_dir from the SRM ibm139.cnaf.infn.it to the CNAF root directory in the SRM testbed006.cnaf.infn.it.
 
-	# clientSRM copy -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt srm://testbed006.cnaf.infn.it:8443/cnaf/test_file01.txt -p
+	$ clientSRM copy -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt srm://testbed006.cnaf.infn.it:8443/cnaf/test_file01.txt -p
 	
 	============================================================
 	Polling request status:
@@ -426,14 +408,13 @@ In the following example we copy the file *test\_file01.txt* in the directory te
 	                  explanation="srmCopy successfully handled!"
 	============================================================
 
-<a name="srmStatusOfCopy">&nbsp;</a>
-##### srmStatusOfCopy
+##### srmStatusOfCopy <a name="srmStatusOfCopy">&nbsp;</a>
 
 Check the status of the previously requested srmCopy. Request token from srmCopy must be provided.
 
 In this example we check the status of the srmCopy operation of the previous example:
 
-	# clientSRM statuscopy -e httpg://ibm139.cnaf.infn.it:8444/ -t 33ab86ee-ddf7-4e19-8e42-356a90f52646
+	$ clientSRM statuscopy -e httpg://ibm139.cnaf.infn.it:8444/ -t 33ab86ee-ddf7-4e19-8e42-356a90f52646
 	
 	============================================================
 	Request status:

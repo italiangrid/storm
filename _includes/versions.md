@@ -1,1 +1,0 @@
-{% for item in site.storm_released_versions %}{% if item.version != page.version %}**[{{ item.version }}]({{ page.rootdir }}/documentation/{{ item.version }}/index.html)**{% endif %}{% endfor %}

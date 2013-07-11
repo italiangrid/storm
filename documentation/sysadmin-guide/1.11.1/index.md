@@ -1,11 +1,12 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - System Administration Guide
+version: 1.11.1
 ---
 
 # System Administration Guide
 
-<br>
+version: {{ page.version }}
 
 * [Introduction](#introduction)
 * [Installation Prerequisites](#installprereq)
@@ -31,8 +32,7 @@ title: StoRM Storage Resource Manager - System Administration Guide
   * [StoRM EMIR Configuration](#emir_advconf)
 * [Appendix A](#AppendixA)
 
-<a name="introduction">&nbsp;</a>
-## Introduction
+## Introduction <a name="introduction">&nbsp;</a>
 
 StoRM has a multi-layer architecture (Fig.1) characterized by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
 
@@ -59,14 +59,12 @@ The modular architecture of StoRM permits that service can be deployed on a mult
 {% assign label_description="Example of distributed StoRM Service Architecture<br/>with one BackEnd, different pools of FrontEnds, GridHTTPs and GridFTPs." %}
 {% include documentation/label.html %}
 
-<a name="installprereq">&nbsp;</a>
-## Installation Prerequisites
+## Installation Prerequisites <a name="installprereq">&nbsp;</a>
 
 All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
 All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on BackEnd host.
 
-<a name="emi3instructions">&nbsp;</a>
-### General EMI 3 installation instructions
+### General EMI 3 installation instructions <a name="emi3instructions">&nbsp;</a>
 
 Official releases are done in the contest of the EMI project so follow the [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) as first installation prerequisite.
 In particular, check the followings:
@@ -123,8 +121,7 @@ In particular, check the followings:
 	  [~]# chmod 0400 /etc/grid-security/hostkey.pem
 	  [~]# chmod 0644 /etc/grid-security/hostcert.pem
 
-<a name="systemusers">&nbsp;</a>
-### System users
+### System users <a name="systemusers">&nbsp;</a>
 
 StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see <a href="#beconf">BackEnd Configuration</a>). If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see <a href="#ghttpconf">GridHTTPs Configuration</a>). 
 It is advisable to manually configure host(s) with this two users before install services. For example, to create *storm* and *gridhttps* users you can launch the following commands:
@@ -146,8 +143,7 @@ For example, if *storm* is the user that runs BackEnd service on host A and *gri
 To satisfy this requirement you can configure a NIS service for the involved hosts and add the two users to the NIS maps. A tutorial on how to setup a NIS service can be found [here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html).
 Another valid solution to share GID and UID among different hosts and provide a user authentication can be found with a client-server LDAP installation, as described in <a href="#AppendixA">Appendix A</a>.
 
-<a name="aclsupport">&nbsp;</a>
-### ACL support
+### ACL support <a name="aclsupport">&nbsp;</a>
 
 StoRM uses the ACLs on files and directories to implement the security model. In so doing, StoRM uses the native access to the file system. Therefore in order to ensure a proper running, ACLs need to be enabled on the underlying file system (sometimes they are enabled by default) and work properly.
 
@@ -186,8 +182,7 @@ Then you need to remount the affected partitions as follows:
 
 This is valid for different file system types (i.e., ext3, xfs, gpfs and others).
 
-<a name="easupport">&nbsp;</a>
-### Extended Attribute support
+### Extended Attribute support <a name="easupport">&nbsp;</a>
 
 StoRM uses the Extended Attributes (EA) on files to store some metadata related to the file (e.g. the checksum value); therefore in order to ensure a proper running, the EA support needs to be enabled on the underlying file system and work properly.
 Note: Depending on OS kernel distribution, for Reiser3, ext2 and ext3 file systems, the default kernel configuration should not enable the EA.
@@ -216,11 +211,9 @@ Then you need to remount the affected partitions as follows:
 
 	  [~]# mount -o remount /storage
 
-<a name="installationguide">&nbsp;</a>
-## Installation guide
+## Installation guide <a name="installationguide">&nbsp;</a>
 
-<a name="upgradetoemi3">&nbsp;</a>
-### StoRM Upgrade to EMI3
+### StoRM Upgrade to EMI3 <a name="upgradetoemi3">&nbsp;</a>
 
 In order to upgrade your current version of StoRM from EMI1 or EMI2 to EMI3 you need to install the EMI3 repos.<br>
 Depending on your platform, download and install the right EMI release package, as described in the [Repository settings](#emireposettings) section.
@@ -238,7 +231,7 @@ the following command:
 
 	yum install storm-native-libs-gpfs
 
-If you are also upgrading the StoRM GridHTTPs server component, after the installation you can remove tomcat because it’s no more used by EMI3 GridHTTPs. Of course, you can do this if you are not using tomcat for other purposes:
+If you are also upgrading the StoRM GridHTTPs server component, after the installation you can remove tomcat because it's no more used by EMI3 GridHTTPs. Of course, you can do this if you are not using tomcat for other purposes:
 
 	yum remove tomcat5
 
@@ -250,13 +243,11 @@ An example of YAIM use for configuring all the services on the same host is repo
 
 Please take a look at the [Launching YAIM configuration](#launchyaim) section for further details.
 
-<a name="reposettings">&nbsp;</a>
-### Repository settings
+### Repository settings <a name="reposettings">&nbsp;</a>
 
 In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory. These are EPEL, EGI and EMI and have to be installed, as prerequisite, as we have already seen in the paragraph <a href="#emi3instructions">general EMI 3 installation instructions</a>.
 
-<a name="commonreposettings">&nbsp;</a>
-#### Common repository settings
+#### Common repository settings <a name="commonreposettings">&nbsp;</a>
 
 To install **EPEL Repository** download and install the EPEL release file.
 
@@ -285,8 +276,7 @@ To disable the DAG repository, if needed, you must set to 0 the enabled property
  		enabled=0
  		...
 
-<a name="emireposettings">&nbsp;</a>
-#### EMI Repository settings
+#### EMI Repository settings <a name="emireposettings">&nbsp;</a>
 
 To install **EMI repository** download and install the EMI release file:
 
@@ -311,8 +301,7 @@ To install the repository files, run the following commands (as root):
     (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
     (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 
-<a name="stormnodes">&nbsp;</a>
-### Install StoRM nodes
+### Install StoRM nodes <a name="stormnodes">&nbsp;</a>
 
 In order to install StoRM components refresh the yum cache:
 
@@ -333,8 +322,7 @@ The storm-srm-client is distributed with the UI EMI components, but if you need 
 
 	  [~]# yum install emi-storm-srm-client-mp
 
-<a name="configuration">&nbsp;</a>
-## Configuration
+## Configuration <a name="configuration">&nbsp;</a>
 
 StoRM is configured by using the YAIM tool, that is a set of configuration scripts that read a set of configuration files.
 It's **recommended** to follow the <a href="#configuration">yaim configuration</a> or the <a href="#advconf">advanced configuration</a> guides to set up your StoRM deployment.
@@ -361,8 +349,7 @@ Then you can configure StoRM by launching YAIM with:
 
 as better explained <a href="#launchyaim">here</a>.
 
-<a name="yaimvariables">&nbsp;</a>
-### General YAIM variables
+### General YAIM variables <a name="yaimvariables">&nbsp;</a>
 
 Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by providing a value to the general variables summarized in Tab.1.
 
@@ -380,8 +367,7 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 {% assign label_description="General YAIM Variables." %}
 {% include documentation/label.html %}
 
-<a name="feconf">&nbsp;</a>
-### Front-End configuration
+### Front-End configuration <a name="feconf">&nbsp;</a>
 
 Specific YAIM variables are in the following file:
 
@@ -393,12 +379,13 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |:--------------------------------------|:--------------|
 |ARGUS\_PEPD\_ENDPOINTS					|The complete service endpoint of Argus PEP server. Mandatory if STORM\_FE\_USER\_BLACKLISTING is true. Example: https://host.domain:8154/authz
 |STORM\_BACKEND\_REST\_SERVICES\_PORT	|StoRM backend server rest port. Optional variable. Default value: **9998**
-|STORM\_BE\_XMLRPC\_PATH				|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
-|STORM\_BE\_XMLRPC\_PORT				|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
 |STORM\_CERT\_DIR						|Host certificate directory for StoRM Frontend service. Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
 |STORM\_DB\_HOST						|Host for database connection. <br/>Optional variable. Default value: **localhost**
 |STORM\_DB\_PWD							|Password for database connection. **Mandatory**.
 |STORM\_DB\_USER						|User for database connection. Default value: **storm**
+|STORM\_FE\_BE\_XMLRPC\_HOST			|StoRM Backend hostname. Optional variable. Default value: **localhost**
+|STORM\_FE\_BE\_XMLRPC\_PATH			|StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
+|STORM\_FE\_BE\_XMLRPC\_PORT			|StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
 |STORM\_FE\_ENABLE\_MAPPING				|Enable the check in gridmapfile for client DN. <br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM\_FE\_ENABLE\_VOMSCHECK			|Enable the check in gridmapfile for client VOMS attributes. <br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM\_FE\_GSOAP\_MAXPENDING			|Max number of request pending in the GSOAP queue. Optional variable. Default value: **2000**
@@ -408,7 +395,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |STORM\_FE\_MONITORING\_ENABLED			|Flag to enable/disable SRM requests Monitoring.<br/>Optional variable. Available values: true, false. Default value: **true**
 |STORM\_FE\_MONITORING\_TIME\_INTERVAL	|Time intervall in seconds between each Monitoring round. Optional variable. Default value: **60**
 |STORM\_FE\_THREADS\_MAXPENDING			|Max number of request pending in the Threads queue. Optional variable. Default value: **200**
-|STORM\_FE\_THREADS\_NUMBER				|Max number of threads to manage user’s requests. Optional variable. Default value: **50**
+|STORM\_FE\_THREADS\_NUMBER				|Max number of threads to manage user's requests. Optional variable. Default value: **50**
 |STORM\_FE\_USER\_BLACKLISTING			|Flag to enable/disable user blacklisting.<br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM\_FE\_WSDL						|WSDL to be returned to a GET request.<br/>Optional variable. Default value: **/usr/share/wsdl/srm.v2.2.wsdl**
 |STORM\_FRONTEND\_OVERWRITE				|This parameter tells YAIM to overwrite storm-frondend.conf configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
@@ -421,20 +408,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 {% assign label_description="Specific StoRM FrontEnd Variables." %}
 {% include documentation/label.html %}
 
-**NOTE** - **_The following table contains the YAIM variables no more used from StoRM v.1.11.2_**:
-
-|	Var. Name					|	Description	|
-|:------------------------------|:--------------|
-|STORM\_FE\_BE\_XMLRPC\_HOST	|**DELETED** It was used to tell to the FrontEnd the XMLRPC endpoint. But this endpoint, for the FrontEnd, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
-|STORM\_FE\_BE\_XMLRPC\_PATH	|**RENAMED** into STORM\_BE\_XMLRPC\_PATH, see Table 2
-|STORM\_FE\_BE\_XMLRPC\_PORT	|**RENAMED** into STORM\_BE\_XMLRPC\_PORT, see Table 2
-
-{% assign label_title="Table 3" %}
-{% assign label_description="YAIM variables no more used from StoRM v.1.11.2" %}
-{% include documentation/label.html %}
-
-<a name="beconf">&nbsp;</a>
-### Back-End configuration
+### Back-End configuration <a name="beconf">&nbsp;</a>
 
 Specific YAIM variables are in the following file:
 
@@ -488,7 +462,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |STORM\_PROXY\_HOME						|Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
 |STORM\_RFIO\_HOST						|Rfio server (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_RFIO\_HOST variable.<br/>Optional variable. Default value: **$STORM\_BACKEND\_HOST**
 |STORM\_ROOT\_HOST						|Root server (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_ROOT\_HOST variable.<br/>Optional variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_SERVICE\_SURL\_DEF\_PORTS		|Comma-separated list of managed SURL’s default ports used to check SURL validity.<br/>Optional variable. Default value: **8444**
+|STORM\_SERVICE\_SURL\_DEF\_PORTS		|Comma-separated list of managed SURL's default ports used to check SURL validity.<br/>Optional variable. Default value: **8444**
 |STORM\_SIZE\_LIMIT						|Limit Maximum available space on the Storage Area (default value for all Storage Areas).<br/>Note: you may change the settings for each SA acting on $STORM\_{SA}\_SIZE\_LIMIT variable. Optional variable. Available values: true, false. Default value: **true**
 |STORM\_STORAGEAREA\_LIST				|List of supported Storage Areas. Usually at least one Storage Area for each VO specified in $VOS should be created.<br/>Optional variable. Default value: **$VOS**
 |STORM_STORAGECLASS						|Storage Class type (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_STORAGECLASS variable. <br/>Optional variable. Available values: T0D1, T1D0, T1D1. No default value.
@@ -549,8 +523,7 @@ You can edit the optional variables summarized in Table 5.
 {% assign label_description="Storage Area Variables." %}
 {% include documentation/label.html %}
 
-<a name="ghttpconf">&nbsp;</a>
-### GridHTTPs configuration
+### GridHTTPs configuration <a name="ghttpconf">&nbsp;</a>
 
 Specific variables are in the following file:
 	
@@ -584,8 +557,7 @@ and check the other variables to evaluate if you like the default set or if you 
 {% assign label_description="Specific StoRM GridHTTPs Variables." %}
 {% include documentation/label.html %}
 
-<a name="launchyaim">&nbsp;</a>
-### Launching YAIM configuration
+### Launching YAIM configuration <a name="launchyaim">&nbsp;</a>
 
 After having built the **site-info.def** services file, you can configure the needed profile by using YAIM as follows:
 
@@ -608,13 +580,11 @@ To verify StoRM services launch:
 	service storm-globus-gridftp status
 	service storm-gridhttps-server status
 
-<a name="advconf">&nbsp;</a>
-## Advanced Configuration
+## Advanced Configuration <a name="advconf">&nbsp;</a>
 
 Please note that most of the configuration parameters of StoRM can be automatically managed directly by YAIM. This means that for standard installation in WLCG site without special requirement is not needed a manual editing of StoRM configuration file, but only a proper tuning of StoRM YAIM variables. On the other hand, with this guide we would like to give to site administrators the opportunity to learn about StoRM details and internal behaviours, in order to allow advanced configuration and ad-hoc set up, to optimize performance and results.
 
-<a name="fe_advconf">&nbsp;</a>
-### Front-End Advanced Configuration
+### Front-End Advanced Configuration <a name="fe_advconf">&nbsp;</a>
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
 	
@@ -626,8 +596,7 @@ containing a list of:
 
 pairs that can be used to configure the Front-End server. In case a parameter is modified, the Front-End service has to be restarted in order to read the new value.
 
-<a name="fesi_advconf">&nbsp;</a>
-#### Front-End service information: storm-frontend-server.conf
+#### Front-End service information: storm-frontend-server.conf <a name="fesi_advconf">&nbsp;</a>
 
 > **_Database settings_**
 
@@ -706,8 +675,7 @@ pairs that can be used to configure the Front-End server. In case a parameter is
 |:------------------|:------------------|
 |	wsdl.file		|	WSDL file, complete with path, to be returned in case of GET request
 
-<a name="loggingfe_advconf">&nbsp;</a>
-#### Logging files and logging level
+#### Logging files and logging level <a name="loggingfe_advconf">&nbsp;</a>
 
 The FrontEnd logs information on the service status and the SRM requests received and managed by the process. The FrontEnd's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
 The FrontEnd log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters. 
@@ -785,16 +753,14 @@ To enable gSOAP logging, set the following environment variables :
 
 and restart the FrontEnd daemon by calling directly the init script /etc/init.d/storm-frontend-server and see if the error messages contained in /tmp/tracefile could help. Please be very careful, it prints really a huge amount of information.
 
-<a name="be_advconf">&nbsp;</a>
-### Back-End Advanced Configuration
+### Back-End Advanced Configuration <a name="be_advconf">&nbsp;</a>
 
 The BackEnd is the core of StoRM. It executes all SRM requests, interacts with other Grid service, with database to retrieve SRM requests, with file-system to set up space and file, etc. It has a modular architecture made by several internal components. The BackEnd needs to be configured for two main aspects:
 
 - _Service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _Storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
 
-<a name="besi_advconf">&nbsp;</a>
-### Back-End Service Information: storm.properties
+### Back-End Service Information: storm.properties <a name="besi_advconf">&nbsp;</a>
 
 The file:
 
@@ -806,6 +772,8 @@ contains a list of:
 
 pairs that represent all the information needed to configure the StoRM BackEnd service. The most important (and mandatory) parameters are configured by default trough YAIM with a standard installation of StoRM. All the other parameters are optionals and can be used to make advanced tuning of the BackEnd.
 To change/set a new value, or add a new parameter, just edit the *storm.properties* file and restart the BackEnd daemon. When the BackeEnd starts, it writes into the log file the whole set of parameters read from the configuration file.
+
+> **_Service information_**
 
 > **_Service information_**
 
@@ -955,8 +923,7 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 |	asynch.srmcopy.gridftp.timeout		|	Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
 |	asynch.gridftpclient				|	The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
 
-<a name="besti_advconf">&nbsp;</a>
-### Back-End Storage Information: namespace.xml
+### Back-End Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
 
 Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM BackEnd host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
 The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL. 
@@ -1189,13 +1156,13 @@ Here is defined a *pool of protocol servers*. Within the pool element pool *memb
 <br/>
 Load balancing strategies details:
 
-– *round-robin* At each TURL construction request the strategy returns the next server following the round-robin approach: a circular list with an index starting from the head and incrementd at each request.
+* *round-robin* At each TURL construction request the strategy returns the next server following the round-robin approach: a circular list with an index starting from the head and incrementd at each request.
 
-– *smart-rr* An enhanced version of *round-robin*. The status of pool members is monitored and maintained in a cache. Cache entries has a validity life time that is refreshed when expired. If the member chosen by *round-robin* is marked as not responsive another iteration of *round-robin* is performed.
+* *smart-rr* An enhanced version of *round-robin*. The status of pool members is monitored and maintained in a cache. Cache entries has a validity life time that is refreshed when expired. If the member chosen by *round-robin* is marked as not responsive another iteration of *round-robin* is performed.
 
-– *random* At each TURL construction request the strategy returns a random member of the pool.
+* *random* At each TURL construction request the strategy returns a random member of the pool.
 
-– *weight* An enhanced version of *round-robin*. When a server is chosen the list index will not be moved forward (and the server will be choosen again in next request) for as many times as specified in its *weight*.
+* *weight* An enhanced version of *round-robin*. When a server is chosen the list index will not be moved forward (and the server will be choosen again in next request) for as many times as specified in its *weight*.
 
 **NOTE**: The weight has to be specified in a *weight* element inside the member element:
 
@@ -1261,8 +1228,7 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - ```<vo-name>dteam</vo-name>``` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-<a name="besui_advconf">&nbsp;</a>
-### Back-End Storage Usage Initialization: used-space.ini
+### Back-End Storage Usage Initialization: used-space.ini <a name="besui_advconf">&nbsp;</a>
 
 StoRM maintains the information about the status of managed storage areas (such as free, used, busy, available, guaranteed and reserved space), and store them into the DB. Whenever it is consumed or released some storage space by creating or deleting files, the status is updated and stored in the DB. The storage space status stored into the DB is authorative. The information about the Storage Space stored into the DB are used also as information source for the Information Provider through the DIP (Dynamic Info Provider). There are cases in which the status of a storage area must be initialized, for example in the case of a fresh StoRM installation configured to manage a storage space already populated with files, where the space used is not zero.
 There are different methods for initialize the Storage Area status, some executed within StoRM (GPFS quota and/or background-DU). In this section it is described how an administrator can initialize the status of a Storage Area by editing a configuration file, the used-space.ini configuration file, that it will be parsed at bootstrap time and only one time.
@@ -1305,8 +1271,7 @@ StoRM BackEnd will load used-space.ini file at bootstrap and initialize the used
 
 > **NOTE**: running YAIM on StoRM BackEnd profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
  
-<a name="belog_advconf">&nbsp;</a>
-### Back-End logging: logging.xml
+### Back-End logging: logging.xml <a name="belog_advconf">&nbsp;</a>
 
 The BackEnd log files provide information on the execution process of all SRM requests. All the BackEnd log files are placed in the */var/log/storm* directory. BackEnd logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
 
@@ -1353,8 +1318,7 @@ An hearthbeat.log entry example:
 			
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
-<a name="besa_advconf">&nbsp;</a>
-### Back-End Space Authorization: authz.db
+### Back-End Space Authorization: authz.db <a name="besa_advconf">&nbsp;</a>
 
 Space authorization component define access control policy on the Storage Area manged by StoRM. It allows to define rules as: *users* (expressed in terms of regular expression on FQANs or DN), *operation* (READ/WRITE/others) and *target Storage Area*. This rules are stored in a file named **authz.db** located at */etc/storm/backend-server/*.
 <br/>
@@ -1385,14 +1349,12 @@ Th *authz.db* file contains all the rule defining access policies for a Storage 
 
 The *evaluation algorithm* is taken from the NFS4 approach.
 
-<a name="gftp_advconf">&nbsp;</a>
-## GridFTP Advanced Configuration
+## GridFTP Advanced Configuration <a name="gftp_advconf">&nbsp;</a>
 
 At each transfer request, the GridFTP uses LCMAPS to get user mapping and start a new processes on behalf of the user to proceed with data transfer. GridFTP relies on a different db file to get the plugin to use. Obviously LCMAPS has to answer to GridFTP requests and StoRM requests in coeherent way.
 The GridFTP uses the LCMAPS configuration file located at */etc/lcmaps/lcmaps.db*.
 
-<a name="gftplog_advconf">&nbsp;</a>
-### GridFTP logging files and logging level
+### GridFTP logging files and logging level <a name="gftplog_advconf">&nbsp;</a>
 
 GridFTP produce two separated log files:
 
@@ -1406,8 +1368,7 @@ The logging level can be specified by editing the configuration file:
 
 The supported logging levels are: ERROR, WARN, INFO, DUMP and ALL.
 
-<a name="ghttp_advconf">&nbsp;</a>
-## GridHTTPs Advanced Configuration
+## GridHTTPs Advanced Configuration <a name="ghttp_advconf">&nbsp;</a>
 
 The EMI3 GridHTTPs is the component responsible to provide:
 
@@ -1425,8 +1386,7 @@ containing a list of:
 
 pairs that can be used to configure the GridHTTPs server. In case a parameter is modified, the GridHTTPs service has to be restarted in order to read the new value.
 
-<a name="ghttpsi_advconf">&nbsp;</a>
-### GridHTTPs service information: server.ini
+### GridHTTPs service information: server.ini <a name="ghttpsi_advconf">&nbsp;</a>
 
 EMI3 StoRM GridHTTPs server no longer needs Tomcat, cause it is now a web component residing in an embedded Jetty server. About Jetty server and its connectors configuration you can manage the following variables:
 
@@ -1474,8 +1434,7 @@ GridHTTPs manage file transfers and file creation. So it computes checksum durin
 |compute-checksum		|If compute-checksum is true, for every file created, for the *checksum-type* specified, a valid *checksum-value* is computed. Available values: true, false.<br/>Default value: **true**
 |checksum-type			|*Checksum-type* specify the kind of algorithm has to be used to compute checksum, if compute-checksum is true. **Available values: *adler32***.<br/>Default value: *adler32*
 
-<a name="ghttplog_advconf">&nbsp;</a>
-### GridHTTPs' logging files and logging level
+### GridHTTPs' logging files and logging level <a name="ghttplog_advconf">&nbsp;</a>
 
 GridHTTPs' log files are located in */var/log/storm/* directory. They are the followings:
 
@@ -1498,9 +1457,7 @@ The supported logging levels are: FATAL, ERROR, WARN, INFO, DEBUG and TRACE.
 <br/><br/>
 The suggest logging level for production endpoint is INFO. In case the log level is modified, GridHTTPs service has to be restarted to read the new value.
 
-
-<a name="ghttpplug_advconf">&nbsp;</a>
-### GridHTTPs plugin information: storm.gridhttps.plugin.properties
+### GridHTTPs plugin information: storm.gridhttps.plugin.properties <a name="ghttpplug_advconf">&nbsp;</a>
 
 StoRM GridHTTPs Plugin is shipped with StoRM BackEnd metapackage and it is installed on BackEnd host. Its configuration information are stored in:
 
@@ -1518,15 +1475,14 @@ The GridHTTPs Plugin lives within BackEnd Java process; in case a parameter is m
 |gridhttps.server.user.uid	|The User ID associated to the local user running the GridHTTPs server service
 |gridhttps.server.user.gid	|The primary Group ID associated to the local user running the GridHTTPs server service
 
-<a name="emir_advconf">&nbsp;</a>
-## StoRM EMIR Configuration
+## StoRM EMIR Configuration <a name="emir_advconf">&nbsp;</a>
 
 You can use EMIR-SERP to publish StoRM information to EMIR. EMIR-SERP uses the information already available in the resource resource bdii (aka ERIS) and publish it to an EMIR DSR endpoint.
 <br/>
 <br/>
 First check that the resource bdii is up and running. Executing
 
-	ldapsearch -x -h localhost -p 2170 -b ’GLUE2GroupID=resource,o=glue’ objectCLass=GLUE2Service
+	ldapsearch -x -h localhost -p 2170 -b 'GLUE2GroupID=resource,o=glue' objectCLass=GLUE2Service
 	
 it should return two services for each vo installed on the machine. If this is not the case, there is some problem with your installation.
 Then install serp:
@@ -1566,16 +1522,14 @@ Start the service:
 
 Verify the pubblication by inspecting this <a href="http://emitbdsr1.cern.ch:9126/services">page</a> searching for an entity with "Name" attribute equal to StoRM YAIM variable "SITE\_NAME". It is recommended to set back the logging level to error and restart the service. Stopping emier-serp will cause the entry to be deleted.
 
-<a name="AppendixA">&nbsp;</a>
-## Appendix A
+## Appendix A <a name="AppendixA">&nbsp;</a>
 <hr/>
 
 ### A.1 How-to configure LDAP Server to share users' accounts
 
 This is a short tutorial that wants to describe how to install and configure a LDAP Server in order to share users' accounts whitin a local network. In particular, we will see how to install and configure a client/server OpenLDAP service on Scientific Linux hosts.
 
-<a name="LDAPServerIC">&nbsp;</a>
-#### A.1.1 OpenLDAP Server installation and configuration
+#### A.1.1 OpenLDAP Server installation and configuration <a name="LDAPServerIC">&nbsp;</a>
 
 To install OpenLDAP service on server, as root user on a SL5 host, we have to install *openldap-servers* package:
 
@@ -1585,7 +1539,7 @@ Instead, as root user on a SL6 host we have to install both *openldap* and *open
 
 	yum install openldap openldap-servers
 
-OpenLDAP installs several files in /etc and other places. The *slapd* daemon’s configuration file is slapd.conf and can be found in /etc/openldap. First of all make sure service is not running. 
+OpenLDAP installs several files in /etc and other places. The *slapd* daemon's configuration file is slapd.conf and can be found in /etc/openldap. First of all make sure service is not running. 
 On SL5:
 
 	service ldap stop
@@ -1694,7 +1648,7 @@ Now we can initialize LDAP DB with already defined initial content, by launching
 	  slapadd -l storm.cnaf.infn.it.ldif
 	  slapadd -l root.storm.cnaf.infn.it.ldif
 
-So we are ready to add to our LDAP database the necessary users and groups. In particular we need storm and gridhttps users and also relative groups. But, how can we organize our directory tree? In a UNIX file system, the top level is the root. Underneath the root you have numerous files and directories. As mentioned above, LDAP directories are set up in much the same manner. Into the directory’s base are conventionally created containers that logically separate data. For historical reasons, most LDAP directories set these logical separations up as OU entries. OU stands for "Organizational Unit", which in X.500 was used to indicate the functional organization within a company. Current LDAP implementations have kept the ou= naming convention. In our case, we can define a pair of Organizationa Unit: People and Group as follow:
+So we are ready to add to our LDAP database the necessary users and groups. In particular we need storm and gridhttps users and also relative groups. But, how can we organize our directory tree? In a UNIX file system, the top level is the root. Underneath the root you have numerous files and directories. As mentioned above, LDAP directories are set up in much the same manner. Into the directory's base are conventionally created containers that logically separate data. For historical reasons, most LDAP directories set these logical separations up as OU entries. OU stands for "Organizational Unit", which in X.500 was used to indicate the functional organization within a company. Current LDAP implementations have kept the ou= naming convention. In our case, we can define a pair of Organizationa Unit: People and Group as follow:
 
 **People.storm.cnaf.infn.it.ldif**
 
@@ -1771,14 +1725,13 @@ or on SL5:
 
 	  service ldap start
 
-<a name="LDAPClientIC">&nbsp;</a>
-#### A.1.2 OpenLDAP Client installation and configuration
+#### A.1.2 OpenLDAP Client installation and configuration <a name="LDAPClientIC">&nbsp;</a>
 
 To install OpenLDAP service on a client, as root user on a SL5 host, we have to install *openldap-clients* and *nss_ldap* packages:
 
 	  yum install openldap-clients nss_ldap
 
-Instead, as root user on a SL6 host we have to install both *openldap-clients* and *nss-pam-ldapd* packages:
+Instead, as root user on a SL6 host we have to install both *openldap-clients* * and *nss-pam-ldapd* packages:
 
 	  yum install openldap-clients nss-pam-ldapd
 
@@ -1802,12 +1755,11 @@ If SL6 modify both **/etc/openldap/ldap.conf** and **/etc/nslcd.conf** by adding
 	  uri ldap://<ldap-server-hostname>
 	  base dc=storm,dc=cnaf,dc=infn.it
 
-<a name="TestLDAP">&nbsp;</a>
-#### A.1.3 Test client-server LDAP installation
+#### A.1.3 Test client-server LDAP installation <a name="TestLDAP">&nbsp;</a>
 
-From a configured client we need to know UIDs and/or GIDs of server’s LDAP users. That users has not to be defined as UNIX-users on clients. To query the LDAP server from one of the clients type, for example, you can list all the contents in db:
+From a configured client we need to know UIDs and/or GIDs of server's LDAP users. That users has not to be defined as UNIX-users on clients. To query the LDAP server from one of the clients type, for example, you can list all the contents in db:
 
-	  ldapsearch -x -b ’dc=storm,dc=cnaf,dc=infn.it’
+	  ldapsearch -x -b 'dc=storm,dc=cnaf,dc=infn.it'
 
 you can search a particular uid or group:
 

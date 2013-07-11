@@ -17,15 +17,13 @@ title: StoRM Documentation - toRM GridHTTPs Server's WebDAV interface
   * [Firefox RESTClient plugin](#usingrestclient)
   * [Cyberduck](#cyberduck)
 
-<a name="introduction">&nbsp;</a>
-### Introduction
+### Introduction <a name="introduction">&nbsp;</a>
 
 The StoRM GridHTTPs is the component responsible for providing both HTTP(s) file transfer capabilities to a StoRM endpoint and a WebDAV interface. The brand-new WebDAV interface provided, conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
 
-<a name="whatwebdav">&nbsp;</a>
-### What is WebDAV?
+### What is WebDAV? <a name="whatwebdav">&nbsp;</a>
 
-<img src="{{ site.baseurl }}/assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
+<img src="{{ site.baseurl }}/assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
 
 Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of methods, headers, and content-types ancillary to HTTP/1.1 for the management of resource properties, creation and management of resource collections, URL namespace manipulation, and resource locking. The purpose of this protocol is to present a Web content as a writable medium in addition to be a readable one. [WebDAV on Wikipedia](http://en.wikipedia.org/wiki/WebDAV) and the [WebDAV website](http://www.webdav.org/) provide information on this protocol.
 
@@ -42,13 +40,12 @@ In a few words, the WebDAV protocol mainly abstracts concepts such as resource p
 While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so the WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
 WebDAV uses XML for property names and some values, and also uses XML to marshal complicated requests and responses.
 
-<a name="mappingdavsrm">&nbsp;</a>
-#### SRM operations via WebDAV
+#### SRM operations via WebDAV <a name="mappingdavsrm">&nbsp;</a>
 
 Starting from EMI3 version, StoRM GridHTTPs server exposes a WebDAV interface to allow users to access Storage-Areas data via browser or by mounting it from a remote host.
 
 
-<img src="{{ site.baseurl }}/assets/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
+<img src="{{ site.baseurl }}/assets/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
 GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open source java library that acts as an API and HTTP protocol handler for adding the WebDAV support to web applications. *Milton* is not a full server in itself. It is able to expose any existing data source (e.g. CMS, hibernate pojos, etc) through a WebDAV interface.
 
 As seen in the chapter before, through a WebDAV interface we are allowed to manipulate resources and collections of them. So it is simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one or more SRM operations that have to be transparent to the final users.
@@ -72,10 +69,10 @@ StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by
 | **UNLOCK** 	| - | *not allowed* | - 
 | **PROPPATCH** | - | *not allowed* | - 
 
-<a name="installconf">&nbsp;</a>
-### Service installation and configuration
+### Service installation and configuration <a name="installconf">&nbsp;</a>
 
-The WebDAV interface is provided by StoRM GridHTTPs component. Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide][prereq] before):
+The WebDAV interface is provided by StoRM GridHTTPs component. 
+Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide][prereq] before):
 
 	  [~]# yum install emi-storm-gridhttps-mp
 
@@ -86,14 +83,13 @@ A good explanation of the required YAIM variable is available in:
 
 The service uses (by default) ports 8443 and 8085, so open them on your firewall.
 
-The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install the StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide](sysadmin-guide.html#beconf)).
+The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install the StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide][be_conf]).
 To start the service:
 
 	  [~]# service storm-gridhttps-server start
 
 
-<a name="usingwebdav">&nbsp;</a>
-### Using WebDAV
+### Using WebDAV <a name="usingwebdav">&nbsp;</a>
 
 The StoRM GridHTTPs WebDAV server listens on two ports, one for the unencrypted HTTP connections and another for the SSL encrypted HTTP requests. Their default values are:
 
@@ -102,10 +98,9 @@ The StoRM GridHTTPs WebDAV server listens on two ports, one for the unencrypted 
 
 User can access storage area data by using a browser, by using cURLs or several third-party WebDAV clients. They also can develop a client on their own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
 
-<a name="usingbrowsers">&nbsp;</a>
-#### Access data via browser
+#### Access data via browser <a name="usingbrowsers">&nbsp;</a>
 
-<img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-right: 50px;"/>
+<img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-right: 50px;"/>
 
 Users can use browsers to easily read data of storage areas that are:
 
@@ -114,8 +109,7 @@ Users can use browsers to easily read data of storage areas that are:
 
 Using a browser, users can navigate through the storage areas' directories and download/open files. 
 
-<a name="usingcurls">&nbsp;</a>
-#### cURLs
+#### cURLs <a name="usingcurls">&nbsp;</a>
 
 The best way to use the WebDAV service is using cURL command. cURL is a command line tool for transferring data with URL syntax (see [cURL website](http://curl.haxx.se/)). With cURLs we can do anonymous requests or provide our x509 credentials: personal certificate, plain Grid proxy, VOMS proxy. The following examples suppose that user has his/her personal certificate (*usercert.pem*) and key (*userkey.pem*) in $HOME/.globus directory, and his/her proxy in $X509\_USER\_PROXY.
 
@@ -177,15 +171,13 @@ and knowing that encrypted connections has 8443 as default port, we can perform 
 
 and retrieve the list of file/directories in the root directory of the storage area **B**.
 
-<a name="usingrestclient">&nbsp;</a>
-#### Firefox RESTClient plugin
+#### Firefox RESTClient plugin <a name="usingrestclient">&nbsp;</a>
 
 There's a useful Firefox plugin, named <a href="https://addons.mozilla.org/it/firefox/addon/restclient/">RESTClient</a>, that can be used as a debugger for RESTful web services. RESTClient supports all HTTP methods <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616</a> (HTTP/1.1) and <a href="http://www.webdav.org/specs/rfc2518.html">RFC2518</a> (WebDAV). You can construct custom HTTP request (custom method with resources URI and HTTP request Body) to directly test requests against a server.
 
-![RESTClient home screenshot]({{ site.baseurl }}/assets/images/restclient.png "RESTClient home screenshot")
+![RESTClient home screenshot]({{ site.baseurl }}/assets/images/restclient.png "RESTClient home screenshot")
 
-<a name="usingcyberduck">&nbsp;</a>
-#### Cyberduck
+#### Cyberduck <a name="usingcyberduck">&nbsp;</a>
 
 To connect to HTTP readable storage area you can use several clients. One of this is <a href="http://cyberduck.ch/">Cyberduck</a>. Cyberduck is an open source FTP and SFTP, WebDAV, Cloud Files, Google Docs, and Amazon S3 client for Mac OS X and Windows (as of version 4.0) licensed under the GPL. To configure it, add a new connection and insert:
 
@@ -196,11 +188,11 @@ To connect to HTTP readable storage area you can use several clients. One of thi
 
 This configuration is the same for lots of WebDAV clients, alternatives to Cyberduck.
 
-<img src="{{ site.baseurl }}/assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
+<img src="{{ site.baseurl }}/assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
 
 
 
-[ghttp_basic_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#ghttpconf
-[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#ghttp_advconf
-[be_conf]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#beconf
-[prereq]: {{ site.baseurl }}/documentation/{{ site.storm_latest_version }}/sysadmin-guide.html#installationguide
+[ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#ghttpconf
+[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#ghttp_advconf
+[be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#beconf
+[prereq]: {{ site.baseurl }}/documentation/sysadmin-guide/{{ site.storm_latest_version }}/#installprereq

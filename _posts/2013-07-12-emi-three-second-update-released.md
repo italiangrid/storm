@@ -1,0 +1,10 @@
+---
+layout: post
+title: StoRM 1.11.2 released
+author: andrea
+---
+
+This StoRM release provides the bug fixes for the StoRM services.
+
+
+See the [release notes]({{site.baseurl}}/release-notes/EMI3-U2.html).

@@ -8,138 +8,67 @@ issue_base_url: "https://issues.infn.it/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
 repo_base_url: "https://github.com/italiangrid"
 
-storm_latest_version: "EMI3-U2"
+versions:
+    sysadmin_guide: 1.11.2
+
+storm_latest_version: 1.11.2
 
 storm_components:
     - name: StoRM BackEnd
       package: storm-backend-server
       latest: 1.11.2
+      new: true
       repo: StoRM
-      visibility: visible
+      visibility: show
     - name: StoRM FrontEnd
       package: storm-frontend-server
       latest: 1.8.2
+      new: true
       repo: StoRM
-      visibility: visible
+      visibility: show
     - name: StoRM GridHTTPs
       package: storm-gridhttps-server
       latest: 2.0.1
+      new: false
       repo: StoRM emi
-      visibility: visible
+      visibility: show
     - name: StoRM native libs
       package: storm-native-libs
       latest: 1.0.2
+      new: true
       repo: StoRM
-      visibility: hidden
+      visibility: hide
     - name: YAIM StoRM
       package: yaim-storm
       latest: 4.3.3
+      new: true
       repo: StoRM
-      visibility: hidden
+      visibility: hide
     - name: StoRM info provider
       package: storm-dynamic-info-provider
       latest: 1.7.6
+      new: false
       repo: StoRM emi
-      visibility: hidden
-
-storm_released_versions:
-    - version: "EMI3-U2"
-      title: "EMI-3 StoRM - 2nd Update"
-      date: "20.07.2013"
-      description: "This was the second update for StoRM in EMI-3."
-      rfcs:
-          - id: STOR-259
-            type: bug
-            component: storm-native-libs
-            title: StoRM native libs call to change_group_ownership now correctly forwards exceptions to the parent java process
-          - id: STOR-250
-            type: bug
-            component: storm-native-libs
-            title: StoRM GPFS get_fileset_quota_info now doesn't leak more file descriptors
-          - id: STOR-235
-            type: bug
-            component: yaim-storm
-            title: YAIM StoRM does not provide a way to configure the XML-RPC service port
-          - id: STOR-257
-            type: bug
-            component: yaim-storm storm-frontend-server storm-backend-server
-            title: Unable to change STORM_USER via yaim setup of StoRM
-          - id: STOR-103
-            type: bug
-            component: yaim-storm
-            title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint
-      components:
-          - name: storm-backend-server
-            version: 1.11.2
-          - name: storm-frontend-server
-            version: 1.8.2
-          - name: storm-native-libs
-            version: 1.0.2
-          - name: yaim-storm
-            version: 4.3.3
-    - version: "EMI3-U1"
-      title: "EMI-3 StoRM - 1st Update"
-      date: "03.06.2013"
-      description: "This was the first update for StoRM in EMI-3."
-      rfcs:
-          - id: STOR-172
-            type: bug
-            component: storm-dynamic-info-provider storm-backend-server
-            title: StoRM now correctly publishes information about storage area sizes in the information system.
-          - id: STOR-148
-            type: bug
-            component: storm-native-libs storm-backend-server
-            title: StoRM now leverages quota limits information gathered from the underlying GPFS filesystem to compute a storage area size
-          - id: STOR-10
-            type: bug
-            component: storm-native libs storm-backend-server
-            title: StoRM now gets quota information directly from GPFS filesystem
-          - id: STOR-130
-            type: bug
-            component: yaim-storm
-            title: StoRM GridHTTPs server is now correctly registered to start at system boot.
-          - id: STOR-117
-            type: bug
-            component: storm-backend-server
-            title: Duplicate prepare-to-get calls on a SURL are now correctly handled
-          - id: STOR-113
-            type: bug
-            component: yaim-storm
-            title: The StoRM YAIM module does not try to configure permissions on existing configured storage areas. It is assumed (and documented) that the correct permissions are set by the system administrator before running YAIM.
-          - id: STOR-109
-            type: bug
-            component: storm-backend-server storm-gridhttps-server
-            title: The Java JDK dependency has been fixed so that all StoRM packages explicitly requires OpenJDK.
-          - id: STOR-230
-            type: feature
-            component: storm-gridhttps-server
-            title: The StoRM WebDAV PROPFIND implementation performance has been improved.
-      components:
-          - name: storm-backend-server
-            version: 1.11.1
-          - name: storm-native-libs
-            version: 1.0.1
-          - name: storm-gridhttps-server
-            version: 2.0.1
-          - name: yaim-storm
-            version: 4.3.2
-          - name: storm-dynamic-info-provider
-            version: 1.7.6
-
-storm_old_versions:
-    - version: "1.11.0"
-      date: "11.03.2013"
-      description: "This was the StoRM released in EMI-3."
-      notes: "http://www.eu-emi.eu/releases/emi-3-montebianco/products/-/asset_publisher/5dKm/content/storm-se-2"
-    - version: "1.10.0"
-      date: "20.07.2012"
-      description: "This was the first update for StoRM in EMI-2."
-      notes: "http://www.eu-emi.eu/emi-2-matterhorn/updates/-/asset_publisher/9AgN/content/update-1-20-07-2012#StoRM_SE_v_1_10_0_task_30816"
-    - version: "1.9.0"
-      date: "21.05.2012"
-      description: "This was the StoRM released with EMI-2."
-      notes: "http://www.eu-emi.eu/emi-2-matterhorn-products/-/asset_publisher/B4Rk/content/storm-se-1"
-
+      visibility: hide
+    - name: StoRM client
+      package: storm-srm-client
+      latest: 1.6.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: StoRM GridHTTPs plugin
+      package: storm-gridhttps-plugin
+      latest: 1.1.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: StoRM GridFTP
+      package: storm-gridftp-dsi
+      latest: 1.2.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+      
 authors:
   andrea:
     display_name: Andrea Ceccanti
@@ -154,6 +83,7 @@ authors:
   daniele:
     display_name: Daniele Andreotti
     email: daniele.andreotti@cnaf.infn.it
+    github: dandreotti
   enrico:
     display_name: Enrico Vianello
     email: enrico.vianello@cnaf.infn.it

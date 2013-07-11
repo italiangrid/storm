@@ -5,7 +5,7 @@ title: Cookbook - Useful recipes for StoRM advanced configuration
 
 ## Cookbook
 
-<img src="{{ site.baseurl }}/assets/images/cookbook.jpg" width="180" style="float:right; margin-top: -20px; margin-right: 60px; margin-bottom: 40px;"/>
+<img src="{{ site.baseurl }}/assets/images/cookbook.jpg" width="180" style="float:right; margin-top: -30px; margin-right: 0px; margin-bottom: 40px;"/>
 
 ### Table of contents
 
