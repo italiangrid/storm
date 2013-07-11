@@ -69,7 +69,7 @@ All the information about the OS Scientific Linux can be found at [here](http://
 Official releases are done in the contest of the EMI project so follow the [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) as first installation prerequisite.
 In particular, check the followings:
 
-#### - NTP service must be installed.
+#### NTP service must be installed
 
 **To check**:
 
@@ -88,7 +88,9 @@ $ chkconfig ntpd on
 $ service ntpd restart
 ```
 
-#### - Hostname must be set correctly, containing a *Fully Qualified Domain Name* (FQDN).
+#### Hostname must be set correctly
+
+Hostname must be a *Fully Qualified Domain Name* (FQDN).
 
 **To check**:
 
@@ -115,7 +117,10 @@ Set your own MYHOSTNAME and MYDOMAIN and restart the network service:
 $ service network restart
 ```
 
-#### - Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
+#### Host needs a valid X.509 certificate
+
+Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). 
+Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
 
 **To check**:
 
