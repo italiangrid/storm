@@ -43,9 +43,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,9 +87,9 @@ public class BoLChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/** milliseconds that must pass before reconnecting to DB */
-	private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
 	/** initial delay in millseconds before starting timer */
-	private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 	/** boolean that tells whether reconnection is needed because of MySQL bug! */
 	private boolean reconnect = false;
 
@@ -267,7 +267,7 @@ public class BoLChunkDAO {
 				addProtocols.setInt(1, id_new);
 				logWarnings(addProtocols.getWarnings());
 
-				addProtocols.setString(2, (String) i.next());
+				addProtocols.setString(2, i.next());
 				logWarnings(addProtocols.getWarnings());
 
 				log.trace("BoL CHUNK DAO: addNew; " + addProtocols.toString());
@@ -1687,7 +1687,7 @@ public class BoLChunkDAO {
 				+ "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
 				+ "WHERE ( rb.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " OR rb.sourceSURL IN "
+				+ " AND rb.sourceSURL IN "
 				+ makeSurlString(surlsArray) + " )";
 			if (withDn) {
 				str += " AND rq.client_dn=\'" + dn + "\'";
