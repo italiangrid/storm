@@ -1009,19 +1009,6 @@ public class PtP implements Delegable, Chooser, Request {
 			// set extended attribute that indicates the file pinned
 			StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
 			
-			// we suspect that some errors might be caused by trying to call
-			// chown too early after the ea is set
-			
-			try {
-				
-				Thread.sleep(100);
-			
-			} catch (InterruptedException e) {
-			
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 			// set group permission for tape quota management
 			fileStoRI.setGroupTapeWrite();
 		}
