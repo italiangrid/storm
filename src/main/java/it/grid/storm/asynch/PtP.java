@@ -1001,10 +1001,27 @@ public class PtP implements Delegable, Chooser, Request {
 	private void setTapeManagementAcl(StoRI fileStoRI) {
 
 		if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-			// Compute the Expiration Time in seconds
+			
+			// compute the Expiration Time in seconds
 			long expDate = (System.currentTimeMillis() / 1000 + requestData
 				.pinLifetime().value());
+			
+			// set extended attribute that indicates the file pinned
 			StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
+			
+			// we suspect that some errors might be caused by trying to call
+			// chown too early after the ea is set
+			
+			try {
+				
+				Thread.sleep(100);
+			
+			} catch (InterruptedException e) {
+			
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			// set group permission for tape quota management
 			fileStoRI.setGroupTapeWrite();
 		}

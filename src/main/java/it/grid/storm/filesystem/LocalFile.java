@@ -767,7 +767,15 @@ public class LocalFile {
 	 */
 	public void setGroupOwnership(String groupName) throws FSException {
 
-		fs.changeFileGroupOwnership(localFile.getAbsolutePath(), groupName);
+		try {
+		
+			fs.changeFileGroupOwnership(localFile.getAbsolutePath(), groupName);
+
+		} catch(FilesystemError filesystemError) {
+
+			throw new FSException(filesystemError);
+			
+		}
 	}
 
 	/**
