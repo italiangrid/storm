@@ -577,6 +577,7 @@ public class RequestSummaryCatalog {
 	 * EMPTY TRequestType is returned.
 	 */
 	synchronized public TRequestType typeOf(TRequestToken rt) {
+
 		TRequestType result = TRequestType.EMPTY;
 		String type = null;
 		if (rt != null) {
@@ -615,21 +616,10 @@ public class RequestSummaryCatalog {
 		int minChunkSize = garbageChunkSize / 2;
 
 		int nrExpiredTasks = dao.getNumberExpired();
-		int nrChunks = nrExpiredTasks / garbageChunkSize;
-		if (nrChunks < 1) {
-			// Check the minimum chunk
-			if (nrExpiredTasks > minChunkSize) {
-				// Single step garbaging
-				log.debug("Purging the expired in single step (expired requests:"
-					+ nrExpiredTasks + ")");
-			} else {
-				// not enough events to remove. Skip the purging phase
-				log
-					.debug("Skipping the purging phase of expired requests. (expired requests:"
-						+ nrExpiredTasks + ")");
-			}
-		} else {
-			// Multiple chunks
+
+		if (nrExpiredTasks > minChunkSize) {
+			// calculate number of chunks with an approximation to the next whole
+			int nrChunks = (int) Math.ceil((double) nrExpiredTasks / garbageChunkSize);
 			log.debug("Purging the expired requests in " + nrChunks
 				+ " steps (expired requests:" + nrExpiredTasks + ")");
 			for (int i = 0; i < nrChunks; i++) {
@@ -637,8 +627,12 @@ public class RequestSummaryCatalog {
 			}
 			log.info("REQUEST SUMMARY CATALOG; removed from DB < "
 				+ expiredRequests.size() + " > expired requests");
+		} else {
+			// not enough events to remove. Skip the purging phase
+			log
+				.debug("Skipping the purging phase of expired requests. (expired requests:"
+					+ nrExpiredTasks + ")");
 		}
-
 		return expiredRequests;
 	}
 
