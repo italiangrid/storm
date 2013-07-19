@@ -43,9 +43,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,9 +91,9 @@ public class PtGChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/** milliseconds that must pass before reconnecting to DB */
-	private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
 	/** initial delay in milliseconds before starting timer */
-	private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 
 	private PtGChunkDAO() {
 
@@ -275,7 +275,7 @@ public class PtGChunkDAO {
 				addProtocols.setInt(1, id_new);
 				logWarnings(addProtocols.getWarnings());
 
-				addProtocols.setString(2, (String) i.next());
+				addProtocols.setString(2, i.next());
 				logWarnings(addProtocols.getWarnings());
 
 				log.trace("PTG CHUNK DAO: addNew; " + addProtocols.toString());
@@ -1804,7 +1804,7 @@ public class PtGChunkDAO {
 				+ "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
 				+ "WHERE ( rg.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " OR rg.sourceSURL IN "
+				+ " AND rg.sourceSURL IN "
 				+ makeSurlString(surlsArray) + " )";
 
 			if (withDn) {

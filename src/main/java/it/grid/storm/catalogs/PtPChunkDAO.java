@@ -75,9 +75,9 @@ public class PtPChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/* milliseconds that must pass before reconnecting to DB */
-	private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
 	/* initial delay in milliseconds before starting timer */
-	private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 
 	/* boolean that tells whether reconnection is needed because of MySQL bug! */
 	private boolean reconnect = false;
@@ -1245,7 +1245,7 @@ public class PtPChunkDAO {
 				+ "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
 				+ "WHERE ( rp.targetSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " OR rp.targetSURL IN "
+				+ " AND rp.targetSURL IN "
 				+ makeSurlString(surlsArray) + " )";
 
 			if (withDn) {
