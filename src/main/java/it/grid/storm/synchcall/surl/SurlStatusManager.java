@@ -421,14 +421,19 @@ public class SurlStatusManager {
 
 		LinkedList<TReturnStatus> nonFinalStatuses = extractNonFinalStatuses(statuses);
 		removeStartingStatus(nonFinalStatuses);
+		
 		if (nonFinalStatuses.isEmpty()) {
+
 			return extractMostRecentStatus(statuses);
+			
 		}
+		
 		if (nonFinalStatuses.size() > 1) {
-			throw new IllegalArgumentException(
-				"Inconsistent status set, multiple not final statuses: "
-					+ nonFinalStatuses);
+
+			return extractMostRecentStatus(nonFinalStatuses);
+		
 		} else {
+		
 			return nonFinalStatuses.getFirst();
 		}
 	}
