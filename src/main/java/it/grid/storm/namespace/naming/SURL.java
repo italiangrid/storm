@@ -145,6 +145,32 @@ public class SURL extends SRMURL {
 		return result;
 	}
 
+	public String getQueryFormAsString() {
+		if (this.isNormalFormSURL()) {
+			String uriString = transfProtocol.getProtocol().getSchema() + "://"
+				+ this.transfProtocol.getAuthority().getServiceHostname();
+			if (this.transfProtocol.getAuthority().getServicePort() >= 0) {
+				uriString += ":" + this.transfProtocol.getAuthority().getServicePort();
+			}
+			uriString += "/srm/managerv2?SFN=" + this.path;
+			return uriString;
+		}
+		return this.getSURLAsURIString();
+	}
+	
+	public String getNormalFormAsString() {
+		if (this.isQueriedFormSURL()) {
+			String uriString = transfProtocol.getProtocol().getSchema() + "://"
+				+ this.transfProtocol.getAuthority().getServiceHostname();
+			if (this.transfProtocol.getAuthority().getServicePort() >= 0) {
+				uriString += ":" + this.transfProtocol.getAuthority().getServicePort();
+			}
+			uriString += this.getStFN();
+			return uriString;
+		}
+		return this.getSURLAsURIString();
+	}
+	
 	public boolean isDirectory() {
 
 		return directory;
@@ -220,7 +246,7 @@ public class SURL extends SRMURL {
 		if (this.isNormalFormSURL()) {
 			uriString += this.path;
 		} else {
-			uriString += this.path + this.getPathQuery() + this.queryString;
+			uriString += this.getPathQuery();
 		}
 		return uriString;
 	}

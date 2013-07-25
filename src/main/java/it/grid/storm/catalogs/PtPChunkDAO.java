@@ -18,6 +18,8 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
@@ -1391,14 +1393,30 @@ public class PtPChunkDAO {
 
 		StringBuffer sb = new StringBuffer("(");
 		int n = surls.length;
+		
 		for (int i = 0; i < n; i++) {
+			
+			SURL requestedSURL;
+			
+			try {
+				requestedSURL = SURL.makeSURLfromString(surls[i]);
+			} catch (NamespaceException e) {
+				log.error(e.getMessage());
+				log.debug("Skip '" + surls[i] + "' during query creation");
+				continue;
+			}
+			
 			sb.append("'");
-			sb.append(surls[i]);
+			sb.append(requestedSURL.getNormalFormAsString());
+			sb.append("','");
+			sb.append(requestedSURL.getQueryFormAsString());
 			sb.append("'");
+			
 			if (i < (n - 1)) {
 				sb.append(",");
 			}
 		}
+		
 		sb.append(")");
 		return sb.toString();
 	}

@@ -20,8 +20,10 @@ package it.grid.storm.catalogs;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -1466,14 +1468,30 @@ public class BoLChunkDAO {
 
 		StringBuffer sb = new StringBuffer("(");
 		int n = surls.length;
+		
 		for (int i = 0; i < n; i++) {
+			
+			SURL requestedSURL;
+			
+			try {
+				requestedSURL = SURL.makeSURLfromString(surls[i]);
+			} catch (NamespaceException e) {
+				log.error(e.getMessage());
+				log.debug("Skip '" + surls[i] + "' during query creation");
+				continue;
+			}
+			
 			sb.append("'");
-			sb.append(surls[i]);
+			sb.append(requestedSURL.getNormalFormAsString());
+			sb.append("','");
+			sb.append(requestedSURL.getQueryFormAsString());
 			sb.append("'");
+			
 			if (i < (n - 1)) {
 				sb.append(",");
 			}
 		}
+		
 		sb.append(")");
 		return sb.toString();
 	}
