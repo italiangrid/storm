@@ -777,15 +777,19 @@ public class PtGChunkDAO {
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
+		
 		try {
+		
 			String str = "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
 				+ "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
 				+ "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
 				+ "WHERE rq.r_token=? AND ( rg.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " OR rg.sourceSURL IN "
+				+ " AND rg.sourceSURL IN "
 				+ makeSurlString(surlsArray) + " ) ";
+			
 			find = con.prepareStatement(str);
+			
 			logWarnings(con.getWarnings());
 
 			ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
@@ -855,7 +859,7 @@ public class PtGChunkDAO {
 				+ "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
 				+ "WHERE rq.client_dn=? AND ( rg.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlUniqueIDs)
-				+ " OR rg.sourceSURL IN "
+				+ " AND rg.sourceSURL IN "
 				+ makeSurlString(surls) + " ) ";
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
@@ -1811,9 +1815,9 @@ public class PtGChunkDAO {
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
+
 		try {
-			// TODO MICHELE USER_SURL get new fields
-			// get chunks of the request
+			
 			String str = "SELECT rq.ID, rq.r_token, sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, "
 				+ "rq.client_dn, rq.proxy, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, "
 				+ "d.isSourceADirectory, d.allLevelRecursive,  d.numOfLevels "
@@ -1826,8 +1830,10 @@ public class PtGChunkDAO {
 				+ makeSurlString(surlsArray) + " )";
 
 			if (withDn) {
+			
 				str += " AND rq.client_dn=\'" + dn + "\'";
 			}
+		
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
