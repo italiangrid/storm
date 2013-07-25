@@ -85,177 +85,269 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 	public OutputData execute(InputData inputData) {
 
 		log.debug("Started ReleaseFiles function");
-		/******************** Check for malformed request: missing mandatory input parameters ****************/
+		
 		if (inputData == null) {
+		
 			log.error("ReleaseFiles: Invalid input parameters specified: inputData="
 				+ inputData);
+			
 			ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 				CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
 					"Empty request parametes"));
+			
 			SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
 				inputData, SRM_COMMAND);
+			
 			return outputData;
 		}
 
 		if (!(inputData instanceof ManageFileTransferRequestFilesInputData
 			|| inputData instanceof ManageFileTransferFilesInputData || inputData instanceof ManageFileTransferRequestInputData)) {
+			
 			throw new IllegalArgumentException(
 				"Unable to execute the task. Wrong input argumenbt type: "
 					+ inputData.getClass());
 		}
 
 		Map<TSURL, TReturnStatus> surlStastuses;
+		
 		try {
+		
 			surlStastuses = SurlStatusCommandHelper.getSurlsStatus(inputData);
+		
 		} catch (IllegalArgumentException e) {
+		
 			log.warn("Unexpected IllegalArgumentException in getSurlsStatus: " + e);
+			
 			ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 				CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
 					"Internal error. Unablr to determine current SURL status"));
+			
 			SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
 				inputData, SRM_COMMAND);
+			
 			return outputData;
+			
 		} catch (RequestUnknownException e) {
+			
 			log.info("No surls status available. RequestUnknownException: "
 				+ e.getMessage());
+			
 			ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 				CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
 					"Invalid request token and surls"));
+			
 			SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
 				inputData, SRM_COMMAND);
+		
 			return outputData;
+		
 		} catch (UnknownTokenException e) {
+			
 			log.info("No surls status available. UnknownTokenException: "
 				+ e.getMessage());
+			
 			ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 				CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
 					"Invalid request token"));
+			
 			SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
 				inputData, SRM_COMMAND);
+			
 			return outputData;
+		
 		} catch (ExpiredTokenException e) {
+			
 			log.info("The request is expired: ExpiredTokenException: "
 				+ e.getMessage());
+			
 			ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 				CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 					"Request expired"));
+			
 			SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
 				inputData, SRM_COMMAND);
+			
 			return outputData;
 		}
+		
 		if (surlStastuses.isEmpty()) {
-			// Case 1: no candidate SURLs in the DB. SRM_INVALID_REQUEST or
-			// SRM_FAILURE are returned.
+		
 			log.info("No SURLs found in the DB. Request failed");
+			
 			TReturnStatus returnStatus;
+			
 			if (inputData instanceof ManageFileTransferRequestFilesInputData) {
+			
 				returnStatus = CommandHelper.buildStatus(
 					TStatusCode.SRM_INVALID_REQUEST,
 					"Invalid request token, no match with provided surls");
+			
 			} else {
+			
 				if (inputData instanceof ManageFileTransferRequestInputData) {
+				
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+				
 				} else {
+				
 					if (inputData instanceof ManageFileTransferFilesInputData) {
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_INVALID_REQUEST,
 							"None of the specified SURLs was found");
+					
 					} else {
+					
 						throw new IllegalStateException("Unexpected InputData received: "
 							+ inputData.getClass());
 					}
+				
 				}
+			
 			}
+			
 			SurlStatusCommandHelper.printRequestOutcome(returnStatus, inputData,
 				SRM_COMMAND);
+			
 			return new ManageFileTransferOutputData(returnStatus);
 		}
+		
 		ArrayOfTSURLReturnStatus surlReturnStatuses;
+		
 		if (inputData instanceof ManageFileTransferFilesInputData) {
+		
 			surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses,
 				((ManageFileTransferFilesInputData) inputData).getArrayOfSURLs());
 
 		} else {
+			
 			surlReturnStatuses = prepareSurlsReturnStatus(surlStastuses);
+			
 		}
+		
 		List<TSURL> surlToRelease = extractSurlToRelease(surlReturnStatuses);
+		
 		if (!surlToRelease.isEmpty()) {
+		
 			try {
+			
 				if (inputData instanceof ManageFileTransferRequestInputData) {
+				
 					expireSurls(surlToRelease,
 						((ManageFileTransferRequestInputData) inputData).getRequestToken());
+				
 				} else {
+				
 					expireSurls(surlToRelease);
+				
 				}
 
 			} catch (IllegalArgumentException e) {
+				
 				log.warn("Unexpected IllegalArgumentException in expireSurls: " + e);
+				
 				ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 					CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
 						"Internal error. Unable to transit SURLs to SRM_RELEASED status"));
+				
 				SurlStatusCommandHelper.printRequestOutcome(
 					outputData.getReturnStatus(), inputData, SRM_COMMAND);
+				
 				return outputData;
+			
 			} catch (UnknownTokenException e) {
+			
 				log.warn("Unexpected RequestUnknownException in expireSurls: " + e);
+				
 				ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 					CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
 						"Internal error. Unable to transit SURLs to SRM_RELEASED status"));
+				
 				SurlStatusCommandHelper.printRequestOutcome(
 					outputData.getReturnStatus(), inputData, SRM_COMMAND);
 				return outputData;
+			
 			} catch (ExpiredTokenException e) {
+			
 				log.info("The request is expired: ExpiredTokenException: "
 					+ e.getMessage());
+				
 				ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 					CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 						"Request expired"));
+				
 				SurlStatusCommandHelper.printRequestOutcome(
 					outputData.getReturnStatus(), inputData, SRM_COMMAND);
+				
 				return outputData;
+			
 			} catch (UnknownSurlException e) {
+			
 				log.warn("Unexpected UnknownSurlException in expireSurls: " + e);
+				
 				ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
 					CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
 						"Internal error. Unable to transit SURLs to SRM_RELEASED status"));
+				
 				SurlStatusCommandHelper.printRequestOutcome(
 					outputData.getReturnStatus(), inputData, SRM_COMMAND);
+				
 				return outputData;
 			}
+			
 		}
 
 		removePinneExtendedAttribute(surlToRelease);
 
 		boolean atLeastOneReleased = false;
 		boolean atLeastOneFailure = false;
+		
 		for (TSURLReturnStatus returnStatus : surlReturnStatuses.getArray()) {
+		
 			printSurlOutcome(returnStatus, inputData);
+			
 			if (returnStatus.getStatus().getStatusCode()
 				.equals(TStatusCode.SRM_RELEASED)) {
+			
 				atLeastOneReleased = true;
 
 			} else {
+				
 				atLeastOneFailure = true;
+		
 			}
+
 		}
+		
 		TReturnStatus returnStatus;
+		
 		if (atLeastOneReleased) {
+			
 			if (atLeastOneFailure) {
+			
 				returnStatus = CommandHelper.buildStatus(
 					TStatusCode.SRM_PARTIAL_SUCCESS, "Check files status for details");
+			
 			} else {
+				
 				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
 					"Files released");
+			
 			}
 
 		} else {
+			
 			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
 				"No files released");
+		
 		}
+		
 		SurlStatusCommandHelper.printRequestOutcome(returnStatus, inputData,
 			SRM_COMMAND);
+		
 		log.debug("End of ReleaseFiles function");
+		
 		return new ManageFileTransferOutputData(returnStatus, surlReturnStatuses);
 	}
 
@@ -264,12 +356,15 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 		ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(
 			surlStastuses.size());
+		
 		for (Entry<TSURL, TReturnStatus> surlStatus : surlStastuses.entrySet()) {
 
 			TReturnStatus returnStatus = prepareStatus(surlStatus.getValue());
+			
 			surlReturnStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(
 				surlStatus.getKey(), returnStatus));
 		}
+		
 		return surlReturnStatuses;
 	}
 
@@ -278,18 +373,26 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 		ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(
 			surlStastuses.size());
+		
 		for (TSURL surl : arrayOfUserSURLs.getArrayList()) {
+		
 			TReturnStatus returnStatus;
 			TReturnStatus status = surlStastuses.get(surl);
+			
 			if (status != null) {
+			
 				returnStatus = prepareStatus(status);
+			
 			} else {
+			
 				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 					"Invalid SURL");
 			}
+			
 			surlReturnStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(surl,
 				returnStatus));
 		}
+		
 		return surlReturnStatuses;
 	}
 
@@ -297,23 +400,31 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 		if (TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode())
 			|| TStatusCode.SRM_SUCCESS.equals(status.getStatusCode())) {
-			return CommandHelper.buildStatus(TStatusCode.SRM_RELEASED, "Released");
+			
+			return CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Released");
+		
 		} else {
+		
 			return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 				"Not released because it is not pinned");
 		}
+	
 	}
 
 	private List<TSURL> extractSurlToRelease(
 		ArrayOfTSURLReturnStatus surlReturnStatuses) {
 
 		LinkedList<TSURL> surlToRelease = new LinkedList<TSURL>();
+		
 		for (TSURLReturnStatus returnStatus : surlReturnStatuses.getArray()) {
+			
 			if (TStatusCode.SRM_RELEASED.equals(returnStatus.getStatus()
 				.getStatusCode())) {
+				
 				surlToRelease.add(returnStatus.getSurl());
 			}
 		}
+		
 		return surlToRelease;
 	}
 
@@ -323,6 +434,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 		if (surlToRelease == null || surlToRelease.isEmpty()
 			|| requestToken == null) {
+			
 			throw new IllegalArgumentException(
 				"unable to expire Surls, null arguments: surlToRelease="
 					+ surlToRelease + " requestToken=" + requestToken);
@@ -336,28 +448,37 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 	private void expireSurls(List<TSURL> surlToRelease)
 		throws IllegalArgumentException, UnknownTokenException,
+		
 		ExpiredTokenException, UnknownSurlException {
 
 		if (surlToRelease == null) {
+		
 			throw new IllegalArgumentException(
 				"unable to expire Surls, null arguments: surlToRelease="
 					+ surlToRelease);
 		}
+		
 		for (TSURL surl : surlToRelease) {
+			
 			Map<TRequestToken, TReturnStatus> tokenStatusMap = SurlStatusManager
 				.getSurlCurrentStatuses(surl);
+		
 			for (Entry<TRequestToken, TReturnStatus> tokenStatus : tokenStatusMap
 				.entrySet()) {
 				if (TStatusCode.SRM_FILE_PINNED.equals(tokenStatus.getValue()
 					.getStatusCode())) {
+			
 					SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(),
 						surlToRelease, TStatusCode.SRM_FILE_PINNED,
 						TStatusCode.SRM_RELEASED);
+				
 				} else {
+				
 					if (TStatusCode.SRM_SUCCESS.equals(tokenStatus.getValue()
 						.getStatusCode())) {
 						SurlStatusManager.checkAndUpdateStatus(tokenStatus.getKey(),
 							surlToRelease, TStatusCode.SRM_SUCCESS, TStatusCode.SRM_RELEASED);
+					
 					}
 				}
 			}
@@ -373,15 +494,23 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 	private void removePinneExtendedAttribute(List<TSURL> surlToRelease) {
 
 		for (TSURL surl : surlToRelease) {
+
 			StoRI stori;
+			
 			try {
+			
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+			
 			} catch (UnapprochableSurlException e) {
+				
 				log.warn("UNEXPECTED: Unable to build a stori for surl " + surl
 					+ " UnapprochableSurlException: " + e.getMessage());
+				
 				continue;
 			}
+			
 			if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+			
 				StormEA.removePinned(stori.getAbsolutePath());
 			}
 		}
