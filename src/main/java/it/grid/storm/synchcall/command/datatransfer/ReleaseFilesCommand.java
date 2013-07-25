@@ -308,7 +308,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 			printSurlOutcome(returnStatus, inputData);
 			
 			if (returnStatus.getStatus().getStatusCode()
-				.equals(TStatusCode.SRM_RELEASED)) {
+				.equals(TStatusCode.SRM_SUCCESS)) {
 			
 				atLeastOneReleased = true;
 
