@@ -418,7 +418,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 		
 		for (TSURLReturnStatus returnStatus : surlReturnStatuses.getArray()) {
 			
-			if (TStatusCode.SRM_RELEASED.equals(returnStatus.getStatus()
+			if (TStatusCode.SRM_SUCCESS.equals(returnStatus.getStatus()
 				.getStatusCode())) {
 				
 				surlToRelease.add(returnStatus.getSurl());
