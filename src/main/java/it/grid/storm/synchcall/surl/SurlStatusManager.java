@@ -563,17 +563,18 @@ public class SurlStatusManager {
 		String explanation) {
 
 		switch (requestType) {
+		
 		case PREPARE_TO_GET:
-			// TODO if needed do it
-			// PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl,
-			// expectedStatusCode, newStatusCode, explanation);
-			throw new IllegalStateException(
-				"Not implemented, contact storm developers: "
-					+ "PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);");
+
+			PtGChunkCatalog.getInstance().updateFromPreviousStatus(surl,
+				expectedStatusCode, newStatusCode, explanation);
+			break;
+			
 		case PREPARE_TO_PUT:
 			PtPChunkCatalog.getInstance().updateFromPreviousStatus(surl,
 				expectedStatusCode, newStatusCode, explanation);
 			break;
+		
 		case COPY:
 			// TODO if needed do it
 			// CopyChunkCatalog.getInstance().updateStatus(requestToken, surl,
@@ -581,6 +582,7 @@ public class SurlStatusManager {
 			throw new IllegalStateException(
 				"Not implemented, contact storm developers: "
 					+ "CopyChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);");
+		
 		case BRING_ON_LINE:
 			// TODO if needed do it
 			// BoLChunkCatalog.getInstance().updateStatus(requestToken, surl,
@@ -588,9 +590,11 @@ public class SurlStatusManager {
 			throw new IllegalStateException(
 				"Not implemented, contact storm developers: "
 					+ "BoLChunkCatalog.getInstance().updateFromPreviousStatus(surl, expectedStatusCode, newStatusCode, explanation);");
+		
 		case EMPTY:
 			throw new IllegalArgumentException("Received Empty TRequestType: "
 				+ requestType);
+
 		default:
 			throw new IllegalArgumentException("Received unknown TRequestType: "
 				+ requestType);

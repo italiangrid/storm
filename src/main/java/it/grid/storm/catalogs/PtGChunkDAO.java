@@ -1460,6 +1460,25 @@ public class PtGChunkDAO {
 		}
 	}
 
+	public synchronized void updateStatusOnMatchingStatus(int[] surlsUniqueIDs,
+		String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode,
+		String explanation) throws IllegalArgumentException {
+
+		if (surlsUniqueIDs == null || surls == null || explanation == null
+			|| surlsUniqueIDs.length == 0 || surls.length == 0
+			|| surlsUniqueIDs.length != surls.length) {
+
+			throw new IllegalArgumentException(
+				"Unable to perform the updateStatusOnMatchingStatus, "
+					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surls="
+					+ surls + " explanation=" + explanation);
+		}
+		
+		doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls,
+			expectedStatusCode, newStatusCode, explanation, false, true, true);
+	}
+
+	
 	public synchronized void updateStatusOnMatchingStatus(
 		TRequestToken requestToken, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation) {
@@ -1501,6 +1520,7 @@ public class PtGChunkDAO {
 		if ((withRequestToken && requestToken == null)
 			|| (withExplanation && explanation == null)
 			|| (withSurls && (surlUniqueIDs == null || surls == null))) {
+			
 			throw new IllegalArgumentException(
 				"Unable to perform the doUpdateStatusOnMatchingStatus, "
 					+ "invalid arguments: withRequestToken=" + withRequestToken

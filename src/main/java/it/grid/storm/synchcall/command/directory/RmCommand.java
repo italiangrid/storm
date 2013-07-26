@@ -308,6 +308,7 @@ public class RmCommand implements Command {
 			// The file exists but it is a directory!
 			statusCode = TStatusCode.SRM_INVALID_PATH;
 			explanation = "The specified file is a directory. Not removed";
+		
 		} else {
 
 			/**
@@ -317,20 +318,26 @@ public class RmCommand implements Command {
 			SurlStatusManager.checkAndUpdateStatus(TRequestType.PREPARE_TO_PUT, surl,
 				TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_ABORTED,
 				"File Removed by a SrmRm()");
-
+			
 			/**
 			 * If there are SrmPrepareToGet active on the SURL specified change the
 			 * SRM_STATUS from SRM_FILE_PINNED to SRM_ABORTED
 			 */
-			// getcatalog.transitSRM_FILE_PINNEDtoSRM_ABORTED(surl,"File Removed
-			// by a SrmRm()");
-			// The file exists and it is not a directory
+			SurlStatusManager.checkAndUpdateStatus(TRequestType.PREPARE_TO_GET, surl,
+				TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_ABORTED,
+				"File Removed by a SrmRm()");
+			
+			// shall we check also for copy requests?
+			
+			// the file exists and it is not a directory
 			fileRemoved = removeTarget(file/* , lUser */);
 
 			if (!(fileRemoved)) {
+			
 				// Deletion failed for not enough permission.
 				statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
 				explanation = "File not removed, permission denied.";
+			
 			} else { // File removed with success from underlying file system
 				// Remove file entry from Persistence
 

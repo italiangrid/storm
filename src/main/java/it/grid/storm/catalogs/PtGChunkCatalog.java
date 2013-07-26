@@ -24,7 +24,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-// import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -59,6 +58,7 @@ import org.slf4j.LoggerFactory;
  * @date April 26th, 2005
  * @version 4.0
  */
+@SuppressWarnings("unused")
 public class PtGChunkCatalog {
 
 	private static final Logger log = LoggerFactory
@@ -943,6 +943,16 @@ public class PtGChunkCatalog {
 			new String[] { surl.rawSurl() }, statusCode, explanation);
 	}
 
+	public void updateFromPreviousStatus(TSURL surl,
+		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
+		String explanation) {
+
+		dao.updateStatusOnMatchingStatus(new int[] { surl.uniqueId() },
+			new String[] { surl.rawSurl() }, expectedStatusCode, newStatusCode,
+			explanation);
+		
+	}
+	
 	public void updateFromPreviousStatus(TRequestToken requestToken,
 		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
 		String explanation) {
