@@ -17,10 +17,11 @@
   		{% include navbar.html %}
 		<div class="container">
 			<div id="stormcontent">
-				<h2>{{page.component.name}} v.{{page.component.version}}</h2>
+				<h2>{{page.component.name}} v.{{page.component.version}} - Release Notes</h2>
 				
-				<h4><strong>Release Notes</strong></h4>
 				Released on <strong>{{page.release_date }}</strong> with <a href="{{site.baseurl}}/release-notes/{{page.release_version}}.html">{{page.release_title}}</a>
+				
+				<h3>Description</h3>
 				
 				<p>{{page.release_description}}</p>
 				

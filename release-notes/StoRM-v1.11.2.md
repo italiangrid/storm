@@ -20,6 +20,15 @@ release_rfcs:
     - id: STOR-103
       type: bug
       title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint
+    - id: STOR-303
+      type: bug
+      title: StoRM creates too many threads
+    - id: STOR-304
+      type: bug
+      title: Slow db queries makes transter operations latency increase
+    - id: STOR-305
+      type: bug
+      title: srmReleaseFiles doesn't release multiple files at once
 release_components:
     - name: StoRM Backend
       package: storm-backend-server

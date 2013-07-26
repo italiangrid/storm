@@ -13,6 +13,15 @@ component:
         - id: STOR-257
           type: bug
           title: Unable to change STORM_USER via yaim setup of StoRM
+        - id: STOR-303
+          type: bug
+          title: StoRM creates too many threads
+        - id: STOR-304
+          type: bug
+          title: Slow db queries makes transter operations latency increase
+        - id: STOR-305
+          type: bug
+          title: srmReleaseFiles doesn't release multiple files at once
 ---
 
 
