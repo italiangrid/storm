@@ -14,6 +14,7 @@ version: {{ page.version }}
   * [System users](#systemusers)
   * [ACL support](#aclsupport)
   * [Extended Attribute support](#easupport)
+  * [Storage Area's permissions](#sapermissions)
 * [Installation guide](#installationguide)
   * [StoRM Upgrade to EMI3](#upgradetoemi3)
   * [Repository settings](#reposettings)
@@ -253,6 +254,17 @@ Then you need to remount the affected partitions as follows:
 
 ```bash
 $ mount -o remount /storage
+```
+
+### Storage Area's permissions <a name="sapermissions">&nbsp;</a>
+
+If your installation has some storage area that already exist, those storage areas must have the right permissions. 
+For example, it needs ${STORM\_USER} as owner of the storage area root directory and recoursively of the all subdirectories and files contained.
+To set the correct permissions on a storage area that has ${dir} as root directory, you can launche the following commands:
+
+```bash
+chown -RL ${STORM_USER}:${STORM_USER} ${dir}
+chmod -R o-rwx,g+r ${dir}
 ```
 
 ## Installation guide <a name="installationguide">&nbsp;</a>
