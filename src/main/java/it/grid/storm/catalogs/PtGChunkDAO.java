@@ -1431,7 +1431,7 @@ public class PtGChunkDAO {
 			+ "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
 			+ "SET sg.statusCode=? , sg.explanation=? " + "WHERE rq.r_token='"
 			+ requestToken.toString() + "' AND ( rg.sourceSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlUniqueIDs) + " OR rg.sourceSURL IN "
+			+ makeSURLUniqueIDWhere(surlUniqueIDs) + " AND rg.sourceSURL IN "
 			+ makeSurlString(surls) + " ) ";
 		PreparedStatement stmt = null;
 		try {
@@ -1926,7 +1926,7 @@ public class PtGChunkDAO {
 	private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
 
 		return " ( rg.sourceSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rg.sourceSURL IN "
+			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rg.sourceSURL IN "
 			+ makeSurlString(surls) + " ) ";
 	}
 

@@ -78,9 +78,9 @@ public class CopyChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/* milliseconds that must pass before reconnecting to DB */
-	private long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
 	/* initial delay in milliseconds before starting timer */
-	private long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 
 	private CopyChunkDAO() {
 
@@ -340,7 +340,7 @@ public class CopyChunkDAO {
 				+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
 				+ "WHERE rq.r_token=? AND ( rc.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlUniqueIDs)
-				+ " OR rc.sourceSURL IN "
+				+ " AND rc.sourceSURL IN "
 				+ makeSurlString(surls) + " ) ";
 
 			find = con.prepareStatement(str);
@@ -730,7 +730,7 @@ public class CopyChunkDAO {
 				+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
 				+ "WHERE ( rc.sourceSURL_uniqueID IN "
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " OR rc.sourceSURL IN "
+				+ " AND rc.sourceSURL IN "
 				+ makeSurlString(surlsArray) + " )";
 			if (withDn) {
 				str += " AND rq.client_dn=\'" + dn + "\'";
@@ -797,7 +797,7 @@ public class CopyChunkDAO {
 	private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
 
 		return " ( rc.sourceSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rc.sourceSURL IN "
+			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rc.sourceSURL IN "
 			+ makeSurlString(surls) + " ) ";
 	}
 

@@ -1769,7 +1769,7 @@ public class BoLChunkDAO {
 	private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
 
 		return " ( rb.sourceSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rb.sourceSURL IN "
+			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rb.sourceSURL IN "
 			+ makeSurlString(surls) + " ) ";
 	}
 

@@ -1054,7 +1054,7 @@ public class PtPChunkDAO {
 			str += buildTokenWhereClause(requestToken) + " AND ";
 		}
 		str += " ( rp.targetSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rp.targetSURL IN "
+			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rp.targetSURL IN "
 			+ makeSurlString(surls) + " ) ";
 		PreparedStatement stmt = null;
 		try {
@@ -1366,7 +1366,7 @@ public class PtPChunkDAO {
 	private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
 
 		return " ( rp.targetSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " OR rp.targetSURL IN "
+			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rp.targetSURL IN "
 			+ makeSurlString(surls) + " ) ";
 	}
 
