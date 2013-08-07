@@ -468,7 +468,11 @@ public class PtPChunkDAO {
 				+ "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
 				+ "WHERE rq.r_token=?";
 			if (addInClause) {
-				str += " AND rp.targetSURL_uniqueID IN (?)";
+				str += " AND rp.targetSURL_uniqueID IN (";
+				for (int i=0; i<surls.size(); i++) {
+					str += i==0 ? "?" : ", ?";
+				}
+				str += ")";
 			}
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
@@ -477,16 +481,12 @@ public class PtPChunkDAO {
 			find.setString(1, reqtoken);
 			logWarnings(find.getWarnings());
 			if (addInClause) {
-				String surlUniqueIdSequence = "";
 				Iterator<TSURL> iterator = surls.iterator();
+				int start = 2;
 				while (iterator.hasNext()) {
 					TSURL surl = iterator.next();
-					surlUniqueIdSequence += " " + surl.uniqueId() + " ";
-					if (iterator.hasNext()) {
-						surlUniqueIdSequence += ",";
-					}
+					find.setInt(start++, surl.uniqueId());
 				}
-				find.setString(2, surlUniqueIdSequence);
 			}
 			logWarnings(find.getWarnings());
 			log.trace("PtP CHUNK DAO! findReduced with request token; "
