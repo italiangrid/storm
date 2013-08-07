@@ -396,8 +396,6 @@ public class MvCommand extends DirectoryCommand implements Command {
 	 *          toFile
 	 * @return TReturnStatus
 	 */
-	// private TReturnStatus manageAuthorizedMV(StoRI fromStori, LocalFile toFile,
-	// boolean hasJiTACL) {
 	private TReturnStatus manageAuthorizedMV(StoRI fromStori, LocalFile toFile) {
 
 		boolean creationDone;
@@ -454,13 +452,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 					+ " not stored, surl is not busy. UnknownSurlException: "
 					+ e.getMessage());
 			}
-			if (TStatusCode.SRM_SPACE_AVAILABLE.equals(surlStatus)) {
+			if (TStatusCode.SRM_SPACE_AVAILABLE.equals(surlStatus.getStatusCode())) {
 				// There is an active PrepareToPut!
 				log
 					.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
 				explanation = "There is an active SrmPrepareToPut on from SURL.";
-				statusCode = TStatusCode.SRM_FILE_BUSY;
-				return CommandHelper.buildStatus(statusCode, explanation);
+				return CommandHelper.buildStatus(TStatusCode.SRM_FILE_BUSY, explanation);
 
 			} else {
 				log.debug("srmMv: No PrepareToPut running on from SURL.");
@@ -471,14 +468,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 			 * case SrmMv() fails with SRM_FILE_BUSY.
 			 */
 
-			// if (getCatalog.isSRM_FILE_PINNED(fromStori.getSURL())) {
-			if (TStatusCode.SRM_FILE_BUSY.equals(surlStatus)) {
+			if (TStatusCode.SRM_FILE_PINNED.equals(surlStatus.getStatusCode())) {
 				// There is an active PrepareToGet!
 				log
 					.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
 				explanation = "There is an active SrmPrepareToGet on from SURL";
-				statusCode = TStatusCode.SRM_FILE_BUSY;
-				return CommandHelper.buildStatus(statusCode, explanation);
+				return CommandHelper.buildStatus(TStatusCode.SRM_FILE_BUSY, explanation);
 			}
 
 			/**
@@ -524,26 +519,6 @@ public class MvCommand extends DirectoryCommand implements Command {
 
 		/**
 		 * VERIFICARE SE I PERMESSI RIMANGONO IMPOSTATI
-		 */
-
-		// Check if failure occour before try to set up ACL.
-		/*
-		 * if (!failure) { // Add Acces Control List (ACL) in directory created. //
-		 * ACL allow user to read-write-list the new directory // Call wrapper to
-		 * set ACL on file created.
-		 * log.debug("Mv : Adding ACL for directory created : '" + file + "'  " +
-		 * "group:g_name:rwx"); FilesystemPermission fpRW =
-		 * FilesystemPermission.ReadWrite; FilesystemPermission fpLIST =
-		 * FilesystemPermission.ListTraverse; // Check if Jit or AoT if (hasJiTACL)
-		 * { // Jit Case // With JiT Model the ACL for directory is not needed. }
-		 * else { // AoT Case try { file.grantGroupPermission(user.getLocalUser(),
-		 * fpRW); file.grantGroupPermission(user.getLocalUser(), fpLIST); } catch
-		 * (CannotMapUserException ex5) { log.error("Unable to setting up the ACL ",
-		 * ex5); failure = true; explanation = explanation +
-		 * " [ADDED : Unable to setting up the ACL ]"; } } if (failure) { //
-		 * Rollback ... /**
-		 * 
-		 * @todo: Rollback of failure. } } // failure
 		 */
 
 		return CommandHelper.buildStatus(statusCode, explanation);
