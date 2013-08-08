@@ -33,7 +33,6 @@ import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.space.SpaceHelper;
-//import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -219,41 +218,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 			return outputData;
 		}
 
-		// If toFile is a directory then append the name of the file fromFile
+		// If toFile exists return SRM_DUPLICATION_ERROR
 		if (toStori.getLocalFile().exists()) {
 			log.debug("srmMv : destination SURL " + toSURL + " already exists! ");
 			outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_DUPLICATION_ERROR, "destination SURL already exists!"));
 			printRequestOutcome(outputData.getStatus(), inputData);
 			return outputData;
-			
-//			if (toStori.getLocalFile().isDirectory()) {
-//				try {
-//					toStori = buildDestinationStoryForFolder(toSURL, fromStori, data);
-//				} catch (IllegalArgumentException e) {
-//					log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL
-//						+ "'. IllegalArgumentException: " + e.getMessage());
-//					outputData.setStatus(CommandHelper.buildStatus(
-//						TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
-//					printRequestOutcome(outputData.getStatus(), inputData);
-//					return outputData;
-//				} catch (UnapprochableSurlException e) {
-//					log.info("srmMv: Unable to build a stori for surl " + toSURL
-//						+ " for user " + DataHelper.getRequestor(inputData)
-//						+ " UnapprochableSurlException: " + e.getMessage());
-//					outputData.setStatus(CommandHelper.buildStatus(
-//						TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
-//					printRequestOutcome(outputData.getStatus(), inputData);
-//					return outputData;
-//				} catch (InvalidTSURLAttributesException e) {
-//					log
-//						.error("Unable to create toSURL. InvalidTSURLAttributesException: "
-//							+ e.getMessage());
-//					outputData.setStatus(CommandHelper.buildStatus(
-//						TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
-//					printRequestOutcome(outputData.getStatus(), inputData);
-//					return outputData;
-//				}
-//			}
 		}
 
 		AuthzDecision sourceDecision;
@@ -325,28 +295,6 @@ public class MvCommand extends DirectoryCommand implements Command {
 		printRequestOutcome(outputData.getStatus(), inputData);
 		return outputData;
 	}
-
-//	private StoRI buildDestinationStoryForFolder(TSURL toSURL, StoRI fromStori,
-//		InputData inputData) throws IllegalArgumentException,
-//		InvalidTSURLAttributesException, UnapprochableSurlException {
-//
-//		StoRI toStori;
-//		String toSURLString = toSURL.getSURLString();
-//		if (!(toSURLString.endsWith("/"))) {
-//			toSURLString += "/";
-//		}
-//		toSURLString += fromStori.getFilename();
-//		log.debug("srmMv: New toSURL: " + toSURLString);
-//		if (inputData instanceof IdentityInputData) {
-//			toStori = namespace.resolveStoRIbySURL(
-//				TSURL.makeFromStringValidate(toSURLString),
-//				((IdentityInputData) inputData).getUser());
-//		} else {
-//			toStori = namespace.resolveStoRIbySURL(TSURL
-//				.makeFromStringValidate(toSURLString));
-//		}
-//		return toStori;
-//	}
 
 	private void setAcl(StoRI oldFileStoRI, StoRI newFileStoRI) {
 
