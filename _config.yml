@@ -26,9 +26,9 @@ storm_components:
       visibility: show
     - name: StoRM GridHTTPs
       package: storm-gridhttps-server
-      latest: 2.0.1
-      new: false
-      repo: StoRM emi
+      latest: 2.0.2
+      new: true
+      repo: StoRM
       visibility: show
     - name: StoRM native libs
       package: storm-native-libs
