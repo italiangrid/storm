@@ -3,9 +3,13 @@ layout: default
 title: StoRM Documentation
 ---
 
-# Documentation
+## Documentation
 
-## Guides
+#### [StoRM Overview]({{site.baseurl}}/documentation/functional-description/)
+
+StoRM components and service overview.
+
+#### _Guides_:
 
 #### [System administrator guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }})
 
@@ -20,7 +24,7 @@ Explains the StoRM WebDAV interface, how to install, configure and use it.
 
 Explains how to use the StoRM SRM client.
 
-## Other resources
+#### _Other resources_:
 
 #### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
 
