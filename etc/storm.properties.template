@@ -81,10 +81,6 @@ gridhttps.enabled=false
 #The complete classname of the class implementing the http(s) plugin interface 
 gridhttps.plugin.classname=it.grid.storm.httpsHTTPSPluginInterfaceStub
 
-# Algorithm used by file-transfer agents to compute checksum. (not case-sensitive): Adler32 
-#   <!! managed by YAIM; please read the above NOTE !!>
-checksum.algorithm=Adler32 
-
 #############################################
 ############  PROFILE PARAMETERS ############
 #############################################

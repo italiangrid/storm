@@ -43,10 +43,7 @@ public class Configuration {
 	private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
 	// as default
 	static Configuration instance = new Configuration(); // only
-	// instance of
-	// this
-	// configuration
-	// class
+	// instance of this configuration class
 
 	private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
 	private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
@@ -147,7 +144,6 @@ public class Configuration {
 	private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
 	private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
 	private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-	private static final String CHECKSUM_ALGORITHM_KEY = "checksum.algorithm";
 	private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
 	private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
 	private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
@@ -2069,10 +2065,7 @@ public class Configuration {
 	}
 
 	public String getChecksumAlgorithm() {
-
-		if (cr.getConfiguration().containsKey(CHECKSUM_ALGORITHM_KEY)) {
-			return cr.getConfiguration().getString(CHECKSUM_ALGORITHM_KEY);
-		}
+		
 		return "Adler32";
 	}
 

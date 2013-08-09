@@ -71,9 +71,9 @@ namespace.filename=namespace.xml
 namespace.refreshrate=3
 namespace.automatic-config-reload=false        # E' considerata ? Mi sembra che venga ricaricato..
 
-checksum.enabled=false
-checksum.serviceURL=(empty array)              # Array dovrebbe essere segnalato nella key con list
-checksum.algorithm=Adler32
+REMOVED checksum.enabled=false
+REMOVED checksum.serviceURL=(empty array)              # Array dovrebbe essere segnalato nella key con list
+REMOVED checksum.algorithm=Adler32
 
 pinnedfiles.cleaning.delay=10
 pinnedfiles.cleaning.interval=300
