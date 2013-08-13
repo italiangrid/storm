@@ -76,19 +76,19 @@
 		</layout>
 	</appender>
 
-	<logger name="it.grid.storm" additivity="false">
-		<level value="INFO" />
+	<logger name="it.grid.storm" additivity="false" level="INFO">
 		<appender-ref ref="PROCESS" />
 	</logger>
-	
-	<!-- Decomment this in case of debug (comment the above one) -->
-	<!-- 
-	<logger name="it.grid.storm" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="DEBUGGING" />
-    </logger>
-    -->
-
+  
+  <!-- Uncomment this section to debug GPFS SA quota updates
+   
+  <logger name="it.grid.storm.space.gpfsquota.GPFSQuotaManager" 
+    level="DEBUG"/>
+  
+  <logger name="it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand"
+    level="DEBUG"/>
+   -->
+   
 	<logger name="health" additivity="false">
 		<level value="INFO" />
 		<appender-ref ref="HEARTBEAT" />
