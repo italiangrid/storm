@@ -2064,11 +2064,6 @@ public class Configuration {
 		}
 	}
 
-	public String getChecksumAlgorithm() {
-		
-		return "Adler32";
-	}
-
 	public boolean getRecallTableTestingMode() {
 
 		if (cr.getConfiguration().containsKey(RECALL_TABLE_TESTING_MODE_KEY)) {

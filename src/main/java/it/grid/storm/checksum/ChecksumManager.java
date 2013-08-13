@@ -17,7 +17,7 @@
 
 package it.grid.storm.checksum;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.DefaultValue;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.StormEA;
 
@@ -37,8 +37,7 @@ public class ChecksumManager {
 
 	private ChecksumManager() {
 
-		defaultAlgorithm = Configuration.getInstance().getChecksumAlgorithm()
-			.toLowerCase();
+		defaultAlgorithm = DefaultValue.getChecksumAlgorithm().toLowerCase();
 	}
 
 	public static synchronized ChecksumManager getInstance() {

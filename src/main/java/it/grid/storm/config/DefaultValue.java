@@ -33,7 +33,6 @@ public class DefaultValue {
 	 */
 	public static String getAnonymous_SpaceType() {
 
-		// return Config.getStringParameter("anyVO.space.type");
 		return "volatile";
 	}
 
@@ -43,7 +42,6 @@ public class DefaultValue {
 	public static String getNamedVO_SpaceType(String voname) {
 
 		String result = null;
-		// result = Config.getStringParameter(voname+".space.type");
 		if (result == null) {
 			log.info("Searching for ANONYMOUS <SPACE-TYPE> parameter value..");
 			result = getAnonymous_SpaceType();
@@ -57,7 +55,6 @@ public class DefaultValue {
 	public static long getAnonymous_TotalSpaceSize() {
 
 		return 104857600; // 100 Mb
-		// return Config.getLongParameter("anyVO.space.totalsize");
 	}
 
 	/**
@@ -66,7 +63,6 @@ public class DefaultValue {
 	public static long getNamedVO_TotalSpaceSize(String voname) {
 
 		long result = -1;
-		// result = Config.getLongParameter(voname + ".space.totalsize");
 		if (result == -1) {
 			log.info("Searching for ANONYMOUS <TOTAL-SPACE-SIZE> parameter value..");
 			result = getAnonymous_TotalSpaceSize();
@@ -80,7 +76,6 @@ public class DefaultValue {
 	public static long getAnonymous_GuaranteedSpaceSize() {
 
 		return 10485760; // 10 Mb
-		// return Config.getLongParameter("anyVO.space.guarsize");
 	}
 
 	/**
@@ -89,7 +84,6 @@ public class DefaultValue {
 	public static long getNamedVO_GuaranteedSpaceSize(String voname) {
 
 		long result = -1;
-		// result = Config.getLongParameter(voname + ".space.guarsize");
 		if (result == -1) {
 			log
 				.info("Searching for ANONYMOUS <GUARANTEED-SPACE-SIZE> parameter value..");
@@ -104,7 +98,6 @@ public class DefaultValue {
 	public static long getAnonymous_SpaceLifeTime() {
 
 		return 86400; // 24h
-		// return Config.getLongParameter("anyVO.space.lifetime");
 	}
 
 	/**
@@ -113,12 +106,19 @@ public class DefaultValue {
 	public static long getNamedVO_SpaceLifeTime(String voname) {
 
 		long result = -1;
-		// result = Config.getLongParameter(voname + ".space.lifetime");
 		if (result == -1) {
 			log.info("Searching for ANONYMOUS <SPACE-LIFETIME> parameter value..");
 			result = getAnonymous_SpaceLifeTime();
 		}
 		return result;
+	}
+	
+	/**
+	 * Retrieve default Checksum Algorithm
+	 */
+	public static String getChecksumAlgorithm() {
+		
+		return "Adler32";
 	}
 
 }
