@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,15 +54,22 @@ public enum GPFSQuotaManager {
 	private static final long DEFAULT_RELAX_PERIOD = 15000;
 
 	/**
-	 * The underlying execution service
+	 * The submitter execution service
 	 */
-	private ScheduledExecutorService workerScheduler;
+	private ScheduledExecutorService submitterExecutionService;
 
+	/**
+	 * The quota workers execution service
+	 */
+	private ExecutorService quotaWorkersExecutionService;
+	
 	/**
 	 * The completion service used to block and wait for the submitted tasks.
 	 */
 	private CompletionService<GPFSFilesetQuotaInfo> quotaService;
 
+	
+	 
 	/**
 	 * The list of GPFS filesystems which have quota enabled.
 	 */
@@ -82,30 +90,30 @@ public enum GPFSQuotaManager {
 	 */
 	private Object submissionTimeLock = new Object();
 
-	private void configureScheduler() {
-
-		// 1 submitter, 1 thread per for quota enabled FS
-		int numThreads = 1 + quotaEnabledFilesystems.size();
-
-		workerScheduler = Executors.newScheduledThreadPool(numThreads,
+	
+	
+	private void configureExecutionService(){
+			
+		submitterExecutionService = Executors.newSingleThreadScheduledExecutor(
+			new NamedThreadFactory("GPFSQuotaSubmitter"));
+		
+		quotaWorkersExecutionService = Executors.newFixedThreadPool(
+			quotaEnabledFilesystems.size(),
 			new NamedThreadFactory("GPFSQuotaWorker"));
 
 		quotaService = new ExecutorCompletionService<GPFSFilesetQuotaInfo>(
-			workerScheduler);
-	}
-
-	private void configureWorkers() {
-
-		long refreshPeriod = Configuration.getInstance()
-				.getGPFSQuotaRefreshPeriod();
+			quotaWorkersExecutionService);
 		
+		long refreshPeriod = Configuration.getInstance()
+			.getGPFSQuotaRefreshPeriod();
+	
 		log.info("GPFSQuotaManager refresh period (in seconds): {}",
 			refreshPeriod);
 
-		workerScheduler.scheduleWithFixedDelay(new QuotaJobSubmitter(), 0,
+		submitterExecutionService.scheduleWithFixedDelay(new QuotaJobSubmitter(), 
+			0,
 			refreshPeriod, 
 			TimeUnit.SECONDS);
-
 	}
 
 	public synchronized void start() {
@@ -118,9 +126,8 @@ public enum GPFSQuotaManager {
 			return;
 		}
 
-		configureScheduler();
-		configureWorkers();
-
+		configureExecutionService();
+		
 	}
 
 	private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
@@ -193,7 +200,7 @@ public enum GPFSQuotaManager {
 			int completedTasks = 0;
 
 			for (VirtualFSInterface vfs : quotaEnabledFilesystems) {
-				log.info("Submitting GPFS quota info for vfs rooted at : {}",
+				log.info("Submitting GPFS quota info computation for vfs rooted at : {}",
 					vfs.getRootPath());
 
 				quotaService.submit(new GetGPFSFilesetQuotaInfoCommand(vfs));
@@ -204,10 +211,11 @@ public enum GPFSQuotaManager {
 			}
 
 			while (completedTasks < quotaEnabledFilesystems.size()) {
-
 				try {
 
 					GPFSFilesetQuotaInfo info = quotaService.take().get();
+					log.debug("Fetched GPFS quota info for vfs rooted at : {}", 
+						info.getVFS().getRootPath());
 					handleQuotaInfo(info);
 					completedTasks++;
 
@@ -221,6 +229,8 @@ public enum GPFSQuotaManager {
 					setLastFailure(e);
 				}
 			}
+			
+			log.debug("Updated quotas for all quota-enabled SAs.");
 		}
 	}
 
@@ -235,10 +245,10 @@ public enum GPFSQuotaManager {
 
 		if (currentTime - lastSubmissionTime > DEFAULT_RELAX_PERIOD) {
 			log.info("Triggering on demand GPFS quota computation.");
-			workerScheduler.submit(new QuotaJobSubmitter());
+			submitterExecutionService.submit(new QuotaJobSubmitter());
 		} else {
 			log
-				.info(
+				.debug(
 					"Skipping GPFS quota computation since last submission is within the last {} seconds.",
 					TimeUnit.MILLISECONDS.toSeconds(DEFAULT_RELAX_PERIOD));
 		}
@@ -262,8 +272,12 @@ public enum GPFSQuotaManager {
 
 	public synchronized void shutdown() {
 		log.info("GPFSQuotaManager shutting down...");
-		if (workerScheduler != null)
-			workerScheduler.shutdownNow();
+		
+		if (submitterExecutionService != null)
+			submitterExecutionService.shutdownNow();
+		
+		if (quotaWorkersExecutionService != null)
+			quotaWorkersExecutionService.shutdownNow();
 	}
 
 }
