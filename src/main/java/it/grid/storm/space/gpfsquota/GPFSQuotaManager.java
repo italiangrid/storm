@@ -230,7 +230,8 @@ public enum GPFSQuotaManager {
 				}
 			}
 			
-			log.info("Updated quotas for all quota-enabled SAs.");
+			log.info("Updated space availability information for all " +
+					"quota-enabled SAs.");
 		}
 	}
 
