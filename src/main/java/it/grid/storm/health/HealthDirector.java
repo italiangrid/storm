@@ -90,104 +90,13 @@ public class HealthDirector {
 
 			healthMonitorIstance.initializePerformanceMonitor(
 				timeToLiveLogEventInSec, glanceTimeInterval);
-			// healthMonitorIstance.setPerformanceEnabled(true);
+	
 		}
-		// else
-		// {
-		// healthMonitorIstance.setPerformanceEnabled(false);
-		// }
-
+	
 		initialized = true;
 
 	}
 
-	/**
-	 * 
-	 * @param testingMode
-	 *          boolean
-	 */
-
-	/**
-	 * private static void configureHealthLog(boolean testingMode) { FileAppender
-	 * healthFileAppender = null; PatternLayout layout = new
-	 * PatternLayout(getHealthPatternLayout()); //Recovery of HEALTH File Name
-	 * String healthFile =
-	 * Configuration.getInstance().getHealthElectrocardiogramFile(); try {
-	 * healthFileAppender = new FileAppender(layout, healthFile);
-	 * healthFileAppender.activateOptions();
-	 * HEARTLOG.addAppender(healthFileAppender); HEARTLOG.setAdditivity(false); if
-	 * (testingMode) { HEARTLOG.setLevel( Level.DEBUG); } else {
-	 * HEARTLOG.setLevel( Level.INFO); } } catch (IOException ex) {
-	 * LOGGER.error("Unable to configure Health log." + ex.getMessage()); } }
-	 **/
-
-	/**
-	 * 
-	 * @param testingMode
-	 *          boolean
-	 */
-
-	/**
-	 * private static void configureBookKeeping(boolean testingMode) {
-	 * bookKeepingConfigured = true; DailyRollingFileAppender bookKeepingAppender
-	 * = null; PatternLayout layout = new
-	 * PatternLayout(getBookKeppingPatternLayout()); //Recovery of BOOK KEEPING
-	 * LOG File Name String bookKeepingFile =
-	 * Configuration.getInstance().getBookKeepingLogFile(); String datePattern =
-	 * "'.'yyyy-MM-dd"; try { bookKeepingAppender = new
-	 * DailyRollingFileAppender(layout, bookKeepingFile, datePattern);
-	 * BOOKKEEPING.addAppender(bookKeepingAppender);
-	 * BOOKKEEPING.setAdditivity(false); bookKeepingAppender.activateOptions(); if
-	 * (testingMode) { BOOKKEEPING.setLevel( Level.DEBUG); } else {
-	 * BOOKKEEPING.setLevel( Level.INFO); } } catch (IOException ex) {
-	 * LOGGER.error("Unable to configure Book Keeping log." + ex.getMessage());
-	 * bookKeepingConfigured = false; } }
-	 **/
-
-	/**
-	 * health.performance.mesauring.enabled health.performance.log.filename
-	 * health.performance.log.verbosity health.performance.glance.timeInterval
-	 * health.performance.logbook.timeInterval
-	 * 
-	 * @param testingMode
-	 *          boolean
-	 */
-	/**
-	 * private static void configurePerformanceMonitor(boolean testingMode) {
-	 * performanceMonitorConfigured = true; DailyRollingFileAppender
-	 * performanceAppender = null; PatternLayout layout = new
-	 * PatternLayout(getPerformanceMonitoringPatternLayout()); //Recovery of
-	 * PERFORMANCE MONITOR LOG File Name String performanceFile =
-	 * Configuration.getInstance().getPerformanceMonitoringLogFile(); String
-	 * datePattern = "'.'yyyy-MM-dd"; try { performanceAppender = new
-	 * DailyRollingFileAppender(layout, performanceFile, datePattern);
-	 * PERFLOG.addAppender(performanceAppender); PERFLOG.setAdditivity(false);
-	 * performanceAppender.activateOptions(); if (testingMode) { PERFLOG.setLevel(
-	 * Level.DEBUG); } else { PERFLOG.setLevel( Level.INFO); }
-	 * 
-	 * 
-	 * } catch (IOException ex) {
-	 * LOGGER.error("Unable to configure Performance Monitor log." +
-	 * ex.getMessage()); performanceMonitorConfigured = false; }
-	 * PERFLOG.debug("--- PERF LOGGER Configured ---"); }
-	 **/
-
-	/**
-	 * 
-	 * @return ArrayList
-	 */
-	/**
-	 * private static ArrayList<FileAppender> getFileAppenders() {
-	 * ArrayList<FileAppender> fileAppenders = new ArrayList<FileAppender>();
-	 * Enumeration en = LOGGER.getAllAppenders(); int nbrOfAppenders = 0; while
-	 * (en.hasMoreElements()) { nbrOfAppenders++; Object appender =
-	 * en.nextElement(); if (appender instanceof FileAppender) {
-	 * fileAppenders.add((FileAppender)appender); } } return fileAppenders; }
-	 **/
-
-	/**
-	 * @return String
-	 */
 
 	private static String getHealthPatternLayout() {
 

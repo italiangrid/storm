@@ -1,116 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true" scanPeriod="60 seconds">
 
-	<appender name="PROCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>${storm.log.dir}/storm-backend.log</File>
-		<ImmediateFlush>true</ImmediateFlush>
-
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
-            <!-- keep 60 days' worth of history -->
-            <MaxHistory>60</MaxHistory>
-        </rollingPolicy>
-
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>%date{HH:mm:ss.SSS} - %level [%thread] - %msg%n</Pattern>
-        </layout>
-    </appender>
-    
-    <appender name="DEBUGGING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>${storm.log.dir}/storm-backend.log</File>
-        <ImmediateFlush>true</ImmediateFlush>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
-            <!-- keep 60 days' worth of history -->
-            <MaxHistory>20</MaxHistory>
-        </rollingPolicy>
-
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>%date{HH:mm:ss.SSS} - %level [%thread][%C{0}.%M] - %msg%n</Pattern>
-        </layout>
-    </appender>
-
-	<appender name="HEARTBEAT"
-		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>${storm.log.dir}/heartbeat.log
-		</File>
-		<ImmediateFlush>true</ImmediateFlush>
-
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
-            <!-- keep 365 days' worth of history -->
-            <!-- <MaxHistory>365</MaxHistory> -->
-        </rollingPolicy>
-
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>[%d{ISO8601}]: %m%n</Pattern>
-        </layout>
-    </appender>
-
-    <appender name="BOOKKEEPING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>${storm.log.dir}/bookkeeping.log</File>
-        <ImmediateFlush>true</ImmediateFlush>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log.gz</FileNamePattern>
-            <!-- keep 365 days' worth of history -->
-            <!-- <MaxHistory>365</MaxHistory> -->
-        </rollingPolicy>
-
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>[%d{ISO8601}]: %m%n</Pattern>
-        </layout>
-    </appender>
-    
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    	<layout class="ch.qos.logback.classic.PatternLayout">
-      		<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
-    	</layout>
-  	</appender>
-
-	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
-		<target>System.err</target>
-		<layout class="ch.qos.logback.classic.PatternLayout">
-			<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
-		</layout>
-	</appender>
-
-	<logger name="it.grid.storm" additivity="false" level="INFO">
-		<appender-ref ref="PROCESS" />
-	</logger>
-  
-  <!-- Uncomment this section to debug GPFS SA quota updates
+  <appender name="PROCESS"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${storm.log.dir}/storm-backend.log</File>
    
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz
+      </FileNamePattern>
+      <MaxHistory>90</MaxHistory>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>%date{HH:mm:ss.SSS} - %level [%thread] - %msg%n</pattern>
+    </encoder>
+    
+  </appender>
+
+  <appender name="HEARTBEAT"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${storm.log.dir}/heartbeat.log</File>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log.gz
+      </FileNamePattern>
+      <!-- keep 365 days' worth of history -->
+      <!-- <MaxHistory>365</MaxHistory> -->
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>[%d{ISO8601}]: %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="BOOKKEEPING"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${storm.log.dir}/bookkeeping.log</File>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log.gz
+      </FileNamePattern>
+      <!-- keep 365 days' worth of history -->
+      <!-- <MaxHistory>365</MaxHistory> -->
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>[%d{ISO8601}]: %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="it.grid.storm" additivity="false" level="INFO">
+    <appender-ref ref="PROCESS" />
+  </logger>
+
+  <!-- Uncomment this section to debug GPFS SA quota updates 
+  
   <logger name="it.grid.storm.space.gpfsquota.GPFSQuotaManager" 
-    level="DEBUG"/>
+    level="DEBUG"/> 
   
-  <logger name="it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand"
-    level="DEBUG"/>
-   -->
-   
-	<logger name="health" additivity="false">
-		<level value="INFO" />
-		<appender-ref ref="HEARTBEAT" />
-	</logger>
+  <logger name="it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand" 
+    level="DEBUG"/> 
+  -->
 
-	<logger name="bookkeeping" additivity="false">
-		<level value="INFO" />
-		<appender-ref ref="BOOKKEEPING" />
-	</logger>
+  <logger name="health" additivity="false" level="INFO">
+    <appender-ref ref="HEARTBEAT" />
+  </logger>
 
-	<logger name="system.out" additivity="false">
-		<level value="ALL" />
-		<appender-ref ref="STDOUT" />
-	</logger>
+  <logger name="bookkeeping" additivity="false" level="INFO">
+    <appender-ref ref="BOOKKEEPING" />
+  </logger>
 
-	<logger name="system.err" additivity="false">
-		<level value="ALL" />
-		<appender-ref ref="STDERR" />
-	</logger>
-
-	<root level="ERROR">
-	    <appender-ref ref="PROCESS" />
-	</root>
-	
+  <root level="ERROR">
+    <appender-ref ref="PROCESS" />
+  </root>
+  
 </configuration>

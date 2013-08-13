@@ -29,6 +29,7 @@ import it.grid.storm.config.WelcomeMessage;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.logging.StoRMLoggers;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.persistence.dao.StorageAreaDAO;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class StoRM {
 
-	private AdvancedPicker picker = null; // Picker of StoRM
+	private AdvancedPicker picker = null; 
 
 	private XMLRPCHttpServer xmlrpcServer = null;
 
@@ -67,118 +68,116 @@ public class StoRM {
 																																			// StoRM
 																																			// project
 
-	private static Logger log;
+	private static final Logger log = LoggerFactory.getLogger(StoRM.class);
 
+	public static final String DEFAULT_CONFIGURATION_FILE_PATH = 
+		"/etc/storm/backend-server/storm.properties";
+	
 	private final Timer GC = new Timer(); // Timer object in charge to call
 																				// periodically the Space Garbace
 																				// Collector
+	
 	private final ReservedSpaceCatalog spaceCatalog;
 	private TimerTask cleaningTask = null;
 	private boolean isPickerRunning = false;
 	private boolean isXmlrpcServerRunning = false;
 	private boolean isRestServerRunning = false;
 	private boolean isSpaceGCRunning = false;
-
-	/**
-	 * Public constructor that requires a String containing the complete pathname
-	 * to the configuration file, as well as the desired refresh rate in seconds
-	 * for changes in configuration. Beware that by pathname it is meant the
-	 * complete path starting from root, including the name of the file itself! If
-	 * pathname is empty or null, then an attempt will be made to read properties
-	 * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
-	 * this attempt _will_ fail! In any case, failure to read the configuratin
-	 * file causes StoRM to use hardcoded default values.
-	 */
-	public StoRM(String configurationPathname, int refresh) {
-
-		// verifying supplied configurationPathname and print to screen...
+	
+	private void loadConfiguration(String configurationPathname, int refresh){
+		
 		if ((configurationPathname == null) || (configurationPathname.equals(""))) {
-			// built-in configuration file to be used if nothing gets specified!
-			configurationPathname = "/opt/storm/backend/etc/storm.properties";
-			System.out
-				.print("This instance of StoRM Backend was invoked without explicitly specifying ");
-			System.out
-				.print("a configuration file. Looking for the standard one in ");
-			System.out.println(configurationPathname);
-		} else {
-			// look for given configuration file...
-			System.out.print("Looking for configuration file ");
-			System.out.println(configurationPathname);
+			configurationPathname = DEFAULT_CONFIGURATION_FILE_PATH;
 		}
-
-		// load properties from configuration...
+		
+		log.info("Loading backend configuration from '{}'", configurationPathname);
+		log.info("Configuration refresh rate (in secs): {}", refresh);
+		
 		Configuration.getInstance().setConfigReader(
 			new ConfigReader(configurationPathname, refresh));
-
-		// set and print current configuration string...
-		String currentConfig = "\nCurrent configuration:\n"
-			+ Configuration.getInstance().toString();
-		System.out.println(currentConfig);
-		// print welcome
-		System.out.println("\n" + welcome);
-
-		/* Now that configuration file has been loaded create the catalog instance */
-		spaceCatalog = new ReservedSpaceCatalog();
-
-		/**
-		 * INIT LOGGING COMPONENT
-		 */
+		
+		log.info("Configuration content:\n{}", 
+			Configuration.getInstance().toString());
+	}
+	
+	
+	private void configureLogging(){
 		String configurationDir = Configuration.getInstance().configurationDir();
 		String logFile = configurationDir + "logging.xml";
-		Bootstrap.initializeLogging(logFile);
-
-		StoRM.log = LoggerFactory.getLogger(StoRM.class);
-
-		//
-		log.warn(welcome); // log welcome string!
-		log.info(currentConfig); // log actually used values!
-
-		// Force the loadind and the parsing of Namespace configuration
+		Bootstrap.configureLogging(logFile);
+	}
+	
+	
+	private void loadNamespaceConfiguration(){
+			
 		boolean verboseMode = false; // true generates verbose logging
 		boolean testingMode = false; // True if you wants testing namespace
 		NamespaceDirector.initializeDirector(verboseMode, testingMode);
-
-		HealthDirector.initializeDirector(false);
-
-		String pathAuthzDBFileName = configurationDir + "path-authz.db";
+		
+	}
+	
+	private void loadPathAuthzDBConfiguration(){
+		
+		String pathAuthzDBFileName = Configuration
+			.getInstance().configurationDir() + "path-authz.db";
+		
 		try {
 			Bootstrap.initializePathAuthz(pathAuthzDBFileName);
 		} catch (BootstrapException e) {
 			log
 				.error("Unable to initialize the Path Authorization manager. BootstrapException: "
-					+ e.getMessage());
+					+ e.getMessage(),e);
+			
 			throw new RuntimeException(
-				"Unable to initialize the Path Authorization manager");
+				"Unable to initialize the Path Authorization manager",e);
 		}
-
-		// Initialize Used Space
-		Bootstrap.initializeUsedSpace();
-
+	}
+	
+	
+	private void configureGridHTTPSPlugin(){
+		
 		if (Configuration.getInstance().getGridhttpsEnabled()) {
+			
 			log.info("Initializing the https plugin");
+			
 			String httpsFactoryName = Configuration.getInstance()
 				.getGRIDHTTPSPluginClassName();
+			
 			Bootstrap.initializeAclManager(httpsFactoryName,
 				LoggerFactory.getLogger(Bootstrap.class));
 		}
-
-		//
-		picker = new AdvancedPicker();
+		
+	}
+	
+	
+	private void configureXMLRPCService(){
+		
 		try {
+			
 			xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance()
 				.getXmlRpcServerPort(), Configuration.getInstance()
 				.getMaxXMLRPCThread());
+			
 		} catch (StoRMXmlRpcException e) {
+			
 			log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: "
 				+ e.getMessage());
-			throw new RuntimeException("Unable to create the XML-RPC Server");
+			
+			throw new RuntimeException("Unable to create the XML-RPC Server", e);
 		}
-
+		
+	}
+	
+	
+	private void performSanityChecks(){
+		
+		
 		if (Configuration.getInstance().getSanityCheckEnabled()) {
-			// Execute checks
+			
 			CheckManager checkManager = new SimpleCheckManager();
 			checkManager.init();
 			CheckResponse checkResponse = checkManager.lauchChecks();
+			
 			if (checkResponse.isSuccessfull()) {
 				log.info("Check suite executed successfully");
 			} else {
@@ -199,10 +198,53 @@ public class StoRM {
 							"Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
 				}
 			}
+			
 		} else {
 			log
 				.warn("Sanity checks disabled. Unable to determine if the environment is sane");
 		}
+		
+	}
+	/**
+	 * Public constructor that requires a String containing the complete pathname
+	 * to the configuration file, as well as the desired refresh rate in seconds
+	 * for changes in configuration. Beware that by pathname it is meant the
+	 * complete path starting from root, including the name of the file itself! If
+	 * pathname is empty or null, then an attempt will be made to read properties
+	 * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
+	 * this attempt _will_ fail! In any case, failure to read the configuratin
+	 * file causes StoRM to use hardcoded default values.
+	 */
+	public StoRM(String configurationPathname, int refresh) {
+
+		loadConfiguration(configurationPathname, refresh);
+	  
+		configureLogging();
+	  
+		// Start space catalog
+		spaceCatalog = new ReservedSpaceCatalog();
+		
+	  // Print welcome message
+	  log.info(welcome);
+
+		loadNamespaceConfiguration();
+
+		HealthDirector.initializeDirector(false);
+
+		loadPathAuthzDBConfiguration();
+		
+		// Initialize Used Space
+		Bootstrap.initializeUsedSpace();
+
+		configureGridHTTPSPlugin();
+		
+		// Start the "advanced" picker 
+		picker = new AdvancedPicker();
+		
+		configureXMLRPCService();
+
+		performSanityChecks();
+		
 	}
 
 	/**

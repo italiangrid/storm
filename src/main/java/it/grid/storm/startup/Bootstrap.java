@@ -27,35 +27,55 @@ import it.grid.storm.https.HTTPSPluginInterface;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.logging.LoggingReloadTask;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
+
 /**
  * @author zappi
  */
 public class Bootstrap {
-
-	private static final Timer reloadTasks = new Timer(true);
+	
 	private static Logger log = LoggerFactory.getLogger(Bootstrap.class);
 
-	/**
-	 * Initializes the logging system and starts the process to watch for config
-	 * file changes.
-	 * 
-	 * @param loggingConfigFilePath
-	 *          path to the logging configuration file
-	 * @param reloadTasks
-	 *          timer controlling the reloading of tasks
-	 */
-	public static void initializeLogging(String loggingConfigFilePath) {
 
-		LoggingReloadTask reloadTask = new LoggingReloadTask(loggingConfigFilePath);
-		int refreshPeriod = 5 * 60 * 1000; // check/reload every 5 minutes
-		reloadTask.run();
-		reloadTasks.scheduleAtFixedRate(reloadTask, refreshPeriod, refreshPeriod);
+	public static void configureLogging(String loggingConfigFilePath) {
+		
+		log.info("Configuring logging from {}", loggingConfigFilePath);
+		
+		File f = new File(loggingConfigFilePath);
+		
+		if (!f.exists() || !f.canRead()) {
+			
+			String message = String.format("Error loading logging configuration: "
+				+ "'%s' does not exist or is not readable.",loggingConfigFilePath);
+			throw new RuntimeException(message);
+		}
+		
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		JoranConfigurator configurator = new JoranConfigurator();
+
+		configurator.setContext(lc);
+		lc.reset();
+
+		try {
+			configurator.doConfigure(loggingConfigFilePath);
+
+		} catch (JoranException e) {
+
+			throw new RuntimeException(e);
+
+		}
+		
+		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
 	}
 
 	public static void initializePathAuthz(String pathAuthzDBFileName)
