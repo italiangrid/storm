@@ -45,7 +45,9 @@ public class GetGPFSFilesetQuotaInfoCommand implements
 		GPFSQuotaInfo info = GPFSQuotaInfo.fromNativeQuotaInfo(vfs,
 			fs.get_fileset_quota_info(fsRoot));
 		
-		log.debug("GPFS fileset quota info: {}", info);
+		log.debug("Computed GPFS fileset quota info for fs rooted at {}: {}",
+			fsRoot, info);
+		
 		return info;
 	}
 

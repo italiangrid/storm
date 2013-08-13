@@ -200,7 +200,7 @@ public enum GPFSQuotaManager {
 			int completedTasks = 0;
 
 			for (VirtualFSInterface vfs : quotaEnabledFilesystems) {
-				log.info("Submitting GPFS quota info computation for vfs rooted at : {}",
+				log.info("Submitting GPFS quota info computation for vfs rooted at {}",
 					vfs.getRootPath());
 
 				quotaService.submit(new GetGPFSFilesetQuotaInfoCommand(vfs));
@@ -214,7 +214,7 @@ public enum GPFSQuotaManager {
 				try {
 
 					GPFSFilesetQuotaInfo info = quotaService.take().get();
-					log.debug("Fetched GPFS quota info for vfs rooted at : {}", 
+					log.debug("Fetched GPFS quota info for vfs rooted at {}", 
 						info.getVFS().getRootPath());
 					handleQuotaInfo(info);
 					completedTasks++;
