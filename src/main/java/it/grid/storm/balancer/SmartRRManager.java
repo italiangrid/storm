@@ -1,6 +1,5 @@
 package it.grid.storm.balancer;
 
-import it.grid.storm.balancer.ResponsivenessCache.Responsiveness;
 
 public class SmartRRManager {
 

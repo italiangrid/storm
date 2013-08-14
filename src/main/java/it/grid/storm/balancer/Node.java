@@ -19,11 +19,11 @@ package it.grid.storm.balancer;
 
 public interface Node {
 
-	public abstract int getWeight();
+	public int getWeight();
 
-	public abstract String getHostName();
+	public String getHostName();
 
-	public abstract int getPort();
+	public int getPort();
 
 	public boolean checkServer() throws Exception;
 
