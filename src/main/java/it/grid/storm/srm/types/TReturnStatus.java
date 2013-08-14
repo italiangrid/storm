@@ -171,19 +171,13 @@ public class TReturnStatus implements Serializable {
 	}
 
 	/**
-	 * This metod encode a TReturnStatus Object into an Hashtable used for xmlrpc
-	 * comunication.
+	 * This method encode a TReturnStatus Object into an Hashtable used for xmlrpc
+	 * communication.
 	 */
 	public void encode(Map outputParam, String name) {
 
 		// Return STATUS OF REQUEST
 		HashMap<String, String> globalStatus = new HashMap<String, String>();
-		// String globalSCode = this.getStatusCode().getValue();
-		// String member_globalSCode = new String("statusCode");
-		// globalStatus.put(member_globalSCode, globalSCode);
-		// String g_explanation = this.getExplanation();
-		// String member_g_expl = new String("explanation");
-		// globalStatus.put(member_g_expl, g_explanation);
 		globalStatus.put("statusCode", this.getStatusCode().getValue());
 		globalStatus.put("explanation", this.getExplanation());
 
@@ -267,52 +261,4 @@ public class TReturnStatus implements Serializable {
 		return true;
 	}
 
-	// WARNING!!!
-	// No equals(Object) and hashCode(): this may be dangerous
-	// if these Objects get used in containers!
-
-	/*
-	 * public static void main(String[] args) { //Testing object creation
-	 * System.out.println("Testing default constructor..."); TReturnStatus s1 =
-	 * new TReturnStatus();
-	 * System.out.println("Should see SRM_CUSTOM_STATUS: undefined");
-	 * System.out.println(s1);
-	 * System.out.println("Code: "+s1.getStatusCode()+"; explanation: "
-	 * +s1.getExplanation()); // //Testing constructor
-	 * System.out.println("\n\nTesting constructor..."); try { String str =
-	 * "Cannot proceed because authentication failed."; TStatusCode stc =
-	 * TStatusCode.SRM_AUTHENTICATION_FAILURE; TReturnStatus s2 = new
-	 * TReturnStatus(stc,str); System.out.println("Should see "+stc+": "+str);
-	 * System.out.println(s2);
-	 * System.out.println("Code: "+s2.getStatusCode()+"; explanation: "
-	 * +s2.getExplanation()); } catch (Exception e) {
-	 * System.out.println("Should not see this!"); } try { String str = null;
-	 * TStatusCode stc = TStatusCode.SRM_AUTHENTICATION_FAILURE; TReturnStatus s2
-	 * = new TReturnStatus(stc,str);
-	 * System.out.println("\nShould see "+stc+": "+str); System.out.println(s2);
-	 * System
-	 * .out.println("Code: "+s2.getStatusCode()+"; explanation: "+s2.getExplanation
-	 * ()); } catch (Exception e) { System.out.println("Should not see this!"); }
-	 * // //Testing Exception throwing
-	 * System.out.println("\n\nTesting constructor Exception..."); try {
-	 * System.out.print("Trying with null TStatusCode: "); String str =
-	 * "Cannot proceed because authentication failed."; TStatusCode stc = null;
-	 * new TReturnStatus(stc,str); System.out.println("Should not see this!"); }
-	 * catch (InvalidTReturnStatusAttributeException e) {
-	 * System.out.println(" OK creation failed as expeceted. "+e); } // //Testing
-	 * setting of TStatusCode
-	 * System.out.println("\n\nTesting settig of TStausCode..."); TReturnStatus ss
-	 * = new TReturnStatus(); TStatusCode ns = TStatusCode.SRM_ABORTED;
-	 * System.out.println("TReturnStatus: "+ss+"; now will set status to "+ns);
-	 * try { ss.setStatus(ns); System.out.println("New TReturnStatus: "+ss); }
-	 * catch (Exception e) { System.out.println("Should not see this!"); } //
-	 * //Testing setting of TStatusCode throwing an Exception
-	 * System.out.println("\n\nTesting setStatus throwing an Exception...");
-	 * TReturnStatus sss = new TReturnStatus();
-	 * System.out.println("TReturnStatus: "+sss+"; now will set status to "+null);
-	 * try { sss.setStatus(null); System.out.println("Should not see this!"); }
-	 * catch (InvalidTReturnStatusAttributeException e) {
-	 * System.out.println("OK: setting failed as expected! "+e);
-	 * System.out.println("TReturnStatus remained the same: "+sss); } }
-	 */
 }

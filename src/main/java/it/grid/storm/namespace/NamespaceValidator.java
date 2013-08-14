@@ -17,12 +17,9 @@
 
 package it.grid.storm.namespace;
 
-import it.grid.storm.config.Configuration;
-
-import java.io.File;
-
 import org.apache.xerces.parsers.SAXParser;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -49,25 +46,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class NamespaceValidator {
 
-	private static String schemaURL;
-	private static String namespaceFile;
-	private Logger log = NamespaceDirector.getLogger();
-
-	public NamespaceValidator() {
-
-		// String configPath = Configuration.getInstance().getNamespaceConfigPath()
-		// + File.separator;
-		String configPath = System.getProperty("user.dir") + File.separator + "etc"
-			+ File.separator;
-		schemaURL = configPath + "namespace.xsd";
-		namespaceFile = configPath
-			+ Configuration.getInstance().getNamespaceConfigFilename();
-		/**
-		 * log.debug("CONFIG PATH        : "+configPath);
-		 * log.debug("SCHEMA URL         : "+schemaURL);
-		 * log.debug("NAMESPACE FILENAME : "+namespaceFile);
-		 **/
-	}
+	private Logger log = LoggerFactory.getLogger(NamespaceValidator.class);
 
 	public boolean validateSchema(String SchemaUrl, String XmlDocumentUrl) {
 
@@ -111,7 +90,6 @@ public class NamespaceValidator {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append("##############################################" + "\n");
-		System.out.println();
 		sb.append("###   WARNING :  namespace.xml   INVALID   ###" + "\n");
 		sb.append("##############################################" + "\n");
 		sb.append("# Please check it. " + "\n");
@@ -122,9 +100,7 @@ public class NamespaceValidator {
 		sb.append("#   in entity : " + handler.saxParseException.getSystemId()
 			+ "\n");
 		sb.append("##############################################" + "\n");
-		System.out.println(sb.toString());
-		log.error(sb.toString());
-
+		log.error("\n" + sb.toString());
 	}
 
 	private class Validator extends DefaultHandler {

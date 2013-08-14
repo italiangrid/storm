@@ -237,17 +237,10 @@ public class SFN {
 				+ machineString + "'." + e);
 		}
 		if ((colon + 1) == slash) {
+			// slash found right after colon! There is no port!
 			throw new ParsingSFNAttributesException(
 				surlString,
-				"String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!"); // slash
-																																																																																											// found
-																																																																																											// right
-																																																																																											// after
-																																																																																											// colon!
-																																																																																											// There
-																																																																																											// is
-																																																																																											// no
-																																																																																											// port!
+				"String interpreted as specifying the optional port, and as referring to query form; but the port number is missing since the first slash was found right after the colon!");
 		}
 		String portString = surlString.substring(colon + 1, slash);
 		Port port = null;
@@ -614,118 +607,4 @@ public class SFN {
 		return hash;
 	}
 
-	/*
-	 * public static void main(String[] args) { // //Testing empty SFN
-	 * System.out.println("Testing empty SFN objects..."); SFN te1 =
-	 * SFN.makeEmpty();
-	 * System.out.println("te1 is an empty SFN; should see Empty SFN:"
-	 * +te1+"; should see hashCode 0:"
-	 * +te1.hashCode()+"; it is empty so should see true:"+te1.isEmpty()); SFN te2
-	 * = SFN.makeEmpty();
-	 * System.out.println("te2 is an empty SFN; should see Empty SFN:"
-	 * +te2+"; should see hashCode 0:"
-	 * +te2.hashCode()+"; it is empty so should see true:"+te2.isEmpty());
-	 * System.out.println("te1.equals(te2) should see true:"+
-	 * te1.equals(te2)+"; te2.equals(te1) should see true:"+te2.equals(te1));
-	 * System
-	 * .out.println("te1 should have all empty parts - Machine: "+te1.machine
-	 * ()+", Port: "+te1.port()+", StFN: "+te1.stfn()); // //Testing correct TFN
-	 * creation
-	 * System.out.println("\n\nTesting correct creation of TFN objects..."); try {
-	 * String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int p1i = 1;
-	 * Port p1 = Port.make(p1i); String stfn1s = "/home/user1"; StFN stfn1 =
-	 * StFN.make(stfn1s); String sfn1s = m1s+":"+p1i+stfn1s;
-	 * 
-	 * String m2s = "www.infn.it"; Machine m2 = Machine.make(m2s); int p2i = 2;
-	 * Port p2 = Port.make(p2i); String stfn2s = "/home/user2"; StFN stfn2 =
-	 * StFN.make(stfn2s); String sfn2s = m2s+":"+p2i+stfn2s;
-	 * 
-	 * SFN sfn1 = SFN.make(m1,p1,stfn1); System.out.println("SFN 1 - should see "+
-	 * sfn1s
-	 * +":   "+sfn1+";    hashCode:"+sfn1.hashCode()+";    isEmpty should be false:"
-	 * +sfn1.isEmpty()); SFN sfn2 = SFN.make(m2,p2,stfn2);
-	 * System.out.println("SFN 2 - should see "+ sfn2s
-	 * +":   "+sfn2+";    hashCode:"
-	 * +sfn2.hashCode()+";    isEmpty should be false:"+sfn2.isEmpty());
-	 * System.out.println("sfn1.equals(sfn2) false: "+sfn1.equals(sfn2));
-	 * System.out.println("sfn2.equals(sfn1) false: "+sfn2.equals(sfn1));
-	 * System.out.println("sfn1.equals(sfn1) true: "+sfn1.equals(sfn1));
-	 * System.out.println("sfn1.equals(null) false: "+sfn1.equals(null));
-	 * System.out.println("sfn1.equals(Object) false: "+sfn1.equals(new
-	 * Object()));
-	 * System.out.println("sfn1.equals(empty) false: "+sfn1.equals(SFN.
-	 * makeEmpty()));
-	 * System.out.println("empty.equals(sfn1) false: "+SFN.makeEmpty
-	 * ().equals(sfn1));
-	 * System.out.println("sfn1 is "+sfn1+" - Machine: "+sfn1.machine
-	 * ()+", Port: "+sfn1.port()+", StFN: "+sfn1.stfn()); } catch (Exception e) {
-	 * System.out.println("Should not see this!"); } // //Testing Exception
-	 * handling
-	 * System.out.println("\n\nTesting object creation with invalid attribute..."
-	 * ); try { String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int
-	 * p1i = 1; Port p1 = Port.make(p1i); String stfn1s = "/home/user1"; StFN
-	 * stfn1 = StFN.make(stfn1s); String sfn1s = m1s+":"+p1i+stfn1s; SFN sfn1 =
-	 * SFN.make(m1,p1,stfn1); System.out.println("Successfully created "+sfn1);
-	 * 
-	 * System.out.print("Now attempting creation with null Machine... "); try {
-	 * SFN.make(null,p1,stfn1); System.out.println("Should not see this!"); }
-	 * catch (InvalidSFNAttributesException e) {
-	 * System.out.println(" OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty Machine... "); try {
-	 * SFN.make(Machine.makeEmpty(),p1,stfn1);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidSFNAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with null Port... "); try {
-	 * SFN.make(m1,null,stfn1); System.out.println("Should not see this!"); }
-	 * catch (InvalidSFNAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty Port... "); try {
-	 * SFN.make(m1,Port.makeEmpty(),stfn1);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidSFNAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with null StFN... "); try {
-	 * SFN.make(m1,p1,null); System.out.println("Should not see this!"); } catch
-	 * (InvalidSFNAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty StFN: "); try {
-	 * SFN.make(m1,p1,StFN.makeEmpty());
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidSFNAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * 
-	 * } catch (Exception e) { System.out.println("Should not see this!"); } //
-	 * //Testing creation from String
-	 * System.out.println("\n\nTesting creation from String!"); String s =
-	 * "testbed006.cnaf.infn.it:8444/tmp/file.txt";
-	 * System.out.print("Should see: "+s); try {
-	 * System.out.println("OK: "+SFN.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s =
-	 * "testbed006.cnaf.infn.it:8444/t"; System.out.print("Should see: "+s); try {
-	 * System.out.println("OK: "+SFN.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s =
-	 * "testbed006.cnaf.infn.it:8/t"; System.out.print("Should see: "+s); try {
-	 * System.out.println("OK: "+SFN.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s = "t:8/t";
-	 * System.out.print("Should see: "+s); try {
-	 * System.out.println("OK: "+SFN.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s = ":8/t";
-	 * System.out.print("Creation failure: "+s); try {
-	 * System.out.println("; should not see this: "+SFN.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("; OK failed as expected! "+e); }
-	 * s = "s:/t"; System.out.print("Creation failure: "+s); try {
-	 * System.out.println("; should not see this: "+SFN.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("; OK failed as expected! "+e); }
-	 * s = "s:/"; System.out.print("Creation failure: "+s); try {
-	 * System.out.println("; should not see this: "+SFN.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("; OK failed as expected! "+e); }
-	 * s = ":/t"; System.out.print("Creation failure: "+s); try {
-	 * System.out.println("; should not see this: "+SFN.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("; OK failed as expected! "+e); }
-	 * s = ":/"; System.out.print("Creation failure: "+s); try {
-	 * System.out.println("; should not see this: "+SFN.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("; OK failed as expected! "+e); }
-	 * }
-	 */
 }

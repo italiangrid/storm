@@ -100,8 +100,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 		try {
 			status = new TReturnStatus(code, expl);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		return formatLogMessage(success, user, desSize, guarSize, lifetime, rpinfo,
 			status);
@@ -350,8 +349,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 		TAccessLatency latency = data.getRetentionPolicyInfo().getAccessLatency();
 		TRetentionPolicy retentionPolicy = data.getRetentionPolicyInfo()
 			.getRetentionPolicy();
-		// latency != Empty,Online --> fail
-		// retentionPolicy != Empty,REPLICA --> fail
 		if (!((latency == null || latency.equals(TAccessLatency.EMPTY) || latency
 			.equals(TAccessLatency.ONLINE)) && (retentionPolicy == null
 			|| retentionPolicy.equals(TRetentionPolicy.EMPTY) || retentionPolicy
@@ -1009,41 +1006,9 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 			desiderataSpaceSize = TSizeInBytes.make(
 				availableSize.value() + sizeToAdd.value(), SizeUnit.BYTES);
 		} catch (InvalidTSizeAttributesException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error(e1.getMessage());
 		}
-
-		/**
-		 * Check free space on file system.
-		 */
-
-		// michele: what this code should do?
-		// TSizeInBytes freeSpace;
-		// try {
-		// long bytesFree = vfs.getFilesystem().getFreeSpace();
-		// freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
-		// } catch (InvalidTSizeAttributesException e) {
-		// log
-		// .debug(
-		// "Error while retrieving free Space in underlying Filesystem",
-		// e);
-		// statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-		// explanation =
-		// "Error while retrieving free Space in underlying Filesystem \n"
-		// + e;
-		// return manageErrorStatus(statusCode, explanation);
-		// } catch (NamespaceException ex) {
-		// log
-		// .debug(
-		// "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
-		// ex);
-		// statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-		// explanation =
-		// "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-		// + ex;
-		// return manageErrorStatus(statusCode, explanation);
-		// }
-
+		
 		/*
 		 * Start with the reservation
 		 */
@@ -1116,8 +1081,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 						return manageErrorStatus(statusCode, explanation);
 					}
 				}
-				// spaceFile.getLocalFile().grantUserPermission(
-				// user.getLocalUser(), fp);
 			} catch (CannotMapUserException ex5) {
 				log.debug("Unable to setting up the ACL ", ex5);
 				revertOldSpaceFileDeletion(localFile);
@@ -1155,8 +1118,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 						return manageErrorStatus(statusCode, explanation);
 					}
 				}
-				// spaceFile.getLocalFile().grantGroupPermission(
-				// user.getLocalUser(), fp);
 			} catch (CannotMapUserException ex5) {
 				log.debug("Unable to setting up the ACL ", ex5);
 				revertOldSpaceFileDeletion(localFile);

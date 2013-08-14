@@ -29,7 +29,6 @@ import it.grid.storm.common.types.SFN;
 import it.grid.storm.common.types.SiteProtocol;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
 
@@ -39,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a TSURL, that is a Site URL. It is made up of a
@@ -51,7 +51,7 @@ import org.slf4j.Logger;
  */
 public class TSURL {
 
-	private static Logger log = NamespaceDirector.getLogger();
+	private static Logger log = LoggerFactory.getLogger(TSURL.class);
 	/**
 	 * The surl as provided by User
 	 */
@@ -134,9 +134,8 @@ public class TSURL {
 	 * @return
 	 * @throws InvalidTSURLAttributesException
 	 */
-	// TODO MICHELE USER_SURL as it is now we don't need to pass throught the SURL
-	// object, maybe
-	// it will be useful for the equals method and storm normal form
+	// TODO MICHELE USER_SURL as it is now we don't need to pass through the SURL
+	// object, maybe it will be useful for the equals method and storm normal form
 	public static TSURL getWellFormed(SURL surl, String rawSurl)
 		throws InvalidTSURLAttributesException {
 
@@ -563,94 +562,4 @@ public class TSURL {
 		}
 		return sp + "://" + sfn;
 	}
-
-	/*
-	 * public static void main(String[] args) { //testing empty TTURL
-	 * System.out.println("Testing empty TSURL objects..."); TSURL se1 =
-	 * TSURL.makeEmpty();
-	 * System.out.println("se1 is an empty TSURL; should see Empty TSURL:"
-	 * +se1+"; should see hashCode 0:"
-	 * +se1.hashCode()+"; it is empty so should see true:"+se1.isEmpty()); TSURL
-	 * se2 = TSURL.makeEmpty();
-	 * System.out.println("se2 is an empty TSURL; should see Empty TSURL:"
-	 * +se2+"; should see hashCode 0:"
-	 * +se2.hashCode()+"; it is empty so should see true:"+se2.isEmpty());
-	 * System.out.println("se1.equals(se2) should see true:"+
-	 * se1.equals(se2)+"; se2.equals(se1) should see true:"+se2.equals(se1));
-	 * System.out.println("se1.equals(null) should be false:"+se1.equals(null)+
-	 * "; se1.equals(Object) should be false: "+se1.equals(new Object()));
-	 * System.out
-	 * .println("se1 should have all empty parts - SiteProtocol: "+se1.protocol
-	 * ()+", StorageFileName: "+se1.sfn()); // //Testing correct TSURL creation
-	 * System.out.println("\n\nTesting correct creation of TSURL objects..."); try
-	 * { String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int p1i = 1;
-	 * Port p1 = Port.make(p1i); String stfn1s = "/home/user1"; StFN stfn1 =
-	 * StFN.make(stfn1s); String sfn1s = m1s+":"+p1i+stfn1s; SFN sfn1 =
-	 * SFN.make(m1,p1,stfn1);
-	 * 
-	 * String m2s = "www.infn.it"; Machine m2 = Machine.make(m2s); int p2i = 2;
-	 * Port p2 = Port.make(p2i); String stfn2s = "/home/user2"; StFN stfn2 =
-	 * StFN.make(stfn2s); String sfn2s = m2s+":"+p2i+stfn2s; SFN sfn2 =
-	 * SFN.make(m2,p2,stfn2);
-	 * 
-	 * TSURL ts1 = TSURL.make(SiteProtocol.SRM,sfn1);
-	 * System.out.println("TSURL 1 - should see "+ SiteProtocol.SRM + "://"+ sfn1
-	 * +
-	 * ":     "+ts1+"; hashCode:    "+ts1.hashCode()+"; isEmpty should be false:   "
-	 * +ts1.isEmpty()); TSURL ts2 = TSURL.make(SiteProtocol.SRM,sfn2);
-	 * System.out.println("TSURL 2 - should see "+ SiteProtocol.SRM + "://"+ sfn2
-	 * +
-	 * ":     "+ts2+"; hashCode:    "+ts2.hashCode()+"; isEmpty should be false:   "
-	 * +ts2.isEmpty());
-	 * System.out.println("ts1.equals(ts2) false: "+ts1.equals(ts2));
-	 * System.out.println("ts2.equals(ts1) false: "+ts2.equals(ts1));
-	 * System.out.println("ts1.equals(ts1) true: "+ts1.equals(ts1));
-	 * System.out.println("ts1.equals(null) false: "+ts1.equals(null));
-	 * System.out.println("ts1.equals(Object) false: "+ts1.equals(new Object()));
-	 * System
-	 * .out.println("ts1.equals(empty) false: "+ts1.equals(TSURL.makeEmpty()));
-	 * System
-	 * .out.println("empty.equals(ts1) false: "+TSURL.makeEmpty().equals(ts1));
-	 * System
-	 * .out.println("ts1 is "+ts1+" - TransferProtocol: "+ts1.protocol()+", SFN: "
-	 * +ts1.sfn()); } catch (Exception e) {
-	 * System.out.println("Should not see this!"); } // //TEsting Exception
-	 * handling
-	 * System.out.println("\n\nTesting object creation with invalid attribute..."
-	 * ); try { String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int
-	 * p1i = 1; Port p1 = Port.make(p1i); String stfn1s = "/home/user1"; StFN
-	 * stfn1 = StFN.make(stfn1s); String sfn1s = m1s+":"+p1i+stfn1s; SFN sfn1 =
-	 * SFN.make(m1,p1,stfn1); TSURL ss = TSURL.make(SiteProtocol.SRM,sfn1);
-	 * System.out.println("Successfully created "+ss);
-	 * 
-	 * System.out.print("Now attempting creation with null SiteProtocol... "); try
-	 * { TSURL.make(null,sfn1); System.out.println("Should not see this!"); }
-	 * catch (InvalidTSURLAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty SiteProtocol... ");
-	 * try { TSURL.make(SiteProtocol.EMPTY,sfn1);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTSURLAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with null SFN... "); try {
-	 * TSURL.make(SiteProtocol.SRM,null);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTSURLAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty SFN... "); try {
-	 * TSURL.make(SiteProtocol.SRM,SFN.makeEmpty());
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTSURLAttributesException e) {
-	 * System.out.println("OK creation failed as expected. " + e); } } catch
-	 * (Exception e) { System.out.println("Should not see this!"); } // //Testing
-	 * creation from String String s =
-	 * "srm://testbed006.cnaf.infn.it:8444/tmp/file.txt";
-	 * System.out.print("\n\nTesting TSURL creation from String "+s+"; "); try {
-	 * System.out.println("OK: "+TSURL.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s =
-	 * "srm://testbed006.cnaf.infn.it:8444//tmp/file.txt";
-	 * System.out.print("Testing TSURL creation from String "+s+"; "); try {
-	 * System.out.println("OK! StFN with // is _OK_: "+TSURL.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("Should not see this! "+e); } }
-	 */
 }

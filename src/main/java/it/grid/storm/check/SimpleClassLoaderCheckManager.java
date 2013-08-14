@@ -48,7 +48,7 @@ public class SimpleClassLoaderCheckManager extends CheckManager {
 		URL location = null;
 		if (source != null) {
 			location = source.getLocation();
-			System.out.println(location);
+			log.info("location: " + location);
 		}
 		String packageResourcePath = "it" + File.separatorChar + "grid"
 			+ File.separatorChar + "storm" + File.separatorChar + "check"
@@ -56,37 +56,31 @@ public class SimpleClassLoaderCheckManager extends CheckManager {
 		List<String> classes = getClasseNamesInPackage(location.toString(),
 			packageResourcePath);
 		for (String className : classes) {
-			Class classe = null;
+			Class<?> classe = null;
 			try {
 				classe = Class.forName(className);
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error(e.getMessage());
 			}
-			Constructor constructor;
+			Constructor<?> constructor;
 			try {
 				constructor = classe.getConstructor();
 				try {
 					Check check = (Check) constructor.newInstance();
 					checks.add(check);
 				} catch (IllegalArgumentException e) {
-
+					log.error(e.getMessage());
 				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				}
 			} catch (SecurityException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				log.error(e1.getMessage());
 			} catch (NoSuchMethodException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				log.error(e1.getMessage());
 			}
 		}
 	}
@@ -110,6 +104,7 @@ public class SimpleClassLoaderCheckManager extends CheckManager {
 						"\\."));
 				}
 			}
+			jarFile.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -175,7 +175,6 @@ public class NameParser {
 				if (c == '/') {
 					nuofSlash++;
 				} else {
-					System.out.println("I = " + pos);
 					return nuofSlash;
 				}
 			}

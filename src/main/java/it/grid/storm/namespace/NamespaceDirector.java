@@ -60,7 +60,6 @@ public class NamespaceDirector {
 	private static String namespaceConfigFileName;
 	private static boolean runningMode = false;
 	private static String configurationFileName;
-	private Configuration config;
 	private static NamespaceLoader loader;
 	private static NamespaceParser parser;
 
@@ -75,7 +74,7 @@ public class NamespaceDirector {
 			log.info(" ####################### ");
 			log.info(" ####  TESTING MODE #### ");
 			log.info(" ####################### ");
-			runningMode = testingMode;
+			setRunningMode(testingMode);
 			configurationPATH = System.getProperty("user.dir") + File.separator
 				+ "etc";
 			configurationFileName = configurationPATH + File.separator
@@ -92,9 +91,8 @@ public class NamespaceDirector {
 				XMLNamespaceLoader xmlLoader = (XMLNamespaceLoader) loader;
 				if (!(xmlLoader.schemaValidity)) {
 					// Error into the validity ckeck of namespace
-					System.out
-						.println("Namespace configuration is not conformant with namespae grammar.");
-					System.out.println("Please validate namespace configuration file.");
+					log.error("Namespace configuration is not conformant with namespae grammar.");
+					log.error("Please validate namespace configuration file.");
 					System.exit(0);
 				}
 			}
@@ -103,14 +101,10 @@ public class NamespaceDirector {
 			log.info(" +++++++++++++++++++++++ ");
 			log.info("    Production Mode      ");
 			log.info(" +++++++++++++++++++++++ ");
-			runningMode = testingMode;
-			configurationPATH = config.namespaceConfigPath(); // Default = "./etc/"
-			namespaceConfigFileName = config.getNamespaceConfigFilename(); // Default
-																																			// =
-																																			// "namespace.xml"
-			refreshInSeconds = config.getNamespaceConfigRefreshRateInSeconds(); // Default
-																																					// =
-																																					// "3 seconds"
+			setRunningMode(testingMode);
+			configurationPATH = config.namespaceConfigPath(); 
+			namespaceConfigFileName = config.getNamespaceConfigFilename(); 
+			refreshInSeconds = config.getNamespaceConfigRefreshRateInSeconds(); 
 			loader = new XMLNamespaceLoader(configurationPATH,
 				namespaceConfigFileName, refreshInSeconds, verboseMode);
 
@@ -119,9 +113,8 @@ public class NamespaceDirector {
 				XMLNamespaceLoader xmlLoader = (XMLNamespaceLoader) loader;
 				if (!(xmlLoader.schemaValidity)) {
 					// Error into the validity ckeck of namespace
-					System.out
-						.println("Namespace configuration is not conformant with namespae grammar.");
-					System.out.println("Please validate namespace configuration file.");
+					log.error("Namespace configuration is not conformant with namespae grammar.");
+					log.error("Please validate namespace configuration file.");
 					System.exit(0);
 				}
 			}
@@ -194,6 +187,16 @@ public class NamespaceDirector {
 	public static Logger getLogger() {
 
 		return log;
+	}
+
+	public static boolean isRunningMode() {
+
+		return runningMode;
+	}
+
+	private static void setRunningMode(boolean runningMode) {
+
+		NamespaceDirector.runningMode = runningMode;
 	}
 
 }

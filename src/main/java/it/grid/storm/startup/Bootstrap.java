@@ -25,12 +25,10 @@ import it.grid.storm.authz.DirectorException;
 import it.grid.storm.https.HTTPPluginManager;
 import it.grid.storm.https.HTTPSPluginInterface;
 import it.grid.storm.info.SpaceInfoManager;
-import it.grid.storm.logging.LoggingReloadTask;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,7 @@ public class Bootstrap {
 		
 		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
 	}
-
+	
 	public static void initializePathAuthz(String pathAuthzDBFileName)
 		throws BootstrapException {
 

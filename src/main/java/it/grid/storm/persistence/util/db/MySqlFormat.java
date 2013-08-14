@@ -51,21 +51,10 @@ public class MySqlFormat implements SQLFormat {
 			return "\'" + stringVal + "\'";
 		}
 		if (value instanceof java.util.Date) {
-			// System.out.println("Date = "+value);
 			return "\'" + dateFormat.format(value) + "\'";
 		}
 		return value.toString();
 
 	}
 
-	// Test main
-	public static void main(String[] args) {
-
-		MySqlFormat formatter = new MySqlFormat();
-		System.out.println("Integer =" + formatter.format(new Integer(1)));
-		System.out.println("String =" + formatter.format("test_string"));
-		System.out.println("Long =" + formatter.format(new Long(102043423)));
-		System.out.println("Date ="
-			+ formatter.format(new java.util.Date(System.currentTimeMillis())));
-	}
 }

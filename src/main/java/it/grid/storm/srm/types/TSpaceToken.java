@@ -24,16 +24,16 @@
  */
 package it.grid.storm.srm.types;
 
-import it.grid.storm.common.types.PFN;
 import java.io.Serializable;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-
-import it.grid.storm.common.*;
 
 public class TSpaceToken implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4511316534032776357L;
 
 	public static String PNAME_SPACETOKEN = "spaceToken";
 
@@ -109,12 +109,12 @@ public class TSpaceToken implements Serializable {
 	}
 
 	/**
-	 * Decode method, used to represnts this object into a structured paramter for
+	 * Decode method, used to represents this object into a structured parameter for
 	 * FE communication.
 	 * 
 	 * @param vector
 	 */
-	public final static TSpaceToken decode(Map param, String name) {
+	public final static TSpaceToken decode(Map<?, ?> param, String name) {
 
 		String tokenString = (String) param.get(name);
 		TSpaceToken spaceToken = TSpaceToken.makeEmpty();
@@ -130,49 +130,18 @@ public class TSpaceToken implements Serializable {
 	}
 
 	/**
-	 * Encode method, used to represnts this object into a structured paramter for
+	 * Encode method, used to represents this object into a structured parameter for
 	 * FE communication.
 	 * 
 	 * @param vector
 	 */
-	public void encode(List list) {
+	public void encode(List<String> list) {
 
 		list.add(this.toString());
 	}
 
-	public void encode(Map outputParam, String fieldName) {
+	public void encode(Map<String, String> outputParam, String fieldName) {
 
 		outputParam.put(fieldName, (String) token);
 	}
-
-	/*
-	 * public static void main(String[] args) { //Testing constructors
-	 * System.out.println("Testing Constructor..."); try { String s =
-	 * "/home/user/file.txt"; PFN pfn = PFN.make(s); TSpaceToken t1 = new
-	 * TSpaceToken(s); TSpaceToken t2 = new TSpaceToken(pfn); TSpaceToken t3 = new
-	 * TSpaceToken("qwerty");
-	 * System.out.println("t1 TSpaceToken: "+t1+"; hashCode:"
-	 * +t1.hashCode()+"; getValue:"+t1.getValue());
-	 * System.out.println("t2 TSpaceToken: "
-	 * +t2+"; hashCode:"+t2.hashCode()+"; getValue:"+t2.getValue());
-	 * System.out.println
-	 * ("t3 TSpaceToken: "+t3+"; hashCode:"+t3.hashCode()+"; getValue:"
-	 * +t3.getValue()); System.out.println("t1.equals(t3) false: "+t1.equals(t3));
-	 * System.out.println("t3.equals(t1) false: "+t3.equals(t1));
-	 * System.out.println("t1.equals(t1) true: "+t1.equals(t1));
-	 * System.out.println("t1.equals(null) false: "+t1.equals(null));
-	 * System.out.println("t1.equals(Object) false: "+t1.equals(new Object()));
-	 * System.out.println("t1.equals(t2) true: "+t1.equals(t2));
-	 * System.out.println("t2.equals(t1) true: "+t2.equals(t1)); } catch
-	 * (Exception e) { System.out.println("Should not see this!"); } //TEsting
-	 * Exception throwing System.out.println("\n\nTesting Exception throwing");
-	 * System.out.print("Creating with null String... "); try { String ss=null;
-	 * new TSpaceToken(ss); System.out.println("Should not see this!"); } catch
-	 * (InvalidTSpaceTokenAttributesException e) {
-	 * System.out.println("OK: creation failed as expected. "+e); }
-	 * System.out.print("Creating with null PFN... "); try { PFN ss=null; new
-	 * TSpaceToken(ss); System.out.println("Should not see this!"); } catch
-	 * (InvalidTSpaceTokenAttributesException e) {
-	 * System.out.println("OK: creation failed as expected. "+e); } }
-	 */
 }

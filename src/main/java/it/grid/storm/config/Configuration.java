@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM
@@ -40,6 +42,8 @@ import org.apache.commons.lang.ArrayUtils;
 
 public class Configuration {
 
+	private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+	
 	private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
 	// as default
 	static Configuration instance = new Configuration(); // only
@@ -207,27 +211,6 @@ public class Configuration {
 		return configDir;
 	}
 
-	/*
-	 * ############################################################ ## ##
-	 * MANDATORY PROPERTIES ##
-	 * ############################################################
-	 * 
-	 * NEW KEY | OLD KEY
-	 * ---------------------------------------+------------------
-	 * -------------------------------------- storm.service.SURL.hostname |
-	 * storm.service.hostname storm.service.SURL.port | storm.service.port fe.port
-	 * storm.service.SURL.service-path | storm.service.endpoint |
-	 * storm.service.FE-list.hostnames | storm.machinenames
-	 * storm.service.FE-list.IPs | storm.machineIPs |
-	 * storm.service.request-db.dbms-vendor | asynch.picker.db.driver
-	 * asynch.picker.db.protocol storm.service.request-db.host |
-	 * asynch.picker.db.host storm.service.request-db.db-name |
-	 * asynch.picker.db.name storm.service.request-db.username |
-	 * asynch.picker.db.username storm.service.request-db.passwd |
-	 * asynch.picker.db.passwd |
-	 * --------------------------------------+------------
-	 * ----------------------------------------------
-	 */
 	/**
 	 * MANDATORY CONFIGURATION PARAMETER! Define the SURL endpoints.
 	 * 
@@ -235,10 +218,8 @@ public class Configuration {
 	 */
 	public String[] getManagedSURLs() {
 
-		// String key = "storm.service.SURL.endpoint";
 		String[] defaultValue = { "UNDEFINED_SERVICE_ENDPOINT" };
 		if (!cr.getConfiguration().containsKey(MANAGED_SURLS_KEY)) {
-			// return default
 			return defaultValue;
 		} else {
 			// load from external source
@@ -253,7 +234,6 @@ public class Configuration {
 
 		Integer[] portsArray;
 		if (!cr.getConfiguration().containsKey(MANAGED_SURL_DEFAULT_PORTS_KEY)) {
-			// return default
 			portsArray = new Integer[] { 8444 };
 		} else {
 			// load from external source
@@ -275,7 +255,6 @@ public class Configuration {
 
 		String defaultValue = "UNDEFINED_STORM_HOSTNAME";
 		if (!cr.getConfiguration().containsKey(SERVICE_HOSTNAME_KEY)) {
-			// return default
 			return defaultValue;
 		} else {
 			// load from external source
@@ -292,7 +271,6 @@ public class Configuration {
 
 		int defaultValue = 8444;
 		if (!cr.getConfiguration().containsKey(SERVICE_PORT_KEY)) {
-			// return default
 			return defaultValue;
 		} else {
 			// load from external source
@@ -368,8 +346,7 @@ public class Configuration {
 			if (vendor.toLowerCase().equals("mysql")) {
 				driver = "com.mysql.jdbc.Driver";
 			} else {
-				System.err.println("CONFIG ERROR 'RDBMS Vendor ('" + vendor
-					+ "')unknown.' ");
+				log.error("CONFIG ERROR 'RDBMS Vendor ('" + vendor + "')unknown.' ");
 			}
 			return driver;
 		}
@@ -1598,17 +1575,6 @@ public class Configuration {
 		}
 	}
 
-	/**
-	 * Method used by SFN to establish the FE binding port. If no value is found
-	 * in the configuration medium, then the default one is used instead.
-	 * key="fe.port"; default value="8444"
-	 */
-	/*
-	 * public int getFEPort() { String key = "fe.port"; if
-	 * (!cr.getConfiguration().containsKey(key)) { // return default return 8444;
-	 * } else { // load from external source return
-	 * cr.getConfiguration().getInt(key); } }
-	 */
 	/**
 	 * Method used by NaiveGridFTP internal client in srmCopy to establish the
 	 * time out in milliseconds for a reply from the server. If no value is found

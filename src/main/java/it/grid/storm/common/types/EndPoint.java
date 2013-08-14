@@ -29,14 +29,15 @@ import java.util.ArrayList;
  */
 public class EndPoint {
 
-	private ArrayList name = new ArrayList();
+	private static final String ROOT_ENDPOINT = "/";
+	
+	private ArrayList<String> name = new ArrayList<String>();
 	private boolean empty = true;
-	private boolean directory = false;
 
-	private EndPoint(ArrayList name, boolean empty) {
+	private EndPoint(ArrayList<String> name, boolean empty) {
 
-		this.name = name; // WARNING!!! A defensive copy of the ArrayList is _NOT_
-											// made!
+		this.name.clear();
+		this.name.addAll(name);
 		this.empty = empty;
 	}
 
@@ -45,7 +46,7 @@ public class EndPoint {
 	 */
 	public static EndPoint makeEmpty() {
 
-		return new EndPoint(new ArrayList(), true);
+		return new EndPoint(new ArrayList<String>(), true);
 	}
 
 	/**
@@ -69,14 +70,7 @@ public class EndPoint {
 	 */
 	static private boolean invalid(String name) {
 
-		boolean wrong = (name == null) || (name.equals(""))
-			|| (name.charAt(0) != '/');
-		/*
-		 * TODO MICHELE this thest is done by the URI class before to arrive here.
-		 * Aniway is not forbidden to a non normalized URI to have double dotts
-		 */
-		// || (name.indexOf("..") != -1);
-		return wrong;
+		return (name == null) || (name.equals("")) || (name.charAt(0) != '/');
 	}
 
 	/**
@@ -92,13 +86,13 @@ public class EndPoint {
 	 * Example3: / Result: empty ArrayList!
 	 * 
 	 */
-	static private ArrayList normalize(String s) {
+	static private ArrayList<String> normalize(String s) {
 
 		// split around slash!
 		String[] pieces = s.split("/");
 		// remove all empty Strings which may have been produced because of
 		// consecutive slashes!
-		ArrayList auxList = new ArrayList();
+		ArrayList<String> auxList = new ArrayList<String>();
 		int pos = 0;
 		String aux = null;
 		for (int k = 0; k < pieces.length; k++) {
@@ -124,11 +118,9 @@ public class EndPoint {
 			return "Empty EndPoint";
 		int size = this.name.size();
 		if (size == 0)
-			return "/"; // This is not an Empty EndPoint because empty==false; yet its
-									// elements List is empty: it can only be the root EndPoint!
-									// That is the "/"!!!
+			return ROOT_ENDPOINT;
 		StringBuffer sb = new StringBuffer();
-		for (Iterator i = this.name.iterator(); i.hasNext();) {
+		for (Iterator<String> i = this.name.iterator(); i.hasNext();) {
 			sb.append("/");
 			sb.append(i.next());
 		}
@@ -158,68 +150,4 @@ public class EndPoint {
 			return hash;
 		return 37 * hash + name.hashCode();
 	}
-
-	/*
-	 * public static void main(String[] args) { // //TEsting empty StFN
-	 * System.out.println("Testing Empty StFN..."); System.out.println(
-	 * "Creating two empty StFN and printing to st.out - should see: Empty StFN and its hash is 0 and its value is Empty StFN, twice: "
-	 * ); StFN e1 = StFN.makeEmpty();
-	 * System.out.println(e1+" and its hash is "+e1.
-	 * hashCode()+" and its value is "
-	 * +e1.getValue()+". isEmpty should be true: "+e1.isEmpty()); StFN e2 =
-	 * StFN.makeEmpty();
-	 * System.out.println(e2+" and its hash is "+e2.hashCode()+" and its value is "
-	 * +e2.getValue()+". isEmpty should be true: "+e2.isEmpty());
-	 * System.out.println("Comparing e1 to e1 - should be true: "+e1.equals(e1));
-	 * System
-	 * .out.println("Comparing e1.equals(e2) - should be true: "+e1.equals(e2));
-	 * System
-	 * .out.println("Comparing e2.equals(e1) - should be true: "+e2.equals(e1));
-	 * System
-	 * .out.println("Comparing e1 to Object - should be false: "+e1.equals(new
-	 * Object()));
-	 * System.out.println("Comparing e1 to null - should be false: "+e1
-	 * .equals(null)); // //TEsting non empty StFN creation
-	 * System.out.println("\n\nTesting correct StFN creation..."); String s1 =
-	 * "/prova1.com/sdf/1"; String s2 = "/prova2.com/srm/2"; String s3 =
-	 * "/prova1.com/sdf/1"; try { StFN p1 = StFN.make(s1);
-	 * System.out.println("Should see "
-	 * +s1+"; p1="+p1+". HashCode: "+p1.hashCode()+
-	 * ". getValue(): "+p1.getValue()+". isEmpty should be false: "+p1.isEmpty());
-	 * StFN p2 = StFN.make(s2);
-	 * System.out.println("Should see "+s2+"; p1="+p2+". HashCode: "
-	 * +p2.hashCode()+
-	 * ". getValue(): "+p2.getValue()+". isEmpty should be false: "+p2.isEmpty());
-	 * StFN p3 = StFN.make(s3);
-	 * System.out.println("Should see "+s3+"; p1="+p3+". HashCode: "
-	 * +p3.hashCode()+
-	 * ". getValue(): "+p3.getValue()+". isEmpty should be false: "+p3.isEmpty());
-	 * System.out.println("p1 equals p1 (true): "+p1.equals(p1));
-	 * System.out.println("p1 equals null (false): "+p1.equals(null));
-	 * System.out.println("p1 equals Object (false): "+p1.equals(new Object()));
-	 * System.out.println("p1 equals p2 (false): "+p1.equals(p2));
-	 * System.out.println("p2 equals p1 (false): "+p2.equals(p1));
-	 * System.out.println("p1 equals p3 (true): "+p1.equals(p3));
-	 * System.out.println("p3 equals p1 (true): "+p3.equals(p1));
-	 * System.out.println
-	 * ("p3 equals empty (false): "+p3.equals(StFN.makeEmpty()));
-	 * System.out.println
-	 * ("empty equals p3 (false): "+StFN.makeEmpty().equals(p3)); } catch
-	 * (Exception e) { System.out.println("Shouldnt see this! "+e); } // //Testing
-	 * Exceptions! System.out.println(
-	 * "\n\nTesting Exception throwing with invalid StFN attributes...");
-	 * System.out.print("Creating StFN without initial /:"); String s =
-	 * "srm.infn.it"; try { StFN.make(s);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidStFNAttributeException e) {
-	 * System.out.println(" OK, exception thrown as expected (false false true) - "
-	 * + e); } System.out.print("Creating StFN with null:"); s = null; try {
-	 * StFN.make(s); System.out.println("Should not see this!"); } catch
-	 * (InvalidStFNAttributeException e) {
-	 * System.out.println("OK: exception thrown as expected (true false false) - "
-	 * + e); } System.out.print("Creating StFN with empty String:"); s = ""; try {
-	 * StFN.make(s); System.out.println("Should not see this!"); } catch
-	 * (InvalidStFNAttributeException e) {
-	 * System.out.println("OK: exception thrown (false true false) - " + e); } }
-	 */
 }

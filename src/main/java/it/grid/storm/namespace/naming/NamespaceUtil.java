@@ -368,8 +368,6 @@ public class NamespaceUtil {
 			}
 			for (Iterator<PathElement> iter = path.iterator(); iter.hasNext();) {
 				PathElement item = (PathElement) iter.next();
-				// DEBUG
-				// System.out.println("Item: "+item.toString());
 				buf.append(item.getPathChunk());
 				if (iter.hasNext()) {
 					buf.append(PATH_SEPARATOR);
