@@ -37,24 +37,29 @@ import java.util.List;
 public class RoundRobinStrategy<E extends Node> extends
 	AbstractBalancingStrategy<E> {
 
-	private int index = 0;
+	private volatile int index = 0;
 
 	public RoundRobinStrategy(List<E> pool) {
 
 		super(pool);
 	}
 
+	@Override
 	public E getNextElement() {
 
 		// Reset index if over the pool size.
 		// % Not used to avoid overflow.
+		
+		synchronized (this) {
+			
+			index = (index >= nodePool.size()) ? 0 : index;
 
-		index = (index >= nodePool.size()) ? 0 : index;
-
-		return (nodePool.get(index++));
-
+			return (nodePool.get(index++));
+		}
+		
 	}
 
+	@Override
 	public void notifyChangeInPool() {
 
 		// Nothing to do
