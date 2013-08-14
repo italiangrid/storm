@@ -32,6 +32,11 @@ import org.slf4j.LoggerFactory;
 
 public class GUID implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1750955753676929827L;
+
 	private static final Logger log = LoggerFactory.getLogger(GUID.class);
 
 	private byte guidValue[] = new byte[16];
@@ -213,22 +218,6 @@ public class GUID implements Serializable {
 		buf.append(getHexString(guidValue[15]));
 
 		return buf.toString();
-	}
-
-	/**
-	 * TEST MAIN CLASS
-	 * 
-	 * @param args
-	 *          String[]
-	 */
-	public static void main(String[] args) {
-
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
 	}
 
 }

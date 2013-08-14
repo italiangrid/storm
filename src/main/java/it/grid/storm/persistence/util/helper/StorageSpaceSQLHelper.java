@@ -272,8 +272,6 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 */
 	public String selectByTokenQuery(String token) {
 
-		// SELECT * FROM `storage_space` where
-		// space_token="6D4E8533-0B01-F1F2-7F00-0001B8273F51";
 		return "SELECT * FROM `storage_space` where space_token='" + token + "'";
 	}
 
@@ -620,56 +618,5 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 		return query;
 
 	}
-
-	// /**
-	// *
-	// * @param token String
-	// * @param freeSpace long
-	// * @return String
-	// */
-	// public String updateAllByTokenQuery(String token, String alias, long size,
-	// String filename, Date updateTimestamp)
-	// {
-	// /**
-	// * @todo all size are the same in this version!!!
-	// */
-	// return
-	// "UPDATE `storage_space` SET `alias`='"+alias+"', `total_size`='"+size+"', `guar_size`='"+size+"', `free_size`='"+size+"', `space_file`='"+filename+"' "+", "
-	// + "`UPDATE_TIME`=" + format(updateTimestamp)
-	// +" WHERE space_token='"+token+"'";
-	// }
-
-	// /**
-	// * Main - only for test
-	// *
-	// * @param args String[]
-	// */
-	// public static void main(String[] args)
-	// {
-	//
-	// DataBaseStrategy db = PersistenceDirector.getDataBase();
-	// System.out.println("Connection string ="+ db.getConnectionString());
-	//
-	// StorageSpaceSQLHelper helper = new StorageSpaceSQLHelper("mysql");
-	//
-	//
-	// StorageSpaceTO ssTO = new StorageSpaceTO();
-	// ssTO.setAlias("Alias");
-	// ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
-	// ssTO.setGuaranteedSize(1000000);
-	// VO vo = VO.make("VOCiccio");
-	// GridUserInterface gu = null;
-	// gu = GridUserManager.makeStoRMGridUser();
-	// //gu = VomsGridUsermake("Ciccio");
-	//
-	// ssTO.setOwner(gu);
-	// ssTO.setOwnerName("Ciccio");
-	// ssTO.setSpaceFile("spaceFile");
-	// ssTO.setSpaceToken("spacetoken001");
-	// ssTO.setSpaceType(TSpaceType.VOLATILE.toString());
-	//
-	// String query = helper.insertQuery(ssTO);
-	// System.out.println("Insert Query = "+query);
-	// }
 
 }

@@ -34,6 +34,10 @@ import it.grid.storm.common.types.*;
 
 public class TLifeTimeInSeconds implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8025723621535456819L;
 	private long time = -1;
 	private TimeUnit u = TimeUnit.EMPTY;
 	private boolean empty = true;
@@ -198,9 +202,9 @@ public class TLifeTimeInSeconds implements Serializable {
 
 	/**
 	 * Method that returns a TSizeInBytes object retrieving its value by the
-	 * Hashtable used for comunicating with the FE
+	 * Hashtable used for communicating with the FE
 	 */
-	public static TLifeTimeInSeconds decode(Map inputParam, String fieldName) {
+	public static TLifeTimeInSeconds decode(Map<?, ?> inputParam, String fieldName) {
 
 		String lifetime = (String) inputParam.get(fieldName);
 
@@ -271,32 +275,4 @@ public class TLifeTimeInSeconds implements Serializable {
 		hash = 37 * hash + u.hashCode();
 		return hash;
 	}
-
-	/*
-	 * public static void main(String[] args) {
-	 * System.out.print("TEsting TLifeTimeInSeconds\n\ns10 is 10 seconds:"); try {
-	 * TLifeTimeInSeconds s10 = new TLifeTimeInSeconds(10,TimeUnit.SECONDS);
-	 * System.out.println(s10+"; hashCode="+s10.hashCode()); TLifeTimeInSeconds
-	 * s20 = new TLifeTimeInSeconds(20,TimeUnit.SECONDS);
-	 * System.out.println("s20 is 20 seconds: "+s20+"; hashCode="+s20.hashCode());
-	 * TLifeTimeInSeconds a10 = new TLifeTimeInSeconds(10,TimeUnit.SECONDS);
-	 * System.out.println("a10 is 10 seconds: "+a10+"; hashCode="+a10.hashCode());
-	 * System.out.println("s10.equals(s20) false:"+s10.equals(s20)+
-	 * "; s20.equals(s10) false:"+s20.equals(s10));
-	 * System.out.println("s10.equals(a10) true:"
-	 * +s10.equals(a10)+"; a10.equals(s10) true:"+a10.equals(s10));
-	 * System.out.println("s10 Value: "+s10.value()+"; s10 Unit: "+s10.unit());
-	 * System
-	 * .out.println("Corresponding to minutes (0.167): "+s10.getTimeIn(TimeUnit
-	 * .MINUTES)+"; and to hours (0.00278):"+s10.getTimeIn(TimeUnit.HOURS)); }
-	 * catch (Exception e) { System.out.println("Should not see this! "+e); }
-	 * //Testing Exceptions System.out.println("Testing Exception throwing"); try
-	 * { TLifeTimeInSeconds s10 = new TLifeTimeInSeconds(10,TimeUnit.SECONDS);
-	 * System.out.println("Successfully created: "+s10);
-	 * System.out.print("Attempting creation with null TimeUnit: "); try { new
-	 * TLifeTimeInSeconds(10,null); System.out.println("Should not see this!"); }
-	 * catch (InvalidTLifeTimeAttributeException e) {
-	 * System.out.println(" creation failed as expected. "+e); } } catch
-	 * (Exception e) { System.out.println("Should not see this!"); } }
-	 */
 }

@@ -31,6 +31,11 @@ import java.io.Serializable;
 
 public abstract class TimeUnit implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3158145080727358357L;
+
 	public static TimeUnit createTimeUnit(String unit) {
 
 		String input = unit.toLowerCase();
@@ -48,6 +53,11 @@ public abstract class TimeUnit implements Serializable {
 	}
 
 	public static TimeUnit EMPTY = new TimeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5599746107173300367L;
 
 		public double conversionFactor() {
 
@@ -67,6 +77,11 @@ public abstract class TimeUnit implements Serializable {
 
 	public static TimeUnit SECONDS = new TimeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4222321087668878368L;
+
 		public double conversionFactor() {
 
 			return 1.0;
@@ -84,6 +99,11 @@ public abstract class TimeUnit implements Serializable {
 	};
 
 	public static TimeUnit MINUTES = new TimeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7667017133554141272L;
 
 		public double conversionFactor() {
 
@@ -103,6 +123,11 @@ public abstract class TimeUnit implements Serializable {
 
 	public static TimeUnit HOURS = new TimeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2405882444491700325L;
+
 		public double conversionFactor() {
 
 			return 3600.0;
@@ -121,6 +146,11 @@ public abstract class TimeUnit implements Serializable {
 
 	public static TimeUnit DAYS = new TimeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 9053681263751106642L;
+
 		public double conversionFactor() {
 
 			return 86400.0;
@@ -138,6 +168,11 @@ public abstract class TimeUnit implements Serializable {
 	};
 
 	public static TimeUnit WEEKS = new TimeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 84259069743229691L;
 
 		public double conversionFactor() {
 
@@ -165,19 +200,4 @@ public abstract class TimeUnit implements Serializable {
 	 */
 	public abstract double conversionFactor();
 
-	/*
-	 * public static void main(String[] args) {
-	 * System.out.println("Time Unit SECONDS:"
-	 * +TimeUnit.SECONDS+"; hashCode:"+TimeUnit
-	 * .SECONDS.hashCode()+"; conversion factor:"
-	 * +TimeUnit.SECONDS.conversionFactor());
-	 * System.out.println("Time Unit MINUTES:"
-	 * +TimeUnit.MINUTES+"; hashCode:"+TimeUnit
-	 * .MINUTES.hashCode()+"; conversion factor:"
-	 * +TimeUnit.MINUTES.conversionFactor());
-	 * System.out.println("Time Unit HOURS:"
-	 * +TimeUnit.HOURS+"; hashCode:"+TimeUnit.
-	 * HOURS.hashCode()+"; conversion factor:"+TimeUnit.HOURS.conversionFactor());
-	 * }
-	 */
 }

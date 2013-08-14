@@ -19,16 +19,34 @@ package it.grid.storm;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class Platform {
-
-	private static final String platformName = System.getProperty("os.name")
-		+ "-" + System.getProperty("os.arch") + "-"
-		+ System.getProperty("sun.arch.data.model");
-
+	
+	private static String OSDistribution;
+	private static String platformName;
+	
+	private static final String RELEASE_FILE_PATH = File.separatorChar + "etc" + File.separatorChar + "redhat-release";
+	private static final String DEFAULT_OS_DISTRIBUTION = "N/A";
+	
+	static {
+		
+		platformName = System.getProperty("os.name")
+			+ "-" + System.getProperty("os.arch") + "-"
+			+ System.getProperty("sun.arch.data.model");
+		System.out.println("Platform name: " + platformName);
+		
+		try {
+			OSDistribution = loadOSDistribution(new File(RELEASE_FILE_PATH));
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			OSDistribution = DEFAULT_OS_DISTRIBUTION;
+		}
+		System.out.println("OS Distribution: " + OSDistribution);
+	
+	}
+	
 	/**
 	 * Get the complete platform as per the java-vm.
 	 * 
@@ -40,41 +58,33 @@ public class Platform {
 	}
 
 	public static String getOSDitribution() {
-
-		String os_dist = "N/A";
-		String releaseFileStr = File.separatorChar + "etc" + File.separatorChar
-			+ "redhat-release";
-		File releaseFile = new File(releaseFileStr);
-		try {
-			if (releaseFile.exists() && releaseFile.isFile() && releaseFile.canRead()) {
-				BufferedReader releaseReader = new BufferedReader(new FileReader(
-					releaseFile));
-				String output = releaseReader.readLine();
-				if ((output != null) && (output.length() > 0)) {
-					os_dist = output;
-				}
-			}
-		} catch (FileNotFoundException e) {
-		} catch (IOException e) {
+		
+		return OSDistribution;
+	}
+	
+	private static String loadOSDistribution(File releaseFile) throws IOException {
+		if (releaseFile == null) {
+			return DEFAULT_OS_DISTRIBUTION;
 		}
-		// String os_dist="Scientific Linux SL release 4.8 (Beryllium)";
-		// String os_dist="Scientific Linux SL release 5.3 (Boron)";
-		if (os_dist != null) {
-			int pos = os_dist.indexOf("release");
-			if ((pos > 0) && (os_dist.length() > pos + 9)) {
-				String rel = os_dist.substring(pos + 7, pos + 9).trim();
-				return "sl" + rel;
+		String os_dist = DEFAULT_OS_DISTRIBUTION;
+		if (releaseFile.exists() && releaseFile.isFile() && releaseFile.canRead()) {
+			BufferedReader releaseReader = new BufferedReader(new FileReader(releaseFile));
+			String output = releaseReader.readLine();
+			if ((output != null) && (output.length() > 0)) {
+				os_dist = output;
+			}
+			releaseReader.close();
+			// String os_dist="Scientific Linux SL release 4.8 (Beryllium)";
+			// String os_dist="Scientific Linux SL release 5.3 (Boron)";
+			if (os_dist != null) {
+				int pos = os_dist.indexOf("release");
+				if ((pos > 0) && (os_dist.length() > pos + 9)) {
+					String rel = os_dist.substring(pos + 7, pos + 9).trim();
+					os_dist = "sl" + rel;
+				}
 			}
 		}
 		return os_dist;
 	}
-
-	public static void main(String[] args) {
-
-		if ((args == null) || (args.length == 0) || (args[0].equals("platform"))) {
-			System.out.println(platformName);
-		} else if (args[0].equals("os_dist")) {
-			System.out.println(getOSDitribution());
-		}
-	}
+	
 }

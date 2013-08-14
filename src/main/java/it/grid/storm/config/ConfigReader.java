@@ -26,6 +26,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that reads the configuration parameters from different sources. It
@@ -48,6 +50,8 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
  */
 public class ConfigReader {
 
+	private static final Logger log = LoggerFactory.getLogger(ConfigReader.class);
+	
 	private Configuration c = makeEmptyConfiguration(); // configuration object
 																											// holding all parameters!
 	private String configurationPathname = ""; // complete path to configuration
@@ -91,7 +95,7 @@ public class ConfigReader {
 				refresh = 0;
 			this.refresh = refresh;
 			this.configurationPathname = configurationPathname;
-			System.out.println("Reading configuration file " + configurationPathname
+			log.info("Reading configuration file " + configurationPathname
 				+ " and setting refresh rate to " + refresh + " seconds.");
 			try {
 				// create reloading strategy for refresh
@@ -101,38 +105,21 @@ public class ConfigReader {
 				// file
 				PropertiesConfiguration properties = new PropertiesConfiguration(
 					configurationPathname);
-				System.out.println("Properties read from file:");
+				log.debug("Properties read from file:");
 				String key;
-				for (Iterator i = properties.getKeys(); i.hasNext();) {
+				for (Iterator<?> i = properties.getKeys(); i.hasNext();) {
 					key = (String) i.next();
-					System.out
-						.println(key + "=" + properties.getProperty(key).toString());
+					log.debug(key + "=" + properties.getProperty(key).toString());
 				}
 				properties.setReloadingStrategy(strategy);
 				// add the properties to the configuration
 				this.c = new CompositeConfiguration();
 				((CompositeConfiguration) this.c).addConfiguration(properties);
-				System.out
-					.println("Configuration file read. Full list of values in use follows; a copy has also been written to the logs.");
+				log.info("Configuration file read successfully.");
 			} catch (ConfigurationException e) {
 				this.c = makeEmptyConfiguration();
-				System.out
-					.println("************************************************************************");
-				System.out
-					.println("            ATTENTION! Reading of configuration file failed!");
-				System.out
-					.println("************************************************************************");
-				System.out
-					.println("Full list of values in use follows: please check it! A copy has also");
-				System.out.println("been written to the logs.");
-				System.err
-					.println("************************************************************************");
-				System.err.println("ATTENTION! Reading of configuration file "
-					+ configurationPathname + " failed! " + e);
-				System.err
-					.println("ATTENTION! Please check standard output or logs for exact configuration in use!");
-				System.err
-					.println("************************************************************************");
+				log.error("ATTENTION! Reading of configuration file "	+ configurationPathname + " failed! " + e);
+				log.error("ATTENTION! Please check logs for exact configuration in use!");
 			}
 		} else {
 			System.err
@@ -165,9 +152,9 @@ public class ConfigReader {
 	}
 
 	/**
-	 * Private method that returns an Empty implemetnation of Apache s
+	 * Private method that returns an Empty implementation of Apache s
 	 * Configuration Object, which does not contain any key, does not
-	 * addPropertyDirect, does not clearProperty, returns an empy Iterator for
+	 * addPropertyDirect, does not clearProperty, returns an empty Iterator for
 	 * getKeys, returns a primitive Object for getPropertyDirect, returns true for
 	 * isEmpty.
 	 */

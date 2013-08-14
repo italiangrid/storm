@@ -166,7 +166,7 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 
 	private void init(String namespaceFileName, int refresh) {
 
-		System.out.println("Reading Namespace configuration file "
+		log.info("Reading Namespace configuration file "
 			+ namespaceFileName + " and setting refresh rate to " + refresh
 			+ " seconds.");
 
@@ -184,15 +184,6 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 			config = new XMLConfiguration();
 			config.setFileName(namespaceFileName);
 
-			/**
-			 * Validate the namespace configuration file.. Only with Apache Commons
-			 * Configuration 1.2+
-			 * 
-			 * @todo It seems having a problem to load the schema...
-			 * 
-			 */
-			// config.setValidating(true);
-
 			// Validation of Namespace.xml
 			log.debug(" ... CHECK of VALIDITY of NAMESPACE Configuration ...");
 
@@ -209,9 +200,7 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 			// conform to its DTD.
 
 			config.setReloadingStrategy(xmlStrategy);
-
-			// config.setReloadingStrategy(new FileChangedReloadingStrategy());
-
+			
 			Peeper peeper = new Peeper(this);
 			timer.schedule(peeper, delay, period);
 
@@ -221,12 +210,7 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 			log.debug("Namespace Configuration read!");
 
 		} catch (ConfigurationException cex) {
-			System.err
-				.println("*****************************************************");
-			System.err
-				.println("   ATTENTION! Unable to load Namespace Configuration!");
-			System.err
-				.println("*****************************************************");
+			log.error("ATTENTION! Unable to load Namespace Configuration!");
 			log.error(toString());
 		}
 

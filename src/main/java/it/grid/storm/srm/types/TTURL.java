@@ -18,14 +18,15 @@
 package it.grid.storm.srm.types;
 
 import java.util.Map;
+
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.InvalidTFNAttributesException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.TFN;
 import it.grid.storm.common.types.TransferProtocol;
-import it.grid.storm.namespace.NamespaceDirector;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a TURL, that is a Transfer URL. It is made up of a
@@ -37,7 +38,7 @@ import org.slf4j.Logger;
  */
 public class TTURL {
 
-	private static Logger log = NamespaceDirector.getLogger();
+	private static Logger log = LoggerFactory.getLogger(TTURL.class);;
 	private TransferProtocol tp;
 	private TFN tfn;
 	private boolean empty = true; // boolean true if this is an empty object
@@ -207,113 +208,4 @@ public class TTURL {
 		hash = 37 * hash + tfn.hashCode();
 		return hash;
 	}
-	/*
-	 * public static void main(String[] args) { //testing empty TTURL
-	 * System.out.println("Testing empty TTURL objects..."); TTURL te1 =
-	 * TTURL.makeEmpty();
-	 * System.out.println("te1 is an empty TTURL; should see Empty TTURL:"
-	 * +te1+"; should see hashCode 0:"
-	 * +te1.hashCode()+"; it is empty so should see true:"+te1.isEmpty()); TTURL
-	 * te2 = TTURL.makeEmpty();
-	 * System.out.println("te2 is an empty TTURL; should see Empty TTURL:"
-	 * +te2+"; should see hashCode 0:"
-	 * +te2.hashCode()+"; it is empty so should see true:"+te2.isEmpty());
-	 * System.out.println("te1.equals(te2) should see true:"+
-	 * te1.equals(te2)+"; te2.equals(te1) should see true:"+te2.equals(te1));
-	 * System
-	 * .out.println("te1 should have all empty parts - TransferProtocol: "+te1
-	 * .protocol()+", TransferFileName: "+te1.tfn()); // //Testing correct TFN
-	 * creation
-	 * System.out.println("\n\nTesting correct creation of TTURL objects..."); try
-	 * { String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int p1i = 1;
-	 * Port p1 = Port.make(p1i); String pfn1s = "/home/user1"; PFN pfn1 =
-	 * PFN.make(pfn1s); String tfn1s = m1s+":"+p1i+pfn1s; TFN tfn1 =
-	 * TFN.make(m1,p1,pfn1);
-	 * 
-	 * String m2s = "www.infn.it"; Machine m2 = Machine.make(m2s); int p2i = 2;
-	 * Port p2 = Port.make(p2i); String pfn2s = "/home/user2"; PFN pfn2 =
-	 * PFN.make(pfn2s); String tfn2s = m2s+":"+p2i+pfn2s; TFN tfn2 =
-	 * TFN.make(m2,p2,pfn2);
-	 * 
-	 * TTURL tt1 = TTURL.make(TransferProtocol.FILE,tfn1);
-	 * System.out.println("TTURL 1 - should see "+ TransferProtocol.FILE + "://"+
-	 * tfn1
-	 * +":     "+tt1+"; hashCode:"+tt1.hashCode()+"; isEmpty should be false:"
-	 * +tt1.isEmpty()); TTURL tt2 = TTURL.make(TransferProtocol.GSIFTP,tfn2);
-	 * System.out.println("TTURL 2 - should see "+ TransferProtocol.GSIFTP +
-	 * "://"+ tfn2
-	 * +":     "+tt2+"; hashCode:"+tt2.hashCode()+"; isEmpty should be false:"
-	 * +tt2.isEmpty());
-	 * System.out.println("tt1.equals(tt2) false: "+tt1.equals(tt2));
-	 * System.out.println("tt2.equals(tt1) false: "+tt2.equals(tt1));
-	 * System.out.println("tt1.equals(tt1) true: "+tt1.equals(tt1));
-	 * System.out.println("tt1.equals(null) false: "+tt1.equals(null));
-	 * System.out.println("tt1.equals(Object) false: "+tt1.equals(new Object()));
-	 * System
-	 * .out.println("tt1.equals(empty) false: "+tt1.equals(TTURL.makeEmpty()));
-	 * System
-	 * .out.println("empty.equals(tt1) false: "+TTURL.makeEmpty().equals(tt1));
-	 * System
-	 * .out.println("tt1 is "+tt1+" - TransferProtocol: "+tt1.protocol()+", PFN: "
-	 * +tt1.tfn());
-	 * 
-	 * String pfn3s = "/home/user3"; PFN pfn3 = PFN.make(pfn3s); String tfn3s =
-	 * pfn3s; TFN tfn3 = TFN.makeByPFN(pfn3); TTURL tt3 =
-	 * TTURL.make(TransferProtocol.FILE,tfn3);
-	 * System.out.println("\nTTURL 3 - should see "+ TransferProtocol.FILE +
-	 * "://"+ tfn3
-	 * +":     "+tt3+"; hashCode:"+tt3.hashCode()+"; isEmpty should be false:"
-	 * +tt3.isEmpty());
-	 * System.out.println("tt3.equals(tt2) false: "+tt3.equals(tt2));
-	 * System.out.println("tt2.equals(tt3) false: "+tt2.equals(tt3));
-	 * System.out.println("tt3.equals(tt3) true: "+tt3.equals(tt3));
-	 * System.out.println("tt3.equals(null) false: "+tt3.equals(null));
-	 * System.out.println("tt3.equals(Object) false: "+tt3.equals(new Object()));
-	 * System
-	 * .out.println("tt3.equals(empty) false: "+tt3.equals(TTURL.makeEmpty()));
-	 * System
-	 * .out.println("empty.equals(tt3) false: "+TTURL.makeEmpty().equals(tt3));
-	 * System
-	 * .out.println("tt3 is "+tt3+" - TransferProtocol: "+tt3.protocol()+", PFN: "
-	 * +tt3.tfn());
-	 * 
-	 * } catch (Exception e) { System.out.println("Should not see this!"); } //
-	 * //TEsting Exception handling
-	 * System.out.println("\n\nTesting object creation with invalid attribute..."
-	 * ); try { String m1s = "www.egrid.it"; Machine m1 = Machine.make(m1s); int
-	 * p1i = 1; Port p1 = Port.make(p1i); String pfn1s = "/home/user1"; PFN pfn1 =
-	 * PFN.make(pfn1s); String tfn1s = m1s+":"+p1i+pfn1s; TFN tfn1 =
-	 * TFN.make(m1,p1,pfn1); TTURL tt = TTURL.make(TransferProtocol.FILE,tfn1);
-	 * System.out.println("Successfully created "+tt);
-	 * 
-	 * System.out.print("Now attempting creation with null TransferProtocol: ");
-	 * try { TTURL.make(null,tfn1); System.out.println("Should not see this!"); }
-	 * catch (InvalidTTURLAttributesException e) {
-	 * System.out.println(" creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty TransferProtocol: ");
-	 * try { TTURL.make(TransferProtocol.EMPTY,tfn1);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTTURLAttributesException e) {
-	 * System.out.println(" creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with null TFN: "); try {
-	 * TTURL.make(TransferProtocol.FILE,null);
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTTURLAttributesException e) {
-	 * System.out.println(" creation failed as expected. " + e); }
-	 * System.out.print("Now attempting creation with empty TFN: "); try {
-	 * TTURL.make(TransferProtocol.FILE,TFN.makeEmpty());
-	 * System.out.println("Should not see this!"); } catch
-	 * (InvalidTTURLAttributesException e) {
-	 * System.out.println(" creation failed as expected. " + e); } } catch
-	 * (Exception e) { System.out.println("Should not see this!"); } // //Testing
-	 * creation from String String s =
-	 * "gsiftp://testbed006.cnaf.infn.it:8444/tmp/file.txt";
-	 * System.out.print("\n\nTesting TTURL creation from String "+s+"; "); try {
-	 * System.out.println("OK: "+TTURL.makeFromString(s)); } catch (Exception e) {
-	 * System.out.println("Should not see this! "+e); } s =
-	 * "gsiftp://testbed006.cnaf.infn.it:8444//tmp/file.txt";
-	 * System.out.print("Testing TTURL creation from String "+s+"; "); try {
-	 * System.out.println("OK a pfn with // is _OK_: "+TTURL.makeFromString(s)); }
-	 * catch (Exception e) { System.out.println("Should not see this! "+e); } }
-	 */
 }

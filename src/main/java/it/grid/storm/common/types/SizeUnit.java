@@ -30,6 +30,11 @@ import java.io.Serializable;
 
 public abstract class SizeUnit implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3885767398054889628L;
+
 	public static SizeUnit createSizeUnit(String unit) {
 
 		String input = unit.toLowerCase();
@@ -47,6 +52,11 @@ public abstract class SizeUnit implements Serializable {
 	}
 
 	public static final SizeUnit BYTES = new SizeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4181134075585414373L;
 
 		public double conversionFactor() {
 
@@ -66,6 +76,11 @@ public abstract class SizeUnit implements Serializable {
 
 	public static final SizeUnit KILOBYTES = new SizeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 9095939098314802303L;
+
 		public double conversionFactor() {
 
 			return 1000.0;
@@ -83,6 +98,11 @@ public abstract class SizeUnit implements Serializable {
 	};
 
 	public static final SizeUnit MEGABYTES = new SizeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4371556318373779599L;
 
 		public double conversionFactor() {
 
@@ -102,6 +122,11 @@ public abstract class SizeUnit implements Serializable {
 
 	public static final SizeUnit GIGABYTES = new SizeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7917622928734775939L;
+
 		public double conversionFactor() {
 
 			return SizeUnit.MEGABYTES.conversionFactor() * 1000;
@@ -120,6 +145,11 @@ public abstract class SizeUnit implements Serializable {
 
 	public static final SizeUnit TERABYTES = new SizeUnit() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8093974088166886328L;
+
 		public double conversionFactor() {
 
 			return SizeUnit.GIGABYTES.conversionFactor() * 1000;
@@ -137,6 +167,11 @@ public abstract class SizeUnit implements Serializable {
 	};
 
 	public static final SizeUnit EMPTY = new SizeUnit() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5609696668282214567L;
 
 		public double conversionFactor() {
 
@@ -159,21 +194,9 @@ public abstract class SizeUnit implements Serializable {
 	}
 
 	/**
-	 * This method returns a converson factor: the amout of bytes present in 1
+	 * This method returns a conversion factor: the amount of bytes present in 1
 	 * unit of this.
 	 */
 	public abstract double conversionFactor();
-	/*
-	 * public static void main(String[] args) {
-	 * System.out.println("bytes: "+SizeUnit
-	 * .BYTES+"; hash="+SizeUnit.BYTES.hashCode
-	 * ()+"; conversion-factor="+SizeUnit.BYTES.conversionFactor());
-	 * System.out.println
-	 * ("kilobytes: "+SizeUnit.KILOBYTES+"; hash="+SizeUnit.KILOBYTES
-	 * .hashCode()+"; conversion-factor="+SizeUnit.KILOBYTES.conversionFactor());
-	 * System
-	 * .out.println("megabytes: "+SizeUnit.MEGABYTES+"; hash="+SizeUnit.MEGABYTES
-	 * .hashCode()+"; conversion-factor="+SizeUnit.MEGABYTES.conversionFactor());
-	 * }
-	 */
+	
 }

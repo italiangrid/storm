@@ -17,10 +17,7 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
-
-// import com.sun.image.codec.jpeg.TruncatedFileException;
 
 /**
  * This class represents the TFileStorageType of an Srm request.
@@ -125,7 +122,7 @@ public class TFileLocality {
 	 * @return
 	 */
 
-	public static TFileLocality decode(Map inputParam, String name) {
+	public static TFileLocality decode(Map<?, ?> inputParam, String name) {
 
 		Integer fileLoc = (Integer) inputParam.get(name);
 		if (fileLoc != null)
@@ -141,7 +138,7 @@ public class TFileLocality {
 	 * @param param
 	 * @param name
 	 */
-	public void encode(Map param, String name) {
+	public void encode(Map<String, Integer> param, String name) {
 
 		Integer value = null;
 		if (this.equals(TFileLocality.ONLINE))
@@ -159,26 +156,5 @@ public class TFileLocality {
 		param.put(name, value);
 
 	}
-
-	/*
-	 * public static void main(String[] args) { //Testing all types
-	 * System.out.println("Testing all types...");
-	 * System.out.println("VOLATILE: "+
-	 * TFileStorageType.VOLATILE+"; getTFileStorageType from String:"
-	 * +TFileStorageType
-	 * .getTFileStorageType(TFileStorageType.VOLATILE.toString()));
-	 * System.out.println
-	 * ("DURABLE: "+TFileStorageType.DURABLE+"; getTFileStorageType from String:"
-	 * +TFileStorageType
-	 * .getTFileStorageType(TFileStorageType.DURABLE.toString()));
-	 * System.out.println
-	 * ("PERMANENT: "+TFileStorageType.PERMANENT+"; getTFileStorageType from String:"
-	 * +
-	 * TFileStorageType.getTFileStorageType(TFileStorageType.PERMANENT.toString())
-	 * ); System.out.println("EMPTY: "+TFileStorageType.EMPTY+
-	 * "; getTFileStorageType from String:"
-	 * +TFileStorageType.getTFileStorageType(TFileStorageType.EMPTY.toString()));
-	 * }
-	 */
 
 }

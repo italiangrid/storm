@@ -82,7 +82,7 @@ public class TURLPrefix {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append("TURLPrefix: ");
-		for (Iterator i = desiredProtocols.iterator(); i.hasNext();) {
+		for (Iterator<Protocol> i = desiredProtocols.iterator(); i.hasNext();) {
 			sb.append(i.next());
 			sb.append(" ");
 		}
@@ -127,27 +127,4 @@ public class TURLPrefix {
 
 		return desiredProtocols.contains(protocol);
 	}
-
-	// public TransferProtocol[] getArray() {
-	// return prefix.toArray();
-	// }
-
-	/*
-	 * public static void main(String[] args) { //Testing adding, getting and
-	 * writing to st.out System.out.println("Empty TURLPrefix: "+new
-	 * TURLPrefix()); TURLPrefix p = new TURLPrefix();
-	 * p.addTransferProtocol(TransferProtocol.FILE);
-	 * p.addTransferProtocol(TransferProtocol.GSIFTP);
-	 * p.addTransferProtocol(TransferProtocol.EMPTY);
-	 * System.out.println("\nTURLPrefix with FILE, GSIFTP, EMPTY; "+p);
-	 * p.addTransferProtocol(TransferProtocol.FILE);
-	 * p.addTransferProtocol(TransferProtocol.GSIFTP);
-	 * p.addTransferProtocol(TransferProtocol.EMPTY); System.out.println(
-	 * "\nTURLPrefix with FILE, GSIFTP, EMPTY, FILE, GSIFTP, EMPTY; "+p);
-	 * System.out.println("Size:"+p.size()); System.out.print("Protocols: "); for
-	 * (int i=0; i<p.size(); i++) System.out.print(p.getTransferProtocol(i)+" ");
-	 * System.out.println("\n"+p+"\nSize:"+p.size()); TURLPrefix n = new
-	 * TURLPrefix(); n.addTransferProtocol(null);
-	 * System.out.println("\nTURLPrefix with null: "+n); }
-	 */
 }

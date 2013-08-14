@@ -17,16 +17,11 @@
 
 package it.grid.storm.persistence.util.db;
 
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.persistence.DataSourceConnectionFactory;
 import it.grid.storm.persistence.exceptions.PersistenceException;
-import it.grid.storm.persistence.model.StorageSpaceTO;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS;
 import org.apache.commons.dbcp.datasources.SharedPoolDataSource;
@@ -174,7 +169,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 	 */
 	private void init(DataBaseStrategy db, int maxActive, int maxWait) {
 
-		instance.db = db;
+		instance.setDatabaseStrategy(db);
 		DriverAdapterCPDS connectionPoolDatasource = new DriverAdapterCPDS();
 		try {
 			connectionPoolDatasource.setDriver(db.getDriverName());
@@ -201,156 +196,28 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 	 */
 	private void shutdown(Connection conn) throws SQLException {
 
-		conn.close(); // if there are no other open connection
+		conn.close();
 		conn = null;
-
-		// db writes out to files and shuts down
-		// this happens anyway at garbage collection
-		// when program ends
 	}
-
-	/***********************************************************
-	 * TEST CLASS
-	 */
-
+	
 	public static void printInfo(DBConnectionPool pool) {
 
-		System.out.println("INFO ");
 		try {
-			System.out.println(pool.getPoolInfo());
+			log.info("DATABASE POOL INFO: " + pool.getPoolInfo());
 		} catch (PersistenceException ex2) {
-			ex2.printStackTrace();
+			log.error(ex2.getMessage());
 		}
 
 	}
 
-	// public static void main(String[] args) {
-	// DataBaseStrategy db = DataBaseStrategy.MYSQL;
-	// db.setDbUrl("localhost");
-	// db.setDbName("storm_be_ISAM");
-	// db.setDbUsr("storm");
-	// db.setDbPwd("storm");
-	// System.out.println("Connection string ="+ db.getConnectionString());
-	//
-	// try {
-	// DBConnectionPool.initPool(db, 10, 50);
-	// }
-	// catch (PersistenceException ex1) {
-	// ex1.printStackTrace();
-	// }
-	//
-	// DBConnectionPool pool = DBConnectionPool.getPoolInstance();
-	//
-	// printInfo(pool);
-	//
-	// Connection conn = null;
-	// try {
-	// conn = pool.borrowConnection();
-	// }
-	// catch (PersistenceException ex) {
-	// ex.printStackTrace();
-	// }
-	//
-	// printInfo(pool);
-	//
-	// Statement myStatement = null;
-	// ResultSet myResult = null;
-	//
-	// if (conn != null) {
-	// try {
-	// myStatement = conn.createStatement();
-	// /**
-	// myResult =
-	// myStatement.executeQuery("SELECT count(*) FROM storage_file s;");
-	// // Get the resulting data back, and loop through it
-	// // to simulate the data retrieval.
-	// int numcols = myResult.getMetaData().getColumnCount();
-	// while (myResult.next()) {
-	// for (int i = 1; i <= numcols; i++) {
-	// System.out.println("res("+i+")= "+myResult.getString(i));
-	// }
-	// }
-	// **/
-	// StorageSpaceTO ssTO = new StorageSpaceTO();
-	// ssTO.setAlias("Test");
-	// ssTO.setCreated(new java.util.Date(System.currentTimeMillis()));
-	// ssTO.setGuaranteedSize(10000);
-	// ssTO.setLifetime(1000);
-	// GridUserInterface gu = null;
-	// gu =
-	// GridUserManager.makeGridUser("/DC=it/DC=infngrid/OU=Services/CN=storm-t1.cnaf.infn.it");
-	// //gu = VomsGridUser.make("testUser");
-	// ssTO.setOwner(gu);
-	// ssTO.setSpaceFile("test_spaceFile");
-	// ssTO.setSpaceToken("test_spaceToken");
-	// ssTO.setSpaceType("volatile");
-	//
-	//
-	//
-	//
-	//
-	// }
-	// catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	// finally {
-	// // We want to be agressive about ensuring that our
-	// // connection is properly cleaned up and returned to
-	// // our pool.
-	// try {
-	// myResult.close();
-	// }
-	// catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// try {
-	// myStatement.close();
-	// }
-	// catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// try {
-	// pool.giveBackConnection(conn);
-	// //conn.close();
-	// }
-	// catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
-	// printInfo(pool);
-	// }
-	//
-	// }
+	public DataBaseStrategy getDatabaseStrategy() {
 
-	/**
-	 * public class DBCPDemo {
-	 * 
-	 * public static void main(String args[]) throws Exception {
-	 * 
-	 * // create a generic pool GenericObjectPool pool = new
-	 * GenericObjectPool(null);
-	 * 
-	 * // use the connection factory which will wraped by // the
-	 * PoolableConnectionFactory DriverManagerConnectionFactory cf = new
-	 * DriverManagerConnectionFactory(
-	 * "jdbc:jtds:sqlserver://myserver:1433/tandem", "user", "pass");
-	 * 
-	 * PoolableConnectionFactory pcf = new PoolableConnectionFactory( cf, pool,
-	 * null, "SELECT * FROM mysql.db", false, true);
-	 * 
-	 * // register our pool and give it a name new
-	 * PoolingDriver().registerPool("myPool", pool);
-	 * 
-	 * // get a connection and test it Connection conn =
-	 * DriverManager.getConnection("jdbc:apache:commons:dbcp:myPool");
-	 * 
-	 * // now we can use this pool the way we want.
-	 * System.err.println("Are we connected? " + !conn.isClosed());
-	 * 
-	 * System.err.println("Idle Connections: " + pool.getNumIdle() + ", out of " +
-	 * pool.getNumActive());
-	 * 
-	 * } }
-	 **/
+		return db;
+	}
+
+	private void setDatabaseStrategy(DataBaseStrategy db) {
+
+		this.db = db;
+	}
 
 }

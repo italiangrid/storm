@@ -44,7 +44,6 @@ public class TSURLInfo {
 			throw new InvalidTSURLInfoAttributeException(surl);
 		this.surl = surl;
 		this.systemInfo = info;
-		// System.out.println("TSUrlInfo created: surl: "+surl+", sysInfo: "+systemInfo);
 	}
 
 	/**

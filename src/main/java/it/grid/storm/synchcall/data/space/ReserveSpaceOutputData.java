@@ -30,12 +30,22 @@ package it.grid.storm.synchcall.data.space;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.srm.types.*;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceOutputDataAttributesException;
 
 public class ReserveSpaceOutputData implements Serializable, OutputData {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9112229304313364826L;
+	
+	private static final Logger log = LoggerFactory.getLogger(ReserveSpaceOutputData.class);
+	
 	private TSizeInBytes spaceTotal = null;
 	private TSizeInBytes spaceGuaranteed = null;
 	private TLifeTimeInSeconds spaceLifetime = null;
@@ -53,8 +63,6 @@ public class ReserveSpaceOutputData implements Serializable, OutputData {
 		TSpaceToken spaceToken, TReturnStatus status)
 		throws InvalidReserveSpaceOutputDataAttributesException {
 
-		// boolean ok = spaceGuaranteed!=null && spaceToken!=null &&
-		// status!=null;
 		boolean ok = status != null;
 
 		if (!ok) {
@@ -128,12 +136,12 @@ public class ReserveSpaceOutputData implements Serializable, OutputData {
 	 */
 	public void print() {
 
-		System.out.println("****SRM_SR_OutputData******");
-		System.out.println("TSizeInBytesTotal: " + spaceTotal);
-		System.out.println("TSizeInBytesGuar: " + spaceGuaranteed);
-		System.out.println("LifeTimeInSeconds: " + spaceLifetime);
-		System.out.println("TSpaceToken: " + spaceToken);
-		System.out.println("TReturnStatus: " + status);
+		log.info("****SRM_SR_OutputData******");
+		log.info("TSizeInBytesTotal: " + spaceTotal);
+		log.info("TSizeInBytesGuar: " + spaceGuaranteed);
+		log.info("LifeTimeInSeconds: " + spaceLifetime);
+		log.info("TSpaceToken: " + spaceToken);
+		log.info("TReturnStatus: " + status);
 
 	}
 

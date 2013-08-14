@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @Date July 2005
  */
 public class StoRMCommandServer {
-
+	
 	private enum Command {
 		START("START"), STOP("STOP"), SHUTDOWN("SHUTDOWN"), STATUS("STATUS"), EXIT(
 			"EXIT"), UNKNOW("UNKNOW");
@@ -109,7 +109,7 @@ public class StoRMCommandServer {
 	private StoRM storm; // only StoRM object that the command server administers!
 	private int listeningPort; // command server binding port
 	private ServerSocket server = null; // server socket of command server!
-	private static Logger log;
+	private static Logger log = LoggerFactory.getLogger(StoRMCommandServer.class);
 	private boolean shutdownInProgress = false;
 
 	public StoRMCommandServer(StoRM storm) {
@@ -125,8 +125,6 @@ public class StoRMCommandServer {
 		//
 		// Initialize handle to StoRM
 		this.storm = storm;
-		// Initialize this log!
-		log = LoggerFactory.getLogger(StoRMCommandServer.class);
 		// set Listening port of StoRMCommandServer!
 		this.listeningPort = Configuration.getInstance()
 			.getCommandServerBindingPort();
@@ -202,10 +200,8 @@ public class StoRMCommandServer {
 
 			BufferedReader in;
 			try {
-				in = new BufferedReader(new InputStreamReader(socket.getInputStream())); // input
-																																									// stream
-																																									// from
-																																									// client!
+				// input stream from client
+				in = new BufferedReader(new InputStreamReader(socket.getInputStream())); 
 			} catch (IOException e) {
 				log
 					.error("UNEXPECTED ERROR! Unable to get a reader for the client socket. IOException : "
@@ -214,8 +210,8 @@ public class StoRMCommandServer {
 			}
 			BufferedWriter out;
 			try {
-				out = new BufferedWriter(new OutputStreamWriter(
-					socket.getOutputStream())); // output stream to the client
+			  // output stream to the client
+				out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())); 
 			} catch (IOException e) {
 				log
 					.error("UNEXPECTED ERROR! Unable to get a writer for the client socket. IOException : "
@@ -501,31 +497,26 @@ public class StoRMCommandServer {
 
 		if (args.length == 0) {
 			// Invoking without any command line parameter!
-			System.out
-				.println("StoRMCommandServer invoked without any command line parameter.");
+			log.info("StoRMCommandServer invoked without any command line parameter.");
 		} else if (args.length == 2) {
 			// Invoked with two command line parameters as expected!
 			configurationPathname = args[0];
-			System.out.println("StoRMCommandServer invoked with two parameters.");
-			System.out.println("Configuration file: " + configurationPathname);
+			log.info("StoRMCommandServer invoked with two parameters.");
+			log.info("Configuration file: " + configurationPathname);
 			try {
 				refresh = Integer.parseInt(args[1]);
-				System.out.println("Configuration file refresh rate: " + refresh
-					+ " seconds");
+				log.info("Configuration file refresh rate: " + refresh + " seconds");
 			} catch (NumberFormatException e) {
 				// the refresh rate was not an int!
-				System.out
-					.println("Configuration file refresh rate: NOT an integer! Disabling refresh by default!");
+				log.error("Configuration file refresh rate: NOT an integer! Disabling refresh by default!");
 			}
 		} else {
 			// Invoked with either one or more than two parameters!
-			System.out
-				.print("StoRMCommandServer invoked with an invalid number of parameters. ");
-			System.out
-				.println("Ignoring all: continuing as though as none were present.");
+			log.warn("StoRMCommandServer invoked with an invalid number of parameters. ");
+			log.warn("Ignoring all: continuing as though as none were present.");
 		}
 
-		System.out.println("Now booting StoRM...");
+		log.info("Now booting StoRM...");
 		new StoRMCommandServer(new StoRM(configurationPathname, refresh));
 	}
 }

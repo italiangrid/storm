@@ -27,9 +27,7 @@ import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.config.WelcomeMessage;
 import it.grid.storm.health.HealthDirector;
-import it.grid.storm.logging.StoRMLoggers;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.persistence.dao.StorageAreaDAO;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
@@ -59,23 +57,16 @@ public class StoRM {
 
 	private XMLRPCHttpServer xmlrpcServer = null;
 
-	private final String welcome = WelcomeMessage.getWelcomeMessage(); // Text
-																																			// that
-																																			// displays
-																																			// general
-																																			// info
-																																			// about
-																																			// StoRM
-																																			// project
+	// Text that displays general info about StoRM project
+	private final String welcome = WelcomeMessage.getWelcomeMessage();
 
 	private static final Logger log = LoggerFactory.getLogger(StoRM.class);
 
 	public static final String DEFAULT_CONFIGURATION_FILE_PATH = 
 		"/etc/storm/backend-server/storm.properties";
 	
-	private final Timer GC = new Timer(); // Timer object in charge to call
-																				// periodically the Space Garbace
-																				// Collector
+	// Timer object in charge to call periodically the Space Garbace Collector
+	private final Timer GC = new Timer(); 
 	
 	private final ReservedSpaceCatalog spaceCatalog;
 	private TimerTask cleaningTask = null;
@@ -183,25 +174,15 @@ public class StoRM {
 			} else {
 				if (checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE)) {
 					log.error("Storm Check suite is failed for some critical checks!");
-					StoRMLoggers
-						.getStderrLogger()
-						.error(
-							"Storm Check suite is failed for some critical checks! Please check the log for more details");
 					throw new RuntimeException(
 						"Storm Check suite is failed for some critical checks! Please check the log for more details");
 				} else {
-					log
-						.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
-					StoRMLoggers
-						.getStderrLogger()
-						.error(
-							"Storm Check suite is failed but not for any critical check. StoRM safely started. Please check the log for more details");
+					log.warn("Storm Check suite is failed but not for any critical check. StoRM safely started.");
 				}
 			}
 			
 		} else {
-			log
-				.warn("Sanity checks disabled. Unable to determine if the environment is sane");
+			log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
 		}
 		
 	}
@@ -309,8 +290,7 @@ public class StoRM {
 		try {
 			RestService.startServer();
 		} catch (IOException e) {
-			System.err
-				.println("Unable to start internal HTTP Server listening for RESTFul services. IOException : "
+			log.error("Unable to start internal HTTP Server listening for RESTFul services. IOException : "
 					+ e.getMessage());
 			throw new Exception(
 				"Unable to start internal HTTP Server listening for RESTFul services. IOException : "
@@ -330,8 +310,7 @@ public class StoRM {
 
 		} catch (Exception e) {
 
-			System.err
-				.println("Unable to stop internal HTTP Server listening for RESTFul services: "
+			log.error("Unable to stop internal HTTP Server listening for RESTFul services: "
 					+ e.getMessage());
 		}
 
@@ -352,16 +331,13 @@ public class StoRM {
 	synchronized public void startSpaceGC() {
 
 		StoRM.log.debug("Starting Space GC.");
-		long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000; // Delay
-																																								// time
-																																								// before
-																																								// starting
+		// Delay time before starting
+		long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
+		
 		// cleaning thread! Set to 1 minute
-		long period = Configuration.getInstance().getCleaningTimeInterval() * 1000; // Period
-																																								// of
-																																								// execution
-																																								// of
-																																								// cleaning!
+		// Period of execution of cleaning
+		long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
+		
 		// Set to 1 hour
 		cleaningTask = new TimerTask() {
 
@@ -373,7 +349,7 @@ public class StoRM {
 		};
 		GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
 		this.isSpaceGCRunning = true;
-		StoRM.log.debug("Space GC started.");
+		log.debug("Space GC started.");
 	}
 
 	/**
@@ -381,12 +357,12 @@ public class StoRM {
      */
 	synchronized public void stopSpaceGC() {
 
-		StoRM.log.debug("Stopping Space GC.");
+		log.debug("Stopping Space GC.");
 		if (cleaningTask != null) {
 			cleaningTask.cancel();
 			GC.purge();
 		}
-		StoRM.log.debug("Space GC stopped.");
+		log.debug("Space GC stopped.");
 		this.isSpaceGCRunning = false;
 	}
 

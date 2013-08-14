@@ -34,12 +34,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author ritz
  * 
  */
 public class ConfigurationKeys {
 
+	private static final Logger log = LoggerFactory.getLogger(ConfigurationKeys.class);
+	
 	private static final String fs = File.separator;
 	private final String configFN = "src" + fs + "it" + fs + "grid" + fs
 		+ "storm" + fs + "config" + fs + "Configuration.java";
@@ -60,10 +65,9 @@ public class ConfigurationKeys {
 					method_key.put(methodName, keyName);
 				}
 			}
-			System.out.println("Configuration has " + method_key.size()
-				+ " methods getting key values.");
+			log.debug("Configuration has " + method_key.size() + " methods getting key values.");
 		} catch (SecurityException se) {
-			System.out.println("Unable to list the definible keys.." + se);
+			log.error("Unable to list the definible keys.." + se);
 		}
 
 		// Store the source code into ArrayList
@@ -80,10 +84,9 @@ public class ConfigurationKeys {
 				lineNr++;
 			}
 			in.close();
-			System.out.println("Configuration has " + lineNr + " lines of code.");
+			log.debug("Configuration has " + lineNr + " lines of code.");
 		} catch (IOException e) {
-			System.out.println("Some problem to read '" + configurationCodeFileName
-				+ "'");
+			log.error("Some problem to read '" + configurationCodeFileName + "'");
 		}
 
 		int currentLine = 0;
@@ -105,13 +108,13 @@ public class ConfigurationKeys {
 						// Check if the method is present into the list
 						if (method_key.containsKey(method)) {
 							// Found the method, search for the key.
-							// System.out.println("found a method GET : '" + method + "'");
+							log.debug("found a method GET : '" + method + "'");
 							int line_to_end = lineNr - currentLine;
 							int lineToScan = (line_to_end > 5 ? 5 : line_to_end);
 							for (int j = currentLine; j < currentLine + lineToScan; j++) {
 								if (configurationCode.get(j).contains("String key")) {
 									String lineKey = configurationCode.get(j);
-									// System.out.println("Key line : " + lineKey);
+									log.debug("Key line : " + lineKey);
 									// Found a key.. extract the key-name
 									int beginIndex = lineKey.indexOf("\"");
 									if (beginIndex > 0) {
@@ -120,7 +123,7 @@ public class ConfigurationKeys {
 										endIndex = keyName.indexOf(";");
 										if (endIndex > 0) {
 											keyName = keyName.substring(1, endIndex - 1);
-											// System.out.println("found a KEY : '" + keyName + "'");
+											log.debug("found a KEY : '" + keyName + "'");
 											method_key.put(method, keyName);
 										}
 									}
@@ -148,14 +151,13 @@ public class ConfigurationKeys {
 		// Print out method-keys
 		Set<String> methods = method_key.keySet();
 		for (String meth : methods) {
-			// System.out.println("method: " + meth);
+			log.debug("method: " + meth);
 			String key = method_key.get(meth);
-			// System.out.println("  key : " + key);
+			log.debug("  key : " + key);
 			if (key.equals("unknown")) {
-				System.out.println("#### Meth: " + meth + "  --- " + key);
+				log.warn("#### Meth: " + meth + "  --- " + key);
 			}
-			definedKeys.add(method_key.get(meth));
-			// System.out.println("---");
+			definedKeys.add(key);
 		}
 		return definedKeys;
 	}
@@ -170,7 +172,7 @@ public class ConfigurationKeys {
 		try {
 			template.load(new FileInputStream(templateFileName));
 		} catch (IOException e) {
-			System.out.println("Error while reading the properties template");
+			log.error("Error while reading the properties template");
 		}
 
 		for (Enumeration<Object> scan = template.keys(); scan.hasMoreElements();) {
@@ -198,7 +200,7 @@ public class ConfigurationKeys {
 						String line = str.trim();
 						int index = line.indexOf("=");
 						if (index < 0) {
-							System.out.println("strange line : " + line);
+							log.warn("strange line : " + line);
 						} else {
 							String keyName = line.substring(0, index);
 							if (keys.contains(keyName)) {
@@ -211,13 +213,13 @@ public class ConfigurationKeys {
 				}
 			}
 			in.close();
-			System.out.println("Configuration has " + lineNr + " lines of code.");
+			log.debug("Configuration has " + lineNr + " lines of code.");
 		} catch (IOException e) {
-			System.out.println("Some problem to read '" + templateFileName + "'");
+			log.error("Some problem to read '" + templateFileName + "'");
 		}
 		int count = 1;
 		for (String key : keys) {
-			System.out.println("key (" + count + "): " + key);
+			log.debug("key (" + count + "): " + key);
 			count++;
 		}
 		return duplicatedKeys;
@@ -230,91 +232,25 @@ public class ConfigurationKeys {
 		Method[] allMethods = Configuration.instance.getClass()
 			.getDeclaredMethods();
 		Set<String> methodNames = method_keys.keySet();
-		System.out.println("sizes KeySet= " + methodNames.size());
-		System.out.println("sizes methods = " + allMethods.length);
+		log.debug("sizes KeySet= " + methodNames.size());
+		log.debug("sizes methods = " + allMethods.length);
 		for (Method m : allMethods) {
-			// System.out.println("scanning for method '" + m + "'");
+			log.debug("scanning for method '" + m + "'");
 			if (methodNames.contains(m.getName())) {
-				System.out.println("method invocable : " + m.getName());
+				log.debug("method invocable : " + m.getName());
 				try {
 					Object result = m.invoke(Configuration.instance, new Object[0]);
-					System.out.println("Output = '" + result.toString() + "'");
+					log.debug("Output = '" + result.toString() + "'");
 				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error(e.getMessage());
 				}
 			}
 		}
-
-		// aux = methodName.invoke(Configuration.instance, new Object[0]);
-
 		return keys_values;
 
 	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-		String configurationPathname = System.getProperty("user.dir")
-			+ File.separator + "etc" + File.separator + "storm.properties";
-
-		System.out.println("config file: " + configurationPathname);
-		Configuration.getInstance().setConfigReader(
-			new ConfigReader(configurationPathname, 0));
-
-		ConfigurationKeys instance = new ConfigurationKeys();
-		List<String> keys = instance.getKeys();
-		int count = 1;
-		for (String key : keys) {
-
-			System.out.println(count + " " + key);
-			count++;
-		}
-		System.out.println("**** keys : " + (count - 1));
-
-		count = 1;
-		List<String> tempKeys = instance.getTemplateKeys();
-		for (String key : tempKeys) {
-
-			if (!(keys.contains(key))) {
-				System.out.println("UNKNOWN KEY in TEMPLATE (" + count + "):" + key);
-				count++;
-			}
-		}
-
-		for (String key : keys) {
-			if (!(tempKeys.contains(key))) {
-				System.out.println("Config KEY not in TEMPLATE (" + count + "):" + key);
-				count++;
-			}
-		}
-
-		for (String key : keys) {
-			if ((tempKeys.contains(key))) {
-				System.out.println("All right key (" + count + "): " + key);
-				count++;
-			}
-		}
-
-		System.out.println("### KEYS : " + (count - 1));
-
-		System.out.println("  ================================  ");
-
-		List<String> dupKeys = instance.getDuplicatedKeys();
-		for (String key : dupKeys) {
-			System.out.println("dup-key: " + key);
-		}
-
-		System.out.println(" ####################### ");
-		instance.getKeyValue();
-	}
-
 }

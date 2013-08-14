@@ -32,9 +32,12 @@ import org.slf4j.LoggerFactory;
 
 public class GUID implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7241176020077117264L;
+
 	private static final Logger log = LoggerFactory.getLogger(GUID.class);
-	// public static final long serialVersionUID =
-	// daomedge.abstractdao.VersionControl.serialVersionUID;
 
 	private byte guidValue[] = new byte[16];
 
@@ -216,21 +219,4 @@ public class GUID implements Serializable {
 
 		return buf.toString();
 	}
-
-	/**
-	 * TEST MAIN CLASS
-	 * 
-	 * @param args
-	 *          String[]
-	 */
-	public static void main(String[] args) {
-
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-		System.out.println(new GUID());
-	}
-
 }

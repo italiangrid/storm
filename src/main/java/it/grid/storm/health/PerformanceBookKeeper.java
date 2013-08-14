@@ -24,12 +24,17 @@ import java.util.ArrayList;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author zappi
  * 
  */
 public class PerformanceBookKeeper extends BookKeeper {
 
+	private static final Logger log = LoggerFactory.getLogger(PerformanceBookKeeper.class);
+	
 	public static final String KEY = "PERF";
 
 	private static long THOUSAND = 1000L;
@@ -113,15 +118,15 @@ public class PerformanceBookKeeper extends BookKeeper {
 	public ArrayList<LogEvent> getEventsGlanced(long timeToLiveGraterThan) {
 
 		ArrayList<LogEvent> eGlanced = new ArrayList<LogEvent>();
-		// System.out.println("time to live - glance: "+timeToLiveGraterThan);
+		log.debug("time to live - glance: "+timeToLiveGraterThan);
 		removeZombieEvents();
 		for (LogEvent event : timedLogBook) {
-			// System.out.println("event: "+event.getDelay(TimeUnit.MILLISECONDS));
+			log.debug("event: "+event.getDelay(TimeUnit.MILLISECONDS));
 			if ((event.getDelay(TimeUnit.MILLISECONDS)) < timeToLiveGraterThan) {
 				eGlanced.add(event);
 			}
 		}
-		// System.out.println("Nr. Events to analyze: "+eGlanced.size());
+		log.debug("Nr. Events to analyze: "+eGlanced.size());
 		return eGlanced;
 	}
 

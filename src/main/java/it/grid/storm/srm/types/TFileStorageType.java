@@ -102,7 +102,7 @@ public class TFileStorageType {
 	 * @return
 	 */
 
-	public static TFileStorageType decode(Map inputParam, String name) {
+	public static TFileStorageType decode(Map<?, ?> inputParam, String name) {
 
 		Integer fileType = (Integer) inputParam.get(name);
 		if (fileType != null)
@@ -118,7 +118,7 @@ public class TFileStorageType {
 	 * @param param
 	 * @param name
 	 */
-	public void encode(Map param, String name) {
+	public void encode(Map<String, Integer> param, String name) {
 
 		Integer value = null;
 		if (this.equals(TFileStorageType.VOLATILE))
@@ -129,26 +129,5 @@ public class TFileStorageType {
 			value = new Integer(2);
 		param.put(name, value);
 	}
-
-	/*
-	 * public static void main(String[] args) { //Testing all types
-	 * System.out.println("Testing all types...");
-	 * System.out.println("VOLATILE: "+
-	 * TFileStorageType.VOLATILE+"; getTFileStorageType from String:"
-	 * +TFileStorageType
-	 * .getTFileStorageType(TFileStorageType.VOLATILE.toString()));
-	 * System.out.println
-	 * ("DURABLE: "+TFileStorageType.DURABLE+"; getTFileStorageType from String:"
-	 * +TFileStorageType
-	 * .getTFileStorageType(TFileStorageType.DURABLE.toString()));
-	 * System.out.println
-	 * ("PERMANENT: "+TFileStorageType.PERMANENT+"; getTFileStorageType from String:"
-	 * +
-	 * TFileStorageType.getTFileStorageType(TFileStorageType.PERMANENT.toString())
-	 * ); System.out.println("EMPTY: "+TFileStorageType.EMPTY+
-	 * "; getTFileStorageType from String:"
-	 * +TFileStorageType.getTFileStorageType(TFileStorageType.EMPTY.toString()));
-	 * }
-	 */
 
 }
