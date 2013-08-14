@@ -22,12 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Platform {
-
-	private static final Logger log = LoggerFactory.getLogger(Platform.class);
 	
 	private static String OSDistribution;
 	private static String platformName;
@@ -40,15 +35,15 @@ public class Platform {
 		platformName = System.getProperty("os.name")
 			+ "-" + System.getProperty("os.arch") + "-"
 			+ System.getProperty("sun.arch.data.model");
-		log.info("Platform name: " + platformName);
+		System.out.println("Platform name: " + platformName);
 		
 		try {
 			OSDistribution = loadOSDistribution(new File(RELEASE_FILE_PATH));
 		} catch (IOException e) {
-			log.error(e.getMessage());
+			System.err.println(e.getMessage());
 			OSDistribution = DEFAULT_OS_DISTRIBUTION;
 		}
-		log.info("Platform name: " + platformName);
+		System.out.println("OS Distribution: " + OSDistribution);
 	
 	}
 	
