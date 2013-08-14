@@ -123,41 +123,6 @@ public class CopyChunkCatalog {
 		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(rt);
 		log.debug("COPY CHUNK CATALOG: retrieved data " + chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs, rt);
-		// ArrayList<CopyPersistentChunkData> list = new
-		// ArrayList<CopyPersistentChunkData>();
-		// if(chunkDataTOs.isEmpty())
-		// {
-		// log.warn("COPY CHUNK CATALOG! No chunks found in persistence for specified request: "
-		// + rt);
-		// }
-		// else
-		// {
-		// CopyPersistentChunkData chunk;
-		// for(CopyChunkDataTO chunkTO : chunkDataTOs)
-		// {
-		// chunk = makeOne(chunkTO, rt);
-		// if(chunk != null)
-		// {
-		// list.add(chunk);
-		// // TODO MICHELE SURL STORE
-		// // SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-		// chunk.getStatus().getStatusCode());
-		// if(!this.isComplete(chunkTO))
-		// {
-		// try
-		// {
-		// dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-		// } catch(InvalidReducedCopyChunkDataAttributesException e)
-		// {
-		// log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-		// + e);
-		// }
-		// }
-		// }
-		// }
-		// }
-		// log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
-		// return list;
 	}
 
 	private Collection<CopyPersistentChunkData> buildChunkDataList(
@@ -169,9 +134,7 @@ public class CopyChunkCatalog {
 			chunk = makeOne(chunkTO, rt);
 			if (chunk != null) {
 				list.add(chunk);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-				// chunk.getStatus().getStatusCode());
+				
 				if (!this.isComplete(chunkTO)) {
 					try {
 						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
@@ -196,9 +159,7 @@ public class CopyChunkCatalog {
 			chunk = makeOne(chunkTO);
 			if (chunk != null) {
 				list.add(chunk);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-				// chunk.getStatus().getStatusCode());
+				
 				if (!this.isComplete(chunkTO)) {
 					try {
 						dao.updateIncomplete(this.completeTO(chunkTO, chunk));

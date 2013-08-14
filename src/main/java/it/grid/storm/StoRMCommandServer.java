@@ -112,23 +112,20 @@ public class StoRMCommandServer {
 	private static Logger log = LoggerFactory.getLogger(StoRMCommandServer.class);
 	private boolean shutdownInProgress = false;
 
+	/**
+	 * Default constructor.
+	 * 
+	 * @param storm the storm instance. that should be initialized before anything
+	 * else, as is where configuration is loaded.
+	 * 
+	 */
 	public StoRMCommandServer(StoRM storm) {
 
-		// Warning! StoRM must be initialized _before_ anything else! This is
-		// because
-		// of the configuration file that sets the properties that will subsequently
-		// be used by all parts of StoRM, including the CommandServer itself!!!
-		// likewise for logging!
-		//
-		// This is not a smart idea... should refactor properties for command
-		// server to a different file/mechanism!!!
-		//
-		// Initialize handle to StoRM
-		this.storm = storm;
-		// set Listening port of StoRMCommandServer!
+		this.storm = storm;		
+		
 		this.listeningPort = Configuration.getInstance()
 			.getCommandServerBindingPort();
-		// Start multithreaded listening server socket!
+		
 		startCommandServer();
 	}
 
@@ -146,8 +143,11 @@ public class StoRMCommandServer {
 			server = new ServerSocket(listeningPort,0,loopbackAddress);
 			
 		} catch (IOException e) {
-
-			log.error("UNEXPECTED ERROR! Could not bind to listeningPort! " + e);
+			
+			log.error("Could not bind to port {}: {}",
+				new Object[]{listeningPort,e.getMessage()},
+				e);
+			
 			System.exit(1);
 		}
 
@@ -165,8 +165,8 @@ public class StoRMCommandServer {
 				} catch (IOException e) {
 	
 					log
-						.error("UNEXPECTED ERROR! Something went wrong with server.accept()! "
-							+ e);
+						.error("UNEXPECTED ERROR! Something went wrong " +
+								"with server.accept(): {}", e.getMessage(), e);
 					System.exit(1);
 				}
 			}
@@ -205,7 +205,7 @@ public class StoRMCommandServer {
 			} catch (IOException e) {
 				log
 					.error("UNEXPECTED ERROR! Unable to get a reader for the client socket. IOException : "
-						+ e.getMessage());
+						+ e.getMessage(), e);
 				return;
 			}
 			BufferedWriter out;
@@ -215,7 +215,7 @@ public class StoRMCommandServer {
 			} catch (IOException e) {
 				log
 					.error("UNEXPECTED ERROR! Unable to get a writer for the client socket. IOException : "
-						+ e.getMessage());
+						+ e.getMessage(), e);
 				return;
 			}
 			String response = REQUEST_FAILURE_RESPONSE;
@@ -226,7 +226,7 @@ public class StoRMCommandServer {
 			} catch (IOException e) {
 				log
 					.error("UNEXPECTED ERROR! Unable to read from the client socket. IOException : "
-						+ e.getMessage());
+						+ e.getMessage(),e);
 				return;
 			}
 			if (inputLine != null) {
@@ -334,7 +334,7 @@ public class StoRMCommandServer {
 				}
 			} catch (Exception e) {
 				log.error("Unable to start the xmlrpc server. Exception: "
-					+ e.getMessage());
+					+ e.getMessage(),e);
 				stopServices();
 				return false;
 			}
@@ -344,7 +344,7 @@ public class StoRMCommandServer {
 				}
 			} catch (Exception e) {
 				log.error("Unable to start the Rest server. Exception: "
-					+ e.getMessage());
+					+ e.getMessage(),e);
 				stopServices();
 				return false;
 			}
@@ -386,7 +386,7 @@ public class StoRMCommandServer {
 				} catch (IOException e) {
 					log
 						.error("UNEXPECTED ERROR! Unable to write on the client socket. IOException : "
-							+ e.getMessage());
+							+ e.getMessage(),e);
 				}
 				try {
 					out.close();
@@ -394,7 +394,7 @@ public class StoRMCommandServer {
 				} catch (IOException e) {
 					log
 						.error("UNEXPECTED ERROR! Unable to close client socket streams. IOException : "
-							+ e.getMessage());
+							+ e.getMessage(),e);
 				}
 			} finally {
 				try {
@@ -402,7 +402,7 @@ public class StoRMCommandServer {
 				} catch (IOException e) {
 					log
 						.error("UNEXPECTED ERROR! Unable to close client socket. IOException : "
-							+ e.getMessage());
+							+ e.getMessage(),e);
 				}
 			}
 		}
@@ -492,31 +492,40 @@ public class StoRMCommandServer {
 	 */
 	public static void main(String[] args) {
 
+		Thread.setDefaultUncaughtExceptionHandler(
+			new StoRMDefaultUncaughtExceptionHandler());
+		
 		String configurationPathname = "";
 		int refresh = 0;
 
 		if (args.length == 0) {
-			// Invoking without any command line parameter!
+			
 			log.info("StoRMCommandServer invoked without any command line parameter.");
+		
 		} else if (args.length == 2) {
-			// Invoked with two command line parameters as expected!
+		
 			configurationPathname = args[0];
+			
 			log.info("StoRMCommandServer invoked with two parameters.");
 			log.info("Configuration file: " + configurationPathname);
+		
 			try {
+			
 				refresh = Integer.parseInt(args[1]);
 				log.info("Configuration file refresh rate: " + refresh + " seconds");
+			
 			} catch (NumberFormatException e) {
-				// the refresh rate was not an int!
+				
 				log.error("Configuration file refresh rate: NOT an integer! Disabling refresh by default!");
 			}
 		} else {
-			// Invoked with either one or more than two parameters!
+			
 			log.warn("StoRMCommandServer invoked with an invalid number of parameters. ");
 			log.warn("Ignoring all: continuing as though as none were present.");
 		}
 
 		log.info("Now booting StoRM...");
+		
 		new StoRMCommandServer(new StoRM(configurationPathname, refresh));
 	}
 }

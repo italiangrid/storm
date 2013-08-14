@@ -51,37 +51,6 @@ public class AuthzDirector {
 	private static PathAuthzInterface pathAuthz = null;
 
 	/**
-	 * private AuthzDirector() { super(); }
-	 **/
-	/**
-	 * private static void initializeDirector(boolean testingMode) throws
-	 * AuthzDBReaderException { log.info("AUTHZ DIRECTOR : Inizializating ...");
-	 * Configuration config = Configuration.getInstance();
-	 * 
-	 * if (testingMode) { log.info(" ####################### ");
-	 * log.info(" ####  TESTING MODE #### ");
-	 * log.info(" ####################### "); configurationPATH =
-	 * System.getProperty("user.dir") + File.separator + "etc";
-	 * stormPropertiesFileName = configurationPATH + File.separator +
-	 * "storm_test.properties"; config.setConfigReader(new
-	 * ConfigReader(stormPropertiesFileName, refreshInSeconds));
-	 * 
-	 * authzDBPath = config.getAuthzDBPath(); refreshInSeconds =
-	 * config.getRefreshRateAuthzDBfilesInSeconds(); // Default = "5 seconds"
-	 * 
-	 * } else { log.info(" +++++++++++++++++++++++ ");
-	 * log.info("    Production Mode      ");
-	 * log.info(" +++++++++++++++++++++++ "); configurationPATH =
-	 * config.getNamespaceConfigPath(); // Default = "./etc/" //
-	 * configurationFileName = "storm.properties"; //Default name authzDBPath =
-	 * config.getAuthzDBPath(); refreshInSeconds =
-	 * config.getRefreshRateAuthzDBfilesInSeconds(); // Default = "5 seconds"
-	 * 
-	 * }
-	 * 
-	 * log.debug("[AuthZ Director] Initialization done!"); initialized = true; }
-	 **/
-	/**
 	 * Scan the Namespace.xml to retrieve the list of file AuthZDB to digest
 	 */
 	private static Map<TSpaceToken, SpaceAuthzInterface> buildSpaceAuthzsMAP() {
@@ -117,7 +86,7 @@ public class AuthzDirector {
 			}
 		} catch (NamespaceException e) {
 			log.warn("Unable to initialize AUTHZ DB!" + e.getMessage());
-			log.warn(".. (Workaround): AuthzDirector INITIALIZATED evenly..");
+			log.warn(".. (Workaround): AuthzDirector INITIALIZED evenly..");
 		}
 
 		return spaceAuthzMap;

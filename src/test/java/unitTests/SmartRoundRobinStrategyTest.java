@@ -113,8 +113,6 @@ public class SmartRoundRobinStrategyTest
                         o.wait(1000);
                     } catch(InterruptedException e1)
                     {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
                     }
                 }
             } catch(BalancingStrategyException e)

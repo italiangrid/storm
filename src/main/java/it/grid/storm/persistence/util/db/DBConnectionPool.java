@@ -52,7 +52,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 	public static DBConnectionPool getPoolInstance() {
 
 		if (handle == -1) {
-			return null; // not initializated.
+			return null; 
 		} else {
 			return instance;
 		}
@@ -86,7 +86,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 
 		Connection result = null;
 		if (handle == -1) {
-			throw new PersistenceException("Connection Pool is not initializated!");
+			throw new PersistenceException("Connection Pool is not initialized!");
 		}
 		try {
 			result = sharedDatasource.getConnection();
@@ -136,7 +136,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 
 		String result = "";
 		if (handle == -1) {
-			throw new PersistenceException("Connection Pool is not initializated!");
+			throw new PersistenceException("Connection Pool is not initialized!");
 		}
 		if (sharedDatasource.getValidationQuery() != null) {
 			result += "Validation query = " + sharedDatasource.getValidationQuery()

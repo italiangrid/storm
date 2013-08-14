@@ -1315,31 +1315,6 @@ public class VirtualFS implements VirtualFSInterface {
 		return space;
 	}
 
-	// public StorageSpaceData getSpaceByToken(TSpaceToken token) throws
-	// NamespaceException {
-	//
-	// StorageSpaceData spaceData = null;
-	// try
-	// {
-	// spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
-	// } catch(TransferObjectDecodingException e)
-	// {
-	// log.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-	// + e.getMessage());
-	// throw new
-	// NamespaceException("Error retrieving Storage Area information from Token. TransferObjectDecodingException : "
-	// + e.getMessage());
-	// } catch(DataAccessException e)
-	// {
-	// log.error("Unable to build get StorageSpaceTO. DataAccessException: " +
-	// e.getMessage());
-	// throw new
-	// NamespaceException("Error retrieving Storage Area information from Token. DataAccessException : "
-	// + e.getMessage());
-	// }
-	// return spaceData;
-	// }
-
 	public StorageSpaceData getSpaceByAlias(String desc)
 		throws NamespaceException {
 

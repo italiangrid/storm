@@ -221,28 +221,15 @@ public class ReservedSpaceCatalog {
 	public void updateStorageSpaceFreeSpace(StorageSpaceData ssd)
 		throws DataAccessException {
 
-		// try
-		// {
+	
 		ssDAO = daoFactory.getStorageSpaceDAO();
 		ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
-		// } catch(DataAccessException e)
-		// {
-		// ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
-		// e);
-		// return;
-		// }
 		StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
 		log.debug("Storage Space TO Created");
 		ssTO.setUpdateTime(new Date());
-		// try
-		// {
 		ssDAO.updateStorageSpaceFreeSpace(ssTO);
 		ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
-		// } catch(DataAccessException e)
-		// {
-		// ReservedSpaceCatalog.log.error("Error while inserting new row in StorageSpace",
-		// e);
-		// }
+	
 	}
 
 	/**

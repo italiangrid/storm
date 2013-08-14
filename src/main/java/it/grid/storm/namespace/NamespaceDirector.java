@@ -67,7 +67,7 @@ public class NamespaceDirector {
 
 	public static void initializeDirector(boolean verboseMode, boolean testingMode) {
 
-		log.info("NAMESPACE : Inizializating ...");
+		log.info("NAMESPACE : Initializing ...");
 		Configuration config = Configuration.getInstance();
 
 		if (testingMode) {

@@ -178,7 +178,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			} catch (FSException e) {
 				log.error("Unable to determine if file "
 					+ bupLocalFile.getAbsolutePath() + " is on disk . FSException : "
-					+ e.getMessage());
+					+ e.getMessage(),e);
 				requestData
 					.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
 			}
@@ -210,15 +210,6 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
 			return;
 		}
-		// if
-		// (PtPChunkCatalog.getInstance().isSRM_SPACE_AVAILABLE(requestData.getSURL()))
-		// {
-		//
-		// requestData.changeStatusSRM_FILE_BUSY("Requested file is still in SRM_SPACE_AVAILABLE state!");
-		// failure = true;
-		// log.debug("ATTENTION in BoLChunk! BoLChunk received request for SURL that is still in SRM_SPACE_AVAILABLE state!");
-		//
-		// }
 		else {
 			StoRI fileStoRI = null;
 			try {

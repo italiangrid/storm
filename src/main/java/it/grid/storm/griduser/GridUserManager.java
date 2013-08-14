@@ -62,7 +62,7 @@ public class GridUserManager {
 	static GridUserFactory userFactory = null;
 
 	static {
-		log.debug("Inizializating Grid User Director...");
+		log.debug("Initializing Grid User Director...");
 		userFactory = initializeFactory();
 	}
 

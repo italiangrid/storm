@@ -173,7 +173,7 @@ public class UsedSpaceFile {
 
 		LinkedList<SaUsedSize> saUsedSizeList = new LinkedList<SaUsedSize>();
 		log.debug("Initializing '" + saNames.size()
-			+ "' not initializated storage areas");
+			+ "' not initialized storage areas");
 		/* Log initialized storage areas */
 
 		if (iniFile != null) {

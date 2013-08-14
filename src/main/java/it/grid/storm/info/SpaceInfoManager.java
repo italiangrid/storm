@@ -347,7 +347,7 @@ public class SpaceInfoManager {
 					.error("Unable to submit DU test, StorageSpaceData returns null values: SpaceToken="
 						+ sT + " , SpaceFileNameString=" + absPath);
 			} else {
-				// SA with GPFS should be already initializated
+				
 				try {
 					bDUTasks.addTask(sT, absPath);
 					LOG.debug("Added " + absPath + " to the DU-Task Queue. (size:"
@@ -620,7 +620,7 @@ public class SpaceInfoManager {
 			for (VirtualFSInterface vfs : NamespaceDirector.getNamespace()
 				.getAllDefinedVFS()) {
 				if (!(saAlias.contains(vfs.getSpaceTokenDescription()))) {
-					LOG.debug("SA '" + vfs.getAliasName() + "' is already initializated");
+					LOG.debug("SA '" + vfs.getAliasName() + "' is already initialized");
 				}
 			}
 		} catch (NamespaceException e) {

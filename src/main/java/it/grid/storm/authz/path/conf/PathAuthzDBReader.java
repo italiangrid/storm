@@ -53,7 +53,7 @@ public class PathAuthzDBReader {
 
 	public PathAuthzDBReader(String filename) throws Exception {
 
-		log.info("Path Authorization : Inizializating ...");
+		log.info("Path Authorization : Initializing...");
 		if (!(existsAuthzDBFile(filename))) {
 			String configurationPATH = Configuration.getInstance()
 				.namespaceConfigPath();

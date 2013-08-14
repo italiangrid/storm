@@ -55,9 +55,7 @@ public class MySqlDAOFactory implements DAOFactory {
      *
      */
 	private MySqlDAOFactory() {
-
-		super();
-		MySqlDAOFactory.log.info("Choose " + MySqlDAOFactory.factoryName);
+		MySqlDAOFactory.log.info("DAO factory: " + MySqlDAOFactory.factoryName);
 	}
 
 	public static MySqlDAOFactory getInstance() {

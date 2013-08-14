@@ -89,10 +89,10 @@ public class Bootstrap {
 
 	public static void initializeUsedSpace() {
 
-		int numberOfSpaceInitializated = SpaceInfoManager.getInstance()
+		int numberOfSpaceInitialized = SpaceInfoManager.getInstance()
 			.initSpaceFromINIFile();
 		
-		log.info("Initializated '" + numberOfSpaceInitializated
+		log.info("Initialized '" + numberOfSpaceInitialized
 			+ "' SA from 'used-space.ini'");
 		SpaceInfoManager.getInstance().updateSpaceUsed();
 		

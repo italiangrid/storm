@@ -25,7 +25,6 @@ import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.config.WelcomeMessage;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.rest.RestService;
@@ -57,9 +56,6 @@ public class StoRM {
 
 	private XMLRPCHttpServer xmlrpcServer = null;
 
-	// Text that displays general info about StoRM project
-	private final String welcome = WelcomeMessage.getWelcomeMessage();
-
 	private static final Logger log = LoggerFactory.getLogger(StoRM.class);
 
 	public static final String DEFAULT_CONFIGURATION_FILE_PATH = 
@@ -87,8 +83,6 @@ public class StoRM {
 		Configuration.getInstance().setConfigReader(
 			new ConfigReader(configurationPathname, refresh));
 		
-		log.info("Configuration content:\n{}", 
-			Configuration.getInstance().toString());
 	}
 	
 	
@@ -205,9 +199,6 @@ public class StoRM {
 		// Start space catalog
 		spaceCatalog = new ReservedSpaceCatalog();
 		
-	  // Print welcome message
-	  log.info(welcome);
-
 		loadNamespaceConfiguration();
 
 		HealthDirector.initializeDirector(false);

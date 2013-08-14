@@ -374,21 +374,7 @@ public final class PtGFeeder implements Delegable {
 				+ "request to expand empty directory.");
 			gsm.successfulChunk(chunkData);
 		}
-		// TODO MICHELE here if the recursion on directory is supported uncomment
-		// the following
-		// catch(InvalidDescendantsTDirOptionRequestException e)
-		// {
-		// // The expanded directory was empty
-		// chunkData
-		// .changeStatusSRM_FAILURE("BEWARE! srmPrepareToGet with dirOption set:"
-		// +
-		// " it was impossible to expand the directory with the provided directory options!");
-		// PtGChunkCatalog.getInstance().update(chunkData);
-		//
-		// log.debug("ATTENTION in PtGFeeder! PtGFeeder received request"
-		// + " to expand a directory with wrong TDirOptions.");
-		// gsm.failedChunk(chunkData);
-		// }
+		
 		catch (InvalidDescendantsPathRequestException e) {
 			// Attempting to expand non existent directory!
 			chunkData

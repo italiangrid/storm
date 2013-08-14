@@ -314,15 +314,7 @@ public final class BoLFeeder implements Delegable {
 					}
 				}
 				log.debug("BoLFeeder - expansion completed."); // info
-				/*
-				 * A request on a Directory is considered done whether there is somethig
-				 * to expand or not!
-				 */
-				/*
-				 * auxChunkData.changeStatusSRM_FILE_PINNED(
-				 * "srmBringOnLine with dirOption set: request successfully expanded!"
-				 * );
-				 */
+				
 				chunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption"
 					+ " set: request successfully expanded!");
 
@@ -341,15 +333,7 @@ public final class BoLFeeder implements Delegable {
 			log.error("Chunk: " + chunkData);
 			gsm.failedChunk(chunkData);
 		} catch (InvalidDescendantsEmptyRequestException e) {
-			/*
-			 * The expanded directory was empty A request on a Directory is considered
-			 * done whether there is somethig to expand or not!
-			 */
-			/*
-			 * auxChunkData.changeStatusSRM_FILE_PINNED(
-			 * "BEWARE! srmBringOnLine with dirOption set: it referred to a directory that was empty!"
-			 * );
-			 */
+		
 			chunkData
 				.changeStatusSRM_SUCCESS("BEWARE! srmBringOnLine with dirOption set:"
 					+ " it referred to a directory that was empty!");
@@ -359,19 +343,7 @@ public final class BoLFeeder implements Delegable {
 			log.debug("ATTENTION in BoLFeeder! BoLFeeder received request "
 				+ "to expand empty directory.");
 			gsm.successfulChunk(chunkData);
-			// } catch(InvalidDescendantsTDirOptionRequestException e)
-			// {
-			// /* The expanded directory was empty */
-			// chunkData
-			// .changeStatusSRM_FAILURE("BEWARE! srmBringOnLine with dirOption set:"
-			// +
-			// " it was impossible to expand the directory with the provided directory options!");
-			//
-			// BoLChunkCatalog.getInstance().update(chunkData);
-			//
-			// log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to"
-			// + " expand a directory with wrong TDirOptions.");
-			// gsm.failedChunk(chunkData);
+		
 		} catch (InvalidDescendantsPathRequestException e) {
 			/* Attempting to expand non existent directory! */
 			chunkData

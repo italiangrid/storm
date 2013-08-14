@@ -213,41 +213,6 @@ public class PtPChunkCatalog {
 		Collection<PtPChunkDataTO> chunkTOs = dao.find(rt);
 		log.debug("PtPChunkCatalog: retrieved data " + chunkTOs);
 		return buildChunkDataList(chunkTOs);
-		// ArrayList<PtPPersistentChunkData> list = new
-		// ArrayList<PtPPersistentChunkData>();
-		// if(chunkTOs.isEmpty())
-		// {
-		// log.warn("PtP CHUNK CATALOG! No chunks found in persistence for specified request: "
-		// + rt);
-		// }
-		// else
-		// {
-		// PtPPersistentChunkData chunk;
-		// for(PtPChunkDataTO chunkTO : chunkTOs)
-		// {
-		// chunk = makeOne(chunkTO, rt);
-		// if(chunk != null)
-		// {
-		// list.add(chunk);
-		// // TODO MICHELE SURL STORE
-		// // SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-		// chunk.getStatus().getStatusCode());
-		// if(!this.isComplete(chunkTO))
-		// {
-		// try
-		// {
-		// dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-		// } catch(InvalidReducedPtPChunkDataAttributesException e)
-		// {
-		// log.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-		// + e);
-		// }
-		// }
-		// }
-		// }
-		// }
-		// log.debug("PtPChunkCatalog: returning " + list + "\n\n");
-		// return list;
 	}
 
 	/**

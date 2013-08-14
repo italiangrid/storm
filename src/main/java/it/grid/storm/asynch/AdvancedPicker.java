@@ -222,7 +222,8 @@ public class AdvancedPicker {
 						
 						} catch (InvalidTReturnStatusAttributeException ex) {
 							
-							log.error("ADVANCED PICKER! Unable to change global status in DB: " + ex);
+							log.error("ADVANCED PICKER! Unable to change global status in DB: " + ex
+								, ex);
 						
 						}
 				
@@ -231,7 +232,8 @@ public class AdvancedPicker {
 				} catch (InvalidPtGFeederAttributesException e) {
 					
 					log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created because of invalid attributes:\n"
-							+ e);
+							+ e,e);
+					
 					log.error("PtG Request is being dropped: " + rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
@@ -240,7 +242,8 @@ public class AdvancedPicker {
 				} catch (InvalidPtPFeederAttributesException e) {
 					
 					log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created" +
-							" because of invalid attributes:\n" + e);
+							" because of invalid attributes:\n" + e,e);
+					
 					log.error("PtP Request is being dropped: " + rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
@@ -248,7 +251,8 @@ public class AdvancedPicker {
 				
 				} catch (InvalidCopyFeederAttributesException e) {
 					log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created" +
-							" because of invalid attributes:\n" + e);
+							" because of invalid attributes:\n" + e, e);
+					
 					log.error("Copy Request is being dropped: " + rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
@@ -257,7 +261,7 @@ public class AdvancedPicker {
 				} catch (InvalidBoLFeederAttributesException e) {
 					
 					log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created " +
-							"because of invalid attributes:\n" + e);
+							"because of invalid attributes:\n" + e, e);
 					log.error("BoL Request is being dropped: " + rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
@@ -266,7 +270,7 @@ public class AdvancedPicker {
 				} catch (SchedulerException e) {
 					
 					log.error("ADVANCED PICKER ERROR! The request could not be scheduled" +
-							" because of scheduler errors!\n" + e);
+							" because of scheduler errors!\n" + e, e);
 					log.error("ADVANCED PICKER ERROR! Request " + rsd.requestToken()
 						+ " of type " + rsd.requestType() + " dropped.");
 					

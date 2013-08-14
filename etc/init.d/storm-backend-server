@@ -200,11 +200,6 @@ done
 # log4j looks for its config file in the classpath...
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
-######################
-## Retrieve NATIVE_PATH by PLATFORM
-######################
-PLATFORM=`${JAVA} -cp $STORM_BE_JAR -Xmx32m it.grid.storm.Platform | sed -e "s/ /_/g"`
-
 setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/"
 export LD_LIBRARY_PATH="/usr/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
@@ -382,30 +377,7 @@ bootstrap () {
         fi
     fi
     export PATH=$GPFS_PATH:$JAVA_HOME/bin:$PATH
-#    run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
-#        java \
-#        $STORM_BE_JVM_OPTS \
-#        -cp '$classpath' \
-#        $STORM_DEBUG_OPTION \
-#        $STORM_JMX_OPTION \
-#        -Djava.library.path='$STORM_BE_LIBDIR' \
-#        -Djna.library.path='$LD_LIBRARY_PATH:$STORM_BE_LIBDIR' \
-#        -Daxis.client.connect.timeout=30000 \
-#        -Djava.protocol.handler.pkgs=org.globus.net.protocol \
-#        -Dnetworkaddress.cache.negative.ttl=0 \
-#        -Dnetworkaddress.cache.ttl=0 \
-#        -Dstorm.home='$STORM_HOME' \
-#        -Dstorm.log.dir='$STORM_BE_LOGDIR' \
-#        -Dstorm.user='$STORM_BE_USER' \
-#        -Dsun.net.client.defaultConnectTimeout=30000 \
-#        -Dsun.net.client.defaultReadTimeout=30000 \
-#        $STORM_SSL_OPTIONS \
-#        -Dwrapper.filesystem.acl.temp='$STORM_BE_TMPDIR' \
-#        it.grid.storm.StoRMCommandServer \
-#        '$STORM_BE_CONFIG_FILE' '$STORM_BE_CONFIG_REFRESH' \
-#        1>$STORM_BE_LOGDIR/storm-backend.stdout \
-#        2>$STORM_BE_LOGDIR/storm-backend.stderr "
-
+    
 	run su "$STORM_BE_USER" -m -s /bin/sh -c "umask $UMASK ; 
         java \
         $STORM_BE_JVM_OPTS \

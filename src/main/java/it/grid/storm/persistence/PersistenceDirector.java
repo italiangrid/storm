@@ -36,7 +36,7 @@ public class PersistenceDirector {
 	private static DataSourceConnectionFactory connFactory;
 
 	static {
-		log.debug("Inizializating Persistence Director...");
+		log.debug("Initializing Persistence Director...");
 		dbMan = initializeDataBase();
 		daoFactory = initializeFactory();
 		connFactory = connectToDateSource();
