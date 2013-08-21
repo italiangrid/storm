@@ -525,7 +525,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
 	private boolean setParentsAcl(StoRI fileStoRI, LocalUser localUser) {
 
-		log.debug("SrmMkdir: Adding parent user ACL for directory : '"
+		log.debug("Adding parent user ACL for directory : '"
 			+ fileStoRI.getAbsolutePath() + "' parents");
 		for (StoRI parentStoRI : fileStoRI.getParents()) {
 			try {
@@ -611,7 +611,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 	private boolean setJiTAcl(StoRI fileStori, LocalUser localUser,
 		FilesystemPermission permission) throws Exception {
 
-		log.debug("SrmMkdir: Adding JiT ACL " + permission + " to user "
+		log.debug("Adding JiT ACL " + permission + " to user "
 			+ localUser + " for directory : '" + fileStori.getAbsolutePath() + "'");
 		try {
 			AclManagerFSAndHTTPS.getInstance().grantUserPermission(
@@ -650,7 +650,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 	private boolean setAoTAcl(StoRI fileStori, LocalUser localUser,
 		FilesystemPermission permission) throws Exception {
 
-		log.debug("SrmMkdir: Adding AoT ACL " + permission + " to user "
+		log.debug("Adding AoT ACL " + permission + " to user "
 			+ localUser + " for directory : '" + fileStori.getAbsolutePath() + "'");
 		try {
 			AclManagerFSAndHTTPS.getInstance().grantGroupPermission(
@@ -686,7 +686,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
 	private void setHttpsServiceParentAcl(StoRI fileStoRI) {
 
-		log.debug("SrmMkdir: Adding parent https ACL for directory : '"
+		log.debug("Adding parent https ACL for directory : '"
 			+ fileStoRI.getAbsolutePath() + "' parents");
 		for (StoRI parentStoRI : fileStoRI.getParents()) {
 			setHttpsServiceAcl(parentStoRI.getLocalFile(),
@@ -697,7 +697,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 	private void setHttpsServiceAcl(LocalFile file,
 		FilesystemPermission permission) {
 
-		log.debug("SrmMkdir: Adding https ACL " + permission + "for directory : '"
+		log.debug("Adding https ACL " + permission + "for directory : '"
 			+ file + "'");
 		try {
 			AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file,
