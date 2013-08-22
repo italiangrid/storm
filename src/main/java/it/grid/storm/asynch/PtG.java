@@ -336,8 +336,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 							/* set group permission for tape quota management */
 							fileStoRI.setGroupTapeRead();
 							try {
-								requestData.setFileSize(TSizeInBytes.make(fileStoRI
-									.getLocalFile().length(), SizeUnit.BYTES));
+								TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI
+									.getLocalFile().length(), SizeUnit.BYTES);
+								
+								requestData.setFileSize(fileSize);
+								log.debug("File size: {}", fileSize);
+								
 							} catch (InvalidTSizeAttributesException e) {
 								requestData
 									.changeStatusSRM_FAILURE("Unable to determine file size");
@@ -431,6 +435,24 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 								return;
 							}
 							if (canRead) {
+								
+								try {
+									TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI
+										.getLocalFile().length(), SizeUnit.BYTES);
+									
+									requestData.setFileSize(fileSize);
+									log.debug("File size: {}", fileSize);
+									
+								} catch (InvalidTSizeAttributesException e) {
+									requestData
+										.changeStatusSRM_FAILURE("Unable to determine file size");
+									failure = true;
+									log
+										.error("ERROR in PtGChunk! error in file size computation! InvalidTSizeAttributesException: "
+											+ e.getMessage());
+									return;
+								}
+								
 								requestData.setTransferURL(turl);
 								requestData
 									.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");
