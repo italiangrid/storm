@@ -4,7 +4,7 @@ markdown: redcarpet
 redcarpet:
   extensions: [ "tables" ]
 
-baseurl: /teststormghpages
+baseurl: /storm
 
 issue_base_url: "https://issues.infn.it/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
