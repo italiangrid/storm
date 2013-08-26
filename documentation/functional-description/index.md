@@ -115,7 +115,7 @@ possible, as you can see from Fig.3.
 ### StoRM Fron-End <a name="stormfrontend">&nbsp;</a>
 
 The Front-End component exposes the SRM web service interface, manages user authentication and stores the data 
-of the SRM requests into the database. It’s mainly written in C/C++. It relies on the GSOAP framework to expose 
+of the SRM requests into the database. It is mainly written in C/C++. It relies on the GSOAP framework to expose 
 the SRM interface and it uses the CGSI-GSOAP plugin to manage secure connection with clients.
 
 #### GSI Authentication <a name="gsiauth">&nbsp;</a>
