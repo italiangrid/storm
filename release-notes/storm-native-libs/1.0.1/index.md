@@ -1,19 +1,33 @@
 ---
-layout: release_note_component
-title: "StoRM native libs v.1.0.2 release notes"
+layout: default
+title: "StoRM native libs v.1.0.1 release notes"
 release_date: "03.06.2013"
-release_description: "This was the first update for StoRM in EMI-3."
-release_title: "StoRM v.1.11.1"
-release_version: "StoRM-v1.11.1"
-component:
-      name: "StoRM native libs"
-      package: "storm-native-libs"
-      version: "1.0.1"
-      rfcs:
-        - id: STOR-148
-          type: bug
-          title: StoRM now leverages quota limits information gathered from the underlying GPFS filesystem to compute a storage area size
-        - id: STOR-10
-          type: bug
-          title: StoRM now gets quota information directly from GPFS filesystem
+rfcs:
+    - id: STOR-148
+      title: Change GPFS Quota Job to leverage native quota info call
+    - id: STOR-10
+      title: StoRM should get quota information directly from GPFS filesystem
 ---
+
+## StoRM native-libs v. 1.0.1
+
+Released on **{{ page.release_date }}**
+
+### Description
+
+This release provides several bug fixes.
+
+### Bug fixes
+
+{% include list-rfcs.liquid %}
+
+### Installation and configuration
+
+You can find information about upgrade, clean installation and configuration of StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+
+### Known issues
+
+None at the moment
+
+[storm-documentation]: {{site.baseurl}}/documentation.html
+[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1

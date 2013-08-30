@@ -10,8 +10,8 @@ issue_base_url: "https://issues.infn.it/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
 repo_base_url: "https://github.com/italiangrid"
 
-versions:
-    sysadmin_guide: 1.11.2
+sysadmin_guide_version: 1.11.2
+functional_description_version: 1.11.2
 
 storm_components:
     - name: StoRM Backend
@@ -22,7 +22,7 @@ storm_components:
       visibility: show
     - name: StoRM Frontend
       package: storm-frontend-server
-      latest: 1.8.2
+      latest: 1.8.3
       new: true
       repo: StoRM
       visibility: show

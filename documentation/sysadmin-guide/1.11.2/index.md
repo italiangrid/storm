@@ -4,11 +4,12 @@ title: StoRM Storage Resource Manager - System Administration Guide
 version: 1.11.2
 ---
 
-# System Administration Guide
+# StoRM System Administration Guide
 
 version: {{ page.version }}
 
-* [Introduction](#introduction)
+#### Table of contents
+
 * [Installation Prerequisites](#installprereq)
   * [General EMI 3 installation instructions](#emi3instructions)
   * [System users](#systemusers)
@@ -32,33 +33,6 @@ version: {{ page.version }}
   * [GridHTTPs Advanced Configuration](#ghttp_advconf)
   * [StoRM EMIR Configuration](#emir_advconf)
 * [Appendix A](#AppendixA)
-
-## Introduction <a name="introduction">&nbsp;</a>
-
-StoRM has a multi-layer architecture (Fig.1) characterized by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
-
-{% assign image_src="storm_architecture.png" %}
-{% assign image_width="200px" %}
-{% include documentation/image.html %}
-{% assign label_title="Fig. 1" %}
-{% assign label_description="Simple StoRM Service Architecture schema<br/>with one BackEnd and one FrontEnd." %}
-{% include documentation/label.html %}
-
-The service is characterized by several components, some of which are mandatory, while others are optional:
-
-- **mandatory components**: *FrontEnd* (FE), *BackEnd* (BE), Dynamic Info Provider (DIP);
-
-- **optional components**: *GridFTP*, *GridHTTPs*, *Client*.
-
-A modular architecture decouples the StoRM logic from the different file system supported, and a set of plug-in mechanisms allows an easy integration of new file systems. With this approach data centre is able to choose the preferred underlying storage system maintaining the same SRM service. To more details look at the Functional Description Guide.
-The modular architecture of StoRM permits that service can be deployed on a multi-node scenario where its components are installed and configured on different hosts. Pools of FE, GridFTP and GridHTTPs are possible, as you can see from Fig.2.
-
-{% assign image_src="storm_distributed.png" %}
-{% assign image_width="100%" %}
-{% include documentation/image.html %}
-{% assign label_title="Fig. 2" %}
-{% assign label_description="Example of distributed StoRM Service Architecture<br/>with one BackEnd, different pools of FrontEnds, GridHTTPs and GridFTPs." %}
-{% include documentation/label.html %}
 
 ## Installation Prerequisites <a name="installprereq">&nbsp;</a>
 
@@ -1544,12 +1518,11 @@ GridHTTPs works with SURLs so it needs to know a valid SRM endpoint:
 |srm.endpoint			|StoRM SRM EndPoint.<br/>Default value: **$STORM\_BACKEND\_HOSTNAME:8444**
 
 <br/>
-GridHTTPs manage file transfers and file creation. So it computes checksum during transfers. This capability can be disabled. Checksum type is fixed to *adler32* and other values are currently not supported.
+GridHTTPs manage file transfers and file creation. So it computes checksum during transfers. The computed checksum type is *adler32*. This capability can be disabled.
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|compute-checksum		|If compute-checksum is true, for every file created, for the *checksum-type* specified, a valid *checksum-value* is computed. Available values: true, false.<br/>Default value: **true**
-|checksum-type			|*Checksum-type* specify the kind of algorithm has to be used to compute checksum, if compute-checksum is true. **Available values: *adler32***.<br/>Default value: *adler32*
+|compute-checksum		|If compute-checksum is true, for every file created a valid adler32 checksum value is computed. Available values: true, false.<br/>Default value: **true**
 
 ### GridHTTPs' logging files and logging level <a name="ghttplog_advconf">&nbsp;</a>
 

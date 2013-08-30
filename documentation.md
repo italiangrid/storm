@@ -5,15 +5,13 @@ title: StoRM Documentation
 
 ## Documentation
 
-#### [StoRM Overview]({{site.baseurl}}/documentation/functional-description/)
+#### [StoRM: a Manager for Storage Resource in Grid]({{site.baseurl}}/documentation/functional-description/)
 
-StoRM components and service overview.
+StoRM service overview.
 
-#### _Guides_:
+#### [System Administrator Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }})
 
-#### [System administrator guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }})
-
-Guide for install and configure StoRM components on a single or distributed scenario.
+Guide to install and configure StoRM.
 <br/>_Older versions_ : [1.11.1][sysadmin-1.11.1]
 
 #### [WebDAV service user guide]({{site.baseurl}}/documentation/webdav-guide/)

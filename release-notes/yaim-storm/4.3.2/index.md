@@ -1,19 +1,34 @@
 ---
-layout: release_note_component
+layout: default
 title: "YAIM StoRM v.4.3.2 release notes"
 release_date: "03.06.2013"
-release_description: "This was the first update for StoRM in EMI-3."
-release_title: "StoRM v.1.11.1"
-release_version: "StoRM-v1.11.1"
-component:
-      name: "YAIM StoRM"
-      package: "yaim-storm"
-      version: "4.3.2"
-      rfcs:
-        - id: STOR-113
-          type: bug
-          title: The StoRM YAIM module does not try to configure permissions on existing configured storage areas. It is assumed (and documented) that the correct permissions are set by the system administrator before running YAIM.
-        - id: STOR-130
-          type: bug
-          title: StoRM GridHTTPs server is now correctly registered to start at system boot.
+rfcs:
+   - id: STOR-113
+     title: YAIM should not try to configure user permissions on all storage areas
+   - id: STOR-130
+     title: Ensure storm-gridhttps-server starts automatically on boot.
 ---
+
+
+## YAIM StoRM v. 4.3.2
+
+Released on **{{ page.release_date }}**
+
+### Description
+
+This release provides several bug fixes.
+
+### Bug fixes
+
+{% include list-rfcs.liquid %}
+
+### Installation and configuration
+
+You can find information about upgrade, clean installation and configuration of StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+
+### Known issues
+
+None at the moment
+
+[storm-documentation]: {{site.baseurl}}/documentation.html
+[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1

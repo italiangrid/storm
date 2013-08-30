@@ -1,6 +1,6 @@
 ---
 layout: default
-title: News
+title: StoRM News
 ---
 
 # News
@@ -16,9 +16,9 @@ title: News
 			</div>
 	    </div>
 	    <div class="span10">
-            <h3><a href="{{post.url}}">{{post.title}}</a></h3>
+            <h3><a href="{{ site.baseurl }}{{ post.url }}">{{post.title}}</a></h3>
             <p>{{post.summary}}</p>
-			<a href="{{ site.baseurl }}{{post.url}}">Read more</a>
+			<a href="{{ site.baseurl }}{{ post.url }}">Read more</a>
         </div>
 </div>
 {% endfor %}
