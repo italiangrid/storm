@@ -3,12 +3,12 @@ layout: default
 title: "StoRM FrontEnd v. 1.8.3 release notes"
 release_date: 02.09.2013
 rfcs:
-   - id: STOR-257
-     title: Unable to change STORM_USER via yaim setup of StoRM
    - id: STOR-306
      title: StoRM returns NULL fileSize for ptp with expected size
    - id: STOR-331
      title: StoRM returns wrong filesize in PtG
+   - id: STOR-257
+     title: Unable to change STORM_USER via yaim setup of StoRM
 ---
 
 ## StoRM FrontEnd v. 1.8.3
