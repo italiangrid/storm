@@ -7,17 +7,18 @@ layout: default
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
 
-<span class="label" style="margin-top: -20px;">20.07.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">04.09.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 ### StoRM v.1.11.2
 
 This is the latest release for StoRM, available on StoRM repositories.
 
-| Component			| Version	|
-|:------------------|:----------|
-|StoRM BackEnd 		|[1.11.2]({{site.baseurl}}/release-notes/storm-backend-server/1.11.2/)|
-|StoRM FrontEnd		|[1.8.2]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.2/)|
-|StoRM native libs	|[1.0.2]({{site.baseurl}}/release-notes/storm-native-libs/1.0.2/)|
-|YAIM StoRM			|[4.3.3]({{site.baseurl}}/release-notes/yaim-storm/4.3.3/)|
+| Component			   | Version	|
+|:---------------------|:-----------|
+|StoRM Backend 		   |[1.11.2]({{site.baseurl}}/release-notes/storm-backend-server/1.11.2/)|
+|StoRM Frontend		   |[1.8.3]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.3/)|
+|StoRM GridHTTPs Server|[2.0.2]({{site.baseurl}}/release-notes/storm-gridhttps-server/2.0.2/)|
+|StoRM Native Libs	   |[1.0.2]({{site.baseurl}}/release-notes/storm-native-libs/1.0.2/)|
+|YAIM StoRM			   |[4.3.3]({{site.baseurl}}/release-notes/yaim-storm/4.3.3/)|
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.2.html).
 
@@ -29,13 +30,13 @@ ___
 
 This was the first update for StoRM in EMI-3.
 
-| Component			| Version	|
-|:------------------|:----------|
-|StoRM BackEnd 		|[1.11.1]({{site.baseurl}}/release-notes/storm-backend-server/1.11.1/)|
-|StoRM native libs	|[1.0.1]({{site.baseurl}}/release-notes/storm-native-libs/1.0.1/)|
-|StoRM GridHTTPs	|[2.0.1]({{site.baseurl}}/release-notes/storm-gridhttps-server/2.0.1/)|
-|YAIM StoRM			|[4.3.2]({{site.baseurl}}/release-notes/yaim-storm/4.3.2/)|
-|StoRM dynamic info |[1.7.6]({{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.6/)|
+| Component			    | Version	|
+|:----------------------|:----------|
+|StoRM Backend 		    |[1.11.1]({{site.baseurl}}/release-notes/storm-backend-server/1.11.1/)|
+|StoRM Native Libs	    |[1.0.1]({{site.baseurl}}/release-notes/storm-native-libs/1.0.1/)|
+|StoRM GridHTTPs Server	|[2.0.1]({{site.baseurl}}/release-notes/storm-gridhttps-server/2.0.1/)|
+|YAIM StoRM			    |[4.3.2]({{site.baseurl}}/release-notes/yaim-storm/4.3.2/)|
+|StoRM dynamic info     |[1.7.6]({{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.6/)|
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.1.html).
 
