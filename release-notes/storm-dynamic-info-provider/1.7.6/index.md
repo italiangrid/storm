@@ -9,7 +9,7 @@ rfcs:
 
 ## StoRM dynamic-info-provider v. 1.7.6
 
-Released on **{{ page.release_date }}**
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.1]({{ site.baseurl }}/release-notes/StoRM-v1.11.1.html).
 
 ### Description
 

@@ -15,7 +15,7 @@ rfcs:
 
 ## YAIM StoRM v. 4.3.3
 
-Released on **{{ page.release_date }}**
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.2]({{ site.baseurl }}/release-notes/StoRM-v1.11.2.html).
 
 ### Description
 

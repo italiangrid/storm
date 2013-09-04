@@ -27,6 +27,8 @@ and make it centered */
   margin-right: auto;
   margin-left: auto;
   max-width: 940px;
+  text-align:justify;
+  text-justify:inter-word;
 }
 
 #push, #footer {

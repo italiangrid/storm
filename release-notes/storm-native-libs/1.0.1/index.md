@@ -11,7 +11,7 @@ rfcs:
 
 ## StoRM native-libs v. 1.0.1
 
-Released on **{{ page.release_date }}**
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.1]({{ site.baseurl }}/release-notes/StoRM-v1.11.1.html).
 
 ### Description
 
