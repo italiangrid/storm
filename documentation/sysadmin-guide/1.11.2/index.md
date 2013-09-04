@@ -22,13 +22,13 @@ version: {{ page.version }}
   * [Install StoRM nodes](#stormnodes)
 * [Configuration](#configuration)
   * [General YAIM variables](#yaimvariables)
-  * [Front-End configuration](#feconf)
-  * [Back-End configuration](#beconf)
+  * [Frontend configuration](#feconf)
+  * [Backend configuration](#beconf)
   * [GridHTTPs configuration](#ghttpconf)
   * [Launching YAIM configuration](#launchyaim)
 * [Advanced Configuration](#advconf)
-  * [Front-End Advanced Configuration](#fe_advconf)
-  * [Back-End Advanced Configuration](#be_advconf)
+  * [Frontend Advanced Configuration](#fe_advconf)
+  * [Backend Advanced Configuration](#be_advconf)
   * [GridFTP Advanced Configuration](#gftp_advconf)
   * [GridHTTPs Advanced Configuration](#ghttp_advconf)
   * [StoRM EMIR Configuration](#emir_advconf)
@@ -37,7 +37,7 @@ version: {{ page.version }}
 ## Installation Prerequisites <a name="installprereq">&nbsp;</a>
 
 All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
-All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on BackEnd host.
+All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
 ### General EMI 3 installation instructions <a name="emi3instructions">&nbsp;</a>
 
@@ -118,7 +118,7 @@ $ chmod 0644 /etc/grid-security/hostcert.pem
 
 ### System users <a name="systemusers">&nbsp;</a>
 
-StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see [BackEnd Configuration](#beconf)). 
+StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see [Backend Configuration](#beconf)). 
 If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. 
 By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see [GridHTTPs Configuration](#ghttpconf)). 
 It is advisable to manually configure host(s) with this two users before install services. 
@@ -138,10 +138,10 @@ $ useradd -M storm -u MY_STORM_UID -g MY_STORM_GID
 $ useradd gridhttps -M -G storm -u MY_GHTTPS_UID -g MY_GHTTPS_GID
 ```
 
-Specifying the same UID and GID is nececcary when you are going to install StoRM on a multi-node scenario because users running BackEnd and GridHTTP services must be the same on every node (UID and GID including).
+Specifying the same UID and GID is nececcary when you are going to install StoRM on a multi-node scenario because users running Backend and GridHTTP services must be the same on every node (UID and GID including).
 <br/>
 <br/>
-For example, if *storm* is the user that runs BackEnd service on host A and *gridhttps* is the user that runs GridHTTP on host B, both of these hosts **must** have *storm* and *gridhttps* users and groups with respectively **the same GID and UID**.
+For example, if *storm* is the user that runs Backend service on host A and *gridhttps* is the user that runs GridHTTP on host B, both of these hosts **must** have *storm* and *gridhttps* users and groups with respectively **the same GID and UID**.
 To satisfy this requirement you can configure a NIS service for the involved hosts and add the two users to the NIS maps. A tutorial on how to setup a NIS service can be found [here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html).
 Another valid solution to share GID and UID among different hosts and provide a user authentication can be found with a client-server LDAP installation, as described in [Appendix A](#AppendixA).
 
@@ -430,7 +430,7 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 {% assign label_description="General YAIM Variables." %}
 {% include documentation/label.html %}
 
-### Front-End configuration <a name="feconf">&nbsp;</a>
+### Frontend configuration <a name="feconf">&nbsp;</a>
 
 Specific YAIM variables are in the following file:
 
@@ -438,7 +438,7 @@ Specific YAIM variables are in the following file:
 $ /opt/glite/yaim/examples/siteinfo/services/se_storm_frontend
 ```
 
-Please copy and edit that file in your CONFDIR/services directory. You have to set at least the STORM\_DB\_PWD variable and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.2 summaries YAIM variables for StoRM FrontEnd component.
+Please copy and edit that file in your CONFDIR/services directory. You have to set at least the STORM\_DB\_PWD variable and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.2 summaries YAIM variables for StoRM Frontend component.
 
 |	Var. Name							|	Description	|
 |:--------------------------------------|:--------------|
@@ -469,14 +469,14 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 |STORM\_USER							|Service user.<br/>Optional variable. Default value: **storm**
 
 {% assign label_title="Table 2" %}
-{% assign label_description="Specific StoRM FrontEnd Variables." %}
+{% assign label_description="Specific StoRM Frontend Variables." %}
 {% include documentation/label.html %}
 
 **NOTE** - **_The following table contains the YAIM variables no more used from StoRM v.1.11.2_**:
 
 |	Var. Name					|	Description	|
 |:------------------------------|:--------------|
-|STORM\_FE\_BE\_XMLRPC\_HOST	|**DELETED** It was used to tell to the FrontEnd the XMLRPC endpoint. But this endpoint, for the FrontEnd, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
+|STORM\_FE\_BE\_XMLRPC\_HOST	|**DELETED** It was used to tell to the Frontend the XMLRPC endpoint. But this endpoint, for the Frontend, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
 |STORM\_FE\_BE\_XMLRPC\_PATH	|**RENAMED** into STORM\_BE\_XMLRPC\_PATH, see Table 2
 |STORM\_FE\_BE\_XMLRPC\_PORT	|**RENAMED** into STORM\_BE\_XMLRPC\_PORT, see Table 2
 
@@ -484,7 +484,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 {% assign label_description="YAIM variables no more used from StoRM v.1.11.2" %}
 {% include documentation/label.html %}
 
-### Back-End configuration <a name="beconf">&nbsp;</a>
+### Backend configuration <a name="beconf">&nbsp;</a>
 
 Specific YAIM variables are in the following file:
 
@@ -499,7 +499,7 @@ You have to set at least these variables:
 - STORM\_DEFAULT\_ROOT
 - STORM\_DB\_PWD
 
-and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.3 summaries YAIM variables for StoRM BackEnd component.
+and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.3 summaries YAIM variables for StoRM Backend component.
 
 |	Var. Name							|	Description	|
 |:--------------------------------------|:--------------|
@@ -551,7 +551,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |STORM\_ENDPOINT\_CAPABILITY			|Capability according to OGSA to be published by the StoRM gip. Optional variable. Default value: **data.management.storage**
 
 {% assign label_title="Table 4" %}
-{% assign label_description="Specific StoRM BackEnd Variables." %}
+{% assign label_description="Specific StoRM Backend Variables." %}
 {% include documentation/label.html %}
 
 Then, for each Storage Area listed in the STORM\_STORAGEAREA\_LIST variable, which is not the name of a valid VO, you have to edit the STORM\_{SA}\_VONAME compulsory variable (detailed in Table 5). {SA} has to be written in capital letters as in the other variables included in the **site-info.def** file, otherwise default values will be used.
@@ -624,17 +624,17 @@ and check the other variables to evaluate if you like the default set or if you 
 
 |	Var. Name							|	Description	|
 |:--------------------------------------|:--------------|
-|STORM\_BACKEND\_HOST					|Host name of the StoRM BackEnd server. **Mandatory**.
-|STORM\_BACKEND\_REST\_SERVICES\_PORT	|StoRM BackEnd server REST port. Optional variable. Default value: **9998**
-|STORM\_BE\_XMLRPC\_PORT				|StoRM BackEnd server XMLRPC port. Optional variable. Default value: **8080**
-|STORM\_FRONTEND\_PORT					|StoRM FrontEnd server SRM port. Optional variable. Default value: **8444**
+|STORM\_BACKEND\_HOST					|Host name of the StoRM Backend server. **Mandatory**.
+|STORM\_BACKEND\_REST\_SERVICES\_PORT	|StoRM Backend server REST port. Optional variable. Default value: **9998**
+|STORM\_BE\_XMLRPC\_PORT				|StoRM Backend server XMLRPC port. Optional variable. Default value: **8080**
+|STORM\_FRONTEND\_PORT					|StoRM Frontend server SRM port. Optional variable. Default value: **8444**
 |STORM\_GRIDHTTPS\_CERT\_DIR			|Host certificate folder for SSL connector. Optional variable. <br/>Default value: **/etc/grid-security/${STORM\_GRIDHTTPS\_USER}**
 |STORM\_GRIDHTTPS\_HTTP\_ENABLED		|Flag that enables/disables http connections. Optional variable. Available values: true, false. <br/>Default value: **true**
 |STORM\_GRIDHTTPS\_HTTP\_PORT			|StoRM GridHTTPs http port. Optional variable. <br/>Default value: **8085**
 |STORM\_GRIDHTTPS\_HTTPS\_PORT			|StoRM GridHTTPs https port Optional variable. <br/>Default value: **8443**
 |STORM\_GRIDHTTPS\_USER					|StoRM GridHTTPs service user. Optional variable. <br/>Default value: **gridhttps**
 |STORM\_SRM\_ENDPOINT					|StoRM SRM EndPoint. Optional variable. <br/>Default value: **${STORM\_BACKEND\_HOST}:<br/>${STORM\_FRONTEND\_PORT}**
-|STORM\_USER							|StoRM BackEnd service user. Optional variable. <br/>Default value: **storm**
+|STORM\_USER							|StoRM Backend service user. Optional variable. <br/>Default value: **storm**
 |X509\_CERT\_DIR						|The location of certificates truststore. Optional variable. <br/>Default value: **/etc/grid-security/certificates**
 |X509\_HOST\_CERT						|Host certificate location. <br/>Default value: **/etc/grid-security/hostcert.pem**
 |X509\_HOST\_KEY						|Host certificate key location. Optional variable. <br/>Default value: **/etc/grid-security/hostkey.pem**
@@ -677,7 +677,7 @@ $ service storm-gridhttps-server status
 
 Please note that most of the configuration parameters of StoRM can be automatically managed directly by YAIM. This means that for standard installation in WLCG site without special requirement is not needed a manual editing of StoRM configuration file, but only a proper tuning of StoRM YAIM variables. On the other hand, with this guide we would like to give to site administrators the opportunity to learn about StoRM details and internal behaviours, in order to allow advanced configuration and ad-hoc set up, to optimize performance and results.
 
-### Front-End Advanced Configuration <a name="fe_advconf">&nbsp;</a>
+### Frontend Advanced Configuration <a name="fe_advconf">&nbsp;</a>
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
 	
@@ -687,9 +687,9 @@ containing a list of:
 	
 	key = value
 
-pairs that can be used to configure the Front-End server. In case a parameter is modified, the Front-End service has to be restarted in order to read the new value.
+pairs that can be used to configure the Frontend server. In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
 
-#### Front-End service information: storm-frontend-server.conf <a name="fesi_advconf">&nbsp;</a>
+#### Frontend service information: storm-frontend-server.conf <a name="fesi_advconf">&nbsp;</a>
 
 > **_Database settings_**
 
@@ -731,8 +731,8 @@ pairs that can be used to configure the Front-End server. In case a parameter is
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	be.xmlrpc.host			|	BackEnd hostname. Default is **localhost**
-|	be.xmlrpc.port			|	XML-RPC server port running on the BackEnd machine.<br/>Default is **8080**
+|	be.xmlrpc.host			|	Backend hostname. Default is **localhost**
+|	be.xmlrpc.port			|	XML-RPC server port running on the Backend machine.<br/>Default is **8080**
 |	be.xmlrpc.path			|	XML-RPC server path. Default is **/RPC2**
 |	be.xmlrpc.check.ascii	|	Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
 
@@ -741,7 +741,7 @@ pairs that can be used to configure the Front-End server. In case a parameter is
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	be.recalltable.port		|	REST server port running on the BackEnd machine. Default is **9998**
+|	be.recalltable.port		|	REST server port running on the Backend machine. Default is **9998**
 
 <br/>
 > **_Blacklisting settings_**
@@ -756,7 +756,7 @@ pairs that can be used to configure the Front-End server. In case a parameter is
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	proxy.dir		|	Directory used by the Front-End to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
+|	proxy.dir		|	Directory used by the Frontend to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
 |	proxy.user		|	Local user owner of proxies files. This have to be the same local user running the backend service. **Mandatory**.
 |	security.enable.vomscheck	|	Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
 |	security.enable.mapping		|	Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
@@ -770,14 +770,14 @@ pairs that can be used to configure the Front-End server. In case a parameter is
 
 #### Logging files and logging level <a name="loggingfe_advconf">&nbsp;</a>
 
-The FrontEnd logs information on the service status and the SRM requests received and managed by the process. The FrontEnd's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
-The FrontEnd log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters. 
+The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
+The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters. 
 At each SRM request, the FE logs also this important information:
 
 	03/19 11:51:42 0x88d4ab8 main: AUDIT - Active tasks: 3
 	03/19 11:51:42 0x88d4ab8 main: AUDIT - Pending tasks: 0
 
-about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the FrontEnd load.
+about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
 
 ##### Monitoring
 
@@ -802,7 +802,7 @@ This row reports the **Monitoring Summary** and this is the default behaviour of
 				Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] 
 				A [OK:6,F:0,E:0,m:0.121,M:0.415])
 	
-Furthermore it can be requested a more detailed FrontEnd Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of srm operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
+Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of srm operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
 
 - how many request succeded,
 - how many failed,
@@ -844,16 +844,16 @@ To enable gSOAP logging, set the following environment variables :
 	$CGSI_TRACE=1
 	$CGSI_TRACEFILE=/tmp/tracefile
 
-and restart the FrontEnd daemon by calling directly the init script /etc/init.d/storm-frontend-server and see if the error messages contained in /tmp/tracefile could help. Please be very careful, it prints really a huge amount of information.
+and restart the Frontend daemon by calling directly the init script /etc/init.d/storm-frontend-server and see if the error messages contained in /tmp/tracefile could help. Please be very careful, it prints really a huge amount of information.
 
-### Back-End Advanced Configuration <a name="be_advconf">&nbsp;</a>
+### Backend Advanced Configuration <a name="be_advconf">&nbsp;</a>
 
-The BackEnd is the core of StoRM. It executes all SRM requests, interacts with other Grid service, with database to retrieve SRM requests, with file-system to set up space and file, etc. It has a modular architecture made by several internal components. The BackEnd needs to be configured for two main aspects:
+The Backend is the core of StoRM. It executes all SRM requests, interacts with other Grid service, with database to retrieve SRM requests, with file-system to set up space and file, etc. It has a modular architecture made by several internal components. The Backend needs to be configured for two main aspects:
 
 - _Service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _Storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
 
-### Back-End Service Information: storm.properties <a name="besi_advconf">&nbsp;</a>
+### Backend Service Information: storm.properties <a name="besi_advconf">&nbsp;</a>
 
 The file:
 
@@ -863,20 +863,20 @@ contains a list of:
 
 	key = value
 
-pairs that represent all the information needed to configure the StoRM BackEnd service. The most important (and mandatory) parameters are configured by default trough YAIM with a standard installation of StoRM. All the other parameters are optionals and can be used to make advanced tuning of the BackEnd.
-To change/set a new value, or add a new parameter, just edit the *storm.properties* file and restart the BackEnd daemon. When the BackeEnd starts, it writes into the log file the whole set of parameters read from the configuration file.
+pairs that represent all the information needed to configure the StoRM Backend service. The most important (and mandatory) parameters are configured by default trough YAIM with a standard installation of StoRM. All the other parameters are optionals and can be used to make advanced tuning of the Backend.
+To change/set a new value, or add a new parameter, just edit the *storm.properties* file and restart the Backend daemon. When the BackeEnd starts, it writes into the log file the whole set of parameters read from the configuration file.
 
 > **_Service information_**
 
 |	Property Name						|	Description		|
 |:--------------------------------------|:------------------|
-|	storm.service.SURL.endpoint			|	List of comma separated strings identifying the StoRM FrontEnd endpoint(s). This is used by StoRM to understand if a SURL is local. E.g. *srm://storm.cnaf.infn.it:8444/srm/managerv2*
+|	storm.service.SURL.endpoint			|	List of comma separated strings identifying the StoRM Frontend endpoint(s). This is used by StoRM to understand if a SURL is local. E.g. *srm://storm.cnaf.infn.it:8444/srm/managerv2*
 |	storm.service.port					|	SRM service port. Default: **8444**
 |	storm.service.SURL.default-ports	|	List of comma separated valid SURL port numbers. Default: **8444**
-|	storm.service.FE-public.hostname	|	StoRM FrontEnd hostname in case of a single FrontEnd StoRM deployment, StoRM FrontEnds DNS alias in case of a multiple FrontEnds StoRM deployment.
-|	storm.service.FE-list.hostnames		|	Comma separated list os FrontEnd(s) hostname(s). Default: **localhost**
-|	storm.service.FE-list.IPs			|	Comma separated list os FrontEnd(s) IP(s). E.g. *131.154.5.127, 131.154.5.128*. Default: **127.0.0.1**
-|	proxy.home							|	Directory used to contains delegated proxies used in case of *srmCopy* request. Please note that in case of clustered installation this directory have to be shared between the BackEnd and the FrontEnd(s) machines. Default: **/etc/storm/tmp**
+|	storm.service.FE-public.hostname	|	StoRM Frontend hostname in case of a single Frontend StoRM deployment, StoRM Frontends DNS alias in case of a multiple Frontends StoRM deployment.
+|	storm.service.FE-list.hostnames		|	Comma separated list os Frontend(s) hostname(s). Default: **localhost**
+|	storm.service.FE-list.IPs			|	Comma separated list os Frontend(s) IP(s). E.g. *131.154.5.127, 131.154.5.128*. Default: **127.0.0.1**
+|	proxy.home							|	Directory used to contains delegated proxies used in case of *srmCopy* request. Please note that in case of clustered installation this directory have to be shared between the Backend and the Frontend(s) machines. Default: **/etc/storm/tmp**
 |	pinLifetime.default					|	Default *PinLifetime* in seconds used for pinning files in case of *srmPrepareToPut* or *srmPrepareToGet* operation without any pinLifetime specified. Default: **259200**
 |	pinLifetime.maximum					|	Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
 |	SRM22Client.PinLifeTime				|	Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
@@ -916,8 +916,8 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	synchcall.xmlrpc.unsecureServerPort	|	Port to listen on for incoming XML-RPC connections from FrontEnds(s). Default: **8080**
-|	synchcall.xmlrpc.maxthread			|	Number of threads managing XML-RPC connection from FrontEnds(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
+|	synchcall.xmlrpc.unsecureServerPort	|	Port to listen on for incoming XML-RPC connections from Frontends(s). Default: **8080**
+|	synchcall.xmlrpc.maxthread			|	Number of threads managing XML-RPC connection from Frontends(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
 
 <br/>
 > **_REST interface parameters_**
@@ -1014,9 +1014,9 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 |	asynch.srmcopy.gridftp.timeout		|	Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
 |	asynch.gridftpclient				|	The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
 
-### Back-End Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
+### Backend Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
 
-Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM BackEnd host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
+Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
 The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL. 
 
 {% assign image_src="surl-turl-schema.png" %}
@@ -1144,8 +1144,8 @@ This is and example of the FS element:
 - ```<filesystem name="dteam-FS" fs_type="ext3">``` : The name is the element identifier. It identifies this Storage Area in the namespace domains. The *fs\_type* is the type of the filesystem the Storage Area is built on. Possible values are: *ext3*, *gpfs*. Please note that *ext3* stands for all generic POSIX filesystem (*ext3*, *Lustre*, etc.)
 - ```<space-token-description>DTEAM_TOKEN</space-token-description>``` : Storage Area space token description.
 - ```<root>/storage/dteam</root>``` : Physical root directory of the Storage Area on the file system.
-- ```<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>``` : Driver loaded by the BackEnd for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
-- ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the BackEnd for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs\_prealloc()_ call).
+- ```<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>``` : Driver loaded by the Backend for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
+- ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs\_prealloc()_ call).
 
 > ***Storage Area properties***
 
@@ -1319,7 +1319,7 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - ```<vo-name>dteam</vo-name>``` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-### Back-End Storage Usage Initialization: used-space.ini <a name="besui_advconf">&nbsp;</a>
+### Backend Storage Usage Initialization: used-space.ini <a name="besui_advconf">&nbsp;</a>
 
 StoRM maintains the information about the status of managed storage areas (such as free, used, busy, available, guaranteed and reserved space), and store them into the DB. Whenever it is consumed or released some storage space by creating or deleting files, the status is updated and stored in the DB. The storage space status stored into the DB is authorative. The information about the Storage Space stored into the DB are used also as information source for the Information Provider through the DIP (Dynamic Info Provider). There are cases in which the status of a storage area must be initialized, for example in the case of a fresh StoRM installation configured to manage a storage space already populated with files, where the space used is not zero.
 There are different methods for initialize the Storage Area status, some executed within StoRM (GPFS quota and/or background-DU). In this section it is described how an administrator can initialize the status of a Storage Area by editing a configuration file, the used-space.ini configuration file, that it will be parsed at bootstrap time and only one time.
@@ -1342,7 +1342,7 @@ Here is a sample of *used-space.ini*:
 
 This file can be produced in two ways:
 
-1. by hand after StoRM BackEnd service configuration
+1. by hand after StoRM Backend service configuration
 
 	* write your own used-space.ini file adding a section for each Storage Area you want to initialize
 
@@ -1352,35 +1352,35 @@ This file can be produced in two ways:
 
 	* set the value of checktime property as in the example. To obtain an RFC-2822 timestamp of the current time you can execute the command *date --rfc-2822*
 
-2. by YAIM at StoRM BackEnd service configuration time
+2. by YAIM at StoRM Backend service configuration time
 
 	* add a variable STORM\_{SA}\_USED\_ONLINE\_SIZE to your YAIM configuration file for each Storage Area you want to initialize where {SA} is the name of the Storage Area as in STORM\_STORAGEAREA\_LIST YAIM variable
 
 	* run YAIM on StoRM profiles installed on this host
 
-StoRM BackEnd will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
+StoRM Backend will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
 
-> **NOTE**: running YAIM on StoRM BackEnd profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
+> **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
  
-### Back-End logging: logging.xml <a name="belog_advconf">&nbsp;</a>
+### Backend logging: logging.xml <a name="belog_advconf">&nbsp;</a>
 
-The BackEnd log files provide information on the execution process of all SRM requests. All the BackEnd log files are placed in the */var/log/storm* directory. BackEnd logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
+The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
 
 	<logger name="it.grid.storm" additivity="false">
 		<level value="DEBUG" />
         <appender-ref ref="PROCESS" />
 	</logger>
 
-the *value* can be setted to the desired log level. Please be careful that logging operation can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the BackEnd have to be restarted to read the new value.
+the *value* can be setted to the desired log level. Please be careful that logging operation can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the Backend have to be restarted to read the new value.
 
 
-The StoRM BackEnd log files are:
+The StoRM Backend log files are:
 
 - **storm-backend.log**
 This is the main log file of StoRM Backend. All the information about the SRM execution process, error or warning are logged here depending on the log level. At startup time, the BE logs here all the storm.properties value, this can be useful to check value effectively used by the system. After that, the BE logs the result of the namespace initialization, reporting errors or misconfiguration. At the INFO level, the BE logs for each SRM operation at least who have request the operation (DN and FQANs), on which files (SURLs) and the operation result. At DEBUG level, much more information are printed regarding the status of many StoRM internal component, depending on the SRM request type. DEBUG level has to be used carefully only for troubleshooting operation. If ERROR or FATAL level are used, the only event logged in the file are due to error condition.
 
 - **storm-backend.stdout**
-This file contains the standard out of the BackEnd process. Usually it does not contains any useful information.
+This file contains the standard out of the Backend process. Usually it does not contains any useful information.
 
 - **storm-backend.stderr**
 This file contains the event logged as ERROR or FATAL conditions. This event logs are presents both in the *storm-backend.log* file and here.
@@ -1409,7 +1409,7 @@ An hearthbeat.log entry example:
 			
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
-### Back-End Space Authorization: authz.db <a name="besa_advconf">&nbsp;</a>
+### Backend Space Authorization: authz.db <a name="besa_advconf">&nbsp;</a>
 
 Space authorization component define access control policy on the Storage Area manged by StoRM. It allows to define rules as: *users* (expressed in terms of regular expression on FQANs or DN), *operation* (READ/WRITE/others) and *target Storage Area*. This rules are stored in a file named **authz.db** located at */etc/storm/backend-server/*.
 <br/>
@@ -1465,7 +1465,7 @@ The EMI3 GridHTTPs is the component responsible to provide:
 
 - HTTP(s) file-transfer capabilities: it's possible to GET/PUT data via HTTP protocol but this is authorized only if a valid SRM prepare-to-get or SRM prepare-to-put has been successfully done before;
 - a WebDAV interface to the StoRM endpoint that conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops;
-- a mapping-service used by BackEnd that convert a real file path to a valid file-transfer URL.
+- a mapping-service used by Backend that convert a real file path to a valid file-transfer URL.
 
 The GridHTTPs component relies on a single configuration file that contains all the configurable parameters. This file is:
 
@@ -1502,13 +1502,13 @@ GridHTTPs' log file is configurable:
 |log.configuration-file	|GridHTTPs logging configuration file.<br/>Default value: **/etc/storm/gridhttps-server/logback.xml**
 
 <br/>
-GridHTTPs interacts with StoRM BackEnd to configure itself in bootstrap phase, to check user's authorization access to resources, to perform SRM operation, to set checksum value on a file, etc. So it needs to know information about BE location and ports:
+GridHTTPs interacts with StoRM Backend to configure itself in bootstrap phase, to check user's authorization access to resources, to perform SRM operation, to set checksum value on a file, etc. So it needs to know information about BE location and ports:
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|backend.hostname		|StoRM BackEnd server full hostname. <br/>**Mandatory**
-|backend.authorization-service.port	|StoRM BackEnd server REST port.<br/>Default value: **9998**
-|backend.srm-service.port	|StoRM BackEnd server XMLRPC port.<br/>Default value: **8080**
+|backend.hostname		|StoRM Backend server full hostname. <br/>**Mandatory**
+|backend.authorization-service.port	|StoRM Backend server REST port.<br/>Default value: **9998**
+|backend.srm-service.port	|StoRM Backend server XMLRPC port.<br/>Default value: **8080**
 
 <br/>
 GridHTTPs works with SURLs so it needs to know a valid SRM endpoint:
@@ -1549,7 +1549,7 @@ The suggest logging level for production endpoint is INFO. In case the log level
 
 ### GridHTTPs plugin information: storm.gridhttps.plugin.properties <a name="ghttpplug_advconf">&nbsp;</a>
 
-StoRM GridHTTPs Plugin is shipped with StoRM BackEnd metapackage and it is installed on BackEnd host. Its configuration information are stored in:
+StoRM GridHTTPs Plugin is shipped with StoRM Backend metapackage and it is installed on Backend host. Its configuration information are stored in:
 
 	/etc/storm/gridhttps-plugin/storm.gridhttps.plugin.properties
 
@@ -1558,7 +1558,7 @@ This file contains a list of:
 	key = value
 
 pairs that can be used to configure the GridHTTPs Plugin.
-The GridHTTPs Plugin lives within BackEnd Java process; in case a parameter is modified, the BackEnd service have to be restarted in order to read the new value.
+The GridHTTPs Plugin lives within Backend Java process; in case a parameter is modified, the Backend service have to be restarted in order to read the new value.
 
 |	Property name		|	Description				|
 |:----------------------|:--------------------------|

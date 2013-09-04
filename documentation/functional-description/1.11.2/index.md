@@ -9,16 +9,16 @@ title: StoRM Storage Resource Manager - Functional Description
 
 * [Introduction](#introduction)
 * [StoRM Architecture](#architecture)
-  * [StoRM Front-End](#stormfrontend)
+  * [StoRM Frontend](#stormfrontend)
       * [GSI Authentication](#gsiauth)
       * [Pool of Worker Threads](#poolwt)
       * [XML-RPC communication](#xmlrpccommunication)
       * [Asynchronous requests](#asynchreq)
-  * [StoRM Back-End](#stormbackend)
+  * [StoRM Backend](#stormbackend)
       * [Internal macro components](#internalmacrocomponents)
       * [SRM requests from database](#srmreqfromdb)
       * [File System driver](#fsdriver)
-  * [StoRM GridHTTPs](#stormghttps)
+  * [StoRM GridHTTPs Server](#stormghttps)
 * [StoRM security](#security)
   * [Credential management](#credentialman)
   * [User access management](#useraccessman)
@@ -123,20 +123,20 @@ It allows direct POSIX access ("file://" transfer protocol support) from applica
 StoRM provides a flexible, configurable, scalable and high performance SRM
 solution. It supports standard Grid access protocols as well as direct access (native POSIX I/O call) on data, fostering the integration of non Grid aware application providing local access on shared storage. Another important characteristic of StoRM is the capability to identify the physical location of a requested data without querying any database service but evaluating a configuration file, an XML schema that describes the storage namespace and input parameters as the logical identifier and SRM attributes. StoRM relies on the underlying file system structure to identify the physical data position.
 
-StoRM has a multi-layer architecture (Fig.4) characterized by two main stateless components, named Front-End (FE) and Back-End (BE), and a database used to store SRM requests and the StoRM metadata. 
+StoRM has a multi-layer architecture (Fig.4) characterized by two main stateless components, named Frontend (FE) and Backend (BE), and a database used to store SRM requests and the StoRM metadata. 
 
 {% assign image_src="storm_architecture.png" %}
 {% assign image_width="220px" %}
 {% include documentation/image.html %}
 {% assign label_title="Fig. 4" %}
-{% assign label_description="Simple StoRM Service Architecture schema<br/>with one BackEnd and one FrontEnd." %}
+{% assign label_description="Simple StoRM Service Architecture schema<br/>with one Backend and one Frontend." %}
 {% include documentation/label.html %}
 
 The service is characterized by several components, some of which are mandatory, while others are optional:
 
-- **mandatory components**: *FrontEnd* (FE), *BackEnd* (BE), Dynamic Info Provider (DIP);
+- **mandatory components**: *Frontend* (FE), *Backend* (BE), Dynamic Info Provider (DIP);
 
-- **optional components**: *GridFTP*, *GridHTTPs*, *Client*.
+- **optional components**: *GridFTP*, *GridHTTPs Server*, *Client*.
 
 The Front-end (FE) has responsibilities of:
 
@@ -177,12 +177,12 @@ possible, as you can see from Fig.5.
 {% assign image_width="800px" %}
 {% include documentation/image.html %}
 {% assign label_title="Fig. 5" %}
-{% assign label_description="Example of distributed StoRM Service Architecture<br/>with one BackEnd, different pools of FrontEnds, GridHTTPs and GridFTPs." %}
+{% assign label_description="Example of distributed StoRM Service Architecture<br/>with one Backend, different pools of Frontends, GridHTTPs and GridFTPs." %}
 {% include documentation/label.html %}
 
-### StoRM Front-End <a name="stormfrontend">&nbsp;</a>
+### StoRM Frontend <a name="stormfrontend">&nbsp;</a>
 
-The Front-End component exposes the SRM web service interface, manages user authentication and stores the data of the SRM requests into the database. It's mainly written in C/C++. It relies on the GSOAP framework to expose the SRM interface and it uses the CGSI-GSOAP plugin to manage secure connection with clients.
+The Frontend component exposes the SRM web service interface, manages user authentication and stores the data of the SRM requests into the database. It's mainly written in C/C++. It relies on the GSOAP framework to expose the SRM interface and it uses the CGSI-GSOAP plugin to manage secure connection with clients.
 
 #### GSI Authentication <a name="gsiauth">&nbsp;</a>
 
@@ -224,7 +224,7 @@ Most of the SRM call belongs to this category:
 
 For this type of request, the FE perform a direct communication to the Backend using a RPC approach, 
 based on the XML-RPC protocol. XML-RPC is a simple protocol to exchange XML structured data over HTTP. 
-The Back-End provides an XML-RPC server and the FE(s) acts as client. 
+The Backend provides an XML-RPC server and the FE(s) acts as client. 
 A worker threads in case of synchronous requests performs this steps:
 
 * structure the SRM data in XML
@@ -253,14 +253,14 @@ The operations:
 - srmCopy 
 
 belong to this category. 
-For this type of requests, the FE insert the SRM data into the Database and the BackEnd retrieve 
+For this type of requests, the FE insert the SRM data into the Database and the Backend retrieve 
 the new request to execute with a polling mechanism. The BE process the SRM request and updates 
 the information into the DB. The FE manages also the srmStatusOf[PtG-PtP-etc] request simply querying 
 the status of the request into the database.
 
-### StoRM Back-End <a name="stormbackend">&nbsp;</a>
+### StoRM Backend <a name="stormbackend">&nbsp;</a>
 
-The Back-End is the core of the StoRM service, it executes all SRM functionalities. 
+The Backend is the core of the StoRM service, it executes all SRM functionalities. 
 It takes care of file and space metadata management, enforces authorization permissions 
 on files and interacts with external Grid services. It is mainly written in Java.
 
@@ -303,18 +303,18 @@ The drivers available with StoRM are:
 
 This driver mechanism implements a common interface and decouple StoRM internal logic from the different functionalities provided by the underlying storage system. The drivers are loaded at run time following the storage namespace configuration. A single StoRM server is able to work on different file system at the same time, and with this flexible approach it can be easily adapted to support new kind of file systems or other storage resources.
 
-### StoRM GridHTTPs <a name="stormghttps">&nbsp;</a>
+### StoRM GridHTTPs Server <a name="stormghttps">&nbsp;</a>
 
-StoRM GridHTTPs component provides to a StoRM endpoint both HTTP(s) file transfer capabilities and a WebDAV interface (see specifications on [WebDAV site](http://www.webdav.org/specs/rfc2518.html)).
+StoRM GridHTTPs Server component provides to a StoRM endpoint both HTTP(s) file transfer capabilities and a WebDAV interface (see specifications on [WebDAV site](http://www.webdav.org/specs/rfc2518.html)).
 
 #### The WebDAV interface
 
-StoRM GridHTTPs component provides a brand-new WebDAV interface that conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
-StoRM GridHTTPs' WebDAV interface is based on the [Milton](http://milton.io/) free, apache licensed, module for basic WebDAV.
+StoRM GridHTTPs Server component provides a brand-new WebDAV interface that conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
+StoRM GridHTTPs Server's WebDAV interface is based on the [Milton](http://milton.io/) free, apache licensed, module for basic WebDAV.
 
 #### The file-transfer functionality
 
-StoRM GridHTTPs also provides HTTP(s) file transfer capabilities that means that it's possible to GET/PUT file data via HTTP protocol. The operation is authorized only if a valid SRM prepare-to-get or SRM prepare-to-put has been successfully done on that file before.
+StoRM GridHTTPs Server also provides HTTP(s) file transfer capabilities that means that it's possible to GET/PUT file data via HTTP protocol. The operation is authorized only if a valid SRM prepare-to-get or SRM prepare-to-put has been successfully done on that file before.
 
 ## StoRM security <a name="security">&nbsp;</a>
 
@@ -363,8 +363,8 @@ StoRM also allows to define default ACLs, a list of ACL entries that will be app
 
 The multi-modular architecture of StoRM permits different deployment schemas. Site administrators can install all the components on the same host (**simplest schema**) or distribute them on different hosts (**distributed schema**), eventually by replicating some of them (**clustered schema**). The simplest deployment needs the following parts to be installed:
 
-* **one single Front-End**
-* **one single Back-End**
+* **one single Frontend**
+* **one single Backend**
 * **one single GridFTP**
 * a **MySQL server**
 

@@ -59,10 +59,10 @@ Install the development repositories like
 
 The StoRM source is available on [Github](https://github.com) in the following repositories:
 
-- [StoRM BackEnd](https://github.com/italiangrid/storm)
-- [StoRM FrontEnd](https://github.com/italiangrid/storm-frontend)
-- [StoRM GridHTTPs](https://github.com/italiangrid/storm-gridhttps-server)
-- [StoRM native libs](https://github.com/italiangrid/storm-native-libs)
+- [StoRM Backend](https://github.com/italiangrid/storm)
+- [StoRM Frontend](https://github.com/italiangrid/storm-frontend)
+- [StoRM GridHTTPs Server](https://github.com/italiangrid/storm-gridhttps-server)
+- [StoRM Native Libs](https://github.com/italiangrid/storm-native-libs)
 - [YAIM StoRM](https://github.com/italiangrid/yaim-storm)
 - [StoRM info provider](https://github.com/italiangrid/storm-info-provider)
 - [StoRM client](https://github.com/italiangrid/storm-client)
