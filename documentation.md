@@ -5,11 +5,11 @@ title: StoRM Documentation
 
 ## Documentation
 
-#### [StoRM: a Manager for Storage Resource in Grid]({{site.baseurl}}/documentation/functional-description/)
+#### [StoRM: a Manager for Storage Resource in Grid]({{site.baseurl}}/documentation/functional-description/) &nbsp;<span class="label label-success">new</span>
 
 StoRM service overview.
 
-#### [System Administrator Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }})
+#### [System Administrator Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }}) &nbsp;<span class="label label-info">updated</span>
 
 Guide to install and configure StoRM.
 <br/>_Older versions_ : [1.11.1][sysadmin-1.11.1]

@@ -16,11 +16,11 @@ rfcs:
     - id: STOR-265
       title: StoRM Gridhttps doesn't register itself to start at boottime
     - id: STOR-259
-      title: StoRM native libs call to change_group_ownership now correctly forwards exceptions to the parent java process
+      title: StoRM native libs call to change_group_ownership does not correctly forward exceptions to the parent java process
     - id: STOR-257
       title: Unable to change STORM_USER via yaim setup of StoRM
     - id: STOR-250
-      title: StoRM GPFS get_fileset_quota_info now doesn't leak more file descriptors
+      title: StoRM GPFS get_fileset_quota_info leaks file descriptors
     - id: STOR-235
       title: YAIM StoRM does not provide a way to configure the XML-RPC service port
     - id: STOR-314
