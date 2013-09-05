@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.2 - release notes"
-release_date: 02.09.2013
+release_date: 05.09.2013
 rfcs:
     - id: STOR-306
       title: StoRM returns NULL fileSize for ptp with expected size

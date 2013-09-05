@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM native libs v.1.0.2 release notes"
-release_date: 02.09.2013
+release_date: 05.09.2013
 rfcs:
     - id: STOR-259
       title: StoRM native libs call to change_group_ownership now correctly forwards exceptions to the parent java process

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.3 release notes"
-release_date: 02.09.2013
+release_date: 05.09.2013
 rfcs:
     - id: STOR-103
       title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint

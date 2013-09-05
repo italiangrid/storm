@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.2 release notes"
-release_date: "20.07.2013"
+release_date: 05.09.2013
 rfcs:
  - id: STOR-305
    title: srmReleaseFiles doesn't release multiple files at once

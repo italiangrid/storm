@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM GridHTTPs v. 2.0.2 release notes"
-release_date: 02.09.2013
+release_date: 05.09.2013
 rfcs:
     - id: STOR-315
       title: Fix how StoRM uses checksum
