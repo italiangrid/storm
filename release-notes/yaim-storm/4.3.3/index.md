@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.3 release notes"
-release_date: 05.09.2013
+release_date: 06.09.2013
 rfcs:
     - id: STOR-103
       title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint
@@ -9,8 +9,6 @@ rfcs:
       title: YAIM StoRM does not provide a way to configure the XML-RPC service port
     - id: STOR-257
       title: Unable to change STORM_USER via yaim setup of StoRM
-    - id: STOR-315
-      title: Fix how StoRM uses checksum
 ---
 
 ## YAIM StoRM v. 4.3.3

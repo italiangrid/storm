@@ -7,7 +7,7 @@ layout: default
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
 
-<span class="label" style="margin-top: -20px;">05.09.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">06.09.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 ### StoRM v.1.11.2
 
 This is the latest release for StoRM, available on StoRM repositories.

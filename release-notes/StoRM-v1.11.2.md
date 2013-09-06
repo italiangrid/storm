@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.2 - release notes"
-release_date: 05.09.2013
+release_date: 06.09.2013
 rfcs:
     - id: STOR-306
       title: StoRM returns NULL fileSize for ptp with expected size
@@ -29,14 +29,13 @@ rfcs:
       title: GPFS Quota computation deadlock
     - id: STOR-295
       title: StoRM does not include timestamp when logging exceptions to stderr log
-    - id: STOR-315
-      title: Fix how StoRM uses checksum
     - id: STOR-103
       title: StoRM publishes a wrong GLUE2EndpointServingState in one of the two GLUE2Endpoint
     - id: STOR-308
       title: srmMv returns SRM_SUCCESS instead of SRM_FILE_BUSY
     - id: STOR-237
       title: StoRM BackEnd fails during bootstrap because welcome.txt file is not found
+features:
     - id: STOR-322
       title: StoRM GridHTTPs server doesn't need to request a TURL from the BE during transfer requests
 components:

@@ -1,10 +1,7 @@
 ---
 layout: default
 title: "StoRM GridHTTPs v. 2.0.2 release notes"
-release_date: 05.09.2013
-rfcs:
-    - id: STOR-315
-      title: Fix how StoRM uses checksum
+release_date: 06.09.2013
 features:
     - id: STOR-322
       title: StoRM GridHTTPs server doesn't need to request a TURL from the BE during transfer requests
@@ -17,10 +14,6 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.2]({{ site.baseurl }
 ### Description
 
 This release provides several bug fixes.
-
-### Bug fixes
-
-{% include list-rfcs.liquid %}
 
 ### Enhancements
 

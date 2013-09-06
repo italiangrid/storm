@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.2 release notes"
-release_date: 05.09.2013
+release_date: 06.09.2013
 rfcs:
  - id: STOR-305
    title: srmReleaseFiles doesn't release multiple files at once
@@ -19,8 +19,6 @@ rfcs:
    title: GPFS Quota computation deadlock
  - id: STOR-295
    title: StoRM does not include timestamp when logging exceptions to stderr log
- - id: STOR-315
-   title: Fix how StoRM uses checksum
  - id: STOR-308
    title: srmMv returns SRM_SUCCESS instead of SRM_FILE_BUSY
  - id: STOR-237
