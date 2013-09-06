@@ -1,32 +1,45 @@
 ---
 layout: default
-title: StoRM Storage Resource Manager
+title: StoRM Documentation
 ---
 
-# Documentation
+## Documentation
 
-### StoRM [v. 1.11.1](release-notes-v1_11_1.html)
+#### [StoRM: a Manager for Storage Resource in Grid]({{site.baseurl}}/documentation/functional-description/) &nbsp;<span class="label label-success">new</span>
 
-* [System administrator guide](sysadmin-guide.html): Guide for install and configure StoRM components on a single or distributed scenario.
-* [WebDAV service user guide](webdav-guide.html): Explains the StoRM WebDAV interface, how to install, configure and use it.
-* [StoRM clientSRM user guide](clientSRM-guide.html): Explains how to use the StoRM SRM client.
+StoRM service overview.
 
----
+#### [System Administrator Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.versions.sysadmin_guide }}) &nbsp;<span class="label label-info">updated</span>
 
-### Other resources
+Guide to install and configure StoRM.
+<br/>_Older versions_ : [1.11.1][sysadmin-1.11.1]
 
-#### [Frequently Asked Questions](faq.html)
+#### [WebDAV service user guide]({{site.baseurl}}/documentation/webdav-guide/)
+
+Explains the StoRM WebDAV interface, how to install, configure and use it.
+
+#### [StoRM clientSRM user guide]({{site.baseurl}}/documentation/clientsrm-guide/)
+
+Explains how to use the StoRM SRM client.
+
+#### _Other resources_:
+
+#### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
 
 Questions from the StoRM user community.
 
-#### [Troubleshooting](troubleshooting.html)
+#### [Troubleshooting]({{site.baseurl}}/documentation/troubleshooting)
 
 Common issues: analysis and solution.
 
-#### [Cookbook](cookbook.html)
+#### [Cookbook]({{site.baseurl}}/documentation/cookbook)
 
 Useful recipes for StoRM advanced configuration.
 
-#### [Conferences and tutorials](tutorials-conferences-presentations.html)
+#### [Conferences and tutorials]({{site.baseurl}}/documentation/tutorials-conferences-presentations)
 
 Conferences, tutorials, presentations and papers.
+
+
+
+[sysadmin-1.11.1]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1/

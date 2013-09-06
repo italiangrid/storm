@@ -3,50 +3,41 @@
   <head>
     <meta charset="utf-8">
     <title>{{ page.title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="shortcut icon" href="favicon.ico" />
-    <!-- Le styles -->
-    <link href="./assets/css/bootstrap.css" rel="stylesheet">
-    <link href="./assets/css/style.css" rel="stylesheet">
-    <style>
-      body {
-       padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
-    </style>
- 
+    <!-- see 
+		https://github.com/mojombo/jekyll/issues/332#issuecomment-18952908 
+		for a recipe on how to solve Jekyll base URL issues -->
+    <link href="{{ site.baseurl }}/assets/css/bootstrap.min.css" rel="stylesheet"/>    
+    <link href="{{ site.baseurl }}/assets/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+    <link href="{{ site.baseurl }}/assets/css/style.css" rel="stylesheet"/>
+	<link href="{{ site.baseurl }}/assets/css/pygments.css" rel="stylesheet"/>
+	<link href="{{ site.baseurl }}/favicon.ico" rel="icon" />
   </head>
 
   <body>
-
-    	<div class="navbar navbar-inverse navbar-fixed-top">
-      	<div class="navbar-inner">
-        	<div class="container">
-          	<a class="brand" href="./index.html">StoRM</a>
-          	<div class="nav-collapse collapse pull-right">
-            	<ul class="nav">
-              	<li><a href="./index.html">Home</a></li>
-              	<!--<li><a href="./blog.html">Blog</a></li>-->
-              	<li><a href="./download.html">Downloads</a></li>
-              	<li><a href="./documentation.html">Documentation</a></li>
-              	<li><a href="./support.html">Support</a></li>
-            	</ul>
-          	</div><!--/.nav-collapse -->
-        	</div>
-      	</div>
-    	</div>
-
-			<div class="container">
-				{{ content }}
+	<div id="wrap">
+  		{% include navbar.html %}
+		<div class="container">
+			<div id="stormcontent">
+				{{content}}
 			</div>
-			
-			<a href="https://github.com/italiangrid/storm"><img style="position: absolute; top: 40px; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
-
-        <!--
-		<footer class="footer">
-			<div class="container">
-			</div>
-		</footer>
-        -->
-
+		</div>
+		<div id="push"></div>
+	</div> <!-- wrap element -->  
+	<!-- Footer -->
+	<div id="footer">
+		<div class="container">
+		</div>
+	</div>
+	<!-- Scripts included at the end  of the page -->
+	<script type="text/javascript" src="{{ site.baseurl }}/assets/js/jquery.js"></script>
+	<script type="text/javascript" src="{{ site.baseurl }}/assets/js/bootstrap.min.js">
+	</script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('table').addClass('table');
+            $('table').addClass('table-bordered');
+        });
+    </script>
   </body>
+  
 </html>

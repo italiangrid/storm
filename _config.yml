@@ -1,5 +1,74 @@
 exclude: [README.md]
 
+markdown: redcarpet
+redcarpet:
+  extensions: [ "tables" ]
+
+baseurl: /storm
+
+issue_base_url: "https://issues.infn.it/browse/"
+website_base_url: "http://italiangrid.github.io/storm"
+repo_base_url: "https://github.com/italiangrid"
+
+sysadmin_guide_version: 1.11.2
+functional_description_version: 1.11.2
+
+storm_components:
+    - name: StoRM Backend
+      package: storm-backend-server
+      latest: 1.11.2
+      new: true
+      repo: StoRM
+      visibility: show
+    - name: StoRM Frontend
+      package: storm-frontend-server
+      latest: 1.8.3
+      new: true
+      repo: StoRM
+      visibility: show
+    - name: StoRM GridHTTPs Server
+      package: storm-gridhttps-server
+      latest: 2.0.2
+      new: true
+      repo: StoRM
+      visibility: show
+    - name: StoRM native libs
+      package: storm-native-libs
+      latest: 1.0.2
+      new: true
+      repo: StoRM
+      visibility: hide
+    - name: StoRM dynamic info
+      package: storm-dynamic-info-provider
+      latest: 1.7.6
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: StoRM client
+      package: storm-srm-client
+      latest: 1.6.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: StoRM GridHTTPs plugin
+      package: storm-gridhttps-plugin
+      latest: 1.1.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: StoRM GridFTP
+      package: storm-gridftp-dsi
+      latest: 1.2.0
+      new: false
+      repo: StoRM emi
+      visibility: hide
+    - name: YAIM StoRM
+      package: yaim-storm
+      latest: 4.3.3
+      new: true
+      repo: StoRM
+      visibility: hide
+      
 authors:
   andrea:
     display_name: Andrea Ceccanti
@@ -14,7 +83,9 @@ authors:
   daniele:
     display_name: Daniele Andreotti
     email: daniele.andreotti@cnaf.infn.it
+    github: dandreotti
   enrico:
     display_name: Enrico Vianello
     email: enrico.vianello@cnaf.infn.it
-  
+    gravatar: 4f496230f3e42d606024e16c5f389611
+    github: enricovianello

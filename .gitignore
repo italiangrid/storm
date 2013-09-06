@@ -3,3 +3,6 @@ _site
 _layouts/.DS_Store
 assets/.DS_Store
 assets/images/.DS_Store
+/.settings
+/.classpath
+/.project
