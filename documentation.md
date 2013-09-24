@@ -22,6 +22,10 @@ Explains the StoRM WebDAV interface, how to install, configure and use it.
 
 Explains how to use the StoRM SRM client.
 
+#### [StoRM Examples]({{site.baseurl}}/documentation/examples/) &nbsp;<span class="label label-success">new</span>
+
+Some examples of StoRM configuration.
+
 #### _Other resources_:
 
 #### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
