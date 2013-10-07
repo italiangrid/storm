@@ -1,6 +1,6 @@
 ---
 layout: default
-title: StoRM Documentation - toRM GridHTTPs Server's WebDAV interface
+title: StoRM Documentation - StoRM GridHTTPs Server's WebDAV interface
 ---
 
 ## StoRM GridHTTPs Server's WebDAV interface
