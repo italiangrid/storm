@@ -840,4 +840,12 @@ public class LocalFile {
 		return fs.truncateFile(localFile.getAbsolutePath(), desired_size);
 	}
 
+	/**
+	 * Return the unique absolute canonical path of the file
+	 */	
+	public String getCanonicalPath() throws IOException {
+
+		return localFile.getCanonicalPath();
+	}
+
 }

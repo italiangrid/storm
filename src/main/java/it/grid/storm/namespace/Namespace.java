@@ -37,6 +37,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -217,7 +218,7 @@ public class Namespace implements NamespaceInterface {
 	 * @throws NamespaceException
 	 */
 	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException {
-
+		
 		log.debug("Resolving StoRI from surl " + surl + " on any VFS");
 		StoRI stori = resolveStoRIbySURL(surl, null, false);
 		if (stori == null) {
@@ -250,12 +251,27 @@ public class Namespace implements NamespaceInterface {
 			log.debug("For StFN " + stfnStr + " the winner Rule is "
 				+ winnerRule.getRuleName());
 			stori = winnerRule.getMappedFS().createFile(
-				NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(), stfnStr),
-				StoRIType.FILE);
+								NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(),
+									stfnStr), StoRIType.FILE);
 			stori.setStFNRoot(winnerRule.getStFNRoot());
 			stori.setMappingRule(winnerRule);
+			try {
+				if (!stori.getLocalFile().getCanonicalPath().startsWith(winnerRule.getMappedFS().getRootPath())) {
+					log.debug("Unable to perform resolveStoRIbySURL, '"
+						+ stori.getLocalFile().getCanonicalPath() + "' doesn't belong to '"
+						+ winnerRule.getMappedFS().getAliasName() + "'");
+					return null;
+				} else {
+					log.debug("'" + stori.getLocalFile().getCanonicalPath() + "' belongs to '"
+						+ winnerRule.getMappedFS().getAliasName() + "'");
+				}
+			} catch (IOException e) {
+				log.debug("Unable to perform resolveStoRIbySURL, " + e.getMessage());
+				return null;
+			}
 		} else {
-			log.debug("No MappingRule matches SURL " + surl);
+			log.debug("Unable to perform resolveStoRIbySURL, no MappingRule matches SURL " + surl);
+			return null;
 		}
 		return stori;
 	}
@@ -534,7 +550,7 @@ public class Namespace implements NamespaceInterface {
 		Hashtable<String, VirtualFSInterface> table = (Hashtable<String, VirtualFSInterface>) parser
 			.getMapVFS_Root();
 		int distance = Integer.MAX_VALUE;
-		Enumeration scan = table.keys();
+		Enumeration<String> scan = table.keys();
 		String vfs_root = null;
 		String vfs_root_winner = null;
 		boolean found = false;
@@ -674,18 +690,18 @@ public class Namespace implements NamespaceInterface {
 	public SortedSet<ApproachableRule> getApproachableRules(GridUserInterface user) {
 
 		TreeSet<ApproachableRule> appRules = null;
-		Map rules = parser.getApproachableRules();
-		Hashtable appRulesUnorderd = null;
+		Map<String, ApproachableRule> rules = parser.getApproachableRules();
+		Hashtable<Object, Object> appRulesUnorderd = null;
 		if (rules != null) {
-			appRulesUnorderd = new Hashtable(parser.getApproachableRules());
+			appRulesUnorderd = new Hashtable<Object, Object>(parser.getApproachableRules());
 		}
-		appRules = new TreeSet();
+		appRules = new TreeSet<ApproachableRule>();
 
 		// Purging incompatible rules from the results
 		if (appRulesUnorderd != null) {
 			ApproachableRule appRule = null;
 			// List the entries
-			for (Iterator it = appRulesUnorderd.keySet().iterator(); it.hasNext();) {
+			for (Iterator<Object> it = appRulesUnorderd.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
 				appRule = (ApproachableRule) appRulesUnorderd.get(key);
 				if (matchSubject(appRule, user)) {
@@ -789,7 +805,7 @@ public class Namespace implements NamespaceInterface {
 	 * it.grid.storm.namespace.NamespaceInterface#getFittingRoots(java.lang.String
 	 * )
 	 */
-	@SuppressWarnings("unchecked")
+	
 	// @Override
 	public boolean isStfnFittingSomewhere(String surlString,
 		GridUserInterface user) throws NamespaceException {
