@@ -96,7 +96,7 @@ public class SURL extends SRMURL {
 		URI uri = null;
 		try {
 			uri = URI.create(surlString);
-			uri = uri.normalize();
+//			uri = uri.normalize();
 		} catch (IllegalArgumentException uriEx) {
 			throw new NamespaceException("SURL_String :'" + surlString
 				+ "' is INVALID. Reason: URI Except: " + uriEx.getMessage());
