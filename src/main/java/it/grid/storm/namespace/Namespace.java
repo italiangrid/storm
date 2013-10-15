@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -97,21 +96,23 @@ public class Namespace implements NamespaceInterface {
 		return parser.getNamespaceVersion();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.namespace.NamespaceInterface#getAllDefinedVFS()
-	 */
 	public Collection<VirtualFSInterface> getAllDefinedVFS()
 		throws NamespaceException {
 
 		return parser.getVFSs().values();
 	}
 
-	public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user)
-		throws NamespaceException {
+	public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user) {
 
-		return null;
+		Hashtable<String, ApproachableRule> apprules = new Hashtable<String, ApproachableRule>(
+			parser.getApproachableRules());
+		LinkedList<VirtualFSInterface> approachVFS = new LinkedList<VirtualFSInterface>();
+		for (ApproachableRule appRule : apprules.values()) {
+			if (appRule.match(user)) {
+				approachVFS.addAll(appRule.getApproachableVFS());
+			}
+		}
+		return approachVFS;
 	}
 
 	public VirtualFSInterface getDefaultVFS(GridUserInterface user)
@@ -150,17 +151,9 @@ public class Namespace implements NamespaceInterface {
 
 	public boolean isApproachable(StoRI storageResource,
 		GridUserInterface gridUser) throws NamespaceException {
-
-		return true;
+		return getApproachableVFS(gridUser).contains(storageResource.getVirtualFileSystem());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.namespace.NamespaceInterface#resolveStoRIbySURL(it.grid.storm
-	 * .srm.types.TSURL, it.grid.storm.griduser.GridUserInterface)
-	 */
 	public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user)
 		throws IllegalArgumentException, UnapprochableSurlException {
 
@@ -168,18 +161,12 @@ public class Namespace implements NamespaceInterface {
 			log.error("Received null parameters: surl= " + surl + " user=" + user);
 			throw new IllegalArgumentException("Received null parameters");
 		}
-		List<VirtualFSInterface> vfsApproachable = getListOfVFS(user);
+		List<VirtualFSInterface> vfsApproachable = getApproachableVFS(user);
 
 		StoRI stori = resolveStoRIbySURL(surl, vfsApproachable);
-		if (stori == null) {
-			if (isStfnFittingSomewhere(surl)) {
-				throw new UnapprochableSurlException("Surl " + surl
-					+ " is not approchable by user " + user);
-			} else {
-				throw new UnapprochableSurlException("Surl " + surl
-					+ " is not managed by this StoRM instance");
-			}
-		}
+		if (stori == null)
+			throw new UnapprochableSurlException("Surl " + surl
+				+ " is not approchable by user " + user);
 		return stori;
 	}
 
@@ -279,7 +266,7 @@ public class Namespace implements NamespaceInterface {
 	public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
 		throws UnapprochableSurlException {
 
-		List<VirtualFSInterface> vfsApproachable = getListOfVFS(user);
+		List<VirtualFSInterface> vfsApproachable = getApproachableVFS(user);
 		VirtualFSInterface vfs = resolveVFSbySURL(surl, vfsApproachable);
 		if (vfs == null) {
 			throw new UnapprochableSurlException("Surl " + surl
@@ -478,20 +465,6 @@ public class Namespace implements NamespaceInterface {
 	/***********************************************
 	 * UTILITY METHODS
 	 **********************************************/
-
-	/**
-	 * The winner rule is selected from the rule with the minimum distance between
-	 * the StFN-Path and the StFN-Root within the rule specification.
-	 * 
-	 * @param stfnPath
-	 *          String
-	 * @return MappingRule
-	 */
-	public MappingRule getWinnerRule(String stfnPath) {
-
-		log.debug("Getting winner rule for StFN path =" + stfnPath + " on any VFS");
-		return getWinnerRule(stfnPath, null, false);
-	}
 
 	private MappingRule getWinnerRule(String stfnPath,
 		List<VirtualFSInterface> vfsApproachable, boolean withVFSList) {
@@ -761,26 +734,6 @@ public class Namespace implements NamespaceInterface {
 		return result;
 	}
 
-	/**
-	 * Retrieve the list of VFS name approachable by the Grid User gUser.
-	 * 
-	 * @param gUser
-	 *          GridUserInterface
-	 * @return Set
-	 */
-	public List<VirtualFSInterface> getListOfVFS(GridUserInterface gUser) {
-
-		Hashtable<String, ApproachableRule> apprules = new Hashtable<String, ApproachableRule>(
-			parser.getApproachableRules());
-		LinkedList<VirtualFSInterface> approachVFS = new LinkedList<VirtualFSInterface>();
-		for (ApproachableRule appRule : apprules.values()) {
-			if (appRule.match(gUser)) {
-				approachVFS.addAll(appRule.getApproachableVFS());
-			}
-		}
-		return approachVFS;
-	}
-
 	/******************************************
 	 * VERSION 1.4 *
 	 *******************************************/
@@ -798,25 +751,13 @@ public class Namespace implements NamespaceInterface {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.namespace.NamespaceInterface#getFittingRoots(java.lang.String
-	 * )
-	 */
-	
-	// @Override
 	public boolean isStfnFittingSomewhere(String surlString,
 		GridUserInterface user) throws NamespaceException {
 
 		boolean result = false;
 
-		// Array of all stfnRoots
 		ArrayList<String> stfnRoots = new ArrayList<String>();
-		// List of VFS approachable
-		List<VirtualFSInterface> listVFS = getListOfVFS(user);
-		// List of Mapping Rule
+		List<VirtualFSInterface> listVFS = getApproachableVFS(user);
 		Hashtable<String, MappingRule> rules = new Hashtable<String, MappingRule>(
 			parser.getMappingRules());
 
@@ -854,71 +795,4 @@ public class Namespace implements NamespaceInterface {
 		return result;
 	}
 
-	@Override
-	public boolean isStfnFittingSomewhereAnonymous(String surlString)
-		throws NamespaceException {
-
-		boolean result = false;
-
-		// Array of all stfnRoots
-		ArrayList<String> stfnRoots = new ArrayList<String>();
-		// List of Mapping Rule
-		Hashtable<String, MappingRule> rules = new Hashtable<String, MappingRule>(
-			parser.getMappingRules());
-
-		// Retrieve the list of stfnRoot approachable
-		String stfnRoot;
-		for (Map.Entry<String, MappingRule> rule : rules.entrySet()) {
-			VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
-			if (mappedFS.isApproachableByAnonymous()) {
-				stfnRoot = rule.getValue().getStFNRoot();
-				stfnRoots.add(stfnRoot);
-			}
-		}
-		log.debug("FITTING: List of StFNRoots approachables = " + stfnRoots);
-
-		// Build SURL and retrieve the StFN part.
-		String stfn = SURL.makeSURLfromString(surlString).getStFN();
-
-		// Path elements of stfn
-		ArrayList<String> stfnArray = (ArrayList<String>) NamespaceUtil
-			.getPathElement(stfn);
-
-		for (Object element : stfnRoots) {
-			stfnRoot = (String) element;
-			log.debug("FITTING: considering StFNRoot = " + stfnRoot
-				+ " against StFN = " + stfn);
-			ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil
-				.getPathElement(stfnRoot);
-			stfnRootArray.retainAll(stfnArray);
-			if (!(stfnRootArray.isEmpty())) {
-				result = true;
-				log.debug("FIT!");
-				break;
-			}
-		}
-		return result;
-	}
-
-	private boolean isStfnFittingSomewhere(TSURL surl) {
-
-		Collection<MappingRule> rules = new HashSet<MappingRule>(parser
-			.getMappingRules().values());
-		Collection<String> stfnArray = NamespaceUtil.getPathElement(surl.sfn()
-			.stfn().toString());
-		for (MappingRule rule : rules) {
-			log.debug("FITTING: considering StFNRoot " + rule.getStFNRoot()
-				+ " against StFN " + surl.sfn().stfn().toString());
-			ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil
-				.getPathElement(rule.getStFNRoot());
-			// TODO this is bugged! it should consider the order of the elements in
-			// the two arrays!
-			stfnRootArray.retainAll(stfnArray);
-			if (!(stfnRootArray.isEmpty())) {
-				log.debug("FITS!");
-				return true;
-			}
-		}
-		return false;
-	}
 }
