@@ -27,11 +27,18 @@
 
 package it.grid.storm.xmlrpc;
 
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+
+import it.grid.storm.config.Configuration;
 import it.grid.storm.rest.JettyThread;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
@@ -76,6 +83,19 @@ public final class XMLRPCHttpServer {
 		ServletContextHandler servletContextHandler = new ServletContextHandler();
 		servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
+		String token = Configuration.getInstance().getXmlRpcToken();
+
+		if(token != null) {
+		
+			log.info("XML-RPC requests token found in configuration, enabling security filter");
+			
+			Filter filter = new SecurityFilter(token);
+		
+			FilterHolder filterHolder = new FilterHolder(filter);
+		
+			servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+		}
+			
 		server.setHandler(servletContextHandler);
 
 		return server;

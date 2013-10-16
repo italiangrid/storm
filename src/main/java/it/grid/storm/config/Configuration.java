@@ -164,7 +164,9 @@ public class Configuration {
 	private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
 	private static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY = "server-pool.status-check.timeout";
 	private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
+	private static final String XMLRPC_SECRET_TOKEN_KEY = "synchcall.xmlrpc.token";
 
+	
 	private Configuration() {
 
 	}
@@ -2252,6 +2254,11 @@ public class Configuration {
 		}
 	}
 
+	public String getXmlRpcToken() {
+		
+		return cr.getConfiguration().getString(XMLRPC_SECRET_TOKEN_KEY);
+	}
+	
 	@Override
 	public String toString() {
 
