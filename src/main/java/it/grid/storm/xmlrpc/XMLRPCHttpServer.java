@@ -83,11 +83,20 @@ public final class XMLRPCHttpServer {
 		ServletContextHandler servletContextHandler = new ServletContextHandler();
 		servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
-		String token = Configuration.getInstance().getXmlRpcToken();
-
-		if(token != null) {
+		Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
 		
-			log.info("XML-RPC requests token found in configuration, enabling security filter");
+		if(isTokenEnabled) {
+		
+			log.info("Enabling security filter for XML-RPC requests");
+
+			String token = Configuration.getInstance().getXmlRpcToken();
+
+			if(token == null || token.isEmpty()) {
+				
+				log.error("XML-RPC requests token enabled, but token not found");
+
+				throw new StoRMXmlRpcException("XML-RPC requests token enabled, but token not found");
+			}
 			
 			Filter filter = new SecurityFilter(token);
 		
