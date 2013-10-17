@@ -1,6 +1,10 @@
 package it.grid.storm.xmlrpc;
 
+import it.grid.storm.catalogs.StatusCodeConverter;
+
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -9,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +33,23 @@ public class SecurityFilter implements Filter {
 		.getLogger(XMLRPCHttpServer.class);
 	
 	/**
+	 * 
+	 */
+	public static final String STORM_HEADER_PATTERN_STRING = 
+		"^\\s*STORM/(\\S+) .*$";
+
+	/**
+	 * 
+	 */
+	public static final Pattern STORM_HEADER_PATTERN = 
+		Pattern.compile(STORM_HEADER_PATTERN_STRING);
+	
+	/**
 	 * This is the string that has to be provided for requests
 	 * to go through.
 	 */
 	private String secret;
 
-	private static String TOKEN_HEADER_NAME = "TBD";
-	
 	/**
 	 * Constructor.
 	 * 
@@ -56,26 +71,35 @@ public class SecurityFilter implements Filter {
 		
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		
-		String token = httpRequest.getHeader(TOKEN_HEADER_NAME);
+		String header = httpRequest.getHeader("User-Agent");
 		
-		if(token == null) {
-
-			log.error("The XML-RPC request does not contain a security token");
-			
-			return;
-		}
+		String token = parseStormToken(header);
 		
 		if(!token.equals(this.secret)) {
 			
 			log.error("The XML-RPC request security token does not match");
 			
-			return;
+			HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+			
+			httpServletResponse.setStatus(400);
 		}
 
-		chain.doFilter(request, response);
-		
+		chain.doFilter(request, response);	
 	}
 
+	/**
+	 * 
+	 */
+	public static final String parseStormToken(String headerContent){
+		
+		Matcher m = STORM_HEADER_PATTERN.matcher(headerContent);
+		
+		if (m.matches())
+			return m.group(1);
+		
+		throw new IllegalArgumentException("No storm token found in '" + headerContent + "'");
+	}
+	
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {}
 
