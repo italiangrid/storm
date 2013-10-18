@@ -1,7 +1,5 @@
 package it.grid.storm.xmlrpc;
 
-import it.grid.storm.catalogs.StatusCodeConverter;
-
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +33,7 @@ public class SecurityFilter implements Filter {
 	 * 
 	 */
 	public static final String STORM_HEADER_PATTERN_STRING = 
-		"^\\s*STORM/(\\S+) .*$";
+		"^\\s*STORM/(\\S+).*$";
 
 	/**
 	 * 
@@ -77,11 +74,10 @@ public class SecurityFilter implements Filter {
 		
 		if(!token.equals(this.secret)) {
 			
-			log.error("The XML-RPC request security token does not match");
-			
-			HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-			
-			httpServletResponse.setStatus(400);
+			log.error("The XML-RPC request security token does not match. The calling " +
+					"service is probably misconfigured.");
+
+			return;
 		}
 
 		chain.doFilter(request, response);	
