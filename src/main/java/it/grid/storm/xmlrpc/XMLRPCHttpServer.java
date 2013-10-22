@@ -98,7 +98,7 @@ public final class XMLRPCHttpServer {
 				throw new StoRMXmlRpcException("XML-RPC requests token enabled, but token not found");
 			}
 			
-			Filter filter = new SecurityFilter(token);
+			Filter filter = new XmlRpcTokenFilter(token);
 		
 			FilterHolder filterHolder = new FilterHolder(filter);
 		
