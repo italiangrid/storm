@@ -21,7 +21,6 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -81,7 +80,7 @@ public interface NamespaceInterface {
 	 * getAllDefinedVFS
 	 * 
 	 * @return List<VirtualFSInterface> : Return a List of VirtualFS cointaing all
-	 *         the istances defined within Namespace
+	 *         the instances defined within Namespace
 	 * @throws NamespaceException
 	 */
 	public Collection<VirtualFSInterface> getAllDefinedVFS()
@@ -93,11 +92,11 @@ public interface NamespaceInterface {
 	 * 
 	 * @param user
 	 *          GridUserInterface : Represents the principal
-	 * @return List : Return a List of VirtualFS istances
+	 * @return List : Return a List of VirtualFS instances
 	 * @throws NamespaceException
 	 *           : Occur when
 	 */
-	public List getApproachableVFS(GridUserInterface user)
+	public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user)
 		throws NamespaceException;
 
 	/**
@@ -419,39 +418,20 @@ public interface NamespaceInterface {
 	public String getNamespaceVersion() throws NamespaceException;
 
 	/**
-	 * 
-	 * @param turl
-	 *          TTURL
-	 * @return VirtualFSInterface
+	 * @param absolutePath
+	 * @return
 	 * @throws NamespaceException
 	 */
 	public VirtualFSInterface resolveVFSbyRoot(String absolutePath)
 		throws NamespaceException;
 
-	/****************************************/
-	/******** VERSION 1.4 *******/
-	/****************************************/
-
+	/**
+	 * @param spaceToken
+	 * @return
+	 * @throws NamespaceException
+	 */
 	public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
 		throws NamespaceException;
 
-	/**
-	 * @param surlString
-	 *          : pass the SURL in String format as it comes from the FE.
-	 * @param user
-	 * @return
-	 * @throws NamespaceException
-	 */
-	public boolean isStfnFittingSomewhere(String surlString,
-		GridUserInterface user) throws NamespaceException;
-
-	/**
-	 * @param surlString
-	 *          : pass the SURL in String format as it comes from the FE.
-	 * @return
-	 * @throws NamespaceException
-	 */
-	public boolean isStfnFittingSomewhereAnonymous(String surlString)
-		throws NamespaceException;
 
 }
