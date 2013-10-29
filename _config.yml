@@ -12,6 +12,7 @@ repo_base_url: "https://github.com/italiangrid"
 
 sysadmin_guide_version: 1.11.2
 functional_description_version: 1.11.2
+webdav_guide_version: 3.0.0
 
 storm_components:
     - name: StoRM Backend
