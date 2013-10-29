@@ -427,6 +427,8 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 |GROUPS\_CONF		|Path to the file containing information on the map- ping between VOMS groups and roles to local groups. An example of this configuration file is given in /opt/glite/yaim/examples/groups.conf file. More details can be found in the Group configuration section in the YAIM guide. | Yes
 |MYSQL\_PASSWORD	|mysql root password.<br/>Example: MYSQL\_PASSWORD="carpediem" | Yes
 |VOS				|List of supported VOs.<br/>Example: VOS="testers.eu-emi.eu dteam" | Yes
+|STORM_BE_XMLRPC_TOKEN	|Token used in communication to the StoRM backend | Yes
+
 
 {% assign label_title="Table 1" %}
 {% assign label_description="General YAIM Variables." %}
@@ -735,6 +737,7 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 |:------------------|:------------------|
 |	be.xmlrpc.host			|	Backend hostname. Default is **localhost**
 |	be.xmlrpc.port			|	XML-RPC server port running on the Backend machine.<br/>Default is **8080**
+|	be.xmlrpc.token	|	Token used for communicating with the backend service. Mandatory, has no default
 |	be.xmlrpc.path			|	XML-RPC server path. Default is **/RPC2**
 |	be.xmlrpc.check.ascii	|	Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
 
@@ -920,6 +923,9 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 |:------------------|:------------------|
 |	synchcall.xmlrpc.unsecureServerPort	|	Port to listen on for incoming XML-RPC connections from Frontends(s). Default: **8080**
 |	synchcall.xmlrpc.maxthread			|	Number of threads managing XML-RPC connection from Frontends(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
+|	synchcall.xmlrpc.token.enabled	|	Whether the backend will require a token to be present for accpeting XML-RPC requests. Default: true
+|	synchcall.xmlrpc.token	|	The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
+
 
 <br/>
 > **_REST interface parameters_**
@@ -1504,6 +1510,7 @@ GridHTTPs interacts with StoRM Backend to configure itself in bootstrap phase, t
 |backend.hostname		|StoRM Backend server full hostname. <br/>**Mandatory**
 |backend.authorization-service.port	|StoRM Backend server REST port.<br/>Default value: **9998**
 |backend.srm-service.port	|StoRM Backend server XMLRPC port.<br/>Default value: **8080**
+|backend.xmlrpc.token	|Token used for communicating with the backend service. Mandatory, has no default
 
 <br/>
 GridHTTPs works with SURLs so it needs to know a valid SRM endpoint:
