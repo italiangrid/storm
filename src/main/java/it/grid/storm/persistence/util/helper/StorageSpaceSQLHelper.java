@@ -399,18 +399,27 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param voname
 	 *          string
 	 * @return String.
+	 * @throws SQLException
 	 */
-	/*
-	 * public String selectBySpaceType(String voname) {
-	 * 
-	 * 
-	 * This is to distinguish a client reseve space with a VOSpaceArea both with
-	 * the same token. Only the one made by the namespace process contains a fake
-	 * dn
-	 * 
-	 * 
-	 * return "SELECT * FROM `storage_space` where SPACE_TYPE='" + voname + "'"; }
-	 */
+
+	public PreparedStatement selectBySpaceType(Connection conn, String voname)
+		throws SQLException {
+
+		/*
+		 * This is to distinguish a client reseve space with a VOSpaceArea both with
+		 * the same token. Only the one made by the namespace process contains a
+		 * fake dn
+		 */
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM storage_space where SPACE_TYPE=?";
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setString(1, voname);
+
+		return preparedStatement;
+	}
 
 	/**
 	 * This method return the SQL query to evaluate all expired space reservation
@@ -459,15 +468,24 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	/**
 	 * @param lastUpdateTimestamp
 	 * @return
+	 * @throws SQLException
 	 */
-	/*
-	 * public String selectByPreviousOrNullLastUpdateQuery(long
-	 * lastUpdateTimestamp) {
-	 * 
-	 * return "SELECT * FROM `storage_space` where " + COLS.get("update_time") +
-	 * " IS NULL or UNIX_TIMESTAMP(" + COLS.get("update_time") + ") < " +
-	 * lastUpdateTimestamp; }
-	 */
+
+	public PreparedStatement selectByPreviousOrNullLastUpdateQuery(
+		Connection conn, long lastUpdateTimestamp) throws SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM storage_space where " + COLS.get("update_time")
+			+ " IS NULL or UNIX_TIMESTAMP(" + COLS.get("update_time") + ") < ?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setLong(1, lastUpdateTimestamp);
+
+		return preparedStatement;
+
+	}
 
 	/**
 	 * Returns the SQL query for removing a row from the table 'storage_space' in
@@ -522,82 +540,98 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param ssTO
 	 * @return
 	 * @throws IllegalArgumentException
+	 * @throws SQLException
 	 */
-	public String updateByAliasAndTokenQuery(StorageSpaceTO ssTO)
-		throws IllegalArgumentException {
+	public PreparedStatement updateByAliasAndTokenQuery(Connection conn,
+		StorageSpaceTO ssTO) throws IllegalArgumentException, SQLException {
+
+		List<String> values = new LinkedList<String>();
 
 		if (ssTO == null) {
 			throw new IllegalArgumentException();
 		}
-		String query = "UPDATE `storage_space` SET";
+		String query = "UPDATE storage_space SET";
 		if (ssTO.getOwnerName() != null) {
-			query += " `" + COLS.get("ownerName") + "` = "
-				+ format(ssTO.getOwnerName()) + " ,";
+			query += " " + COLS.get("ownerName") + " = ?" + " ,";
+			values.add(format(ssTO.getOwnerName()));
 		}
-		query += " `" + COLS.get("ownerVO") + "` = "
-			+ format(getVOName(ssTO.getVoName())) + " ,";
+
+		query += " " + COLS.get("ownerVO") + " = ?" + " ,";
+		values.add(format(getVOName(ssTO.getVoName())));
+
 		if (ssTO.getCreated() != null) {
-			query += " `" + COLS.get("created") + "` = " + format(ssTO.getCreated())
-				+ " ,";
+			query += " " + COLS.get("created") + " = ?" + " ,";
+			values.add(format(ssTO.getCreated()));
 		}
 		if (ssTO.getSpaceFile() != null) {
-			query += " `" + COLS.get("spaceFile") + "` = "
-				+ format(ssTO.getSpaceFile()) + " ,";
+			query += " " + COLS.get("spaceFile") + " = ?" + " ,";
+			values.add(format(ssTO.getSpaceFile()));
 		}
 		if (ssTO.getStorageInfo() != null) {
-			query += " `" + COLS.get("storaqeInfo") + "` = "
-				+ format(ssTO.getStorageInfo()) + " ,";
+			query += " " + COLS.get("storaqeInfo") + " = ?" + " ,";
+			values.add(format(ssTO.getStorageInfo()));
 		}
 		if (ssTO.getLifetime() != -1) {
-			query += " `" + COLS.get("lifeTime") + "` = "
-				+ format(ssTO.getLifetime()) + " ,";
+			query += " " + COLS.get("lifeTime") + " = ?" + " ,";
+			values.add(format(ssTO.getLifetime()));
 		}
 		if (ssTO.getSpaceType() != null) {
-			query += " `" + COLS.get("spaceType") + "` = "
-				+ format(ssTO.getSpaceType()) + " ,";
+			query += " " + COLS.get("spaceType") + " = ?" + " ,";
+			values.add(format(ssTO.getSpaceType()));
 		}
 		if ((ssTO.getTotalSize() != 0) || (ssTO.getTotalSize() != -1)) {
-			query += " `" + COLS.get("total_size") + "` = "
-				+ format(ssTO.getTotalSize()) + " ,";
+			query += " " + COLS.get("total_size") + " = ?" + " ,";
+			values.add(format(ssTO.getTotalSize()));
 		}
 		if ((ssTO.getGuaranteedSize() != 0) || (ssTO.getGuaranteedSize() != -1)) {
-			query += " `" + COLS.get("guar_size") + "` = "
-				+ format(ssTO.getGuaranteedSize()) + " ,";
+			query += " " + COLS.get("guar_size") + " = ?" + " ,";
+			values.add(format(ssTO.getGuaranteedSize()));
 		}
 		if ((ssTO.getFreeSize() != 0) || (ssTO.getFreeSize() != -1)) {
-			query += " `" + COLS.get("free_size") + "` = "
-				+ format(ssTO.getFreeSize()) + " ,";
+			query += " " + COLS.get("free_size") + " = ?" + " ,";
+			values.add(format(ssTO.getFreeSize()));
 		}
 		if ((ssTO.getUsedSize() != 0) || (ssTO.getUsedSize() != -1)) {
-			query += " `" + COLS.get("used_size") + "` = "
-				+ format(ssTO.getUsedSize()) + " ,";
+			query += " " + COLS.get("used_size") + " = ?" + " ,";
+			values.add(format(ssTO.getUsedSize()));
 		}
 		if ((ssTO.getBusySize() != 0) || (ssTO.getBusySize() != -1)) {
-			query += " `" + COLS.get("busy_size") + "` = "
-				+ format(ssTO.getBusySize()) + " ,";
+			query += " " + COLS.get("busy_size") + " = ?" + " ,";
+			values.add(format(ssTO.getBusySize()));
 		}
 		if ((ssTO.getUnavailableSize() != 0) || (ssTO.getUnavailableSize() != -1)) {
-			query += " `" + COLS.get("unavailable_size") + "` = "
-				+ format(ssTO.getUnavailableSize()) + " ,";
+			query += " " + COLS.get("unavailable_size") + " = ?" + " ,";
+			values.add(format(ssTO.getUnavailableSize()));
 		}
 		if ((ssTO.getAvailableSize() != 0) || (ssTO.getAvailableSize() != -1)) {
-			query += " `" + COLS.get("available_size") + "` = "
-				+ format(ssTO.getAvailableSize()) + " ,";
+			query += " " + COLS.get("available_size") + " = ?" + " ,";
+			values.add(format(ssTO.getAvailableSize()));
 		}
 		if ((ssTO.getReservedSize() != 0) || (ssTO.getReservedSize() != -1)) {
-			query += " `" + COLS.get("reserved_size") + "` = "
-				+ format(ssTO.getReservedSize()) + " ,";
+			query += " " + COLS.get("reserved_size") + " = ?" + " ,";
+			values.add(format(ssTO.getReservedSize()));
 		}
 		if (ssTO.getUpdateTime() != null) {
-			query += " `" + COLS.get("update_time") + "` = "
-				+ format(ssTO.getUpdateTime()) + "";
+			query += " " + COLS.get("update_time") + " = ?" + " ,";
+			values.add(format(ssTO.getUpdateTime()));
 		}
 		if (query.charAt(query.length() - 1) == ',') {
 			query = query.substring(0, query.length() - 1);
 		}
-		query += " where `" + COLS.get("alias") + "` = " + format(ssTO.getAlias())
-			+ " and `" + COLS.get("token") + "` = " + format(ssTO.getSpaceToken());
-		return query;
+		query += " where " + COLS.get("alias") + " = ?" + " and " + COLS.get("token") + " = ?";
+
+		values.add(format(ssTO.getAlias()));
+		values.add(format(ssTO.getSpaceToken()));
+
+		PreparedStatement preparedStatement = conn.prepareStatement(query);
+
+		int index = 1;
+		for (String val : values) {
+			preparedStatement.setString(index, val);
+			index++;
+		}
+
+		return preparedStatement;
 	}
 
 	/**
@@ -607,86 +641,101 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param ssTO
 	 * @return
 	 * @throws IllegalArgumentException
+	 * @throws SQLException
 	 */
-	public String updateByTokenQuery(StorageSpaceTO ssTO)
-		throws IllegalArgumentException {
+	public PreparedStatement updateByTokenQuery(Connection conn,
+		StorageSpaceTO ssTO) throws IllegalArgumentException, SQLException {
+
+		List<String> values = new LinkedList<String>();
 
 		if (ssTO == null) {
 			throw new IllegalArgumentException();
 		}
-		String query = "UPDATE `storage_space` SET";
+		String query = "UPDATE storage_space SET";
 		if (ssTO.getOwnerName() != null) {
-			query += " `" + COLS.get("ownerName") + "` = "
-				+ format(ssTO.getOwnerName()) + " ,";
+			query += " " + COLS.get("ownerName") + " = ?" + " ,";
+			values.add(format(ssTO.getOwnerName()));
 		}
-		query += " `" + COLS.get("ownerVO") + "` = "
-			+ format(getVOName(ssTO.getVoName())) + " ,";
+
+		query += " " + COLS.get("ownerVO") + " = ?" + " ,";
+		values.add((getVOName(ssTO.getVoName())));
+
 		if (ssTO.getCreated() != null) {
-			query += " `" + COLS.get("created") + "` = " + format(ssTO.getCreated())
-				+ " ,";
+			query += " " + COLS.get("created") + " = ?" + " ,";
+			values.add(format(ssTO.getCreated()));
 		}
 		if (ssTO.getAlias() != null) {
-			query += " `" + COLS.get("alias") + "` = " + format(ssTO.getAlias())
-				+ " ,";
+			query += " " + COLS.get("alias") + " = ?" + " ,";
+			values.add(format(ssTO.getAlias()));
 		}
 		if (ssTO.getSpaceFile() != null) {
-			query += " `" + COLS.get("spaceFile") + "` = "
-				+ format(ssTO.getSpaceFile()) + " ,";
+			query += " " + COLS.get("spaceFile") + " = ?" + " ,";
+			values.add(format(ssTO.getSpaceFile()));
 		}
 		if (ssTO.getStorageInfo() != null) {
-			query += " `" + COLS.get("storaqeInfo") + "` = "
-				+ format(ssTO.getStorageInfo()) + " ,";
+			query += " " + COLS.get("storaqeInfo") + " = ?" + " ,";
+			values.add(format(ssTO.getStorageInfo()));
 		}
 		if (ssTO.getLifetime() != -1) {
-			query += " `" + COLS.get("lifeTime") + "` = "
-				+ format(ssTO.getLifetime()) + " ,";
+			query += " " + COLS.get("lifeTime") + " = ?" + " ,";
+			values.add(format(ssTO.getLifetime()));
 		}
 		if (ssTO.getSpaceType() != null) {
-			query += " `" + COLS.get("spaceType") + "` = "
-				+ format(ssTO.getSpaceType()) + " ,";
+			query += " " + COLS.get("spaceType") + " = ?" + " ,";
+			values.add(format(ssTO.getSpaceType()));
 		}
 		if ((ssTO.getTotalSize() != 0) || (ssTO.getTotalSize() != -1)) {
-			query += " `" + COLS.get("total_size") + "` = "
-				+ format(ssTO.getTotalSize()) + " ,";
+			query += " " + COLS.get("total_size") + " = ?" + " ,";
+			values.add(format(ssTO.getTotalSize()));
 		}
 		if ((ssTO.getGuaranteedSize() != 0) || (ssTO.getGuaranteedSize() != -1)) {
-			query += " `" + COLS.get("guar_size") + "` = "
-				+ format(ssTO.getGuaranteedSize()) + " ,";
+			query += " " + COLS.get("guar_size") + " = ?" + " ,";
+			values.add(format(ssTO.getGuaranteedSize()));
 		}
 		if ((ssTO.getFreeSize() != 0) || (ssTO.getFreeSize() != -1)) {
-			query += " `" + COLS.get("free_size") + "` = "
-				+ format(ssTO.getFreeSize()) + " ,";
+			query += " " + COLS.get("free_size") + " = ?" + " ,";
+			values.add(format(ssTO.getFreeSize()));
 		}
 		if ((ssTO.getUsedSize() != 0) || (ssTO.getUsedSize() != -1)) {
-			query += " `" + COLS.get("used_size") + "` = "
-				+ format(ssTO.getUsedSize()) + " ,";
+			query += " " + COLS.get("used_size") + " = ?" + " ,";
+			values.add(format(ssTO.getUsedSize()));
 		}
 		if ((ssTO.getBusySize() != 0) || (ssTO.getBusySize() != -1)) {
-			query += " `" + COLS.get("busy_size") + "` = "
-				+ format(ssTO.getBusySize()) + " ,";
+			query += " " + COLS.get("busy_size") + " = ?" + " ,";
+			values.add(format(ssTO.getBusySize()));
 		}
 		if ((ssTO.getUnavailableSize() != 0) || (ssTO.getUnavailableSize() != -1)) {
-			query += " `" + COLS.get("unavailable_size") + "` = "
-				+ format(ssTO.getUnavailableSize()) + " ,";
+			query += " " + COLS.get("unavailable_size") + " = ?" + " ,";
+			values.add(format(ssTO.getUnavailableSize()));
 		}
 		if ((ssTO.getAvailableSize() != 0) || (ssTO.getAvailableSize() != -1)) {
-			query += " `" + COLS.get("available_size") + "` = "
-				+ format(ssTO.getAvailableSize()) + " ,";
+			query += " " + COLS.get("available_size") + " = ?" + " ,";
+			values.add(format(ssTO.getAvailableSize()));
 		}
 		if ((ssTO.getReservedSize() != 0) || (ssTO.getReservedSize() != -1)) {
-			query += " `" + COLS.get("reserved_size") + "` = "
-				+ format(ssTO.getReservedSize()) + " ,";
+			query += " " + COLS.get("reserved_size") + " = ?" + " ,";
+			values.add(format(ssTO.getReservedSize()));
 		}
 		if (ssTO.getUpdateTime() != null) {
-			query += " `" + COLS.get("update_time") + "` = "
-				+ format(ssTO.getUpdateTime()) + "";
+			query += " " + COLS.get("update_time") + " = ?" + " ,";
+			values.add(format(ssTO.getUpdateTime()));
 		}
 		if (query.charAt(query.length() - 1) == ',') {
 			query = query.substring(0, query.length() - 1);
 		}
-		query += " where `" + COLS.get("token") + "` = "
-			+ format(ssTO.getSpaceToken());
-		return query;
+		query += " where " + COLS.get("token") + " = ?";
+
+		values.add(format(format(ssTO.getSpaceToken())));
+
+		PreparedStatement preparedStatement = conn.prepareStatement(query);
+
+		int index = 1;
+		for (String val : values) {
+			preparedStatement.setString(index, val);
+			index++;
+		}
+
+		return preparedStatement;
 	}
 
 	/**

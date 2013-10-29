@@ -441,19 +441,22 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 				+ timestampColumn + "=\'?" + "\' " + " WHERE " + COL_GROUP_TASK_ID
 				+ "=?";
 
-			for (int i = 1; i < taskList.size(); i++) {			
+			for (int i = 1; i < taskList.size(); i++) {
 				str += " OR " + COL_GROUP_TASK_ID + "=?";
 			}
 
 			preparedStatement = conn.prepareStatement(str);
 
 			preparedStatement.setInt(1, statusId);
-			preparedStatement.setTimestamp(2,	new java.sql.Timestamp(timestamp.getTime()));
-			preparedStatement.setString(3, formatString(taskList.get(0)	.getGroupTaskId().toString()));
+			preparedStatement.setTimestamp(2,
+				new java.sql.Timestamp(timestamp.getTime()));
+			preparedStatement.setString(3, formatString(taskList.get(0)
+				.getGroupTaskId().toString()));
 
 			int idx = 4;
 			for (int i = 1; i < taskList.size(); i++) {
-				preparedStatement.setString(idx, taskList.get(i).getGroupTaskId().toString());
+				preparedStatement.setString(idx, taskList.get(i).getGroupTaskId()
+					.toString());
 				idx++;
 			}
 		} else {

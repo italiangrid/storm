@@ -221,7 +221,6 @@ public class ReservedSpaceCatalog {
 	public void updateStorageSpaceFreeSpace(StorageSpaceData ssd)
 		throws DataAccessException {
 
-	
 		ssDAO = daoFactory.getStorageSpaceDAO();
 		ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
 		StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
@@ -229,7 +228,7 @@ public class ReservedSpaceCatalog {
 		ssTO.setUpdateTime(new Date());
 		ssDAO.updateStorageSpaceFreeSpace(ssTO);
 		ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
-	
+
 	}
 
 	/**
@@ -371,7 +370,8 @@ public class ReservedSpaceCatalog {
 	 * @param lastUpdateTimestamp
 	 * @return
 	 */
-	/*public List<StorageSpaceData> getStorageSpaceByLastUpdate(
+
+	public List<StorageSpaceData> getStorageSpaceByLastUpdate(
 		Date lastUpdateTimestamp) {
 
 		log.debug("Retrieve Storage Space not initialized start ");
@@ -383,7 +383,7 @@ public class ReservedSpaceCatalog {
 		} catch (DataAccessException daEx) {
 			log.debug("Error while retrieving StorageSpaceDAO.", daEx);
 		}
-		// Get StorageSpaceTO form persistence
+		// GetStorageSpaceTO form persistence
 		try {
 			Collection<StorageSpaceTO> storagesSpaceTOCollection = ssDAO
 				.getStorageSpaceByPreviousLastUpdate(lastUpdateTimestamp);
@@ -406,7 +406,7 @@ public class ReservedSpaceCatalog {
 			log.debug("Error while retrieving StorageSpace", daEx);
 		}
 		return result;
-	}*/
+	}
 
 	/**
 	 * 
@@ -523,7 +523,7 @@ public class ReservedSpaceCatalog {
 	 * @return
 	 */
 
-	/*public ArrayOfTSpaceToken getSpaceTokensBySpaceType(String stype) {
+	public ArrayOfTSpaceToken getSpaceTokensBySpaceType(String stype) {
 
 		ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
@@ -566,7 +566,7 @@ public class ReservedSpaceCatalog {
 				"Generic Error while retrieving StorageSpace", e);
 		}
 		return result;
-	}*/
+	}
 
 	// ************************ CHECH BELOW METHODS ***************************
 

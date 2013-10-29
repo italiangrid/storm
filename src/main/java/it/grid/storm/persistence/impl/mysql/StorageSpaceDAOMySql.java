@@ -166,26 +166,41 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	 * @return Collection of StorageSpaceTO.
 	 * @throws DataAccessException
 	 */
-	/*
-	 * public Collection<StorageSpaceTO> getStorageSpaceBySpaceType(String stype)
-	 * throws DataAccessException {
-	 * 
-	 * StorageSpaceTO ssTO = null; Collection<StorageSpaceTO> result = new
-	 * LinkedList<StorageSpaceTO>();
-	 * 
-	 * String query = helper.selectBySpaceType(stype); log.debug("DB query = " +
-	 * query);
-	 * 
-	 * Connection conn = getConnection(); ResultSet res = null; Statement stat =
-	 * null; try { stat = getStatement(conn); res = stat.executeQuery(query);
-	 * log.debug("query result = " + res); if (res.first() == false) {
-	 * log.info("No rows found for query : " + query); } else { // Fetch each row
-	 * from the result set do { ssTO = helper.makeStorageSpaceTO(res);
-	 * result.add(ssTO); } while (res.next()); } } catch (SQLException e) {
-	 * log.error("Error while executing DB query", e); throw new
-	 * DataAccessException("Error while executing DB query", e); } finally {
-	 * releaseConnection(res, stat, conn); } return result; }
-	 */
+
+	public Collection<StorageSpaceTO> getStorageSpaceBySpaceType(String stype)
+		throws DataAccessException {
+
+		StorageSpaceTO ssTO = null;
+		Collection<StorageSpaceTO> result = new LinkedList<StorageSpaceTO>();
+
+		PreparedStatement prepStatement = null;
+
+		Connection conn = getConnection();
+		ResultSet res = null;
+		Statement stat = null;
+		try {
+			prepStatement = helper.selectBySpaceType(conn, stype);
+			log.debug("DB query = " + prepStatement.toString());
+
+			res = prepStatement.executeQuery();
+			log.debug("query result = " + res);
+			if (res.first() == false) {
+				log.info("No rows found for query : " + prepStatement.toString());
+			} else {
+				// Fetch each row from the result set
+				do {
+					ssTO = helper.makeStorageSpaceTO(res);
+					result.add(ssTO);
+				} while (res.next());
+			}
+		} catch (SQLException e) {
+			log.error("Error while executing DB query", e);
+			throw new DataAccessException("Error while executing DB query", e);
+		} finally {
+			releaseConnection(res, stat, conn);
+		}
+		return result;
+	}
 
 	/**
 	 * Returns a Collection of StorageSpaceTO with the specified alias
@@ -306,27 +321,43 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	}
 
 	@Override
-	/*
-	 * public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate( Date
-	 * lastUpdateTimestamp) throws DataAccessException {
-	 * 
-	 * StorageSpaceTO ssTO = null; Collection<StorageSpaceTO> result = new
-	 * LinkedList<StorageSpaceTO>();
-	 * 
-	 * String query = helper
-	 * .selectByPreviousOrNullLastUpdateQuery(lastUpdateTimestamp.getTime());
-	 * log.debug("SELECT query = " + query);
-	 * 
-	 * Connection conn = getConnection(); ResultSet res = null; Statement stat =
-	 * null; try { stat = getStatement(conn); res = stat.executeQuery(query);
-	 * log.debug("SELECT result = " + res); if (res.first() == false) {
-	 * log.info("No rows found for query : " + query); } else { // Fetch each row
-	 * from the result set do { ssTO = helper.makeStorageSpaceTO(res);
-	 * result.add(ssTO); } while (res.next()); } } catch (SQLException ex) {
-	 * log.error("Error while executing SELECT query", ex); throw new
-	 * DataAccessException("Error while executing INSERT query", ex); } finally {
-	 * releaseConnection(res, stat, conn); } return result; }
-	 */
+	public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate(
+		Date lastUpdateTimestamp) throws DataAccessException {
+
+		StorageSpaceTO ssTO = null;
+		Collection<StorageSpaceTO> result = new LinkedList<StorageSpaceTO>();
+
+		Connection conn = getConnection();
+		ResultSet res = null;
+		Statement stat = null;
+
+		PreparedStatement prepStatement = null;
+
+		try {
+			prepStatement = helper.selectByPreviousOrNullLastUpdateQuery(conn,
+				lastUpdateTimestamp.getTime());
+			log.debug("SELECT query = " + prepStatement.toString());
+
+			res = prepStatement.executeQuery();
+			log.debug("SELECT result = " + res);
+			if (res.first() == false) {
+				log.info("No rows found for query : " + prepStatement.toString());
+			} else {
+				// Fetch each row from the result set
+				do {
+					ssTO = helper.makeStorageSpaceTO(res);
+					result.add(ssTO);
+				} while (res.next());
+			}
+		} catch (SQLException ex) {
+			log.error("Error while executing SELECT query", ex);
+			throw new DataAccessException("Error while executing INSERT query", ex);
+		} finally {
+			releaseConnection(res, stat, conn);
+		}
+		return result;
+	}
+
 	/**
 	 * removeStorageSpace
 	 * 
@@ -404,22 +435,24 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	public void updateStorageSpace(StorageSpaceTO ssTO)
 		throws DataAccessException {
 
-		String query = helper.updateByAliasAndTokenQuery(ssTO);
-
-		log.debug("UPDATE query = " + query);
+		PreparedStatement prepStatement = null;
 
 		Connection conn = getConnection();
 		Statement stat = null;
 		try {
-			stat = getStatement(conn);
-			int res = stat.executeUpdate(query);
+			prepStatement = helper.updateByAliasAndTokenQuery(conn, ssTO);
+			log.debug("UPDATE query = " + prepStatement.toString());
+
+			int res = prepStatement.executeUpdate();
 			log.debug("UPDATE row count = " + res);
+
 			if (res != 1) {
 				if (res < 1) {
-					log.error("No storage space rows updated by query : " + query);
+					log.error("No storage space rows updated by query : "
+						+ prepStatement.toString());
 				} else {
 					log.warn("More than a single storage space rows updated by query : "
-						+ query + " updated " + res + " rows");
+						+ prepStatement.toString() + " updated " + res + " rows");
 				}
 			}
 		} catch (SQLException ex) {
@@ -478,21 +511,24 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		// ss.getAlias(),
 		// ss.getGuaranteedSize(),
 		// ss.getSpaceFile(), ss.getUpdateTime());
-		String query = helper.updateByTokenQuery(ssTO);
-		log.debug("UPDATE query = " + query);
 
 		Connection conn = getConnection();
 		Statement stat = null;
+		PreparedStatement prepStatement = null;
+
 		try {
-			stat = getStatement(conn);
-			int res = stat.executeUpdate(query);
+			prepStatement = helper.updateByTokenQuery(conn, ssTO);
+			log.debug("UPDATE query = " + prepStatement.toString());
+
+			int res = prepStatement.executeUpdate();
 			log.debug("UPDATE row count = " + res);
 			if (res != 1) {
 				if (res < 1) {
-					log.error("No storage space rows updated by query : " + query);
+					log.error("No storage space rows updated by query : "
+						+ prepStatement.toString());
 				} else {
 					log.warn("More than a single storage space rows updated by query : "
-						+ query + " updated " + res + " rows");
+						+ prepStatement.toString() + " updated " + res + " rows");
 				}
 			}
 		} catch (SQLException ex) {
