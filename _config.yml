@@ -10,14 +10,14 @@ issue_base_url: "https://issues.infn.it/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
 repo_base_url: "https://github.com/italiangrid"
 
-sysadmin_guide_version: 1.11.2
+sysadmin_guide_version: 1.11.3
 functional_description_version: 1.11.2
 webdav_guide_version: 3.0.0
 
 storm_components:
     - name: StoRM Backend
       package: storm-backend-server
-      latest: 1.11.2
+      latest: 1.11.3
       new: true
       repo: StoRM
       visibility: show
