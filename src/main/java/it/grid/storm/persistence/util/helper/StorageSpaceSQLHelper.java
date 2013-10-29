@@ -17,17 +17,20 @@
 
 package it.grid.storm.persistence.util.helper;
 
+import it.grid.storm.common.types.VO;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.persistence.model.StorageSpaceTO;
 import it.grid.storm.persistence.util.db.InsertBuilder;
 import it.grid.storm.persistence.util.db.SQLHelper;
-import java.util.Date;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
-
-import it.grid.storm.common.types.VO;
-
-import it.grid.storm.griduser.GridUserInterface;
+import java.util.LinkedList;
+import java.util.List;
 
 public class StorageSpaceSQLHelper extends SQLHelper {
 
@@ -87,87 +90,127 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param ssTO
 	 *          StorageSpaceTO
 	 * @return String
+	 * @throws SQLException
 	 */
-	public String insertQuery(StorageSpaceTO ssTO) {
 
-		builder = new InsertBuilder();
-		builder.setTable(TABLE_NAME);
+	public PreparedStatement insertQuery(Connection conn, StorageSpaceTO ssTO)
+		throws SQLException {
+
+		List<String> values = new LinkedList<String>();
+
+		StringBuilder fields = new StringBuilder("(");
+		StringBuilder placeholders = new StringBuilder("(");
+
 		if (ssTO != null) {
 			if (ssTO.getOwnerName() != null) {
-				builder.addColumnAndData((String) COLS.get("ownerName"),
-					format(ssTO.getOwnerName()));
+				fields.append(COLS.get("ownerName") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getOwnerName()));
 			}
-			builder.addColumnAndData(COLS.get("ownerVO"),
-				format(getVOName(ssTO.getVoName())));
+
+			fields.append(COLS.get("ownerVO") + (","));
+			placeholders.append("?,");
+			values.add(format(ssTO.getVoName()));
+
 			if (ssTO.getAlias() != null) {
-				builder.addColumnAndData((String) COLS.get("alias"),
-					format(ssTO.getAlias()));
+				fields.append(COLS.get("alias") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getAlias()));
 			}
 			if (ssTO.getSpaceToken() != null) {
-				builder.addColumnAndData((String) COLS.get("token"),
-					format(ssTO.getSpaceToken()));
+				fields.append(COLS.get("token") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getSpaceToken()));
 			}
 			if (ssTO.getCreated() != null) {
-				builder.addColumnAndData((String) COLS.get("created"),
-					format(ssTO.getCreated()));
+				fields.append(COLS.get("created") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getCreated()));
 			}
 			if (ssTO.getSpaceFile() != null) {
-				builder.addColumnAndData((String) COLS.get("spaceFile"),
-					format(ssTO.getSpaceFile()));
+				fields.append(COLS.get("spaceFile") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getSpaceFile()));
 			}
 			if (ssTO.getStorageInfo() != null) {
-				builder.addColumnAndData((String) COLS.get("storaqeInfo"),
-					format(ssTO.getStorageInfo()));
+				fields.append(COLS.get("storaqeInfo") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getStorageInfo()));
 			}
 			if (ssTO.getLifetime() != -1) {
-				builder.addColumnAndData((String) COLS.get("lifeTime"),
-					format(ssTO.getLifetime()));
+				fields.append(COLS.get("lifeTime") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getLifetime()));
 			}
 			if (ssTO.getSpaceType() != null) {
-				builder.addColumnAndData((String) COLS.get("spaceType"),
-					format(ssTO.getSpaceType()));
+				fields.append(COLS.get("spaceType") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getSpaceType()));
 			}
 			if ((ssTO.getTotalSize() != 0) || (ssTO.getTotalSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("total_size"),
-					format(ssTO.getTotalSize()));
+				fields.append(COLS.get("total_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getTotalSize()));
 			}
 			if ((ssTO.getGuaranteedSize() != 0) || (ssTO.getGuaranteedSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("guar_size"),
-					format(ssTO.getGuaranteedSize()));
+				fields.append(COLS.get("guar_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getGuaranteedSize()));
 			}
 			if ((ssTO.getFreeSize() != 0) || (ssTO.getFreeSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("free_size"),
-					format(ssTO.getFreeSize()));
+				fields.append(COLS.get("free_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getFreeSize()));
 			}
 			if ((ssTO.getUsedSize() != 0) || (ssTO.getUsedSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("used_size"),
-					format(ssTO.getUsedSize()));
+				fields.append(COLS.get("used_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getUsedSize()));
 			}
 			if ((ssTO.getBusySize() != 0) || (ssTO.getBusySize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("busy_size"),
-					format(ssTO.getBusySize()));
+				fields.append(COLS.get("busy_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getBusySize()));
 			}
 			if ((ssTO.getUnavailableSize() != 0) || (ssTO.getUnavailableSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("unavailable_size"),
-					format(ssTO.getUnavailableSize()));
+				fields.append(COLS.get("unavailable_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getUnavailableSize()));
 			}
 
 			if ((ssTO.getAvailableSize() != 0) || (ssTO.getAvailableSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("available_size"),
-					format(ssTO.getAvailableSize()));
+				fields.append(COLS.get("available_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getAvailableSize()));
 			}
 			if ((ssTO.getReservedSize() != 0) || (ssTO.getReservedSize() != -1)) {
-				builder.addColumnAndData((String) COLS.get("reserved_size"),
-					format(ssTO.getReservedSize()));
+				fields.append(COLS.get("reserved_size") + (","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getReservedSize()));
 			}
 			if (ssTO.getUpdateTime() != null) {
-				builder.addColumnAndData((String) COLS.get("update_time"),
-					format(ssTO.getUpdateTime()));
+				fields.append(COLS.get("update_time").concat(","));
+				placeholders.append("?,");
+				values.add(format(ssTO.getUpdateTime()));
 			}
 		}
 
-		String sql = buildSQL(builder);
-		return sql;
+		fields.deleteCharAt(fields.length() - 1);
+		fields.append(")");
+		placeholders.deleteCharAt(placeholders.length() - 1);
+		placeholders.append(")");
+
+		String str = "INSERT INTO " + TABLE_NAME + " " + fields.toString()
+			+ " VALUES " + placeholders.toString();
+		PreparedStatement preparedStatement = conn.prepareStatement(str);
+
+		int index = 1;
+		for (String val : values) {
+			preparedStatement.setString(index, val);
+			index++;
+		}
+
+		return preparedStatement;
 	}
 
 	/**
@@ -268,11 +311,21 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * 
 	 * @param token
 	 *          String
+	 * @param conn
 	 * @return String
+	 * @throws SQLException
 	 */
-	public String selectByTokenQuery(String token) {
+	public PreparedStatement selectByTokenQuery(Connection conn, String token)
+		throws SQLException {
 
-		return "SELECT * FROM `storage_space` where space_token='" + token + "'";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM  storage_space where space_token=?";
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setString(1, token);
+
+		return preparedStatement;
 	}
 
 	/**
@@ -285,17 +338,27 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param spaceAlias
 	 *          String.
 	 * @return String.
+	 * @throws SQLException
 	 */
-	public String selectBySpaceAliasQuery(GridUserInterface user,
-		String spaceAlias) {
+	public PreparedStatement selectBySpaceAliasQuery(Connection conn,
+		GridUserInterface user, String spaceAlias) throws SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
 		String dn = user.getDn();
 
-		if ((spaceAlias == null) || (spaceAlias.length() == 0))
-			return "SELECT * FROM `storage_space` where userdn='" + dn + "'";
-
-		return "SELECT * FROM `storage_space` where userdn='" + dn
-			+ "' AND alias='" + spaceAlias + "'";
+		if ((spaceAlias == null) || (spaceAlias.length() == 0)) {
+			str = "SELECT * FROM storage_space where userdn=?";
+			preparedStatement = conn.prepareStatement(str);
+			preparedStatement.setString(1, dn);
+		} else {
+			str = "SELECT * FROM storage_space where userdn=? AND alias=?";
+			preparedStatement = conn.prepareStatement(str);
+			preparedStatement.setString(1, dn);
+			preparedStatement.setString(2, spaceAlias);
+		}
+		return preparedStatement;
 	}
 
 	/**
@@ -308,8 +371,10 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param spaceAlias
 	 *          String.
 	 * @return String.
+	 * @throws SQLException
 	 */
-	public String selectBySpaceAliasOnlyQuery(String spaceAlias) {
+	public PreparedStatement selectBySpaceAliasOnlyQuery(Connection conn,
+		String spaceAlias) throws SQLException {
 
 		/*
 		 * This is to distinguish a client reseve space with a VOSpaceArea both with
@@ -317,7 +382,14 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 		 * fake dn
 		 */
 
-		return "SELECT * FROM `storage_space` where alias='" + spaceAlias + "'";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM storage_space where alias=?";
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setString(1, spaceAlias);
+
+		return preparedStatement;
 	}
 
 	/**
@@ -328,16 +400,17 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 *          string
 	 * @return String.
 	 */
-	public String selectBySpaceType(String voname) {
-
-		/*
-		 * This is to distinguish a client reseve space with a VOSpaceArea both with
-		 * the same token. Only the one made by the namespace process contains a
-		 * fake dn
-		 */
-
-		return "SELECT * FROM `storage_space` where SPACE_TYPE='" + voname + "'";
-	}
+	/*
+	 * public String selectBySpaceType(String voname) {
+	 * 
+	 * 
+	 * This is to distinguish a client reseve space with a VOSpaceArea both with
+	 * the same token. Only the one made by the namespace process contains a fake
+	 * dn
+	 * 
+	 * 
+	 * return "SELECT * FROM `storage_space` where SPACE_TYPE='" + voname + "'"; }
+	 */
 
 	/**
 	 * This method return the SQL query to evaluate all expired space reservation
@@ -347,33 +420,54 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 *          Current time (in second) to compare to the reservationTime +
 	 *          lifetime
 	 * @return String SQL query
+	 * @throws SQLException
 	 */
-	public String selectExpiredQuery(long currentTimeInSecond) {
+	public PreparedStatement selectExpiredQuery(Connection conn,
+		long currentTimeInSecond) throws SQLException {
 
-		return "SELECT * FROM `storage_space` where  lifetime is not null and (UNIX_TIMESTAMP(created)+lifetime< "
-			+ currentTimeInSecond + ")";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM storage_space where  lifetime is not null and (UNIX_TIMESTAMP(created)+lifetime< ?)";
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setLong(1, currentTimeInSecond);
+
+		return preparedStatement;
+
 	}
 
 	/**
 	 * @param size
 	 * @return
+	 * @throws SQLException
 	 */
-	public String selectByUnavailableUsedSpaceSizeQuery(long unavailableSizeValue) {
+	public PreparedStatement selectByUnavailableUsedSpaceSizeQuery(
+		Connection conn, long unavailableSizeValue) throws SQLException {
 
-		return "SELECT * FROM `storage_space` where " + COLS.get("used_size")
-			+ " IS NULL or " + COLS.get("used_size") + "=" + unavailableSizeValue;
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM storage_space where " + COLS.get("used_size")
+			+ " IS NULL or " + COLS.get("used_size") + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setLong(1, unavailableSizeValue);
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param lastUpdateTimestamp
 	 * @return
 	 */
-	public String selectByPreviousOrNullLastUpdateQuery(long lastUpdateTimestamp) {
-
-		return "SELECT * FROM `storage_space` where " + COLS.get("update_time")
-			+ " IS NULL or UNIX_TIMESTAMP(" + COLS.get("update_time") + ") < "
-			+ lastUpdateTimestamp;
-	}
+	/*
+	 * public String selectByPreviousOrNullLastUpdateQuery(long
+	 * lastUpdateTimestamp) {
+	 * 
+	 * return "SELECT * FROM `storage_space` where " + COLS.get("update_time") +
+	 * " IS NULL or UNIX_TIMESTAMP(" + COLS.get("update_time") + ") < " +
+	 * lastUpdateTimestamp; }
+	 */
 
 	/**
 	 * Returns the SQL query for removing a row from the table 'storage_space' in
@@ -382,11 +476,21 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param user
 	 * @param spaceToken
 	 * @return
+	 * @throws SQLException
 	 */
-	public String removeByTokenQuery(GridUserInterface user, String spaceToken) {
+	public PreparedStatement removeByTokenQuery(Connection conn,
+		GridUserInterface user, String spaceToken) throws SQLException {
 
-		return "DELETE FROM `storage_space` WHERE ((USERDN='" + user.getDn()
-			+ "') AND (SPACE_TOKEN='" + spaceToken + "'))";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "DELETE FROM storage_space WHERE ((USERDN=?) AND (SPACE_TOKEN=?))";
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setString(1, user.getDn());
+		preparedStatement.setString(2, spaceToken);
+
+		return preparedStatement;
 	}
 
 	/**
@@ -395,11 +499,20 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * 
 	 * @param spaceToken
 	 * @return
+	 * @throws SQLException
 	 */
-	public String removeByTokenQuery(String spaceToken) {
+	public PreparedStatement removeByTokenQuery(Connection conn, String spaceToken)
+		throws SQLException {
 
-		return "DELETE FROM `storage_space` WHERE (SPACE_TOKEN='" + spaceToken
-			+ "')";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "DELETE FROM storage_space WHERE (SPACE_TOKEN=?)";
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setString(1, spaceToken);
+
+		return preparedStatement;
 	}
 
 	/**
@@ -583,13 +696,24 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 * @param freeSpace
 	 *          long
 	 * @return String
+	 * @throws SQLException
 	 */
-	public String updateFreeSpaceByTokenQuery(String token, long freeSpace,
-		Date updateTimestamp) {
+	public PreparedStatement updateFreeSpaceByTokenQuery(Connection conn,
+		String token, long freeSpace, Date updateTimestamp) throws SQLException {
 
-		return "UPDATE `storage_space` SET `free_size`=" + freeSpace + " , "
-			+ "`UPDATE_TIME`=" + format(updateTimestamp) + " WHERE space_token='"
-			+ token + "'";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "UPDATE storage_space SET free_size=?" + " , " + "UPDATE_TIME=?"
+			+ " WHERE space_token=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setLong(1, freeSpace);
+		preparedStatement.setString(2, format(updateTimestamp));
+		preparedStatement.setString(3, token);
+
+		return preparedStatement;
 	}
 
 	/**
@@ -600,23 +724,22 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 	 *          long
 	 * @return String
 	 */
-	public String updateSpaceSizesByTokenQuery(String token, long freeSpace,
-		long availableSpace, long usedSpace, long busySpace, long unavailableSpace,
-		Date updateTimestamp)
-
-	{
-
-		String query = "UPDATE `storage_space` SET ";
-		query += "`free_size`=" + freeSpace;
-		query += "`available_size`=" + availableSpace;
-		query += "`used_size`=" + usedSpace;
-		query += "`busy_size`=" + busySpace;
-		query += "`unavailable_size`=" + unavailableSpace;
-		query += "`UPDATE_TIME`=" + format(updateTimestamp);
-		query += " WHERE space_token='" + token + "'";
-
-		return query;
-
-	}
+	/*
+	 * public String updateSpaceSizesByTokenQuery(String token, long freeSpace,
+	 * long availableSpace, long usedSpace, long busySpace, long unavailableSpace,
+	 * Date updateTimestamp)
+	 * 
+	 * {
+	 * 
+	 * String query = "UPDATE `storage_space` SET "; query += "`free_size`=" +
+	 * freeSpace; query += "`available_size`=" + availableSpace; query +=
+	 * "`used_size`=" + usedSpace; query += "`busy_size`=" + busySpace; query +=
+	 * "`unavailable_size`=" + unavailableSpace; query += "`UPDATE_TIME`=" +
+	 * format(updateTimestamp); query += " WHERE space_token='" + token + "'";
+	 * 
+	 * return query;
+	 * 
+	 * }
+	 */
 
 }

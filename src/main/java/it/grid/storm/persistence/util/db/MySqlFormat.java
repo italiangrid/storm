@@ -41,20 +41,12 @@ public class MySqlFormat implements SQLFormat {
 			value = value.toString();
 		}
 		if (value instanceof String) {
-			StringBuffer stringVal = new StringBuffer((String) value);
-			for (int i = 0; i < stringVal.length(); i++) {
-				if (stringVal.charAt(i) == '\'') {
-					stringVal.insert(i, '\'');
-					i++;
-				}
-			}
-			return "\'" + stringVal + "\'";
+			return value.toString();
 		}
 		if (value instanceof java.util.Date) {
-			return "\'" + dateFormat.format(value) + "\'";
+			return dateFormat.format(value);
 		}
 		return value.toString();
-
 	}
 
 }

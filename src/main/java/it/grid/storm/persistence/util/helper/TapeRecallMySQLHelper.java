@@ -130,185 +130,293 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	 * @param taskId
 	 * @param requestToken
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetTask(UUID taskId, String requestToken) {
+	public PreparedStatement getQueryGetTask(Connection conn, UUID taskId,
+		String requestToken) throws SQLException {
 
-		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE "
-			+ COL_TASK_ID + "=" + formatString(taskId.toString()) + " AND "
-			+ COL_REQUEST_TOKEN + "=" + formatString(requestToken);
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_TASK_ID + "=?"
+			+ " AND " + COL_REQUEST_TOKEN + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setString(1, formatString(taskId.toString()));
+		preparedStatement.setString(2, formatString(requestToken));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param groupTaskId
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetGroupTasks(UUID groupTaskId) {
+	public PreparedStatement getQueryGetGroupTasks(Connection conn,
+		UUID groupTaskId) throws SQLException {
 
-		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE "
-			+ COL_GROUP_TASK_ID + "=" + formatString(groupTaskId.toString());
-		return queryFormat;
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_GROUP_TASK_ID + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setString(1, formatString(groupTaskId.toString()));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param taskId
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetGroupTaskIds(UUID taskId) {
+	public PreparedStatement getQueryGetGroupTaskIds(Connection conn, UUID taskId)
+		throws SQLException {
 
-		String queryFormat = "SELECT DISTINCT " + COL_GROUP_TASK_ID + " , "
-			+ COL_STATUS + " , " + COL_IN_PROGRESS_DATE + " , "
-			+ COL_FINAL_STATUS_DATE + " FROM " + TABLE_NAME + " WHERE " + COL_TASK_ID
-			+ "=" + formatString(taskId.toString());
-		return queryFormat;
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT DISTINCT " + COL_GROUP_TASK_ID + " , " + COL_STATUS + " , "
+			+ COL_IN_PROGRESS_DATE + " , " + COL_FINAL_STATUS_DATE + " FROM "
+			+ TABLE_NAME + " WHERE " + COL_TASK_ID + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setString(1, formatString(taskId.toString()));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param taskId
 	 * @param statuses
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetGroupTaskIds(UUID taskId, int[] statuses) {
+	public PreparedStatement getQueryGetGroupTaskIds(Connection conn,
+		UUID taskId, int[] statuses) throws SQLException {
 
-		String queryFormat = "SELECT DISTINCT " + COL_GROUP_TASK_ID + " , "
-			+ COL_STATUS + " , " + COL_IN_PROGRESS_DATE + " , "
-			+ COL_FINAL_STATUS_DATE + " FROM " + TABLE_NAME + " WHERE " + COL_TASK_ID
-			+ "=" + formatString(taskId.toString()) + " AND " + COL_STATUS + " IN ( ";
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT DISTINCT " + COL_GROUP_TASK_ID + " , " + COL_STATUS + " , "
+			+ COL_IN_PROGRESS_DATE + " , " + COL_FINAL_STATUS_DATE + " FROM "
+			+ TABLE_NAME + " WHERE " + COL_TASK_ID + "=?" + " AND " + COL_STATUS
+			+ " IN ( ";
+
 		boolean first = true;
 		for (int status : statuses) {
 			if (first) {
 				first = false;
 			} else {
-				queryFormat += " , ";
+				str += " , ";
 			}
-			queryFormat += status;
+			str += status;
 		}
-		queryFormat += " )";
-		return queryFormat;
+		str += " )";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setString(1, formatString(taskId.toString()));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryNumberQueued() {
+	public PreparedStatement getQueryNumberQueued(Connection conn)
+		throws SQLException {
 
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.QUEUED.getStatusId();
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param voName
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryNumberQueued(String voName) {
+	public PreparedStatement getQueryNumberQueued(Connection conn, String voName)
+		throws SQLException {
 
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.QUEUED.getStatusId() + " AND " + COL_VO_NAME + "="
-			+ formatString(voName);
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?" + " AND " + COL_VO_NAME + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setString(2, formatString(voName));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryReadyForTakeOver() {
+	public PreparedStatement getQueryReadyForTakeOver(Connection conn)
+		throws SQLException {
 
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.QUEUED.getStatusId() + " AND "
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?" + " AND " + COL_DEFERRED_STARTTIME
+			+ "<=NOW()";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+
+		return preparedStatement;
+	}
+
+	/**
+	 * @param voName
+	 * @return the requested query as string
+	 * @throws SQLException
+	 */
+	public PreparedStatement getQueryReadyForTakeOver(Connection conn,
+		String voName) throws SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?" + " AND " + COL_VO_NAME + "=?" + " AND "
 			+ COL_DEFERRED_STARTTIME + "<=NOW()";
-		return queryFormat;
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setString(2, formatString(voName));
+
+		return preparedStatement;
+	}
+
+	/**
+	 * @return the requested query as string
+	 * @throws SQLException
+	 */
+	public PreparedStatement getQueryNumberInProgress(Connection conn)
+		throws SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.IN_PROGRESS.getStatusId());
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param voName
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryReadyForTakeOver(String voName) {
+	public PreparedStatement getQueryNumberInProgress(Connection conn,
+		String voName) throws SQLException {
 
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.QUEUED.getStatusId() + " AND " + COL_VO_NAME + "="
-			+ formatString(voName) + " AND " + COL_DEFERRED_STARTTIME + "<=NOW()";
-		return queryFormat;
-	}
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-	/**
-	 * @return the requested query as string
-	 */
-	public String getQueryNumberInProgress() {
+		str = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID + ") FROM " + TABLE_NAME
+			+ " WHERE " + COL_STATUS + "=?" + " AND " + COL_VO_NAME + "=?";
 
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.IN_PROGRESS.getStatusId();
-		return queryFormat;
-	}
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.IN_PROGRESS.getStatusId());
+		preparedStatement.setString(2, formatString(voName));
 
-	/**
-	 * @param voName
-	 * @return the requested query as string
-	 */
-	public String getQueryNumberInProgress(String voName) {
-
-		String queryFormat = "SELECT COUNT(DISTINCT " + COL_GROUP_TASK_ID
-			+ ") FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "="
-			+ TapeRecallStatus.IN_PROGRESS.getStatusId() + " AND " + COL_VO_NAME
-			+ "=" + formatString(voName);
-
-		return queryFormat;
+		return preparedStatement;
 	}
 
 	/**
 	 * @param numberOfTasks
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetTakeoverTasksWithDoubles(int numberOfTasks) {
+	public PreparedStatement getQueryGetTakeoverTasksWithDoubles(Connection conn,
+		int numberOfTasks) throws SQLException {
 
-		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS
-			+ "=" + TapeRecallStatus.QUEUED.getStatusId() + " AND "
-			+ COL_DEFERRED_STARTTIME + "<=NOW() ORDER BY " + COL_DEFERRED_STARTTIME
-			+ " LIMIT " + numberOfTasks;
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "=?"
+			+ " AND " + COL_DEFERRED_STARTTIME + "<=NOW() ORDER BY "
+			+ COL_DEFERRED_STARTTIME + " LIMIT ?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setInt(2, numberOfTasks);
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param numberOfTasks
 	 * @param voName
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryGetTakeoverTasksWithDoubles(int numberOfTasks,
-		String voName) {
+	public PreparedStatement getQueryGetTakeoverTasksWithDoubles(Connection conn,
+		int numberOfTasks, String voName) throws SQLException {
 
-		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS
-			+ "=" + TapeRecallStatus.QUEUED.getStatusId() + " AND " + COL_VO_NAME
-			+ "=" + formatString(voName) + " AND " + COL_DEFERRED_STARTTIME
-			+ "<=NOW() ORDER BY " + COL_DEFERRED_STARTTIME + " LIMIT "
-			+ numberOfTasks;
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "=?"
+			+ " AND " + COL_VO_NAME + "=?" + " AND " + COL_DEFERRED_STARTTIME
+			+ "<=NOW() ORDER BY " + COL_DEFERRED_STARTTIME + " LIMIT ?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setString(2, formatString(voName));
+		preparedStatement.setInt(3, numberOfTasks);
+
+		return preparedStatement;
 	}
 
 	/**
-	 * Creates the query string for looking up all the information related to
-	 * in progress tasks in the recall database.
+	 * Creates the query string for looking up all the information related to in
+	 * progress tasks in the recall database.
 	 * 
-	 * @param numberOfTasks the maximum number of task returned
+	 * @param numberOfTasks
+	 *          the maximum number of task returned
 	 * @return the query string
+	 * @throws SQLException
 	 */
-	public String getQueryGetAllTasksInProgress(int numberOfTasks) {
+	public PreparedStatement getQueryGetAllTasksInProgress(Connection conn,
+		int numberOfTasks) throws SQLException {
 
-		String queryFormat = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS
-			+ "=" + TapeRecallStatus.IN_PROGRESS.getStatusId() + " ORDER BY "
-			+ COL_IN_PROGRESS_DATE + " ASC LIMIT " + numberOfTasks;
-		
-		return queryFormat;
+		String str = null;
+		PreparedStatement preparedStatement = null;
+
+		str = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "=?"
+			+ " ORDER BY " + COL_IN_PROGRESS_DATE + " ASC LIMIT ?";
+
+		preparedStatement = conn.prepareStatement(str);
+		preparedStatement.setInt(1, TapeRecallStatus.IN_PROGRESS.getStatusId());
+		preparedStatement.setInt(2, numberOfTasks);
+
+		return preparedStatement;
+
 	}
 
 	/**
@@ -316,30 +424,45 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	 * @param date
 	 * @param j
 	 * @return
+	 * @throws SQLException
 	 */
-	public String getQueryUpdateTasksStatus(List<TapeRecallTO> taskList,
-		int statusId, String timestampColumn, Date timestamp)
-		throws IllegalArgumentException {
+	public PreparedStatement getQueryUpdateTasksStatus(Connection conn,
+		List<TapeRecallTO> taskList, int statusId, String timestampColumn,
+		Date timestamp) throws IllegalArgumentException, SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
 		if (taskList.size() == 0) {
 			return null;
 		}
 		if (validTimestampColumnName(timestampColumn)) {
-			String queryFormat = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "="
-				+ statusId + " , " + timestampColumn + "=\'"
-				+ new java.sql.Timestamp(timestamp.getTime()) + "\' " + " WHERE "
-				+ COL_GROUP_TASK_ID + "="
-				+ formatString(taskList.get(0).getGroupTaskId().toString());
-			for (int i = 1; i < taskList.size(); i++) {
-				queryFormat += " OR " + COL_GROUP_TASK_ID + "="
-					+ formatString(taskList.get(i).getGroupTaskId().toString());
+			str = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "=?" + " , "
+				+ timestampColumn + "=\'?" + "\' " + " WHERE " + COL_GROUP_TASK_ID
+				+ "=?";
+
+			for (int i = 1; i < taskList.size(); i++) {			
+				str += " OR " + COL_GROUP_TASK_ID + "=?";
 			}
-			return queryFormat;
+
+			preparedStatement = conn.prepareStatement(str);
+
+			preparedStatement.setInt(1, statusId);
+			preparedStatement.setTimestamp(2,	new java.sql.Timestamp(timestamp.getTime()));
+			preparedStatement.setString(3, formatString(taskList.get(0)	.getGroupTaskId().toString()));
+
+			int idx = 4;
+			for (int i = 1; i < taskList.size(); i++) {
+				preparedStatement.setString(idx, taskList.get(i).getGroupTaskId().toString());
+				idx++;
+			}
 		} else {
 			throw new IllegalArgumentException(
 				"Unable to update row status and timestamp. The priovided timestamp column \'"
 					+ timestampColumn + "\' is not valid");
 		}
+
+		return preparedStatement;
 	}
 
 	/**
@@ -349,77 +472,127 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	 * @param timestamp
 	 * @return
 	 * @throws IllegalArgumentException
+	 * @throws SQLException
 	 */
-	public String getQueryUpdateGroupTaskStatus(UUID groupTaskId, int status,
-		String timestampColumn, Date timestamp) throws IllegalArgumentException {
+	public PreparedStatement getQueryUpdateGroupTaskStatus(Connection conn,
+		UUID groupTaskId, int status, String timestampColumn, Date timestamp)
+		throws IllegalArgumentException, SQLException {
+
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
 		if (validTimestampColumnName(timestampColumn)) {
-			String queryFormat = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "="
-				+ status + " , " + timestampColumn + "=\'"
-				+ new java.sql.Timestamp(timestamp.getTime()) + "\' " + " WHERE "
-				+ COL_GROUP_TASK_ID + "=" + formatString(groupTaskId.toString())
-				+ " AND " + COL_STATUS + "!=" + status;
-			return queryFormat;
+			str = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "=?" + " , "
+				+ timestampColumn + "=\'?" + "\' " + " WHERE " + COL_GROUP_TASK_ID
+				+ "=?" + " AND " + COL_STATUS + "!=?";
+
 		} else {
 			throw new IllegalArgumentException(
 				"Unable to update row status and timestamp. The priovided timestamp column \'"
 					+ timestampColumn + "\' is not valid");
 		}
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setInt(1, status);
+		preparedStatement.setTimestamp(2,
+			new java.sql.Timestamp(timestamp.getTime()));
+		preparedStatement.setString(3, formatString(groupTaskId.toString()));
+		preparedStatement.setInt(4, status);
+
+		return preparedStatement;
+
 	}
 
 	/**
 	 * @param groupTaskId
 	 * @param status
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQuerySetGroupTaskStatus(UUID groupTaskId, int status) {
+	public PreparedStatement getQuerySetGroupTaskStatus(Connection conn,
+		UUID groupTaskId, int status) throws SQLException {
 
-		String queryFormat = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "="
-			+ status + " WHERE " + COL_GROUP_TASK_ID + "="
-			+ formatString(groupTaskId.toString()) + " AND " + COL_STATUS + "!="
-			+ status;
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "=?" + " WHERE "
+			+ COL_GROUP_TASK_ID + "=?" + " AND " + COL_STATUS + "!=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setInt(1, status);
+		preparedStatement.setString(2, formatString(groupTaskId.toString()));
+		preparedStatement.setInt(3, status);
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param groupTaskId
 	 * @param value
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQuerySetGroupTaskRetryValue(UUID groupTaskId, int value) {
+	public PreparedStatement getQuerySetGroupTaskRetryValue(Connection conn,
+		UUID groupTaskId, int value) throws SQLException {
 
-		String queryFormat = "UPDATE " + TABLE_NAME + " SET " + COL_RETRY_ATTEMPT
-			+ "=" + value + " WHERE " + COL_GROUP_TASK_ID + "="
-			+ formatString(groupTaskId.toString());
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "UPDATE " + TABLE_NAME + " SET " + COL_RETRY_ATTEMPT + "=?"
+			+ " WHERE " + COL_GROUP_TASK_ID + "=?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setInt(1, value);
+		preparedStatement.setString(2, formatString(groupTaskId.toString()));
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryDeleteCompletedTasks() {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn)
+		throws SQLException {
 
-		String queryFormat = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS
-			+ "<>" + TapeRecallStatus.QUEUED.getStatusId() + " AND " + COL_STATUS
-			+ "<>" + TapeRecallStatus.IN_PROGRESS.getStatusId();
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>?"
+			+ " AND " + COL_STATUS + "<>?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
+
+		return preparedStatement;
 	}
 
 	/**
 	 * @param maxNumTasks
 	 * @return the requested query as string
+	 * @throws SQLException
 	 */
-	public String getQueryDeleteCompletedTasks(int maxNumTasks) {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn,
+		int maxNumTasks) throws SQLException {
 
-		String queryFormat = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS
-			+ " != " + TapeRecallStatus.QUEUED.getStatusId() + " AND " + COL_STATUS
-			+ " != " + TapeRecallStatus.IN_PROGRESS.getStatusId() + " LIMIT "
-			+ maxNumTasks;
+		String str = null;
+		PreparedStatement preparedStatement = null;
 
-		return queryFormat;
+		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + " != ?"
+			+ " AND " + COL_STATUS + " != ?" + " LIMIT  ?";
+
+		preparedStatement = conn.prepareStatement(str);
+
+		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
+		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
+		preparedStatement.setInt(3, maxNumTasks);
+
+		return preparedStatement;
 	}
 
 }

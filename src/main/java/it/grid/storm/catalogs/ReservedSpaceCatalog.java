@@ -371,7 +371,7 @@ public class ReservedSpaceCatalog {
 	 * @param lastUpdateTimestamp
 	 * @return
 	 */
-	public List<StorageSpaceData> getStorageSpaceByLastUpdate(
+	/*public List<StorageSpaceData> getStorageSpaceByLastUpdate(
 		Date lastUpdateTimestamp) {
 
 		log.debug("Retrieve Storage Space not initialized start ");
@@ -406,7 +406,7 @@ public class ReservedSpaceCatalog {
 			log.debug("Error while retrieving StorageSpace", daEx);
 		}
 		return result;
-	}
+	}*/
 
 	/**
 	 * 
@@ -523,7 +523,7 @@ public class ReservedSpaceCatalog {
 	 * @return
 	 */
 
-	public ArrayOfTSpaceToken getSpaceTokensBySpaceType(String stype) {
+	/*public ArrayOfTSpaceToken getSpaceTokensBySpaceType(String stype) {
 
 		ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
@@ -566,7 +566,7 @@ public class ReservedSpaceCatalog {
 				"Generic Error while retrieving StorageSpace", e);
 		}
 		return result;
-	}
+	}*/
 
 	// ************************ CHECH BELOW METHODS ***************************
 

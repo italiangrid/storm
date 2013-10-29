@@ -43,8 +43,8 @@ public interface StorageSpaceDAO {
 	public Collection<StorageSpaceTO> getStorageSpaceByOwner(
 		GridUserInterface owner, String spaceAlias) throws DataAccessException;
 
-	public Collection<StorageSpaceTO> getStorageSpaceBySpaceType(String stype)
-		throws DataAccessException;
+	/*public Collection<StorageSpaceTO> getStorageSpaceBySpaceType(String stype)
+		throws DataAccessException;*/
 
 	public Collection<StorageSpaceTO> getStorageSpaceByAliasOnly(String spaceAlias)
 		throws DataAccessException;
@@ -75,7 +75,7 @@ public interface StorageSpaceDAO {
 	public Collection<StorageSpaceTO> getStorageSpaceByUnavailableUsedSpace(
 		long unavailableSizeValue) throws DataAccessException;
 
-	public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate(
-		Date lastUpdateTimestamp) throws DataAccessException;
+	/*public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate(
+		Date lastUpdateTimestamp) throws DataAccessException;*/
 
 }
