@@ -46,6 +46,6 @@ Useful recipes for StoRM advanced configuration.
 Conferences, tutorials, presentations and papers.
 
 
-
+[sysadmin-1.11.2]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.2/
 [sysadmin-1.11.1]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1/
 [webdav-2.0.2]: {{site.baseurl}}/documentation/webdav-guide/2.0.2/

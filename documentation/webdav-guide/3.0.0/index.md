@@ -32,13 +32,13 @@ Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of 
 
 In a few words, the WebDAV protocol mainly abstracts concepts such as resource properties, collections of resources, locks in general, and write locks specifically. These abstractions are manipulated by the WebDAV-specific HTTP methods and the extra HTTP headers used with WebDAV methods. The WebDAV added methods include:
 
-* PROPFIND — used to retrieve properties, stored as XML, from a web resource. It is also overloaded to allow one to retrieve the collection structure (a.k.a. directory hierarchy) of a remote system.
-* PROPPATCH — used to change and delete multiple properties on a resource in a single atomic act.
-* MKCOL — used to create collections (a.k.a. a directory).
-* COPY — used to copy a resource from one URI to another.
-* MOVE — used to move a resource from one URI to another.
-* LOCK — used to put a lock on a resource. WebDAV supports both shared and exclusive locks.
-* UNLOCK — used to remove a lock from a resource.
+* PROPFIND - used to retrieve properties, stored as XML, from a web resource. It is also overloaded to allow one to retrieve the collection structure (a.k.a. directory hierarchy) of a remote system.
+* PROPPATCH - used to change and delete multiple properties on a resource in a single atomic act.
+* MKCOL - used to create collections (a.k.a. a directory).
+* COPY - used to copy a resource from one URI to another.
+* MOVE - used to move a resource from one URI to another.
+* LOCK - used to put a lock on a resource. WebDAV supports both shared and exclusive locks.
+* UNLOCK - used to remove a lock from a resource.
 
 While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so the WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
 WebDAV uses XML for property names and some values, and also uses XML to marshal complicated requests and responses.
@@ -54,23 +54,202 @@ GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open 
 As seen in the chapter before, through a WebDAV interface we are allowed to manipulate resources and collections of them. So it is simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one or more SRM operations that have to be transparent to the final users.
 StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by the following table:
 
-| HTTP/WebDAV Method | Description | SRM Operation | Status codes |
-|:------------------:|:------------|:--------------|:-------------|
-|**GET**	|GET is defined as "*retrieve whatever information (in the form of an entity) is identified by the Request-URI*" (see [RFC2616](http://tools.ietf.org/html/rfc2616.txt)). GET applied to a file retrieves file's content. GET, when applied to a collection, returns an HTML resource that is a human-readable view of the contents of the collection. |If resource is a file then a ***srmPtg*** and a ***srmRf*** are performed before and after the *file transfer* from server. If resource is a directory then a ***srmLs*** is performed to retrieve its content.| Success when status code is **OK 200**.
-|**PUT**	|The PUT method requests that the enclosed entity be stored under the supplied Request-URI. If the Request-URI refers to an already existing resource, the enclosed entity is considered as a modified version of the one residing on the origin server. If the Request-URI does not point to an existing resource, server creates the resource with that URI.|Resource has to be a file so a ***srmPtp*** and a ***srmPd*** are performed before and after the *file transfer* from client.|Success when status code is **Created 201** or **No Content 204** (already existing resource). If status code is **Conflict 409** one or more intermediate collections doesn't exist and you can't perform a PUT.
-| **HEAD**	| Acts like HTTP/1.1, so HEAD is a GET without a response message body.	| none	| Success when status code is **OK 200**
-| **OPTIONS**| Returns "DAV: 1" header.	| Performs an additional ***srmPing***	| Success when status code is **OK 200**
-| **MKCOL**	| MKCOL creates a new collection resource at the location specified by the Request-URI.| ***srmMkdir*** | Success when status code is **Created 201**. **Conflict 409** means that one or more intermediate collections doesn't exist. **Method Not Allowed 415** means that collection already exists.
-| **DELETE**| Delete the resource identified by the Request-URI.| ***srmRm*** or ***srmRmdir*** (with ```-r``` recursive option in case directory is not empty)| Success when status code is **No Content 204**
-| **COPY**	| The COPY method creates a duplication of the source resource identified by the Request-URI, in the destination resource identified by the URI in the Destination header. The Destination header MUST be present.| The COPY of a file has been implemented with a PUT of the file read from request-URI to the request's destination URI. The COPY of a directory has been implemented as a recoursive serie of MKCOL/PUT.| Success when status code is **Created 201** or **No Content 204** (already existing destination). **Conflict 409** means that one or more intermediate collections doesn't exist. **Forbidden 403** is a retrived if source and destination URI are the same.
-| **MOVE**	| The MOVE operation is the logical equivalent of a COPY followed by a delete of the source. All these actions has to be performed in a single operation. The Destination header MUST be present on all MOVE methods.| ***srmMv***| Success when status code is **Created 201** or **No Content 204** (already existing destination). **Conflict 409** means that one or more intermediate collections doesn't exist. **Forbidden 403** is a retrived if source and destination URI are the same.
-| **PROPFIND**| The PROPFIND operation retrieves, in XML format, the properties defined on the resource identified by the Request-URL. Clients must submit a *Depth* header with a value of "0", "1", or "infinity" (default is "Depth: infinity"). Clients may submit a 'propfind' XML element in the body of the request method describing what information is being requested: a particular property values, by naming the properties desired within the 'prop' element, all property values including additional by using the 'allprop' element (e.g. checksum tyoe and value), the list of names of all the properties defined on the resource by using the 'propname' element.| ***srmLs*** with ```-l``` (detailed) option| Success when status is ***Multi-Status 207***.
-| **POST** 	 	| - | *not allowed* | - 
-| **TRACE** 	| - | *not allowed* | - 
-| **CONNECT** 	| - | *not allowed* | - 
-| **LOCK** 		| - | *not allowed* | - 
-| **UNLOCK** 	| - | *not allowed* | - 
-| **PROPPATCH** | - | *not allowed* | - 
+<table>
+	<thead>
+		<th style="width: 3%; text-align: center;">Method</th>
+		<th style="width: 40%">Description</th>
+		<th style="width: 25%">SRM Operation</th>
+		<th style="width: 32%">Main exit codes</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td style="text-align: center;">
+				<b>GET</b>
+			</td>
+			<td>
+				GET is defined as "<i>retrieve whatever information (in the form of an entity) is identified by the Request-URI</i>" 
+				(see <a href="http://tools.ietf.org/html/rfc2616.txt">RFC2616</a>). 
+				GET applied to a file retrieves file's content.
+				GET, when applied to a collection, returns an HTML resource that is a human-readable view of the contents of the collection.
+			</td>
+			<td>
+				GET <b>directory</b>: <span class="label label-info">srmLs</span> <br/>
+				GET <b>file</b>:<br/> 
+				&nbsp; 1. <span class="label label-info">srmPrepareToGet</span> <br/>
+				&nbsp; 2. <i>read-file</i> from disk</li> <br/>
+				&nbsp; 3. <span class="label label-info">srmReleaseFile</span> <br/>
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>PUT</b>
+			</td>
+			<td>
+				The PUT method requests that the enclosed entity be stored under the supplied Request-URI. 
+				If the Request-URI refers to an already existing resource, the enclosed entity is considered as a modified version 
+				of the one residing on the origin server. 
+				If the Request-URI does not point to an existing resource, server creates the resource with that URI.
+			</td>
+			<td>
+				Resource can't be a collection. <br/>
+				PUT <b>file</b>: <br/>
+				&nbsp; 1. <span class="label label-info">srmPrepareToPut</span> <br/>
+				&nbsp; 2. <i>write-file</i> on disk <br/>
+				&nbsp; 3. <span class="label label-info">srmPutDone</span>.
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> file created <br/>
+				<span class="label label-success">204 No Content</span> file overwrited <br/>
+				<span class="label label-important">409 Conflict</span> one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">405 Method Not Allowed</span> resource exists but it's a collection
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>HEAD</b>
+			</td>
+			<td>
+				Acts like HTTP/1.1, so HEAD is a GET without a response message body
+			</td>
+			<td>
+				A <span class="label label-info">srmLs</span> to check the existence of the resource.
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>OPTIONS</b>
+			</td>
+			<td>
+				Returns "DAV: 1" header
+			</td>
+			<td>
+				Performs a <span class="label label-info">srmPing</span> (additional)
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>MKCOL</b>
+			</td>
+			<td>
+				MKCOL creates a new collection resource at the location specified by the Request-UI.
+			</td>
+			<td>
+				<span class="label label-info">srmMkdir</span>
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> directory created <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">415 Method Not Allowed</span> means that collection already exists
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>DELETE</b>
+			</td>
+			<td>
+				Delete the resource identified by the Request-URI. If the resource is a collection, deletes every resource contained recursively.
+			</td>
+			<td>
+				DELETE <b>file</b>: <span class="label label-info">srmRm</span> <br/> 
+				DELETE <b>directory</b>: <span class="label label-info">srmRmdir</span> with <span class="label">-r</span> recursive option
+			</td>
+			<td>
+				<span class="label label-success">204 No Content</span> resource deleted <br/>
+				<span class="label label-important">404 Not Found</span> resource doesn't exist
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>COPY</b>
+			</td>
+			<td>
+				The COPY method creates a duplication of the source resource identified by the Request-URI, 
+				in the destination resource identified by the URI in the Destination header. 
+				The Destination header MUST be present.
+			</td>
+			<td>
+				StoRM <span class="label label-info">srmCopy</span> is actually deprecated so the WebDAV COPY of a file becomes a PUT of the file read from request-URI to the request's destination URI. 
+				The COPY of a directory is a recursive series of MKCOL/PUT.
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> </br>
+				<span class="label label-success">204 No Content</span> destination resource already exists <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist. <br/>
+				<span class="label label-important">403 Forbidden</span> is a retrieved if source and destination URI are the same.
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>MOVE</b>
+			</td>
+			<td>
+				The MOVE operation is the logical equivalent of a COPY followed by a delete of the source. 
+				All these actions has to be performed in a single operation. 
+				The Destination header MUST be present on all MOVE methods.
+			</td>
+			<td>
+				<span class="label label-info">srmMv</span>
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> or <br/>
+				<span class="label label-success">204 No Content</span> if destination resource already exists <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">403 Forbidden</span> is retrieved if source and destination URI are the same.
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>PROPFIND</b>
+			</td>
+			<td>
+				The PROPFIND operation retrieves, in XML format, the properties defined on the resource identified by the Request-URL. 
+				Clients must submit a <i>Depth</i> header with a value of "0", "1", or "infinity" (default is "Depth: infinity"). 
+				Clients may submit a 'propfind' XML element in the body of the request method describing what information 
+				is being requested: a particular property values, by naming the properties desired within the 'prop' element, 
+				all property values including additional by using the 'allprop' element (e.g. checksum type and value), 
+				the list of names of all the properties defined on the resource by using the 'propname' element.
+			</td>
+			<td>
+				<span class="label label-info">srmLs</span> with <span class="label">-l</span> (detailed) option
+			</td>
+			<td>
+				<span class="label label-success">207 Multi-Status</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>POST</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>TRACE</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>CONNECT</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>LOCK</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>UNLOCK</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>PROPPATCH</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+	</tbody>
+</table>
+
+For each method, a <span class="label label-warning">401 Unauthorized</span> can be obtained if user doesn't provide the necessary credentials.
 
 ### Service installation and configuration <a name="installconf">&nbsp;</a>
 
@@ -99,7 +278,13 @@ The StoRM GridHTTPs WebDAV server listens on two ports, one for the unencrypted 
 * HTTP: **8085**
 * HTTP over SSL: **8443**
 
-User can access storage area data by using a browser, by using cURLs or several third-party WebDAV clients. They also can develop a client on their own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
+To access storage areas' data, users can use:
+
+* a browser (if the storage area can be accessed by anonymous or via a valid personal certificate)
+* cURLs (mandatory if you need to provide a valid x509 proxy credential)
+* a third-party WebDAV client (Cyberduck, Firefox RestClient plugin, ...)
+
+They also can develop a client on their own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
 
 <div class="alert alert-error">
 <h4>Note:</h4> 
@@ -111,7 +296,7 @@ instead of:
 
 #### Access data via browser <a name="usingbrowsers">&nbsp;</a>
 
-<img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-right: 50px;"/>
+<img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-left: 50px;"/>
 
 Users can use browsers to easily read data of storage areas that are:
 
