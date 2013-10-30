@@ -427,7 +427,7 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 |GROUPS\_CONF		|Path to the file containing information on the map- ping between VOMS groups and roles to local groups. An example of this configuration file is given in /opt/glite/yaim/examples/groups.conf file. More details can be found in the Group configuration section in the YAIM guide. | Yes
 |MYSQL\_PASSWORD	|mysql root password.<br/>Example: MYSQL\_PASSWORD="carpediem" | Yes
 |VOS				|List of supported VOs.<br/>Example: VOS="testers.eu-emi.eu dteam" | Yes
-|STORM_BE_XMLRPC_TOKEN	|Token used in communication to the StoRM backend | Yes
+|STORM\_BE\_XMLRPC\_TOKEN	|Token used in communication to the StoRM Backend | Yes
 
 
 {% assign label_title="Table 1" %}
