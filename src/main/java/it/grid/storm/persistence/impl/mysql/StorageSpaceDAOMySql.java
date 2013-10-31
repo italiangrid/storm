@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -71,22 +70,24 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	public void addStorageSpace(StorageSpaceTO ss) throws DataAccessException {
 
 		Connection conn = getConnection();
-		Statement stat = null;
-		try {
-			PreparedStatement query = helper.insertQuery(conn, ss);
-			log.info("INSERT query = " + query);
+		PreparedStatement prepStatement = null;
 
-			int res = query.executeUpdate();
+		try {
+			prepStatement = helper.insertQuery(conn, ss);
+			log.info("INSERT query = " + prepStatement.toString());
+
+			int res = prepStatement.executeUpdate();
 			log.debug("INSERT result = " + res);
 			if (res <= 0) {
-				log.error("No row inserted for statement : " + query);
+				log
+					.error("No row inserted for statement : " + prepStatement.toString());
 				throw new DataAccessException("No rows inserted for Storage Space");
 			}
 		} catch (SQLException ex) {
 			log.error("Error while executing INSERT query", ex);
 			throw new DataAccessException("Error while executing INSERT query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -129,12 +130,11 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		Collection<StorageSpaceTO> result = new LinkedList<StorageSpaceTO>();
 
 		Connection conn = getConnection();
-		Statement stat = null;
 		ResultSet res = null;
+		PreparedStatement prepStatement = null;
 
 		try {
-			PreparedStatement prepStatement = helper.selectBySpaceAliasQuery(conn,
-				owner, spaceAlias);
+			prepStatement = helper.selectBySpaceAliasQuery(conn, owner, spaceAlias);
 			log.debug("DB query = " + prepStatement.toString());
 
 			res = prepStatement.executeQuery();
@@ -153,7 +153,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DB query", e);
 			throw new DataAccessException("Error while executing DB query", e);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}
@@ -177,7 +177,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
+
 		try {
 			prepStatement = helper.selectBySpaceType(conn, stype);
 			log.debug("DB query = " + prepStatement.toString());
@@ -197,7 +197,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DB query", e);
 			throw new DataAccessException("Error while executing DB query", e);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}
@@ -218,18 +218,18 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		Collection<StorageSpaceTO> result = new LinkedList<StorageSpaceTO>();
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
+
+		PreparedStatement prepStatement = null;
 
 		try {
-			PreparedStatement prepStatement = helper.selectBySpaceAliasOnlyQuery(
-				conn, spaceAlias);
-			log.debug("DB query = " + prepStatement);
+			prepStatement = helper.selectBySpaceAliasOnlyQuery(conn, spaceAlias);
+			log.debug("DB query = " + prepStatement.toString());
 
 			res = prepStatement.executeQuery();
 			log.debug("query result = " + res);
 
 			if (res.first() == false) {
-				log.info("No rows found for query : " + prepStatement);
+				log.info("No rows found for query : " + prepStatement.toString());
 			} else {
 				// Fetch each row from the result set
 				do {
@@ -241,7 +241,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DB query", e);
 			throw new DataAccessException("Error while executing DB query", e);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}
@@ -261,11 +261,11 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
 
+		PreparedStatement prepStatement = null;
 		try {
-			PreparedStatement prepStatement = helper.selectByTokenQuery(conn, token);
-			log.debug("SELECT query = " + prepStatement);
+			prepStatement = helper.selectByTokenQuery(conn, token);
+			log.debug("SELECT query = " + prepStatement.toString());
 
 			res = prepStatement.executeQuery();
 
@@ -280,7 +280,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing SELECT query", ex);
 			throw new DataAccessException("Error while executing INSERT query", ex);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return ssTO;
 	}
@@ -294,16 +294,17 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
+		PreparedStatement prepStatement = null;
+
 		try {
-			PreparedStatement prepStatement = helper
-				.selectByUnavailableUsedSpaceSizeQuery(conn, unavailableSizeValue);
-			log.debug("SELECT query = " + prepStatement);
+			prepStatement = helper.selectByUnavailableUsedSpaceSizeQuery(conn,
+				unavailableSizeValue);
+			log.debug("SELECT query = " + prepStatement.toString());
 
 			res = prepStatement.executeQuery();
 			log.debug("SELECT result = " + res);
 			if (res.first() == false) {
-				log.info("No rows found for query : " + prepStatement);
+				log.info("No rows found for query : " + prepStatement.toString());
 			} else {
 				// Fetch each row from the result set
 				do {
@@ -315,7 +316,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing SELECT query", ex);
 			throw new DataAccessException("Error while executing INSERT query", ex);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}
@@ -329,8 +330,6 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
-
 		PreparedStatement prepStatement = null;
 
 		try {
@@ -353,7 +352,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing SELECT query", ex);
 			throw new DataAccessException("Error while executing INSERT query", ex);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}
@@ -369,13 +368,11 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		throws DataAccessException {
 
 		Connection conn = getConnection();
-		Statement stat = null;
+		PreparedStatement prepStatement = null;
 
 		try {
-
-			PreparedStatement prepStatement = helper.removeByTokenQuery(conn, user,
-				spaceToken);
-			log.debug("query = " + prepStatement);
+			prepStatement = helper.removeByTokenQuery(conn, user, spaceToken);
+			log.debug("query = " + prepStatement.toString());
 
 			int res = prepStatement.executeUpdate();
 			log.debug("Number of rows removed: " + res);
@@ -389,7 +386,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DELETE query", ex);
 			throw new DataAccessException("Error while executing DELETE query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -403,12 +400,11 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	public void removeStorageSpace(String spaceToken) throws DataAccessException {
 
 		Connection conn = getConnection();
-		Statement stat = null;
-		try {
+		PreparedStatement prepStatement = null;
 
-			PreparedStatement prepStatement = helper.removeByTokenQuery(conn,
-				spaceToken);
-			log.debug("query = " + prepStatement);
+		try {
+			prepStatement = helper.removeByTokenQuery(conn, spaceToken);
+			log.debug("query = " + prepStatement.toString());
 
 			int res = prepStatement.executeUpdate();
 			log.debug("Number of rows removed: " + res);
@@ -422,7 +418,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DELETE query", ex);
 			throw new DataAccessException("Error while executing DELETE query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -435,10 +431,9 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 	public void updateStorageSpace(StorageSpaceTO ssTO)
 		throws DataAccessException {
 
+		Connection conn = getConnection();
 		PreparedStatement prepStatement = null;
 
-		Connection conn = getConnection();
-		Statement stat = null;
 		try {
 			prepStatement = helper.updateByAliasAndTokenQuery(conn, ssTO);
 			log.debug("UPDATE query = " + prepStatement.toString());
@@ -459,7 +454,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing UPDATE query", ex);
 			throw new DataAccessException("Error while executing UPDATE query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -475,23 +470,24 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		long freeSpace = ssTO.getFreeSize();
 
 		Connection conn = getConnection();
-		Statement stat = null;
-		try {
+		PreparedStatement prepStatement = null;
 
-			PreparedStatement prepStatement = helper.updateFreeSpaceByTokenQuery(
-				conn, ssTO.getSpaceToken(), freeSpace, new Date());
-			log.debug("UPDATE query = " + prepStatement);
+		try {
+			prepStatement = helper.updateFreeSpaceByTokenQuery(conn,
+				ssTO.getSpaceToken(), freeSpace, new Date());
+			log.debug("UPDATE query = " + prepStatement.toString());
 
 			int res = prepStatement.executeUpdate();
 			log.debug("UPDATE row count = " + res);
 			if (res <= 0) {
-				log.error("No storage space rows updated by query : " + prepStatement);
+				log.error("No storage space rows updated by query : "
+					+ prepStatement.toString());
 			}
 		} catch (SQLException ex) {
 			log.error("Error while executing UPDATE query", ex);
 			throw new DataAccessException("Error while executing UPDATE query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -513,7 +509,6 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		// ss.getSpaceFile(), ss.getUpdateTime());
 
 		Connection conn = getConnection();
-		Statement stat = null;
 		PreparedStatement prepStatement = null;
 
 		try {
@@ -535,7 +530,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing UPDATE query", ex);
 			throw new DataAccessException("Error while executing UPDATE query", ex);
 		} finally {
-			releaseConnection(null, stat, conn);
+			releaseConnection(null, prepStatement, conn);
 		}
 	}
 
@@ -553,19 +548,17 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 		Connection conn = getConnection();
 		ResultSet res = null;
-		Statement stat = null;
+		PreparedStatement prepStatement = null;
 
 		try {
-
-			PreparedStatement prepStatement = helper.selectExpiredQuery(conn,
-				currentTimeInSecond);
-			log.debug("DB query = " + prepStatement);
+			prepStatement = helper.selectExpiredQuery(conn, currentTimeInSecond);
+			log.debug("DB query = " + prepStatement.toString());
 
 			res = prepStatement.executeQuery();
 
 			log.debug("query result = " + res);
 			if (res.first() == false) {
-				log.info("No rows found for query : " + prepStatement);
+				log.info("No rows found for query : " + prepStatement.toString());
 				throw new DataAccessException("No storage space expired found at time "
 					+ currentTimeInSecond);
 			} else {
@@ -579,7 +572,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 			log.error("Error while executing DB query", e);
 			throw new DataAccessException("Error while executing DB query", e);
 		} finally {
-			releaseConnection(res, stat, conn);
+			releaseConnection(res, prepStatement, conn);
 		}
 		return result;
 	}

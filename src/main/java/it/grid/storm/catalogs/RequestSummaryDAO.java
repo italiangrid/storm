@@ -120,8 +120,7 @@ public class RequestSummaryDAO {
 	 */
 	public Collection<RequestSummaryDataTO> findNew(int freeSlot) {
 
-		PreparedStatement stmt2 = null;
-		Statement stmt = null;
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		List<RequestSummaryDataTO> list = new ArrayList<RequestSummaryDataTO>(); // ArrayList
 																																							// containing
@@ -143,18 +142,25 @@ public class RequestSummaryDAO {
 			} else {
 				howMuch = freeSlot;
 			}
-			// get id, request type, request token and client_DN of newly added
-			// requests, which must be in SRM_REQUEST_QUEUED state
-			stmt = con.createStatement();
-			logWarnings(con.getWarnings());
+
 			// String query =
 			// "SELECT ID, config_RequestTypeID, r_token, client_dn FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
-			String query = "SELECT ID, config_RequestTypeID, r_token, timeStamp, client_dn, proxy FROM request_queue WHERE status="
-				+ StatusCodeConverter.getInstance()
-					.toDB(TStatusCode.SRM_REQUEST_QUEUED) + " LIMIT " + howMuch;
+			String query = "SELECT ID, config_RequestTypeID, r_token, timeStamp, client_dn, proxy FROM request_queue WHERE status=?"
+				+ " LIMIT ?";
 			// log.debug("REQUEST SUMMARY DAO - findNew: executing "+query);
-			rs = stmt.executeQuery(query);
+
+			// get id, request type, request token and client_DN of newly added
+			// requests, which must be in SRM_REQUEST_QUEUED state
+			stmt = con.prepareStatement(query);
+			logWarnings(con.getWarnings());
+
+			stmt.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
+			stmt.setInt(2, howMuch);
+
+			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
+
 			List<Long> rowids = new ArrayList<Long>(); // arraylist with selected ids
 			RequestSummaryDataTO aux = null; // RequestSummaryDataTO made from
 			// retrieved row
@@ -198,13 +204,14 @@ public class RequestSummaryDAO {
 					+ StatusCodeConverter.getInstance().toDB(
 						TStatusCode.SRM_REQUEST_INPROGRESS) + ", errstring=?"
 					+ " WHERE ID IN " + where;
-				stmt2 = con.prepareStatement(update);
-				logWarnings(stmt2.getWarnings());
-				stmt2.setString(1, "Request handled!");
-				logWarnings(stmt2.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - findNew: executing " + stmt2);
-				stmt2.executeUpdate();
-				close(stmt2);
+				stmt = con.prepareStatement(update);
+				logWarnings(stmt.getWarnings());
+				stmt.setString(1, "Request handled!");
+				logWarnings(stmt.getWarnings());
+				log
+					.trace("REQUEST SUMMARY DAO - findNew: executing " + stmt.toString());
+				stmt.executeUpdate();
+				close(stmt);
 			}
 
 			// commit and finish transaction
@@ -220,7 +227,6 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(stmt);
-			close(stmt2);
 		}
 		// return collection of requests
 		if (!list.isEmpty()) {
