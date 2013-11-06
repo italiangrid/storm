@@ -73,14 +73,6 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		super(dbmsVendor);
 	}
 
-	private String formatString(String s) {
-
-		if (s == null) {
-			return null;
-		}
-		return "'" + s + "'";
-	}
-
 	/**
 	 * @param conn
 	 * @param recallTask
@@ -143,8 +135,8 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 
-		preparedStatement.setString(1, formatString(taskId.toString()));
-		preparedStatement.setString(2, formatString(requestToken));
+		preparedStatement.setString(1, taskId.toString());
+		preparedStatement.setString(2, requestToken);
 
 		return preparedStatement;
 	}
@@ -164,7 +156,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 
-		preparedStatement.setString(1, formatString(groupTaskId.toString()));
+		preparedStatement.setString(1, groupTaskId.toString());
 
 		return preparedStatement;
 	}
@@ -186,7 +178,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 
-		preparedStatement.setString(1, formatString(taskId.toString()));
+		preparedStatement.setString(1, taskId.toString());
 
 		return preparedStatement;
 	}
@@ -220,7 +212,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		str += " )";
 
 		preparedStatement = conn.prepareStatement(str);
-		preparedStatement.setString(1, formatString(taskId.toString()));
+		preparedStatement.setString(1, taskId.toString());
 
 		return preparedStatement;
 	}
@@ -260,7 +252,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setString(2, formatString(voName));
+		preparedStatement.setString(2, voName);
 
 		return preparedStatement;
 	}
@@ -302,7 +294,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setString(2, formatString(voName));
+		preparedStatement.setString(2, voName);
 
 		return preparedStatement;
 	}
@@ -342,7 +334,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 		preparedStatement.setInt(1, TapeRecallStatus.IN_PROGRESS.getStatusId());
-		preparedStatement.setString(2, formatString(voName));
+		preparedStatement.setString(2, voName);
 
 		return preparedStatement;
 	}
@@ -387,7 +379,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		preparedStatement = conn.prepareStatement(str);
 		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setString(2, formatString(voName));
+		preparedStatement.setString(2, voName);
 		preparedStatement.setInt(3, numberOfTasks);
 
 		return preparedStatement;
@@ -438,8 +430,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		}
 		if (validTimestampColumnName(timestampColumn)) {
 			str = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "=?" + " , "
-				+ timestampColumn + "=\'?" + "\' " + " WHERE " + COL_GROUP_TASK_ID
-				+ "=?";
+				+ timestampColumn + "=?" + " WHERE " + COL_GROUP_TASK_ID + "=?";
 
 			for (int i = 1; i < taskList.size(); i++) {
 				str += " OR " + COL_GROUP_TASK_ID + "=?";
@@ -450,8 +441,8 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 			preparedStatement.setInt(1, statusId);
 			preparedStatement.setTimestamp(2,
 				new java.sql.Timestamp(timestamp.getTime()));
-			preparedStatement.setString(3, formatString(taskList.get(0)
-				.getGroupTaskId().toString()));
+			preparedStatement.setString(3, taskList.get(0).getGroupTaskId()
+				.toString());
 
 			int idx = 4;
 			for (int i = 1; i < taskList.size(); i++) {
@@ -486,8 +477,8 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 
 		if (validTimestampColumnName(timestampColumn)) {
 			str = "UPDATE " + TABLE_NAME + " SET " + COL_STATUS + "=?" + " , "
-				+ timestampColumn + "=\'?" + "\' " + " WHERE " + COL_GROUP_TASK_ID
-				+ "=?" + " AND " + COL_STATUS + "!=?";
+				+ timestampColumn + "=?" + " WHERE " + COL_GROUP_TASK_ID + "=?"
+				+ " AND " + COL_STATUS + "!=?";
 
 		} else {
 			throw new IllegalArgumentException(
@@ -500,7 +491,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		preparedStatement.setInt(1, status);
 		preparedStatement.setTimestamp(2,
 			new java.sql.Timestamp(timestamp.getTime()));
-		preparedStatement.setString(3, formatString(groupTaskId.toString()));
+		preparedStatement.setString(3, groupTaskId.toString());
 		preparedStatement.setInt(4, status);
 
 		return preparedStatement;
@@ -525,7 +516,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		preparedStatement = conn.prepareStatement(str);
 
 		preparedStatement.setInt(1, status);
-		preparedStatement.setString(2, formatString(groupTaskId.toString()));
+		preparedStatement.setString(2, groupTaskId.toString());
 		preparedStatement.setInt(3, status);
 
 		return preparedStatement;
@@ -549,7 +540,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		preparedStatement = conn.prepareStatement(str);
 
 		preparedStatement.setInt(1, value);
-		preparedStatement.setString(2, formatString(groupTaskId.toString()));
+		preparedStatement.setString(2, groupTaskId.toString());
 
 		return preparedStatement;
 	}
