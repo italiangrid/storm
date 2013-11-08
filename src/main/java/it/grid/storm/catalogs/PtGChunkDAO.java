@@ -93,7 +93,8 @@ public class PtGChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/** milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance()
+		.getDBReconnectPeriod() * 1000;
 	/** initial delay in milliseconds before starting timer */
 	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 
@@ -777,9 +778,9 @@ public class PtGChunkDAO {
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
-		
+
 		try {
-		
+
 			String str = "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
 				+ "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
 				+ "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
@@ -787,9 +788,9 @@ public class PtGChunkDAO {
 				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
 				+ " AND rg.sourceSURL IN "
 				+ makeSurlString(surlsArray) + " ) ";
-			
+
 			find = con.prepareStatement(str);
-			
+
 			logWarnings(con.getWarnings());
 
 			ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
@@ -1023,23 +1024,25 @@ public class PtGChunkDAO {
 		}
 		HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
 		String str = null;
-		Statement statement = null;
+		// Statement statement = null;
+		PreparedStatement preparedStatement = null;
 
 		/* Find all expired surls */
 		try {
 			// start transaction
 			con.setAutoCommit(false);
 
-			statement = con.createStatement();
-
 			str = "SELECT rg.sourceSURL , rg.sourceSURL_uniqueID "
 				+ "FROM request_Get rg JOIN (status_Get sg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-				+ "WHERE sg.statusCode="
-				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+				+ "WHERE sg.statusCode=?"
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
-			ResultSet res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			preparedStatement = con.prepareStatement(str);
+			preparedStatement.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+
+			ResultSet res = preparedStatement.executeQuery();
+			logWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rg.sourceSURL");
@@ -1068,12 +1071,12 @@ public class PtGChunkDAO {
 			rollback(con);
 			return new ArrayList<TSURL>();
 		} finally {
-			close(statement);
+			close(preparedStatement);
 		}
 
 		/* Update status of all expired surls to SRM_RELEASED */
 
-		PreparedStatement preparedStatement = null;
+		preparedStatement = null;
 		try {
 
 			str = "UPDATE "
@@ -1127,17 +1130,18 @@ public class PtGChunkDAO {
 		HashSet<Integer> pinnedSurlSet = new HashSet<Integer>();
 		try {
 
-			statement = con.createStatement();
-
 			// SURLs pinned by PtGs
 			str = "SELECT rg.sourceSURL , rg.sourceSURL_uniqueID FROM "
 				+ "request_Get rg JOIN (status_Get sg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-				+ "WHERE sg.statusCode="
-				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+				+ "WHERE sg.statusCode=?"
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) < rq.pinLifetime ";
 
-			ResultSet res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			preparedStatement = con.prepareStatement(str);
+			preparedStatement.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+
+			ResultSet res = preparedStatement.executeQuery();
+			logWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rg.sourceSURL");
@@ -1155,13 +1159,14 @@ public class PtGChunkDAO {
 				pinnedSurlSet.add(uniqueID);
 			}
 
+			close(preparedStatement);
+
 			// SURLs pinned by BoLs
 			// TODO MICHELE USER_SURL uncomment this line when the development goes on
 			// the BoL operation
 			str = "SELECT rb.sourceSURL , rb.sourceSURL_uniqueID FROM "
 				+ "request_BoL rb JOIN (status_BoL sb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
-				+ "WHERE sb.statusCode="
-				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
+				+ "WHERE sb.statusCode=?"
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) < rq.pinLifetime ";
 
 			// str = "SELECT sourceSURL FROM "
@@ -1172,8 +1177,12 @@ public class PtGChunkDAO {
 			// +
 			// " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(r.timeStamp) < r.pinLifetime ";
 
-			res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			preparedStatement = con.prepareStatement(str);
+			preparedStatement.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
+
+			res = preparedStatement.executeQuery();
+			logWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				// TODO MICHELE USER_SURL uncomment this line when the development goes
@@ -1197,7 +1206,7 @@ public class PtGChunkDAO {
 			log.error("PtGChunkDAO! SQLException." + e);
 			rollback(con);
 		} finally {
-			close(statement);
+			close(preparedStatement);
 		}
 
 		ArrayList<TSURL> expiredSurlList = new ArrayList<TSURL>();
@@ -1402,12 +1411,11 @@ public class PtGChunkDAO {
 					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surls="
 					+ surls + " explanation=" + explanation);
 		}
-		
+
 		doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls,
 			expectedStatusCode, newStatusCode, explanation, false, true, true);
 	}
 
-	
 	public synchronized void updateStatusOnMatchingStatus(
 		TRequestToken requestToken, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation) {
@@ -1449,7 +1457,7 @@ public class PtGChunkDAO {
 		if ((withRequestToken && requestToken == null)
 			|| (withExplanation && explanation == null)
 			|| (withSurls && (surlUniqueIDs == null || surls == null))) {
-			
+
 			throw new IllegalArgumentException(
 				"Unable to perform the doUpdateStatusOnMatchingStatus, "
 					+ "invalid arguments: withRequestToken=" + withRequestToken
@@ -1629,7 +1637,7 @@ public class PtGChunkDAO {
 		sb.append(")");
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Method that returns a String containing all Surls.
 	 */
@@ -1637,11 +1645,11 @@ public class PtGChunkDAO {
 
 		StringBuffer sb = new StringBuffer("(");
 		int n = surls.length;
-		
+
 		for (int i = 0; i < n; i++) {
-			
+
 			SURL requestedSURL;
-			
+
 			try {
 				requestedSURL = SURL.makeSURLfromString(surls[i]);
 			} catch (NamespaceException e) {
@@ -1649,18 +1657,18 @@ public class PtGChunkDAO {
 				log.debug("Skip '" + surls[i] + "' during query creation");
 				continue;
 			}
-			
+
 			sb.append("'");
 			sb.append(requestedSURL.getNormalFormAsString());
 			sb.append("','");
 			sb.append(requestedSURL.getQueryFormAsString());
 			sb.append("'");
-			
+
 			if (i < (n - 1)) {
 				sb.append(",");
 			}
 		}
-		
+
 		sb.append(")");
 		return sb.toString();
 	}
@@ -1766,7 +1774,7 @@ public class PtGChunkDAO {
 		ResultSet rs = null;
 
 		try {
-			
+
 			String str = "SELECT rq.ID, rq.r_token, sg.statusCode, rq.pinLifetime, rg.ID, rq.timeStamp, "
 				+ "rq.client_dn, rq.proxy, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID, "
 				+ "d.isSourceADirectory, d.allLevelRecursive,  d.numOfLevels "
@@ -1779,10 +1787,10 @@ public class PtGChunkDAO {
 				+ makeSurlString(surlsArray) + " )";
 
 			if (withDn) {
-			
+
 				str += " AND rq.client_dn=\'" + dn + "\'";
 			}
-		
+
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
