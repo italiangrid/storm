@@ -99,7 +99,7 @@ public class PutTapeRecallStatusValidator {
 		}
 
 		if(!TokenValidator.valid(requestToken)){
-			validationResponse = Response.status(400).build();
+			validationResponse = Response.status(400).entity("Invalid token\n\n").build();
 			return false;
 		}
 		
@@ -130,7 +130,7 @@ public class PutTapeRecallStatusValidator {
 		TSURL surl;
 
 		if(!SurlValidator.valid(surlString)){
-			validationResponse = Response.status(400).build();
+			validationResponse = Response.status(400).entity("Invalid surl\n\n").build();
 			return false;
 		}
 		
