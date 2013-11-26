@@ -32,8 +32,6 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.core.status.Status;
-
 public class PutTapeRecallStatusValidator {
 
 	private static final Logger log = LoggerFactory
