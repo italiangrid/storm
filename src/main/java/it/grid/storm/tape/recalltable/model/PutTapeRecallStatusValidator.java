@@ -22,6 +22,8 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.util.SurlValidator;
+import it.grid.storm.util.TokenValidator;
 
 import java.util.StringTokenizer;
 
@@ -96,6 +98,11 @@ public class PutTapeRecallStatusValidator {
 
 		}
 
+		if(!TokenValidator.valid(requestToken)){
+			validationResponse = Response.status(400).entity("Invalid token:  " + requestToken +" \n\n").build();
+			return false;
+		}
+		
 		if (!validateSurl(surlString)) {
 			return false;
 		}
@@ -122,6 +129,11 @@ public class PutTapeRecallStatusValidator {
 
 		TSURL surl;
 
+		if(!SurlValidator.valid(surlString)){
+			validationResponse = Response.status(400).entity("Invalid surl: " + surlString + "\n\n").build();
+			return false;
+		}
+		
 		try {
 
 			surl = TSURL.makeFromStringValidate(surlString);
