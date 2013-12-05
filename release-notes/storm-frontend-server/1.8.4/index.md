@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM FrontEnd v. 1.8.4 release notes"
-release_date: 05.12.2013
+release_date: 09.12.2013
 rfcs:
 - id: STOR-431
   title: File /etc/sysconfig/storm-frontend-server is replaced by yum

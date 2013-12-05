@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.4 release notes"
-release_date: 05.12.2013
+release_date: 09.12.2013
 ---
 
 ## YAIM StoRM v. 4.3.4

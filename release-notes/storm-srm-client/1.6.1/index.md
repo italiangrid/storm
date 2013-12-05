@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM SRM clients v.1.6.1 release notes"
-release_date: 05.12.2013
+release_date: 09.12.2013
 ---
 
 ## StoRM SRM clients v. 1.6.1

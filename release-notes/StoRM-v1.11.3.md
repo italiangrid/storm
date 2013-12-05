@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.3 - release notes"
-release_date: "05.12.2013"
+release_date: "09.12.2013"
 rfcs:
     - id: STOR-450
       title: StoRM Gridhttps initializes VOMS validation in an unsafe way
@@ -30,7 +30,7 @@ components:
     - name: YAIM StoRM
       package: yaim-storm
       version: 4.3.4
-    - name: StoRM SRM clients
+    - name: StoRM SRM client
       package: storm-srm-client
       version: 1.6.1
 ---
