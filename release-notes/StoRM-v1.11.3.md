@@ -30,6 +30,9 @@ components:
     - name: YAIM StoRM
       package: yaim-storm
       version: 4.3.4
+    - name: StoRM SRM clients
+      package: storm-srm-client
+      version: 1.6.1
 ---
 
 ## StoRM v. 1.11.3
