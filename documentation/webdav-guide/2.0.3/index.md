@@ -22,7 +22,16 @@ version: {{ page.version }}
 
 ### Introduction <a name="introduction">&nbsp;</a>
 
-The StoRM GridHTTPs is the component responsible for providing both HTTP(s) file transfer capabilities to a StoRM endpoint and a WebDAV interface. The brand-new WebDAV interface provided, conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops. It represents a single entry point to the storage data both for file management and transferring by providing different authentication models (from typical grid x.509 proxies and standard x.509 certificates to anonymous http read access), maintaining at the same time full compliance with present Grid standards.
+Each Storage Area that supports HTTP or HTTPS transfer protocols can be accessed through the WebDAV interface provided by 
+the StoRM GridHTTPs server component. This WebDAV interface conceals the details of the SRM protocol and allows users to mount 
+remote Grid storage areas as a volume, directly on their own desktop.
+
+To access the Storage Area's data users have to provide the right credentials. 
+For example, if the Storage Area *A* is owned by the VO *X*, user has to provide a valid VOMS proxy. 
+If the Storage Area *B* is owned by the VO *Y* but permits a read-only access to anonymous 
+(see [examples section][anonymous-read-example]),
+user has to provide a valid VOMS proxy only if he wants to write data.
+And so on. See the [examples section][examples-section] to other storage area configuration examples.
 
 ### What is WebDAV? <a name="whatwebdav">&nbsp;</a>
 
@@ -284,7 +293,7 @@ To access storage areas' data, users can use:
 * cURLs (mandatory if you need to provide a valid x509 proxy credential)
 * a third-party WebDAV client (Cyberduck, Firefox RestClient plugin, ...)
 
-They also can develop a client on their own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
+You can also develop a client on your own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
 
 <div class="alert alert-error">
 <h4>Note:</h4> 
@@ -387,7 +396,8 @@ This configuration is the same for lots of WebDAV clients, alternatives to Cyber
 <img src="{{ site.baseurl }}/assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
 
 
-
+[examples-section]: {{ site.baseurl }}/documentation/examples/
+[anonymous-read-example]: {{ site.baseurl }}/documentation/examples/1.11.2/storage-area-configuration-examples.html#sa-anonymous-r
 [ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttpconf
 [ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttp_advconf
 [be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#beconf
