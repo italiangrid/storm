@@ -23,21 +23,21 @@ storm_components:
       visibility: show
     - name: StoRM Frontend
       package: storm-frontend-server
-      latest: 1.8.3
+      latest: 1.8.4
       new: true
       repo: StoRM
       visibility: show
     - name: StoRM GridHTTPs Server
       package: storm-gridhttps-server
-      latest: 2.0.2
+      latest: 2.0.3
       new: true
       repo: StoRM
       visibility: show
     - name: StoRM native libs
       package: storm-native-libs
       latest: 1.0.2
-      new: true
-      repo: StoRM
+      new: false
+      repo: StoRM emi
       visibility: hide
     - name: StoRM dynamic info
       package: storm-dynamic-info-provider
@@ -47,9 +47,9 @@ storm_components:
       visibility: hide
     - name: StoRM client
       package: storm-srm-client
-      latest: 1.6.0
-      new: false
-      repo: StoRM emi
+      latest: 1.6.1
+      new: true
+      repo: StoRM
       visibility: hide
     - name: StoRM GridHTTPs plugin
       package: storm-gridhttps-plugin
@@ -65,7 +65,7 @@ storm_components:
       visibility: hide
     - name: YAIM StoRM
       package: yaim-storm
-      latest: 4.3.3
+      latest: 4.3.4
       new: true
       repo: StoRM
       visibility: hide

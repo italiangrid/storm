@@ -33,6 +33,8 @@ To install the repository files, run the following commands (as root):
 
 ### Current release
 
+The current release is [StoRM v.1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
+
 {% include download/component-table.html %}
 
 ---
