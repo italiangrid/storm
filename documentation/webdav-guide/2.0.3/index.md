@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Documentation - StoRM GridHTTPs Server's WebDAV interface
-version: 3.0.0
+version: 2.0.3
 ---
 
 ## StoRM GridHTTPs Server's WebDAV interface
@@ -297,7 +297,7 @@ You can also develop a client on your own, for example by using the <a href="htt
 
 <div class="alert alert-error">
 <h4>Note:</h4> 
-from StoRM GridHTTPs server version <b>3.0.0</b> the WebDAV service is provided at:
+from StoRM GridHTTPs server version <b>2.0.3</b> the WebDAV service is provided at:
 <pre><code>http(s)://[gridhttps.hostname]:[port]/webdav/[storage-area]/</code></pre>
 instead of:
 <pre><code>http(s)://[gridhttps.hostname]:[port]/[storage-area]/</code></pre>
