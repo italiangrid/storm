@@ -232,13 +232,17 @@ $ mount -o remount /storage
 
 ### Storage Area's permissions <a name="sapermissions">&nbsp;</a>
 
-If your installation has some storage area that already exist, those storage areas must have the right permissions. 
-For example, it needs ${STORM\_USER} as owner of the storage area root directory and recoursively of the all subdirectories and files contained.
-To set the correct permissions on a storage area that has ${dir} as root directory, you can launche the following commands:
+All the Storage Areas managed by StoRM needs to be owned by the STORM\_USER. This means that if STORM\_USER is _storm_, for example, the storage-area _test_ root directory permissions must be:
 
 ```bash
-chown -RL ${STORM_USER}:${STORM_USER} ${dir}
-chmod -R o-rwx,g+r ${dir}
+drwxr-x---+  2 storm storm
+```
+YAIM-StoRM doesn't set the correct permissions if the SA's root directory already exists. So, the site administrator has to take care of it. 
+To set the correct permissions on a storage area, you can launch the following commands:
+
+```bash
+chown -RL <storm-user>:<storm-user> <sa-root-directory>
+chmod -R o-rwx,g+r <sa-root-directory>
 ```
 
 ## Installation guide <a name="installationguide">&nbsp;</a>
