@@ -552,7 +552,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |STORM\_SIZE\_LIMIT						|Limit Maximum available space on the Storage Area (default value for all Storage Areas).<br/>Note: you may change the settings for each SA acting on $STORM\_{SA}\_SIZE\_LIMIT variable. Optional variable. Available values: true, false. Default value: **true**
 |STORM\_STORAGEAREA\_LIST				|List of supported Storage Areas. Usually at least one Storage Area for each VO specified in $VOS should be created.<br/>Optional variable. Default value: **$VOS**
 |STORM_STORAGECLASS						|Storage Class type (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_STORAGECLASS variable. <br/>Optional variable. Available values: T0D1, T1D0, T1D1. No default value.
-|STORM\_SURL\_ENDPOINT\_LIST			|StoRM SURL endpoint list. Optional variable. Default values: **srm://${STORM\_FRONTEND\_PUBLIC\_HOST}:<br/>${STORM\_FRONTEND\_PORT}<br/>/${STORM\_FRONTEND\_PATH}**
+|STORM\_SURL\_ENDPOINT\_LIST			|This is a comma separated list of the SRM endpoints managed by the Backend. A SURL is accepted only if this list contains the endpoint specified. It's an optional variable with default value: **srm://${STORM\_FRONTEND\_PUBLIC\_HOST}:${STORM\_FRONTEND\_PORT}/${STORM\_FRONTEND\_PATH}**. So, if you want to accept requests with incoming SURLs that has the ip address instead of the FQDN hostname, add the full srm endpoint to this list.
 |STORM\_USER							|Service user. Optional variable. Default value: **storm**
 |STORM\_ENDPOINT\_QUALITY\_LEVEL		|Endpoint maturity level to be published by the StoRM gip. Optional variable. Default value: **2**
 |STORM\_ENDPOINT\_SERVING\_STATE		|Endpoint serving state to be published by the StoRM gip. Optional variable. Default value: **4**
@@ -703,79 +703,79 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-| db.host	| Host for database connection. Default is **localhost**	|
-| db.user	| User for database connection. Default is **storm**		|
-| db.passwd | Password for database connection. Default is **password**	|
+| ```db.host```	| Host for database connection. Default is **localhost**	|
+| ```db.user```	| User for database connection. Default is **storm**		|
+| ```db.passwd``` | Password for database connection. Default is **password**	|
 
 <br/>
 > **_Frontend service settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	fe.port							|	Frontend port. Default is **8444**	
-|	fe.threadpool.threads.number	|	Size of the worker thread pool. Default is **50**	
-|	fe.threadpool.maxpending		|	Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
-|	fe.gsoap.maxpending				|	Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
+|	```fe.port```							|	Frontend port. Default is **8444**	
+|	```fe.threadpool.threads.number```	|	Size of the worker thread pool. Default is **50**	
+|	```fe.threadpool.maxpending```		|	Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
+|	```fe.gsoap.maxpending```				|	Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
 
 <br/>
 > **_Log settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	log.filename	|	Log file name, complete whit path.<br/>Default is **/var/log/storm/storm-frontend.log**
-|	log.debuglevel 	|	Loggin level. Possible value are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
+|	```log.filename```	|	Log file name, complete whit path.<br/>Default is **/var/log/storm/storm-frontend.log**
+|	```log.debuglevel``` 	|	Loggin level. Possible value are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
 
 <br/>
 > **_Monitoring settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	monitoring.enabled		|	Flag to enable/disable SRM requests Monitoring. Default is **true**
-|	monitoring.timeInterval	|	Time intervall in seconds between each Monitoring round. <br/>Default is **60**
-|	monitoring.detailed		|	Flag to enable/disable detailed SRM requests Monitoring. <br/>Default is **false**
+|	```monitoring.enabled```		|	Flag to enable/disable SRM requests Monitoring. Default is **true**
+|	```monitoring.timeInterval```	|	Time intervall in seconds between each Monitoring round. <br/>Default is **60**
+|	```monitoring.detailed```		|	Flag to enable/disable detailed SRM requests Monitoring. <br/>Default is **false**
 
 <br/>
 > **_XML-RPC communication settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	be.xmlrpc.host			|	Backend hostname. Default is **localhost**
-|	be.xmlrpc.port			|	XML-RPC server port running on the Backend machine.<br/>Default is **8080**
-|	be.xmlrpc.token	|	Token used for communicating with the backend service. Mandatory, has no default
-|	be.xmlrpc.path			|	XML-RPC server path. Default is **/RPC2**
-|	be.xmlrpc.check.ascii	|	Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
+|	```be.xmlrpc.host```	|	Backend hostname. Default is **localhost**
+|	```be.xmlrpc.port```	|	XML-RPC server port running on the Backend machine.<br/>Default is **8080**
+|	```be.xmlrpc.token```	|	Token used for communicating with the backend service. Mandatory, has no default
+|	```be.xmlrpc.path```	|	XML-RPC server path. Default is **/RPC2**
+|	```be.xmlrpc.check.ascii```	|	Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
 
 <br/>
 > **_REST communication settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	be.recalltable.port		|	REST server port running on the Backend machine. Default is **9998**
+|	```be.recalltable.port```	|	REST server port running on the Backend machine. Default is **9998**
 
 <br/>
 > **_Blacklisting settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	check.user.blacklisting	|	Flag to enable/disable user blacklisting. Default is **false**
-|	argus-pepd-endpoint		|	The complete service endpoint of Argus PEP server. Mandatory if check.user.blacklisting is true. <br/>Example: _https://host.domain:8154/authz_
+|	```check.user.blacklisting```	|	Flag to enable/disable user blacklisting. Default is **false**
+|	```argus-pepd-endpoint```	|	The complete service endpoint of Argus PEP server. Mandatory if check.user.blacklisting is true. <br/>Example: _https://host.domain:8154/authz_
 
 <br/>
 > **_Proxy settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	proxy.dir		|	Directory used by the Frontend to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
-|	proxy.user		|	Local user owner of proxies files. This have to be the same local user running the backend service. **Mandatory**.
-|	security.enable.vomscheck	|	Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
-|	security.enable.mapping		|	Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
+|	```proxy.dir```	|	Directory used by the Frontend to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
+|	```proxy.user```|	Local user owner of proxies files. This have to be the same local user running the backend service. **Mandatory**.
+|	```security.enable.vomscheck```	|	Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
+|	```security.enable.mapping```	|	Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
 
 <br/>
 > **_General settings_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	wsdl.file		|	WSDL file, complete with path, to be returned in case of GET request
+|	```wsdl.file```	|	WSDL file, complete with path, to be returned in case of GET request
 
 #### Logging files and logging level <a name="loggingfe_advconf">&nbsp;</a>
 
@@ -877,58 +877,58 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 
 > **_Service information_**
 
-|	Property Name						|	Description		|
-|:--------------------------------------|:------------------|
-|	storm.service.SURL.endpoint			|	List of comma separated strings identifying the StoRM Frontend endpoint(s). This is used by StoRM to understand if a SURL is local. E.g. *srm://storm.cnaf.infn.it:8444/srm/managerv2*
-|	storm.service.port					|	SRM service port. Default: **8444**
-|	storm.service.SURL.default-ports	|	List of comma separated valid SURL port numbers. Default: **8444**
-|	storm.service.FE-public.hostname	|	StoRM Frontend hostname in case of a single Frontend StoRM deployment, StoRM Frontends DNS alias in case of a multiple Frontends StoRM deployment.
-|	storm.service.FE-list.hostnames		|	Comma separated list os Frontend(s) hostname(s). Default: **localhost**
-|	storm.service.FE-list.IPs			|	Comma separated list os Frontend(s) IP(s). E.g. *131.154.5.127, 131.154.5.128*. Default: **127.0.0.1**
-|	proxy.home							|	Directory used to contains delegated proxies used in case of *srmCopy* request. Please note that in case of clustered installation this directory have to be shared between the Backend and the Frontend(s) machines. Default: **/etc/storm/tmp**
-|	pinLifetime.default					|	Default *PinLifetime* in seconds used for pinning files in case of *srmPrepareToPut* or *srmPrepareToGet* operation without any pinLifetime specified. Default: **259200**
-|	pinLifetime.maximum					|	Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
-|	SRM22Client.PinLifeTime				|	Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
-|	fileLifetime.default				|	Default *FileLifetime* in seconds used for VOLATILE file in case of SRM request without *FileLifetime* parameter specified. Default: **3600**
-|	extraslashes.gsiftp					|	Add extra slashes after the "authority" part of a TURL for gsiftp protocol. 
-|	extraslashes.rfio					|	Add extra slashes after the "authority" part of a TURL for rfio protocol.
-|	extraslashes.root					|	Add extra slashes after the "authority" part of a TURL for root protocol.
-|	extraslashes.file					|	Add extra slashes after the "authority" part of a TURL for file protocol.
-|	checksum.enabled					|	Flag to enable or not the support of *Adler32* checksum computation. Default: **false**
-|	synchcall.directoryManager.maxLsEntry|	Maximum number of entries returned by an *srmLs* call. Since in case of recursive *srmLs* results can be in order of million, this prevent a server overload. Default: **500**
-|	directory.automatic-creation		|	Flag to enable authomatic missing directory creation upon *srmPrepareToPut* requests.<br/>Default: **false**
-|	directory.writeperm					|	Flag to enable directory write permission setting upon *srmMkDir* requests on created dyrectories. Default: **false**
-|	default.overwrite					|	Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
-|	default.storagetype					|	Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
+|	Property Name								|	Description		|
+|:----------------------------------------------|:------------------|
+|	```storm.service.SURL.endpoint```			|	List of comma separated strings identifying the StoRM Frontend endpoint(s). This is used by StoRM to understand if a SURL is local. E.g. *srm://storm.cnaf.infn.it:8444/srm/managerv2*. <br/> If you want to accept SURL with the ip address instead of the FQDN hostname you have to add the proper endpoint (E.g. IPv4: *srm://192.168.100.12:8444/srm/managerv2* or IPv6: *srm://[2001:0db8::1428:57ab]:8444/srm/managerv2*. Default value: **srm://```storm.service.FE-public.hostname```:8444/srm/managerv2**
+|	```storm.service.port```					|	SRM service port. Default: **8444**
+|	```storm.service.SURL.default-ports```		|	List of comma separated valid SURL port numbers. Default: **8444**
+|	```storm.service.FE-public.hostname```		|	StoRM Frontend hostname in case of a single Frontend StoRM deployment, StoRM Frontends DNS alias in case of a multiple Frontends StoRM deployment.
+|	```storm.service.FE-list.hostnames```		|	Comma separated list os Frontend(s) hostname(s). Default: **localhost**
+|	```storm.service.FE-list.IPs```				|	Comma separated list os Frontend(s) IP(s). E.g. *131.154.5.127, 131.154.5.128*. Default: **127.0.0.1**
+|	```proxy.home```							|	Directory used to contains delegated proxies used in case of *srmCopy* request. Please note that in case of clustered installation this directory have to be shared between the Backend and the Frontend(s) machines. Default: **/etc/storm/tmp**
+|	```pinLifetime.default```					|	Default *PinLifetime* in seconds used for pinning files in case of *srmPrepareToPut* or *srmPrepareToGet* operation without any pinLifetime specified. Default: **259200**
+|	```pinLifetime.maximum```					|	Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
+|	```SRM22Client.PinLifeTime```				|	Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
+|	```fileLifetime.default```					|	Default *FileLifetime* in seconds used for VOLATILE file in case of SRM request without *FileLifetime* parameter specified. Default: **3600**
+|	```extraslashes.gsiftp```					|	Add extra slashes after the "authority" part of a TURL for gsiftp protocol. 
+|	```extraslashes.rfio```						|	Add extra slashes after the "authority" part of a TURL for rfio protocol.
+|	```extraslashes.root```						|	Add extra slashes after the "authority" part of a TURL for root protocol.
+|	```extraslashes.file```						|	Add extra slashes after the "authority" part of a TURL for file protocol.
+|	```checksum.enabled```						|	Flag to enable or not the support of *Adler32* checksum computation. Default: **false**
+|	```synchcall.directoryManager.maxLsEntry```	|	Maximum number of entries returned by an *srmLs* call. Since in case of recursive *srmLs* results can be in order of million, this prevent a server overload. Default: **500**
+|	```directory.automatic-creation```			|	Flag to enable authomatic missing directory creation upon *srmPrepareToPut* requests.<br/>Default: **false**
+|	```directory.writeperm```					|	Flag to enable directory write permission setting upon *srmMkDir* requests on created dyrectories. Default: **false**
+|	```default.overwrite```						|	Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
+|	```default.storagetype```					|	Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
 <br/>
 > **_Requests garbage collector_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	purging			|	Flag to enable the purging of expired requests. This garbage collector process cleans all database tables and proxies from the expired SRM requests. An appropriate tuning is needed in case of high throughput of SRM requests required for long time. Default: **true**. Possible values are: true, false.
-|	purge.interval	|	Time interval in seconds between successive purging run. Default: **600**.
-|	purge.size		|	Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
-|	purge.delay		|	Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
-|	expired.request.time|	Time in seconds to consider a request expired after its submission. Default: **604800**
+|	```purging```				|	Flag to enable the purging of expired requests. This garbage collector process cleans all database tables and proxies from the expired SRM requests. An appropriate tuning is needed in case of high throughput of SRM requests required for long time. Default: **true**. Possible values are: true, false.
+|	```purge.interval```		|	Time interval in seconds between successive purging run. Default: **600**.
+|	```purge.size```			|	Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
+|	```purge.delay```			|	Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
+|	```expired.request.time```	|	Time in seconds to consider a request expired after its submission. Default: **604800**
 
 <br/>
 > **_Garbage collector_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	gc.pinnedfiles.cleaning.delay	|	Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
-|	gc.pinnedfiles.cleaning.interval|	Time interval in seconds between successive purging run. Default: **300**
+|	```gc.pinnedfiles.cleaning.delay```		|	Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
+|	```gc.pinnedfiles.cleaning.interval```	|	Time interval in seconds between successive purging run. Default: **300**
 
 <br/>
 > **_Synchronous call_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	synchcall.xmlrpc.unsecureServerPort	|	Port to listen on for incoming XML-RPC connections from Frontends(s). Default: **8080**
-|	synchcall.xmlrpc.maxthread			|	Number of threads managing XML-RPC connection from Frontends(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
-|	synchcall.xmlrpc.token.enabled	|	Whether the backend will require a token to be present for accpeting XML-RPC requests. Default: true
-|	synchcall.xmlrpc.token	|	The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
+|	```synchcall.xmlrpc.unsecureServerPort```	|	Port to listen on for incoming XML-RPC connections from Frontends(s). Default: **8080**
+|	```synchcall.xmlrpc.maxthread```			|	Number of threads managing XML-RPC connection from Frontends(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
+|	```synchcall.xmlrpc.token.enabled```		|	Whether the backend will require a token to be present for accpeting XML-RPC requests. Default: true
+|	```synchcall.xmlrpc.token```				|	The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
 
 <br/>
@@ -936,95 +936,95 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	storm.rest.services.port	|	REST services port. Default: **9998**
+|	```storm.rest.services.port```	|	REST services port. Default: **9998**
 
 <br/>
 > **_Database connection parameters_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	com.mysql.jdbc.Driver	|	JDBC driver to be used to connect with StoRM database. Default: **com.mysql.jdbc.Driver**
-|	storm.service.request-db.protocol	|	Protocol to be used to connect with StoRM database. Default: **jdbc:mysql://**
-|	storm.service.request-db.host		|	Host for StoRM database. Default: **localhost**
-|	storm.service.request-db.db-name	|	Database name for SRM requests. Default: **storm_db**
-|	storm.service.request-db.username	|	Username for database connection. Default: **storm**
-|	storm.service.request-db.passwd		|	Password for database connection
-|	asynch.db.ReconnectPeriod			|	Database connection refresh time intervall in seconds. Default: **18000**
-|	asynch.db.DelayPeriod				|	Database connection refresh initial delay in seconds. Default: **30**
-|	persistence.internal-db.connection-pool	|	Enable the database connection pool. Default: **false**
-|	persistence.internal-db.connection-pool.maxActive |	Database connection pool max active connections. Default: **10**
-|	persistence.internal-db.connection-pool.maxWait		|	Database connection pool max wait time to provide a connection. Default: **50**
+|	```com.mysql.jdbc.Driver```	|	JDBC driver to be used to connect with StoRM database. Default: **com.mysql.jdbc.Driver**
+|	```storm.service.request-db.protocol```	|	Protocol to be used to connect with StoRM database. Default: **jdbc:mysql://**
+|	```storm.service.request-db.host```	|	Host for StoRM database. Default: **localhost**
+|	```storm.service.request-db.db-name```	|	Database name for SRM requests. Default: **storm_db**
+|	```storm.service.request-db.username```	|	Username for database connection. Default: **storm**
+|	```storm.service.request-db.passwd```	|	Password for database connection
+|	```asynch.db.ReconnectPeriod```	|	Database connection refresh time intervall in seconds. Default: **18000**
+|	```asynch.db.DelayPeriod```	|	Database connection refresh initial delay in seconds. Default: **30**
+|	```persistence.internal-db.connection-pool```	|	Enable the database connection pool. Default: **false**
+|	```persistence.internal-db.connection-pool.maxActive``` 	|	Database connection pool max active connections. Default: **10**
+|	```persistence.internal-db.connection-pool.maxWait```	|	Database connection pool max wait time to provide a connection. Default: **50**
 
 <br/>
 > **_SRM Requests Picker_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	asynch.PickingInitialDelay	|	Initial delay before starting to pick requests from the DB, in seconds. Default: **1**
-|	asynch.PickingTimeInterval	|	Polling interval in seconds to pick up new SRM requests. Default: **2**
-|	asynch.PickingMaxBatchSize	|	Maximum number of requests picked up at each polling time. Default: **100**
-|	scheduler.serial			|	**DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
+|	```asynch.PickingInitialDelay```	|	Initial delay before starting to pick requests from the DB, in seconds. Default: **1**
+|	```asynch.PickingTimeInterval```	|	Polling interval in seconds to pick up new SRM requests. Default: **2**
+|	```asynch.PickingMaxBatchSize```	|	Maximum number of requests picked up at each polling time. Default: **100**
+|	```scheduler.serial```			|	**DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
 
 <br/>
 > **_Worker threads_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	scheduler.crusher.workerCorePoolSize	|	Crusher Scheduler worker pool base size. Default: **10**
-|	scheduler.crusher.workerMaxPoolSize		|	Crusher Schedule worker pool max size. Default: **50**
-|	scheduler.crusher.queueSize				|	Request queue maximum size.<br/>Default: **2000**
-|	scheduler.chunksched.ptg.workerCorePoolSize	|	*PrepareToGet* worker pool base size. Default: **50**
-|	scheduler.chunksched.ptg.workerMaxPoolSize	|	*PrepareToGet* worker pool max size. Default: **200**
-|	scheduler.chunksched.ptg.queueSize			|	*PrepareToGet* request queue maximum size. Default: **2000**
-|	scheduler.chunksched.ptp.workerCorePoolSize	|	*PrepareToPut* worker pool base size. Default: **50**
-|	scheduler.chunksched.ptp.workerMaxPoolSize	|	*PrepareToPut* worker pool max size. Default: **200**
-|	scheduler.chunksched.ptp.queueSize			|	*PrepareToPut* request queue maximum size. Default: **1000**
-|	scheduler.chunksched.bol.workerCorePoolSize	|	*BringOnline* worker pool base size. Default: **50**
-|	scheduler.chunksched.bol.workerMaxPoolSize	|	*BringOnline* Worker pool max size. Default: **200**
-|	scheduler.chunksched.bol.queueSize			|	*BringOnline* request queue maximum size. Default: **2000**
-|	scheduler.chunksched.copy.workerCorePoolSize|	*Copy* worker pool base size. Default: **10**
-|	scheduler.chunksched.copy.workerMaxPoolSize	|	*Copy* worker pool max size. Default: **50**
-|	scheduler.chunksched.copy.queueSize			|	*Copy* request queue maximum size. Default: **500**
+|	```scheduler.crusher.workerCorePoolSize```	|	Crusher Scheduler worker pool base size. Default: **10**
+|	```scheduler.crusher.workerMaxPoolSize```		|	Crusher Schedule worker pool max size. Default: **50**
+|	```scheduler.crusher.queueSize```				|	Request queue maximum size.<br/>Default: **2000**
+|	```scheduler.chunksched.ptg.workerCorePoolSize```	|	*PrepareToGet* worker pool base size. Default: **50**
+|	```scheduler.chunksched.ptg.workerMaxPoolSize```	|	*PrepareToGet* worker pool max size. Default: **200**
+|	```scheduler.chunksched.ptg.queueSize```			|	*PrepareToGet* request queue maximum size. Default: **2000**
+|	```scheduler.chunksched.ptp.workerCorePoolSize```	|	*PrepareToPut* worker pool base size. Default: **50**
+|	```scheduler.chunksched.ptp.workerMaxPoolSize```	|	*PrepareToPut* worker pool max size. Default: **200**
+|	```scheduler.chunksched.ptp.queueSize```			|	*PrepareToPut* request queue maximum size. Default: **1000**
+|	```scheduler.chunksched.bol.workerCorePoolSize```	|	*BringOnline* worker pool base size. Default: **50**
+|	```scheduler.chunksched.bol.workerMaxPoolSize```	|	*BringOnline* Worker pool max size. Default: **200**
+|	```scheduler.chunksched.bol.queueSize```			|	*BringOnline* request queue maximum size. Default: **2000**
+|	```scheduler.chunksched.copy.workerCorePoolSize```	|	*Copy* worker pool base size. Default: **10**
+|	```scheduler.chunksched.copy.workerMaxPoolSize```	|	*Copy* worker pool max size. Default: **50**
+|	```scheduler.chunksched.copy.queueSize```			|	*Copy* request queue maximum size. Default: **500**
 
 <br/>
 > **_HTTP(S) protocol_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	gridhttps.enabled		|	Flag to enable the support to HTTP and HTTPS protocols. Default: **false**
-|	gridhttps.server.host	|	The complete hostname of the host running StoRM GridHTTPs. Default: **localhost**
-|	gridhttps.server.port	|	The port on StoRM GridHTTPs host where GridHTTPs accepts HTTP connections. Default:**8088**
-|	gridhttps.plugin.classname	|	The complete class-name of the HTTPSPluginInterface implementation to be used. Default: **it.grid.storm.https.HTTPSPluginInterfaceStub**
+|	```gridhttps.enabled```		|	Flag to enable the support to HTTP and HTTPS protocols. Default: **false**
+|	```gridhttps.server.host```	|	The complete hostname of the host running StoRM GridHTTPs. Default: **localhost**
+|	```gridhttps.server.port```	|	The port on StoRM GridHTTPs host where GridHTTPs accepts HTTP connections. Default:**8088**
+|	```gridhttps.plugin.classname```	|	The complete class-name of the HTTPSPluginInterface implementation to be used. Default: **it.grid.storm.https.HTTPSPluginInterfaceStub**
 
 <br/>
 > **_Protocol balancing_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	gridftp-pool.status-check.timeout	|	Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
+|	```gridftp-pool.status-check.timeout```	|	Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
 
 <br/>
 > **_Tape recall_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	tape.support.enabled	|	Flag to enable tape support. Default: **false**
-|	tape.buffer.group.read	|	System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
-|	tape.buffer.group.write	|	System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
+|	```tape.support.enabled```	|	Flag to enable tape support. Default: **false**
+|	```tape.buffer.group.read```	|	System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
+|	```tape.buffer.group.write```	|	System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
 
 <br/>
 > **_srmCopy parameters_**
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	asynch.srmclient.retrytime			|	Timeout for a single *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
-|	asynch.srmclient.sleeptime			|	Interval between successive *srmPrepareToPut* request status polling performed to fulfill *srmCopy* requests in seconds. Default: **5**
-|	asynch.srmclient.timeout			|	Timeout for *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **180**
-|	asynch.srmclient.putdone.sleeptime	|	Interval between consecutive *srmPutDone* attempts performed to fulfill *srmCopy* requests in seconds. Default: **1**
-|	asynch.srmclient.putdone.timeout	|	Timeout for *srmPutDone* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
-|	asynch.srmclient					|	The complete class-name of the *SRMClient* implementation providing SRM client features to be used to perform srm operations to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.SRM22Client**
-|	asynch.srmcopy.gridftp.timeout		|	Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
-|	asynch.gridftpclient				|	The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
+|	```asynch.srmclient.retrytime```		|	Timeout for a single *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
+|	```asynch.srmclient.sleeptime```		|	Interval between successive *srmPrepareToPut* request status polling performed to fulfill *srmCopy* requests in seconds. Default: **5**
+|	```asynch.srmclient.timeout```			|	Timeout for *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **180**
+|	```asynch.srmclient.putdone.sleeptime```|	Interval between consecutive *srmPutDone* attempts performed to fulfill *srmCopy* requests in seconds. Default: **1**
+|	```asynch.srmclient.putdone.timeout```	|	Timeout for *srmPutDone* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
+|	```asynch.srmclient```					|	The complete class-name of the *SRMClient* implementation providing SRM client features to be used to perform srm operations to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.SRM22Client**
+|	```asynch.srmcopy.gridftp.timeout```	|	Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
+|	```asynch.gridftpclient```				|	The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
 
 ### Backend Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
 
@@ -1488,47 +1488,47 @@ EMI3 StoRM GridHTTPs server no longer needs Tomcat, cause it is now a web compon
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|http.enabled					|Flag to enable anonymous webdav and file-transfer connections. Available values: true, false. Default value: **true**
-|http.port				|Gridhttps http port for anonymous webdav and file-transfer connections. Default value: **8085**
-|https.port				|Gridhttps https port for secure webdav and file-transfer connections. Default value: **8443**
-|mapper.servlet.port	|Mapping-service http port.<br/>Default value: **8086**
-|max.active.threads		|Maximum number of active threads for server's requests.<br/>Default value: **150**
-|max.queued.threads		|Maximum number of queued threads for server's requests.<br/>Default value: **300**
-|x509.host-certificate	|x509 host certificate for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostcert.pem**
-|x509.host-key			|x509 host key for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostkey.pem**
-|x509.truststore.directory	|Truststore location.<br/>Default value: **/etc/grid-security/certificates**
-|x509.truststore.refresh-interval	|Canl truststore update time interval expressed in milliseconds.<br/>Default value: **600000** (1 minute)
+|```http.enabled```		|Flag to enable anonymous webdav and file-transfer connections. Available values: true, false. Default value: **true**
+|```http.port```		|Gridhttps http port for anonymous webdav and file-transfer connections. Default value: **8085**
+|```https.port```		|Gridhttps https port for secure webdav and file-transfer connections. Default value: **8443**
+|```mapper.servlet.port```	|Mapping-service http port.<br/>Default value: **8086**
+|```max.active.threads```	|Maximum number of active threads for server's requests.<br/>Default value: **150**
+|```max.queued.threads```	|Maximum number of queued threads for server's requests.<br/>Default value: **300**
+|```x509.host-certificate```	|x509 host certificate for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostcert.pem**
+|```x509.host-key```	|x509 host key for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostkey.pem**
+|```x509.truststore.directory```	|Truststore location.<br/>Default value: **/etc/grid-security/certificates**
+|```x509.truststore.refresh-interval```	|Canl truststore update time interval expressed in milliseconds.<br/>Default value: **600000** (1 minute)
 
 <br/>
 GridHTTPs' log file is configurable:
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|log.configuration-file	|GridHTTPs logging configuration file.<br/>Default value: **/etc/storm/gridhttps-server/logback.xml**
+|```log.configuration-file```	|GridHTTPs logging configuration file.<br/>Default value: **/etc/storm/gridhttps-server/logback.xml**
 
 <br/>
 GridHTTPs interacts with StoRM Backend to configure itself in bootstrap phase, to check user's authorization access to resources, to perform SRM operation, to set checksum value on a file, etc. So it needs to know information about BE location and ports:
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|backend.hostname		|StoRM Backend server full hostname. <br/>**Mandatory**
-|backend.authorization-service.port	|StoRM Backend server REST port.<br/>Default value: **9998**
-|backend.srm-service.port	|StoRM Backend server XMLRPC port.<br/>Default value: **8080**
-|backend.xmlrpc.token	|Token used for communicating with the backend service. Mandatory, has no default
+|```backend.hostname```		|StoRM Backend server full hostname. <br/>**Mandatory**
+|```backend.authorization-service.port```	|StoRM Backend server REST port.<br/>Default value: **9998**
+|```backend.srm-service.port```	|StoRM Backend server XMLRPC port.<br/>Default value: **8080**
+|```backend.xmlrpc.token```	|Token used for communicating with the backend service. Mandatory, has no default
 
 <br/>
 GridHTTPs works with SURLs so it needs to know a valid SRM endpoint:
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|srm.endpoint			|StoRM SRM EndPoint.<br/>Default value: **$STORM\_BACKEND\_HOSTNAME:8444**
+|```srm.endpoint```			|StoRM SRM EndPoint.<br/>Default value: **$STORM\_BACKEND\_HOSTNAME:8444**
 
 <br/>
 GridHTTPs manage file transfers and file creation. So it computes checksum during transfers. The computed checksum type is *adler32*. This capability can be disabled.
 
 |	Var. name			|	Description				|
 |:----------------------|:--------------------------|
-|compute-checksum		|If compute-checksum is true, for every file created a valid adler32 checksum value is computed. Available values: true, false.<br/>Default value: **true**
+|```compute-checksum```		|If compute-checksum is true, for every file created a valid adler32 checksum value is computed. Available values: true, false.<br/>Default value: **true**
 
 ### GridHTTPs' logging files and logging level <a name="ghttplog_advconf">&nbsp;</a>
 
@@ -1568,8 +1568,8 @@ The GridHTTPs Plugin lives within Backend Java process; in case a parameter is m
 
 |	Property name		|	Description				|
 |:----------------------|:--------------------------|
-|gridhttps.server.user.uid	|The User ID associated to the local user running the GridHTTPs server service
-|gridhttps.server.user.gid	|The primary Group ID associated to the local user running the GridHTTPs server service
+|```gridhttps.server.user.uid```	|The User ID associated to the local user running the GridHTTPs server service
+|```gridhttps.server.user.gid```	|The primary Group ID associated to the local user running the GridHTTPs server service
 
 ## StoRM EMIR Configuration <a name="emir_advconf">&nbsp;</a>
 
