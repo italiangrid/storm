@@ -31,6 +31,8 @@ public class Constants {
 	public static final String VFS_ENABLED_PROTOCOLS_KEY = "protocols";
 	public static final char VFS_ENABLED_PROTOCOLS_SEPARATOR = ';';
 	public static final String VFS_ANONYMOUS_PERMS_KEY = "anonymous";
+	
+	public static enum HttpPerms { NOREAD, READ, READWRITE };
 
 	/*
 	 * Usage samples in an HTTP GET call /RESOURCE/VERSION/LIST_ALL_KEY

@@ -13,17 +13,21 @@ package it.grid.storm.namespace.remote.resource;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.remote.Constants;
+import it.grid.storm.namespace.remote.Constants.HttpPerms;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,10 +124,11 @@ public class VirtualFSResource {
 		vfsEncoded += Constants.VFS_FIELD_MATCHER;
 		if (vfs.isHttpWorldReadable())
 			if (vfs.isApproachableByAnonymous())
-				vfsEncoded += "RW";
+				vfsEncoded += HttpPerms.READWRITE;
 			else
-				vfsEncoded += "R";
-		
+				vfsEncoded += HttpPerms.READ;
+		else
+			vfsEncoded += HttpPerms.NOREAD;
 		return vfsEncoded;
 	}
 }
