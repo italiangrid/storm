@@ -18,7 +18,8 @@ public class Constants {
 	public static final String ENCODING_SCHEME = "UTF-8";
 	public static final String RESOURCE = "configuration";
 	public static final String VERSION_1_0 = "1.0";
-	public static final String VERSION = "1.1";
+	public static final String VERSION_1_1 = "1.1";
+	public static final String VERSION = "1.2";
 	public static final String LIST_ALL_KEY = "StorageAreaList";
 	public static final char VFS_LIST_SEPARATOR = ':';
 	public static final String VFS_NAME_KEY = "name";
@@ -29,6 +30,7 @@ public class Constants {
 	public static final char VFS_STFN_ROOT_SEPARATOR = ';';
 	public static final String VFS_ENABLED_PROTOCOLS_KEY = "protocols";
 	public static final char VFS_ENABLED_PROTOCOLS_SEPARATOR = ';';
+	public static final String VFS_ANONYMOUS_PERMS_KEY = "anonymous";
 
 	/*
 	 * Usage samples in an HTTP GET call /RESOURCE/VERSION/LIST_ALL_KEY

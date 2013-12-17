@@ -32,11 +32,11 @@ import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 /**
  * @author Michele Dibenedetto
  */
-@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
-public class VirtualFSResource {
+@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_1)
+public class VirtualFSResourceCompat_1_1 {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(VirtualFSResource.class);
+		.getLogger(VirtualFSResourceCompat_1_1.class);
 
 	/**
 	 * @return
@@ -115,15 +115,6 @@ public class VirtualFSResource {
 				vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
 			}
 		}
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ANONYMOUS_PERMS_KEY;
-		vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		if (vfs.isHttpWorldReadable())
-			if (vfs.isApproachableByAnonymous())
-				vfsEncoded += "RW";
-			else
-				vfsEncoded += "R";
-		
 		return vfsEncoded;
 	}
 }
