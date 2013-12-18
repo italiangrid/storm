@@ -122,13 +122,15 @@ public class VirtualFSResource {
 		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
 		vfsEncoded += Constants.VFS_ANONYMOUS_PERMS_KEY;
 		vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		if (vfs.isHttpWorldReadable())
-			if (vfs.isApproachableByAnonymous())
+		if (vfs.isHttpWorldReadable()) {
+			if (vfs.isApproachableByAnonymous()) {
 				vfsEncoded += HttpPerms.READWRITE;
-			else
+			} else {
 				vfsEncoded += HttpPerms.READ;
-		else
+			}
+		} else {
 			vfsEncoded += HttpPerms.NOREAD;
+		}
 		return vfsEncoded;
 	}
 }
