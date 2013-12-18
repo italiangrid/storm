@@ -1297,8 +1297,7 @@ public class PtPChunkDAO {
 					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
 				}
 
-				chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));
-				chunkDataTO.setProtocolList(findProtocols(rs.getLong("rq.ID")));
+				chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));				
 				chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
 				chunkDataTO.setStatus(rs.getInt("sp.statusCode"));
 				list.add(chunkDataTO);

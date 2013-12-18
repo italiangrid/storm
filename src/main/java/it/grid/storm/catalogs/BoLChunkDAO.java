@@ -1741,8 +1741,7 @@ public class BoLChunkDAO {
 				chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
 				chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
 				chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));
-				chunkDataTO.setProtocolList(PtPChunkDAO.getInstance().findProtocols(
-					rs.getLong("rq.ID")));
+				
 				list.add(chunkDataTO);
 			}
 			return list;
