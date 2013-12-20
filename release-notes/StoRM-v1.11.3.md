@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.3 - release notes"
-release_date: "09.12.2013"
+release_date: "20.12.2013"
 rfcs:
     - id: STOR-450
       title: StoRM Gridhttps initializes VOMS validation in an unsafe way

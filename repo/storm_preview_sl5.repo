@@ -1,5 +1,5 @@
 [StoRM-Preview-SL5]
-name=StoRM
+name=StoRM-Preview-SL5
 baseurl=https://ci-01.cnaf.infn.it/download/storm/preview/sl5/x86_64
 protect=1
 enabled=1

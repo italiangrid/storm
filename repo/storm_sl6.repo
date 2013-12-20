@@ -1,5 +1,5 @@
-[StoRM-Latest-SL6]
-name=StoRM 
+[StoRM-Release-SL6]
+name=StoRM-Release-SL6
 baseurl=https://ci-01.cnaf.infn.it/download/storm/emi3/sl6/x86_64
 protect=1
 enabled=1

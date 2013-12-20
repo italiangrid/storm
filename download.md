@@ -45,15 +45,18 @@ Information about previous releases can be found [here](releases.html) or on the
 
 ---
 
+### Preview releases
+
+Preview versions can be found in the preview repositories for [SL5][preview_repo_sl5] and [SL6][preview_repo_sl6].
+
+---
+
 ### Nightly builds
 
-Development versions are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/). 
+Development versions are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/).
 
-Artifacts for the last commit can be found on our yum repos for [SL5](http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo) or [SL6](http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL6/lastSuccessfulBuild/artifact/storm.repo).
-
-Install the development repositories like
-
-	wget http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo -O /etc/yum.repos.d/storm.repo
+Artifacts for the development branch (not recommended for production) can be found in the development
+yum repositories for [SL5][devel_repo_sl5] and [SL6][devel_repo_sl6].
 
 ---
 
@@ -71,3 +74,8 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
+
+[devel_repo_sl5]: http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo
+[devel_repo_sl6]: http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL6/lastSuccessfulBuild/artifact/storm.repo
+[preview_repo_sl5]: {{site.baseurl}}/repo/storm_preview_sl5.repo
+[preview_repo_sl6]: {{site.baseurl}}/repo/storm_preview_sl6.repo
