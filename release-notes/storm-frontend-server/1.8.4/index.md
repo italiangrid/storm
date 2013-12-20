@@ -11,13 +11,18 @@ rfcs:
   title: Service crashes on status of async operations
 ---
 
-## StoRM FrontEnd v. 1.8.4
+## StoRM Frontend v. 1.8.4
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
 
 ### Description
 
 This release provides fixes for security vulnerabilities that were recently reported, and a few bug fixes.
+
+<span class="label label-info">Important</span> A security authentication token is now used
+to secure all communication among the storm-frontend and grihttps services and the 
+backend. The token is configured using the `STORM_BE_XMLRPC_TOKEN` YAIM variable for
+the three services. More details in the [System administrator guide][storm-sysadmin-guide].
 
 ### Security vulnerabilities
 

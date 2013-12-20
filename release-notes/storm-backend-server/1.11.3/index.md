@@ -7,13 +7,18 @@ rfcs:
       title: During the start-up the file welcome.txt is not found
 ---
 
-## StoRM BackEnd v. 1.11.3
+## StoRM Backend v. 1.11.3
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
 
 ### Description
 
 This release provides fixes for security vulnerabilities that were recently reported, and a few bug fixes.
+
+<span class="label label-info">Important</span> A security authentication token is now used
+to secure all communication among the storm-frontend and grihttps services and the 
+backend. The token is configured using the `STORM_BE_XMLRPC_TOKEN` YAIM variable for
+the three services. More details in the [System administrator guide][storm-sysadmin-guide].
 
 ### Security vulnerabilities
 
