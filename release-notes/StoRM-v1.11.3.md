@@ -8,7 +8,7 @@ rfcs:
     - id: STOR-431
       title: File /etc/sysconfig/storm-frontend-server is replaced by yum
     - id: STOR-415
-      title: StoRM documentation typo
+      title: Fix StoRM documentation typo
     - id: STOR-376
       title: StoRM GridHTTPs' fileTransfer and WebDAV requests on different context-paths
     - id: STOR-368
@@ -26,7 +26,7 @@ components:
       version: 1.8.4
     - name: StoRM GridHTTPs
       package: storm-gridhttps-server
-      version: 2.0.3
+      version: 3.0.0
     - name: YAIM StoRM
       package: yaim-storm
       version: 4.3.4

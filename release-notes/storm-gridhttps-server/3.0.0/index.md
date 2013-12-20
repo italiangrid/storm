@@ -1,17 +1,17 @@
 ---
 layout: default
-title: "StoRM GridHTTPs v. 2.0.3 release notes"
+title: "StoRM GridHTTPs v. 3.0.0 release notes"
 release_date: 09.12.2013
 rfcs:
 - id: STOR-450
   title: StoRM Gridhttps initializes VOMS validation in an unsafe way
 - id: STOR-415
-  title: StoRM documentation typo
+  title: Fix StoRM documentation typo
 - id: STOR-376
   title: StoRM GridHTTPs' fileTransfer and WebDAV requests on different context-paths
 ---
 
-## StoRM GridHTTPs v. 2.0.3
+## StoRM GridHTTPs v. 3.0.0
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
 

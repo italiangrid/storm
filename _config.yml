@@ -29,7 +29,7 @@ storm_components:
       visibility: show
     - name: StoRM GridHTTPs Server
       package: storm-gridhttps-server
-      latest: 2.0.3
+      latest: 3.0.0
       new: true
       repo: StoRM
       visibility: show
