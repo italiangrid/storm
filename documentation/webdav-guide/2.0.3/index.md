@@ -1,0 +1,404 @@
+---
+layout: default
+title: StoRM Documentation - StoRM GridHTTPs Server's WebDAV interface
+version: 2.0.3
+---
+
+## StoRM GridHTTPs Server's WebDAV interface
+
+version: {{ page.version }}
+
+### Table of contents
+
+* [Introduction](#introduction)
+* [What is WebDAV?](#whatwebdav)
+* [SRM operations via WebDAV](#mappingdavsrm)
+* [Service installation and configuration](#installconf)
+* [Using WebDAV](#usingwebdav)
+  * [Access data via browser](#usingbrowsers)
+  * [cURLs](#usingcurls)
+  * [Firefox RESTClient plugin](#usingrestclient)
+  * [Cyberduck](#cyberduck)
+
+### Introduction <a name="introduction">&nbsp;</a>
+
+Each Storage Area that supports HTTP or HTTPS transfer protocols can be accessed through the WebDAV interface provided by 
+the StoRM GridHTTPs server component. This WebDAV interface conceals the details of the SRM protocol and allows users to mount 
+remote Grid storage areas as a volume, directly on their own desktop.
+
+To access the Storage Area's data users have to provide the right credentials. 
+For example, if the Storage Area *A* is owned by the VO *X*, user has to provide a valid VOMS proxy. 
+If the Storage Area *B* is owned by the VO *Y* but permits a read-only access to anonymous 
+(see [examples section][anonymous-read-example]),
+user has to provide a valid VOMS proxy only if he wants to write data.
+And so on. See the [examples section][examples-section] to other storage area configuration examples.
+
+### What is WebDAV? <a name="whatwebdav">&nbsp;</a>
+
+<img src="{{ site.baseurl }}/assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: right; margin-right: 10px; margin-left: 30px; margin-top: -5px;"/>
+
+Web Distributed Authoring and Versioning (WebDAV) protocol consists of a set of methods, headers, and content-types ancillary to HTTP/1.1 for the management of resource properties, creation and management of resource collections, URL namespace manipulation, and resource locking. The purpose of this protocol is to present a Web content as a writable medium in addition to be a readable one. [WebDAV on Wikipedia](http://en.wikipedia.org/wiki/WebDAV) and the [WebDAV website](http://www.webdav.org/) provide information on this protocol.
+
+In a few words, the WebDAV protocol mainly abstracts concepts such as resource properties, collections of resources, locks in general, and write locks specifically. These abstractions are manipulated by the WebDAV-specific HTTP methods and the extra HTTP headers used with WebDAV methods. The WebDAV added methods include:
+
+* PROPFIND - used to retrieve properties, stored as XML, from a web resource. It is also overloaded to allow one to retrieve the collection structure (a.k.a. directory hierarchy) of a remote system.
+* PROPPATCH - used to change and delete multiple properties on a resource in a single atomic act.
+* MKCOL - used to create collections (a.k.a. a directory).
+* COPY - used to copy a resource from one URI to another.
+* MOVE - used to move a resource from one URI to another.
+* LOCK - used to put a lock on a resource. WebDAV supports both shared and exclusive locks.
+* UNLOCK - used to remove a lock from a resource.
+
+While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so the WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
+WebDAV uses XML for property names and some values, and also uses XML to marshal complicated requests and responses.
+
+#### SRM operations via WebDAV <a name="mappingdavsrm">&nbsp;</a>
+
+Starting from EMI3 version, StoRM GridHTTPs server exposes a WebDAV interface to allow users to access Storage-Areas data via browser or by mounting it from a remote host.
+
+
+<img src="{{ site.baseurl }}/assets/images/milton.png" alt="milton-logo" width="180" style="float: left; margin-right: 20px; margin-left: 0px; margin-top: 9px;"/>
+GridHTTPs' WebDAV implementation is based on [*Milton*](http://milton.io/) open source java library that acts as an API and HTTP protocol handler for adding the WebDAV support to web applications. *Milton* is not a full server in itself. It is able to expose any existing data source (e.g. CMS, hibernate pojos, etc) through a WebDAV interface.
+
+As seen in the chapter before, through a WebDAV interface we are allowed to manipulate resources and collections of them. So it is simple to understand that a WebDAV resource for StoRM GridHTTPs WebDAV implementation will be a file, while WebDAV collections will be directories of a file-system. Every WebDAV method needs to be mapped to one or more SRM operations that have to be transparent to the final users.
+StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by the following table:
+
+<table>
+	<thead>
+		<th style="width: 3%; text-align: center;">Method</th>
+		<th style="width: 40%">Description</th>
+		<th style="width: 25%">SRM Operation</th>
+		<th style="width: 32%">Main exit codes</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td style="text-align: center;">
+				<b>GET</b>
+			</td>
+			<td>
+				GET is defined as "<i>retrieve whatever information (in the form of an entity) is identified by the Request-URI</i>" 
+				(see <a href="http://tools.ietf.org/html/rfc2616.txt">RFC2616</a>). 
+				GET applied to a file retrieves file's content.
+				GET, when applied to a collection, returns an HTML resource that is a human-readable view of the contents of the collection.
+			</td>
+			<td>
+				GET <b>directory</b>: <span class="label label-info">srmLs</span> <br/>
+				GET <b>file</b>:<br/> 
+				&nbsp; 1. <span class="label label-info">srmPrepareToGet</span> <br/>
+				&nbsp; 2. <i>read-file</i> from disk</li> <br/>
+				&nbsp; 3. <span class="label label-info">srmReleaseFile</span> <br/>
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>PUT</b>
+			</td>
+			<td>
+				The PUT method requests that the enclosed entity be stored under the supplied Request-URI. 
+				If the Request-URI refers to an already existing resource, the enclosed entity is considered as a modified version 
+				of the one residing on the origin server. 
+				If the Request-URI does not point to an existing resource, server creates the resource with that URI.
+			</td>
+			<td>
+				Resource can't be a collection. <br/>
+				PUT <b>file</b>: <br/>
+				&nbsp; 1. <span class="label label-info">srmPrepareToPut</span> <br/>
+				&nbsp; 2. <i>write-file</i> on disk <br/>
+				&nbsp; 3. <span class="label label-info">srmPutDone</span>.
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> file created <br/>
+				<span class="label label-success">204 No Content</span> file overwrited <br/>
+				<span class="label label-important">409 Conflict</span> one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">405 Method Not Allowed</span> resource exists but it's a collection
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>HEAD</b>
+			</td>
+			<td>
+				Acts like HTTP/1.1, so HEAD is a GET without a response message body
+			</td>
+			<td>
+				A <span class="label label-info">srmLs</span> to check the existence of the resource.
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>OPTIONS</b>
+			</td>
+			<td>
+				Returns "DAV: 1" header
+			</td>
+			<td>
+				Performs a <span class="label label-info">srmPing</span> (additional)
+			</td>
+			<td>
+				<span class="label label-success">200 OK</span> <br/>
+				<span class="label label-important">404 Not Found</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>MKCOL</b>
+			</td>
+			<td>
+				MKCOL creates a new collection resource at the location specified by the Request-UI.
+			</td>
+			<td>
+				<span class="label label-info">srmMkdir</span>
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> directory created <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">415 Method Not Allowed</span> means that collection already exists
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>DELETE</b>
+			</td>
+			<td>
+				Delete the resource identified by the Request-URI. If the resource is a collection, deletes every resource contained recursively.
+			</td>
+			<td>
+				DELETE <b>file</b>: <span class="label label-info">srmRm</span> <br/> 
+				DELETE <b>directory</b>: <span class="label label-info">srmRmdir</span> with <span class="label">-r</span> recursive option
+			</td>
+			<td>
+				<span class="label label-success">204 No Content</span> resource deleted <br/>
+				<span class="label label-important">404 Not Found</span> resource doesn't exist
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>COPY</b>
+			</td>
+			<td>
+				The COPY method creates a duplication of the source resource identified by the Request-URI, 
+				in the destination resource identified by the URI in the Destination header. 
+				The Destination header MUST be present.
+			</td>
+			<td>
+				StoRM <span class="label label-info">srmCopy</span> is actually deprecated so the WebDAV COPY of a file becomes a PUT of the file read from request-URI to the request's destination URI. 
+				The COPY of a directory is a recursive series of MKCOL/PUT.
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> </br>
+				<span class="label label-success">204 No Content</span> destination resource already exists <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist. <br/>
+				<span class="label label-important">403 Forbidden</span> is a retrieved if source and destination URI are the same.
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>MOVE</b>
+			</td>
+			<td>
+				The MOVE operation is the logical equivalent of a COPY followed by a delete of the source. 
+				All these actions has to be performed in a single operation. 
+				The Destination header MUST be present on all MOVE methods.
+			</td>
+			<td>
+				<span class="label label-info">srmMv</span>
+			</td>
+			<td>
+				<span class="label label-success">201 Created</span> or <br/>
+				<span class="label label-success">204 No Content</span> if destination resource already exists <br/>
+				<span class="label label-important">409 Conflict</span> means that one or more intermediate collections doesn't exist <br/>
+				<span class="label label-important">403 Forbidden</span> is retrieved if source and destination URI are the same.
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<b>PROPFIND</b>
+			</td>
+			<td>
+				The PROPFIND operation retrieves, in XML format, the properties defined on the resource identified by the Request-URL. 
+				Clients must submit a <i>Depth</i> header with a value of "0", "1", or "infinity" (default is "Depth: infinity"). 
+				Clients may submit a 'propfind' XML element in the body of the request method describing what information 
+				is being requested: a particular property values, by naming the properties desired within the 'prop' element, 
+				all property values including additional by using the 'allprop' element (e.g. checksum type and value), 
+				the list of names of all the properties defined on the resource by using the 'propname' element.
+			</td>
+			<td>
+				<span class="label label-info">srmLs</span> with <span class="label">-l</span> (detailed) option
+			</td>
+			<td>
+				<span class="label label-success">207 Multi-Status</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>POST</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>TRACE</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>CONNECT</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>LOCK</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>UNLOCK</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><b>PROPPATCH</b></td><td>-</td><td><i>not allowed</i></td><td>-</td>
+		</tr>
+	</tbody>
+</table>
+
+For each method, a <span class="label label-warning">401 Unauthorized</span> can be obtained if user doesn't provide the necessary credentials.
+
+### Service installation and configuration <a name="installconf">&nbsp;</a>
+
+The WebDAV interface is provided by StoRM GridHTTPs component. 
+Therefore, if you want to install a WebDAV access point to your data you have to install StoRM GridHTTPs metapackage RPM (do not forget to satisfy all the [pre-requisites shown in the sys-admin guide][prereq] before):
+
+	  [~]# yum install emi-storm-gridhttps-mp
+
+To configure storm-gridhttps-server you need to fill the requested YAIM variables as described in the [basic][ghttp_basic_conf] and [advanced][ghttp_advanced_conf] StoRM GridHTTPs sys-admin configuration guides. 
+A good explanation of the required YAIM variable is available in:
+
+	/opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
+
+The service uses (by default) ports 8443 and 8085, so open them on your firewall.
+
+The service needs to be installed on a machine on which storm file system is mounted. If you need, you can install the StoRM GridHTTPs on differents hosts (that share the same data, e.g. hosts are GPFS clients) and use them as a pool (see [StoRM BackEnd configuration on sys-admin guide][be_conf]).
+To start the service:
+
+	  [~]# service storm-gridhttps-server start
+
+
+### Using WebDAV <a name="usingwebdav">&nbsp;</a>
+
+The StoRM GridHTTPs WebDAV server listens on two ports, one for the unencrypted HTTP connections and another for the SSL encrypted HTTP requests. Their default values are:
+
+* HTTP: **8085**
+* HTTP over SSL: **8443**
+
+To access storage areas' data, users can use:
+
+* a browser (if the storage area can be accessed by anonymous or via a valid personal certificate)
+* cURLs (mandatory if you need to provide a valid x509 proxy credential)
+* a third-party WebDAV client (Cyberduck, Firefox RestClient plugin, ...)
+
+You can also develop a client on your own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
+
+<div class="alert alert-error">
+<h4>Note:</h4> 
+from StoRM GridHTTPs server version <b>2.0.3</b> the WebDAV service is provided at:
+<pre><code>http(s)://[gridhttps.hostname]:[port]/webdav/[storage-area]/</code></pre>
+instead of:
+<pre><code>http(s)://[gridhttps.hostname]:[port]/[storage-area]/</code></pre>
+</div>
+
+#### Access data via browser <a name="usingbrowsers">&nbsp;</a>
+
+<img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-left: 50px;"/>
+
+Users can use browsers to easily read data of storage areas that are:
+
+- HTTP readable (see the storage area configuration described in the [StoRM BackEnd configuration on sys-admin guide][be_conf])
+- not HTTP readable, not associated to a particular VO, eventually access-filtered through users' DN.
+
+Using a browser, users can navigate through the storage areas' directories and download/open files. 
+
+#### cURLs <a name="usingcurls">&nbsp;</a>
+
+The best way to use the WebDAV service is using cURL command. cURL is a command line tool for transferring data with URL syntax (see [cURL website](http://curl.haxx.se/)). With cURLs we can do anonymous requests or provide our x509 credentials: personal certificate, plain Grid proxy, VOMS proxy. The following examples suppose that user has his/her personal certificate (*usercert.pem*) and key (*userkey.pem*) in $HOME/.globus directory, and his/her proxy in $X509\_USER\_PROXY.
+
+##### Anonymous cURLs
+
+Assuming that:
+
+- *ghttps.hostname* is the hostname where your WebDAV service is available
+- *free* is the name of a R/W from anonymous Storage Area
+
+and knowing that unencrypted connections have 8085 as default port, the following table show various cURLs, one for each HTTP/WebDAV method.
+
+| Method | cURL | Notes |
+|-------------------:|:----|:------|
+| **GET** | <pre style="width: 500px"><code>curl -v -X GET http://ghttps.hostname:8085/webdav/free</code></pre><pre><code>curl -v http://ghttps.hostname:8085/webdav/free</code></pre> | In case you are getting a file, you can specify a *range* header to get a part of it. The method GET can be omitted because by default a cURL is an HTTP GET.
+| **PUT** | To create the destination resource specifying its content via HTTP body: <pre><code>curl -v -X PUT http://ghttps.hostname:8085/webdav/free/filename.txt --data-ascii "file content"</code></pre> To create the destination resource by uploading a local existent file:<pre><code>curl -v -T /local/path/to/filename.txt http://ghttps.hostname:8085/free/filename.txt</code></pre> | By default, a PUT request overwrites the destination resource if exists, so there is an implicit ```'Overwrite: T'``` header. If you want to be sure that destination resource won't be overwritten, you have to add: ```--header 'Overwrite: F'```
+| **MKCOL** | <pre><code>curl -v -X MKCOL http://ghttps.hostname:8085/webdav/free/newdirectory</code></pre> | -
+| **DELETE** | <pre><code>curl -v -X DELETE http://ghttps.hostname:8085/webdav/free/existent_resource</code></pre> | If *existent\_resource* is a not empty directory, DELETE works recoursively deleting all the resources contained.
+| **OPTIONS** | <pre><code>curl -v -X OPTIONS http://ghttps.hostname:8085/webdav/</code></pre>| There's no need to specify any storage area or resource with OPTIONS cURLs, the response is the same.
+| **HEAD** | <pre><code>curl -v --head http://ghttps.hostname:8085/webdav/</code></pre>| There's no need to specify any storage area or resource with HEAD cURLs, the response is the same: a GET on the same URL without body.
+| **PROPFIND** | <pre><code>curl -v -X PROPFIND http://ghttps.hostname:8085/webdav/free/path/to/resource</code></pre>| The *Depth* header with a value of "0", "1", or "infinity" (default is "Depth: infinity") is used to enable/disable recursion. HTTP request body is used to retrieve specific and/or more detailed information. It must be in XML format so it's necessary to add a `--header "Content-Type: text/xml"` header. Then, the body content is specified through the *data-ascii* option, that, first of all, contains the XML header: `--data-ascii "<?xml version='1.0' encoding='utf-8'?>..."`<br/>To obtain the list of names of all the resource properties complete it with:<br/>`<propfind xmlns='DAV:'><propname/></propfind>`<br/>To obtain the value of a single property complete it with:<br/>`<propfind xmlns='DAV:'><prop>property-name</prop></propfind>`<br/>To obtain all the property values complete it with:<br/>`<propfind xmlns='DAV:'><allprop/></propfind>`
+| **COPY** | <pre><code>curl -X COPY http://ghttps.hostname:8085/webdav/free/existent_resource --header "Destination: http://ghttps.hostname:8085/webdav/free/unexistent_resource"</code></pre> | The *Destination* header must be present. The COPY method on a collection without a *Depth* header must act as if a *Depth: infinity* header was included. *Depth* header can be 0 or *infinity*. A COPY with ```--header "Depth: infinity"``` copies all its internal member resources, recursively through all levels of the collection hierarchy. A COPY with ```--header "Depth: 0"``` only instructs that the collection and its properties but not resources identified by its internal member URIs, are to be copied. If destination resource exists, the copy has success only if user specifies ```--header "Overwrite: T"```.
+| **MOVE** | <pre><code>curl -X MOVE http://ghttps.hostname:8085/webdav/free/existent\_resource --header "Destination: http://ghttps.hostname:8085/webdav/free/unexistent_resource"</code></pre>| The *Destination* header must be present. The MOVE method act like a COPY and a DELETE of the source. If the destination resource exists, the move has success only if user specifies ```--header "Overwrite: T"```.
+
+##### Using x509 credentials
+
+If you need to present an x509 certificate to be authorized, you can add to your cURL command the following options:
+
+	--cert path/to/usercert.pem --key path/to/userkey.pem --capath /path/to/the/trustdir
+
+For example, assuming that:
+
+* **A** is a storage area readable and writable only with an x509 certificate that has *O="INFN"*
+* $HOME/.globus/usercert.pem and $HOME/.globus/userkey.pem are user's certificate and private key
+* $HOME/.globus/usercert.pem has *O="INFN"*
+* the trust directory with CA informations is in */etc/grid-security/certificates*
+
+and knowing that encrypted connections has 8443 as default port, we can perform a cURL like this:
+
+	curl --verbose -X GET https://gridhttps.hostname:8443/webdav/A/ --cert $HOME/.globus/usercert.pem --key $HOME/.globus/userkey.pem --capath /etc/grid-security/certificates
+
+and retrieve the list of file/directories in the root directory of the storage area **A**.
+
+##### Using proxy credentials
+
+If you need to present an x509 proxy - plain or with VOMS extensions - to be authorized, you can add to your cURL command the following options:
+
+	--cert path/to/yourproxy --capath /path/to/the/trustdir
+
+For example, assuming that:
+
+* **B** is a storage area readable and writable only with an x509 VOMS proxy for dteam VO
+* $X509\_USER\_PROXY contains the path to the user's VOMS proxy
+* the trust directory with CA informations is in */etc/grid-security/certificates*
+
+and knowing that encrypted connections has 8443 as default port, we can perform a cURL like this:
+
+	curl --verbose -X GET https://gridhttps.hostname:8443/webdav/B/ --cert $X509_USER_PROXY --capath /etc/grid-security/certificates
+
+and retrieve the list of file/directories in the root directory of the storage area **B**.
+
+#### Firefox RESTClient plugin <a name="usingrestclient">&nbsp;</a>
+
+There's a useful Firefox plugin, named <a href="https://addons.mozilla.org/it/firefox/addon/restclient/">RESTClient</a>, that can be used as a debugger for RESTful web services. RESTClient supports all HTTP methods <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616</a> (HTTP/1.1) and <a href="http://www.webdav.org/specs/rfc2518.html">RFC2518</a> (WebDAV). You can construct custom HTTP request (custom method with resources URI and HTTP request Body) to directly test requests against a server.
+
+![RESTClient home screenshot]({{ site.baseurl }}/assets/images/restclient.png "RESTClient home screenshot")
+
+#### Cyberduck <a name="usingcyberduck">&nbsp;</a>
+
+To connect to HTTP readable storage area you can use several clients. One of this is <a href="http://cyberduck.ch/">Cyberduck</a>. Cyberduck is an open source FTP and SFTP, WebDAV, Cloud Files, Google Docs, and Amazon S3 client for Mac OS X and Windows (as of version 4.0) licensed under the GPL. To configure it, add a new connection and insert:
+
+* *server*: the FQDN of the gridhttps host
+* *port*: the unencrypted HTTP port, default 8085
+* select *anonymous login*
+* specify /storage-area-name as *remote path*
+
+This configuration is the same for lots of WebDAV clients, alternatives to Cyberduck.
+
+<img src="{{ site.baseurl }}/assets/images/cyberduck.png" alt="cyberduck" style="margin: 10px auto;"/>
+
+
+[examples-section]: {{ site.baseurl }}/documentation/examples/
+[anonymous-read-example]: {{ site.baseurl }}/documentation/examples/1.11.2/storage-area-configuration-examples.html#sa-anonymous-r
+[ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttpconf
+[ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttp_advconf
+[be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#beconf
+[prereq]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#installprereq
