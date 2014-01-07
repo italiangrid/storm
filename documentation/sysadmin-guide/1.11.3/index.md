@@ -1092,7 +1092,7 @@ This is and example of the FS element:
 			it.grid.storm.filesystem.MockSpaceSystem
 		</spacesystem-driver>
 		<storage-area-authz>
-			<authz-db>DTEAM_AUTH</authz-db>
+			<fixed>permit-all</fixed>
 		</storage-area-authz>
 		<properties>
 			<RetentionPolicy>replica</RetentionPolicy>
@@ -1413,37 +1413,6 @@ An hearthbeat.log entry example:
 |```[#PTP=5 OK=5 M.Dur.=300]```		|Number of srmPrepareToPut executed in the last beat, with number of request terminated with success and average time in milliseconds.
 			
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
-
-### Backend Space Authorization: authz.db <a name="besa_advconf">&nbsp;</a>
-
-Space authorization component define access control policy on the Storage Area manged by StoRM. It allows to define rules as: *users* (expressed in terms of regular expression on FQANs or DN), *operation* (READ/WRITE/others) and *target Storage Area*. This rules are stored in a file named **authz.db** located at */etc/storm/backend-server/*.
-<br/>
-<br/>
-The complete list of the operations is showed into the following table:
-
-|	Operation name			|	Code	|	Description				|
-|:--------------------------|:---------:|:--------------------------|
-|	RELEASE\_SPACE			|	D		|	Release Space			|
-|	UPDATE\_SPACE			|	U		|	Update Space			|
-|	READ\_FROM\_SPACE		|	R		|	Read from space			|
-|	WRITE\_TO\_SPACE		|	W		|	Write to space			|
-|	STAGE\_TO\_SPACE		|	S		|	Stage in space			|
-|	REPLICATE\_FROM\_SPACE	|	C		|	Replicate from space	|
-|	PURGE\_FROM\_SPACE		|	P		|	Purge from space		|
-|	QUERY\_SPACE			|	Q		|	Query space				|
-
-Th *authz.db* file contains all the rule defining access policies for a Storage Area, and it is expressed in the *auth_db* element of the NS-Filesystem element referring to that Storage Area.
-
-	ace.1=dn:/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=lmagnoni/CN=576235/CN=Luca Magnoni:DURWSCP:AL
-	ace.2=dn:/O=GermanGrid/OU=DESY/CN=Tigran Mkrtchyan:S:ALLOW
-	ace.3=fqan:EVERYONE:RQ:ALLOW
-	ace.4=fqan:EVERYONE:S:DENY
-	ace.5=fqan:dteam/Role=production:RSWQP:ALLOW
-	ace.6=fqan:dteam/Role=lcgamin:DURWSPQM:ALLOW
-	ace.7=fqan:dteam/Role=NULL:RSQ:ALLOW
-	ace.8=fqan:EVERYONE:DURWSPQMC:DENY
-
-The *evaluation algorithm* is taken from the NFS4 approach.
 
 ## GridFTP Advanced Configuration <a name="gftp_advconf">&nbsp;</a>
 
