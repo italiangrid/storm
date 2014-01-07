@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - Storage Area configuration examples
-version: 1.11.2
+version: 1.11.3
 ---
 
 #### [StoRM Examples]({{site.baseurl}}/documentation/examples/)
@@ -36,7 +36,7 @@ To test this configuration, if you have a StoRM GridHTTPs server enabled (see [E
 and _file.txt_ exists and it's located in the root directory of the storage area, you can simply open a browser or do a _curl_ to the address:
 
 ```bash
-http://<storm-gridhttps-server-hostname>:8085/test-sa/file.txt
+http://<storm-gridhttps-server-hostname>:8085/webdav/test-sa/file.txt
 ```
 
 and see the file content. The ```storm-gridhttps-server-hostname``` is the Backend hostname in case of a standalone deployment.
@@ -62,13 +62,13 @@ To test this configuration, if you have a StoRM GridHTTPs server enabled (see [E
 and _file.txt_ exists and it's located in the root directory of the storage area, you can simply open a browser or do a _curl_ to the address:
 
 ```bash
-http://<storm-gridhttps-server-hostname>:8085/test-sa/file.txt
+http://<storm-gridhttps-server-hostname>:8085/webdav/test-sa/file.txt
 ```
 
 and see the file content. The ```storm-gridhttps-server-hostname``` is the Backend hostname in case of a standalone deployment. If you want to write/upload an existent local file _localfile.txt_ do:
 
 ```bash
-curl -T localfile.txt http://<storm-gridhttps-server-hostname>:8085/test-sa/localfile.txt
+curl -T localfile.txt http://<storm-gridhttps-server-hostname>:8085/webdav/test-sa/localfile.txt
 ```
 
 
@@ -99,4 +99,4 @@ to make your own DN filter.
 
 
 
-[example2]: {{site.baseurl}}/documentation/examples/1.11.2/enable-gridhttps-standalone-deployment.html
+[example2]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html

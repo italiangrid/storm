@@ -1,12 +1,22 @@
 ---
 layout: default
 title: StoRM Documentation - StoRM GridHTTPs Server's WebDAV interface
-version: 2.0.3
+version: 3.0.0
 ---
 
 ## StoRM GridHTTPs Server's WebDAV interface
 
 version: {{ page.version }}
+
+<div class="alert alert-error">
+<h4 onclick="$('#note300').toggle();" style="cursor: pointer; margin-bottom: 0px;">READ THIS</h4>
+<div id="note300" style="display: none; margin-top: 20px;">
+From StoRM GridHTTPs server version <b>3.0.0</b> the WebDAV service is provided at:
+<pre><code>http(s)://[gridhttps.hostname]:[port]/webdav/[storage-area]/</code></pre>
+instead of:
+<pre><code>http(s)://[gridhttps.hostname]:[port]/[storage-area]/</code></pre>
+</div>
+</div>
 
 ### Table of contents
 
@@ -125,7 +135,7 @@ StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by
 				Acts like HTTP/1.1, so HEAD is a GET without a response message body
 			</td>
 			<td>
-				A <span class="label label-info">srmLs</span> to check the existence of the resource.
+				<i>none</i>
 			</td>
 			<td>
 				<span class="label label-success">200 OK</span> <br/>
@@ -140,7 +150,7 @@ StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by
 				Returns "DAV: 1" header
 			</td>
 			<td>
-				Performs a <span class="label label-info">srmPing</span> (additional)
+				<i>none</i>
 			</td>
 			<td>
 				<span class="label label-success">200 OK</span> <br/>
@@ -189,7 +199,7 @@ StoRM GridHTTPs maps the HTTP/WebDAV methods with the SRM operations as shown by
 				The Destination header MUST be present.
 			</td>
 			<td>
-				StoRM <span class="label label-info">srmCopy</span> is actually deprecated so the WebDAV COPY of a file becomes a PUT of the file read from request-URI to the request's destination URI. 
+				Actually the StoRM <span class="label label-info">srmCopy</span> is deprecated, so the COPY of a file becomes a PUT of the file read from request-URI to the request's destination URI. 
 				The COPY of a directory is a recursive series of MKCOL/PUT.
 			</td>
 			<td>
@@ -295,14 +305,6 @@ To access storage areas' data, users can use:
 
 You can also develop a client on your own, for example by using the <a href="http://jackrabbit.apache.org/">Apache Jackrabbit API</a>.
 
-<div class="alert alert-error">
-<h4>Note:</h4> 
-from StoRM GridHTTPs server version <b>2.0.3</b> the WebDAV service is provided at:
-<pre><code>http(s)://[gridhttps.hostname]:[port]/webdav/[storage-area]/</code></pre>
-instead of:
-<pre><code>http(s)://[gridhttps.hostname]:[port]/[storage-area]/</code></pre>
-</div>
-
 #### Access data via browser <a name="usingbrowsers">&nbsp;</a>
 
 <img src="{{ site.baseurl }}/assets/images/browser-logos.jpg" alt="brower-logos" width="200" style="float: right; margin-left: 50px;"/>
@@ -397,7 +399,7 @@ This configuration is the same for lots of WebDAV clients, alternatives to Cyber
 
 
 [examples-section]: {{ site.baseurl }}/documentation/examples/
-[anonymous-read-example]: {{ site.baseurl }}/documentation/examples/1.11.2/storage-area-configuration-examples.html#sa-anonymous-r
+[anonymous-read-example]: {{ site.baseurl }}/documentation/examples/1.11.3/storage-area-configuration-examples.html#sa-anonymous-r
 [ghttp_basic_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttpconf
 [ghttp_advanced_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#ghttp_advconf
 [be_conf]: {{ site.baseurl }}/documentation/sysadmin-guide/{{site.versions.sysadmin_guide}}/#beconf

@@ -10,7 +10,7 @@ version: 1.11.2
 
 _**Components installed**_: <span class="label label-important">StoRM Backend</span> <span class="label label-info">StoRM Frontend</span> <span class="label">StoRM GridFTP</span> <span class="label label-success">StoRM GridHTTPs</span>
 
-If you have a standalone deployment of StoRM (see [this example]({{site.baseurl}}/documentation/examples/1.11.2/enable-gridhttps-standalone-deployment.html)), and you need to add a WebDAV interface or use the HTTP/HTTPS protocol file transfer functionality, then you have to install the StoRM GridHTTPs component:
+If you have a standalone deployment of StoRM (see [this example][example]), and you need to add a WebDAV interface or use the HTTP/HTTPS protocol file transfer functionality, then you have to install the StoRM GridHTTPs component:
 
 ```bash
 yum install emi-storm-gridhttps-mp
@@ -41,4 +41,4 @@ Run YAIM specyfing also the StoRM GridHTTPs profile:
 /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp -n se_storm_gridhttps
 ```
 
-
+[example]: {{site.baseurl}}/documentation/examples/basic-storm-standalone-configuration/1.11.2/basic-storm-standalone-configuration.html
