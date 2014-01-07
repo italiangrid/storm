@@ -99,4 +99,4 @@ to make your own DN filter.
 
 
 
-[example2]: {{site.baseurl}}/documentation/examples/1.11.2/enable-gridhttps-standalone-deployment.html
+[example2]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html
