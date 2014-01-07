@@ -6,11 +6,27 @@ layout: default
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-
-<span class="label" style="margin-top: -20px;">06.09.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
-### StoRM v.1.11.2
+<span class="label" style="margin-top: -20px;">20.12.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+### StoRM v.1.11.3
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component			   | Version	|
+|:---------------------|:-----------|
+|StoRM Backend 		   |[1.11.3]({{site.baseurl}}/release-notes/storm-backend-server/1.11.3/)|
+|StoRM Frontend		   |[1.8.4]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.4/)|
+|StoRM GridHTTPs Server|[3.0.0]({{site.baseurl}}/release-notes/storm-gridhttps-server/3.0.0/)|
+|StoRM Client		   |[1.6.1]({{site.baseurl}}/release-notes/storm-srm-client/1.6.1/)|
+|YAIM StoRM			   |[4.3.4]({{site.baseurl}}/release-notes/yaim-storm/4.3.4/)|
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.2.html).
+
+___
+
+<span class="label" style="margin-top: -20px;">06.09.2013</span>
+### StoRM v.1.11.2
+
+This is the second update for StoRM in EMI-3.
 
 | Component			   | Version	|
 |:---------------------|:-----------|
@@ -28,7 +44,7 @@ ___
 ### StoRM v.1.11.1
 
 
-This was the first update for StoRM in EMI-3.
+This is the first update for StoRM in EMI-3.
 
 | Component			    | Version	|
 |:----------------------|:----------|
