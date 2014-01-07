@@ -60,5 +60,6 @@ Run YAIM specifying the proper components profiles:
 /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp
 ```
 
-If you want to install and use alse the StoRM GridHTTPs read [Enable StoRM GridHTTPs on a standalone deployment]({{site.baseurl}}/documentation/examples/1.11.2/enable-gridhttps-standalone-deployment.html).
+If you want to install and use alse the StoRM GridHTTPs read [Enable StoRM GridHTTPs on a standalone deployment][enable-example].
 
+[enable-example]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html
