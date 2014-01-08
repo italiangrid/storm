@@ -1433,6 +1433,19 @@ The logging level can be specified by editing the configuration file:
 
 The supported logging levels are: ERROR, WARN, INFO, DUMP and ALL.
 
+### Redirect LCMAPS logging to a particular file (instead of syslog)
+
+Administrators can redirect the LCMAPS logging to a different log file than the one used by syslog by setting the ```LLGT_LOG_FILE``` environment variable.
+As example, consider the following setup for the gridftp service:
+
+	vim /etc/sysconfig/globus-gridftp
+
+insert:
+
+	export LLGT_LOG_FILE="/var/log/storm/storm-gridftp-lcmaps.log"
+
+After restarting the service, all LCMAPS calls will be logged to the new file.
+
 ## GridHTTPs Advanced Configuration <a name="ghttp_advconf">&nbsp;</a>
 
 The EMI3 GridHTTPs is the component responsible to provide:
