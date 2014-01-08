@@ -331,7 +331,7 @@ public class VirtualFS implements VirtualFSInterface {
 	public boolean isHttpWorldReadable() {
 
 		for (ApproachableRule rule : approachableRules) {
-			if (rule.getAnonymousHttpReadAccess()) {
+			if (rule.getAnonymousHttpReadAccess() || rule.isAdmitAll()) {
 				return true;
 			}
 		}

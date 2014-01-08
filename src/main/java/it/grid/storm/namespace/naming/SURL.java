@@ -96,7 +96,6 @@ public class SURL extends SRMURL {
 		URI uri = null;
 		try {
 			uri = URI.create(surlString);
-			uri = uri.normalize();
 		} catch (IllegalArgumentException uriEx) {
 			throw new NamespaceException("SURL_String :'" + surlString
 				+ "' is INVALID. Reason: URI Except: " + uriEx.getMessage());
@@ -187,7 +186,7 @@ public class SURL extends SRMURL {
 
 	/**
 	 * 
-	 * Checks if the quesry string begins with the correct prefix ("SFN=")
+	 * Checks if the query string begins with the correct prefix ("SFN=")
 	 * 
 	 * @param query
 	 * @return

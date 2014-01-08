@@ -163,21 +163,6 @@ public class StoRIImpl implements StoRI {
 		} else {
 			log.warn("StoRI built without MAPPIG RULE!!");
 		}
-		/**
-		 * log.debug(" ..............................");
-		 * log.debug("StFN : "+stfn+" [StFN relative = '"+relativeStFN+"']");
-		 * log.debug("vfs root : "+vfsRoot+" [StFN relative= '"+relativeStFN+"']");
-		 * log.debug("relative StFN : "+relativeStFN+" [StFN relative = '"+
-		 * relativeStFN+"']");
-		 * log.debug("relative Path : "+relativePath+" [StFN relative= '"
-		 * +relativeStFN+"']");
-		 * log.debug("filename : "+fileName+" [StFN relative = '"
-		 * +relativeStFN+"']");
-		 * log.debug("stfn Path : "+stfnPath+" [StFN relative= '"
-		 * +relativeStFN+"']");
-		 * log.debug("stfn Root : "+stfnRoot+" [StFN relative= '"
-		 * +relativeStFN+"']"); log.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-		 **/
 	}
 
 	public StoRIImpl(VirtualFSInterface vfs, String stfnStr,
@@ -216,8 +201,6 @@ public class StoRIImpl implements StoRI {
 	public void allotSpaceByToken(TSpaceToken token) throws ReservationException,
 		ExpiredSpaceTokenException {
 
-		LocalFile localfile = this.getLocalFile();
-
 		// Retrieve SpaceSystem Driver
 		if (spaceDriver == null) {
 			try {
@@ -238,14 +221,10 @@ public class StoRIImpl implements StoRI {
 				+ token + "' for " + this.fileName);
 		}
 
-		// this.getSpace().allot();
-
 	}
 
 	public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize)
 		throws ReservationException, ExpiredSpaceTokenException {
-
-		LocalFile localfile = this.getLocalFile();
 
 		// Retrieve SpaceSystem Driver
 		if (spaceDriver == null) {
@@ -266,8 +245,6 @@ public class StoRIImpl implements StoRI {
 			throw new ReservationException("Error while using Space with token '"
 				+ token + "' for " + this.fileName);
 		}
-
-		// this.getSpace().allot();
 
 	}
 
@@ -825,7 +802,7 @@ public class StoRIImpl implements StoRI {
 	private void setVolatileInformation() {
 
 		VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
-		List volatileInfo = catalog.volatileInfoOn(getPFN());
+		List<?> volatileInfo = catalog.volatileInfoOn(getPFN());
 		if (volatileInfo.size() != 2) {
 			lifetime = TLifeTimeInSeconds.makeInfinite();
 			startTime = null;

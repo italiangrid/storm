@@ -13,21 +13,17 @@ package it.grid.storm.namespace.remote.resource;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.remote.Constants;
-import it.grid.storm.namespace.remote.Constants.HttpPerms;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +32,11 @@ import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 /**
  * @author Michele Dibenedetto
  */
-@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
-public class VirtualFSResource {
+@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_1)
+public class VirtualFSResourceCompat_1_1 {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(VirtualFSResource.class);
+		.getLogger(VirtualFSResourceCompat_1_1.class);
 
 	/**
 	 * @return
@@ -118,18 +114,6 @@ public class VirtualFSResource {
 			if (protocolsIterator.hasNext()) {
 				vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
 			}
-		}
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ANONYMOUS_PERMS_KEY;
-		vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		if (vfs.isHttpWorldReadable()) {
-			if (vfs.isApproachableByAnonymous()) {
-				vfsEncoded += HttpPerms.READWRITE;
-			} else {
-				vfsEncoded += HttpPerms.READ;
-			}
-		} else {
-			vfsEncoded += HttpPerms.NOREAD;
 		}
 		return vfsEncoded;
 	}

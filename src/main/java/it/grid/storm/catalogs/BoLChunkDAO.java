@@ -89,7 +89,8 @@ public class BoLChunkDAO {
 	 */
 	private TimerTask clockTask = null;
 	/** milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+	private final long period = Configuration.getInstance()
+		.getDBReconnectPeriod() * 1000;
 	/** initial delay in millseconds before starting timer */
 	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 	/** boolean that tells whether reconnection is needed because of MySQL bug! */
@@ -967,25 +968,27 @@ public class BoLChunkDAO {
 				.error("BoL CHUNK DAO: transitExpiredSRM_SUCCESS - unable to get a valid connection!");
 			return new ArrayList<TSURL>();
 		}
+
 		HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
 		String str = null;
-		Statement statement = null;
+		PreparedStatement prepStatement = null;
 
 		/* Find all expired surls */
 		try {
 			// start transaction
 			con.setAutoCommit(false);
 
-			statement = con.createStatement();
-
 			str = "SELECT rb.sourceSURL , rb.sourceSURL_uniqueID FROM "
 				+ "request_BoL rb JOIN (status_BoL sb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
-				+ "WHERE sb.statusCode="
-				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
+				+ "WHERE sb.statusCode=?"
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
-			ResultSet res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			prepStatement = con.prepareStatement(str);
+			prepStatement.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
+
+			ResultSet res = prepStatement.executeQuery();
+			logWarnings(prepStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rb.sourceSURL");
@@ -1014,12 +1017,12 @@ public class BoLChunkDAO {
 			rollback(con);
 			return new ArrayList<TSURL>();
 		} finally {
-			close(statement);
+			close(prepStatement);
 		}
 
 		/* Update status of all successful surls to SRM_RELEASED */
 
-		PreparedStatement preparedStatement = null;
+		prepStatement = null;
 		try {
 
 			str = "UPDATE "
@@ -1027,22 +1030,22 @@ public class BoLChunkDAO {
 				+ "SET sb.statusCode=? "
 				+ "WHERE sb.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
-			preparedStatement = con.prepareStatement(str);
+			prepStatement = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			preparedStatement.setInt(1,
+			prepStatement.setInt(1,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
-			logWarnings(preparedStatement.getWarnings());
+			logWarnings(prepStatement.getWarnings());
 
-			preparedStatement.setInt(2,
+			prepStatement.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
-			logWarnings(preparedStatement.getWarnings());
+			logWarnings(prepStatement.getWarnings());
 
 			log.trace("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: "
-				+ preparedStatement.toString());
+				+ prepStatement.toString());
 
-			int count = preparedStatement.executeUpdate();
-			logWarnings(preparedStatement.getWarnings());
+			int count = prepStatement.executeUpdate();
+			logWarnings(prepStatement.getWarnings());
 
 			if (count == 0) {
 				log.trace("BoLChunkDAO! No chunk of BoL request was"
@@ -1059,7 +1062,7 @@ public class BoLChunkDAO {
 			rollback(con);
 			return new ArrayList<TSURL>();
 		} finally {
-			close(preparedStatement);
+			close(prepStatement);
 		}
 
 		/*
@@ -1072,9 +1075,6 @@ public class BoLChunkDAO {
 
 		HashSet<Integer> pinnedSurlSet = new HashSet<Integer>();
 		try {
-
-			statement = con.createStatement();
-
 			// SURLs pinned by BoLs
 			str = "SELECT rb.sourceSURL , rb.sourceSURL_uniqueID FROM "
 				+ "request_BoL rb JOIN (status_BoL sb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
@@ -1082,8 +1082,11 @@ public class BoLChunkDAO {
 				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS)
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) < rq.pinLifetime ";
 
-			ResultSet res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			ResultSet res = null;
+
+			prepStatement = con.prepareStatement(str);
+			res = prepStatement.executeQuery();
+			logWarnings(prepStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rb.sourceSURL");
@@ -1101,14 +1104,20 @@ public class BoLChunkDAO {
 				pinnedSurlSet.add(uniqueID);
 			}
 
+			close(prepStatement);
+
 			str = "SELECT rg.sourceSURL , rg.sourceSURL_uniqueID FROM "
 				+ "request_Get rg JOIN (status_Get sg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-				+ "WHERE sg.statusCode="
-				+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED)
+				+ "WHERE sg.statusCode=?"
 				+ " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) < rq.pinLifetime ";
 
-			res = statement.executeQuery(str);
-			logWarnings(statement.getWarnings());
+			prepStatement = con.prepareStatement(str);
+
+			prepStatement.setInt(1,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
+
+			res = prepStatement.executeQuery();
+			logWarnings(prepStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rg.sourceSURL");
@@ -1132,7 +1141,7 @@ public class BoLChunkDAO {
 			log.error("BoLChunkDAO! SQLException." + e);
 			rollback(con);
 		} finally {
-			close(statement);
+			close(prepStatement);
 		}
 
 		/* Remove the Extended Attribute pinned if there is not a valid surl on it */
@@ -1468,11 +1477,11 @@ public class BoLChunkDAO {
 
 		StringBuffer sb = new StringBuffer("(");
 		int n = surls.length;
-		
+
 		for (int i = 0; i < n; i++) {
-			
+
 			SURL requestedSURL;
-			
+
 			try {
 				requestedSURL = SURL.makeSURLfromString(surls[i]);
 			} catch (NamespaceException e) {
@@ -1480,18 +1489,18 @@ public class BoLChunkDAO {
 				log.debug("Skip '" + surls[i] + "' during query creation");
 				continue;
 			}
-			
+
 			sb.append("'");
 			sb.append(requestedSURL.getNormalFormAsString());
 			sb.append("','");
 			sb.append(requestedSURL.getQueryFormAsString());
 			sb.append("'");
-			
+
 			if (i < (n - 1)) {
 				sb.append(",");
 			}
 		}
-		
+
 		sb.append(")");
 		return sb.toString();
 	}
@@ -1741,8 +1750,7 @@ public class BoLChunkDAO {
 				chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
 				chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
 				chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));
-				chunkDataTO.setProtocolList(PtPChunkDAO.getInstance().findProtocols(
-					rs.getLong("rq.ID")));
+				
 				list.add(chunkDataTO);
 			}
 			return list;

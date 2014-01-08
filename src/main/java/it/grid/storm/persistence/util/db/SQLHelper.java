@@ -28,16 +28,6 @@ public abstract class SQLHelper {
 		this.formatter = DataBaseStrategy.getInstance(dbmsVendor).getFormatter();
 	}
 
-	public String buildSQL(SQLBuilder builder) {
-
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(builder.getCommand());
-		buffer.append(builder.getTable());
-		buffer.append(builder.getWhat());
-		buffer.append(builder.getCriteria());
-		return buffer.toString();
-	}
-
 	public String format(Object value) {
 
 		return formatter.format(value);

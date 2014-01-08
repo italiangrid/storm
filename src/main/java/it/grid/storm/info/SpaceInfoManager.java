@@ -145,9 +145,8 @@ public class SpaceInfoManager {
 		return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
 	}
 
-
 	public void execGPFSQuota() {
-		
+
 		GPFSQuotaManager.INSTANCE.start();
 	}
 
@@ -198,10 +197,9 @@ public class SpaceInfoManager {
 		List<VirtualFSInterface> vfsSet = retrieveSAtoInitializeWithQuota();
 		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
 		for (VirtualFSInterface vfsEntry : vfsSet) {
-				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
-				StorageSpaceData ssd = ssdCatalog
-					.getStorageSpaceByAlias(spaceTokenDesc);
-				ssdSet.add(ssd);
+			String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
+			StorageSpaceData ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
+			ssdSet.add(ssd);
 		}
 		return ssdSet;
 	}
@@ -212,12 +210,12 @@ public class SpaceInfoManager {
 		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
 		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
 		for (VirtualFSInterface vfsEntry : vfsList) {
-				String qName = vfsEntry.getCapabilities().getQuota()
-					.getQuotaElementName();
-				if (qName.equals(quotaName)) {
-					String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
-					ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
-				}
+			String qName = vfsEntry.getCapabilities().getQuota()
+				.getQuotaElementName();
+			if (qName.equals(quotaName)) {
+				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
+				ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
+			}
 		}
 		return ssd;
 	}
@@ -347,7 +345,7 @@ public class SpaceInfoManager {
 					.error("Unable to submit DU test, StorageSpaceData returns null values: SpaceToken="
 						+ sT + " , SpaceFileNameString=" + absPath);
 			} else {
-				
+
 				try {
 					bDUTasks.addTask(sT, absPath);
 					LOG.debug("Added " + absPath + " to the DU-Task Queue. (size:"

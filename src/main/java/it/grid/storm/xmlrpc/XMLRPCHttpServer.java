@@ -27,11 +27,20 @@
 
 package it.grid.storm.xmlrpc;
 
-import java.io.IOException;
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+
+import it.grid.storm.config.Configuration;
+import it.grid.storm.rest.JettyThread;
 
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.server.PropertyHandlerMapping;
-import org.apache.xmlrpc.webserver.WebServer;
+import org.apache.xmlrpc.webserver.XmlRpcServlet;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,14 +52,10 @@ public final class XMLRPCHttpServer {
 	private static final Logger log = LoggerFactory
 		.getLogger(XMLRPCHttpServer.class);
 
-	private final static int DEFAULT_PORT = 8080;
-
-	private final static int DEFAULT_THREAD_NUM = 100;
-
 	/**
-	 * The web server running the XML-RPC server
+	 * The Jetty server hosting the Apache XML-RPC machinery
 	 */
-	private final WebServer webServer;
+	private final Server server;
 
 	/**
 	 * True if a web server has been started
@@ -65,61 +70,43 @@ public final class XMLRPCHttpServer {
 	public XMLRPCHttpServer(int port, int maxThreadNum)
 		throws StoRMXmlRpcException {
 
-		log.info("[xmlrpc server] Creating server on port: " + port
-			+ " using at most " + maxThreadNum + " threads");
-		this.webServer = buildWebServer(port, maxThreadNum);
+		server = buildWebServer(port, maxThreadNum);
 	};
 
-	/**
-	 * @param port
-	 * @throws XmlRpcException
-	 */
-	public XMLRPCHttpServer(int port) throws StoRMXmlRpcException {
-
-		this(port, DEFAULT_THREAD_NUM);
-	};
-
-	/**
-	 * @throws XmlRpcException
-	 * 
-	 */
-	public XMLRPCHttpServer() throws StoRMXmlRpcException {
-
-		this(DEFAULT_PORT);
-	};
-
-	private WebServer buildWebServer(int port, int maxThreadNum)
+	private Server buildWebServer(int port, int maxThreadNum)
 		throws StoRMXmlRpcException {
 
-		WebServer server = new WebServer(port);
-		server.getXmlRpcServer().setMaxThreads(maxThreadNum);
-		PropertyHandlerMapping phm = new PropertyHandlerMapping();
-		try {
-			phm.addHandler("synchcall", XMLRPCMethods.class);
-		} catch (XmlRpcException e) {
-			log
-				.error("Unable to create synchcall PropertyHandlerMapping on XMLRPCMethods class . XmlRpcException"
-					+ e.getMessage());
-			throw new StoRMXmlRpcException("Unable to initialize the XmlRpcServer");
-		}
-		server.getXmlRpcServer().setHandlerMapping(phm);
+		Server server = new Server(port);
 
-		/*
-		 * IP filtering is disabled because dynamic DNS for the FE machine. Where a
-		 * dynamic DNS is used to load balancing on the FE machines, the hostname IP
-		 * lookup above cannot be used. In that case the configuration properties
-		 * files must contains the set of the specific IPs for the frontend
-		 * machines. In that way, the xmlrpc server can be configured to accept
-		 * request from each particulare FE machine.
-		 * 
-		 * HostLookup hl = new HostLookup(); for(String hostname :
-		 * Configuration.getInstance().getListOfMachineNames()) { try { String IP =
-		 * hl.lookup(hostname); log.info("[xmlrpc server] Accepting requests from "
-		 * + IP + " (" + hostname + ")"); server.getXmlRpcServer().acceptClient(IP);
-		 * } catch (UnknownHostException ex) {
-		 * log.warn("Synchserver: IP for hostname: " + hostname +
-		 * " cannot be resolved."); } }
-		 */
+		XmlRpcServlet servlet = new XmlRpcServlet();
+
+		ServletContextHandler servletContextHandler = new ServletContextHandler();
+		servletContextHandler.addServlet(new ServletHolder(servlet), "/");
+
+		Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
+		
+		if(isTokenEnabled) {
+		
+			log.info("Enabling security filter for XML-RPC requests");
+
+			String token = Configuration.getInstance().getXmlRpcToken();
+
+			if(token == null || token.isEmpty()) {
+				
+				log.error("XML-RPC requests token enabled, but token not found");
+
+				throw new StoRMXmlRpcException("XML-RPC requests token enabled, but token not found");
+			}
+			
+			Filter filter = new XmlRpcTokenFilter(token);
+		
+			FilterHolder filterHolder = new FilterHolder(filter);
+		
+			servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+		}
+			
+		server.setHandler(servletContextHandler);
+
 		return server;
 	}
 
@@ -131,28 +118,46 @@ public final class XMLRPCHttpServer {
 	public synchronized void start() throws StoRMXmlRpcException {
 
 		if (!running) {
-			log.info("[xmlrpc server] Starting server...");
-			try {
-				this.webServer.start();
-			} catch (IOException e) {
-				log.error("xmlrpcServer web server start failure. IOException"
-					+ e.getMessage());
-				throw new StoRMXmlRpcException(
-					"Unable to create the xmlRPC server. IOException: " + e.getMessage());
-			}
+
+			log.info("Starting Jetty server hosting the XML-RPC machinery");
+
+			JettyThread thread = new JettyThread(server);
+			thread.start();
+			
 			running = true;
-			log.info("[xmlrpc server] Server running...");
+
+			log.info("Jetty server hosting the XML-RPM machinery is running");
 		}
+
 	}
 
 	/**
+	 * @throws Exception 
      * 
      */
 	public synchronized void stop() {
 
-		if (this.webServer != null) {
-			this.webServer.shutdown();
+		log.info("Stopping Jetty server hosting the XML-RPC machinery");
+
+		if (server != null) {
+
+			try {
+				
+				server.stop();
+			
+			} catch (Exception e) {
+				
+				log.info("Could not stop the Jetty server hosting the XML-RPC machinery");
+				
+				return;
+			}
+		
 		}
+
 		running = false;
+
+		log.info("Jetty server hosting the XML-RPM machinery is not running");
+
 	}
+
 }

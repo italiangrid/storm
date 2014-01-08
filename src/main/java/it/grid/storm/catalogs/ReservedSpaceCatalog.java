@@ -221,7 +221,6 @@ public class ReservedSpaceCatalog {
 	public void updateStorageSpaceFreeSpace(StorageSpaceData ssd)
 		throws DataAccessException {
 
-	
 		ssDAO = daoFactory.getStorageSpaceDAO();
 		ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
 		StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
@@ -229,7 +228,7 @@ public class ReservedSpaceCatalog {
 		ssTO.setUpdateTime(new Date());
 		ssDAO.updateStorageSpaceFreeSpace(ssTO);
 		ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
-	
+
 	}
 
 	/**
@@ -371,6 +370,7 @@ public class ReservedSpaceCatalog {
 	 * @param lastUpdateTimestamp
 	 * @return
 	 */
+
 	public List<StorageSpaceData> getStorageSpaceByLastUpdate(
 		Date lastUpdateTimestamp) {
 
@@ -383,7 +383,7 @@ public class ReservedSpaceCatalog {
 		} catch (DataAccessException daEx) {
 			log.debug("Error while retrieving StorageSpaceDAO.", daEx);
 		}
-		// Get StorageSpaceTO form persistence
+		// GetStorageSpaceTO form persistence
 		try {
 			Collection<StorageSpaceTO> storagesSpaceTOCollection = ssDAO
 				.getStorageSpaceByPreviousLastUpdate(lastUpdateTimestamp);

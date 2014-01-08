@@ -194,7 +194,8 @@ storm.rest.services.port=
 # ============================
 synchcall.xmlrpc.unsecureServerPort=8080
 synchcall.xmlrpc.maxthread=100
-
+synchcall.xmlrpc.security.enabled=true
+synchcall.xmlrpc.security.token=
 
 # =======================
 # Pinned Files cleaning parameters
