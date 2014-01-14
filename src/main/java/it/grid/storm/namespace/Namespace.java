@@ -227,8 +227,11 @@ public class Namespace implements NamespaceInterface {
 				"Unable to perform getWinnerRule, invalid arguments");
 		}
 		String stfnStr = surl.sfn().stfn().toString();
-		MappingRule winnerRule = getWinnerRule(NamespaceUtil.getStFNPath(stfnStr),
+		
+		// Fix for STOR-501
+		MappingRule winnerRule = getWinnerRule(stfnStr,
 			vfsApproachable, withVFSList);
+
 		if (winnerRule == null) {
 			/* attempt using complete file path */
 			winnerRule = getWinnerRule(stfnStr, vfsApproachable, withVFSList);
