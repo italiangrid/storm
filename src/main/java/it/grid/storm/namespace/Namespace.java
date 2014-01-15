@@ -96,8 +96,7 @@ public class Namespace implements NamespaceInterface {
 		return parser.getNamespaceVersion();
 	}
 
-	public Collection<VirtualFSInterface> getAllDefinedVFS()
-		throws NamespaceException {
+	public Collection<VirtualFSInterface> getAllDefinedVFS() {
 
 		return parser.getVFSs().values();
 	}
@@ -161,12 +160,15 @@ public class Namespace implements NamespaceInterface {
 			log.error("Received null parameters: surl= " + surl + " user=" + user);
 			throw new IllegalArgumentException("Received null parameters");
 		}
+		
 		List<VirtualFSInterface> vfsApproachable = getApproachableVFS(user);
-
-		StoRI stori = resolveStoRIbySURL(surl, vfsApproachable);
-		if (stori == null)
+		StoRI stori = resolveStoRIbySURL(surl);
+		
+		if (stori == null
+			|| !vfsApproachable.contains(stori.getVirtualFileSystem())) {
 			throw new UnapprochableSurlException("Surl " + surl
 				+ " is not approchable by user " + user);
+		}
 		return stori;
 	}
 
@@ -183,31 +185,17 @@ public class Namespace implements NamespaceInterface {
 	 * @return StoRI
 	 * @throws NamespaceException
 	 */
-	private StoRI resolveStoRIbySURL(TSURL surl,
-		List<VirtualFSInterface> vfsApproachable) throws UnapprochableSurlException {
-
-		log.debug("Resolving StoRI from surl " + surl + " on " + vfsApproachable
-			+ " VFS");
-		return resolveStoRIbySURL(surl, vfsApproachable, true);
-	}
-
-	/**
-	 * 
-	 * The resolution is based on the retrieving of the Winner Rule 1) First
-	 * attempt is based on StFN-Path 2) Second attempt is based on all StFN. That
-	 * because is possible that SURL is expressed without File Name so StFN is a
-	 * directory. ( Special case is when the SFN does not contain the File Name
-	 * and ALL the StFN is considerable as StFN-Path. )
-	 * 
-	 * @param surl
-	 *          TSURL
-	 * @return StoRI
-	 * @throws NamespaceException
-	 */
-	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException {
+	public StoRI resolveStoRIbySURL(TSURL surl) throws IllegalArgumentException,
+		UnapprochableSurlException {
+		
+		if (surl == null) {
+			log.error("Unable to perform resolveStoRIbySURL, invalid arguments: surl=" + surl);
+			throw new IllegalArgumentException("Unable to perform getWinnerRule, invalid arguments");
+		}
 		
 		log.debug("Resolving StoRI from surl " + surl + " on any VFS");
-		StoRI stori = resolveStoRIbySURL(surl, null, false);
+		StoRI stori = resolveStoRIbySURL(surl, 
+			new ArrayList<VirtualFSInterface>(getAllDefinedVFS()));
 		if (stori == null) {
 			throw new UnapprochableSurlException("Surl " + surl
 				+ " is not managed by this StoRM instance");
@@ -216,51 +204,35 @@ public class Namespace implements NamespaceInterface {
 	}
 
 	private StoRI resolveStoRIbySURL(TSURL surl,
-		List<VirtualFSInterface> vfsApproachable, boolean withVFSList) {
+		List<VirtualFSInterface> vfsApproachable) throws UnapprochableSurlException {
 
-		if (surl == null || withVFSList && vfsApproachable == null) {
-			log
-				.error("Unable to perform resolveStoRIbySURL, invalid arguments: surl="
-					+ surl + " withVFSList=" + withVFSList + " vfsApproachable="
-					+ vfsApproachable);
-			throw new IllegalArgumentException(
-				"Unable to perform getWinnerRule, invalid arguments");
-		}
 		String stfnStr = surl.sfn().stfn().toString();
-		
-		// Fix for STOR-501
-		MappingRule winnerRule = getWinnerRule(stfnStr,
-			vfsApproachable, withVFSList);
-
+		MappingRule winnerRule = getWinnerRule(stfnStr, vfsApproachable);
 		if (winnerRule == null) {
-			/* attempt using complete file path */
-			winnerRule = getWinnerRule(stfnStr, vfsApproachable, withVFSList);
+			log.debug("Unable to perform resolveStoRIbySURL, no MappingRule matches SURL " + surl);
+			return null;
 		}
 		StoRI stori = null;
-		if (winnerRule != null) {
-			log.debug("For StFN " + stfnStr + " the winner Rule is "
-				+ winnerRule.getRuleName());
-			stori = winnerRule.getMappedFS().createFile(
-								NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(),
-									stfnStr), StoRIType.FILE);
-			stori.setStFNRoot(winnerRule.getStFNRoot());
-			stori.setMappingRule(winnerRule);
-			try {
-				if (!stori.getLocalFile().getCanonicalPath().startsWith(winnerRule.getMappedFS().getRootPath())) {
-					log.debug("Unable to perform resolveStoRIbySURL, '"
-						+ stori.getLocalFile().getCanonicalPath() + "' doesn't belong to '"
-						+ winnerRule.getMappedFS().getAliasName() + "'");
-					return null;
-				} else {
-					log.debug("'" + stori.getLocalFile().getCanonicalPath() + "' belongs to '"
-						+ winnerRule.getMappedFS().getAliasName() + "'");
-				}
-			} catch (IOException e) {
-				log.debug("Unable to perform resolveStoRIbySURL, " + e.getMessage());
+		log.debug("For StFN " + stfnStr + " the winner Rule is "
+			+ winnerRule.getRuleName());
+		stori = winnerRule.getMappedFS().createFile(
+			NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(), stfnStr),
+			StoRIType.FILE);
+		stori.setStFNRoot(winnerRule.getStFNRoot());
+		stori.setMappingRule(winnerRule);
+		try {
+			if (!stori.getLocalFile().getCanonicalPath()
+				.startsWith(winnerRule.getMappedFS().getRootPath())) {
+				log.debug("Unable to perform resolveStoRIbySURL, '"
+					+ stori.getLocalFile().getCanonicalPath() + "' doesn't belong to '"
+					+ winnerRule.getMappedFS().getAliasName() + "'");
 				return null;
+			} else {
+				log.debug("'" + stori.getLocalFile().getCanonicalPath()
+					+ "' belongs to '" + winnerRule.getMappedFS().getAliasName() + "'");
 			}
-		} else {
-			log.debug("Unable to perform resolveStoRIbySURL, no MappingRule matches SURL " + surl);
+		} catch (IOException e) {
+			log.debug("Unable to perform resolveStoRIbySURL, " + e.getMessage());
 			return null;
 		}
 		return stori;
@@ -280,12 +252,15 @@ public class Namespace implements NamespaceInterface {
 
 	private VirtualFSInterface resolveVFSbySURL(TSURL surl,
 		List<VirtualFSInterface> vfsApproachable) {
-
-		MappingRule winnerRule = getWinnerRule(
-			NamespaceUtil.getStFNPath(surl.sfn().stfn().toString()), vfsApproachable);
-		log.debug("For surl " + surl + " the winner Rule is "
-			+ winnerRule.getRuleName());
-		return parser.getVFS(winnerRule.getMappedFS().getAliasName());
+		
+		String stfnStr = surl.sfn().stfn().toString();
+		MappingRule winnerRule = getWinnerRule(stfnStr, vfsApproachable);
+		if (winnerRule == null) {
+			log.debug("Unable to perform resolveStoRIbySURL, no MappingRule matches SURL " + surl);
+			return null;
+		}
+		log.debug("For surl " + surl + " the winner Rule is " + winnerRule.getRuleName());
+		return winnerRule.getMappedFS();
 	}
 
 	public StoRI resolveStoRIbyAbsolutePath(String absolutePath,
