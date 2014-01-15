@@ -22,6 +22,7 @@ import it.grid.storm.balancer.BalancingStrategyException;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
+import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
@@ -362,7 +363,11 @@ public class StoRIImpl implements StoRI {
 					log.debug("<GetChildren>:Creation of new StoRI with path : "
 						+ childPath);
 					try {
-						stoRIList.add(namespace.resolveStoRIbyAbsolutePath(childPath));
+					  
+					  StoRI childStorI = namespace.resolveStoRIbyAbsolutePath(childPath);
+					  childStorI.setMappingRule(getMappingRule());
+						
+					  stoRIList.add(childStorI);
 					} catch (NamespaceException ex) {
 						log.error("Error occurred while resolving StoRI by absolute path",
 							ex);
@@ -566,7 +571,7 @@ public class StoRIImpl implements StoRI {
 						transProt = protList.get(0);
 						authority = transProt.getAuthority();
 					}
-					// TODO HTTPS TURL
+					
 					resultTURL = buildTURL(choosen, authority);
 					turlBuilt = true;
 				}
@@ -659,14 +664,11 @@ public class StoRIImpl implements StoRI {
 		this.type = type;
 	}
 
-	/***********************************************
-	 * UTILITY METHODS
-	 **********************************************/
-
 	@Override
 	public String toString() {
 
 		StringBuffer sb = new StringBuffer();
+		
 		sb.append("\n");
 		sb.append(" stori.stfn           : " + this.getStFN().toString() + "\n");
 		sb.append(" stori.vfs-root       :" + this.vfsRoot + "\n");
@@ -680,6 +682,7 @@ public class StoRIImpl implements StoRI {
 		sb.append(" story.type           : " + this.type + "\n");
 		sb.append(" stori.SURL           : " + this.getSURL() + "\n");
 		sb.append(" stori.localFile      : " + this.getLocalFile() + "\n");
+		sb.append(" stori.mappingRule    : " + this.getMappingRule() + "\n");
 
 		return sb.toString();
 	}
@@ -691,29 +694,11 @@ public class StoRIImpl implements StoRI {
 		return surl.toString();
 	}
 
-	// TODO MICHELE HTTPS here we can add a case to build https TURL...what really
-	// matter is that probably because it is an URL we cannot build it
-	// just using the infomation available actually from the parameters
-	// I can make an hypothesis on web server url construction, maybe it is
-	// https://server_name.server_domain:web_server_https_port/file_server_service_identifier/file_relative_url
-	// in such a case we need: web_server_https_port -> can be retrieved from
-	// Protocol object : we can associate a default port to protocol the effective
-	// value
-	// has to be demanded to the connector
-	// file_server_service_identifier -> also from Protocol object ... not so
-	// true... hummm : it has to be demanded to the connector
-	// file_relative_url -> here start real problems... : we have to hope that
-	// from the physicalFN we are able to build this value
-	// - it has to be demanded to the connector
-	// TODO HTTPS TURL
-	// private TTURL buildTURL(Protocol protocol, Authority authority, PFN
-	// physicalFN) throws InvalidProtocolForTURLException {
 	private TTURL buildTURL(Protocol protocol, Authority authority)
 		throws InvalidProtocolForTURLException {
 
 		TTURL result = null;
-		// TODO MICHELE HTTPS NOTE: this is the only access point to TURLBuilder
-		// class (good sign)
+
 		switch (protocol.getProtocolIndex()) {
 		case 0: // EMPTY Protocol
 			throw new InvalidProtocolForTURLException(protocol.getSchema());
@@ -731,7 +716,6 @@ public class StoRIImpl implements StoRI {
 		case 5:
 			result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
 			break; // ROOT Protocol
-		// TODO HTTPS TURL
 		case 6:
 			try {
 				result = TURLBuilder.buildHTTPTURL(authority, this.getLocalFile());
@@ -756,8 +740,9 @@ public class StoRIImpl implements StoRI {
 			break; // HTTPS Protocol
 
 		default:
-			throw new InvalidProtocolForTURLException(protocol.getSchema()); // UNKNOWN
-																																				// Protocol
+		  // Unknown protocol
+			throw new InvalidProtocolForTURLException(protocol.getSchema()); 
+			
 		}
 		return result;
 	}
@@ -812,5 +797,33 @@ public class StoRIImpl implements StoRI {
 		lifetime = (TLifeTimeInSeconds) volatileInfo.get(1);
 		volatileInformationAreSet = true;
 	}
+
+  @Override
+  public StFN getStFNFromMappingRule() {    
+    try {
+
+      if (getMappingRule() == null){
+        log.warn("Mapping rule is null for this StorI. " +
+        		"Falling back to VFS StFN.");
+        return getStFN();
+      }
+      
+      String mappingRuleRoot = getMappingRule().getStFNRoot();
+      String mappedStfn = mappingRuleRoot + NamingConst.SEPARATOR 
+        + relativeStFN;
+    
+      return StFN.make(mappedStfn);
+
+    } catch (InvalidStFNAttributeException e) {
+      
+      log.error("Error building StFN from mapping rule. Reason: {}", 
+        e.getMessage(),e);
+      
+      log.error("Falling back to VFS StFN.");
+      
+      return getStFN();
+
+    }
+  }
 
 }
