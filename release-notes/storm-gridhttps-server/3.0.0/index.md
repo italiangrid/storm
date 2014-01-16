@@ -18,6 +18,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.3]({{ site.baseurl }
 ### Description
 
 This release provides fixes for security vulnerabilities that were recently reported, and a few bug fixes.
+  
+<span class="label label-info">Important</span> The webdav service now responds on 
+the `/webdav/[storage-area]` path. More details in the [WebDAV interface guide][storm-webdav-guide]. 
 
 <span class="label label-info">Important</span> A security authentication token is now used
 to secure all communication among the storm-frontend and grihttps services and the 
@@ -42,3 +45,4 @@ None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3
+[storm-webdav-guide]: {{site.baseurl}}/documentation/webdav-guide/3.0.0
