@@ -60,6 +60,8 @@ public interface StoRI {
 	public PFN getPFN();
 
 	public StFN getStFN();
+	
+	public StFN getStFNFromMappingRule();
 
 	public String getRelativePath();
 

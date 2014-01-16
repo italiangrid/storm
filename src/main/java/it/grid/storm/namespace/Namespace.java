@@ -226,44 +226,54 @@ public class Namespace implements NamespaceInterface {
 			throw new IllegalArgumentException(
 				"Unable to perform getWinnerRule, invalid arguments");
 		}
+
 		String stfnStr = surl.sfn().stfn().toString();
 		
-		// Fix for STOR-501
 		MappingRule winnerRule = getWinnerRule(stfnStr,
 			vfsApproachable, withVFSList);
 
-		if (winnerRule == null) {
-			/* attempt using complete file path */
-			winnerRule = getWinnerRule(stfnStr, vfsApproachable, withVFSList);
-		}
-		StoRI stori = null;
-		if (winnerRule != null) {
-			log.debug("For StFN " + stfnStr + " the winner Rule is "
-				+ winnerRule.getRuleName());
-			stori = winnerRule.getMappedFS().createFile(
-								NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(),
-									stfnStr), StoRIType.FILE);
-			stori.setStFNRoot(winnerRule.getStFNRoot());
-			stori.setMappingRule(winnerRule);
-			try {
-				if (!stori.getLocalFile().getCanonicalPath().startsWith(winnerRule.getMappedFS().getRootPath())) {
-					log.debug("Unable to perform resolveStoRIbySURL, '"
-						+ stori.getLocalFile().getCanonicalPath() + "' doesn't belong to '"
-						+ winnerRule.getMappedFS().getAliasName() + "'");
-					return null;
-				} else {
-					log.debug("'" + stori.getLocalFile().getCanonicalPath() + "' belongs to '"
-						+ winnerRule.getMappedFS().getAliasName() + "'");
-				}
-			} catch (IOException e) {
-				log.debug("Unable to perform resolveStoRIbySURL, " + e.getMessage());
-				return null;
-			}
-		} else {
-			log.debug("Unable to perform resolveStoRIbySURL, no MappingRule matches SURL " + surl);
+		if (winnerRule == null){
+			log.debug("Unable to perform resolveStoRIbySURL, " +
+					"no MappingRule matches SURL " + surl);
 			return null;
 		}
-		return stori;
+
+		log.debug("For StFN " + stfnStr + " the winner Rule is "
+		  + winnerRule.getRuleName());
+
+		StoRI stori = winnerRule.getMappedFS().createFile(
+		  NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(),
+		    stfnStr), StoRIType.FILE);
+
+		stori.setStFNRoot(winnerRule.getStFNRoot());
+		stori.setMappingRule(winnerRule);
+		
+		try {
+
+      if (stori
+          .getLocalFile()
+          .getCanonicalPath()
+          .startsWith(winnerRule.getMappedFS().getRootPath())){
+
+      			log.debug("'" + stori.getLocalFile().getCanonicalPath() + "' belongs to '"
+      				+ winnerRule.getMappedFS().getAliasName() + "'");
+      			return stori;
+
+      } else {
+
+      			log.debug("Unable to perform resolveStoRIbySURL, '"
+      				+ stori.getLocalFile().getCanonicalPath() + "' doesn't belong to '"
+      				+ winnerRule.getMappedFS().getAliasName() + "'");
+      			return null;
+      }
+    } catch (IOException e) {
+
+      log.error("Error resolving stori for surl {}: {}.",
+        surl, e.getMessage(), e);
+
+      return null;
+    }
+		
 	}
 
 	public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)

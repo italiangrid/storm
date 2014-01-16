@@ -343,7 +343,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 				elementDetail.setStatus(status);
 				elementDetail.setSurl(surl);
 				if (stori != null) {
-					elementDetail.setStFN(stori.getStFN());
+					elementDetail.setStFN(stori.getStFNFromMappingRule());
 				} else {
 					elementDetail.setStFN(surl.sfn().stfn());
 				}
@@ -505,7 +505,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 						}
 					}
 					// In Any case set SURL value into TMetaDataPathDetail
-					currentElementDetail.setStFN(stori.getStFN());
+					currentElementDetail.setStFN(stori.getStFNFromMappingRule());
 
 					numberOfResults.increment();
 					rootArray.addTMetaDataPathDetail(currentElementDetail);
@@ -565,7 +565,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 					}
 
 					// In Any case set SURL value into TMetaDataPathDetail
-					currentElementDetail.setStFN(stori.getStFN());
+					currentElementDetail.setStFN(stori.getStFNFromMappingRule());
 					numberOfResults.increment();
 					rootArray.addTMetaDataPathDetail(currentElementDetail);
 				}
@@ -577,7 +577,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 			if (numberOfIterations.intValue() >= offset) {
 				errorCount++;
 				// In Any case set SURL value into TMetaDataPathDetail
-				currentElementDetail.setStFN(stori.getStFN());
+				currentElementDetail.setStFN(stori.getStFNFromMappingRule());
 				// Set Error Status Code and Explanation
 				populateDetailFromFS(stori, currentElementDetail);
 				// Add the information into details structure
