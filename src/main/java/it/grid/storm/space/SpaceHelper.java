@@ -96,21 +96,29 @@ public class SpaceHelper {
 			// implicit put done by TimerTask
 			try {
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-			} catch (UnapprochableSurlException e) {
-				log.warn("Unable to build a stori for requested surl " + surl
-					+ " UnapprochableSurlException: " + e.getMessage());
+			} catch (IllegalArgumentException e) {
+				log.error(String.format(
+					"Unable to build a stori for requested surl %s %s: %s", surl, e
+						.getClass().getCanonicalName(), e.getMessage()));
+				return;
+			} catch (Throwable e) {
+				log.warn(String.format(
+					"Unable to build a stori for requested surl %s %s: %s", surl, e
+						.getClass().getCanonicalName(), e.getMessage()));
 				return;
 			}
 		} else {
 			try {
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
-			} catch (IllegalArgumentException e) {
-				log.error(
-					funcName + " Unable to build StoRI by SURL and user: " + surl, e);
+			}  catch (IllegalArgumentException e) {
+				log.error(String.format(
+					"Unable to build a stori for requested surl %s and user &s %s: %s", surl, user, e
+						.getClass().getCanonicalName(), e.getMessage()));
 				return;
-			} catch (UnapprochableSurlException e) {
-				log.warn("Unable to build a stori for surl " + surl + " for user "
-					+ user + " UnapprochableSurlException: " + e.getMessage());
+			} catch (Throwable e) {
+				log.warn(String.format(
+					"Unable to build a stori for requested surl %s and user %s %s: %s", surl, user, e
+						.getClass().getCanonicalName(), e.getMessage()));
 				return;
 			}
 		}

@@ -22,7 +22,6 @@ import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
@@ -1161,10 +1160,12 @@ public class BoLChunkDAO {
 				StoRI stori;
 				try {
 					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-				} catch (UnapprochableSurlException e) {
-					log.error("Invalid SURL " + surlEntry.getKey()
-						+ " cannot release the pin. UnapprochableSurlException: "
-						+ e.getMessage());
+				} catch (Throwable e) {
+					log
+						.error(String.format(
+							"Invalid SURL %s cannot release the pin. %s: %s",
+							surlEntry.getKey(), e.getClass().getCanonicalName(),
+							e.getMessage()));
 					continue;
 				}
 

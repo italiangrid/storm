@@ -18,6 +18,7 @@
 package it.grid.storm.asynch;
 
 import java.util.Map;
+
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
@@ -29,7 +30,9 @@ import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.scheduler.Chooser;
@@ -223,11 +226,23 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 				log.error("Unable to get StoRI for surl " + requestData.getSURL()
 					+ " IllegalArgumentException: " + e.getMessage());
 			} catch (UnapprochableSurlException e) {
-				requestData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+				requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
 				failure = true;
 				log.info("Unable to build a stori for surl " + requestData.getSURL()
 					+ " for user " + DataHelper.getRequestor(requestData)
 					+ " UnapprochableSurlException: " + e.getMessage());
+			} catch (NamespaceException e) {
+				requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				failure = true;
+				log.info("Unable to build a stori for surl " + requestData.getSURL()
+					+ " for user " + DataHelper.getRequestor(requestData)
+					+ " NamespaceException: " + e.getMessage());
+			} catch (InvalidSURLException e) {
+				requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				failure = true;
+				log.info("Unable to build a stori for surl " + requestData.getSURL()
+					+ " for user " + DataHelper.getRequestor(requestData)
+					+ " InvalidSURLException: " + e.getMessage());
 			}
 			if (!failure) {
 				SpaceHelper sp = new SpaceHelper();

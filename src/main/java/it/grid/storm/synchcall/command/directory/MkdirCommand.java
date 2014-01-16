@@ -29,7 +29,9 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -101,48 +103,82 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
 		TSURL surl = inputData.getSurl();
 
-		StoRI stori = null;
-		if (!surl.isEmpty()) {
-			try {
-				if (inputData instanceof IdentityInputData) {
-					try {
-						stori = namespace.resolveStoRIbySURL(surl,
-							((IdentityInputData) inputData).getUser());
-					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl " + surl + " for user "
-							+ DataHelper.getRequestor(inputData)
-							+ " UnapprochableSurlException: " + e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
-						printRequestOutcome(returnStatus, inputData);
-						outData = new MkdirOutputData(returnStatus);
-						return outData;
-					}
-				} else {
-					try {
-						stori = namespace.resolveStoRIbySURL(surl);
-					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl " + surl
-							+ " UnapprochableSurlException: " + e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
-						printRequestOutcome(returnStatus, inputData);
-						outData = new MkdirOutputData(returnStatus);
-						return outData;
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to get surl's stori. IllegalArgumentException: "
-					+ e.getMessage());
-				returnStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, "Unable to get StoRI for surl");
-				printRequestOutcome(returnStatus, inputData);
-				outData = new MkdirOutputData(returnStatus);
-				return outData;
-			}
-		} else {
+		if (surl.isEmpty()) {
 			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 				"Invalid SURL specified!");
+			printRequestOutcome(returnStatus, inputData);
+			outData = new MkdirOutputData(returnStatus);
+			return outData;
+		}
+		
+		StoRI stori = null;
+		try {
+			if (inputData instanceof IdentityInputData) {
+				try {
+					stori = namespace.resolveStoRIbySURL(surl,
+						((IdentityInputData) inputData).getUser());
+				} catch (UnapprochableSurlException e) {
+					log.info("Unable to build a stori for surl " + surl + " for user "
+						+ DataHelper.getRequestor(inputData)
+						+ " UnapprochableSurlException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				} catch (NamespaceException e) {
+					log.info("Unable to build a stori for surl " + surl + " for user "
+						+ DataHelper.getRequestor(inputData)
+						+ " NamespaceException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				} catch (InvalidSURLException e) {
+					log.info("Unable to build a stori for surl " + surl + " for user "
+						+ DataHelper.getRequestor(inputData)
+						+ " InvalidSURLException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				}
+			} else {
+				try {
+					stori = namespace.resolveStoRIbySURL(surl);
+				} catch (UnapprochableSurlException e) {
+					log.info("Unable to build a stori for surl " + surl
+						+ " UnapprochableSurlException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				} catch (NamespaceException e) {
+					log.info("Unable to build a stori for surl " + surl
+						+ " NamespaceException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				} catch (InvalidSURLException e) {
+					log.info("Unable to build a stori for surl " + surl
+						+ " InvalidSURLException: " + e.getMessage());
+					returnStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage());
+					printRequestOutcome(returnStatus, inputData);
+					outData = new MkdirOutputData(returnStatus);
+					return outData;
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("Unable to get surl's stori. IllegalArgumentException: "
+				+ e.getMessage());
+			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+				e.getMessage());
 			printRequestOutcome(returnStatus, inputData);
 			outData = new MkdirOutputData(returnStatus);
 			return outData;
