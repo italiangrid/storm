@@ -19,7 +19,7 @@ This is the latest release for StoRM, available on StoRM repositories.
 |StoRM Client		   |[1.6.1]({{site.baseurl}}/release-notes/storm-srm-client/1.6.1/)|
 |YAIM StoRM			   |[4.3.4]({{site.baseurl}}/release-notes/yaim-storm/4.3.4/)|
 
-See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.2.html).
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.3.html).
 
 ___
 
