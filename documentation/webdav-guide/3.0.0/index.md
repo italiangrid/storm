@@ -9,8 +9,8 @@ version: 3.0.0
 version: {{ page.version }}
 
 <div class="alert alert-error">
-<h4 onclick="$('#note300').toggle();" style="cursor: pointer; margin-bottom: 0px;">READ THIS</h4>
-<div id="note300" style="display: none; margin-top: 20px;">
+<h4 style="margin-bottom: 0px;">READ THIS</h4>
+<div id="note300" style="margin-top: 20px;">
 From StoRM GridHTTPs server version <b>3.0.0</b> the WebDAV service is provided at:
 <pre><code>http(s)://[gridhttps.hostname]:[port]/webdav/[storage-area]/</code></pre>
 instead of:
