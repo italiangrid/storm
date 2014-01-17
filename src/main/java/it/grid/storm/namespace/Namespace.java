@@ -205,14 +205,6 @@ public class Namespace implements NamespaceInterface {
 		MappingRule winnerRule = getWinnerRule(surl);
 		log.debug(String.format("For SURL %s the winner Rule is %s", surl,
 			winnerRule.getRuleName()));
-
-		if (!vfsApproachable.contains(winnerRule.getMappedFS())) {
-			String msg = String.format(
-				"VFS '%s' is not on the approachable VFS list!", winnerRule
-					.getMappedFS().getAliasName());
-			log.debug(msg);
-			throw new UnapprochableSurlException(msg);
-		}
 		
 		StoRI stori = winnerRule.getMappedFS().createFile(
 			NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(), surl.sfn()
@@ -231,18 +223,33 @@ public class Namespace implements NamespaceInterface {
 		}
 
 		if (realPath.startsWith(winnerRule.getMappedFS().getRootPath())) {
-			log.debug(String.format("Resource '%s' belongs to '%s'", realPath,
-				winnerRule.getMappedFS().getAliasName()));
-			return stori;
+			if (vfsApproachable.contains(winnerRule.getMappedFS())) {
+				log.debug(String.format("Resource '%s' belongs to '%s'", realPath,
+					winnerRule.getMappedFS().getAliasName()));
+				return stori;
+			}
+			String msg = String.format(
+				"VFS '%s' is not on the approachable VFS list!", winnerRule
+					.getMappedFS().getAliasName());
+			log.debug(msg);
+			throw new UnapprochableSurlException(msg);
 		}
-
+		
 		String msg = String.format("Resource '%s' doesn't belong to %s", realPath,
 			winnerRule.getMappedFS().getAliasName());
 		log.debug(msg);
 		VirtualFSInterface redirectedVFS = getWinnerVFS(realPath);
-		log.debug(String.format("Surl %s is a symbolic link to %s", surl, redirectedVFS.getAliasName()));
-		if (vfsApproachable.contains(winnerRule.getMappedFS())) {
-			log.debug(String.format("%s is approachable", redirectedVFS.getAliasName()));
+		log.debug(String.format("Surl %s is a symbolic link to %s", surl,
+			redirectedVFS.getAliasName()));
+		if (vfsApproachable.contains(redirectedVFS)) {
+			log.debug(String.format("%s is approachable",
+				redirectedVFS.getAliasName()));
+			MappingRule rule = redirectedVFS.getMappingRules().get(0);
+			stori = redirectedVFS.createFile(NamespaceUtil.extractRelativePath(
+				redirectedVFS.getRootPath(), realPath), StoRIType.FILE);
+
+			stori.setStFNRoot(rule.getStFNRoot());
+			stori.setMappingRule(rule);
 			return stori;
 		}
 		throw new UnapprochableSurlException(String.format(
