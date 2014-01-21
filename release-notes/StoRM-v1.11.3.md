@@ -51,6 +51,9 @@ the three services. More details in the [System administrator guide][storm-sysad
 <span class="label label-info">Important</span> The webdav service now responds on 
 the `/webdav/[storage-area]` path. More details in the [WebDAV interface guide][storm-webdav-guide]. 
 
+<span class="label label-info">Important</span> Please ensure that storage area file permissions are 
+correctly set. Follow these [instructions][file-perms-section] before running the gridhttps server.
+
 ### Released components
 
 {% include list-components.liquid %}
@@ -77,4 +80,5 @@ None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3
+[file-perms-section]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3/#sapermissions
 [storm-webdav-guide]: {{site.baseurl}}/documentation/webdav-guide/3.0.0

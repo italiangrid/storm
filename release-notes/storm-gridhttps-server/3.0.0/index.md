@@ -27,6 +27,9 @@ to secure all communication among the storm-frontend and grihttps services and t
 backend. The token is configured using the `STORM_BE_XMLRPC_TOKEN` YAIM variable for
 the three services. More details in the [System administrator guide][storm-sysadmin-guide].
 
+<span class="label label-info">Important</span> Please ensure that storage area file permissions are 
+correctly set. Follow these [instructions][file-perms-section] before running the gridhttps server.
+
 ### Security vulnerabilities
 
 More information concerning the security vulnerabilities addressed by this release are going to be published when appropriate at [this URL](https://wiki.egi.eu/wiki/SVG:Advisory-SVG-2012-4598).
@@ -45,4 +48,5 @@ None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3
+[file-perms-section]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3/#sapermissions
 [storm-webdav-guide]: {{site.baseurl}}/documentation/webdav-guide/3.0.0
