@@ -238,11 +238,21 @@ All the Storage Areas managed by StoRM needs to be owned by the STORM\_USER. Thi
 drwxr-x---+  2 storm storm
 ```
 YAIM-StoRM doesn't set the correct permissions if the SA's root directory already exists. So, the site administrator has to take care of it. 
-To set the correct permissions on a storage area, you can launch the following commands:
+To set the correct permissions on a storage area, you can launch the following commands (assuming that storm runs as user `storm`, which
+is the default):
 
 ```bash
-chown -RL <storm-user>:<storm-user> <sa-root-directory>
+chown -RL storm:storm <sa-root-directory>
 chmod -R o-rwx,g+r <sa-root-directory>
+```
+
+If the storm GridHTTPs server is also enabled for a storage area, you also have
+to make sure that the GridHTTPs can access the files. To set the correct
+permissions, you could use the following command (assuming that the gridhttps
+server runs as user `gridhttps`, which is the default): 
+
+```bash
+find <sa-root-directory> -type d -exec setfacl -m g:gridhttps:x {} \;
 ```
 
 ## Installation guide <a name="installationguide">&nbsp;</a>
