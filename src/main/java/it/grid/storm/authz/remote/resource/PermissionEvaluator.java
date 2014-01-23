@@ -161,7 +161,7 @@ class PermissionEvaluator {
 		if (!fileVFS.getCapabilities().getAllManagedProtocols()
 			.contains(Protocol.HTTP)) {
 			log.debug("The requeste Storage Area \'" + fileVFS.getAliasName()
-				+ "\' is not appoachable via HTTPS");
+				+ "\' is not approachable via HTTPS");
 			return Boolean.FALSE;
 		}
 		log.info("Authorization decision for Anonymous user requesting " + request
@@ -189,7 +189,7 @@ class PermissionEvaluator {
 		if (!fileVFS.isApproachableByAnonymous()
 			&& !(request.isReadOnly() && fileVFS.isHttpWorldReadable())) {
 			log.debug("The requeste Storage Area \'" + fileVFS.getAliasName()
-				+ "\' is not appoachable by anonymous users");
+				+ "\' is not approachable by anonymous users");
 			return new Boolean(false);
 		}
 		StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
