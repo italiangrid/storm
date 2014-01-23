@@ -12,7 +12,7 @@ version: {{ page.version }}
 
 * [Installation Prerequisites](#installprereq)
   * [General EMI 3 installation instructions](#emi3instructions)
-  * [System users](#systemusers)
+  * [System users and file limits](#systemusers)
   * [ACL support](#aclsupport)
   * [Extended Attribute support](#easupport)
   * [Storage Area's permissions](#sapermissions)
@@ -116,13 +116,16 @@ $ chmod 0400 /etc/grid-security/hostkey.pem
 $ chmod 0644 /etc/grid-security/hostcert.pem
 ```
 
-### System users <a name="systemusers">&nbsp;</a>
+### System users and file limits <a name="systemusers">&nbsp;</a>
 
-StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see [Backend Configuration](#beconf)). 
-If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. 
-By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see [GridHTTPs Configuration](#ghttpconf)). 
-It is advisable to manually configure host(s) with this two users before install services. 
-For example, to create *storm* and *gridhttps* users you can launch the following commands:
+The StoRM frontend and backend services run by default as user **storm** (to 
+change the default settings see [Backend Configuration](#beconf)). 
+
+The StoRM GridHTTPs server runs as user **gridhttps** (this also can be configured,
+see [GridHTTPs Configuration](#ghttpconf)). 
+
+You can use the following commands to create the StoRM users on the machines
+where you are deploying the services:
 
 ```bash
 # add storm user (-M means without an home directory)
@@ -131,19 +134,35 @@ $ useradd -M storm
 $ useradd gridhttps -M -G storm
 ```
 
-or, if needed, you can specify users' UID and GID, as follows:
+You could also use specific user and group IDs as follows (change
+the text contained in angled brackets with the appropriate
+numerical value for your installation):
 
 ```bash
-$ useradd -M storm -u MY_STORM_UID -g MY_STORM_GID
-$ useradd gridhttps -M -G storm -u MY_GHTTPS_UID -g MY_GHTTPS_GID
+$ useradd -M storm -u <MY_STORM_UID> -g <MY_STORM_GID>
+$ useradd gridhttps -M -G storm -u <MY_GHTTPS_UID> -g <MY_GHTTPS_GID>
 ```
 
-Specifying the same UID and GID is nececcary when you are going to install StoRM on a multi-node scenario because users running Backend and GridHTTP services must be the same on every node (UID and GID including).
-<br/>
-<br/>
-For example, if *storm* is the user that runs Backend service on host A and *gridhttps* is the user that runs GridHTTP on host B, both of these hosts **must** have *storm* and *gridhttps* users and groups with respectively **the same GID and UID**.
-To satisfy this requirement you can configure a NIS service for the involved hosts and add the two users to the NIS maps. A tutorial on how to setup a NIS service can be found [here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html).
-Another valid solution to share GID and UID among different hosts and provide a user authentication can be found with a client-server LDAP installation, as described in [Appendix A](#AppendixA).
+<span class="label label-info">Important</span> Keep UIDs and GIDs aligned for
+the StoRM users and groups on distributed deployments (i.e. when the services
+are installed on different machines). This can be done using NIS (see a tutorial
+[here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html)) or LDAP (see [Appendix
+A](#AppendixA)).
+
+#### File limits
+
+The following settings are recommended to safely run the StoRM services.  Put
+these settings in `/etc/security/limits.conf` or in a file contained in the
+`/etc/security/limits.d` directory (recommended):
+
+```bash
+# StoRM frontend and backend services
+storm hard nofile 8192
+storm soft nofile 8192
+# StoRM GridHTTPs service
+gridhttps hard nofile 65535
+gridhttps soft nofile 65535
+```
 
 ### ACL support <a name="aclsupport">&nbsp;</a>
 
