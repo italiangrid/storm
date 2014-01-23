@@ -101,6 +101,33 @@ public interface NamespaceInterface {
 
 	/**
 	 * 
+	 * @return List : Return a List of readable and writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getApproachableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable or writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableOrApproachableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
 	 * @param user
 	 *          GridUserInterface
 	 * @return VirtualFSInterface
