@@ -33,7 +33,6 @@ import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -66,8 +65,8 @@ import org.slf4j.LoggerFactory;
 
 public class SpaceHelper {
 
-	private static final int ADD = 0;
-	private static final int REMOVE = 1;
+	private static final int ADD_FREE_SPACE = 0;
+	private static final int REMOVE_FREE_SPACE = 1;
 	private Configuration config;
 	private static final Logger log = LoggerFactory.getLogger(SpaceHelper.class);
 	public static GridUserInterface storageAreaOwner = GridUserManager
@@ -78,126 +77,119 @@ public class SpaceHelper {
 		config = Configuration.getInstance();
 	}
 
-	/**
-	 * @param log
-	 * @param funcName
-	 * @param user
-	 * @param surl
-	 */
+
 
 	private void updateSpaceUsageForSA(Logger log, String funcName,
 		GridUserInterface user, TSURL surl, int operation, long filesize) {
 
-		log.debug(funcName + " Updating Storage Area free size on db");
+		log.debug("{}: Updating Storage Area free size on db", funcName);
+		
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 		StoRI stori = null;
-		// Retrieve the StoRI associate to the SURL
-		if (user == null) {
-			// implicit put done by TimerTask
-			try {
+
+		
+		try {
+			// FIXME: should be fixed in NamespaceDirector to avoid having
+			// two distinct calls if user is null or not.
+			// The resolveStoRIBySURL(surl, user) should handle this.
+			if (user == null) {
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-			} catch (IllegalArgumentException e) {
-				log.error(String.format(
-					"Unable to build a stori for requested surl %s %s: %s", surl, e
-						.getClass().getCanonicalName(), e.getMessage()));
-				return;
-			} catch (Throwable e) {
-				log.warn(String.format(
-					"Unable to build a stori for requested surl %s %s: %s", surl, e
-						.getClass().getCanonicalName(), e.getMessage()));
-				return;
-			}
-		} else {
-			try {
+			} else {
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
-			}  catch (IllegalArgumentException e) {
-				log.error(String.format(
-					"Unable to build a stori for requested surl %s and user &s %s: %s", surl, user, e
-						.getClass().getCanonicalName(), e.getMessage()));
-				return;
-			} catch (Throwable e) {
-				log.warn(String.format(
-					"Unable to build a stori for requested surl %s and user %s %s: %s", surl, user, e
-						.getClass().getCanonicalName(), e.getMessage()));
-				return;
 			}
+
+		} catch(Throwable e){
+		
+			log.error("Unable to build stori for surl {} and user {}: {}",
+					new Object[]{surl,user,e.getMessage()},e);
+			return;
+
 		}
-		// Get Virtual FileSystem for DB information
+
 		VirtualFSInterface fs = stori.getVirtualFileSystem();
-
-		// Get StorageSpaceData from the database
-		StorageSpaceData spaceData = null;
-
-		spaceData = catalog.getStorageSpaceByAlias(fs.getSpaceTokenDescription());
-
-		// Get the localELement to know the real file size, if exists
+		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(fs.getSpaceTokenDescription());
 		LocalFile localElement = stori.getLocalFile();
 
-		if (spaceData != null
-			&& (localElement.exists() || operation == SpaceHelper.ADD)) {
-
-			// IF PutDone, calculate the real fileSize
-			if (operation == SpaceHelper.REMOVE) {
-				// increase used size by localElement size
-				filesize = localElement.getExactSize();
-				// else in case of RM the filesize is passed from the client
-			}
-
-			TSizeInBytes availableSize = spaceData.getAvailableSpaceSize();
-			long usedSize = -1;
-			if (operation == SpaceHelper.REMOVE) {
-				// remainingSize = availableSize.value() - filesize;
-				usedSize = spaceData.getUsedSpaceSize().value() + filesize;
-			} else if (operation == SpaceHelper.ADD) {
-				// The new remaining size cannot be greater than the total size
-				long newAvailableSize = availableSize.value() + filesize;
-				// Use Storage Area Total Size as upper limit for the new Unused Size
-				long totalSize = spaceData.getTotalSpaceSize().value();
-				newAvailableSize = (newAvailableSize > totalSize) ? totalSize
-					: newAvailableSize;
-				long reservedSize = spaceData.getReservedSpaceSize().isEmpty() ? 0
-					: spaceData.getReservedSpaceSize().value();
-				long unavailableSize = spaceData.getUnavailableSpaceSize().isEmpty() ? 0
-					: spaceData.getUnavailableSpaceSize().value();
-				usedSize = totalSize - newAvailableSize - reservedSize
-					- unavailableSize;
-			}
-
-			// Prevent negative value
-			if (usedSize < 0) {
-				usedSize = 0;
-			}
-
-			// Update the unused space size with new value
-			TSizeInBytes newUsedSize = spaceData.getTotalSpaceSize();
-			try {
-				newUsedSize = TSizeInBytes.make(usedSize, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex) {
-				// never thrown
-				log
-					.error(
-						funcName
-							+ " Unexpected InvalidTSizeAttributesException , Unable to create  new used size, so the previous one is used",
-						ex);
-			}
-
-			spaceData.setUsedSpaceSize(newUsedSize);
-
-			try {
-				fs.storeSpaceByToken(spaceData);
-			} catch (NamespaceException e) {
-				log.error(funcName + " Unable to update the new free size.", e);
-			}
-
-			log.debug(funcName + " Storage Area used size updated to: "
-				+ newUsedSize.value());
-
-		} else {
-			// Nothing to do. Problem with DB?
-			log.error(funcName + " Unable to update the DB used size!");
+		if (spaceData == null){
+			log.error("{}: StorageSpace not found from space token description: {}", 
+					funcName, 
+					fs.getSpaceTokenDescription());
 			return;
 		}
+		
+		TSizeInBytes availableSize = spaceData.getAvailableSpaceSize();
+		long usedSize = -1;
+		
+		if (operation == SpaceHelper.ADD_FREE_SPACE){
 
+			log.debug("Adding {} bytes of free space to Storage Area {}", 
+					filesize, fs.getAliasName());
+
+			long totalSize = spaceData.getTotalSpaceSize().value();
+			long newAvailableSize = availableSize.value() + filesize;
+			
+			// The new remaining size cannot be greater than the total size
+			if (newAvailableSize > totalSize) {
+				newAvailableSize = totalSize;
+			}
+			
+			long reservedSize = spaceData.getReservedSpaceSize().isEmpty() ? 0
+				: spaceData.getReservedSpaceSize().value();
+			
+			long unavailableSize = spaceData.getUnavailableSpaceSize().isEmpty() ? 0
+				: spaceData.getUnavailableSpaceSize().value();
+			
+			usedSize = totalSize - newAvailableSize - reservedSize
+				- unavailableSize;
+			
+		} else if (operation == SpaceHelper.REMOVE_FREE_SPACE){
+			
+			if (!localElement.exists()){
+				log.error("{}: Local file not found to compute space size change: {}", 
+					funcName,
+					localElement);
+				return;
+			}
+			
+			log.debug("Removing {} bytes of free space from Storage Area {}", 
+					filesize, fs.getAliasName());
+			
+			usedSize = spaceData.getUsedSpaceSize().value() + localElement.getSize();
+			
+		}
+		
+		// Prevent used size negative values.
+		if (usedSize < 0){
+			usedSize = 0;
+		}
+			
+		TSizeInBytes oldUsedSize = null, newUsedSize = null;
+		
+		// Update used size
+		try{
+
+			oldUsedSize = spaceData.getTotalSpaceSize();
+			newUsedSize = TSizeInBytes.make(usedSize, SizeUnit.BYTES);
+			spaceData.setUsedSpaceSize(newUsedSize);
+			
+		}catch(InvalidTSizeAttributesException e){
+			
+			log.error("Error creating new used size: {}.",e.getMessage(),e);
+			log.info("Falling back to old used size value: {}", oldUsedSize.value());
+			spaceData.setUsedSpaceSize(oldUsedSize);
+		}
+		
+		
+		try {
+
+			fs.storeSpaceByToken(spaceData);
+
+		} catch (NamespaceException e) {
+			log.error("Error storing updated space data: {}. {}", spaceData, e.getMessage(), e);
+			return;
+		}
+			
+		log.debug("{}: Starage Area used size updated to {}", spaceData.getUsedSpaceSize().value());
 	}
 
 	/**
@@ -225,7 +217,7 @@ public class SpaceHelper {
 				.get(i);
 			TSURL surl = chunkData.toSURL();
 
-			updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE, 0);
+			updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE_FREE_SPACE, 0);
 
 		}
 
@@ -240,7 +232,7 @@ public class SpaceHelper {
 	public void decreaseFreeSpaceForSA(Logger log, String funcName,
 		GridUserInterface user, TSURL surl) {
 
-		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE, 0);
+		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE_FREE_SPACE, 0);
 
 	}
 
@@ -257,13 +249,13 @@ public class SpaceHelper {
 	public void increaseFreeSpaceForSA(Logger log, String funcName,
 		GridUserInterface user, TSURL surl, long fileSize) {
 
-		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.ADD, fileSize);
+		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.ADD_FREE_SPACE, fileSize);
 	}
 
 	public void increaseFreeSpaceForSA(Logger log, String funcName, TSURL surl,
 		long fileSize) {
 
-		updateSpaceUsageForSA(log, funcName, null, surl, SpaceHelper.ADD, fileSize);
+		updateSpaceUsageForSA(log, funcName, null, surl, SpaceHelper.ADD_FREE_SPACE, fileSize);
 	}
 
 	public boolean isSAFull(Logger log, StoRI stori) {
