@@ -172,36 +172,31 @@ public class Namespace implements NamespaceInterface {
 			getApproachableRules(user));
 		if (appRules.isEmpty()) {
 			if (user instanceof AbstractGridUser) {
-				log.error("No approachable rules found for user with DN='"
-					+ user.getDn() + "' and VO = '" + ((AbstractGridUser) user).getVO()
-					+ "'");
-				throw new NamespaceException(
-					"No approachable rules found for user with DN='" + user.getDn()
-						+ "' and VO = '" + ((AbstractGridUser) user).getVO() + "'");
+				String msg = String.format(
+					"No approachable rules found for user with DN='%s' and VO = '%s'",
+					user.getDn(), ((AbstractGridUser) user).getVO());
+				log.error(msg);
+				throw new NamespaceException(msg);
 			} else {
-				log.error("No approachable rules found for user with DN='"
-					+ user.getDn() + "' User certificate has not VOMS extension");
-				throw new NamespaceException(
-					"No approachable rules found for user with DN='" + user.getDn()
-						+ "' User certificate has not VOMS extension");
+				String msg = String.format("No approachable rules found for user with "
+					+ "DN='%s' User certificate has not VOMS extension", user.getDn());
+				log.error(msg);
+				throw new NamespaceException(msg);
 			}
 		}
-		log.debug("Compatible Approachable rules : " + appRules);
+		log.debug("Compatible Approachable rules : {}", appRules);
 		ApproachableRule firstAppRule = appRules.first();
-		log.debug("Default APP_RULE is the first (in respsect of name): "
-			+ firstAppRule);
+		log.debug("Default APP_RULE is the first: {}", firstAppRule);
 
-		// Retrieve default VFS for the first Approachable Rule compatible for the
-		// user.
 		VirtualFSInterface vfs = getApproachableDefaultVFS(firstAppRule);
-		log.debug("Default VFS for Space Files : " + vfs);
+		log.debug("Default VFS for Space Files : {}", vfs);
 		return vfs;
-
 	}
 
-	public boolean isApproachable(StoRI storageResource,
-		GridUserInterface gridUser) throws NamespaceException {
-		return getApproachableVFS(gridUser).contains(storageResource.getVirtualFileSystem());
+	public boolean isApproachable(StoRI stori, GridUserInterface user)
+		throws NamespaceException {
+
+		return getApproachableVFS(user).contains(stori.getVirtualFileSystem());
 	}
 	
 	/**
@@ -221,6 +216,13 @@ public class Namespace implements NamespaceInterface {
 	public StoRI resolveStoRIbySURL(TSURL surl) throws IllegalArgumentException,
 		UnapprochableSurlException, NamespaceException, InvalidSURLException {
 		
+		/* check surl */
+		if (surl == null) {
+			String msg = "resolveStoRIbySURL: invalid null surl";
+			log.error(msg);
+			throw new IllegalArgumentException(msg);
+		}
+		
 		return resolveStoRI(surl, null);
 	}
 	
@@ -228,100 +230,79 @@ public class Namespace implements NamespaceInterface {
 		throws IllegalArgumentException, UnapprochableSurlException,
 		NamespaceException, InvalidSURLException {
 		
-		return resolveStoRI(surl, user);
-	}
-	
-	private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
-		throws IllegalArgumentException, UnapprochableSurlException,
-		NamespaceException, InvalidSURLException {
-
-		StoRI stori = null;
-
 		/* check surl */
 		if (surl == null) {
 			String msg = "resolveStoRIbySURL: invalid null surl";
 			log.error(msg);
 			throw new IllegalArgumentException(msg);
 		}
+		
+		return resolveStoRI(surl, user);
+	}
 
+	private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
+		throws IllegalArgumentException, UnapprochableSurlException,
+		NamespaceException, InvalidSURLException {
+
+		StoRI stori = null;
 		List<VirtualFSInterface> vfsApproachable = null;
-		if (user != null) {
-			// get the grid user approachable VFSs
-			vfsApproachable = getApproachableVFS(user);
+
+		/* 1. compute user's approachable VFS: */
+		if (isAnonymous(user)) {
+			vfsApproachable = new ArrayList<VirtualFSInterface>(getAllDefinedVFS());
 		} else {
-			// get all the R or RW by anonymous VFSs
-			vfsApproachable = getReadableOrApproachableByAnonymousVFS();
+			vfsApproachable = getApproachableVFS(user);
 		}
 		
-		//check vfsApproachable
 		if (vfsApproachable.isEmpty()) {
 			String errorMsg = "No approachable VFS found for user!";
 			log.debug(errorMsg);
 			throw new UnapprochableSurlException(errorMsg);
 		}
 
-		// get the winner rule for SURL
+		/* get the winner rule for SURL */
 		MappingRule winnerRule = getWinnerRule(surl, vfsApproachable);
 		
 		if (winnerRule == null) {
-			/* is this surl invalid for this instance of StoRM? */
-			if (getWinnerRule(surl, new ArrayList<VirtualFSInterface>(getAllDefinedVFS())) == null) {
-				String msg = "The requested SURL is not managed by this instance of StoRM";
-				log.debug(msg);
-				throw new InvalidSURLException(surl, msg);
+			/* check if surl can be resolved by this instance of StoRM */
+			if (!isAnonymous(user) && isSolvable(surl)) {
+				log.debug("No mapping rule found for surl='{}' and user '{}'", surl,
+					user);
+				throw new UnapprochableSurlException("User '" + user + "' is not "
+					+ "authorized to access '" + surl + "'");
 			}
-			
-			String msg = null;
-			if (user != null) {
-				msg = String.format("No mapping rule found for surl='%s' and user '%s'", surl, user);
-			} else {
-				msg = String.format("No mapping rule found for surl='%s'", surl);
-			}
+			/* this surl is invalid for this instance of StoRM? */
+			String msg = "The requested SURL is not managed by this instance of StoRM";
 			log.debug(msg);
-			throw new UnapprochableSurlException(msg);
+			throw new InvalidSURLException(surl, msg);
 		}
 		
-		log.debug("The winner Rule is %s", winnerRule.getRuleName());
+		log.debug("The winner rule is {}", winnerRule.getRuleName());
 		
 		// create StoRI
-		String stfnPath = surl.sfn().stfn().toString();
+		stori = buildStoRI(winnerRule.getMappedFS(), winnerRule, surl);
 		
-		String relPath = NamespaceUtil.extractRelativePath(
-			winnerRule.getStFNRoot(), stfnPath);
-		
-		stori = winnerRule.getMappedFS().createFile(relPath, StoRIType.FILE);
-		stori.setStFNRoot(winnerRule.getStFNRoot());
-    stori.setMappingRule(winnerRule);
-		
-    // verify if StoRI real resource is enclosed into the winner VFS
-		String realPath = null;
-		try {
-			realPath = stori.getLocalFile().getCanonicalPath();
-		} catch (IOException e) {
-			log.error("Error on reading the canonical path: " + e.getMessage());
-			throw new NamespaceException(e.getMessage());
-		}
-		
-		if (realPath.startsWith(winnerRule.getMappedFS().getRootPath())) {
-			log.debug(String.format("Resource '%s' belongs to '%s'", realPath,
-				winnerRule.getMappedFS().getAliasName()));
+		// verify if StoRI canonical path is enclosed into the winner VFS
+		if (isStoRIEnclosed(stori, winnerRule.getMappedFS())) {
+			log.debug("Resource '{}' belongs to '{}'", stori.getLocalFile(),
+				winnerRule.getMappedFS().getAliasName());
 			return stori;
 		}
 		
-		log.debug("Resource '{}' doesn't belong to {}", realPath, winnerRule
-			.getMappedFS().getAliasName());
+		log.debug("Resource '{}' doesn't belong to {}", stori.getLocalFile(),
+			winnerRule.getMappedFS().getAliasName());
 		
 		/* get the VFS where the resource is phisically located, if exists */
+		String realPath = getStoRICanonicalPath(stori);
 		VirtualFSInterface targetVFS = getWinnerVFS(realPath);
-		
 		if (targetVFS == null) {
 			log.debug("Unable to find a valid VFS from path '{}'", realPath);
 			throw new InvalidSURLException(surl,
 				"The requested SURL is not managed by this instance of StoRM");
 		}
-		
 		log.debug("{} belongs to {}", realPath, targetVFS.getAliasName());
 		
+		/* check if target VFS is approachable */
 		if (!vfsApproachable.contains(targetVFS)) {
 			String msg = String.format("%s is not approachable by the user",
 				targetVFS.getAliasName());
@@ -330,14 +311,51 @@ public class Namespace implements NamespaceInterface {
 		}
 
 		log.debug("{} is approachable by the user", targetVFS.getAliasName());
-		relPath = NamespaceUtil.extractRelativePath(winnerRule.getStFNRoot(),
-			stfnPath);
-		stori = targetVFS.createFile(relPath, StoRIType.FILE);
-		stori.setStFNRoot(winnerRule.getStFNRoot());
-    stori.setMappingRule(winnerRule);
-    return stori;
+		return buildStoRI(targetVFS, winnerRule, surl);
 	}
-	
+
+	private boolean isSolvable(TSURL surl) throws IllegalArgumentException,
+		InvalidSURLException, UnapprochableSurlException, NamespaceException {
+
+		return getWinnerRule(surl) != null;
+	}
+
+	private String getStoRICanonicalPath(StoRI stori)
+		throws NamespaceException {
+
+		String realPath = null;
+		try {
+			realPath = stori.getLocalFile().getCanonicalPath();
+		} catch (IOException e) {
+			log.error("Error on reading the canonical path: " + e.getMessage());
+			throw new NamespaceException(e.getMessage());
+		}
+		return realPath;
+	}
+
+	private boolean isStoRIEnclosed(StoRI stori, VirtualFSInterface vfs)
+		throws NamespaceException {
+
+		return getStoRICanonicalPath(stori).startsWith(vfs.getRootPath());
+	}
+
+	private StoRI buildStoRI(VirtualFSInterface vfs, MappingRule mappingRule,
+		TSURL surl) {
+
+		String stfnPath = surl.sfn().stfn().toString();
+		String relativePath = NamespaceUtil.extractRelativePath(
+			mappingRule.getStFNRoot(), stfnPath);
+		StoRI stori = vfs.createFile(relativePath, StoRIType.FILE);
+		stori.setStFNRoot(mappingRule.getStFNRoot());
+		stori.setMappingRule(mappingRule);
+		return stori;
+	}
+
+	private boolean isAnonymous(GridUserInterface user) {
+		
+		return user == null;
+	}
+
 	public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
 		throws UnapprochableSurlException, IllegalArgumentException,
 		InvalidSURLException, NamespaceException {
@@ -371,8 +389,8 @@ public class Namespace implements NamespaceInterface {
 		throws NamespaceException {
 
 		VirtualFSInterface vfs = resolveVFSbyAbsolutePath(absolutePath);
-		log.debug("VFS retrivied is " + vfs.getAliasName());
-		log.debug("VFS instance is " + vfs.hashCode());
+		log.debug("VFS retrivied is {}", vfs.getAliasName());
+		log.debug("VFS instance is {}", vfs.hashCode());
 		String relativePath = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
 			absolutePath);
 		StoRI stori = vfs.createFile(relativePath);
@@ -556,13 +574,16 @@ public class Namespace implements NamespaceInterface {
 		List<VirtualFSInterface> vfsApproachable) throws IllegalArgumentException,
 		InvalidSURLException, UnapprochableSurlException, NamespaceException {
 
-		if (surl == null || vfsApproachable == null || vfsApproachable.isEmpty()) {
-			String errorMsg = String
-				.format(
-					"Unable to perform getWinnerRule, invalid argument(s): surl=%s, vfs=%s",
-					surl, vfsApproachable);
+		if (surl == null || vfsApproachable == null) {
+			String errorMsg = String.format("Unable to perform getWinnerRule, "
+				+ "invalid argument(s): surl=%s, vfs=%s", surl, vfsApproachable);
 			log.error(errorMsg);
 			throw new IllegalArgumentException(errorMsg);
+		}
+		
+		if (vfsApproachable.isEmpty()) {
+			log.debug("Empty VFS list!");
+			return null;
 		}
 		
 		Vector<MappingRule> rules = new Vector<MappingRule>(parser
@@ -581,7 +602,8 @@ public class Namespace implements NamespaceInterface {
 		for (MappingRule rule : rules) {
 			if (NamespaceUtil.isEnclosed(rule.getStFNRoot(), stfnPath)
 				&& vfsApproachable.contains(rule.getMappedFS())) {
-				int distance = NamespaceUtil.computeDistanceFromPath(rule.getStFNRoot(), stfnPath);
+				int distance = NamespaceUtil.computeDistanceFromPath(
+					rule.getStFNRoot(), stfnPath);
 				if (distance < minDistance) {
 					minDistance = distance;
 					winnerRule = rule;
@@ -589,6 +611,14 @@ public class Namespace implements NamespaceInterface {
 			}
 		}
 		return winnerRule;
+	}
+	
+	private MappingRule getWinnerRule(TSURL surl)
+		throws IllegalArgumentException, InvalidSURLException,
+		UnapprochableSurlException, NamespaceException {
+
+		return getWinnerRule(surl, new ArrayList<VirtualFSInterface>(
+			getAllDefinedVFS()));
 	}
 
 	@SuppressWarnings("unchecked")
