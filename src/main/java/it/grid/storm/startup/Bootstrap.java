@@ -55,8 +55,11 @@ public class Bootstrap {
 			
 			String message = String.format("Error loading logging configuration: "
 				+ "'%s' does not exist or is not readable.",loggingConfigFilePath);
+			
+			log.error(message);
+			
 			throw new RuntimeException(message);
-		}
+		} 
 		
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 		JoranConfigurator configurator = new JoranConfigurator();
@@ -69,11 +72,15 @@ public class Bootstrap {
 
 		} catch (JoranException e) {
 
+			System.err.println(e + "\n" + e.getCause());
+			
 			throw new RuntimeException(e);
 
-		}
+		} finally {
 		
-		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+			StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+		
+		}
 	}
 	
 	public static void initializePathAuthz(String pathAuthzDBFileName)
