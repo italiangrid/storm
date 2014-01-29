@@ -72,8 +72,6 @@ public class Bootstrap {
 
 		} catch (JoranException e) {
 
-			System.err.println(e + "\n" + e.getCause());
-			
 			throw new RuntimeException(e);
 
 		} finally {
