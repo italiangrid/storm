@@ -265,7 +265,7 @@ public class Namespace implements NamespaceInterface {
 		
 		if (winnerRule == null) {
 			/* check if surl can be resolved by this instance of StoRM */
-			if (!isAnonymous(user) && isSolvable(surl)) {
+			if (isSolvable(surl)) {
 				log.debug("No mapping rule found for surl='{}' and user '{}'", surl,
 					user);
 				throw new UnapprochableSurlException("User '" + user + "' is not "
@@ -292,6 +292,11 @@ public class Namespace implements NamespaceInterface {
 		log.debug("Resource '{}' doesn't belong to {}", stori.getLocalFile(),
 			winnerRule.getMappedFS().getAliasName());
 		
+		if (isAnonymous(user)) {
+			throw new UnapprochableSurlException(stori.getLocalFile()
+				+ " is not approachable by anonymous users!");
+		}
+		
 		/* get the VFS where the resource is phisically located, if exists */
 		String realPath = getStoRICanonicalPath(stori);
 		VirtualFSInterface targetVFS = getWinnerVFS(realPath);
@@ -311,7 +316,7 @@ public class Namespace implements NamespaceInterface {
 		}
 
 		log.debug("{} is approachable by the user", targetVFS.getAliasName());
-		return buildStoRI(targetVFS, winnerRule, surl);
+		return stori;
 	}
 
 	private boolean isSolvable(TSURL surl) throws IllegalArgumentException,
