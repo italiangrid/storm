@@ -26,7 +26,9 @@ import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.scheduler.Delegable;
@@ -278,18 +280,34 @@ public final class PtGFeeder implements Delegable {
 					chunkData.getSURL(), chunkData.getUser());
 			} catch (IllegalArgumentException e) {
 				log.error("Unable to build StoRI by SURL and user", e);
-				chunkData
-					.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
 				PtGChunkCatalog.getInstance().update(chunkData);
 				log.error("ATTENTION in PtGFeeder! PtGFeeder received "
 					+ "request for a SURL and user not recognised by StoRI!"); // info
 				gsm.failedChunk(chunkData);
 			} catch (UnapprochableSurlException e) {
-				chunkData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+				chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
 				PtGChunkCatalog.getInstance().update(chunkData);
-				log.info("Unable to build a stori for surl " + chunkData.getSURL()
-					+ " for user " + DataHelper.getRequestor(chunkData)
-					+ " UnapprochableSurlException: " + e.getMessage());
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
+						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
+				gsm.failedChunk(chunkData);
+			} catch (NamespaceException e) {
+				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				PtGChunkCatalog.getInstance().update(chunkData);
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
+						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
+				gsm.failedChunk(chunkData);
+			} catch (InvalidSURLException e) {
+				chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				PtGChunkCatalog.getInstance().update(chunkData);
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
+						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
 				gsm.failedChunk(chunkData);
 			}
 			if (stori != null) {
@@ -298,9 +316,6 @@ public final class PtGFeeder implements Delegable {
 				// substiture the following withe the commented one
 				Collection<StoRI> storiChildren = stori.getChildren(chunkData
 					.getDirOption());
-				// Collection<StoRI> storiChildren =
-				// stori.generateChildrenNoFolders(chunkData
-				// .dirOption());
 
 				log.debug("PtGFeeder - Number of children in parent: "
 					+ storiChildren.size());

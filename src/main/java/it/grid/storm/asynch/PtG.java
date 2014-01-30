@@ -28,7 +28,9 @@ import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -124,7 +126,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 			+ requestData.getSURL());
 		if (!verifySurlStatusTransition(requestData.getSURL(),
 			requestData.getRequestToken())) {
-			failure = true;
 			requestData.changeStatusSRM_FILE_BUSY("Requested file is"
 				+ " busy (in an incompatible state with PTG)");
 			log.info("Unable to perform the PTG request, surl busy");
@@ -132,95 +133,127 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 			return;
 		}
 
-		else {
-			/* proceed normally! */
-			StoRI fileStoRI = null;
-			boolean unapprochableSurl = false;
-			try {
+		/* proceed normally! */
+		StoRI fileStoRI = null;
+		boolean unapprochableSurl = false;
+		try {
+			if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
+				try {
+					fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
+						requestData.getSURL(), ((IdentityInputData) requestData).getUser());
+				} catch (UnapprochableSurlException e) {
+					unapprochableSurl = true;
+					log.info("Unable to build a stori for surl " + requestData.getSURL()
+						+ " for user " + DataHelper.getRequestor(requestData)
+						+ " UnapprochableSurlException: " + e.getMessage());
+				} catch (NamespaceException e) {
+					failure = true;
+					log.info(String.format(
+						"Unable to build a stori for surl %s for user %s %s: %s",
+						requestData.getSURL(), DataHelper.getRequestor(requestData), e
+							.getClass().getCanonicalName(), e.getMessage()));
+					requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				} catch (InvalidSURLException e) {
+					failure = true;
+					log.info(String.format(
+						"Unable to build a stori for surl %s for user %s %s: %s",
+						requestData.getSURL(), DataHelper.getRequestor(requestData), e
+							.getClass().getCanonicalName(), e.getMessage()));
+					requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				}
+			} else {
+				try {
+					fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
+						requestData.getSURL());
+				} catch (UnapprochableSurlException e) {
+					failure = true;
+					log.info(String.format("Unable to build a stori for surl %s %s: %s",
+						requestData.getSURL(), e.getClass().getCanonicalName(),
+						e.getMessage()));
+					requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+				} catch (NamespaceException e) {
+					failure = true;
+					log.info(String.format("Unable to build a stori for surl %s %s: %s",
+						requestData.getSURL(), e.getClass().getCanonicalName(),
+						e.getMessage()));
+					requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				} catch (InvalidSURLException e) {
+					failure = true;
+					log.info(String.format("Unable to build a stori for surl %s %s: %s",
+						requestData.getSURL(), e.getClass().getCanonicalName(),
+						e.getMessage()));
+					requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			failure = true;
+			log.error("Unable to get StoRI for surl " + requestData.getSURL()
+				+ " IllegalArgumentException: " + e.getMessage());
+			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+		}
+		if (!failure) {
+			AuthzDecision ptgAuthz;
+			if (!unapprochableSurl) {
 				if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
-					try {
-						fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-							requestData.getSURL(),
-							((IdentityInputData) requestData).getUser());
-					} catch (UnapprochableSurlException e) {
-						unapprochableSurl = true;
-						log.info("Unable to build a stori for surl "
-							+ requestData.getSURL() + " for user "
-							+ DataHelper.getRequestor(requestData)
-							+ " UnapprochableSurlException: " + e.getMessage());
-					}
+					ptgAuthz = AuthzDirector.getPathAuthz().authorize(
+						((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG,
+						fileStoRI);
 				} else {
+					ptgAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(
+						SRMFileRequest.PTG, fileStoRI.getStFN());
+				}
+			} else {
+				if (requestData.getTransferProtocols().allows(Protocol.HTTP)) {
 					try {
 						fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
 							requestData.getSURL());
 					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl "
-							+ requestData.getSURL() + " UnapprochableSurlException: "
-							+ e.getMessage());
 						failure = true;
-						requestData
-							.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
+						log.info(String.format(
+							"Unable to build a stori for surl %s %s: %s",
+							requestData.getSURL(), e.getClass().getCanonicalName(),
+							e.getMessage()));
+						requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+					} catch (InvalidSURLException e) {
+						failure = true;
+						log.info(String.format(
+							"Unable to build a stori for surl %s %s: %s",
+							requestData.getSURL(), e.getClass().getCanonicalName(),
+							e.getMessage()));
+						requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+					} catch (Throwable e) {
+						failure = true;
+						log.error(String.format(
+							"Unable to build a stori for surl %s %s: %s",
+							requestData.getSURL(), e.getClass().getCanonicalName(),
+							e.getMessage()));
+						requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
 					}
-				}
-			} catch (IllegalArgumentException e) {
-				failure = true;
-				requestData
-					.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-						+ requestData.getSURL());
-				log.error("Unable to get StoRY for surl " + requestData.getSURL()
-					+ " IllegalArgumentException: " + e.getMessage());
-			}
-			if (!failure) {
-				AuthzDecision ptgAuthz;
-				if (!unapprochableSurl) {
-					if (!downgradedToAnonymous
-						&& requestData instanceof IdentityInputData) {
-						ptgAuthz = AuthzDirector.getPathAuthz().authorize(
-							((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG,
-							fileStoRI);
+					if (!failure) {
+						if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable()) {
+							this.downgradeToAnonymousHttpRequest();
+							ptgAuthz = AuthzDecision.PERMIT;
+						} else {
+							ptgAuthz = AuthzDecision.DENY;
+						}
 					} else {
-						ptgAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(
-							SRMFileRequest.PTG, fileStoRI.getStFN());
+						ptgAuthz = AuthzDecision.INDETERMINATE;
 					}
 				} else {
-					if (requestData.getTransferProtocols().allows(Protocol.HTTP)) {
-						try {
-							fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-								requestData.getSURL());
-						} catch (UnapprochableSurlException e) {
-							log.info("Unable to build a stori for surl "
-								+ requestData.getSURL() + " UnapprochableSurlException: "
-								+ e.getMessage());
-							failure = true;
-							requestData
-								.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
-						}
-						if (!failure) {
-							if (fileStoRI.getVirtualFileSystem().isHttpWorldReadable()) {
-								this.downgradeToAnonymousHttpRequest();
-								ptgAuthz = AuthzDecision.PERMIT;
-							} else {
-								ptgAuthz = AuthzDecision.DENY;
-							}
-						} else {
-							ptgAuthz = AuthzDecision.INDETERMINATE;
-						}
-					} else {
-						ptgAuthz = AuthzDecision.DENY;
-					}
+					ptgAuthz = AuthzDecision.DENY;
 				}
-				if (!failure) {
-					if (ptgAuthz.equals(AuthzDecision.PERMIT)) {
-						manageIsPermit(fileStoRI);
+			}
+			if (!failure) {
+				if (ptgAuthz.equals(AuthzDecision.PERMIT)) {
+					manageIsPermit(fileStoRI);
+				} else {
+					if (ptgAuthz.equals(AuthzDecision.DENY)) {
+						manageIsDeny();
 					} else {
-						if (ptgAuthz.equals(AuthzDecision.DENY)) {
-							manageIsDeny();
+						if (ptgAuthz.equals(AuthzDecision.INDETERMINATE)) {
+							manageIsIndeterminate(ptgAuthz);
 						} else {
-							if (ptgAuthz.equals(AuthzDecision.INDETERMINATE)) {
-								manageIsIndeterminate(ptgAuthz);
-							} else {
-								manageIsNotApplicabale(ptgAuthz);
-							}
+							manageIsNotApplicabale(ptgAuthz);
 						}
 					}
 				}

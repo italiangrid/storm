@@ -33,7 +33,9 @@ import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -81,6 +83,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
+
 import it.grid.storm.checksum.ChecksumAlgorithm;
 
 /**
@@ -252,8 +255,10 @@ public class LsCommand extends DirectoryCommand implements Command {
 
 			log.debug("srmLs: surlArray.size=" + surlArray.size());
 			TSURL surl = surlArray.getTSURL(j);
+
 			if (!surl.isEmpty()) {
 				try {
+					
 					if (inputData instanceof IdentityInputData) {
 						try {
 							stori = namespace.resolveStoRIbySURL(surl,
@@ -263,8 +268,26 @@ public class LsCommand extends DirectoryCommand implements Command {
 							log.info("Unable to build a stori for surl " + surl
 								+ " for user " + DataHelper.getRequestor(inputData)
 								+ " UnapprochableSurlException: " + e.getMessage());
+							fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
+							fileLevelExplanation = e.getMessage();
+							printRequestOutcome(CommandHelper.buildStatus(
+								fileLevelStatusCode, fileLevelExplanation), inputData);
+						} catch (NamespaceException e) {
+							failure = true;
+							log.error("Unable to build a stori for surl " + surl
+								+ " for user " + DataHelper.getRequestor(inputData)
+								+ " UnapprochableSurlException: " + e.getMessage());
+							fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+							fileLevelExplanation = e.getMessage();
+							printRequestOutcome(CommandHelper.buildStatus(
+								fileLevelStatusCode, fileLevelExplanation), inputData);
+						} catch (InvalidSURLException e) {
+							failure = true;
+							log.info("Unable to build a stori for surl " + surl
+								+ " for user " + DataHelper.getRequestor(inputData)
+								+ " UnapprochableSurlException: " + e.getMessage());
 							fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
-							fileLevelExplanation = "Invalid SURL path specified";
+							fileLevelExplanation = e.getMessage();
 							printRequestOutcome(CommandHelper.buildStatus(
 								fileLevelStatusCode, fileLevelExplanation), inputData);
 						}
@@ -275,8 +298,24 @@ public class LsCommand extends DirectoryCommand implements Command {
 							failure = true;
 							log.info("Unable to build a stori for surl " + surl
 								+ " UnapprochableSurlException: " + e.getMessage());
+							fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
+							fileLevelExplanation = e.getMessage();
+							printRequestOutcome(CommandHelper.buildStatus(
+								fileLevelStatusCode, fileLevelExplanation), inputData);
+						} catch (NamespaceException e) {
+							failure = true;
+							log.info("Unable to build a stori for surl " + surl
+								+ " NamespaceException: " + e.getMessage());
+							fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+							fileLevelExplanation = e.getMessage();
+							printRequestOutcome(CommandHelper.buildStatus(
+								fileLevelStatusCode, fileLevelExplanation), inputData);
+						} catch (InvalidSURLException e) {
+							failure = true;
+							log.info("Unable to build a stori for surl " + surl
+								+ " InvalidSURLException: " + e.getMessage());
 							fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
-							fileLevelExplanation = "Invalid SURL path specified";
+							fileLevelExplanation = e.getMessage();
 							printRequestOutcome(CommandHelper.buildStatus(
 								fileLevelStatusCode, fileLevelExplanation), inputData);
 						}
@@ -285,7 +324,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 					log.error("srmLs: Unable to build StoRI by SURL: " + e);
 					failure = true;
 					fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
-					fileLevelExplanation = "Unable to build StoRI, Illegal Argument Exception";
+					fileLevelExplanation = e.getMessage();
 					printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode,
 						fileLevelExplanation), inputData);
 				}

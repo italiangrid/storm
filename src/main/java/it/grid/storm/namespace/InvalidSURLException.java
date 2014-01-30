@@ -29,7 +29,7 @@ package it.grid.storm.namespace;
 
 import it.grid.storm.srm.types.*;
 
-public class MalformedSURLException extends Exception {
+public class InvalidSURLException extends Exception {
 
 	/**
 	 * 
@@ -37,7 +37,7 @@ public class MalformedSURLException extends Exception {
 	private static final long serialVersionUID = 1L;
 	private TSURL surl = null;
 
-	public MalformedSURLException(TSURL surl, String message) {
+	public InvalidSURLException(TSURL surl, String message) {
 
 		super(message);
 		this.surl = surl;
@@ -45,7 +45,7 @@ public class MalformedSURLException extends Exception {
 
 	public String toString() {
 
-		return String.format("MalformedSURLException for SURL='%s': %s", this.surl,
+		return String.format("InvalidSURLException for SURL='%s': %s", this.surl,
 			this.getMessage());
 	}
 

@@ -18,6 +18,7 @@
 package it.grid.storm.synchcall.command.directory;
 
 import java.util.Arrays;
+
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -25,7 +26,9 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -104,7 +107,23 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 							+ DataHelper.getRequestor(inputData)
 							+ " UnapprochableSurlException: " + e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
+							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+						printRequestOutcome(returnStatus, inputData);
+						return new RmdirOutputData(returnStatus);
+					} catch (NamespaceException e) {
+						log.info("Unable to build a stori for surl " + surl + " for user "
+							+ DataHelper.getRequestor(inputData)
+							+ " NamespaceException: " + e.getMessage());
+						returnStatus = CommandHelper.buildStatus(
+							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+						printRequestOutcome(returnStatus, inputData);
+						return new RmdirOutputData(returnStatus);
+					} catch (InvalidSURLException e) {
+						log.info("Unable to build a stori for surl " + surl + " for user "
+							+ DataHelper.getRequestor(inputData)
+							+ " InvalidSURLException: " + e.getMessage());
+						returnStatus = CommandHelper.buildStatus(
+							TStatusCode.SRM_INVALID_PATH, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					}
@@ -115,7 +134,21 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 						log.info("Unable to build a stori for surl " + surl
 							+ " UnapprochableSurlException: " + e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
+							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+						printRequestOutcome(returnStatus, inputData);
+						return new RmdirOutputData(returnStatus);
+					} catch (NamespaceException e) {
+						log.info("Unable to build a stori for surl " + surl
+							+ " NamespaceException: " + e.getMessage());
+						returnStatus = CommandHelper.buildStatus(
+							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+						printRequestOutcome(returnStatus, inputData);
+						return new RmdirOutputData(returnStatus);
+					} catch (InvalidSURLException e) {
+						log.info("Unable to build a stori for surl " + surl
+							+ " InvalidSURLException: " + e.getMessage());
+						returnStatus = CommandHelper.buildStatus(
+							TStatusCode.SRM_INVALID_PATH, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					}
@@ -125,7 +158,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 					.error("srmRmdir: Unable to build StoRI by surl and user. IllegalArgumentException: "
 						+ e.getMessage());
 				returnStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, "Unable to get StoRI for surl");
+					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 				printRequestOutcome(returnStatus, inputData);
 				outData = new RmdirOutputData(returnStatus);
 				return outData;

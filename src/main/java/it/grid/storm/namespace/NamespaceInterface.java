@@ -101,6 +101,33 @@ public interface NamespaceInterface {
 
 	/**
 	 * 
+	 * @return List : Return a List of readable and writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getApproachableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable or writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableOrApproachableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
 	 * @param user
 	 *          GridUserInterface
 	 * @return VirtualFSInterface
@@ -130,18 +157,21 @@ public interface NamespaceInterface {
 	 * @return StoRI
 	 * @throws NamespaceException
 	 * @throws UnapprochableSurlException
+	 * @throws InvalidSURLException 
 	 */
 	public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user)
-		throws IllegalArgumentException, UnapprochableSurlException;
+		throws IllegalArgumentException, UnapprochableSurlException, NamespaceException, InvalidSURLException;
 
 	/**
 	 * 
 	 * @param surl
 	 *          TSURL
 	 * @return StoRI
+	 * @throws IllegalArgumentException 
 	 * @throws NamespaceException
+	 * @throws InvalidSURLException 
 	 */
-	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException;
+	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException, IllegalArgumentException, NamespaceException, InvalidSURLException;
 
 	/**
 	 * 
@@ -152,9 +182,11 @@ public interface NamespaceInterface {
 	 * @return VirtualFSInterface
 	 * @throws NamespaceException
 	 * @throws UnapprochableSurlException
+	 * @throws InvalidSURLException 
+	 * @throws IllegalArgumentException 
 	 */
 	public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
-		throws UnapprochableSurlException;
+		throws UnapprochableSurlException, IllegalArgumentException, InvalidSURLException, NamespaceException;
 
 	/**
 	 * 

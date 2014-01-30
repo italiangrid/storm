@@ -33,7 +33,6 @@ import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -87,32 +86,24 @@ public class SpaceHelper {
 		
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 		StoRI stori = null;
+
 		
 		try {
 			// FIXME: should be fixed in NamespaceDirector to avoid having
 			// two distinct calls if user is null or not.
 			// The resolveStoRIBySURL(surl, user) should handle this.
-			if (user == null){
-
+			if (user == null) {
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-
 			} else {
-
-				stori = NamespaceDirector
-					.getNamespace()
-					.resolveStoRIbySURL(surl, user);
+				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
 			}
+
+		} catch(Throwable e){
 		
-		} catch(UnapprochableSurlException e){
-		
-			log.warn("Unable to build stori for surl {} and user {}: {}",
+			log.error("Unable to build stori for surl {} and user {}: {}",
 					new Object[]{surl,user,e.getMessage()},e);
 			return;
-		
-		} catch( IllegalArgumentException e) {
 
-			log.error(e.getMessage(),e);
-			return;
 		}
 
 		VirtualFSInterface fs = stori.getVirtualFileSystem();

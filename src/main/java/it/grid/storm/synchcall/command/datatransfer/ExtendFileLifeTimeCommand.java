@@ -20,7 +20,9 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -162,20 +164,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 			return outputData;
 		}
 
-		/**
-		 * !!! LocalUser is unnecessary !!! // Maps the VOMS Grid user into Local
-		 * User LocalUser lUser = null; try { lUser = user.getLocalUser(); } catch
-		 * (CannotMapUserException e) { log.error(funcName +
-		 * "Unable to map the user '" + user + "' in a local user.", e); try {
-		 * globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-		 * "Unable to map the user"); } catch
-		 * (InvalidTReturnStatusAttributeException ex1) { // Nothing to do, it will
-		 * never be thrown
-		 * log.warn("dataTransferManger: Error creating returnStatus "); }
-		 * outputData.setReturnStatus(globalStatus);
-		 * outputData.setArrayOfFileStatuses(null); return outputData; }
-		 **/
-
 		/********************************** Start to manage the request ***********************************/
 		ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatus = new ArrayOfTSURLLifetimeReturnStatus();
 
@@ -257,8 +245,18 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 				} catch (UnapprochableSurlException e) {
 					log.info("Unable to build a stori for surl " + surl + " for user "
 						+ guser + " UnapprochableSurlException: " + e.getMessage());
+					fileStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
+					fileStatusExplanation = e.getMessage();
+				} catch (NamespaceException e) {
+					log.info("Unable to build a stori for surl " + surl + " for user "
+						+ guser + " NamespaceException: " + e.getMessage());
+					fileStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
+					fileStatusExplanation = e.getMessage();
+				} catch (InvalidSURLException e) {
+					log.info("Unable to build a stori for surl " + surl + " for user "
+						+ guser + " InvalidSURLException: " + e.getMessage());
 					fileStatusCode = TStatusCode.SRM_INVALID_PATH;
-					fileStatusExplanation = "Invalid SURL path specified";
+					fileStatusExplanation = e.getMessage();
 				}
 				if (stori != null) {
 					LocalFile localFile = stori.getLocalFile();
@@ -412,15 +410,12 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 				"Invalid request token");
 		}
 		// Once we have the list of SURLs belonging to the request, we must check
-		// that the SURLs
-		// given by the user are consistent, that the resulting lifetime could be
-		// lower than
-		// the one requested (and for this we must read the Volatile table of the
-		// DB), that the SURLs
-		// are not released, aborted, expired or suspended and so on...
-		// therefore the purpose of all that stuff is to return the right
-		// information. I mean, no PIN lifetime
-		// is effectively extend, in StoRM the TURL corresponds to the SURL.
+		// that the SURLs given by the user are consistent, that the resulting
+		// lifetime could be lower than the one requested (and for this we must read
+		// the Volatile table of the DB), that the SURLs are not released, aborted,
+		// expired or suspended and so on... therefore the purpose of all that stuff
+		// is to return the right information. I mean, no PIN lifetime is
+		// effectively extend, in StoRM the TURL corresponds to the SURL.
 		boolean requestSuccess = true;
 		boolean requestFailure = true;
 		TLifeTimeInSeconds PINLifetime;
@@ -452,9 +447,10 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 						stori = namespace.resolveStoRIbySURL(surl, guser);
 					} catch (IllegalArgumentException e) {
 						log.error("Unable to build StoRI by SURL and user", e);
-					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl " + surl + " for user "
-							+ guser + " UnapprochableSurlException: " + e.getMessage());
+					} catch (Exception e) {
+						log.info(String.format(
+							"Unable to build a stori for surl %s for user %s, %s: %s", surl,
+							guser, e.getClass().getCanonicalName(), e.getMessage()));
 					}
 					if (stori != null) {
 						LocalFile localFile = stori.getLocalFile();
@@ -465,19 +461,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 
 							if ((statusOfTheSURL != TStatusCode.SRM_FILE_PINNED)
 								&& (statusOfTheSURL != TStatusCode.SRM_SPACE_AVAILABLE)
-								&& (statusOfTheSURL != TStatusCode.SRM_SUCCESS)) // ULTIMO CASE
-																																	// e da
-																																	// rimuovere.
-																																	// questo
-																																	// e' il caso
-																																	// di
-																																	// REQUEST_TOKEN
-																																	// senza
-																																	// niente, che
-																																	// deve
-																																	// ritornare
-																																	// valori di
-																																	// default.
+								&& (statusOfTheSURL != TStatusCode.SRM_SUCCESS))
 							{
 								fileStatusCode = TStatusCode.SRM_INVALID_REQUEST;
 								fileStatusExplanation = "No TURL available";
@@ -491,9 +475,8 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 								requestSuccess = false;
 							} else { // OK, extend the PIN lifetime.
 								// If the status is success the extension will not take place,
-								// only in case of empty
-								// parametetr
-								// the current value are returned, otherwaise the request must
+								// only in case of empty parameter the current value are
+								// returned, otherwaise the request must
 								// fail!
 
 								if ((statusOfTheSURL == TStatusCode.SRM_SUCCESS)
@@ -557,9 +540,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 				// Set the file level information to be returned.
 				TReturnStatus fileStatus = new TReturnStatus(fileStatusCode,
 					fileStatusExplanation);
-				// TSURLLifetimeReturnStatus lifetimeReturnStatus = new
-				// TSURLLifetimeReturnStatus(surl, fileStatus,
-				// null, PINLifetime);
 				if (fileStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 					ExtendFileLifeTimeCommand.log.info("srmExtendFileLifeTime: <" + guser
 						+ "> Request for [token:" + requestToken + "] for [SURL:" + surl
@@ -575,7 +555,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 
 				TSURLLifetimeReturnStatus lifetimeReturnStatus = new TSURLLifetimeReturnStatus(
 					surl, fileStatus, dbLifetime, PINLifetime);
-				// log.warn("pinlifetime"+PINLifetime.value());
 				details.addTSurlReturnStatus(lifetimeReturnStatus);
 			} catch (InvalidTReturnStatusAttributeException e2) {
 				// Nothing to do, it will never be thrown
@@ -585,7 +564,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 				ExtendFileLifeTimeCommand.log
 					.debug("Thrown InvalidTSURLLifetimeReturnStatusAttributeException");
 			}
-		} // for (int i = 0; i < arrayOfSURLS.size(); i++)
+		}
 
 		// Set global status
 		try {
@@ -623,10 +602,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 		ExpiredTokenException {
 
 		List<SURLData> listOfSURLsInfo = new LinkedList<SURLData>();
-		// RequestSummaryCatalog rsCatalog = RequestSummaryCatalog.getInstance();
-		// TRequestType requestType = rsCatalog.typeOf(requestToken);
 
-		// if (requestType == TRequestType.PREPARE_TO_GET) {
 		Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager
 			.getSurlsStatus(requestToken);
 		if (!(surlStatusMap == null || surlStatusMap.isEmpty())) {
@@ -635,42 +611,6 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 					.getValue().getStatusCode()));
 			}
 		}
-		// } else if (requestType == TRequestType.PREPARE_TO_PUT)
-		// {
-		// Map<TSURL, TReturnStatus> surlStatusMap =
-		// SurlStatusManager.getSurlsStatus(requestToken);
-		// if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
-		// {
-		// for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
-		// {
-		// listOfSURLsInfo.add(new SURLData(surlStatus.getKey(),
-		// surlStatus.getValue().getStatusCode()));
-		// }
-		// }
-
-		// }
-		// else if (requestType == TRequestType.COPY) {
-		// CopyChunkCatalog copyCatalog = CopyChunkCatalog.getInstance();
-		// Collection chunkList = copyCatalog.lookup(requestToken);
-		// Iterator chunk = chunkList.iterator();
-		// while (chunk.hasNext()) {
-		// CopyPersistentChunkData aux = (CopyPersistentChunkData) chunk.next();
-		// SURLData surlData = new SURLData(aux.getDestinationSURL(),
-		// aux.getStatus().getStatusCode());
-		// listOfSURLsInfo.add(surlData);
-		// }
-		// Map<TSURL, TReturnStatus> surlStatusMap =
-		// SurlStatusManager.getSurlsStatus(requestToken);
-		// if(!(surlStatusMap == null && surlStatusMap.isEmpty()))
-		// {
-		// for(Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet())
-		// {
-		// listOfSURLsInfo.add(new SURLData(surlStatus.getKey(),
-		// surlStatus.getValue().getStatusCode()));
-		// }
-		// }
-		// }
-
 		return listOfSURLsInfo;
 	}
 

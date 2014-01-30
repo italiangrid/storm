@@ -30,7 +30,9 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -177,20 +179,34 @@ public class PtP implements Delegable, Chooser, Request {
 				fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
 					requestData.getSURL(), ((IdentityInputData) requestData).getUser());
 			} catch (UnapprochableSurlException e) {
-				requestData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
-				failure = true;
-				log.info("Unable to build a stori for surl " + requestData.getSURL()
-					+ " for user " + DataHelper.getRequestor(requestData)
-					+ " UnapprochableSurlException: " + e.getMessage());
+				requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", requestData
+						.getSURL(), DataHelper.getRequestor(requestData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
 				printRequestOutcome(requestData);
 				return;
 			} catch (IllegalArgumentException e) {
-				failure = true;
 				requestData
-					.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-						+ requestData.getSURL());
+					.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
 				log.error("Unable to get StoRI for surl " + requestData.getSURL()
 					+ " IllegalArgumentException: " + e.getMessage());
+				printRequestOutcome(requestData);
+				return;
+			} catch (NamespaceException e) {
+				requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", requestData
+						.getSURL(), DataHelper.getRequestor(requestData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
+				printRequestOutcome(requestData);
+				return;
+			} catch (InvalidSURLException e) {
+				requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				log.info(String.format(
+					"Unable to build a stori for surl %s for user %s %s: %s", requestData
+						.getSURL(), DataHelper.getRequestor(requestData), e.getClass()
+						.getCanonicalName(), e.getMessage()));
 				printRequestOutcome(requestData);
 				return;
 			}
@@ -199,11 +215,31 @@ public class PtP implements Delegable, Chooser, Request {
 				fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
 					requestData.getSURL());
 			} catch (UnapprochableSurlException e) {
-				failure = true;
-				log.info("Unable to build a stori for surl " + requestData.getSURL()
-					+ " UnapprochableSurlException: " + e.getMessage());
-				requestData
-					.changeStatusSRM_INVALID_PATH("This surl is not managed by this StoRM instance");
+				log.info(String.format("Unable to build a stori for surl %s %s: %s",
+					requestData.getSURL(), e.getClass().getCanonicalName(),
+					e.getMessage()));
+				requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+				printRequestOutcome(requestData);
+				return;
+			} catch (IllegalArgumentException e) {
+				log.error(String.format("Unable to build a stori for surl %s %s: %s",
+					requestData.getSURL(), e.getClass().getCanonicalName(),
+					e.getMessage()));
+				requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				printRequestOutcome(requestData);
+				return;
+			} catch (NamespaceException e) {
+				log.info(String.format("Unable to build a stori for surl %s %s: %s",
+					requestData.getSURL(), e.getClass().getCanonicalName(),
+					e.getMessage()));
+				requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				printRequestOutcome(requestData);
+				return;
+			} catch (InvalidSURLException e) {
+				log.info(String.format("Unable to build a stori for surl %s %s: %s",
+					requestData.getSURL(), e.getClass().getCanonicalName(),
+					e.getMessage()));
+				requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
 				printRequestOutcome(requestData);
 				return;
 			}

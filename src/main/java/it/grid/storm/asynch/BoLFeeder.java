@@ -27,7 +27,9 @@ import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.scheduler.Delegable;
@@ -271,11 +273,25 @@ public final class BoLFeeder implements Delegable {
 					+ " for a SURL and user not recognised by StoRI!");
 				gsm.failedChunk(chunkData);
 			} catch (UnapprochableSurlException e) {
-				chunkData.changeStatusSRM_INVALID_PATH("Invalid SURL path specified");
+				chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
 				BoLChunkCatalog.getInstance().update(chunkData);
 				log.info("Unable to build a stori for surl " + chunkData.getSURL()
 					+ " for user " + DataHelper.getRequestor(chunkData)
 					+ " UnapprochableSurlException: " + e.getMessage());
+				gsm.failedChunk(chunkData);
+			} catch (NamespaceException e) {
+				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+				BoLChunkCatalog.getInstance().update(chunkData);
+				log.info("Unable to build a stori for surl " + chunkData.getSURL()
+					+ " for user " + DataHelper.getRequestor(chunkData)
+					+ " NamespaceException: " + e.getMessage());
+				gsm.failedChunk(chunkData);
+			} catch (InvalidSURLException e) {
+				chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
+				BoLChunkCatalog.getInstance().update(chunkData);
+				log.info("Unable to build a stori for surl " + chunkData.getSURL()
+					+ " for user " + DataHelper.getRequestor(chunkData)
+					+ " InvalidSURLException: " + e.getMessage());
 				gsm.failedChunk(chunkData);
 			}
 			if (stori != null) {
