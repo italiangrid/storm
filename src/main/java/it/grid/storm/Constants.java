@@ -61,24 +61,22 @@ public class Constants {
 			+ "issue";
 		File issueFile = new File(issuePath);
 		if (!issueFile.exists() || !issueFile.isFile() || !issueFile.canRead()) {
-			log.warn("Unable to read " + issueFile.getAbsolutePath() + " file!!");
+			log.warn("Unable to read {} file!!", issueFile.getAbsolutePath());
 		} else {
 			try {
 				BufferedReader issueReader = new BufferedReader(new FileReader(
 					issueFile));
 				String output = issueReader.readLine();
 				if (output == null) {
-					log.warn("The file " + issueFile.getAbsolutePath() + " is empty!");
+					log.warn("The file {} is empty!", issueFile.getAbsolutePath());
 				} else {
 					distribution = output;
 				}
 				issueReader.close();
 			} catch (FileNotFoundException e) {
-				log.error("Unable to read file '" + issueFile.getAbsolutePath() + "'. "
-					+ e);
+				log.error("Unable to read file '{}'. {}", issueFile.getAbsolutePath(), e);
 			} catch (IOException e) {
-				log.error("Unable to read file '" + issueFile.getAbsolutePath() + "'."
-					+ e);
+				log.error("Unable to read file '{}'. {}", issueFile.getAbsolutePath(), e);
 			}
 		}
 		return distribution;
@@ -105,14 +103,14 @@ public class Constants {
 				while (error != null) {
 					error += stdError.readLine();
 				}
-				log.error("Unable to invoke \'uname -ri\' . Standard error : " + error);
+				log.error("Unable to invoke \'uname -ri\' . Standard error : {}", error);
 			} else {
 				String[] fields = output.trim().split(" ");
 				map.put("kernelRelease", fields[0]);
 				map.put("platform", fields[1]);
 			}
 		} catch (IOException e) {
-			log.error("Unable to invoke \'uname -ri\' . IOException " + e);
+			log.error("Unable to invoke \'uname -ri\' . IOException {}", e);
 		}
 		return map;
 	}

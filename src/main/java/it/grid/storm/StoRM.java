@@ -145,10 +145,9 @@ public class StoRM {
 			
 		} catch (StoRMXmlRpcException e) {
 			
-			log.error("Unable to create the XML-RPC Server. StoRMXmlRpcException: "
-				+ e.getMessage());
+			log.error(e.getMessage(), e);
 			
-			throw new RuntimeException("Unable to create the XML-RPC Server", e);
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		
 	}
@@ -281,11 +280,11 @@ public class StoRM {
 		try {
 			RestService.startServer();
 		} catch (IOException e) {
-			log.error("Unable to start internal HTTP Server listening for RESTFul services. IOException : "
-					+ e.getMessage());
-			throw new Exception(
-				"Unable to start internal HTTP Server listening for RESTFul services. IOException : "
-					+ e.getMessage());
+			
+			String emsg = String.format("Unable to start internal HTTP Server "
+				+ "listening for RESTFul services. IOException : %s", e.getMessage());
+			log.error(emsg, e);
+			throw new Exception(emsg);
 		}
 		this.isRestServerRunning = true;
 	}
@@ -301,8 +300,9 @@ public class StoRM {
 
 		} catch (Exception e) {
 
-			log.error("Unable to stop internal HTTP Server listening for RESTFul services: "
-					+ e.getMessage());
+			String emsg = String.format("Unable to stop internal HTTP Server "
+				+ "listening for RESTFul services: %s", e.getMessage());
+			log.error(emsg, e);
 		}
 
 		this.isRestServerRunning = false;
