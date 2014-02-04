@@ -72,10 +72,10 @@ public class ReserveSpaceConverter implements Converter {
 	public InputData convertToInputData(Map inputParam) {
 
 		log
-			.debug("reserveSpaceConverter :Call received :Creation of SpaceResData = "
-				+ inputParam.size());
-		log.debug("reserveSpaceConverter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+			.debug("reserveSpaceConverter :Call received :Creation of SpaceResData = {}"
+				, inputParam.size());
+		log.debug("reserveSpaceConverter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		String memberName = null;
 

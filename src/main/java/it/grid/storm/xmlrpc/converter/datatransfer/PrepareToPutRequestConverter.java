@@ -62,8 +62,8 @@ public class PrepareToPutRequestConverter extends
 			}
 		} catch (IllegalArgumentException e) {
 			log
-				.error("Unable to build PrepareToPutInputData. IllegalArgumentException: "
-					+ e.getMessage());
+				.error("Unable to build PrepareToPutInputData. IllegalArgumentException: {}"
+					, e.getMessage(),e);
 			throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
 		}
 		TLifeTimeInSeconds desiredFileLifetime = TLifeTimeInSeconds.decode(
@@ -94,17 +94,17 @@ public class PrepareToPutRequestConverter extends
 			try {
 				overwriteMode = TOverwriteMode.getTOverwriteMode(overwriteModeString);
 			} catch (IllegalArgumentException e) {
-				log.error("Unable to build TOverwriteMode from \'"
-					+ overwriteModeString + "\'. IllegalArgumentException: "
-					+ e.getMessage());
+				log.error("Unable to build TOverwriteMode from '{}'. IllegalArgumentException: {}"
+					, overwriteModeString
+					, e.getMessage()
+					, e);
 				throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
 			}
 			if (!overwriteMode.equals(TOverwriteMode.EMPTY)) {
 				inputData.setOverwriteMode(overwriteMode);
 			} else {
 				log
-					.warn("Unable to use the received \'" + OVERWRITE_MODE_PARAMETER_NAME
-						+ "\', interpreted as an empty value");
+					.warn("Unable to use the received '{}', interpreted as an empty value" , OVERWRITE_MODE_PARAMETER_NAME);
 			}
 		}
 		log.debug("PrepareToPutInputData Created!");

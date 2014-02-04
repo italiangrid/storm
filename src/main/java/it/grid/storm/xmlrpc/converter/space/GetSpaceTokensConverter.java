@@ -104,7 +104,7 @@ public class GetSpaceTokensConverter implements Converter {
 				ArrayOfTSpaceToken.PNAME_ARRAYOFSPACETOKENS);
 		}
 
-		log.debug("Sending: " + outputParam.toString());
+		log.debug("Sending: {}" , outputParam.toString());
 
 		// Return output Parameter structure
 		return outputParam;

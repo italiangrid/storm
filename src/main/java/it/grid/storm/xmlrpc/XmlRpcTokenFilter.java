@@ -74,8 +74,7 @@ public class XmlRpcTokenFilter implements Filter {
 		if (token == null) {
 
 			log
-				.error("The XML-RPC request security token is missing. The calling "
-					+ "service is probably misconfigured.");
+				.error("The XML-RPC request security token is missing. The calling service is probably misconfigured.");
 
 			((HttpServletResponse) response).getWriter().write(
 				prepareXml("The request security token is missing"));
@@ -87,8 +86,7 @@ public class XmlRpcTokenFilter implements Filter {
 		if (!token.equals(this.secret)) {
 
 			log
-				.error("The XML-RPC request security token does not match. The calling "
-					+ "service is probably misconfigured.");
+				.error("The XML-RPC request security token does not match. The calling service is probably misconfigured.");
 
 			((HttpServletResponse) response).getWriter().write(
 				prepareXml("The request security token does not match"));

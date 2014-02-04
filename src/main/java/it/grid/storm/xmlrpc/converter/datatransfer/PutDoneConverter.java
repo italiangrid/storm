@@ -70,17 +70,17 @@ public class PutDoneConverter extends ManageFileTransferConverter implements
 		try {
 			requestToken = TRequestToken.decode(inputParam,
 				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken=" + requestToken.toString());
+			log.debug("requestToken={}" , requestToken.toString());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			requestToken = null;
-			log.debug("requestToken=NULL" + e);
+			log.debug("requestToken=NULL" , e);
 		}
 
 		ArrayOfSURLs arrayOfSURLs;
 		try {
 			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e) {
-			log.debug("Empty surlArray!");
+			log.debug("Empty surlArray!",e);
 			arrayOfSURLs = null;
 		}
 

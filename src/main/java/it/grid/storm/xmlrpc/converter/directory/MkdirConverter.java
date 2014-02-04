@@ -66,10 +66,10 @@ public class MkdirConverter implements Converter {
 	public InputData convertToInputData(Map inputParam) {
 
 		log
-			.debug("SrmMkdir: Converter :Call received :Creation of MkdirInputData = "
-				+ inputParam.size());
-		log.debug("SrmMkdir: Converter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+			.debug("SrmMkdir: Converter :Call received :Creation of MkdirInputData = {}"
+				, inputParam.size());
+		log.debug("SrmMkdir: Converter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		GridUserInterface guser = GridUserManager.decode(inputParam);
 
@@ -78,7 +78,7 @@ public class MkdirConverter implements Converter {
 		try {
 			surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
 		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMkdir: ErrorCreating surl: " + e1.toString());
+			log.debug("SrmMkdir: ErrorCreating surl: {}" , e1.toString(),e1);
 		}
 
 		MkdirInputData inputData;
