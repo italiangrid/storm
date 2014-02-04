@@ -61,8 +61,9 @@ public class InvalidPtGChunkAttributesException extends
 
 	public String toString() {
 
-		return "Invalid attributes when creating PtGChunk: null-GridUser=" + nullGu
-			+ ", null-RequestSumamryData=" + nullRsd + " null-PtGChunkData="
-			+ nullChunkData + " null-GlobalStatusManager=" + nullGlobalStatusManager;
+		return String.format("Invalid attributes when creating PtGChunk: "
+			+ "null-GridUser=%b, null-RequestSumamryData=%b, null-PtGChunkData=%b, "
+			+ "null-GlobalStatusManager=%b", nullGu, nullRsd, nullChunkData, 
+			nullGlobalStatusManager);
 	}
 }

@@ -83,9 +83,8 @@ public final class PtPFeeder implements Delegable {
 			this.rsd = rsd;
 			gsm = new GlobalStatusManager(rsd.requestToken());
 		} catch (InvalidOverallRequestAttributeException e) {
-			log
-				.error("ATTENTION in PtPFeeder! Programming bug when creating GlobalStatusManager! "
-					+ e);
+			log.error("ATTENTION in PtPFeeder! Programming bug when creating "
+				+ "GlobalStatusManager! {}", e.getMessage());
 			throw new InvalidPtPFeederAttributesException(rsd, gu, null);
 		}
 	}
@@ -96,19 +95,18 @@ public final class PtPFeeder implements Delegable {
 	 */
 	public void doIt() {
 
-		log.debug("PtPFeeder: pre-processing " + rsd.requestToken());
+		log.debug("PtPFeeder: pre-processing {}", rsd.requestToken());
 		/* Get all parts in request */
 		Collection<PtPPersistentChunkData> chunks = PtPChunkCatalog.getInstance()
 			.lookup(rsd.requestToken());
 		if (chunks.isEmpty()) {
-			log
-				.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing to process! "
-					+ rsd.requestToken());
+			log.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing "
+				+ "to process! {}", rsd.requestToken());
 			RequestSummaryCatalog.getInstance().failRequest(rsd,
 				"This SRM put request contained nothing to process!");
 		} else {
 			manageChunks(chunks);
-			log.debug("PtPFeeder: finished pre-processing " + rsd.requestToken());
+			log.debug("PtPFeeder: finished pre-processing {}", rsd.requestToken());
 		}
 	}
 
@@ -120,7 +118,7 @@ public final class PtPFeeder implements Delegable {
 	 */
 	private void manageChunks(Collection<PtPPersistentChunkData> chunksData) {
 
-		log.debug("PtPFeeder: number of chunks in request " + chunksData.size());
+		log.debug("PtPFeeder: number of chunks in request {}", chunksData.size());
 		/* chunk currently being processed */
 		for (PtPPersistentChunkData chunkData : chunksData) {
 			/* add chunk for global status consideration */
@@ -134,8 +132,8 @@ public final class PtPFeeder implements Delegable {
 				 */
 				log.warn("PtPFeeder: srmPtP contract violation! toSURL"
 					+ " does not refer to this machine!");
-				log.warn("Request: " + rsd.requestToken());
-				log.warn("Chunk: " + chunkData);
+				log.warn("Request: {}", rsd.requestToken());
+				log.warn("Chunk: {}", chunkData);
 
 				chunkData.changeStatusSRM_FAILURE("SRM protocol violation!"
 					+ " Cannot do an srmPtP of a SURL that is not local!");
@@ -171,7 +169,8 @@ public final class PtPFeeder implements Delegable {
 				.schedule(new PtPPersistentChunk(rsd, auxChunkData, gsm));
 			log.debug("PtPFeeder - chunk scheduled.");
 		} catch (IllegalArgumentException e) {
-			log.error("Unable to schedule the chunk. IllegalArgumentException: " + e);
+			log.error("Unable to schedule the chunk. IllegalArgumentException: {}", 
+				e.getMessage(), e);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
 				+ " does not allow this chunk to be processed!");
@@ -179,19 +178,18 @@ public final class PtPFeeder implements Delegable {
 			PtPChunkCatalog.getInstance().update(auxChunkData);
 			gsm.failedChunk(auxChunkData);
 		} catch (InvalidRequestAttributesException e) {
-			log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be created!\n"
-				+ e);
+			log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be "
+				+ "created!\n{}", e.getMessage(), e);
 
-			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
-				+ " does not allow this chunk to be processed!");
+			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not "
+				+ "allow this chunk to be processed!");
 
 			PtPChunkCatalog.getInstance().update(auxChunkData);
 			gsm.failedChunk(auxChunkData);
 		} catch (SchedulerException e) {
 			/* Internal error of scheduler! */
-			log
-				.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n"
-					+ e);
+			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be "
+				+ "scheduled!\n{}", e.getMessage(), e);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
 				+ "error prevented this chunk from being processed!");

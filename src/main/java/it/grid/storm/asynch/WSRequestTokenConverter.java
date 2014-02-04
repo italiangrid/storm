@@ -67,9 +67,8 @@ public class WSRequestTokenConverter {
 			return new it.grid.storm.srm.types.TRequestToken(auxString, Calendar
 				.getInstance().getTime());
 		} catch (InvalidTRequestTokenAttributesException e) {
-			log
-				.debug("Unexpected error in WSRequestTokenConverter! This is a programming bug! Could not translate TRequestToken from WS! "
-					+ e);
+			log.debug("Unexpected error in WSRequestTokenConverter! This is a "
+				+ "programming bug! Could not translate TRequestToken from WS! {}", e);
 			throw new WSConversionException(e.toString());
 		}
 	}

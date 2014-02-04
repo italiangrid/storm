@@ -78,20 +78,28 @@ public class GlobalStatusManager {
 	 */
 	synchronized public void addChunk(ChunkData c) {
 
-		log.debug("GlobalStatusManager: asked to add chunkData "
-			+ c.getIdentifier());
-		if ((!finished) && (c != null)) {
-			if (chunks.contains(new Long(c.getIdentifier()))) {
-				log
-					.warn("GlobalStatusManager: chunkData NOT added because of another chunkData already added with the same identifier");
-			} else {
-				chunks.add(new Long(c.getIdentifier()));
-				log.debug("GlobalStatusManager: chunkData added.");
-			}
-		} else {
-			log
-				.warn("GlobalStatusManager: chunkData NOT added because either it is null or finishedAdding has already been invoked!");
+		if (c == null) {
+			log.warn("GlobalStatusManager: chunkData NOT added because it is null!");
+			return;
 		}
+
+		log.debug("GlobalStatusManager: asked to add chunkData {}",
+			c.getIdentifier());
+		
+		if (finished) {
+			log.warn("GlobalStatusManager: chunkData NOT added because finishedAdding "
+				+ "has already been invoked!");
+			return;
+		}
+		
+		if (chunks.contains(new Long(c.getIdentifier()))) {
+			log.warn("GlobalStatusManager: chunkData NOT added because of another "
+				+ "chunkData already added with the same identifier");
+			return;
+		}
+		
+		chunks.add(new Long(c.getIdentifier()));
+		log.debug("GlobalStatusManager: chunkData added.");
 	}
 
 	/**
@@ -103,20 +111,23 @@ public class GlobalStatusManager {
 
 		log.debug("GlobalStatusManager: received finishedAdding signal.");
 		this.finished = true;
-		if (chunks.isEmpty()) {
-			// finishedAdding invoked after _all_ ChunkData were processed!
-			// make final state transition
-			if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-				internal = InternalState.SUCCESS;
-			} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-				internal = InternalState.FAIL;
-			}
-			// save state in persistence
-			log
-				.debug("GlobalStatusManager: since all chunks have been processed, saving final state "
-					+ internal);
-			saveRequestState();
+		
+		if (!chunks.isEmpty()) {
+			log.debug("Empty chunks!");
+			return;
 		}
+		
+		// finishedAdding invoked after _all_ ChunkData were processed!
+		// do final state transition:
+		if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+			internal = InternalState.SUCCESS;
+		} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+			internal = InternalState.FAIL;
+		}
+		// save state in persistence
+		log.debug("GlobalStatusManager: since all chunks have been processed, "
+			+ "saving final state {}", internal);
+		saveRequestState();
 	}
 
 	/**
@@ -127,99 +138,115 @@ public class GlobalStatusManager {
 	 */
 	synchronized public void successfulChunk(ChunkData c) {
 
-		log.debug("GlobalStatusManager: received successfulChunk signal for " + c);
+		log.debug("GlobalStatusManager: received successfulChunk signal for {}", c);
 
-		if (c != null && !chunks.isEmpty()
-			&& chunks.remove(new Long(c.getIdentifier()))) {
+		if (c == null) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a successful Chunk, but it is null!");
+			log.error("Request: {}", rt);
+			log.error("Chunk: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		if (chunks.isEmpty()) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a successful Chunk, but there are actually no Chunks left to "
+				+ "be considered!");
+			log.error("Request: {}", rt);
+			log.error("Chunk: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		boolean removed = chunks.remove(new Long(c.getIdentifier()));
 
-			// manage state transition: c was indeed there
-			if (finished && (chunks.isEmpty())) {
-				// no other chunk will be added to request, and none is left: this was
-				// the last one to be processed!
-				log.debug("GlobalStatusManager: finished and no more chunks left... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.SUCCESS;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.SUCCESS;
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-
-				log.debug("GlobalStatusManager: saving final global state " + internal);
-				saveRequestState();
-
-			} else if (finished && (!chunks.isEmpty())) {
-
-				// no chunk will be added to request, but there are _more_ left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: finished but there are more chunks to be processed... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.INTERMEDIATE_SUCCESS;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.INTERMEDIATE_SUCCESS; // stays the same!
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
-
-			} else if (!finished) {
-
-				// more chunks may be added to request, and it is all the same if there
-				// are or aren't any left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: still not finished adding chunks for consideration, but it is the same whether there are more to be processed or not...");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.INTERMEDIATE_SUCCESS;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.INTERMEDIATE_SUCCESS; // stays the same!
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
-
+		if (!removed) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a successful Chunk, but it was not originally asked to be "
+				+ "considered in the evaluation!");
+			log.error("Request: {}", rt);
+			log.error("Chunk: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		// manage state transition: c was indeed there
+		if (finished && (chunks.isEmpty())) {
+			// no other chunk will be added to request, and none is left: this was
+			// the last one to be processed!
+			log.debug("GlobalStatusManager: finished and no more chunks left... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.SUCCESS;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.SUCCESS;
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
 			} else {
-				// This cannot possibly occur by logic! But there could be
-				// multithreading issues in case of bugs!
-				log
-					.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic codition has materialised: it may be due to multithreading issues! Request is "
-						+ rt);
-				internal = InternalState.ERROR;
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: {}", internal);
+				return;
 			}
+			log.debug("GlobalStatusManager: saving final global state {}", internal);
+			saveRequestState();
+		} else if (finished && (!chunks.isEmpty())) {
+
+			// no chunk will be added to request, but there are _more_ left to be
+			// processed!
+			log.debug("GlobalStatusManager: finished but there are more chunks to be processed... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.INTERMEDIATE_SUCCESS;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.INTERMEDIATE_SUCCESS; // stays the same!
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: {}", internal);
+				return;
+			}
+			log.debug("GlobalStatusManager: transited to {}", internal);
+
+		} else if (!finished) {
+
+			// more chunks may be added to request, and it is all the same if there
+			// are or aren't any left to be processed!
+			log.debug("GlobalStatusManager: still not finished adding chunks for "
+				+ "consideration, but it is the same whether there are more to be "
+				+ "processed or not...");
+			
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.INTERMEDIATE_SUCCESS;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.INTERMEDIATE_SUCCESS; // stays the same!
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: {}", internal);
+				return;
+			}
+			
+			log.debug("GlobalStatusManager: transited to {}", internal);
 
 		} else {
-			// error situation!
-			log
-				.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to signal a successful Chunk, but it is either null, or there are actually no Chunks left to be considered, or it was not originally asked to be considered in the evaluation!");
-			log.error("Request: " + rt);
-			log.error("Chunk: " + c);
-			internal = InternalState.ERROR;
+			// This cannot possibly occur by logic! But there could be
+			// multithreading issues in case of bugs!
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic "
+				+ "condition has materialised: it may be due to multithreading issues! "
+				+ "Request is {}", rt);
+				internal = InternalState.ERROR;
 		}
+
 	}
 
 	/**
@@ -230,88 +257,113 @@ public class GlobalStatusManager {
 	 */
 	synchronized public void failedChunk(ChunkData c) {
 
-		log.debug("GlobalStatusManager: received failedChunk signal for " + c);
-		if ((c != null) && (!chunks.isEmpty())
-			&& chunks.remove(new Long(c.getIdentifier()))) {
-			// manage state transition: c was indeed there
-			if (finished && (chunks.isEmpty())) {
-				// no other chunk will be added to request, and none is left: this was
-				// the last one to be processed!
-				log.debug("GlobalStatusManager: finished and no more chunks left... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.FAIL;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.FAIL;
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: saving final global state " + internal);
-				saveRequestState();
-			} else if (finished && (!chunks.isEmpty())) {
-				// no chunk will be added to request, but there are _more_ left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: finished but there are more chunks to be processed... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.INTERMEDIATE_FAIL;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.INTERMEDIATE_FAIL; // stays the same!
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
-			} else if (!finished) {
-				// more chunks may be added to request, and it is all the same if there
-				// are or arent any left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: still not finished adding chunks for consideration, but it is the same whether there are more to be processed or not...");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.INTERMEDIATE_FAIL;
-				} else if (internal == InternalState.INTERMEDIATE_SUCCESS) {
-					internal = InternalState.PARTIAL;
-				} else if (internal == InternalState.INTERMEDIATE_FAIL) {
-					internal = InternalState.INTERMEDIATE_FAIL; // stays the same!
-				} else if (internal == InternalState.PARTIAL) {
-					internal = InternalState.PARTIAL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
+		log.debug("GlobalStatusManager: received failedChunk signal for {}", c);
+		
+		if (c == null) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a failed Chunk, but it is null!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		if (chunks.isEmpty()) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a failed Chunk, but there are actually no Chunks left to be "
+				+ "considered!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		boolean removed = chunks.remove(new Long(c.getIdentifier()));
+
+		if (!removed) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a successful Chunk, but it was not originally asked to be "
+				+ "considered in the evaluation!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		// manage state transition: c was indeed there
+		if (finished && (chunks.isEmpty())) {
+			// no other chunk will be added to request, and none is left: this was
+			// the last one to be processed!
+			log.debug("GlobalStatusManager: finished and no more chunks left... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.FAIL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.FAIL;
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
 			} else {
-				// This cannot possibly occur by logic! But there could be
-				// multithreading issues in case of bugs!
-				log
-					.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic codition has materialised: it may be due to multithreading issues! Request is "
-						+ rt);
-				internal = InternalState.ERROR;
+				log.error("ERROR in GlobalStatusManager: programming bug! "
+					+ "Unexpected InternalState: {}", internal);
+				return;
 			}
+			log.debug("GlobalStatusManager: saving final global state {}", internal);
+			saveRequestState();
+		} else if (finished && (!chunks.isEmpty())) {
+			// no chunk will be added to request, but there are _more_ left to be
+			// processed!
+			log.debug("GlobalStatusManager: finished but there are more chunks to be "
+				+ "processed... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.INTERMEDIATE_FAIL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.INTERMEDIATE_FAIL; // stays the same!
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected "
+					+ "InternalState: {}", internal);
+				return;
+			}
+			log.debug("GlobalStatusManager: transited to {}", internal);
+		
+		} else if (!finished) {
+			// more chunks may be added to request, and it is all the same if there
+			// are or arent any left to be processed!
+			log.debug("GlobalStatusManager: still not finished adding chunks for "
+				+ "consideration, but it is the same whether there are more to be "
+				+ "processed or not...");
+			
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.INTERMEDIATE_FAIL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_SUCCESS)) {
+				internal = InternalState.PARTIAL;
+			} else if (internal.equals(InternalState.INTERMEDIATE_FAIL)) {
+				internal = InternalState.INTERMEDIATE_FAIL; // stays the same!
+			} else if (internal.equals(InternalState.PARTIAL)) {
+				internal = InternalState.PARTIAL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected "
+					+ "InternalState: {}", internal);
+				return;
+			}
+			log.debug("GlobalStatusManager: transited to " + internal);
+		
 		} else {
-			// error situation!
-			log
-				.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to signal a failed Chunk, but it is either null, or there are actually no Chunks left to be considered, or it was not originally asked to be considered in the evaluation!");
-			log.error("Request: " + rt);
-			log.error("ChunkData: " + c);
+			// This cannot possibly occur by logic! But there could be
+			// multithreading issues in case of bugs!
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic "
+				+ "condition has materialised: it may be due to multithreading issues! "
+				+ "Request is {}", rt);
 			internal = InternalState.ERROR;
 		}
 	}
@@ -325,78 +377,107 @@ public class GlobalStatusManager {
 	 */
 	synchronized public void expiredSpaceLifetimeChunk(ChunkData c) {
 
-		log
-			.debug("GlobalStatusManager: received expiredSpaceLifetimeChunk signal for "
-				+ c);
-		if ((c != null) && (!chunks.isEmpty())
-			&& chunks.remove(new Long(c.getIdentifier()))) {
-			// manage state transition: c was indeed there
-			if (finished && (chunks.isEmpty())) {
-				// no other chunk will be added to request, and none is left: this was
-				// the last one to be processed!
-				log.debug("GlobalStatusManager: finished and no more chunks left... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.SPACEFAIL;
-				} else if (internal == InternalState.SPACEFAIL) {
-					internal = InternalState.SPACEFAIL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: saving final global state " + internal);
-				saveRequestState();
-			} else if (finished && (!chunks.isEmpty())) {
-				// no chunk will be added to request, but there are _more_ left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: finished but there are more chunks to be processed... ");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.SPACEFAIL;
-				} else if (internal == InternalState.SPACEFAIL) {
-					internal = InternalState.SPACEFAIL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
-			} else if (!finished) {
-				// more chunks may be added to request, and it is all the same if there
-				// are or arent any left to be
-				// processed!
-				log
-					.debug("GlobalStatusManager: still not finished adding chunks for consideration, but it is the same whether there are more to be processed or not...");
-				if (internal == InternalState.IN_PROGRESS) {
-					internal = InternalState.SPACEFAIL;
-				} else if (internal == InternalState.SPACEFAIL) {
-					internal = InternalState.SPACEFAIL; // stays the same!
-				} else if (internal == InternalState.ERROR) {
-					internal = InternalState.ERROR; // stays the same!
-				} else {
-					log
-						.error("ERROR in GlobalStatusManager: programming bug! Unexpected InternalState: "
-							+ internal);
-				}
-				log.debug("GlobalStatusManager: transited to " + internal);
+		log.debug("GlobalStatusManager: received expiredSpaceLifetimeChunk signal for {}", c);
+		
+		if (c == null) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a failed Chunk, but it is null!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		if (chunks.isEmpty()) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a failed Chunk, but there are actually no Chunks left to be "
+				+ "considered!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		boolean removed = chunks.remove(new Long(c.getIdentifier()));
+
+		if (!removed) {
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
+				+ "signal a successful Chunk, but it was not originally asked to be "
+				+ "considered in the evaluation!");
+			log.error("Request: {}", rt);
+			log.error("ChunkData: {}", c);
+			internal = InternalState.ERROR;
+			return;
+		}
+		
+		// manage state transition: c was indeed there
+		if (finished && (chunks.isEmpty())) {
+			
+			// no other chunk will be added to request, and none is left: this was
+			// the last one to be processed!
+			log.debug("GlobalStatusManager: finished and no more chunks left... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.SPACEFAIL;
+			} else if (internal.equals(InternalState.SPACEFAIL)) {
+				internal = InternalState.SPACEFAIL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
 			} else {
-				// This cannot possibly occur by logic! But there could be
-				// multithreading issues in case of bugs!
-				log
-					.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic codition has materialised: it may be due to multithreading issues! Request is "
-						+ rt);
-				internal = InternalState.ERROR;
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected "
+					+ "InternalState: {}", internal);
+				return;
 			}
+			log.debug("GlobalStatusManager: saving final global state {}", internal);
+			saveRequestState();
+			
+		} else if (finished && (!chunks.isEmpty())) {
+			
+			// no chunk will be added to request, but there are _more_ left to be
+			// processed!
+			log.debug("GlobalStatusManager: finished but there are more chunks to be "
+				+ "processed... ");
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.SPACEFAIL;
+			} else if (internal.equals(InternalState.SPACEFAIL)) {
+				internal = InternalState.SPACEFAIL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected "
+					+ "InternalState: {}", internal);
+				return;
+			}
+			log.debug("GlobalStatusManager: transited to {}", internal);
+			
+		} else if (!finished) {
+			
+			// more chunks may be added to request, and it is all the same if there
+			// are or arent any left to be processed!
+			log.debug("GlobalStatusManager: still not finished adding chunks for "
+				+ "consideration, but it is the same whether there are more to be "
+				+ "processed or not...");
+	
+			if (internal.equals(InternalState.IN_PROGRESS)) {
+				internal = InternalState.SPACEFAIL;
+			} else if (internal.equals(InternalState.SPACEFAIL)) {
+				internal = InternalState.SPACEFAIL; // stays the same!
+			} else if (internal.equals(InternalState.ERROR)) {
+				internal = InternalState.ERROR; // stays the same!
+			} else {
+				log.error("ERROR in GlobalStatusManager: programming bug! Unexpected "
+					+ "InternalState: {}", internal);
+				return;
+			}
+			
+			log.debug("GlobalStatusManager: transited to {}", internal);
+		
 		} else {
-			// error situation!
-			log
-				.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to signal a space failed Chunk, but it is either null, or there are actually no Chunks left to be considered, or it was not originally asked to be considered in the evaluation!");
-			log.error("Request: " + rt);
-			log.error("ChunkData: " + c);
+			
+			// This cannot possibly occur by logic! But there could be
+			// multithreading issues in case of bugs!
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! An impossible logic "
+				+ "condition has materialised: it may be due to multithreading issues! "
+				+ "Request is {}", rt);
 			internal = InternalState.ERROR;
 		}
 	}
@@ -414,48 +495,48 @@ public class GlobalStatusManager {
 
 			TReturnStatus retstat = null;
 
-			if (internal == InternalState.ERROR) {
+			if (internal.equals(InternalState.ERROR)) {
 
 				updatePinFileLifetime = true;
 				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
 					"Global status cannot be evaluated: single file status must be checked.");
 
-			} else if (internal == InternalState.FAIL) {
+			} else if (internal.equals(InternalState.FAIL)) {
 
 				updatePinFileLifetime = false;
 				retstat = new TReturnStatus(TStatusCode.SRM_FAILURE,
 					"All chunks failed!");
 
-			} else if (internal == InternalState.SUCCESS) {
+			} else if (internal.equals(InternalState.SUCCESS)) {
 
 				updatePinFileLifetime = true;
 				retstat = new TReturnStatus(TStatusCode.SRM_SUCCESS,
 					"All chunks successfully handled!");
 
-			} else if (internal == InternalState.PARTIAL) {
+			} else if (internal.equals(InternalState.PARTIAL)) {
 
 				updatePinFileLifetime = true;
 				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
 					"Some chunks were successful while others failed!");
 
-			} else if (internal == InternalState.SPACEFAIL) {
+			} else if (internal.equals(InternalState.SPACEFAIL)) {
 
 				updatePinFileLifetime = false;
 				retstat = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
 					"Supplied SpaceToken has expired lifetime!");
+
 			} else {
 
 				updatePinFileLifetime = true;
 				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
 					"Global status cannot be evaluated: single file status must be checked.");
-				log
-					.error("ERROR IN GLOBAL STATUS EVALUATION! "
-						+ internal
-						+ " was attempted to be written into persistence, but it is not a final state!");
-				log.error("Request: " + rt);
+				log.error("ERROR IN GLOBAL STATUS EVALUATION! {} was attempted to be "
+					+ "written into persistence, but it is not a final state!", internal);
+				log.error("Request: {}", rt);
+
 			}
 
-			log.debug("GlobalStatusManager: saving into persistence " + retstat);
+			log.debug("GlobalStatusManager: saving into persistence {}", retstat);
 
 			if (updatePinFileLifetime) {
 				RequestSummaryCatalog.getInstance().updateGlobalStatusPinFileLifetime(
@@ -466,9 +547,8 @@ public class GlobalStatusManager {
 			}
 
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.error("ERROR IN GLOBAL STATUS EVALUATION! Could not create a valid TReturnStatus: this is a programming bug! "
-					+ e);
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! Could not create a valid "
+				+ "TReturnStatus: this is a programming bug! {}", e);
 		}
 	}
 

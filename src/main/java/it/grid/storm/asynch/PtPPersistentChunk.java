@@ -89,16 +89,16 @@ public class PtPPersistentChunk extends PtP implements PersistentRequestChunk {
 	@Override
 	public void persistStatus() {
 
-		PtPPersistentChunk.log.debug("Persisting status of request : "
-			+ rsd.requestToken() + " on SURL " + this.requestData.getSURL());
+		PtPPersistentChunk.log.debug("Persisting status of request: {} on SURL {}", 
+			rsd.requestToken(), requestData.getSURL());
 		PtPChunkCatalog.getInstance().update((PtPPersistentChunkData) requestData);
 	}
 
 	@Override
 	public void updateGlobalStatus() {
 
-		PtPPersistentChunk.log.debug("Updating global status for request : "
-			+ rsd.requestToken() + " on SURL " + this.requestData.getSURL());
+		PtPPersistentChunk.log.debug("Updating global status for request: {} on "
+			+ "SURL ", rsd.requestToken(), requestData.getSURL());
 		if (failure) {
 			gsm.failedChunk((PtPPersistentChunkData) requestData);
 		} else {

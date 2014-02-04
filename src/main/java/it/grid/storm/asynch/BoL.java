@@ -45,7 +45,6 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -165,34 +164,32 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 	 */
 	public Boolean completeRequest(TapeRecallStatus recallStatus) {
 
-		boolean requestSuccessfull = false;
-		if (recallStatus == TapeRecallStatus.SUCCESS) {
-			try {
-				if (bupLocalFile.isOnDisk()) {
-					requestData.changeStatusSRM_SUCCESS("File recalled from tape");
-					requestSuccessfull = true;
-				} else {
-					log
-						.error("File "
-							+ bupLocalFile.getAbsolutePath()
-							+ " not found on the disk, but it was reported to be successfully recalled from tape");
-					requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
-				}
-			} catch (FSException e) {
-				log.error("Unable to determine if file "
-					+ bupLocalFile.getAbsolutePath() + " is on disk . FSException : "
-					+ e.getMessage(),e);
-				requestData
-					.changeStatusSRM_FAILURE("Internal error: unable to determine if the file is on disk");
-			}
-		} else {
-			if (recallStatus == TapeRecallStatus.ABORTED) {
-				requestData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
-			} else {
-				requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
-			}
+		if (TapeRecallStatus.ABORTED.equals(recallStatus)) {
+			requestData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
+			return false;
 		}
-		return requestSuccessfull;
+		
+		if (!TapeRecallStatus.SUCCESS.equals(recallStatus)) {
+			requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
+			return false;
+		}
+		
+		try {
+			if (bupLocalFile.isOnDisk()) {
+				requestData.changeStatusSRM_SUCCESS("File recalled from tape");
+				return true;
+			}
+		} catch (FSException e) {
+			log.error("Unable to determine if file {} is on disk. FSException: {}", 
+				bupLocalFile.getAbsolutePath(), e.getMessage(), e);
+			requestData.changeStatusSRM_FAILURE("Unable to determine if file is on disk");
+			return false;
+		}
+		
+		log.error("File {} not found on the disk, but it was reported to be "
+			+ "successfully recalled from tape", bupLocalFile.getAbsolutePath());
+		requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
+		return false;
 	}
 
 	/**
@@ -201,67 +198,67 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 	 */
 	public void doIt() {
 
-		log.debug("Handling BoL chunk for user DN: " + gu.getDn() + "; for SURL: "
-			+ requestData.getSURL());
+		TSURL surl = requestData.getSURL();
+		TRequestToken rToken = requestData.getRequestToken();
+		String user = gu.getDn();
 
-		if (!verifySurlStatusTransition(requestData.getSURL(),
-			requestData.getRequestToken())) {
+		log.debug("Handling BoL chunk for user DN: {}; for SURL: {}", user, surl);
+
+		if (!verifySurlStatusTransition(surl, rToken)) {
 			failure = true;
+			log.info("Unable to perform the BOL request, surl busy");
 			requestData.changeStatusSRM_FILE_BUSY("Requested file is"
 				+ " busy (in an incompatible state with BOL)");
-			log.info("Unable to perform the BOL request, surl busy");
-			printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
+			printOutcome(user, surl, requestData.getStatus());
 			return;
 		}
-		else {
-			StoRI fileStoRI = null;
-			try {
-				fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-					requestData.getSURL(), gu);
-			} catch (IllegalArgumentException e) {
-				failure = true;
-				requestData
-					.changeStatusSRM_INTERNAL_ERROR("Unable to get StoRI for surl "
-						+ requestData.getSURL());
-				log.error("Unable to get StoRI for surl " + requestData.getSURL()
-					+ " IllegalArgumentException: " + e.getMessage());
-			} catch (UnapprochableSurlException e) {
-				requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
-				failure = true;
-				log.info("Unable to build a stori for surl " + requestData.getSURL()
-					+ " for user " + DataHelper.getRequestor(requestData)
-					+ " UnapprochableSurlException: " + e.getMessage());
-			} catch (NamespaceException e) {
-				requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
-				failure = true;
-				log.info("Unable to build a stori for surl " + requestData.getSURL()
-					+ " for user " + DataHelper.getRequestor(requestData)
-					+ " NamespaceException: " + e.getMessage());
-			} catch (InvalidSURLException e) {
-				requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
-				failure = true;
-				log.info("Unable to build a stori for surl " + requestData.getSURL()
-					+ " for user " + DataHelper.getRequestor(requestData)
-					+ " InvalidSURLException: " + e.getMessage());
-			}
-			if (!failure) {
-				SpaceHelper sp = new SpaceHelper();
-				TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
-				SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-				if (spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
-					manageIsPermit(fileStoRI);
-				} else {
-					failure = true;
-					requestData
-						.changeStatusSRM_AUTHORIZATION_FAILURE("Space authoritazion denied "
-							+ requestData.getSURL() + " in Storage Area: " + token);
-					log.debug("Read access to " + requestData.getSURL()
-						+ " in Storage Area: " + token + " denied!");
-				}
+		
+		StoRI fileStoRI = null;
+		try {
+			fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
+		} catch (IllegalArgumentException e) {
+			log.error("Unable to build a stori for surl '{}' and user '{}'. "
+				+ "IllegalArgumentException: {}", surl, user, e.getMessage(), e);
+			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+			failure = true;
+		} catch (UnapprochableSurlException e) {
+			log.info("Unable to build a stori for surl '{}' and user '{}'. "
+				+ "UnapprochableSurlException: {}", surl, user, e.getMessage());
+			requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+			failure = true;
+		} catch (NamespaceException e) {
+			log.error("Unable to build a stori for surl '{}' and user '{}'. "
+				+ "NamespaceException: {}", surl, user, e.getMessage(), e);
+			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+			failure = true;
+		} catch (InvalidSURLException e) {
+			log.info("Unable to build a stori for surl '{}' and user '{}'. "
+				+ "InvalidSURLException: {}", surl, user, e.getMessage());
+			requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+			failure = true;
+		} finally {
+			if (failure) {
+				printOutcome(user, surl, requestData.getStatus());
+				return;
 			}
 		}
-		printOutcome(gu.getDn(), requestData.getSURL(), requestData.getStatus());
+		
+		SpaceHelper sp = new SpaceHelper();
+		TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
+		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+
+		if (!spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
+			String emsg = String.format("Space authorization denied %s"
+				+ " in Storage Area: %s", surl, token);
+			log.debug(emsg);
+			requestData.changeStatusSRM_AUTHORIZATION_FAILURE(emsg);
+			failure = true;
+			printOutcome(user, surl, requestData.getStatus());
+			return;
+		}
+
+		manageIsPermit(fileStoRI);
+		printOutcome(user, surl, requestData.getStatus());
 	}
 
 	@Override
@@ -291,13 +288,9 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 	public boolean isResultSuccess() {
 
-		boolean result = false;
 		TStatusCode statusCode = requestData.getStatus().getStatusCode();
-		if ((statusCode.getValue().equals(TStatusCode.SRM_FILE_PINNED.getValue()))
-			|| requestData.getStatus().isSRM_SUCCESS()) {
-			result = true;
-		}
-		return result;
+		return ((statusCode.equals(TStatusCode.SRM_FILE_PINNED))
+			|| requestData.getStatus().isSRM_SUCCESS());
 	}
 
 	private void backupData(LocalFile localFile) {
@@ -313,74 +306,77 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 		LocalFile localFile = fileStoRI.getLocalFile();
 
 		try {
+
 			if ((!localFile.exists()) || (localFile.isDirectory())) {
-				// File does not exist, or it is a directory! Fail request with
-				// SRM_INVALID_PATH!
-				requestData
-					.changeStatusSRM_INVALID_PATH("The requested file either does not exist, or it is a directory!");
+
+				String emsg = "The requested file either does not exist, or it is a directory!";
+				requestData.changeStatusSRM_INVALID_PATH(emsg);
 				failure = true;
-				log
-					.debug("BoLChunk: the requested file either does not exist, or it is a directory!");
+				log.debug("BoLChunk: {}", emsg);
+				return;
+			} 
+			
+			if (!fileStoRI.getVirtualFileSystem().getStorageClassType()
+				.isTapeEnabled()) {
 
-			} else { // File exists and it is not a directory
-
-				if (fileStoRI.getVirtualFileSystem().getStorageClassType()
-					.isTapeEnabled()) {
-
-					// Compute the Expiration Time in seconds
-					// Add the deferred start time to the expiration date
-					long expDate = (System.currentTimeMillis() / 1000 + (requestData
-						.getLifeTime().value() + requestData.getDeferredStartTime()));
-					StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-
-					// set group permission for tape quota management
-					fileStoRI.setGroupTapeRead();
-					requestData.setFileSize(TSizeInBytes.make(localFile.length(),
-						SizeUnit.BYTES));
-
-					if (isStoriOndisk(fileStoRI)) {
-
-						requestData
-							.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
-
-					} else {
-
-						requestData
-							.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
-
-						String voName = null;
-						if (gu instanceof AbstractGridUser) {
-							voName = ((AbstractGridUser) gu).getVO().getValue();
-						}
-						new TapeRecallCatalog().insertTask(this, voName,
-							localFile.getAbsolutePath());
-						backupData(localFile);
-					}
-				} else {
-					requestData
-						.changeStatusSRM_NOT_SUPPORTED("Tape not supported for this filesystem");
-				}
-
+				String emsg = "Tape not supported for this filesystem";
+				log.debug(emsg);
+				requestData.changeStatusSRM_NOT_SUPPORTED(emsg);
+				return;
 			}
+
+			// Compute the Expiration Time in seconds
+			// Add the deferred start time to the expiration date
+			long expDate = (System.currentTimeMillis() / 1000 + (requestData
+				.getLifeTime().value() + requestData.getDeferredStartTime()));
+			StormEA.setPinned(localFile.getAbsolutePath(), expDate);
+
+			// set group permission for tape quota management
+			fileStoRI.setGroupTapeRead();
+			requestData.setFileSize(TSizeInBytes.make(localFile.length(),
+				SizeUnit.BYTES));
+
+			if (isStoriOndisk(fileStoRI)) {
+
+				requestData
+					.changeStatusSRM_SUCCESS("srmBringOnLine successfully handled!");
+
+			} else {
+
+				requestData
+					.changeStatusSRM_REQUEST_INPROGRESS("Recalling file from tape");
+				String voName = null;
+				if (gu instanceof AbstractGridUser) {
+					voName = ((AbstractGridUser) gu).getVO().getValue();
+				}
+				new TapeRecallCatalog().insertTask(this, voName,
+					localFile.getAbsolutePath());
+				backupData(localFile);
+			}
+
 		} catch (SecurityException e) {
-			// The check for existence of the File failed because there is a
-			// SecurityManager installed that
-			// denies read privileges for that File! Perhaps the local system
-			// administrator of StoRM set
-			// up Java policies that contrast policies described by the
-			// PolicyCollector! There is a conflict here!
+			/*
+			 * The check for existence of the File failed because there is a
+			 * SecurityManager installed that denies read privileges for that File!
+			 * Perhaps the local system administrator of StoRM set up Java policies
+			 * that contrast policies described by the PolicyCollector! There is a
+			 * conflict here!
+			 */
 			requestData
-				.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
+			.changeStatusSRM_FAILURE("StoRM is not allowed to work on requested file!");
 			failure = true;
-			log
-				.error("ATTENTION in BoLChunk! BoLChunk received a SecurityException from Java SecurityManager; StoRM cannot check-existence or check-if-directory for: "
-					+ localFile.toString() + "; exception: " + e);
+			log.error("ATTENTION in BoLChunk! BoLChunk received a SecurityException "
+				+ "from Java SecurityManager; StoRM cannot check-existence or "
+				+ "check-if-directory for: {}; exception: {}", localFile.toString(),
+				e.getMessage(), e);
+			return;
+
 		} catch (Exception e) {
-			requestData
-				.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
+			requestData.changeStatusSRM_FAILURE("StoRM encountered an unexpected error!");
 			failure = true;
-			log.error("ERROR in BoLChunk! StoRM process got an unexpected error! "
-				+ e);
+			log.error("ERROR in BoLChunk! StoRM process got an unexpected error! {}", 
+				e.getMessage(), e);
+			return;
 		}
 	}
 
@@ -388,9 +384,8 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 		if (!storiFile.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 			return true;
-		} else {
-			return storiFile.getLocalFile().isOnDisk();
 		}
+		return storiFile.getLocalFile().isOnDisk();
 	}
 
 	private boolean verifySurlStatusTransition(TSURL surl,
@@ -404,7 +399,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 	private void printOutcome(String dn, TSURL surl, TReturnStatus status) {
 
-		log.info("Finished handling BoL chunk for user DN: " + dn + "; for SURL: "
-			+ surl + "; result is: " + status);
+		log.info("Finished handling BoL chunk for user DN: {}; for SURL: {}; "
+			+ "result is: {}", dn, surl, status);
 	}
 }

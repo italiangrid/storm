@@ -45,7 +45,7 @@ public class InvalidRequestAttributesException extends Exception {
 
 	public String toString() {
 
-		return "Invalid attributes when creating Request: nullGridUser=" + nullGu
-			+ " , nullChunkData=" + nullChunkData;
+		return String.format("Invalid attributes when creating Request: "
+			+ "nullGridUser=%b, nullChunkData=%b", nullGu, nullChunkData);
 	}
 }

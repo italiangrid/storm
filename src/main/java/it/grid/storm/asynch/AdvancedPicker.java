@@ -155,7 +155,7 @@ public class AdvancedPicker {
 		
 		} else {
 		
-			log.info("ADVANCED PICKER: dispatching " + requests.size() + " requests.");
+			log.info("ADVANCED PICKER: dispatching {} requests.", requests.size());
 		
 		}
 		
@@ -207,12 +207,12 @@ public class AdvancedPicker {
 					
 					} else {
 					
-						log.warn("ADVANCED PICKER received request " + rt + " of type "
-							+ rtype + " which is NOT currently supported. Dropping request... ");
+						log.warn("ADVANCED PICKER received request {} of type which is NOT "
+							+ "currently supported. Dropping request... ", rt, rtype);
 						
-						log.warn("ADVANCED PICKER: Beware that the global status of request "
-								+ rt + " will transit to SRM_FAILURE, but each chunk in the request " +
-										"will remain in SRM_REQUEST_QUEUED!");
+						log.warn("ADVANCED PICKER: Beware that the global status of "
+							+ "request {} will transit to SRM_FAILURE, but each chunk in the "
+							+ "request will remain in SRM_REQUEST_QUEUED!", rt);
 						
 						try {
 							
@@ -222,57 +222,59 @@ public class AdvancedPicker {
 						
 						} catch (InvalidTReturnStatusAttributeException ex) {
 							
-							log.error("ADVANCED PICKER! Unable to change global status in DB: " + ex
-								, ex);
+							log.error("ADVANCED PICKER! Unable to change global status in "
+								+ "DB: {}", ex.getMessage(), ex);
 						
 						}
 				
 					}
 				
 				} catch (InvalidPtGFeederAttributesException e) {
+
+					log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created "
+						+ "because of invalid attributes: {}", e.getMessage(), e);
 					
-					log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created because of invalid attributes:\n"
-							+ e,e);
-					
-					log.error("PtG Request is being dropped: " + rsd.requestToken());
+					log.error("PtG Request is being dropped: {}", rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
 						"Internal error does not allow request to be fed to scheduler.");
 				
 				} catch (InvalidPtPFeederAttributesException e) {
 					
-					log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created" +
-							" because of invalid attributes:\n" + e,e);
+					log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created "
+						+ "because of invalid attributes: {}", e.getMessage(),e);
 					
-					log.error("PtP Request is being dropped: " + rsd.requestToken());
+					log.error("PtP Request is being dropped: {}", rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
 						"Internal error does not allow request to be fed to scheduler.");
 				
 				} catch (InvalidCopyFeederAttributesException e) {
-					log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created" +
-							" because of invalid attributes:\n" + e, e);
-					
-					log.error("Copy Request is being dropped: " + rsd.requestToken());
+
+					log.error("ADVANCED PICKER ERROR! CopyFeeder could not be created "
+						+ "because of invalid attributes: {}", e.getMessage(),e);
+
+					log.error("Copy Request is being dropped: {}", rsd.requestToken());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
 						"Internal error does not allow request to be fed to scheduler.");
 				
 				} catch (InvalidBoLFeederAttributesException e) {
-					
-					log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created " +
-							"because of invalid attributes:\n" + e, e);
-					log.error("BoL Request is being dropped: " + rsd.requestToken());
-					
+
+					log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created "
+						+ "because of invalid attributes: {}", e.getMessage(), e);
+
+					log.error("BoL Request is being dropped: {}", rsd.requestToken());
+
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
 						"Internal error does not allow request to be fed to scheduler.");
 				
 				} catch (SchedulerException e) {
 					
-					log.error("ADVANCED PICKER ERROR! The request could not be scheduled" +
-							" because of scheduler errors!\n" + e, e);
-					log.error("ADVANCED PICKER ERROR! Request " + rsd.requestToken()
-						+ " of type " + rsd.requestType() + " dropped.");
+					log.error("ADVANCED PICKER ERROR! The request could not be scheduled"
+						+ "because of scheduler errors: {}", e.getMessage(), e);
+					log.error("ADVANCED PICKER ERROR! Request {} of type {} dropped.",
+						rsd.requestToken(), rsd.requestType());
 					
 					RequestSummaryCatalog.getInstance().failRequest(rsd,
 						"Internal scheduler has problems accepting request feed.");

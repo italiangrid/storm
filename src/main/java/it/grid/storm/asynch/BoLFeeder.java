@@ -123,14 +123,16 @@ public final class BoLFeeder implements Delegable {
 			throw new InvalidBoLFeederAttributesException(rsd, null, null);
 		}
 		try {
+			
 			gu = rsd.gridUser();
 			this.rsd = rsd;
 			gsm = new GlobalStatusManager(rsd.requestToken());
+		
 		} catch (InvalidOverallRequestAttributeException e) {
-			log
-				.error("ATTENTION in BoLFeeder! Programming bug when creating GlobalStatusManager! "
-					+ e);
+			
+			log.error(e.getMessage(), e);
 			throw new InvalidBoLFeederAttributesException(rsd, gu, null);
+		
 		}
 	}
 
@@ -141,7 +143,7 @@ public final class BoLFeeder implements Delegable {
 	 */
 	public void doIt() {
 
-		log.debug("BoLFeeder: pre-processing " + rsd.requestToken());
+		log.debug("BoLFeeder: pre-processing {}", rsd.requestToken());
 		// Get all parts in request
 		Collection<BoLPersistentChunkData> chunks = BoLChunkCatalog.getInstance()
 			.lookup(rsd.requestToken());
@@ -153,7 +155,7 @@ public final class BoLFeeder implements Delegable {
 				"This SRM Get request contained nothing to process!");
 		} else {
 			manageChunks(chunks);
-			log.debug("BoLFeeder: finished pre-processing " + rsd.requestToken());
+			log.debug("BoLFeeder: finished pre-processing {}", rsd.requestToken());
 		}
 	}
 
@@ -163,7 +165,7 @@ public final class BoLFeeder implements Delegable {
 	 */
 	private void manageChunks(Collection<BoLPersistentChunkData> chunks) {
 
-		log.debug("BoLFeeder - number of chunks in request: " + chunks.size());
+		log.debug("BoLFeeder - number of chunks in request: {}", chunks.size());
 		for (BoLPersistentChunkData chunkData : chunks) {
 			/* add chunk for global status consideration */
 			gsm.addChunk(chunkData);
@@ -184,9 +186,9 @@ public final class BoLFeeder implements Delegable {
 				 * fromSURL does _not_ correspond to this installation of StoRM: fail
 				 * chunk!
 				 */
-				log.warn("BoLFeeder: srmBoL contract violation! fromSURL"
-					+ " does not correspond to this machine!\n Request: "
-					+ rsd.requestToken() + "\n Chunk: " + chunkData);
+				log.warn("BoLFeeder: srmBoL contract violation! fromSURL does not "
+					+ "correspond to this machine!\n Request: {}\n Chunk: {}", 
+					rsd.requestToken(), chunkData);
 
 				chunkData.changeStatusSRM_FAILURE("SRM protocol violation! "
 					+ "Cannot do an srmBoL of a SURL that is not local!");
@@ -221,10 +223,10 @@ public final class BoLFeeder implements Delegable {
 			 * for some reason gu, rsd or auxChunkData may be null! This should not be
 			 * so!
 			 */
-			log.error("UNEXPECTED ERROR in BoLFeeder! Chunk could not be created!\n"
-				+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + auxChunkData);
+			log.error("UNEXPECTED ERROR in BoLFeeder! Chunk could not be "
+				+ "created!\n{}", e.getMessage(), e);
+			log.error("Request: {}" + rsd.requestToken());
+			log.error("Chunk: {}" + auxChunkData);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does"
 				+ " not allow this chunk to be processed!");
@@ -233,11 +235,10 @@ public final class BoLFeeder implements Delegable {
 			gsm.failedChunk(auxChunkData);
 		} catch (SchedulerException e) {
 			/* Internal error of scheduler! */
-			log
-				.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n"
-					+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + auxChunkData);
+			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be "
+				+ "scheduled!\n{}", e.getMessage(), e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", auxChunkData);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
 				+ "error prevented this chunk from being processed!");
@@ -254,105 +255,104 @@ public final class BoLFeeder implements Delegable {
 	private void manageIsDirectory(BoLPersistentChunkData chunkData) {
 
 		log.debug("BoLFeeder - pre-processing Directory chunk...");
-		chunkData
-			.changeStatusSRM_REQUEST_INPROGRESS("srmBringOnLine chunk is being processed!");
+		chunkData.changeStatusSRM_REQUEST_INPROGRESS("srmBringOnLine chunk "
+			+ "is being processed!");
 		BoLChunkCatalog.getInstance().update(chunkData);
 
+		TSURL surl = chunkData.getSURL();
+		String user = DataHelper.getRequestor(chunkData);
+
+		StoRI stori = null;
 		try {
-			StoRI stori = null;
-			try {
-				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-					chunkData.getSURL(), gu);
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to build StoRI by SURL and user", e);
-				chunkData
-					.changeStatusSRM_INTERNAL_ERROR("Unable to build StoRI by SURL and user");
+			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
+		} catch (IllegalArgumentException e) {
+			log.error("Unable to build a stori for surl {} for user {}. "
+				+ "IllegalArgumentException: {}", surl, user, e.getMessage(), e);
+			chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+		} catch (UnapprochableSurlException e) {
+			log.info("Unable to build a stori for surl {} for user {}. "
+				+ "UnapprochableSurlException: {}", surl, user, e.getMessage());
+			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+		} catch (NamespaceException e) {
+			log.error("Unable to build a stori for surl {} for user {}. "
+				+ "NamespaceException: {}", surl, user, e.getMessage(), e);
+			chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+		} catch (InvalidSURLException e) {
+			log.info("Unable to build a stori for surl {} for user {}. "
+				+ "InvalidSURLException: {}", surl, user, e.getMessage());
+			chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
+		} finally {
+			if (stori == null) {
+				// failed:
 				BoLChunkCatalog.getInstance().update(chunkData);
-
-				log.debug("ATTENTION in BoLFeeder! BoLFeeder received request"
-					+ " for a SURL and user not recognised by StoRI!");
 				gsm.failedChunk(chunkData);
-			} catch (UnapprochableSurlException e) {
-				chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
-				BoLChunkCatalog.getInstance().update(chunkData);
-				log.info("Unable to build a stori for surl " + chunkData.getSURL()
-					+ " for user " + DataHelper.getRequestor(chunkData)
-					+ " UnapprochableSurlException: " + e.getMessage());
-				gsm.failedChunk(chunkData);
-			} catch (NamespaceException e) {
-				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
-				BoLChunkCatalog.getInstance().update(chunkData);
-				log.info("Unable to build a stori for surl " + chunkData.getSURL()
-					+ " for user " + DataHelper.getRequestor(chunkData)
-					+ " NamespaceException: " + e.getMessage());
-				gsm.failedChunk(chunkData);
-			} catch (InvalidSURLException e) {
-				chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
-				BoLChunkCatalog.getInstance().update(chunkData);
-				log.info("Unable to build a stori for surl " + chunkData.getSURL()
-					+ " for user " + DataHelper.getRequestor(chunkData)
-					+ " InvalidSURLException: " + e.getMessage());
-				gsm.failedChunk(chunkData);
+				return;
 			}
-			if (stori != null) {
-				/* Collection of children! */
-				Collection<StoRI> storiChildren = stori.getChildren(chunkData
-					.getDirOption());
-				log.debug("BoLFeeder - Number of children in parent: "
-					+ storiChildren.size());
+		}
+		
+		try {
+			
+			/* Collection of children! */
+			Collection<StoRI> storiChildren = stori.getChildren(chunkData
+				.getDirOption());
+			log.debug("BoLFeeder - Number of children in parent: {}",
+				storiChildren.size());
+			
+			TDirOption notDir = new TDirOption(false, false, 0);
+			BoLPersistentChunkData childData;
+			
+			for (StoRI storiChild : storiChildren) {
+				try {
+					childData = new BoLPersistentChunkData(chunkData.getRequestToken(),
+						storiChild.getSURL(), chunkData.getLifeTime(), notDir,
+						chunkData.getTransferProtocols(), chunkData.getFileSize(),
+						chunkData.getStatus(), chunkData.getTransferURL(),
+						chunkData.getDeferredStartTime());
 
-				TDirOption notDir = new TDirOption(false, false, 0);
-				BoLPersistentChunkData childData;
-				for (StoRI storiChild : storiChildren) {
-					try {
-						childData = new BoLPersistentChunkData(chunkData.getRequestToken(),
-							storiChild.getSURL(), chunkData.getLifeTime(), notDir,
-							chunkData.getTransferProtocols(), chunkData.getFileSize(),
-							chunkData.getStatus(), chunkData.getTransferURL(),
-							chunkData.getDeferredStartTime());
+					/* fill in new db row and set the PrimaryKey of ChildData! */
+					BoLChunkCatalog.getInstance().addChild(childData);
 
-						/* fill in new db row and set the PrimaryKey of ChildData! */
-						BoLChunkCatalog.getInstance().addChild(childData);
+					log.debug("BoLFeeder - added child data: {}", childData);
+					/* add chunk for global status consideration */
+					gsm.addChunk(childData);
 
-						log.debug("BoLFeeder - added child data: " + childData);
-						/* add chunk for global status consideration */
-						gsm.addChunk(childData);
-
-						manageNotDirectory(childData);
-					} catch (InvalidSurlRequestDataAttributesException e) {
-						/*
-						 * For some reason it was not possible to create a BoLChunkData: it
-						 * is a programme bug!!! It should not occur!!! Log it and skip to
-						 * the next one!
-						 */
-						log.error("ERROR in BoLFeeder! While expanding recursive request"
-							+ ", it was not possible to create a new BoLChunkData! " + e);
+					manageNotDirectory(childData);
+				} catch (InvalidSurlRequestDataAttributesException e) {
+					/*
+					 * For some reason it was not possible to create a BoLChunkData: it
+					 * is a programme bug!!! It should not occur!!! Log it and skip to
+					 * the next one!
+					 */
+					log.error("ERROR in BoLFeeder! While expanding recursive request, "
+						+ "it was not possible to create a new BoLChunkData! {}", 
+						e.getMessage(), e);
 					}
 				}
-				log.debug("BoLFeeder - expansion completed."); // info
+				log.debug("BoLFeeder - expansion completed.");
 				
 				chunkData.changeStatusSRM_SUCCESS("srmBringOnLine with dirOption"
 					+ " set: request successfully expanded!");
 
 				BoLChunkCatalog.getInstance().update(chunkData);
 				gsm.successfulChunk(chunkData);
-			}
+
 		} catch (InvalidTDirOptionAttributesException e) {
+			
 			/* Could not create TDirOption that specifies no-expansion! */
 			chunkData.changeStatusSRM_FAILURE("srmBringOnLine with dirOption set:"
 				+ " expansion failure due to internal error!");
 			BoLChunkCatalog.getInstance().update(chunkData);
 
-			log.error("UNEXPECTED ERROR in BoLFeeder! Could"
-				+ " not create TDirOption specifying non-expansion!\n" + e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + chunkData);
+			log.error("UNEXPECTED ERROR in BoLFeeder! Could not create TDirOption "
+				+ "specifying non-expansion!\n{}", e.getMessage(), e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", chunkData);
 			gsm.failedChunk(chunkData);
+			
 		} catch (InvalidDescendantsEmptyRequestException e) {
 		
-			chunkData
-				.changeStatusSRM_SUCCESS("BEWARE! srmBringOnLine with dirOption set:"
-					+ " it referred to a directory that was empty!");
+			chunkData.changeStatusSRM_SUCCESS("BEWARE! srmBringOnLine with "
+				+ "dirOption set: it referred to a directory that was empty!");
 
 			BoLChunkCatalog.getInstance().update(chunkData);
 
@@ -361,32 +361,34 @@ public final class BoLFeeder implements Delegable {
 			gsm.successfulChunk(chunkData);
 		
 		} catch (InvalidDescendantsPathRequestException e) {
+			
 			/* Attempting to expand non existent directory! */
-			chunkData
-				.changeStatusSRM_INVALID_PATH("srmBringOnLine with dirOption set:"
-					+ " it referred to a non-existent directory!");
+			chunkData.changeStatusSRM_INVALID_PATH("srmBringOnLine with dirOption "
+				+ "set: it referred to a non-existent directory!");
 
 			BoLChunkCatalog.getInstance().update(chunkData);
 
-			log.debug("ATTENTION in BoLFeeder! BoLFeeder received request"
-				+ " to expand non-existing directory.");
+			log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to expand "
+				+ "non-existing directory.");
 			gsm.failedChunk(chunkData);
+			
 		} catch (InvalidDescendantsFileRequestException e) {
+			
 			/* Attempting to expand a file! */
-			chunkData
-				.changeStatusSRM_INVALID_PATH("srmBringOnLine with dirOption set: "
-					+ "a file was asked to be expanded!");
+			chunkData.changeStatusSRM_INVALID_PATH("srmBringOnLine with dirOption "
+				+ "set: a file was asked to be expanded!");
 
 			BoLChunkCatalog.getInstance().update(chunkData);
 
-			log
-				.debug("ATTENTION in BoLFeeder! BoLFeeder received request to expand a file.");
+			log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to expand "
+				+ "a file.");
 			gsm.failedChunk(chunkData);
+		
 		} catch (InvalidDescendantsAuthRequestException e) {
+			
 			/* No rights to directory! */
-			chunkData
-				.changeStatusSRM_AUTHORIZATION_FAILURE("srmBringOnLine with dirOption set:"
-					+ " user has no right to access directory!");
+			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("srmBringOnLine with "
+				+ "dirOption set: user has no right to access directory!");
 
 			BoLChunkCatalog.getInstance().update(chunkData);
 

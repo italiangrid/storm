@@ -66,9 +66,8 @@ public class PtPBuilder {
 			status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,
 				"Synchronous request created");
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.error("Unable to build TReturnStatus. InvalidTReturnStatusAttributeException: "
-					+ e.getMessage());
+			log.error("Unable to build TReturnStatus. "
+				+ "InvalidTReturnStatusAttributeException: {}", e.getMessage());
 			throw new BuilderException(
 				"Error building PtP TReturnStatus. Building failed");
 		}
@@ -88,29 +87,26 @@ public class PtPBuilder {
 			}
 			data.store();
 		} catch (InvalidPtPDataAttributesException e) {
-			log
-				.error("Unable to build PtPChunkData. InvalidPtPChunkDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtPChunkData. "
+				+ "InvalidPtPChunkDataAttributesException: {}", e.getMessage());
 			throw new BuilderException(
 				"Error building PtP PtPChunkData. Building failed");
 		} catch (InvalidFileTransferDataAttributesException e) {
-			log
-				.error("Unable to build PtPChunkData. InvalidFileTransferChunkDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtPChunkData. "
+				+ "InvalidFileTransferChunkDataAttributesException: {}", e.getMessage());
 			throw new BuilderException(
 				"Error building PtP PtPChunkData. Building failed");
 		} catch (InvalidSurlRequestDataAttributesException e) {
-			log
-				.error("Unable to build PtPChunkData. InvalidSurlRequestDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtPChunkData. "
+				+ "InvalidSurlRequestDataAttributesException: ", e.getMessage());
 			throw new BuilderException(
 				"Error building PtP PtPChunkData. Building failed");
 		}
 		try {
 			return new PtP(data);
 		} catch (InvalidRequestAttributesException e) {
-			log.error("Unable to build PtP. InvalidRequestAttributesException: "
-				+ e.getMessage());
+			log.error("Unable to build PtP. "
+				+ "InvalidRequestAttributesException: {}", e.getMessage());
 			throw new BuilderException("Error building PtP. Building failed");
 		}
 	}
