@@ -74,7 +74,7 @@ public class TasksResource {
 		// retrieve the Input String
 		String inputStr = buildInputString(input);
 		
-		log.debug("@PUT (input string) = '" + inputStr + "'");
+		log.debug("@PUT (input string) = '{}'" , inputStr);
 
 		// retrieve the number of tasks to takeover (default = 1)
 		int numbOfTask = 1;
@@ -119,8 +119,8 @@ public class TasksResource {
 			
 			} catch (IllegalArgumentException e) {
 				
-				log.error("Unable to makeOne the task list . IllegalArgumentException : " + e.getMessage());
-				log.error("Erroneous task list (long output): " + groupTaskList.toString());
+				log.error("Unable to makeOne the task list . IllegalArgumentException : {}" , e.getMessage() , e);
+				log.error("Erroneous task list (long output): {}" , groupTaskList.toString());
 				log.error("Skip the erroneous task list and go on...Please contact StoRM support");
 			}
 		}
@@ -130,8 +130,7 @@ public class TasksResource {
 			log.debug("Taking over some multy-group tasks");
 		}
 		
-		log.debug("Number of tasks recalled : <" + groupTasks.size() + "> over <"
-			+ tasks.size() + "> tasks requested");
+		log.debug("Number of tasks recalled : <{}> over <{}> tasks requested" , groupTasks.size() , tasks.size());
 
 		// need a generic entity
 		GenericEntity<List<TapeRecallTO>> entity = 
@@ -188,8 +187,7 @@ public class TasksResource {
 		
 			if (!recallTask.getTaskId().equals(taskId)) {
 			
-				log.error("Received a list of not omogeneous tasks, the taskid \'"
-					+ taskId + "\' is not matched by : " + recallTask.toString());
+				log.error("Received a list of not omogeneous tasks, the taskid '{}' is not matched by : {}" , taskId , recallTask.toString());
 				
 				throw new IllegalArgumentException(
 					"Received a list of not omogeneous tasks");

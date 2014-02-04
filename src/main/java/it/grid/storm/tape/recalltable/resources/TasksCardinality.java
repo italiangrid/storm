@@ -69,11 +69,11 @@ public class TasksCardinality {
 			
 			if (nQueued > 0) {
 			
-				log.info("Number of tasks queued = " + nQueued);
+				log.info("Number of tasks queued = {}" , nQueued);
 			
 			} else {
 				
-				log.trace("Number of tasks queued = " + nQueued);
+				log.trace("Number of tasks queued = {}" , nQueued);
 			}
 			
 			numberQueued += nQueued;
@@ -116,7 +116,7 @@ public class TasksCardinality {
 			
 			nReadyForTakeover = rtCat.getReadyForTakeOver();
 			
-			log.debug("Number of tasks queued = " + nReadyForTakeover);
+			log.debug("Number of tasks queued = {}" , nReadyForTakeover);
 			
 			numberReadyForTakeover += nReadyForTakeover;
 		
