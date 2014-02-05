@@ -144,9 +144,9 @@ public class StoRMCommandServer {
 			
 		} catch (IOException e) {
 			
-			log.error("Could not bind to port {}: {}",
-				new Object[]{listeningPort,e.getMessage()},
-				e);
+			String emsg = String.format("Could not bind to port %d: %s", 
+				listeningPort, e.getMessage());
+			log.error(emsg, e);
 			
 			System.exit(1);
 		}
@@ -164,9 +164,11 @@ public class StoRMCommandServer {
 					}
 				} catch (IOException e) {
 	
-					log
-						.error("UNEXPECTED ERROR! Something went wrong " +
-								"with server.accept(): {}", e.getMessage(), e);
+					String emsg = String.format(
+						"UNEXPECTED ERROR! Something went wrong with server.accept(): %s",
+						e.getMessage());
+					log.error(emsg, e);
+
 					System.exit(1);
 				}
 			}
@@ -294,7 +296,7 @@ public class StoRMCommandServer {
 						// sequence of commands completed
 						break;
 					case UNKNOW:
-						log.warn("Received an unknown command: " + inputLine);
+						log.warn("Received an unknown command: {}", inputLine);
 						acceptCommands = false;
 						// any other command breaks the connection, but the command server
 						// remains on!
@@ -303,15 +305,16 @@ public class StoRMCommandServer {
 						// any other command breaks the connection, but the command server
 						// remains on!
 						acceptCommands = false;
-						log.warn("Received an unknown command: " + inputLine);
+						log.warn("Received an unknown command: {}", inputLine);
 						break;
 					}
 					try {
 						inputLine = in.readLine();
 					} catch (IOException e) {
-						log
-							.error("UNEXPECTED ERROR! Unable to read from the client socket. IOException : "
-								+ e.getMessage());
+
+						String emsg = String.format("UNEXPECTED ERROR! Unable to read from "
+							+ "the client socket. IOException : %s", e.getMessage());
+						log.error(emsg, e);
 						return;
 					}
 				} while (inputLine != null && acceptCommands);
@@ -333,8 +336,11 @@ public class StoRMCommandServer {
 					storm.startXmlRpcServer();
 				}
 			} catch (Exception e) {
-				log.error("Unable to start the xmlrpc server. Exception: "
-					+ e.getMessage(),e);
+
+				String emsg = String.format("Unable to start the xmlrpc server. "
+					+ "Exception: %s", e.getMessage());
+				log.error(emsg, e);
+				
 				stopServices();
 				return false;
 			}
@@ -343,8 +349,11 @@ public class StoRMCommandServer {
 					storm.startRestServer();
 				}
 			} catch (Exception e) {
-				log.error("Unable to start the Rest server. Exception: "
-					+ e.getMessage(),e);
+
+				String emsg = String.format("Unable to start the Rest server. "
+					+ "Exception: %s", e.getMessage());
+				log.error(emsg, e);
+
 				stopServices();
 				return false;
 			}
@@ -384,25 +393,31 @@ public class StoRMCommandServer {
 					out.write(response, 0, response.length());
 					out.newLine();
 				} catch (IOException e) {
-					log
-						.error("UNEXPECTED ERROR! Unable to write on the client socket. IOException : "
-							+ e.getMessage(),e);
+
+					String emsg = String.format("UNEXPECTED ERROR! Unable to write on "
+						+ "the client socket. IOException : %s", e.getMessage());
+					log.error(emsg, e);
+
 				}
 				try {
 					out.close();
 					in.close();
 				} catch (IOException e) {
-					log
-						.error("UNEXPECTED ERROR! Unable to close client socket streams. IOException : "
-							+ e.getMessage(),e);
+
+					String emsg = String.format("UNEXPECTED ERROR! Unable to close client "
+						+ "socket streams. IOException : %s", e.getMessage());
+					log.error(emsg, e);
+
 				}
 			} finally {
 				try {
 					socket.close();
 				} catch (IOException e) {
-					log
-						.error("UNEXPECTED ERROR! Unable to close client socket. IOException : "
-							+ e.getMessage(),e);
+
+					String emsg = String.format("UNEXPECTED ERROR! Unable to close client "
+						+ "socket. IOException : %s", e.getMessage());
+					log.error(emsg, e);
+
 				}
 			}
 		}
@@ -507,16 +522,17 @@ public class StoRMCommandServer {
 			configurationPathname = args[0];
 			
 			log.info("StoRMCommandServer invoked with two parameters.");
-			log.info("Configuration file: " + configurationPathname);
+			log.info("Configuration file: {}", configurationPathname);
 		
 			try {
 			
 				refresh = Integer.parseInt(args[1]);
-				log.info("Configuration file refresh rate: " + refresh + " seconds");
+				log.info("Configuration file refresh rate: {} seconds", refresh);
 			
 			} catch (NumberFormatException e) {
 				
-				log.error("Configuration file refresh rate: NOT an integer! Disabling refresh by default!");
+				log.error("Configuration file refresh rate: NOT an integer! "
+					+ "Disabling refresh by default!", e);
 			}
 		} else {
 			

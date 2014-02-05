@@ -100,52 +100,48 @@ public class SRM22Client implements SRMClient {
 			srmClientStubs.SrmPrepareToPutRequest req = new srmClientStubs.SrmPrepareToPutRequest(); // srm
 																																																// request
 			// set description
-			log.debug("NAIVE SRM CLIENT; setting description to: " + description);
+			log.debug("NAIVE SRM CLIENT; setting description to: {}", description);
 			req.setUserRequestDescription(description);
 			// set array of transfer protocols
 			String[] protocolArray = new String[1];
 			protocolArray[0] = protocol.toString();
-			log
-				.debug("NAIVE SRM CLIENT; setting protocol array to: " + protocolArray);
+			log.debug("NAIVE SRM CLIENT; setting protocol array to: {}", (Object[]) protocolArray);
 			srmClientStubs.ArrayOfString protocolArrayString = new srmClientStubs.ArrayOfString();
 			protocolArrayString.setStringArray(protocolArray);
 			srmClientStubs.TTransferParameters stubtp = new srmClientStubs.TTransferParameters();
 			stubtp.setArrayOfTransferProtocols(protocolArrayString);
 			req.setTransferParameters(stubtp);
 			// set Overwrite Option
-			log.debug("NAIVE SRM CLIENT; setting overwrite option to: "
-				+ overwriteOption);
+			log.debug("NAIVE SRM CLIENT; setting overwrite option to: {}", overwriteOption);
 			req.setOverwriteOption(new WSOverwriteModeConverter()
 				.fromStoRM(overwriteOption));
 			// set retry time
 			Integer dtrt = new Integer(new Long(retryTime.value()).intValue());
-			log
-				.debug("NAIVE SRM CLIENT; setting desired total request time: " + dtrt);
+			log.debug("NAIVE SRM CLIENT; setting desired total request time: {}", dtrt);
 			req.setDesiredTotalRequestTime(dtrt);
 
 			// set storage type
 			srmClientStubs.TFileStorageType stubfst = new WSFileStorageTypeConverter()
 				.fromStoRM(fileStorageType); // ws file storage type!
-			log.debug("NAIVE SRM CLIENT; setting file storage type to: "
-				+ fileStorageType);
+			log.debug("NAIVE SRM CLIENT; setting file storage type to: {}", fileStorageType);
 			req.setDesiredFileStorageType(stubfst);
 			// set space token
 			if (!spaceToken.isEmpty()) {
 				String st = spaceToken.toString();
-				log.debug("NAIVE SRM CLIENT; setting space token to: " + st);
+				log.debug("NAIVE SRM CLIENT; setting space token to: {}", st);
 				req.setTargetSpaceToken(st);
 			} else {
 				log.debug("NAIVE SRM CLIENT; setting space token to null. ");
 			}
 			// set lifetime
 			Integer dflt = new Integer(new Long(lifetime.value()).intValue());
-			log.debug("NAIVE SRM CLIENT; setting desired file life time to: " + dflt);
+			log.debug("NAIVE SRM CLIENT; setting desired file life time to: {}", dflt);
 			req.setDesiredFileLifeTime(dflt);
 
 			// set pinLifetime
 			Integer dplt = new Integer(Configuration.getInstance()
 				.getSRM22ClientPinLifeTime());
-			log.debug("NAIVE SRM CLIENT; setting desired pin life time to: " + dplt);
+			log.debug("NAIVE SRM CLIENT; setting desired pin life time to: {}", dplt);
 			req.setDesiredPinLifeTime(dplt);
 
 			// set request specific info
@@ -155,7 +151,7 @@ public class SRM22Client implements SRMClient {
 																																											// request!
 			// set file size
 			long efs = filesize.value();
-			log.debug("NAIVE SRM CLIENT; setting expected file size to: " + efs);
+			log.debug("NAIVE SRM CLIENT; setting expected file size to: {}", efs);
 			// FIXME here we can have -1, that means the absence of information about
 			// filesize. manage this case considering the following method!
 			org.apache.axis.types.UnsignedLong ulFileSize = new org.apache.axis.types.UnsignedLong(
@@ -163,7 +159,7 @@ public class SRM22Client implements SRMClient {
 			stubpfr.setExpectedFileSize(ulFileSize);
 			// set target SURL
 			String ts = toSURL.toString();
-			log.debug("NAIVE SRM CLIENT; setting target SURL to: " + ts);
+			log.debug("NAIVE SRM CLIENT; setting target SURL to: {}", ts);
 			stubpfr.setTargetSURL(new org.apache.axis.types.URI(ts));
 
 			// set array of requests
@@ -179,10 +175,10 @@ public class SRM22Client implements SRMClient {
 			req.setArrayOfFileRequests(arrayOfPut);
 
 			// execute request!
-			log.debug("NAIVE SRM CLIENT: sending request " + arrayOfPut);
+			log.debug("NAIVE SRM CLIENT: sending request {}", arrayOfPut);
 			srmClientStubs.SrmPrepareToPutResponse response = _srm
 				.srmPrepareToPut(req);
-			log.debug("NAIVE SRM CLIENT: received reply " + response);
+			log.debug("NAIVE SRM CLIENT: received reply {}", response);
 
 			// get overall request status
 			if (response == null) {
@@ -307,10 +303,10 @@ public class SRM22Client implements SRMClient {
 			req.setArrayOfTargetSURLs(arrayOfTSURL);
 
 			// execute request
-			log.debug("NAIVE SRM CLIENT: invoking status of put with " + req);
+			log.debug("NAIVE SRM CLIENT: invoking status of put with {}", req);
 			srmClientStubs.SrmStatusOfPutRequestResponse response = _srm
 				.srmStatusOfPutRequest(req);
-			log.debug("NAIVE SRM CLIENT: received response " + response);
+			log.debug("NAIVE SRM CLIENT: received response {}", response);
 
 			// get overall request status
 			if (response == null) {
@@ -442,9 +438,9 @@ public class SRM22Client implements SRMClient {
 			req.setArrayOfSURLs(arrayOfTSURL);
 
 			// execute request
-			log.debug("NAIVE SRM CLIENT: invoking srmPutDone with " + req);
+			log.debug("NAIVE SRM CLIENT: invoking srmPutDone with {}", req);
 			srmClientStubs.SrmPutDoneResponse response = _srm.srmPutDone(req);
-			log.debug("NAIVE SRM CLIENT: received response " + response);
+			log.debug("NAIVE SRM CLIENT: received response {}", response);
 
 			// get overall request status
 			if (response == null) {
@@ -579,7 +575,7 @@ public class SRM22Client implements SRMClient {
 
 		// set proxy in stub
 		if (((AbstractGridUser) gu).getUserCredentials() == null) {
-			log.error("ERROR in NaiveSRMClient! No proxy present for " + gu.getDn());
+			log.error("ERROR in NaiveSRMClient! No proxy present for {}", gu.getDn());
 		}
 		InputStream proxy = new ByteArrayInputStream(((AbstractGridUser) gu)
 			.getUserCredentials().getBytes()); // String containing the proxy seen as

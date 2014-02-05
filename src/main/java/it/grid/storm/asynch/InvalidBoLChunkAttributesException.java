@@ -55,8 +55,9 @@ public class InvalidBoLChunkAttributesException extends Exception {
 
 	public String toString() {
 
-		return "Invalid attributes when creating BoLChunk: nullGridUser=" + nullGu
-			+ ", nullRequestSumamryData=" + nullRsd + "nullBoLChunkData="
-			+ nullChunkData + "nullGlobalStatusManager=" + nullGlobalStatusManager;
+		return String.format("Invalid attributes when creating BoLChunk: "
+			+ "nullGridUser=%b; nullRequestSumamryData=%b; nullBoLChunkData=%b; "
+			+ "nullGlobalStatusManager=%b" ,nullGu, nullRsd, nullChunkData, 
+			nullGlobalStatusManager);
 	}
 }

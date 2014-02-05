@@ -128,15 +128,13 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
 		persistStatus();
 		if (requestSuccessfull) {
 			gsm.successfulChunk((BoLPersistentChunkData) requestData);
-			log.info("Completed BoL request (" + rsd.requestToken()
-				+ "), file successfully recalled from tape: "
-				+ requestData.getSURL().toString());
+			log.info(
+				"Completed BoL request ({}), file successfully recalled from tape: {}",
+				rsd.requestToken(), requestData.getSURL().toString());
 		} else {
 			gsm.failedChunk((BoLPersistentChunkData) requestData);
-			log
-				.error("BoL request (" + requestData.getRequestToken()
-					+ "), file not recalled from tape: "
-					+ requestData.getSURL().toString());
+			log.error("BoL request ({}), file not recalled from tape: {}",
+				requestData.getRequestToken(), requestData.getSURL().toString());
 		}
 		return requestSuccessfull;
 	}
@@ -148,8 +146,8 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
 	@Override
 	public String getName() {
 
-		return "BoLChunk of request " + rsd.requestToken() + " for SURL "
-			+ requestData.getSURL();
+		return String.format("BoLChunk of request %s for SURL %s",
+			rsd.requestToken(), requestData.getSURL());
 	}
 
 	public String getRequestToken() {
@@ -167,12 +165,15 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
 		 * a SUCCESS in the corresponding row (and the file will have been
 		 * recalled).
 		 */
-		if (requestData.getStatus().getStatusCode() != TStatusCode.SRM_REQUEST_INPROGRESS) {
-			if (failure) {
-				gsm.failedChunk((BoLPersistentChunkData) requestData);
-			} else {
-				gsm.successfulChunk((BoLPersistentChunkData) requestData);
-			}
+		if (TStatusCode.SRM_REQUEST_INPROGRESS.equals(requestData.getStatus()
+			.getStatusCode())) {
+			
+			return;
+		}
+		if (failure) {
+			gsm.failedChunk((BoLPersistentChunkData) requestData);
+		} else {
+			gsm.successfulChunk((BoLPersistentChunkData) requestData);
 		}
 	}
 

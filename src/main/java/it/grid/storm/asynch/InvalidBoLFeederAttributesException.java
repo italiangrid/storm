@@ -51,8 +51,8 @@ public class InvalidBoLFeederAttributesException extends Exception {
 
 	public String toString() {
 
-		return "null-RequestSummaryData=" + nullRequestSummaryData
-			+ "; null-GridUser=" + nullGridUser + "; null-GlobalStatusManagerr="
-			+ nullGlobalStatusManager;
+		return String.format("null-RequestSummaryData=%b; null-GridUser=%b; "
+			+ "null-GlobalStatusManager=%b", nullRequestSummaryData, nullGridUser, 
+			nullGlobalStatusManager);
 	}
 }
