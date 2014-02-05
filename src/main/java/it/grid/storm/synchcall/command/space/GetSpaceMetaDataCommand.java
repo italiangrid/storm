@@ -61,14 +61,10 @@ import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 
 public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
-	public static final Logger log = LoggerFactory.getLogger(GetSpaceMetaDataCommand.class);
+	public static final Logger log = LoggerFactory
+	  .getLogger(GetSpaceMetaDataCommand.class);
 	
 	private ReservedSpaceCatalog catalog = null;
-
-	private static final boolean SUCCESS = true;
-	private static final boolean FAILURE = false;
-	private static final boolean GLOBALSTATUS = true;
-	private static final boolean LOCALSTATUS = false;
 
 	private static final String SRM_COMMAND = "srmGetSpaceMetaData";
 
@@ -116,9 +112,8 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 			try {
 				spaceData = catalog.getStorageSpace(token);
 			} catch (TransferObjectDecodingException e) {
-				log
-					.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-						+ e.getMessage());
+				log.error("Error getting storage space data for token {}. {}",
+				  token, e.getMessage(),e);
 				metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
 					"Error building space data from row DB data", data.getUser());
 				errorCount++;
@@ -126,8 +121,8 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 				continue;
 
 			} catch (DataAccessException e) {
-				log.error("Unable to build get StorageSpaceTO. DataAccessException: "
-					+ e.getMessage());
+				log.error("Error getting storage space data for token {}. {}",
+				  token, e.getMessage(),e);
 				metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
 					"Error retrieving row space token data from DB", data.getUser());
 				errorCount++;
@@ -136,9 +131,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 			}
 			if (spaceData != null) {
 				if (!spaceData.isInitialized()) {
-					log
-						.warn("Unable to create a valid TMetaDataSpace for storage space token \'"
-							+ token + "\', the space is not initialized");
+					log.warn("Uninitialized storage data found for token {}", token);
 					metadata = createFailureMetadata(token, TStatusCode.SRM_FAILURE,
 						"Storage Space not initialized yet", data.getUser());
 					errorCount++;
@@ -146,18 +139,14 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 					try {
 						metadata = new TMetaDataSpace(spaceData);
 					} catch (InvalidTMetaDataSpaceAttributeException e) {
-						log
-							.error("Unable to build TMetaDataSpace from  StorageSpaceData. InvalidTMetaDataSpaceAttributeException: "
-								+ e.getMessage());
+						log.error("Metadata error. {}", e.getMessage(), e);
 						metadata = createFailureMetadata(token,
 							TStatusCode.SRM_INTERNAL_ERROR,
 							"Error building Storage Space Metadata from row data",
 							data.getUser());
 						errorCount++;
 					} catch (InvalidTSizeAttributesException e) {
-						log
-							.error("Unable to build TMetaDataSpace from  StorageSpaceData. InvalidTSizeAttributesException: "
-								+ e.getMessage());
+						log.error("Metadata error. {}", e.getMessage(), e);
 						metadata = createFailureMetadata(token,
 							TStatusCode.SRM_INTERNAL_ERROR,
 							"Error building Storage Space Metadata from row data",
@@ -166,8 +155,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 					}
 				}
 			} else {
-				log.warn("getMetaDataSpace: unable to retrieve SpaceData for token: "
-					+ token);
+				log.warn("Unable to retrieve space data for token {}.",token);
 				metadata = createFailureMetadata(token,
 					TStatusCode.SRM_INVALID_REQUEST, "Space Token not found",
 					data.getUser());
@@ -179,39 +167,50 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 		boolean requestSuccess = (errorCount == 0);
 		boolean requestFailure = (errorCount == data.getSpaceTokenArray().size());
 
-		// Create Global Status Response
 		try {
 			if (requestSuccess) {
 				globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
-				log.info(formatLogMessage(SUCCESS, GLOBALSTATUS, data.getUser(), null,
-					data.getSpaceTokenArray(), globalStatus));
+
+				log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+				  + "done succesfully with: [status: {}]",
+				  data.getUser(),
+				  data.getSpaceTokenArray(),
+				  globalStatus);
+
 			} else {
 				if (requestFailure) {
 					globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
 						"No valid space tokens");
-					log.info(formatLogMessage(FAILURE, GLOBALSTATUS, data.getUser(),
-						null, data.getSpaceTokenArray(), globalStatus));
+
+					log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+					  + "failed with: [status: {}]",
+					  data.getUser(),
+					  data.getSpaceTokenArray(),
+					  globalStatus);
+
 				} else {
+
 					globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
 						"Check space tokens statuses for details");
-					log.info(formatLogMessage(SUCCESS, GLOBALSTATUS, data.getUser(),
-						null, data.getSpaceTokenArray(), globalStatus));
+
+					log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+					  + "partially done with: [status: {}]",
+					  data.getUser(),
+					  data.getSpaceTokenArray(),
+					  globalStatus);
+
 				}
 			}
 		} catch (InvalidTReturnStatusAttributeException ex) {
-			log.error("srmGetSpaceMetaData: Impossible is happen!!", ex);
+		  log.error(ex.getMessage(),ex);
 			return new GetSpaceMetaDataOutputData();
 		}
 
-		log.debug("<GetSpaceMetaData > all value retrived...");
 		GetSpaceMetaDataOutputData response = null;
 		try {
 			response = new GetSpaceMetaDataOutputData(globalStatus, arrayData);
 		} catch (InvalidGetSpaceMetaDataOutputAttributeException e) {
-			// never thrown
-			log
-				.error("Unexpected InvalidGetSpaceMetaDataOutputAttributeException in execute : "
-					+ e.getMessage());
+		  log.error(e.getMessage(),e);
 		}
 		return response;
 	}
@@ -221,16 +220,13 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
 		TMetaDataSpace metadata = TMetaDataSpace.makeEmpty();
 		metadata.setSpaceToken(token);
+
 		try {
 			metadata.setStatus(new TReturnStatus(statusCode, message));
 		} catch (InvalidTReturnStatusAttributeException e) {
-			// never thrown
-			log
-				.error("Unexpected InvalidTReturnStatusAttributeException in execute : "
-					+ e);
+		  log.error(e.getMessage(),e);
 		}
-		log.error(formatLogMessage(SUCCESS, LOCALSTATUS, user, token, null,
-			metadata.getStatus()));
+		
 		return metadata;
 	}
 
