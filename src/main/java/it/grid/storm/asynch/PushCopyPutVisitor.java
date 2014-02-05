@@ -46,7 +46,7 @@ public class PushCopyPutVisitor implements CopyVisitor {
 					.getRequestData().getSpaceToken(), getFileSize,
 					TransferProtocol.GSIFTP, "StoRM Remote PtP for (push) srmCopy", copy
 						.getRequestData().getOverwriteOption(), retryTime);
-				copy.getLog().debug("... got it! Reply was: " + reply);
+				copy.getLog().debug("... got it! Reply was: {}", reply);
 				// Polling...
 				long timeOut = new Date().getTime()
 					+ Configuration.getInstance().getSRMClientPutTimeOut() * 1000;
@@ -69,20 +69,17 @@ public class PushCopyPutVisitor implements CopyVisitor {
 							.getDestinationSURL());
 						replyCode = statusOfPutRequestReply.returnStatus().getStatusCode();
 						timedOut = (new Date().getTime() > timeOut);
-						copy.getLog().debug(
-							"PUSH COPY CHUNK: reply was " + statusOfPutRequestReply
-								+ "; the reply code was: " + replyCode + "; timedOut is:"
-								+ timedOut);
+						copy.getLog().debug("PUSH COPY CHUNK: reply was {}; the reply code "
+							+ "was: {}; timedOut is: {}", statusOfPutRequestReply, replyCode, 
+							timedOut);
 					} while (((replyCode == TStatusCode.SRM_REQUEST_QUEUED)
-						|| (replyCode == TStatusCode.SRM_REQUEST_INPROGRESS) || (replyCode == TStatusCode.SRM_INTERNAL_ERROR))
+						|| (replyCode == TStatusCode.SRM_REQUEST_INPROGRESS) 
+						|| (replyCode == TStatusCode.SRM_INTERNAL_ERROR))
 						&& !timedOut);
 				} catch (SRMClientException e2) {
 					// The SRMClient statusOfPutRequest functionality failed!
-					copy
-						.getLog()
-						.error(
-							"ERROR IN PushCopyChunk! PutOperation failed: SRMClient could not do an srmStatusOfPutRequest! "
-								+ e2);
+					copy.getLog().error("ERROR IN PushCopyChunk! PutOperation failed: "
+						+ "SRMClient could not do an srmStatusOfPutRequest! {}", e2);
 					StringBuffer sb = new StringBuffer();
 					sb.append("Parameters passed to client: ");
 					sb.append("requestToken: ");
@@ -109,9 +106,8 @@ public class PushCopyPutVisitor implements CopyVisitor {
 						ResultType.PUT);
 				}
 				// The remote operation completed!!!
-				copy.getLog().debug(
-					"PushCopyChunk! The PutOperation completed! "
-						+ statusOfPutRequestReply.returnStatus());
+				copy.getLog().debug("PushCopyChunk! The PutOperation completed! {}", 
+					statusOfPutRequestReply.returnStatus());
 				ArrayList<Object> parameters = new ArrayList<Object>(3);
 				parameters.add(1, statusOfPutRequestReply.returnStatus());
 				parameters.add(2, statusOfPutRequestReply.toTURL());
@@ -119,11 +115,8 @@ public class PushCopyPutVisitor implements CopyVisitor {
 				return copy.buildOperationResult(parameters, ResultType.PUT);
 			} catch (SRMClientException e1) {
 				// The SRMClient prepareToPut functionality failed!
-				copy
-					.getLog()
-					.error(
-						"ERROR IN PushCopyChunk! PutOperation failed: SRMClient could not do an srmPrepareToPut! "
-							+ e1);
+				copy.getLog().error("ERROR IN PushCopyChunk! PutOperation failed: "
+					+ "SRMClient could not do an srmPrepareToPut! {}", e1);
 				StringBuffer sb = new StringBuffer();
 				sb.append("Parameters passed to client: ");
 				sb.append("GridUser:");
@@ -161,11 +154,8 @@ public class PushCopyPutVisitor implements CopyVisitor {
 					"SRMClient failure! Could not do an srmPrepareToPut! " + e1,
 					ResultType.PUT);
 			} catch (NoSRMClientFoundException e1) {
-				copy
-					.getLog()
-					.error(
-						"ERROR IN PushCopyChunk! Cannot call remote SRM server because no SRM client could be loaded! "
-							+ e1, ResultType.PUT);
+				copy.getLog().error("ERROR IN PushCopyChunk! Cannot call remote SRM "
+					+ "server because no SRM client could be loaded! {}", e1, ResultType.PUT);
 				return copy
 					.buildOperationResult(
 						"Cannot talk to other SRM server because no SRM client could be loaded!",
@@ -174,8 +164,8 @@ public class PushCopyPutVisitor implements CopyVisitor {
 		} catch (IllegalArgumentException e3) {
 			// Cannot create TLifeTimeInSeconds! This is a programming bug and should
 			// not occur!!!
-			copy.getLog().error(
-				"ERROR IN PushCopyChunk! Cannot create TLifeTimeInSeconds! " + e3);
+			copy.getLog().error("ERROR IN PushCopyChunk! Cannot create "
+				+ "TLifeTimeInSeconds! {}", e3.getMessage(), e3);
 			return copy.buildOperationResult(e3.toString(), ResultType.PUT);
 		}
 	}

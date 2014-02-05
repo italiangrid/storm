@@ -56,8 +56,8 @@ public class InvalidPersistentRequestAttributesException extends
 
 	public String toString() {
 
-		return "Invalid attributes when creating Chunk: nullGridUser=" + nullGu
-			+ ", nullRequestSumamryData=" + nullRsd + " , nullChunkData="
-			+ nullChunkData + " , nullGsm=" + nullGsm;
+		return String.format("Invalid attributes when creating Chunk: "
+			+ "nullGridUser=%b, nullRequestSumamryData=%b, nullChunkData=%b, "
+			+ "nullGsm=%b", nullGu, nullRsd, nullChunkData, nullGsm);
 	}
 }

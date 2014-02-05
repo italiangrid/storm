@@ -98,17 +98,13 @@ public class PushCopyTransferVisitor implements CopyVisitor {
 						.getRequestData().getDestinationSURL());
 					replyCode = reply.overallRetStat().getStatusCode();
 					timedOut = (new Date().getTime() > timeOut);
-					copy.getLog().debug(
-						"PUSH COPY CHUNK: reply was " + reply + "; the reply code was: "
-							+ replyCode + "; timedOut is:" + timedOut);
+					copy.getLog().debug("PUSH COPY CHUNK: reply was {}; the reply code "
+						+ "was: {}; timedOut is: {}", reply, replyCode, timedOut);
 				} while ((replyCode == TStatusCode.SRM_INTERNAL_ERROR) && !timedOut);
 			} catch (SRMClientException e2) {
 				// The SRMClient putDone functionality failed!
-				copy
-					.getLog()
-					.error(
-						"File transfer completed successfully, but problems were encountered performing final srmPutDone! "
-							+ e2);
+				copy.getLog().error("File transfer completed successfully, but problems "
+					+ "were encountered performing final srmPutDone! {}", e2);
 				StringBuffer sb = new StringBuffer();
 				sb.append("Parameters passed to client: ");
 				sb.append(", ");
@@ -139,24 +135,19 @@ public class PushCopyTransferVisitor implements CopyVisitor {
 			return copy.buildOperationResult(new ArrayList<Object>(0),
 				ResultType.TRANSFER);
 		} catch (NoSRMClientFoundException e) {
-			copy
-				.getLog()
-				.error(
-					"ERROR IN PushCopyChunk! TransferOperation could not invoke srmPutDone on remote SRM server because no SRM client could be loaded! "
-						+ e);
+			copy.getLog().error("ERROR IN PushCopyChunk! TransferOperation could not "
+				+ "invoke srmPutDone on remote SRM server because no SRM client could "
+				+ "be loaded! {}", e);
 			return copy
 				.buildOperationResult(
 					"TransferOperation could not invoke srmPutDone on remote SRM server because no SRM client could be loaded!",
 					ResultType.TRANSFER);
 		} catch (GridFTPTransferClientException e) {
-			copy.getLog().error("ERROR IN PushCopyChunk! File transfer failed! " + e);
+			copy.getLog().error("ERROR IN PushCopyChunk! File transfer failed! {}", e);
 			return copy.buildOperationResult(e.toString(), ResultType.TRANSFER);
 		} catch (NoGridFTPTransferClientFoundException e) {
-			copy
-				.getLog()
-				.error(
-					"ERROR IN PushCopyChunk! Cannot transfer file because no transfer client could be loaded! "
-						+ e);
+			copy.getLog().error("ERROR IN PushCopyChunk! Cannot transfer file because "
+				+ "no transfer client could be loaded! {}", e);
 			return copy.buildOperationResult(
 				"Cannot transfer file because no transfer client could be loaded!",
 				ResultType.TRANSFER);

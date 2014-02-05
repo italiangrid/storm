@@ -25,11 +25,10 @@
  */
 package it.grid.storm.srm.types;
 
-import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.Map;
+import it.grid.storm.common.types.SizeUnit;
 
-import it.grid.storm.common.types.*;
+import java.io.Serializable;
+import java.util.Map;
 
 public class TSizeInBytes implements Serializable {
 

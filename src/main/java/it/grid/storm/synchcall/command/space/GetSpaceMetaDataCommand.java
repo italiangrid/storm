@@ -17,6 +17,9 @@
 
 package it.grid.storm.synchcall.command.space;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -58,6 +61,8 @@ import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 
 public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
+	public static final Logger log = LoggerFactory.getLogger(GetSpaceMetaDataCommand.class);
+	
 	private ReservedSpaceCatalog catalog = null;
 
 	private static final boolean SUCCESS = true;

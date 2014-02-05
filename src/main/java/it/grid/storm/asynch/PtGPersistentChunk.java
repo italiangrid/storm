@@ -134,18 +134,18 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
 
 		boolean success = super.completeRequest(recallStatus);
 		persistStatus();
+		
 		if (success) {
-
+			
 			gsm.successfulChunk((PtGPersistentChunkData) requestData);
-			log.info("Completed PtG request (" + rsd.requestToken()
-				+ "), file successfully recalled from tape: "
-				+ requestData.getSURL().toString());
+			log.info("Completed PtG request ({}), file successfully recalled from "
+				+ "tape: {}", rsd.requestToken(), requestData.getSURL().toString());
+		
 		} else {
+			
 			gsm.failedChunk((PtGPersistentChunkData) requestData);
-			log
-				.error("BoL request (" + rsd.requestToken()
-					+ "), file not recalled from tape: "
-					+ requestData.getSURL().toString());
+			log.error("BoL request ({}), file not recalled from tape: {}", 
+				rsd.requestToken(), requestData.getSURL().toString());
 		}
 		return success;
 	}
@@ -170,13 +170,12 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
 	@Override
 	public boolean isResultSuccess() {
 
-		boolean result = false;
 		if ((requestData.getStatus().getStatusCode()
 			.equals(TStatusCode.SRM_FILE_PINNED))
 			|| requestData.getStatus().isSRM_SUCCESS()) {
-			result = true;
+			return true;
 		}
-		return result;
+		return false;
 	}
 
 	@Override

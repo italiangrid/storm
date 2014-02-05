@@ -17,6 +17,9 @@
 
 package it.grid.storm.synchcall.command.space;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
@@ -46,6 +49,8 @@ import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
  */
 
 public class GetSpaceTokensCommand extends SpaceCommand implements Command {
+
+	public static final Logger log = LoggerFactory.getLogger(GetSpaceTokensCommand.class);
 
 	private static final String SRM_COMMAND = "srmGetSpaceTokens";
 	private ReservedSpaceCatalog catalog = null;

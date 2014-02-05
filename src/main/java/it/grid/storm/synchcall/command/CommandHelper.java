@@ -1,7 +1,6 @@
 package it.grid.storm.synchcall.command;
 
-import java.util.List;
-import org.slf4j.Logger;
+import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
@@ -12,8 +11,36 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.InputData;
 
-public class CommandHelper {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+
+public class CommandHelper {
+  
+  public static final Map<TStatusCode, String> STATUS_MESSAGES;
+  private static final String FAILED_STRING = "failed";
+
+  static{
+    
+    STATUS_MESSAGES = new HashMap<TStatusCode, String>();
+    STATUS_MESSAGES.put(TStatusCode.SRM_SUCCESS, "succesfully done");
+    STATUS_MESSAGES.put(TStatusCode.SRM_SPACE_AVAILABLE, "succesfully done");
+    STATUS_MESSAGES.put(TStatusCode.SRM_FILE_PINNED, "succesfully done");
+    STATUS_MESSAGES.put(TStatusCode.SRM_PARTIAL_SUCCESS, "partially succeded");
+   
+  }
+
+  private static String getStatusMessage(TStatusCode statusCode){
+  
+    String result = STATUS_MESSAGES.get(statusCode);
+    if (result == null)
+      return FAILED_STRING;
+
+    return result;
+  }
+  
 	public static TReturnStatus buildStatus(TStatusCode statusCode,
 		String explaination) throws IllegalArgumentException, IllegalStateException {
 
@@ -24,7 +51,6 @@ public class CommandHelper {
 		try {
 			return new TReturnStatus(statusCode, explaination);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			// Never thrown
 			throw new IllegalStateException(
 				"Unexpected InvalidTReturnStatusAttributeException "
 					+ "in building TReturnStatus: " + e.getMessage());
@@ -43,7 +69,6 @@ public class CommandHelper {
 		try {
 			return new TSURLReturnStatus(surl, returnStatus);
 		} catch (InvalidTSURLReturnStatusAttributeException e) {
-			// Never thrown
 			throw new IllegalStateException(
 				"Unexpected InvalidTSURLReturnStatusAttributeException "
 					+ "in building TSURLReturnStatus: " + e.getMessage());
@@ -52,113 +77,98 @@ public class CommandHelper {
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status) {
-
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			log.info(srmCommand + ": Request successfully done with: [status: "
-				+ status + "]");
-		} else {
-			if (status.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-				log.info(srmCommand + ": Request partially done with [status: "
-					+ status + "]");
-			} else {
-				log.info(srmCommand + ": Request failed with [status: " + status + "]");
-			}
-		}
+	  
+	  log.info("{}: Request {} with: [status: {}]",
+	    srmCommand, 
+	    getStatusMessage(status.getStatusCode()),
+	    status);
 	}
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData) {
 
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
-				+ "> Request successfully done with: [status: " + status + "]");
-		} else {
-			if (status.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request partially done with [status: " + status + "]");
-			} else {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request failed with [status: " + status + "]");
-			}
-		}
+	  log.info("{}: user <{}> Request {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    getStatusMessage(status.getStatusCode()),
+	    status);
+	  
 	}
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, List<String> surls) {
 
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
-				+ "> Request for  [SURL: " + surls
-				+ "] successfully done with: [status: " + status + "]");
-		} else {
-			if (status.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [SURL: " + surls + "] partially done with [status: "
-					+ status + "]");
-			} else {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [SURL: " + surls + "] failed with [status: "
-					+ status + "]");
-			}
-		}
+	  log.info("{}: user <{}> Request for [SURL: {}] {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    surls,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
+	}
+
+	public static void printRequestOutcome(String srmCommand, Logger log,
+		TReturnStatus status, InputData inputData, TRequestToken token, ArrayOfSURLs surls) {
+
+	  log.info("{}: user <{}> Request for [token: {}] for [SURL: {}] {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    token,
+	    surls,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
 	}
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, TRequestToken token) {
+	  
+	  log.info("{}: user <{}> Request for [token: {}] {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    token,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
 
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
-				+ "> Request for [token:" + token
-				+ "] successfully done with: [status: " + status + "]");
-		} else {
-			if (status.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [token:" + token + "] partially done with [status: "
-					+ status + "]");
-			} else {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [token:" + token + "] failed with [status: "
-					+ status + "]");
-			}
-		}
 	}
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, TRequestToken token,
 		List<String> surls) {
-
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)
-			|| status.getStatusCode().equals(TStatusCode.SRM_SPACE_AVAILABLE)
-			|| status.getStatusCode().equals(TStatusCode.SRM_FILE_PINNED)) {
-			log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
-				+ "> Request for [token:" + token + "] for [SURL: " + surls
-				+ "] successfully done with: [status: " + status + "]");
-		} else {
-			if (status.getStatusCode().equals(TStatusCode.SRM_PARTIAL_SUCCESS)) {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [token:" + token + "] for [SURL: " + surls
-					+ "] partially done with [status: " + status + "]");
-			} else {
-				log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [token:" + token + "] for [SURL: " + surls
-					+ "] failed with [status: " + status + "]");
-			}
-		}
+	  
+	  log.info("{}: user<{}> Request for [token: {}] for [SURL: {}] {} with "
+	    +" [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    token,
+	    surls,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
 	}
 
 	public static void printSurlOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, TSURL surl) {
 
-		// TODO add all the successfull status for any request
-		if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			log.info(srmCommand + ": user <" + DataHelper.getRequestor(inputData)
-				+ "> operation on [SURL: " + surl
-				+ "] successfully done with: [status: " + status + "]");
-		} else {
-			log.info(srmCommand + ": <" + DataHelper.getRequestor(inputData)
-				+ "> operation on [SURL: " + surl + "] failed with [status: " + status
-				+ "]");
-		}
+	  log.info("{}: user <{}> operation on [SURL: {}] {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    surl,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
+	  
 	}
+	
+	public static void printSurlOutcome(String srmCommand, 
+	  Logger log,
+		TReturnStatus status, 
+		InputData inputData, 
+		TRequestToken token, 
+		TSURL surl) {
 
+	  log.info("{}: user <{}> operation for token [token:{}] on [SURL: {}] {} with: [status: {}]",
+	    srmCommand,
+	    DataHelper.getRequestor(inputData),
+	    token,
+	    surl,
+	    getStatusMessage(status.getStatusCode()),
+	    status);
+	}
 }

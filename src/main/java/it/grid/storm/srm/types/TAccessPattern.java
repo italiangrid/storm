@@ -25,7 +25,6 @@
  */
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 public class TAccessPattern {

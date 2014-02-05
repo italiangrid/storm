@@ -55,14 +55,8 @@ public class InvalidCopyAttributesException extends
 	@Override
 	public String toString() {
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("InvalidCopyAttributesException [negativeN=");
-		builder.append(negativeN);
-		builder.append(", nullGu=");
-		builder.append(nullGu);
-		builder.append(", nullChunkData=");
-		builder.append(nullChunkData);
-		builder.append("]");
-		return builder.toString();
+		return String.format("InvalidCopyAttributesException [negativeN=%b, "
+			+ "nullGu=%b, nullChunkData=%b]", negativeN, nullGu, nullChunkData);
+		
 	}
 }

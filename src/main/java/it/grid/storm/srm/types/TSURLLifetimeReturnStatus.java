@@ -27,10 +27,8 @@
 package it.grid.storm.srm.types;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 public class TSURLLifetimeReturnStatus {
 

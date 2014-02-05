@@ -98,8 +98,8 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 		String fullSourceFile = "/" + source.tfn().pfn().getValue();
 		String fullDestinationFile = "/" + destination.tfn().pfn().getValue();
 
-		log.debug("source file: " + fullSourceFile);
-		log.debug("destin file: " + fullDestinationFile);
+		log.debug("source file: {}", fullSourceFile);
+		log.debug("destin file: {}", fullDestinationFile);
 
 		// Smart implementation of Marker Listener
 		MarkerListenerImpl listener = new MarkerListenerImpl();
@@ -115,8 +115,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 			// Set up of remote Source GridFTP
 			String remoteSourceHost = source.tfn().machine().getValue();
 			int remoteSourcePort = source.tfn().port().toInt();
-			log.debug("remote source GridFTP : " + remoteSourceHost + ":"
-				+ remoteSourcePort);
+			log.debug("remote source GridFTP {}:{}", remoteSourceHost, remoteSourcePort);
 			GridFTPClient sourceClient = new GridFTPClient(remoteSourceHost,
 				remoteSourcePort);
 			setParams(sourceClient, cred);
@@ -124,8 +123,8 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 			// Set up of remote Destination GridFTP
 			String remoteDestinationHost = destination.tfn().machine().getValue();
 			int remoteDestinationPort = destination.tfn().port().toInt();
-			log.debug("remote destination GridFTP : " + remoteDestinationHost + ":"
-				+ remoteDestinationPort);
+			log.debug("remote destination GridFTP: {}:{}", remoteDestinationHost, 
+				remoteDestinationPort);
 			GridFTPClient destClient = new GridFTPClient(remoteDestinationHost,
 				remoteDestinationPort);
 			setParams(destClient, cred);
@@ -134,7 +133,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 			// org.globus.ftp.test.gridftp.parallelism=6
 			int parallelism = 6;
 			sourceClient.setOptions(new RetrieveOptions(parallelism));
-			log.debug(" Transfer parallelism : " + parallelism);
+			log.debug(" Transfer parallelism: {}", parallelism);
 
 			// Execute the transfer
 			log.debug(" Starting transfer ... ");
@@ -221,19 +220,19 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 
 			log.info("--> restart marker arrived:");
 			list.merge(marker.toVector());
-			log.info("Current transfer state: " + list.toFtpCmdArgument());
+			log.info("Current transfer state: {}", list.toFtpCmdArgument());
 		}
 
 		private void perfMarkerArrived(PerfMarker marker) {
 
 			log.info("--> perf marker arrived");
 			// time stamp
-			log.info("Timestamp = " + marker.getTimeStamp());
+			log.info("Timestamp = {}", marker.getTimeStamp());
 
 			// stripe index
 			if (marker.hasStripeIndex()) {
 				try {
-					log.info("Stripe index =" + marker.getStripeIndex());
+					log.info("Stripe index = {}", marker.getStripeIndex());
 				} catch (PerfMarkerException e) {
 					log.warn(e.toString());
 				}
@@ -244,8 +243,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 			// stripe bytes transferred
 			if (marker.hasStripeBytesTransferred()) {
 				try {
-					log.info("Stripe bytes transferred = "
-						+ marker.getStripeBytesTransferred());
+					log.info("Stripe bytes transferred = {}", marker.getStripeBytesTransferred());
 				} catch (PerfMarkerException e) {
 					log.warn(e.toString());
 				}
@@ -256,7 +254,7 @@ public class ThirdPartGridFTPTransferClient implements GridFTPTransferClient {
 			// total stripe count
 			if (marker.hasTotalStripeCount()) {
 				try {
-					log.info("Total stripe count = " + marker.getTotalStripeCount());
+					log.info("Total stripe count = {}", marker.getTotalStripeCount());
 				} catch (PerfMarkerException e) {
 					log.warn(e.toString());
 				}

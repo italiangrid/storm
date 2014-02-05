@@ -86,7 +86,7 @@ public final class CopyFeeder implements Delegable {
 			gsm = new GlobalStatusManager(rsd.requestToken());
 		} catch (InvalidOverallRequestAttributeException e) {
 			log.error("ATTENTION in CopyFeeder! "
-				+ "Programming bug when creating GlobalStatusManager! " + e);
+				+ "Programming bug when creating GlobalStatusManager! {}", e);
 			throw new InvalidCopyFeederAttributesException(rsd, gu, gsm);
 		}
 	}
@@ -102,14 +102,13 @@ public final class CopyFeeder implements Delegable {
 		Collection<CopyPersistentChunkData> chunks = CopyChunkCatalog.getInstance()
 			.lookup(rsd.requestToken());
 		if (chunks.isEmpty()) {
-			log.warn("ATTENTION in CopyFeeder! "
-				+ "This SRM Copy request contained nothing to process! "
-				+ rsd.requestToken());
+			log.warn("ATTENTION in CopyFeeder! This SRM Copy request contained "
+				+ "nothing to process! {}", rsd.requestToken());
 			RequestSummaryCatalog.getInstance().failRequest(rsd,
 				"This SRM Copy request contained nothing to process!");
 		} else {
 			manageChunks(chunks);
-			log.debug("CopyFeeder: finished pre-processing " + rsd.requestToken());
+			log.debug("CopyFeeder: finished pre-processing {}", rsd.requestToken());
 		}
 	}
 
@@ -119,7 +118,7 @@ public final class CopyFeeder implements Delegable {
 	 */
 	private void manageChunks(Collection<CopyPersistentChunkData> chunksData) {
 
-		log.debug("CopyFeeder: number of chunks in request " + chunksData.size());
+		log.debug("CopyFeeder: number of chunks in request {}", chunksData.size());
 		int counter = 0; // counter of the number of chunk retrieved
 		for (CopyPersistentChunkData chunkData : chunksData) {
 			/* Add chunk for global status consideration */
@@ -156,8 +155,8 @@ public final class CopyFeeder implements Delegable {
 					 * CHANGED SOON!!! ONLY FOR DEBUG PURPOSES!!!
 					 */
 					log.info("CopyFeeder: chunk is localCopy.");
-					log.debug("Request: " + rsd.requestToken());
-					log.debug("Chunk: " + chunkData);
+					log.debug("Request: {}", rsd.requestToken());
+					log.debug("Chunk: {]", chunkData);
 
 					SchedulerFacade
 						.getInstance()
@@ -173,8 +172,8 @@ public final class CopyFeeder implements Delegable {
 					 * copy to destination!
 					 */
 					log.info("CopyFeeder: chunk is pushCopy.");
-					log.debug("Request: " + rsd.requestToken());
-					log.debug("Chunk: " + chunkData);
+					log.debug("Request: {}", rsd.requestToken());
+					log.debug("Chunk: {}", chunkData);
 
 					SchedulerFacade
 						.getInstance()
@@ -194,11 +193,11 @@ public final class CopyFeeder implements Delegable {
 					 * WARNING!!! OPERATION NOT SUPPORTED!!! MUST BE CHANGED SOON!!!
 					 */
 					log.warn("CopyFeeder: srmCopy in pull mode NOT supported yet!");
-					log.debug("Request: " + rsd.requestToken());
-					log.debug("Chunk: " + chunkData);
+					log.debug("Request: {}", rsd.requestToken());
+					log.debug("Chunk: {}", chunkData);
 
-					chunkData.changeStatusSRM_NOT_SUPPORTED("srmCopy in pull "
-						+ "mode NOT supported yet!");
+					chunkData
+						.changeStatusSRM_NOT_SUPPORTED("srmCopy in pull mode NOT supported yet!");
 
 					CopyChunkCatalog.getInstance().update(chunkData);
 					/*
@@ -213,11 +212,11 @@ public final class CopyFeeder implements Delegable {
 					log.warn("CopyFeeder: srmCopy contract violation! Neither fromSURL"
 						+ " nor toSURL are this machine! Cannot do a third party SRM"
 						+ " transfer as per protocol!");
-					log.warn("Request: " + rsd.requestToken());
-					log.warn("Chunk: " + chunkData);
+					log.warn("Request: {}", rsd.requestToken());
+					log.warn("Chunk: {}", chunkData);
 
-					chunkData.changeStatusSRM_FAILURE("SRM protocol violation"
-						+ "! Cannot do an srmCopy between third parties!");
+					chunkData
+						.changeStatusSRM_FAILURE("SRM protocol violation! Cannot do an srmCopy between third parties!");
 
 					CopyChunkCatalog.getInstance().update(chunkData);
 					/*
@@ -233,25 +232,24 @@ public final class CopyFeeder implements Delegable {
 			 */
 			log.error("UNEXPECTED ERROR in CopyFeeder! Chunk could not be created!\n"
 				+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + chunkData);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", chunkData);
 
-			chunkData.changeStatusSRM_FAILURE("StoRM internal error does not"
-				+ " allow this chunk to be processed!");
+			chunkData
+				.changeStatusSRM_FAILURE("StoRM internal error does not allow this chunk to be processed!");
 
 			CopyChunkCatalog.getInstance().update(chunkData);
 			/* inform global status computation of the chunk s failure */
 			gsm.failedChunk(chunkData);
 		} catch (SchedulerException e) {
 			/* Internal error of scheduler! */
-			log
-				.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!\n"
-					+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + chunkData);
+			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be "
+				+ "scheduled!\n{}", e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", chunkData);
 
-			chunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
-				+ "error prevented this chunk from being processed!");
+			chunkData
+				.changeStatusSRM_FAILURE("StoRM internal scheduler error prevented this chunk from being processed!");
 
 			CopyChunkCatalog.getInstance().update(chunkData);
 			/* inform global status computation of the chunk s failure */

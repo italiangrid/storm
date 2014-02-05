@@ -127,9 +127,8 @@ public final class PtGFeeder implements Delegable {
 			this.rsd = rsd;
 			gsm = new GlobalStatusManager(rsd.requestToken());
 		} catch (InvalidOverallRequestAttributeException e) {
-			log
-				.error("ATTENTION in PtGFeeder! Programming bug when creating GlobalStatusManager! "
-					+ e);
+			log.error("ATTENTION in PtGFeeder! Programming bug when creating "
+				+ "GlobalStatusManager! {}", e.getMessage(), e);
 			throw new InvalidPtGFeederAttributesException(rsd, null, null);
 		}
 	}
@@ -141,19 +140,18 @@ public final class PtGFeeder implements Delegable {
 	 */
 	public void doIt() {
 
-		log.debug("PtGFeeder: pre-processing " + rsd.requestToken());
+		log.debug("PtGFeeder: pre-processing {}", rsd.requestToken());
 		// Get all parts in request
 		Collection<PtGPersistentChunkData> chunks = PtGChunkCatalog.getInstance()
 			.lookup(rsd.requestToken());
 		if (chunks.isEmpty()) {
-			log
-				.warn("ATTENTION in PtGFeeder! This SRM PtG request contained nothing to process! "
-					+ rsd.requestToken());
+			log.warn("ATTENTION in PtGFeeder! This SRM PtG request contained nothing "
+				+ "to process! {}", rsd.requestToken());
 			RequestSummaryCatalog.getInstance().failRequest(rsd,
 				"This SRM Get request contained nothing to process!");
 		} else {
 			manageChunks(chunks);
-			log.debug("PtGFeeder: finished pre-processing " + rsd.requestToken());
+			log.debug("PtGFeeder: finished pre-processing {}", rsd.requestToken());
 		}
 	}
 
@@ -163,7 +161,7 @@ public final class PtGFeeder implements Delegable {
 	 */
 	private void manageChunks(Collection<PtGPersistentChunkData> chunks) {
 
-		log.debug("PtGFeeder - number of chunks in request: " + chunks.size());
+		log.debug("PtGFeeder - number of chunks in request: {}", chunks.size());
 		for (PtGPersistentChunkData chunkData : chunks) {
 			gsm.addChunk(chunkData); // add chunk for global status
 			// consideration
@@ -184,10 +182,10 @@ public final class PtGFeeder implements Delegable {
 				 * fromSURL does _not_ correspond to this installation of StoRM: fail
 				 * chunk!
 				 */
-				log.warn("PtGFeeder: srmPtG contract violation!"
-					+ " fromSURL does not correspond to this machine!");
-				log.warn("Request: " + rsd.requestToken());
-				log.warn("Chunk: " + chunkData);
+				log.warn("PtGFeeder: srmPtG contract violation! fromSURL does not"
+					+ "correspond to this machine!");
+				log.warn("Request: {}", rsd.requestToken());
+				log.warn("Chunk: {}", chunkData);
 
 				chunkData.changeStatusSRM_FAILURE("SRM protocol violation!"
 					+ " Cannot do an srmPtG of a SURL that is not local!");
@@ -222,10 +220,10 @@ public final class PtGFeeder implements Delegable {
 				.schedule(new PtGPersistentChunk(rsd, auxChunkData, gsm));
 			log.debug("PtGFeeder - chunk scheduled.");
 		} catch (InvalidPersistentRequestAttributesException e) {
-			log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n"
-				+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + auxChunkData);
+			log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!");
+			log.error(e.getMessage(), e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", auxChunkData);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does"
 				+ " not allow this chunk to be processed!");
@@ -233,10 +231,10 @@ public final class PtGFeeder implements Delegable {
 			PtGChunkCatalog.getInstance().update(auxChunkData);
 			gsm.failedChunk(auxChunkData);
 		} catch (InvalidRequestAttributesException e) {
-			log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!\n"
-				+ e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + auxChunkData);
+			log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!");
+			log.error(e.getMessage(), e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", auxChunkData);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does"
 				+ " not allow this chunk to be processed!");
@@ -245,10 +243,10 @@ public final class PtGFeeder implements Delegable {
 			gsm.failedChunk(auxChunkData);
 		} catch (SchedulerException e) {
 			/* Internal error of scheduler! */
-			log.error("UNEXPECTED ERROR in ChunkScheduler! "
-				+ "Chunk could not be scheduled!\n" + e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + auxChunkData);
+			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be scheduled!");
+			log.error(e.getMessage(), e);
+			log.error("Request: {}", rsd.requestToken());
+			log.error("Chunk: {}", auxChunkData);
 
 			auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
 				+ "error prevented this chunk from being processed!");
@@ -270,157 +268,149 @@ public final class PtGFeeder implements Delegable {
 		/* Change status of this chunk to being processed! */
 		chunkData.changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToGet "
 			+ "chunk is being processed!");
+		
+		TSURL surl = chunkData.getSURL();
+		String user = DataHelper.getRequestor(chunkData);
+		
 		/* update persistence!!! */
 		PtGChunkCatalog.getInstance().update(chunkData);
+		
+		/* Build StoRI for current chunk */
+		StoRI stori = null;
 		try {
-			/* Build StoRI for current chunk */
-			StoRI stori = null;
-			try {
-				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-					chunkData.getSURL(), chunkData.getUser());
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to build StoRI by SURL and user", e);
-				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, 
+				chunkData.getUser());
+		} catch (IllegalArgumentException e) {
+			log.error("Unable to build a stori for surl {} for user {}. "
+				+ "IllegalArgumentException: {}", surl, user, e.getMessage(), e);
+			chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+		} catch (UnapprochableSurlException e) {
+			log.info("Unable to build a stori for surl {} for user {}. "
+				+ "UnapprochableSurlException: {}", surl, user, e.getMessage());
+			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
+		} catch (NamespaceException e) {
+			log.error("Unable to build a stori for surl {} for user {}. "
+				+ "NamespaceException: {}", surl, user, e.getMessage(), e);
+			chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+		} catch (InvalidSURLException e) {
+			log.info("Unable to build a stori for surl {} for user {}. "
+				+ "InvalidSURLException: {}", surl, user, e.getMessage());
+			chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
+		} finally {
+			if (stori == null) {
+				// failed!
 				PtGChunkCatalog.getInstance().update(chunkData);
-				log.error("ATTENTION in PtGFeeder! PtGFeeder received "
-					+ "request for a SURL and user not recognised by StoRI!"); // info
 				gsm.failedChunk(chunkData);
-			} catch (UnapprochableSurlException e) {
-				chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
-				PtGChunkCatalog.getInstance().update(chunkData);
-				log.info(String.format(
-					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
-						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
-						.getCanonicalName(), e.getMessage()));
-				gsm.failedChunk(chunkData);
-			} catch (NamespaceException e) {
-				chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
-				PtGChunkCatalog.getInstance().update(chunkData);
-				log.info(String.format(
-					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
-						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
-						.getCanonicalName(), e.getMessage()));
-				gsm.failedChunk(chunkData);
-			} catch (InvalidSURLException e) {
-				chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
-				PtGChunkCatalog.getInstance().update(chunkData);
-				log.info(String.format(
-					"Unable to build a stori for surl %s for user %s %s: %s", chunkData
-						.getSURL(), DataHelper.getRequestor(chunkData), e.getClass()
-						.getCanonicalName(), e.getMessage()));
-				gsm.failedChunk(chunkData);
+				return;
 			}
-			if (stori != null) {
-				/* Collection of children! */
-				// TODO MICHELE here if the recursion on directory is supported
-				// substiture the following withe the commented one
-				Collection<StoRI> storiChildren = stori.getChildren(chunkData
-					.getDirOption());
-
-				log.debug("PtGFeeder - Number of children in parent: "
-					+ storiChildren.size());
-
-				// FIXME MICHELE why here we set the diroption in this way? maybe it
-				// is correct in this other way:
-				// new TDirOption(childStoRI.isDirectory() (this method doesn't
-				// exists), (childStoRI.isDirectory() ? auxChunkData.dirOption() :
-				// false).isAllLevelRecursive(), (childStoRI.isDirectory() ?
-				// auxChunkData.dirOption().getNumLevel() > 0 ?
-				// (auxChunkData.dirOption().getNumLevel()-1)) : 0 ) :0));
-				TDirOption notDir = new TDirOption(false, false, 0);
-
-				PtGPersistentChunkData childData;
-				for (StoRI storiChild : storiChildren) {
-					try {
-						childData = new PtGPersistentChunkData(chunkData.getUser(),
-							chunkData.getRequestToken(), storiChild.getSURL(),
-							chunkData.getPinLifeTime(), notDir,
-							chunkData.getTransferProtocols(), chunkData.getFileSize(),
-							chunkData.getStatus(), chunkData.getTransferURL());
-						/* fill in new db row and set the PrimaryKey of ChildData! */
-						PtGChunkCatalog.getInstance().addChild(childData);
-						log.debug("PtGFeeder - added child data: " + childData);
-
-						/* add chunk for global status consideration */
-						gsm.addChunk(childData);
-						/* manage chunk */
-						manageNotDirectory(childData);
-					} catch (InvalidSurlRequestDataAttributesException e) {
-						log.error("ERROR in PtGFeeder! While expanding recursive request,"
-							+ " it was not possible to create a new PtGPersistentChunkData! "
-							+ e);
-					}
-				}
-				log.debug("PtGFeeder - expansion completed.");
-				/*
-				 * A request on a Directory is considered done whether there is somethig
-				 * to expand or not!
-				 */
-				// FIXME MICHELE maybe here as in BOL we have to set the success status
-				// and not pinned
-				chunkData
-					.changeStatusSRM_FILE_PINNED("srmPrepareToGet with dirOption set: "
-						+ "request successfully expanded!");
-				PtGChunkCatalog.getInstance().update(chunkData);
-				gsm.successfulChunk(chunkData);
-			}
-		} catch (InvalidTDirOptionAttributesException e) {
-			// Could not create TDirOption that specifies no-expansion!
-			chunkData.changeStatusSRM_FAILURE("srmPrepareToGet with dirOption set:"
-				+ " expansion failure due to internal error!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-
-			log.error("UNEXPECTED ERROR in PtGFeeder! Could not"
-				+ " create TDirOption specifying non-expansion!\n" + e);
-			log.error("Request: " + rsd.requestToken());
-			log.error("Chunk: " + chunkData);
-			gsm.failedChunk(chunkData);
+		}
+			
+		Collection<StoRI> storiChildren = null;
+		
+		try {
+			
+			storiChildren = stori.getChildren(chunkData.getDirOption());
+			
 		} catch (InvalidDescendantsEmptyRequestException e) {
+			
+			log.debug("ATTENTION in PtGFeeder! PtGFeeder received request to expand "
+				+ "empty directory.");
 			/*
 			 * The expanded directory was empty, anyway a request on a Directory is
 			 * considered done whether there is somethig to expand or not!
 			 */
-			chunkData
-				.changeStatusSRM_FILE_PINNED("BEWARE! srmPrepareToGet with dirOption"
-					+ " set: it referred to a directory that was empty!");
+			chunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmPrepareToGet with "
+				+ "dirOption set: it referred to a directory that was empty!");
 			PtGChunkCatalog.getInstance().update(chunkData);
-
-			log.debug("ATTENTION in PtGFeeder! PtGFeeder received "
-				+ "request to expand empty directory.");
 			gsm.successfulChunk(chunkData);
-		}
+			return;
 		
-		catch (InvalidDescendantsPathRequestException e) {
-			// Attempting to expand non existent directory!
-			chunkData
-				.changeStatusSRM_INVALID_PATH("srmPrepareToGet with dirOption set:"
-					+ " it referred to a non-existent directory!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-
+		} catch (InvalidDescendantsPathRequestException e) {
+			
 			log.debug("ATTENTION in PtGFeeder! PtGFeeder received request"
 				+ " to expand non-existing directory.");
+			// Attempting to expand non existent directory!
+			chunkData.changeStatusSRM_INVALID_PATH("srmPrepareToGet with dirOption "
+				+ "set: it referred to a non-existent directory!");
+			PtGChunkCatalog.getInstance().update(chunkData);
 			gsm.failedChunk(chunkData);
+			return;
+			
 		} catch (InvalidDescendantsFileRequestException e) {
+			
+			log.debug("ATTENTION in PtGFeeder! PtGFeeder received request to "
+				+ "expand a file.");
 			// Attempting to expand a file!
-			chunkData
-				.changeStatusSRM_INVALID_PATH("srmPrepareToGet with dirOption set:"
-					+ " a file was asked to be expanded!");
+			chunkData.changeStatusSRM_INVALID_PATH("srmPrepareToGet with dirOption "
+				+ "set: a file was asked to be expanded!");
 			PtGChunkCatalog.getInstance().update(chunkData);
-
-			log
-				.debug("ATTENTION in PtGFeeder! PtGFeeder received request to expand a file.");
 			gsm.failedChunk(chunkData);
+			return;
+			
 		} catch (InvalidDescendantsAuthRequestException e) {
-			// No rights to directory!
-			chunkData
-				.changeStatusSRM_AUTHORIZATION_FAILURE("srmPrepareToGet with dirOption set:"
-					+ " user has no right to access directory!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-
+			
 			log.debug("ATTENTION in PtGFeeder! PtGFeeder received request to"
-				+ " expand a directory for which the user has no rights."); // info
+				+ " expand a directory for which the user has no rights.");
+			// No rights to directory!
+			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("srmPrepareToGet with "
+				+ "dirOption set: user has no right to access directory!");
+			PtGChunkCatalog.getInstance().update(chunkData);
 			gsm.failedChunk(chunkData);
+			return;
 		}
+		
+		log.debug("PtGFeeder - Number of children in parent: {}", storiChildren.size());
+		
+		TDirOption notDir = null;
+		
+		try {
+		
+			notDir = new TDirOption(false, false, 0);
+		
+		} catch (InvalidTDirOptionAttributesException e) {
+			
+			log.error("UNEXPECTED ERROR in PtGFeeder! Could not create TDirOption "
+				+ "specifying non-expansion!\n{}\nRequest: {}\nChunk: {}", 
+				e.getMessage(), rsd.requestToken(), chunkData, e);
+			
+			chunkData.changeStatusSRM_FAILURE("srmPrepareToGet with dirOption set:"
+				+ " expansion failure due to internal error!");
+			PtGChunkCatalog.getInstance().update(chunkData);
+			gsm.failedChunk(chunkData);
+			return;
+		}
+		
+		PtGPersistentChunkData childData;
+		for (StoRI storiChild : storiChildren) {
+			try {
+				childData = new PtGPersistentChunkData(chunkData.getUser(),
+					chunkData.getRequestToken(), storiChild.getSURL(),
+					chunkData.getPinLifeTime(), notDir,
+					chunkData.getTransferProtocols(), chunkData.getFileSize(),
+					chunkData.getStatus(), chunkData.getTransferURL());
+				/* fill in new db row and set the PrimaryKey of ChildData! */
+				PtGChunkCatalog.getInstance().addChild(childData);
+				log.debug("PtGFeeder - added child data: {}", childData);
+
+				/* add chunk for global status consideration */
+				gsm.addChunk(childData);
+				/* manage chunk */
+				manageNotDirectory(childData);
+			} catch (InvalidSurlRequestDataAttributesException e) {
+				log.error("ERROR in PtGFeeder! While expanding recursive request,"
+					+ " it was not possible to create a new PtGPersistentChunkData! {}",
+					e.getMessage(), e);
+			}
+		}
+		log.debug("PtGFeeder - expansion completed.");
+		/*
+		 * A request on a Directory is considered done whether there is something
+		 * to expand or not!
+		 */
+		chunkData.changeStatusSRM_FILE_PINNED("srmPrepareToGet with dirOption "
+			+ "set: request successfully expanded!");
+		PtGChunkCatalog.getInstance().update(chunkData);
+		gsm.successfulChunk(chunkData);
 	}
 
 	/**

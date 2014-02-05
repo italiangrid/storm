@@ -55,6 +55,9 @@ import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
@@ -65,6 +68,8 @@ import java.util.Arrays;
 
 public class MkdirCommand extends DirectoryCommand implements Command {
 
+  public static final Logger log = LoggerFactory.getLogger(MkdirCommand.class);
+  
 	private static final String SRM_COMMAND = "SrmMkdir";
 	private final NamespaceInterface namespace;
 
@@ -87,10 +92,6 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 		MkdirInputData inputData = (MkdirInputData) data;
 		MkdirOutputData outData = null;
 
-		/**
-		 * Validate MkdirInputData. The check is done at this level to separate
-		 * internal StoRM logic from xmlrpc specific operation.
-		 */
 
 		if ((inputData == null)
 			|| ((inputData != null) && (inputData.getSurl() == null))) {
@@ -118,27 +119,33 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 					stori = namespace.resolveStoRIbySURL(surl,
 						((IdentityInputData) inputData).getUser());
 				} catch (UnapprochableSurlException e) {
-					log.info("Unable to build a stori for surl " + surl + " for user "
-						+ DataHelper.getRequestor(inputData)
-						+ " UnapprochableSurlException: " + e.getMessage());
+				  log.info("Unable to build a stori for surl {} for user {}. {}",
+				    surl,
+				    DataHelper.getRequestor(inputData),
+				    e.getMessage());
+				  
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
 					outData = new MkdirOutputData(returnStatus);
 					return outData;
 				} catch (NamespaceException e) {
-					log.info("Unable to build a stori for surl " + surl + " for user "
-						+ DataHelper.getRequestor(inputData)
-						+ " NamespaceException: " + e.getMessage());
+				  log.info("Unable to build a stori for surl {} for user {}. {}",
+				    surl,
+				    DataHelper.getRequestor(inputData),
+				    e.getMessage());
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
 					outData = new MkdirOutputData(returnStatus);
 					return outData;
 				} catch (InvalidSURLException e) {
-					log.info("Unable to build a stori for surl " + surl + " for user "
-						+ DataHelper.getRequestor(inputData)
-						+ " InvalidSURLException: " + e.getMessage());
+
+				  log.info("Unable to build a stori for surl {} for user {}. {}",
+				    surl,
+				    DataHelper.getRequestor(inputData),
+				    e.getMessage());
+
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_INVALID_PATH, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
@@ -149,24 +156,25 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 				try {
 					stori = namespace.resolveStoRIbySURL(surl);
 				} catch (UnapprochableSurlException e) {
-					log.info("Unable to build a stori for surl " + surl
-						+ " UnapprochableSurlException: " + e.getMessage());
+				  log.info("Unable to build a stori for surl {}. {}",
+				    surl, e.getMessage());
+				  
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
 					outData = new MkdirOutputData(returnStatus);
 					return outData;
 				} catch (NamespaceException e) {
-					log.info("Unable to build a stori for surl " + surl
-						+ " NamespaceException: " + e.getMessage());
+				  log.info("Unable to build a stori for surl {}. {}",
+				    surl, e.getMessage());
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
 					outData = new MkdirOutputData(returnStatus);
 					return outData;
 				} catch (InvalidSURLException e) {
-					log.info("Unable to build a stori for surl " + surl
-						+ " InvalidSURLException: " + e.getMessage());
+				  log.info("Unable to build a stori for surl {}. {}",
+				    surl, e.getMessage());
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_INVALID_PATH, e.getMessage());
 					printRequestOutcome(returnStatus, inputData);
@@ -175,8 +183,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			log.error("Unable to get surl's stori. IllegalArgumentException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(),e);
 			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
 				e.getMessage());
 			printRequestOutcome(returnStatus, inputData);
@@ -195,22 +202,19 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MD);
 		}
 		if (!isSpaceAuthorized) {
-			// User not authorized to perform RM request on the storage area
-			log
-				.debug("srmMkdir: User not authorized to perform srmMkdir request on the storage area: "
-					+ token);
+			log.debug("srmMkdir: User not authorized to perform srmMkdir request "
+			  + "on the storage area: {}", token);
+
 			returnStatus = CommandHelper.buildStatus(
 				TStatusCode.SRM_AUTHORIZATION_FAILURE,
 				": User not authorized to perform srmMkdir request on the storage area: "
 					+ token);
+
 			printRequestOutcome(returnStatus, inputData);
 			outData = new MkdirOutputData(returnStatus);
 			return outData;
 		}
 
-		/**
-		 * 1.5.0 Path Authorization
-		 */
 		AuthzDecision decision;
 		if (inputData instanceof IdentityInputData) {
 			decision = AuthzDirector.getPathAuthz().authorize(
@@ -220,8 +224,9 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 				SRMFileRequest.MD, stori.getStFN());
 		}
 		if (decision.equals(AuthzDecision.PERMIT)) {
-			log.debug("srmMkdir authorized for " + DataHelper.getRequestor(inputData)
-				+ " for directory = " + stori.getPFN());
+
+			log.debug("srmMkdir authorized for {} for directory = {}", 
+			  DataHelper.getRequestor(inputData), stori.getPFN());
 
 			returnStatus = manageAuthorizedMKDIR(stori, data);
 		} else {
@@ -260,7 +265,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
 		LocalFile parent = file.getParentFile();
 		if (parent != null) {
-			log.debug("Mkdir : Parent of '" + file + "' exists");
+			log.debug("Mkdir : Parent of '{}' exists.", file);
 			if (!file.exists()) {
 				if (file.mkdir()) {
 					log.debug("SrmMkdir: Request success!");
@@ -332,8 +337,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 		 * read-write-list the new directory Call wrapper to set ACL on file
 		 * created.
 		 */
-		log.debug("SrmMkdir: Adding ACL for directory created : '" + file + "'  "
-			+ "group:g_name:--x");
+		log.debug("SrmMkdir: Adding ACL for directory '{}' group:g_name:--x", file);
 
 		/*
 		 * Set permission on directory In case of local auth source enable also
@@ -346,25 +350,23 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 			try {
 				if (user.getLocalUser() == null) {
 					log
-						.warn("SrmMkdir: Unable to setting up the ACL. LocalUser il null!");
-					returnStatus.extendExplaination("Unable to setting up the ACL");
+						.warn("SrmMkdir: Unable to setting up the ACL. LocalUser is null!");
+					returnStatus.extendExplaination("ACL setup error. Invalid local user.");
 				} else {
 					try {
 						AclManagerFSAndHTTPS.getInstance().grantGroupPermission(file,
 							user.getLocalUser(), permission);
 					} catch (IllegalArgumentException e) {
-						log
-							.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
-								+ e.getMessage());
+						log.error("Unable to grant user permission on folder. {}", 
+						  e.getMessage(),e);
 						returnStatus
 							.extendExplaination("Unable to grant group permission on the created folder");
 					}
 				}
 			} catch (CannotMapUserException e) {
 				log
-					.warn("SrmMkdir: Unable to setting up the ACL.CannotMapUserException: "
-						+ e.getMessage());
-				returnStatus.extendExplaination("Unable to setting up the ACL");
+					.warn("SrmMkdir: ACL setup error. {}", e.getMessage(),e);
+				returnStatus.extendExplaination("ACL setup error. Local mapping error.");
 			}
 		}
 	}
@@ -380,17 +382,18 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 				 * TODO ATTENTION: here we never set the acl contained in the ACE, we
 				 * just add xr or xrw in respect to getEnableWritePermOnDirectory
 				 */
-				log.debug("Adding DefaultACL for the gid: " + ace.getGroupID()
-					+ " with permission: " + ace.getFilePermissionString());
+				log.debug("Adding DefaultACL for the gid: {} with permission: {}",
+				  ace.getGroupID(),  ace.getFilePermissionString());
+
 				LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
 				try {
 					AclManagerFSAndHTTPS.getInstance().grantGroupPermission(
 						stori.getLocalFile(), user, permission);
 				} catch (IllegalArgumentException e) {
 					log
-						.error("Unable to grant group permission on the created folder to user "
-							+ user + " . IllegalArgumentException: " + e.getMessage());
-					returnStatus.extendExplaination("Errors setting default acls");
+						.error("Unable to grant group permission on folder to user {}. {}",
+						  user, e.getMessage(), e);
+					returnStatus.extendExplaination("Default ACL setup error.");
 				}
 			}
 		}
@@ -399,15 +402,18 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 	private void setHttpsServiceAcl(LocalFile file,
 		FilesystemPermission permission, TReturnStatus returnStatus) {
 
-		log.debug("SrmMkdir: Adding default ACL for directory created : '" + file
-			+ "'  " + permission);
+		log.debug("SrmMkdir: Adding default ACL for directory {}: {}", 
+		  file,
+		  permission);
+
 		try {
 			AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file,
 				permission);
 		} catch (IllegalArgumentException e) {
 			log
-				.error("Unable to grant user permission on the created folder. IllegalArgumentException: "
-					+ e.getMessage());
+				.error("Unable to grant user permission on folder. {}",
+				  e.getMessage(), e);
+
 			returnStatus
 				.extendExplaination("Unable to grant group permission on the created folder");
 		}

@@ -30,15 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TTransferParameters implements Serializable {
 
 	private static final long serialVersionUID = 7309411351545907539L;
-
-	private static final Logger log = LoggerFactory
-		.getLogger(TTransferParameters.class);
 
 	public static final String PNAME_transferParameters = "transferParameters";
 
@@ -106,11 +100,9 @@ public class TTransferParameters implements Serializable {
 			TConnectionType.PNAME_connectionType);
 
 		memberName = new String("arrayOfClientNetworks");
-		// vector = (Hashtable) param.get(memberName);
 		try {
 			vector = Arrays.asList((Object[]) param.get(memberName));
 		} catch (NullPointerException e) {
-			// log.warn("Empty SURL array found!");
 		}
 
 		if (vector != null) {
@@ -122,11 +114,9 @@ public class TTransferParameters implements Serializable {
 		}
 
 		memberName = new String("arrayOfTransferProtocols");
-		// vector = (Hashtable) param.get(memberName);
 		try {
 			vector = Arrays.asList((Object[]) param.get(memberName));
 		} catch (NullPointerException e) {
-			// log.warn("Empty SURL array found!");
 		}
 		if (vector != null) {
 			int arraySize = vector.size();

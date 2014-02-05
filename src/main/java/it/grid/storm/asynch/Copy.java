@@ -100,8 +100,8 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				.getTime());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			// never thrown
-			log.error("Unexpected InvalidTRequestTokenAttributesException: "
-				+ e.getMessage());
+			log.error("Unexpected InvalidTRequestTokenAttributesException: {}",
+				e.getMessage(), e);
 			throw new IllegalStateException(
 				"Unexpected InvalidTRequestTokenAttributesException");
 		}
@@ -141,16 +141,18 @@ public abstract class Copy implements Delegable, Chooser, Request {
 	 */
 	public void doIt() {
 
-		log.debug("Handling Copy chunk for user DN: " + this.gu.getDn()
-			+ "; fromSURL: " + this.requestData.getSURL() + "; toSURL: "
-			+ this.requestData.getDestinationSURL());
-		log.debug("RequestToken used for local operation: " + localrt);
+		log.debug("Handling Copy chunk for user DN: {}; fromSURL: {}; toSURL: {}",
+			gu.getDn(), requestData.getSURL(), requestData.getDestinationSURL());
+		
+		log.debug("RequestToken used for local operation: {}", localrt);
 		GetOperationResult getResult = executeGetOperation();
-		log.debug("Result from get: " + getResult);
+		log.debug("Result from get: {}", getResult);
+		
 		if (getResult.successful()
-			&& getResult.status().getStatusCode() == TStatusCode.SRM_FILE_PINNED) {
+			&& TStatusCode.SRM_FILE_PINNED.equals(getResult.status().getStatusCode())) {
+			
 			PutOperationResult putResult = executePutOperation(getResult.filesize());
-			log.debug("Result from put: " + putResult);
+			log.debug("Result from put: {}", putResult);
 			/*
 			 * ATTENTION! the following check for SRM_SUCCESS is done to keep
 			 * compatibility between StoRM servers which use a hack thereby switching
@@ -162,15 +164,16 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				&& ((putResult.status().getStatusCode()
 					.equals(TStatusCode.SRM_SPACE_AVAILABLE)) || (putResult.status()
 					.getStatusCode().equals(TStatusCode.SRM_SUCCESS)))) {
+				
 				TransferResult transferResult = executeTransfer(getResult, putResult);
-				log.debug("Result from transfer: " + transferResult);
+				log.debug("Result from transfer: {}", transferResult);
 				if (transferResult.successful()) {
 					requestData.changeStatusSRM_SUCCESS("srmCopy successfully handled!");
 					log.debug("SRM Copy successful!");
 					this.failure = false; // gsm.successfulChunk(chunkData);
 				} else {
-					String message = "GSIFTP transfer failed! "
-						+ transferResult.failureExplanation();
+					String message = String.format("GSIFTP transfer failed! %s",
+						transferResult.failureExplanation());
 					log.error(message);
 					requestData.changeStatusSRM_FAILURE(message);
 					this.failure = true; // gsm.failedChunk(chunkData);
@@ -178,28 +181,20 @@ public abstract class Copy implements Delegable, Chooser, Request {
 			} else {
 				// The put operation was problematic!
 				String message = "PUT part of srmCopy failed! ";
-				if (putResult.successful()) {
-					message = message + putResult.status().toString();
-				}
 				log.error(message);
-				requestData.changeStatusSRM_FAILURE("PUT part of srmCopy failed! "
-					+ message);
+				requestData.changeStatusSRM_FAILURE(message);
 				this.failure = true;
 			}
 		} else {
 			// the get operation was problematic!
 			String message = "GET part of srmCopy failed! ";
-			if (getResult.successful()) {
-				message = message + getResult.status().toString();
-			}
 			log.error(message);
 			requestData.changeStatusSRM_FAILURE(message);
-			this.failure = true; // gsm.failedChunk(chunkData);
+			this.failure = true;
 		}
-		log.info("Finished handling Copy chunk for user DN: " + this.gu.getDn()
-			+ "; fromSURL: " + this.requestData.getSURL() + "; toSURL: "
-			+ this.requestData.getDestinationSURL() + " result is: "
-			+ this.requestData.getStatus());
+		log.info("Finished handling Copy chunk for user DN: {}; fromSURL: {}; "
+			+ "toSURL: {} result is: {}", gu.getDn(), requestData.getSURL(), 
+			requestData.getDestinationSURL(), requestData.getStatus());
 	}
 
 	/**
@@ -208,8 +203,8 @@ public abstract class Copy implements Delegable, Chooser, Request {
 	 */
 	public String getName() {
 
-		return "Copy for SURL " + requestData.getSURL() + " to SURL "
-			+ requestData.getDestinationSURL();
+		return String.format("Copy for SURL %s to SURL %s", requestData.getSURL(),
+			requestData.getDestinationSURL());
 	}
 
 	@Override
@@ -271,8 +266,6 @@ public abstract class Copy implements Delegable, Chooser, Request {
 		private boolean successful = false;
 		private String failureExplanation = "";
 
-		private final Copy.ResultType type = Copy.ResultType.TRANSFER;
-
 		/**
 		 * Constructor used to indicate a failed transfer: it requires a String
 		 * explaining the failure.
@@ -325,7 +318,6 @@ public abstract class Copy implements Delegable, Chooser, Request {
 	 */
 	protected class GetOperationResult implements Result {
 
-		private final Copy.ResultType type = Copy.ResultType.GET;
 		/**
 		 * boolean indicating if the operation was successful
 		 */
@@ -377,7 +369,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				try {
 					this.status = new TReturnStatus();
 				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unexpected InvalidTReturnStatusAttributeException: " + e);
+					log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
 				}
 			}
 		}
@@ -397,7 +389,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 			try {
 				this.status = new TReturnStatus();
 			} catch (InvalidTReturnStatusAttributeException e) {
-				log.warn("Unexpected InvalidTReturnStatusAttributeException: " + e);
+				log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
 			}
 		}
 
@@ -452,9 +444,9 @@ public abstract class Copy implements Delegable, Chooser, Request {
 		@Override
 		public String toString() {
 
-			return "GetOperationResult: successful=" + successful + "; status="
-				+ status + "; getTURL=" + getTURL + "; filesize=" + filesize
-				+ "; requestToken=" + rt;
+			return String.format("GetOperationResult: successful=%b; status=%s; "
+				+ "getTURL=%s; filesize=%s; requestToken=%s", successful, status, 
+				getTURL, filesize, rt);
 		}
 	}
 
@@ -471,15 +463,11 @@ public abstract class Copy implements Delegable, Chooser, Request {
 	 */
 	protected class PutOperationResult implements Result {
 
-		private final Copy.ResultType type = Copy.ResultType.PUT;
-
-		private boolean successful = false; // boolean indicating if the operation
-																				// was successful
-		private TReturnStatus status; // TReturnStatus from srmPrepareToGet
-		private TTURL putTURL = TTURL.makeEmpty(); // TURL from srmPrepareToGet
-		private String failureExplanation = ""; // String containing an explanation
-																						// of failure
-		private TRequestToken rt = null; // TRequestToken associated to PtP
+		private boolean successful = false;
+		private TReturnStatus status;
+		private TTURL putTURL = TTURL.makeEmpty();
+		private String failureExplanation = "";
+		private TRequestToken rt = null;
 
 		/**
 		 * Constructor to make a successful PutOperationResult containing the
@@ -500,7 +488,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				try {
 					this.status = new TReturnStatus();
 				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unexpected InvalidTReturnStatusAttributeException: " + e);
+					log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
 				}
 			}
 		}
@@ -520,7 +508,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 			try {
 				this.status = new TReturnStatus();
 			} catch (InvalidTReturnStatusAttributeException e) {
-				log.warn("Unexpected InvalidTReturnStatusAttributeException: " + e);
+				log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
 			}
 		}
 
@@ -568,9 +556,9 @@ public abstract class Copy implements Delegable, Chooser, Request {
 		@Override
 		public String toString() {
 
-			return "PutOperationResult: successful=" + successful + "; status="
-				+ status + "; putTURL=" + putTURL + "; failureExplanation="
-				+ failureExplanation;
+			return String.format("PutOperationResult: successful=%b; status=%s; "
+				+ "putTURL=%s; failureExplanation=%s", successful, status, putTURL, 
+				failureExplanation);
 		}
 	}
 }
