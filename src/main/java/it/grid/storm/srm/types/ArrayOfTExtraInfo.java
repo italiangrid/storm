@@ -30,7 +30,12 @@ import java.util.*;
 
 public class ArrayOfTExtraInfo implements Serializable {
 
-	public static String PNAME_STORAGESYSTEMINFO = "storageSystemInfo";
+	/**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+  
+  public static String PNAME_STORAGESYSTEMINFO = "storageSystemInfo";
 
 	private ArrayList<TExtraInfo> extraInfoList;
 
@@ -44,7 +49,6 @@ public class ArrayOfTExtraInfo implements Serializable {
 		if (infoArray == null) {
 			throw new InvalidArrayOfTExtraInfoAttributeException(infoArray);
 		}
-		// FIXME this.tokenArray = tokenArray;
 	}
 
 	public ArrayOfTExtraInfo() {

@@ -96,9 +96,8 @@ public class TTURL {
 		try {
 			tp = TransferProtocol.getTransferProtocol(tpString);
 		} catch (IllegalArgumentException e) {
-			// do nothing - tp remains null and that is fine!
-			log.warn("TTURL: Transfer protocol by '" + tpString
-				+ "' is empty, but that's fine.");
+			log.warn("TTURL: Transfer protocol by {} is empty, but that's fine.", 
+			  tpString);
 		}
 		if ((separator + 3) > (s.length())) {
 			throw new InvalidTTURLAttributesException(tp, null); // separator found at
@@ -107,25 +106,18 @@ public class TTURL {
 		String tfnString = s.substring(separator + 3, s.length());
 		TFN tfn = null;
 		if (tfnString.startsWith("/")) {
-			// TFN without hostname and port
 			try {
 				tfn = TFN.makeByPFN(PFN.make(tfnString));
 			} catch (InvalidTFNAttributesException e) {
-				// do nothing - tfn remains null and that is fine: an exception will be
-				// thrown later on!
-				log.warn("TFN by '" + tfnString + "' is empty, but that's fine.");
+				log.warn("TFN by {} is empty, but that's fine.", tfnString);
 			} catch (InvalidPFNAttributeException ex) {
-				/** @todo Handle this exception */
-				log.error("PFN by '" + tfnString + "' cause an error : " + ex);
+				log.error("Invalid PFN: {}", tfnString, ex);
 			}
 		} else {
-			// TFN does have host and port!
 			try {
 				tfn = TFN.makeFromString(tfnString);
 			} catch (InvalidTFNAttributesException e) {
-				// do nothing - tfn remains null and that is fine: an exception will be
-				// thrown later on!
-				log.warn("TFN by '" + tfnString + "' is empty, but that's fine.");
+				log.warn("TFN by {} is empty, but that's fine.", tfnString);
 			}
 		}
 		return TTURL.make(tp, tfn);
