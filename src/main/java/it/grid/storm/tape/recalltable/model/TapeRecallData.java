@@ -85,13 +85,13 @@ public class TapeRecallData {
 			String parameters = inputString.substring(beginArray + 1, endArray);
 			String[] paramArray = parameters.split(TapeRecallBuilder.elementSep);
 			for (int i = 0; i < paramArray.length; i++) {
-				log.debug("param[" + i + "]=" + paramArray[i]);
+				log.debug("param[{}]={}" , i , paramArray[i]);
 				if (paramArray[i].contains(TapeRecallBuilder.equalChar)) {
 					int equalIndex = paramArray[i].indexOf(TapeRecallBuilder.equalChar);
 					String key = paramArray[i].substring(0, equalIndex);
 					String value = paramArray[i].substring(equalIndex + 1,
 						paramArray[i].length());
-					log.debug("KEY:" + key + " VALUE:" + value);
+					log.debug("KEY: {} VALUE: {}" , key , value);
 					// Scan for known keys.
 					if (key.equals(TapeRecallBuilder.fnPrefix)) {
 						result.fileName = value;
@@ -102,8 +102,7 @@ public class TapeRecallData {
 					} else if (key.equals(TapeRecallBuilder.fqansPrefix)) {
 						result.fqans = result.parseFQANs(value, 0, 0, 0, value.length());
 					} else {
-						log.warn("Unknown key-value pair (" + key + "," + value
-							+ "). StoRM will ignore them.");
+						log.warn("Unknown key-value pair ({},{}. StoRM will ignore them.)" , key , value);
 					}
 				}
 			}
@@ -164,10 +163,10 @@ public class TapeRecallData {
 					userDN = parseDN(taskDataText, fnPos, dnPos, fqansPos, voNamePos);
 					fqans = parseFQANs(taskDataText, fnPos, dnPos, fqansPos, voNamePos);
 					voName = parseVOName(taskDataText, fnPos, dnPos, fqansPos, voNamePos);
-					log.debug("filename='" + fileName + "'");
-					log.debug("userDN  ='" + userDN + "'");
-					log.debug("fqans='" + fqans + "'");
-					log.debug("voName='" + voName + "'");
+					log.debug("filename='{}'" , fileName);
+					log.debug("userDN  ='{}'" , userDN);
+					log.debug("fqans='{}'" , fqans);
+					log.debug("voName='{}'" , voName);
 				}
 			} else {
 				throw new TapeRecallException("Unable to find the File Name");
@@ -299,8 +298,7 @@ public class TapeRecallData {
 		if (dnPos > 0) {
 			if (fqansPos > 0) {
 				result = taskDataText.substring(dnPos, fqansPos - 1);
-				log.debug("dn to parse (dnPos=" + dnPos + " fqansPos=" + fqansPos
-					+ ": " + result);
+				log.debug("dn to parse dnPos={} fqansPos={}: {}" , dnPos , fqansPos	, result);
 			} else if (voNamePos > 0) {
 				result = taskDataText.substring(dnPos, voNamePos - 1);
 			} else {
@@ -313,7 +311,7 @@ public class TapeRecallData {
 		int pos = result.indexOf(TapeRecallBuilder.elementSep);
 		pos = pos < 0 ? result.length() : pos;
 		result = result.substring(TapeRecallBuilder.dnPrefix.length(), pos);
-		log.debug("DN to parse ='" + result + "'");
+		log.debug("DN to parse ='{}'" , result);
 
 		log.warn("## TODO Feature ## : Bug in parsing DN in RFC 2253 format.");
 		/**
@@ -334,7 +332,7 @@ public class TapeRecallData {
 		 * ################# END TEMPORARY FIX
 		 */
 
-		log.debug("DN parsed ='" + result + "'");
+		log.debug("DN parsed ='{}'" , result);
 		return result;
 	}
 
@@ -359,11 +357,11 @@ public class TapeRecallData {
 		} else {
 			result = taskDataText.substring(fnPos);
 		}
-		log.debug("FN to parse ='" + result + "'");
+		log.debug("FN to parse ='{}'" , result);
 		int pos = result.indexOf(TapeRecallBuilder.elementSep);
 		pos = pos < 0 ? result.length() : pos;
 		result = result.substring(TapeRecallBuilder.fnPrefix.length(), pos);
-		log.debug("FN parsed ='" + result + "'");
+		log.debug("FN parsed ='{}'" , result);
 		return result;
 	}
 
@@ -403,13 +401,13 @@ public class TapeRecallData {
 			FQAN fqan;
 			int count = 0;
 			for (String fqanIter : fqans) {
-				log.debug("fqanString = '" + fqanIter + "'");
+				log.debug("fqanString = '{}'" , fqanIter);
 				// Trim out the prefix and the separator (if there)
 				pos = fqansSt.indexOf(TapeRecallBuilder.fqanSep);
 				pos = pos < 0 ? fqansSt.length() : pos;
 				fqanIter = fqanIter.substring(TapeRecallBuilder.fqanPrefix.length(),
 					pos);
-				log.debug("fqanString (purged) = '" + fqanIter + "'");
+				log.debug("fqanString (purged) = '{}'" , fqanIter);
 				fqan = new FQAN(fqanIter);
 				result.add(fqan);
 				fqansString[count] = fqan.toString();
@@ -435,7 +433,7 @@ public class TapeRecallData {
 		String result = null;
 		if (voNamePos > 0) {
 			result = taskDataText.substring(voNamePos);
-			log.debug("vo-name to parse ='" + result + "'");
+			log.debug("vo-name to parse ='{}'" , result);
 			int pos = result.indexOf(TapeRecallBuilder.elementSep);
 			pos = pos < 0 ? result.length() : pos;
 			result = result.substring(TapeRecallBuilder.voNamePrefix.length(), pos);
@@ -448,7 +446,7 @@ public class TapeRecallData {
 			}
 		}
 
-		log.debug("vo-name parsed ='" + result + "'");
+		log.debug("vo-name parsed ='{}'" , result);
 		return result;
 	}
 

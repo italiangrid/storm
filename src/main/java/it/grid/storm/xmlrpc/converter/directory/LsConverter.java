@@ -76,10 +76,10 @@ public class LsConverter implements Converter {
 	 */
 	public InputData convertToInputData(Map inputParam) {
 
-		log.debug("SrmLs: LSConverter :Call received :Creation of SpaceResData = "
-			+ inputParam.size());
-		log.debug("SrmLs: LSConverter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+		log.debug("SrmLs: LSConverter :Call received :Creation of SpaceResData = {}"
+			, inputParam.size());
+		log.debug("SrmLs: LSConverter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		// Member name definition for inputParam struct , from SRM V2.2
 		String member_fullDL = new String("fullDetailedList");
@@ -96,33 +96,33 @@ public class LsConverter implements Converter {
 		try {
 			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e2) {
-			log.debug("SrmLs: Empty surlArray found!");
+			log.debug("SrmLs: Empty surlArray found!",e2);
 			surlArray = null;
 		}
 
 		TFileStorageType fileStorageType = TFileStorageType.decode(inputParam,
 			TFileStorageType.PNAME_FILESTORAGETYPE);
-		log.debug("fileType: " + fileStorageType);
+		log.debug("fileType: {}" , fileStorageType);
 
 		/* (5) fullDetailedList */
 		Boolean fullDL = (Boolean) inputParam.get(member_fullDL);
-		log.debug("fullDetailedList: " + fullDL);
+		log.debug("fullDetailedList: {}" , fullDL);
 
 		/* (6) allLevelRecursive */
 		Boolean allLR = (Boolean) inputParam.get(member_allLR);
-		log.debug("allLevelRecursive: " + allLR);
+		log.debug("allLevelRecursive: {}" , allLR);
 
 		/* (7) numOfLevels */
 		Integer numOL = (Integer) inputParam.get(member_numOL);
-		log.debug("numOfLevels: " + numOL);
+		log.debug("numOfLevels: {}" , numOL);
 
 		/* (8) offset */
 		Integer offset = (Integer) inputParam.get(member_offset);
-		log.debug("offset: " + offset);
+		log.debug("offset: {}" , offset);
 
 		/* (9) count */
 		Integer count = (Integer) inputParam.get(member_count);
-		log.debug("count: " + count);
+		log.debug("count: {}" , count);
 
 		LSInputData inputData;
 		if (guser != null) {

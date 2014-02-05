@@ -59,7 +59,7 @@ public class ExecCommand {
 				String eol = System.getProperty("line.separator");
 				while ((buff = br.readLine()) != null) {
 					readBuffer.append(buff).append(eol);
-					LOG.debug(" - output-reader: " + buff);
+					LOG.debug(" - output-reader: {}" , buff);
 				}
 
 				output = readBuffer.toString();
@@ -69,8 +69,8 @@ public class ExecCommand {
 
 			} catch (IOException e) {
 				LOG
-					.warn("IO Exception occours when retrieve output form the execution on a native command. "
-						+ e.getMessage());
+					.warn("IO Exception occours when retrieve output from the execution on a native command. {}"
+						, e.getMessage());
 			} finally {
 				IOUtils.closeQuietly(br);
 				IOUtils.closeQuietly(isr);
@@ -124,7 +124,7 @@ public class ExecCommand {
 		try {
 			ProcessBuilder pb = new ProcessBuilder(this.command);
 			Process process = pb.start();
-			LOG.debug("Running command: '" + command + "'");
+			LOG.debug("Running command: '{}'" , command);
 
 			int corePoolSize = 3;
 			int maxPoolSize = 3;
@@ -160,31 +160,31 @@ public class ExecCommand {
 			LOG.debug("END WaitFor the result of Native Command.");
 
 		} catch (IOException e) {
-			LOG.warn("IO Exception occours during the execution of a native command "
-				+ command + ". " + e.getMessage());
+			LOG.warn("IO Exception occours during the execution of a native command {}. {}"
+				, command , e.getMessage());
 			result = 1;
 		} catch (InterruptedException e) {
 			LOG
-				.warn("Interrupted Exception occours during the execution of a native command "
-					+ command + ". " + e.getMessage());
+				.warn("Interrupted Exception occours during the execution of a native command {}. {}"
+					, command , e.getMessage());
 			result = 2;
 		} catch (TimeoutException e) {
-			LOG.warn("Native command " + command + " was in TimeOut.");
+			LOG.warn("Native command {}  was in TimeOut." , command);
 			result = 3;
 		} catch (NullPointerException npe) {
-			LOG.error("The command to execute is NULL! " + npe);
+			LOG.error("The command to execute is NULL!" , npe);
 			result = 4;
 		} catch (SecurityException se) {
-			LOG.error("The program have Security limitation to execute the command '"
-				+ command + "'." + se);
+			LOG.error("The program have Security limitation to execute the command '{}'"
+				, command , se);
 			result = 5;
 		} catch (IllegalArgumentException iae) {
-			LOG.error("The command to execute is EMPTY or ILLEGAL ('" + command
-				+ "')! " + iae);
+			LOG.error("The command to execute is EMPTY or ILLEGAL {}" , command
+				, iae);
 			result = 6;
 		} catch (ExecutionException e) {
-			LOG.error("Execution Exception during the execution of '" + command
-				+ "'! " + e);
+			LOG.error("Execution Exception during the execution of {}" , command
+			 , e);
 			result = 7;
 		}
 		return result;
@@ -201,22 +201,22 @@ public class ExecCommand {
 				} else {
 					outputResult = outputFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
 				}
-				LOG.debug(" .. :" + outputResult);
+				LOG.debug(" .. :{}" , outputResult);
 			} else {
 				LOG.warn("Unable to get outputResult value. outputResult is NULL");
 			}
 		} catch (ExecutionException e) {
 			LOG
-				.warn("ExecutionException occours when retrieving OUTPUT stream returned by native command."
-					+ e.getMessage());
+				.warn("ExecutionException occours when retrieving OUTPUT stream returned by native command: {}"
+					, e.getMessage());
 		} catch (TimeoutException e) {
 			LOG
-				.warn("Timeout occours when retrieving OUTPUT stream returned by native command."
-					+ e.getMessage());
+				.warn("Timeout occours when retrieving OUTPUT stream returned by native command: {}"
+					, e.getMessage());
 		} catch (InterruptedException e) {
 			LOG
-				.warn("Interrupt occours when retrieving OUTPUT stream returned by native command."
-					+ e.getMessage());
+				.warn("Interrupt occours when retrieving OUTPUT stream returned by native command: {}"
+					, e.getMessage());
 		}
 		return outputResult;
 	}
@@ -231,20 +231,20 @@ public class ExecCommand {
 			} else {
 				errorResult = outputFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
 			}
-			LOG.debug(" .. :" + errorResult);
+			LOG.debug(" .. :{}" , errorResult);
 
 		} catch (ExecutionException e) {
 			LOG
-				.warn("ExecutionException occours when retrieving error stream returned by native command."
-					+ e.getMessage());
+				.warn("ExecutionException occours when retrieving error stream returned by native command: {}"
+					, e.getMessage());
 		} catch (TimeoutException e) {
 			LOG
-				.warn("Timeout occours when retrieving error stream returned by native command."
-					+ e.getMessage());
+				.warn("Timeout occours when retrieving error stream returned by native command: {}"
+					, e.getMessage());
 		} catch (InterruptedException e) {
 			LOG
-				.warn("Interrupt occours when retrieving error stream returned by native command."
-					+ e.getMessage());
+				.warn("Interrupt occours when retrieving error stream returned by native command: {}"
+					, e.getMessage());
 		}
 		return errorResult;
 	}
@@ -261,9 +261,9 @@ public class ExecCommand {
 				executorService.awaitTermination(millisecToWait, TimeUnit.MILLISECONDS);
 				LOG.debug("Shutted down!");
 			} catch (InterruptedException ie) {
-				LOG.debug("Interrupted excep. " + ie);
+				LOG.debug("Interrupted excep." , ie);
 			} finally {
-				LOG.debug("Tasks killed: " + executorService.shutdownNow().size());
+				LOG.debug("Tasks killed: {}" , executorService.shutdownNow().size());
 			}
 		}
 	}

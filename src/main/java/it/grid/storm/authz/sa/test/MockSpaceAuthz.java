@@ -17,18 +17,18 @@
 
 package it.grid.storm.authz.sa.test;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.griduser.GridUserInterface;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockSpaceAuthz implements SpaceAuthzInterface {
 
 	private static final String MOCK_ID = "mock-space-authz";
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(MockSpaceAuthz.class);
 
 	public MockSpaceAuthz() {
 

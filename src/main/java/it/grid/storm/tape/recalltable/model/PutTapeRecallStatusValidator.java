@@ -144,8 +144,7 @@ public class PutTapeRecallStatusValidator {
 		try {
 			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 		} catch (Exception e) {
-			log.warn("Unable to build a stori for surl " + surl
-				+ " UnapprochableSurlException: " + e.getMessage());
+			log.warn("Unable to build a stori for surl {} UnapprochableSurlException: {}" , surl , e.getMessage(),e);
 			return false;
 		}
 		return true;

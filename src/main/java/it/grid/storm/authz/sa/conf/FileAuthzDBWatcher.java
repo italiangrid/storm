@@ -20,8 +20,6 @@
  */
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
@@ -32,6 +30,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
@@ -39,7 +38,7 @@ import org.slf4j.Logger;
  */
 public class FileAuthzDBWatcher {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDBWatcher.class);
 	private String authzDBPath;
 	private Map<String, AuthzDBFileStatus> authzDBfiles; // <filename, status>
 	private final long delay = 1000; // 1 seconds
@@ -91,8 +90,7 @@ public class FileAuthzDBWatcher {
 				+ "' is not a directory!");
 		}
 		String[] authzDBs = authzPath.list(authzDBFileFilter);
-		log.debug("Found " + authzDBs.length + " authzDBs in '" + authzDBPath
-			+ "' path.");
+		log.debug("Found {} authzDBs in '{}' path.", authzDBs.length, authzDBPath);
 		for (String authzDB : authzDBs) {
 			authzDBfiles.put(authzDB, status);
 		}
@@ -125,7 +123,7 @@ public class FileAuthzDBWatcher {
 
 		timer.schedule(fWatcher, delay, period);
 		log.debug("AuthzDB-Watcher started.");
-		log.debug(" and observing the files: " + authzDBfiles);
+		log.debug(" and observing the files: {}", authzDBfiles);
 	}
 
 	public void onChange(String dbFileName) {
@@ -146,7 +144,7 @@ public class FileAuthzDBWatcher {
 
 		long parsingTime = System.currentTimeMillis();
 		fWatcher.setParsingTime(dbFileName, parsingTime);
-		log.debug("Authz DB '" + dbFileName + "' parsed");
+		log.debug("Authz DB '{}' parsed", dbFileName);
 	}
 
 	/**
@@ -197,17 +195,15 @@ public class FileAuthzDBWatcher {
 		public void setParsingTime(String dbFileName, long parsingTime) {
 
 			lastModification.put(dbFileName, parsingTime);
-			log.debug("Watcher updated with the occurred parsing of '" + dbFileName
-				+ "'");
+			log.debug("Watcher updated with the occurred parsing of '{}'", dbFileName);
 		}
 
 		public long getParsingTime(String dbFileName) {
 
 			if (lastModification.containsKey(dbFileName)) {
 				return lastModification.get(dbFileName).longValue();
-			} else {
-				return -1L;
 			}
+			return -1L;
 		}
 
 		/*
@@ -221,13 +217,11 @@ public class FileAuthzDBWatcher {
 			// Check for new authz db files
 			File authzPath = new File(authzDBPath);
 			String[] authzDBs = authzPath.list(authzDBFileFilter);
-			log.debug("Found " + authzDBs.length + " authzDBs in '" + authzDBPath
-				+ "' path.");
+			log.debug("Found {} authzDBs in '{}' path.", authzDBs.length, authzDBPath);
 			for (String authzDB : authzDBs) {
 				if (!(authzDBfiles.containsKey(authzDB))) {
 					authzDBfiles.put(authzDB, AuthzDBFileStatus.ERROR1);
-					log.debug("Found a new authz files ('" + authzDB
-						+ "')in authzDB path.");
+					log.debug("Found a new authz files ('{}')in authzDB path.", authzDB);
 				}
 			}
 
@@ -237,11 +231,11 @@ public class FileAuthzDBWatcher {
 				f = new File(fileName);
 				if (!f.exists()) {
 					// authz DB file is disappeared
-					log.error("Unable to find the AuthzDB file '" + fileName + "' ");
+					log.error("Unable to find the AuthzDB file '{}'", fileName);
 					authzDBfiles.put(fileName, AuthzDBFileStatus.ERROR2);
 				}
 				if (f.lastModified() > lastModification.get(fileName)) {
-					log.debug("Found authzDB '" + fileName + "' modified!");
+					log.debug("Found authzDB '{}' modified!", fileName);
 					onChange(fileName);
 				}
 			}

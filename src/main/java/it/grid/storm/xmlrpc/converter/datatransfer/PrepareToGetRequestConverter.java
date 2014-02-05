@@ -39,8 +39,8 @@ public class PrepareToGetRequestConverter extends
 	public Map<String, Object> convertFromOutputData(OutputData outputData) {
 
 		if (!(outputData instanceof PrepareToGetOutputData)) {
-			log.error("Unable to convert from OutputData. Wrong OutputData type: \'"
-				+ outputData.getClass().getName() + "\'");
+			log.error("Unable to convert from OutputData. Wrong OutputData type: '{}'"
+				, outputData.getClass().getName());
 			throw new IllegalArgumentException(
 				"Unable to convert from OutputData. Wrong OutputData type: \'"
 					+ outputData.getClass().getName() + "\'");
@@ -50,7 +50,7 @@ public class PrepareToGetRequestConverter extends
 		ptgOutputData.getFileSize().encode(outputParam, TSizeInBytes.PNAME_SIZE);
 		ptgOutputData.getRemainingPinTime().encode(outputParam,
 			TLifeTimeInSeconds.PNAME_PINLIFETIME);
-		log.debug("Built output Map: " + outputParam.toString());
+		log.debug("Built output Map: {}" , outputParam.toString());
 		return outputParam;
 	}
 

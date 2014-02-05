@@ -103,9 +103,9 @@ public class StorageSpaceData {
 
 		boolean ok = (spaceType != null
 			&& ((guOwner != null) || (spaceType == TSpaceType.VOSPACE)) && spaceTokenAlias != null);
-		log.debug("Storage Space Data - User identity : " + guOwner);
-		log.debug("Storage Space Data - Space Type : " + spaceType);
-		log.debug("Storage Space Data - Space Token Alias : " + spaceTokenAlias);
+		log.debug("Storage Space Data - User identity : {}" , guOwner);
+		log.debug("Storage Space Data - Space Type : {}" , spaceType);
+		log.debug("Storage Space Data - Space Token Alias : {}" , spaceTokenAlias);
 
 		if (!ok) {
 			throw new InvalidSpaceDataAttributesException(guOwner);
@@ -154,22 +154,22 @@ public class StorageSpaceData {
 						ssTO.getVoName());
 				} catch (IllegalArgumentException e) {
 					log
-						.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-							+ e.getMessage());
+						.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException {}"
+							, e.getMessage(),e);
 					throw e;
 				}
 			} else {
 				this.owner = GridUserManager.makeGridUser(ssTO.getOwnerName());
 			}
 			if (this.owner != null) {
-				log.trace("StorageSpaceData - Owner: " + this.owner.toString());
+				log.trace("StorageSpaceData - Owner: {}" , this.owner.toString());
 			} else {
 				log.trace("StorageSpaceData - Owner: NULL");
 			}
 			// TYPE of Storage Space
 			this.spaceType = TSpaceType.getTSpaceType(ssTO.getSpaceType());
 			if (this.spaceType != null) {
-				log.trace("StorageSpaceData - spaceType: " + this.spaceType);
+				log.trace("StorageSpaceData - spaceType: {}" , this.spaceType);
 			} else {
 				log.trace("StorageSpaceData - spaceType: NULL");
 			}
@@ -177,7 +177,7 @@ public class StorageSpaceData {
 			this.spaceTokenAlias = ssTO.getAlias();
 			if (this.spaceTokenAlias != null) {
 				log
-					.trace("StorageSpaceData - spaceTokenAlias: " + this.spaceTokenAlias);
+					.trace("StorageSpaceData - spaceTokenAlias: {}" , this.spaceTokenAlias);
 			} else {
 				log.trace("StorageSpaceData - spaceTokenAlias: NULL");
 			}
@@ -188,7 +188,7 @@ public class StorageSpaceData {
 				log.error("Error while constructing TSpaceToken", ex);
 			}
 			if (this.spaceToken != null) {
-				log.trace("StorageSpaceData - spaceToken: " + this.spaceToken);
+				log.trace("StorageSpaceData - spaceToken: {}" , this.spaceToken);
 			}
 
 			// Storage Space File Name
@@ -198,7 +198,7 @@ public class StorageSpaceData {
 				log.error("Error while constructing Storage Space File Name", e);
 			}
 			if (this.spaceFileName != null) {
-				log.trace("StorageSpaceData - spaceFileName: " + this.spaceFileName);
+				log.trace("StorageSpaceData - spaceFileName: {}" , this.spaceFileName);
 			}
 
 			// Life Time for Storage Space.
@@ -209,83 +209,83 @@ public class StorageSpaceData {
 				log.error("Error while constructing Space Life Time", e);
 			}
 			if (this.spaceLifetime != null) {
-				log.trace("StorageSpaceData - spaceLifetime: " + this.spaceLifetime);
+				log.trace("StorageSpaceData - spaceLifetime: {}" , this.spaceLifetime);
 			}
 			// Storage System Info.
 			// this.storageInfo = new TStorageSystemInfo("", true);
 			this.storageInfo = TStorageSystemInfo.make(ssTO.getStorageInfo());
 			if (this.storageInfo.getValue() != null) {
-				log.trace("StorageSpaceData - storageInfo: " + this.storageInfo);
+				log.trace("StorageSpaceData - storageInfo: {}" , this.storageInfo);
 			} else {
 				log.trace("StorageSpaceData - storageInfo: NULL");
 			}
 			// Creation time of Storage Space
 			this.creationDate = ssTO.getCreated();
 			if (this.creationDate != null) {
-				log.trace("StorageSpaceData - date: " + this.creationDate);
+				log.trace("StorageSpaceData - date: {}" , this.creationDate);
 			} else {
 				log.trace("StorageSpaceData - date: NULL");
 			}
 			// Space TOTAL Desired for Storage Space
 
-			log.debug("StorageSpaceData - TOTAL (Desired) size:"
-				+ ssTO.getTotalSize());
+			log.debug("StorageSpaceData - TOTAL (Desired) size: {}"
+				, ssTO.getTotalSize());
 			this.totalSpaceSize = TSizeInBytes.makeEmpty();
 			if (ssTO.getTotalSize() >= 0) {
 				try {
 					this.totalSpaceSize = TSizeInBytes.make(ssTO.getTotalSize(),
 						SizeUnit.BYTES);
-					log.trace("StorageSpaceData - TotalSize (desired): "
-						+ this.totalSpaceSize);
+					log.trace("StorageSpaceData - TotalSize (desired): {}"
+						, this.totalSpaceSize);
 				} catch (InvalidTSizeAttributesException ex1) {
 					log.error("Error while constructing TotalSize (desired)", ex1);
 				}
 			} else {
-				log.trace("StorageSpaceData - TotalSize (desired): EMPTY "
-					+ this.totalSpaceSize);
+				log.trace("StorageSpaceData - TotalSize (desired): EMPTY {}"
+					, this.totalSpaceSize);
 			}
 			// Space TOTAL Guaranteed for Storage Space
 
-			log.debug("StorageSpaceData - TOTAL (Guaranteed) size:"
-				+ ssTO.getGuaranteedSize());
+			log.debug("StorageSpaceData - TOTAL (Guaranteed) size: {}"
+				, ssTO.getGuaranteedSize());
 			this.setTotalGuaranteedSize(TSizeInBytes.makeEmpty());
 			if (ssTO.getGuaranteedSize() >= 0) {
 				try {
 					this.totalGuaranteedSize = TSizeInBytes.make(
 						ssTO.getGuaranteedSize(), SizeUnit.BYTES);
-					log.trace("StorageSpaceData - TotalSize (guaranteed): "
-						+ this.totalGuaranteedSize);
+					log.trace("StorageSpaceData - TotalSize (guaranteed): {}"
+						, this.totalGuaranteedSize);
 				} catch (InvalidTSizeAttributesException ex2) {
 					log.error("Error while constructing SpaceGuaranteed", ex2);
 				}
 			} else {
 				// log.debug("StorageSpaceData - TotalSize (guaranteed): EMPTY " +
 				// this.reservedSpaceSize);
-				log.trace("StorageSpaceData - TotalSize (guaranteed): EMPTY "
-					+ this.totalGuaranteedSize);
+				log.trace("StorageSpaceData - TotalSize (guaranteed): EMPTY {}"
+					, this.totalGuaranteedSize);
 			}
 
 			// AVAILABLE space
-			log.trace("StorageSpaceData - AVAILABLE size:" + ssTO.getAvailableSize());
+			log.trace("StorageSpaceData - AVAILABLE size: {}" , ssTO.getAvailableSize());
 			// this.availableSpaceSize = TSizeInBytes.makeEmpty();
 			this.forceAvailableSpaceSize(TSizeInBytes.makeEmpty());
 			if (ssTO.getAvailableSize() >= 0) {
 				try {
 					this.forceAvailableSpaceSize(TSizeInBytes.make(
 						ssTO.getAvailableSize(), SizeUnit.BYTES));
-					log.trace("StorageSpaceData - AVAILABLE size : "
-						+ this.getAvailableSpaceSize());
+					log.trace("StorageSpaceData - AVAILABLE size : {}"
+						, this.getAvailableSpaceSize());
 				} catch (InvalidTSizeAttributesException ex3) {
 					log.error("Error while constructing AvailableSpaceSize", ex3);
 				}
 			} else {
-				log.trace("StorageSpaceData - AVAILABLE size : EMPTY "
-					+ this.getAvailableSpaceSize());
+				log.trace("StorageSpaceData - AVAILABLE size : EMPTY {}"
+					, this.getAvailableSpaceSize());
 			}
 
 			// FREE space
-			log.trace("StorageSpaceData - FREE (= available + unavailable) size :"
-				+ ssTO.getFreeSize());
+			log.trace("StorageSpaceData - FREE (= available + unavailable) size : {}"
+				, ssTO.getFreeSize());
 			this.forceFreeSpaceSize(TSizeInBytes.makeEmpty());
 			if (ssTO.getFreeSize() >= 0) {
 				try {
@@ -293,88 +293,88 @@ public class StorageSpaceData {
 					this.forceFreeSpaceSize(TSizeInBytes.make(ssTO.getFreeSize(),
 						SizeUnit.BYTES));
 					log
-						.trace("StorageSpaceData - FREE (= available + unavailable) size : "
-							+ this.getFreeSpaceSize());
+						.trace("StorageSpaceData - FREE (= available + unavailable) size : {}"
+							, this.getFreeSpaceSize());
 				} catch (InvalidTSizeAttributesException ex3) {
 					log.error("Error while constructing FreeSpaceSize", ex3);
 				}
 			} else {
 				log
-					.trace("StorageSpaceData - FREE (= available + unavailable) size : EMPTY "
-						+ this.getFreeSpaceSize());
+					.trace("StorageSpaceData - FREE (= available + unavailable) size : EMPTY {}"
+						, this.getFreeSpaceSize());
 			}
 
 			// USED space
-			log.debug("StorageSpaceData - USED size:" + ssTO.getUsedSize());
+			log.debug("StorageSpaceData - USED size: {}" , ssTO.getUsedSize());
 			this.usedSpaceSize = TSizeInBytes.makeEmpty();
 			if (ssTO.getUsedSize() >= 0) {
 				try {
 					this.usedSpaceSize = TSizeInBytes.make(ssTO.getUsedSize(),
 						SizeUnit.BYTES);
-					log.trace("StorageSpaceData - USED size: " + this.usedSpaceSize);
+					log.trace("StorageSpaceData - USED size: {}" , this.usedSpaceSize);
 				} catch (InvalidTSizeAttributesException ex3) {
 					log.error("Error while constructing UsedSpaceSize", ex3);
 				}
 			} else {
-				log.trace("StorageSpaceData - USED size: EMPTY " + this.usedSpaceSize);
+				log.trace("StorageSpaceData - USED size: EMPTY {}" , this.usedSpaceSize);
 			}
 
 			// BUSY space
 			log
-				.debug("StorageSpaceData - BUSY (= used + reserved + unavailable) size:"
-					+ ssTO.getBusySize());
+				.debug("StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}"
+					, ssTO.getBusySize());
 			this.forceBusySpaceSize(TSizeInBytes.makeEmpty());
 			if (ssTO.getBusySize() >= 0) {
 				try {
 					this.forceBusySpaceSize(TSizeInBytes.make(ssTO.getBusySize(),
 						SizeUnit.BYTES));
 					log
-						.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size:"
-							+ this.getBusySpaceSize());
+						.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}"
+							, this.getBusySpaceSize());
 				} catch (InvalidTSizeAttributesException ex3) {
 					log.error("Error while constructing BusySpaceSize", ex3);
 				}
 			} else {
 				log
-					.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: EMPTY "
-						+ this.getBusySpaceSize());
+					.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: EMPTY {}"
+						, this.getBusySpaceSize());
 			}
 
 			// UNAVAILABLE space
 
-			log.trace("StorageSpaceData - UNAVAILABLE size:"
-				+ ssTO.getUnavailableSize());
+			log.trace("StorageSpaceData - UNAVAILABLE size: {}"
+				, ssTO.getUnavailableSize());
 			this.unavailableSpaceSize = TSizeInBytes.makeEmpty();
 			if (ssTO.getUnavailableSize() >= 0) {
 				try {
 					this.unavailableSpaceSize = TSizeInBytes.make(
 						ssTO.getUnavailableSize(), SizeUnit.BYTES);
-					log.trace("StorageSpaceData - UNAVAILABLE size: "
-						+ this.unavailableSpaceSize);
+					log.trace("StorageSpaceData - UNAVAILABLE size: {}"
+						, this.unavailableSpaceSize);
 				} catch (InvalidTSizeAttributesException ex3) {
 					log.error("Error while constructing UnavailableSpaceSize", ex3);
 				}
 			} else {
-				log.trace("StorageSpaceData - UNAVAILABLE size: EMPTY "
-					+ this.unavailableSpaceSize);
+				log.trace("StorageSpaceData - UNAVAILABLE size: EMPTY {}"
+					, this.unavailableSpaceSize);
 			}
 
 			// Space Reserved for Storage Space
-			log.trace("StorageSpaceData - TOTAL (Reserved) size:"
-				+ ssTO.getReservedSize());
+			log.trace("StorageSpaceData - TOTAL (Reserved) size: {}"
+				, ssTO.getReservedSize());
 			this.reservedSpaceSize = TSizeInBytes.makeEmpty();
 			if (ssTO.getReservedSize() >= 0) {
 				try {
 					this.reservedSpaceSize = TSizeInBytes.make(ssTO.getReservedSize(),
 						SizeUnit.BYTES);
-					log.trace("StorageSpaceData - TotalSize (reserved): "
-						+ this.reservedSpaceSize);
+					log.trace("StorageSpaceData - TotalSize (reserved): {}"
+						, this.reservedSpaceSize);
 				} catch (InvalidTSizeAttributesException ex2) {
 					log.error("Error while constructing SpaceReserved", ex2);
 				}
 			} else {
-				log.trace("StorageSpaceData - Reserved : EMPTY "
-					+ this.reservedSpaceSize);
+				log.trace("StorageSpaceData - Reserved : EMPTY {}"
+					, this.reservedSpaceSize);
 			}
 		}
 
@@ -736,9 +736,9 @@ public class StorageSpaceData {
 						this.totalSpaceSize.value() - this.getBusySpaceSize().value(),
 						SizeUnit.BYTES);
 				} catch (InvalidTSizeAttributesException e) {
-					log.warn("Unable to produce the TSizeInBytes object from \'"
-						+ (this.totalSpaceSize.value() - this.getBusySpaceSize().value())
-						+ "\' and \'" + SizeUnit.BYTES + "\'");
+					log.warn("Unable to produce the TSizeInBytes object from '{}' and '{}'"
+						, (this.totalSpaceSize.value() - this.getBusySpaceSize().value())
+						, SizeUnit.BYTES);
 					this.availableSpaceSize = TSizeInBytes.makeEmpty();
 				}
 			}

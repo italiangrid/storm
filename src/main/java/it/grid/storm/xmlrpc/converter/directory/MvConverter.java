@@ -67,10 +67,10 @@ public class MvConverter implements Converter {
 	 */
 	public InputData convertToInputData(Map inputParam) {
 
-		log.debug("SrmMv: Converter :Call received :Creation of MvInputData = "
-			+ inputParam.size());
-		log.debug("SrmMv: Converter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+		log.debug("SrmMv: Converter :Call received :Creation of MvInputData = {}"
+			, inputParam.size());
+		log.debug("SrmMv: Converter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		GridUserInterface guser = GridUserManager.decode(inputParam);
 
@@ -79,7 +79,7 @@ public class MvConverter implements Converter {
 		try {
 			fromSURL = TSURL.decode(inputParam, TSURL.PNAME_FROMSURL);
 		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
+			log.debug("SrmMv: ErrorCreating surl: {}" , e1.toString(),e1);
 		}
 
 		/* (3) toSURL */
@@ -87,7 +87,7 @@ public class MvConverter implements Converter {
 		try {
 			toSURL = TSURL.decode(inputParam, TSURL.PNAME_TOSURL);
 		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMv: ErrorCreating surl: " + e1.toString());
+			log.debug("SrmMv: ErrorCreating surl: {}" , e1.toString(),e1);
 		}
 
 		MvInputData inputData;

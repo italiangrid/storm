@@ -26,6 +26,11 @@ package it.grid.storm.authz;
  */
 public class AuthzException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public AuthzException() {
 
 		super();

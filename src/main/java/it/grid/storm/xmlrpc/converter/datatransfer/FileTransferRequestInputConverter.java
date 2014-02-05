@@ -55,16 +55,14 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 
 		TSURL surl = decodeSURL(inputParam);
 		if (surl == null) {
-			log.error("Missing mandatory parameter \'" + TSURL.PNAME_SURL
-				+ "\' Unable to build FileTransferInputData");
+			log.error("Missing mandatory parameter '{}' Unable to build FileTransferInputData" , TSURL.PNAME_SURL);
 			throw new IllegalArgumentException("Missing mandatory parameter \'"
 				+ TSURL.PNAME_SURL + "\'");
 		}
 		GridUserInterface user = decodeUser(inputParam);
 		TURLPrefix transferProtocols = decodeTransferProtocols(inputParam);
 		if (transferProtocols == null) {
-			log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
-				+ "\' Unable to build FileTransferInputData");
+			log.error("Missing mandatory parameter '{}' Unable to build FileTransferInputData" , TURLPrefix.PNAME_TURL_PREFIX);
 			throw new IllegalArgumentException("Missing mandatory parameter \'"
 				+ TURLPrefix.PNAME_TURL_PREFIX + "\'");
 		}
@@ -79,8 +77,8 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 			}
 		} catch (IllegalArgumentException e) {
 			log
-				.error("Unable to build FileTransferInputData. IllegalArgumentException: "
-					+ e.getMessage());
+				.error("Unable to build FileTransferInputData. IllegalArgumentException: {}"
+					, e.getMessage(),e);
 			throw new StoRMXmlRpcException("Unable to build FileTransferInputData");
 		}
 		TLifeTimeInSeconds desiredPinLifetime = decodeDesiredPinLifetime(inputParam);
@@ -99,14 +97,14 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 		throws IllegalArgumentException {
 
 		if (outputData == null) {
-			log.error("Unable to build an output map. Null argument: outputData= "
-				+ outputData);
+			log.error("Unable to build an output map. Null argument: outputData={}"
+				, outputData);
 			throw new IllegalArgumentException(
 				"Unable to build a valid output map, null argument");
 		}
 		if (!(outputData instanceof FileTransferOutputData)) {
-			log.error("Unable to convert from OutputData. Wrong OutputData type: \'"
-				+ outputData.getClass().getName() + "\'");
+			log.error("Unable to convert from OutputData. Wrong OutputData type: '{}'"
+				, outputData.getClass().getName());
 			throw new IllegalArgumentException(
 				"Unable to convert from OutputData. Wrong OutputData type: \'"
 					+ outputData.getClass().getName() + "\'");
@@ -120,8 +118,8 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 			|| turl == null || status == null || requestToken == null
 			|| requestToken.getValue() == null || requestToken.getValue().isEmpty()) {
 			log
-				.error("Unable to build a valid output map. Missing mandatory values from FileTransferOutputData: "
-					+ ftOutputData.toString());
+				.error("Unable to build a valid output map. Missing mandatory values from FileTransferOutputData: {}"
+					, ftOutputData.toString());
 			throw new IllegalArgumentException(
 				"Unable to build a valid output map from FileTransferOutputData");
 		}
@@ -130,7 +128,7 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 		turl.encode(outputParam, TTURL.PNAME_TURL);
 		status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 		outputParam.put(TRequestToken.PNAME_REQUESTOKEN, requestToken.toString());
-		log.debug("Built output Map: " + outputParam.toString());
+		log.debug("Built output Map: {}" , outputParam.toString());
 		return outputParam;
 	}
 
@@ -152,8 +150,7 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 		TURLPrefix transferProtocols = TURLPrefix.decode(inputParam,
 			TURLPrefix.PNAME_TURL_PREFIX);
 		if (transferProtocols == null) {
-			log.error("Missing mandatory parameter \'" + TURLPrefix.PNAME_TURL_PREFIX
-				+ "\' Unable to build FileTransferInputData");
+			log.error("Missing mandatory parameter '{}' Unable to build FileTransferInputData" , TURLPrefix.PNAME_TURL_PREFIX);
 			throw new IllegalArgumentException("Missing mandatory parameter \'"
 				+ TURLPrefix.PNAME_TURL_PREFIX + "\'");
 		}
@@ -172,9 +169,8 @@ public abstract class FileTransferRequestInputConverter implements Converter {
 		try {
 			surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
 		} catch (InvalidTSURLAttributesException e) {
-			log.error("Unable to decode \'" + TSURL.PNAME_SURL
-				+ "\' parameter as TSURL. InvalidTSURLAttributesException: "
-				+ e.getMessage());
+			log.error("Unable to decode '{}' parameter as TSURL. InvalidTSURLAttributesException: {}" , TSURL.PNAME_SURL
+				, e.getMessage(),e);
 			throw new IllegalArgumentException("Unable to decode \'"
 				+ TSURL.PNAME_SURL + "\' parameter as TSURL");
 		}

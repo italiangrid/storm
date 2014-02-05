@@ -93,8 +93,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getNumberInProgress();
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks currently in progress. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks currently in progress. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -114,8 +114,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getNumberInProgress(voName);
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks currently in progress. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks currently in progress. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -134,8 +134,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getNumberQueued();
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks queued. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks queued. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -154,8 +154,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getNumberQueued(voName);
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks queued. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks queued. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -176,8 +176,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getReadyForTakeOver();
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks ready for the take-over. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks ready for the take-over. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -197,8 +197,8 @@ public class TapeRecallCatalog {
 			result = tapeRecallDAO.getReadyForTakeOver(voName);
 		} catch (DataAccessException e) {
 			log
-				.error("Unable to retrieve the number of tasks ready for the take-over. DataAccessException: "
-					+ e.getMessage());
+				.error("Unable to retrieve the number of tasks ready for the take-over. DataAccessException: {}"
+					, e.getMessage(),e);
 			throw e;
 		}
 		return result;
@@ -258,10 +258,10 @@ public class TapeRecallCatalog {
 	public void purgeCatalog(int n) {
 
 		try {
-			log.debug("purging.. '" + n + "' tasks.");
+			log.debug("purging.. '{}' tasks.", n);
 			tapeRecallDAO.purgeCompletedTasks(n);
 		} catch (DataAccessException e) {
-			log.error("Unable to takeover a task", e);
+			log.error("Unable to takeover a task {}", e);
 		}
 	}
 
@@ -278,7 +278,7 @@ public class TapeRecallCatalog {
 		try {
 			taskList.addAll(tapeRecallDAO.takeoverTasksWithDoubles(numberOfTaks));
 		} catch (DataAccessException e) {
-			log.error("Unable to takeover " + numberOfTaks + " tasks", e);
+			log.error("Unable to takeover {} tasks" , numberOfTaks , e);
 		}
 		return taskList;
 	}
@@ -328,7 +328,7 @@ public class TapeRecallCatalog {
 		try {
 			task = tapeRecallDAO.takeoverTask(voName);
 		} catch (DataAccessException e) {
-			log.error("Unable to takeover a task for vo " + voName, e);
+			log.error("Unable to takeover a task for vo {}" , voName, e);
 		}
 		return task;
 	}
@@ -345,8 +345,7 @@ public class TapeRecallCatalog {
 			taskList.addAll(tapeRecallDAO.takeoverTasksWithDoubles(numberOfTaks,
 				voName));
 		} catch (DataAccessException e) {
-			log.error("Unable to takeover " + numberOfTaks + " tasks for vo "
-				+ voName, e);
+			log.error("Unable to takeover {} tasks for vo {}" , numberOfTaks , voName, e);
 		}
 		return taskList;
 	}
@@ -412,9 +411,7 @@ public class TapeRecallCatalog {
 				TapeRecallStatus.IN_PROGRESS.getStatusId() }, newGroupTaskId);
 
 		if (newGroupTaskId != groupTaskId) {
-			log.debug("Task with taskId " + task.getTaskId()
-				+ " of request with token " + task.getRequestTokenStr()
-				+ " has benn added to an existentr group : " + groupTaskId);
+			log.debug("Task with taskId {} of request with token {} has benn added to an existent group : " , task.getTaskId(),task.getRequestTokenStr(), groupTaskId);
 		}
 		return groupTaskId;
 	}
@@ -479,17 +476,15 @@ public class TapeRecallCatalog {
 				if ((recallTaskStatus == TapeRecallStatus.IN_PROGRESS)
 					|| (recallTaskStatus == TapeRecallStatus.QUEUED)) {
 					log
-						.warn("Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not "
-							+ "a legal operation, doing it anyway. groupTaskId="
-							+ groupTaskId);
+						.warn("Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not a legal operation, doing it anyway. groupTaskId={}", groupTaskId);
 				} else {
 					// the status is a terminal status
 					chunkBucket = recallBuckets.remove(groupTaskId);
 					// end
 					if (chunkBucket == null) {
 						log
-							.error("Unable to perform the final status update. No bucket found for Recall Group Task ID "
-								+ groupTaskId.toString());
+							.error("Unable to perform the final status update. No bucket found for Recall Group Task ID {}"
+								, groupTaskId.toString());
 						throw new DataAccessException(
 							"Unable to perform the final status update. No bucket found for Recall Group Task ID "
 								+ groupTaskId.toString());

@@ -68,10 +68,10 @@ public class ReleaseSpaceConverter implements Converter {
 	public InputData convertToInputData(Map inputParam) {
 
 		log
-			.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = "
-				+ inputParam.size());
-		log.debug("ReleaseSpaceConverter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+			.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = {}"
+				, inputParam.size());
+		log.debug("ReleaseSpaceConverter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		GridUserInterface guser = GridUserManager.decode(inputParam);
 

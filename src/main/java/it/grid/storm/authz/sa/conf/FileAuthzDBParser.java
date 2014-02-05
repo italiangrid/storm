@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.AuthzDBReaderInterface;
@@ -27,6 +26,7 @@ import java.util.Observer;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileAuthzDBParser implements Observer {
 
@@ -35,7 +35,7 @@ public class FileAuthzDBParser implements Observer {
 	private final AuthzDBInterface authzFileDB;
 	private SpaceAuthzInterface spaceAuthz = null;
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDBParser.class);
 
 	public FileAuthzDBParser(SpaceAuthzInterface spaceAuthz,
 		AuthzDBReaderInterface reader, boolean verboseLogging) {
@@ -80,7 +80,7 @@ public class FileAuthzDBParser implements Observer {
 
 	public void update(Observable observed, Object arg) {
 
-		log.debug(arg + " Refreshing Namespace Memory Cache .. ");
+		log.debug("{} Refreshing Namespace Memory Cache .. ", arg);
 		// //////TEMPORARY FIX
 		// ////// THIS METHOD HAS BEEN COMMENTED TO MAKE EVERYTHING COMPILE
 		// FileAuthzDBReader reader = (FileAuthzDBReader) observed;

@@ -22,10 +22,15 @@ package it.grid.storm.authz.util;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author ritz
  */
 public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
+
+	private static final Logger log = LoggerFactory.getLogger(PathAuthzConfigurationWatcher.class);
 
 	/**
 	 * @param file
@@ -33,7 +38,7 @@ public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
 	public PathAuthzConfigurationWatcher(File file) {
 
 		super(file);
-		log.debug("Watcher manages the configuration file :" + file);
+		log.debug("Watcher manages the configuration file: {}", file);
 	}
 
 	/*

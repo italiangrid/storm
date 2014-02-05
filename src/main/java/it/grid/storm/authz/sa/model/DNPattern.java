@@ -373,13 +373,12 @@ public class DNPattern implements SubjectPattern {
 	public boolean isValidPattern() throws AuthzDBReaderException {
 
 		// Matches to the specification.
-		Matcher m = DNPattern.dnWildcardPattern.matcher(this.dnPatternString);
+		Matcher m = DNPattern.dnWildcardPattern.matcher(dnPatternString);
 		if (!m.matches()) {
 			if (checkValidity) {
-				throw new IllegalArgumentException("DN '" + this.dnPatternString + "'");
-			} else {
-				return false;
-			}
+				throw new IllegalArgumentException("DN '" + dnPatternString + "'");
+			} 
+			return false;
 		}
 		return true;
 	}
