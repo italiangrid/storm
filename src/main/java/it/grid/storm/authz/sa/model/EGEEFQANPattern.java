@@ -22,7 +22,12 @@ import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class EGEEFQANPattern extends FQANPattern {
+
+	private static final Logger log = LoggerFactory.getLogger(EGEEFQANPattern.class);
 
 	// To verify the Regular Expression visit the site
 	// "http://www.fileformat.info/tool/regex.htm"
@@ -31,8 +36,6 @@ public class EGEEFQANPattern extends FQANPattern {
 
 	private String fqanRE = null;
 	private String voName = null;
-	// private String groupPattern = null;
-	// private String rolePattern = null;
 	private final boolean checkValidity;
 
 	/**
@@ -98,10 +101,10 @@ public class EGEEFQANPattern extends FQANPattern {
 					groupPatternString = groupPatternString + "/" + groups[i];
 				}
 			}
-			log.debug("voName = " + voName);
-			log.debug("groupPattern = " + groupPatternString);
+			log.debug("voName = {}", voName);
+			log.debug("groupPattern = {}", groupPatternString);
 		}
-		log.debug("RolePattern = " + rolePatternString);
+		log.debug("RolePattern = {}", rolePatternString);
 	}
 
 	/**
@@ -116,9 +119,8 @@ public class EGEEFQANPattern extends FQANPattern {
 			if (checkValidity) {
 				throw new IllegalArgumentException("FQAN '" + fqanRE
 					+ "' is malformed (syntax: /VO[(/subgroup(s)|*)]][/Role=(role|*)])");
-			} else {
-				return false;
 			}
+			return false;
 		}
 		return true;
 	}

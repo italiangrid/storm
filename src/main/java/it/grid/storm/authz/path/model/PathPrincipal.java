@@ -33,15 +33,13 @@ public class PathPrincipal {
 
 	public PathPrincipal(String principal) {
 
-		if (principal.startsWith(prefix)) {
-			principalCategory = true;
-		}
+		principalCategory = principal.startsWith(prefix);
 		localGroupName = principal;
 	}
 
 	public boolean isLocalGroup() {
 
-		return (!(principalCategory));
+		return !principalCategory;
 	}
 
 	public String getLocalGroupName() {
@@ -51,16 +49,13 @@ public class PathPrincipal {
 
 	public boolean equals(Object o) {
 
-		boolean result = false;
 		if (o instanceof PathPrincipal) {
 			PathPrincipal op = (PathPrincipal) o;
 			if (op.isLocalGroup() && (isLocalGroup())) {
-				result = (op.getLocalGroupName().equals(getLocalGroupName()));
-			} else {
-				result = false;
+				return (op.getLocalGroupName().equals(getLocalGroupName()));
 			}
 		}
-		return result;
+		return false;
 	}
 
 	@Override

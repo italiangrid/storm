@@ -64,11 +64,10 @@ public class DNEveryonePattern extends DNPattern implements Everyone {
 	@Override
 	public boolean match(SubjectAttribute subjectAttribute) {
 
-		boolean result = false;
 		if (subjectAttribute instanceof DistinguishedName) {
-			result = true;
+			return true;
 		}
-		return result;
+		return false;
 	}
 
 }

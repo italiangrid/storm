@@ -38,12 +38,16 @@ public enum SRMFileRequest {
 	PTP_Overwrite("srmPrepareToPut-overwrite", "PTP-Over",
 		new ArrayList<PathOperation>() {
 
+			private static final long serialVersionUID = 1L;
+
 			{
 				add(PathOperation.WRITE_FILE);
 			}
 		}),
 
 	PTP("srmPrepareToPut", "PTP", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.CREATE_FILE);
@@ -53,12 +57,16 @@ public enum SRMFileRequest {
 
 	PTG("srmPrepareToGet", "PTG", new ArrayList<PathOperation>() {
 
+		private static final long serialVersionUID = 1L;
+
 		{
 			add(PathOperation.READ_FILE);
 		}
 	}),
 
 	CPto("srmCopy to", "CPto", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.WRITE_FILE);
@@ -69,12 +77,16 @@ public enum SRMFileRequest {
 	CPto_Overwrite("srmCopy to-overwrite", "CPto_Over",
 		new ArrayList<PathOperation>() {
 
+			private static final long serialVersionUID = 1L;
+
 			{
 				add(PathOperation.WRITE_FILE);
 			}
 		}),
 
 	CPfrom("srmCopy from", "CPfrom", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.READ_FILE);
@@ -84,12 +96,16 @@ public enum SRMFileRequest {
 	// OVERLOAD with OP
 	RM("srmRemove", "RM", new ArrayList<PathOperation>() {
 
+		private static final long serialVersionUID = 1L;
+
 		{
 			add(PathOperation.DELETE);
 		}
 	}),
 
 	RMD("srmRemoveDir", "RMD", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.DELETE);
@@ -98,6 +114,8 @@ public enum SRMFileRequest {
 
 	MD("srmMakeDir", "MD", new ArrayList<PathOperation>() {
 
+		private static final long serialVersionUID = 1L;
+
 		{
 			add(PathOperation.MAKE_DIRECTORY);
 		}
@@ -105,12 +123,16 @@ public enum SRMFileRequest {
 
 	LS("srmLS", "LS", new ArrayList<PathOperation>() {
 
+		private static final long serialVersionUID = 1L;
+
 		{
 			add(PathOperation.LIST_DIRECTORY);
 		}
 	}),
 
 	MV_source("srmMove-source", "MV-source", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.READ_FILE);
@@ -121,12 +143,16 @@ public enum SRMFileRequest {
 	MV_dest_Overwrite("srmMove-dest-overwrite", "MV-dest-Over",
 		new ArrayList<PathOperation>() {
 
+			private static final long serialVersionUID = 1L;
+
 			{
 				add(PathOperation.WRITE_FILE);
 			}
 		}),
 
 	MV_dest("srmMove-dest-overwrite", "MV-dest", new ArrayList<PathOperation>() {
+
+		private static final long serialVersionUID = 1L;
 
 		{
 			add(PathOperation.CREATE_FILE);
@@ -139,6 +165,11 @@ public enum SRMFileRequest {
 	private final PathAccessMask requestedPathOps;
 
 	private static HashMap<String, SRMFileRequest> ops = new HashMap<String, SRMFileRequest>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
 		{
 			put("PTP-Over", PTP_Overwrite);
@@ -204,9 +235,7 @@ public enum SRMFileRequest {
 	@Override
 	public String toString() {
 
-		String result;
-		result = srmOp + " : " + description + " = " + requestedPathOps;
-		return result;
+		return String.format("%s : %s = %s", srmOp, description, requestedPathOps);
 	}
 
 	public boolean isReadOnly() {

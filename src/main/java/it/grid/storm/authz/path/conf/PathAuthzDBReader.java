@@ -20,7 +20,6 @@
  */
 package it.grid.storm.authz.path.conf;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
@@ -36,13 +35,14 @@ import java.util.LinkedList;
 import java.io.FileNotFoundException;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
  */
 public class PathAuthzDBReader {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(PathAuthzDBReader.class);
 
 	private final String authzDBFilename;
 	private PathAuthzDB pathAuthzDB;
@@ -59,18 +59,16 @@ public class PathAuthzDBReader {
 				.namespaceConfigPath();
 			if (configurationPATH.length() == 0) {
 				String userDir = System.getProperty("user.dir");
-				log.debug("Unable to found the configuration path. Assume: '" + userDir
-					+ "'");
+				log.debug("Unable to found the configuration path. Assume: '{}'", userDir);
 				configurationPATH = userDir + File.separator + "etc";
 			}
 			authzDBFilename = configurationPATH + File.separator + filename;
 		} else {
 			authzDBFilename = filename;
 		}
-		log.debug("Loading Path Authz DB : '" + authzDBFilename + "'.");
+		log.debug("Loading Path Authz DB : '{}'", authzDBFilename);
 		pathAuthzDB = loadPathAuthzDB(authzDBFilename);
-		log
-			.info("Path Authz DB ('" + pathAuthzDB.getPathAuthzDBID() + "') loaded.");
+		log.info("Path Authz DB ('{}') loaded.", pathAuthzDB.getPathAuthzDBID());
 		log.info(pathAuthzDB.toString());
 	}
 
@@ -79,8 +77,7 @@ public class PathAuthzDBReader {
 		log.debug("<PathAuthzDBReader> Start refreshing.");
 		pathAuthzDB = loadPathAuthzDB(authzDBFilename);
 		log.debug("<PathAuthzDBReader> End refreshing.");
-		log.info("Path Authz DB ('" + pathAuthzDB.getPathAuthzDBID()
-			+ "') RE-loaded.");
+		log.info("Path Authz DB ('{}') RE-loaded.", pathAuthzDB.getPathAuthzDBID());
 		log.info(pathAuthzDB.toString());
 	}
 
@@ -100,11 +97,11 @@ public class PathAuthzDBReader {
 		if (existsAuthzDBFile(authzDBFilename)) {
 			log.debug("Parsing the Path Authz DB ...");
 			PathAuthzDB result = parsePathAuthzDB(authzDBFilename);
-			log.info("Loaded a Path Authz DB containing '" + result.getACL().size()
-				+ "' path ACE.");
+			log.info("Loaded a Path Authz DB containing '{}' path ACE.", 
+				result.getACL().size());
 			return result;
 		}
-		log.warn("Unable to get a valid Path Authz DB. Loaded the default one! ");
+		log.warn("Unable to get a valid Path Authz DB. Loaded the default one!");
 		return new PathAuthzDB();
 	}
 
@@ -120,8 +117,8 @@ public class PathAuthzDBReader {
 		try {
 			reader = new BufferedReader(new FileReader(authzDBFilename));
 		} catch (FileNotFoundException e) {
-			log.error("Unable to get a FIleReader on \'" + authzDBFilename
-				+ "\' . FileNotFoundException: " + e);
+			log.error("Unable to get a FIleReader on '{}'. FileNotFoundException: ", 
+				authzDBFilename, e.getMessage(), e);
 			throw new Exception("No file available at path \'" + authzDBFilename
 				+ "\' . FileNotFoundException: " + e.getMessage());
 		}
@@ -131,36 +128,35 @@ public class PathAuthzDBReader {
 				ParseLineResults parsedLine = parseLine(str);
 				switch (parsedLine.type) {
 				case COMMENT:
-					log.debug("comment line  : " + parsedLine.getComment());
+					log.debug("comment line  : {}", parsedLine.getComment());
 					break;
 				case ALGORITHM_NAME:
 					if (algorithm != null) {
-						log
-							.error("Attention! More than one Algorithm specified in configuration file: '"
-								+ parsedLine.getAlgorithmName() + "' , " + algorithm.getClass());
+						log.error("Attention! More than one Algorithm specified in "
+							+ "configuration file: '{}', {}", parsedLine.getAlgorithmName(), 
+							algorithm.getClass());
 						throw new Exception(
 							"More than one Algorithm specified in configuration file");
 					}
 					try {
 						algorithm = buildAlgorithmInstance(parsedLine.getAlgorithmName());
-						log.debug("algorithm name: " + parsedLine.getAlgorithmName());
+						log.debug("algorithm name: {}", parsedLine.getAlgorithmName());
 					} catch (Exception e) {
-						log.error("Unable to get Algorithm: '"
-							+ parsedLine.getAlgorithmName() + "'");
+						log.error("Unable to get Algorithm: '{}'", parsedLine.getAlgorithmName());
 						throw new Exception("Unable to build a valid Algorithm");
 					}
 					break;
 				case PATH_ACE:
 					aces.add(parsedLine.getPathAce());
-					log.debug("path ace      : " + parsedLine.getPathAce());
+					log.debug("path ace      : {}", parsedLine.getPathAce());
 					break;
 				case OTHER:
-					log.debug("something was wrong in '" + str + "'");
+					log.debug("something was wrong in '{}'", str);
 					break;
 				}
 			}
 		} catch (IOException e) {
-			log.error("Error while reading Path Authz DB '" + authzDBFilename + "'");
+			log.error("Error while reading Path Authz DB '{}'", authzDBFilename);
 			throw new Exception("Error while reading Path Authz DB. IOException: "
 				+ e);
 		} finally {
@@ -176,8 +172,8 @@ public class PathAuthzDBReader {
 		try {
 			clazz = Class.forName(algorithmName);
 		} catch (ClassNotFoundException e) {
-			log.error("Unable to load the Path Authz Algorithm Class '"
-				+ algorithmName + "' . ClassNotFoundException: " + e);
+			log.error("Unable to load the Path Authz Algorithm Class '{}'. "
+				+ "ClassNotFoundException: {}", algorithmName, e.getMessage(), e);
 			throw new Exception("Unable to load a class with name \'" + algorithmName
 				+ "\'");
 		}
@@ -185,8 +181,9 @@ public class PathAuthzDBReader {
 		try {
 			authzAlgClass = clazz.asSubclass(PathAuthzEvaluationAlgorithm.class);
 		} catch (ClassCastException e) {
-			log.error("The loaded class Class '" + algorithmName
-				+ "' is not a PathAuthzEvaluationAlgorithm. ClassCastException: " + e);
+			log.error("The loaded class Class '{}' is not a "
+				+ "PathAuthzEvaluationAlgorithm. ClassCastException: {}", 
+				algorithmName, e.getMessage(), e);
 			throw new Exception("Class \'" + algorithmName
 				+ "\' is not a PathAuthzEvaluationAlgorithm");
 		}
@@ -194,47 +191,45 @@ public class PathAuthzDBReader {
 		try {
 			instanceMethod = authzAlgClass.getMethod("getInstance", new Class[0]);
 		} catch (NoSuchMethodException e) {
-			log.error("The loaded class Class '" + algorithmName
-				+ "' has not a getInstance method. NoSuchMethodException: " + e);
+			log.error("The loaded class Class '{}' has not a getInstance method. "
+				+ "NoSuchMethodException: {}", algorithmName, e.getMessage(), e);
 			throw new Exception("Class \'" + algorithmName
 				+ "\' has not a getInstance method");
 		} catch (SecurityException e) {
-			log.error("Unable to get getInstance method. SecurityException: " + e);
+			log.error("Unable to get getInstance method. SecurityException: {}", 
+				e.getMessage(), e);
 			throw new Exception("Unable to get getInstance method");
 		}
 		if (instanceMethod == null) {
-			log.error("The retrieved getInstance methos is null");
-			throw new Exception("The retrieved getInstance methos is null");
+			log.error("The retrieved getInstance method is null");
+			throw new Exception("The retrieved getInstance method is null");
 		}
 		Object authzAlgInstance;
 		try {
 			authzAlgInstance = instanceMethod.invoke(null, new Object[0]);
 		} catch (IllegalAccessException e) {
-			log.error("Unable to call getInstance method. IllegalAccessException: "
-				+ e);
+			log.error("Unable to call getInstance method. IllegalAccessException: {}", 
+				e.getMessage(), e);
 			throw new Exception("Unable to call getInstance method");
 		} catch (IllegalArgumentException e) {
-			log.error("Unable to call getInstance method. IllegalArgumentException: "
-				+ e);
+			log.error("Unable to call getInstance method. IllegalArgumentException: {}", 
+				e.getMessage(), e);
 			throw new Exception("Unable to call getInstance method");
 		} catch (InvocationTargetException e) {
-			log
-				.error("Unable to call getInstance method. InvocationTargetException: "
-					+ e);
+			log.error("Unable to call getInstance method. InvocationTargetException: {}", 
+				e.getMessage(), e);
 			throw new Exception("Unable to call getInstance method");
 		}
 
 		if (authzAlgInstance instanceof PathAuthzEvaluationAlgorithm) {
-			log
-				.debug("Found a valid Path Authz Evaluation Algorithm. It implements the algorithm : "
-					+ ((PathAuthzEvaluationAlgorithm) authzAlgInstance).getDescription());
+			log.debug("Found a valid Path Authz Evaluation Algorithm. It implements "
+				+ "the algorithm : {}", 
+				((PathAuthzEvaluationAlgorithm) authzAlgInstance).getDescription());
 			return (PathAuthzEvaluationAlgorithm) authzAlgInstance;
 		} else {
-			log
-				.error("The method  getInstance of class '"
-					+ algorithmName
-					+ "' does not return a valid Path Authz Evaluation Algorithm object but a \'"
-					+ authzAlgInstance.getClass() + "\'");
+			log.error("The method  getInstance of class '{}' does not return a valid "
+				+ "Path Authz Evaluation Algorithm object but a '{}'", algorithmName, 
+				authzAlgInstance.getClass());
 			throw new Exception(
 				"Unable to get a valid instance of PathAuthzEvaluationAlgorithm");
 		}
@@ -273,9 +268,8 @@ public class PathAuthzDBReader {
 						result = new ParseLineResults(LineType.PATH_ACE);
 						result.setPathAce(ace);
 					} catch (AuthzException e) {
-						log
-							.error("Something of inexiplicable in the line " + pathACEString);
-						log.error(" - explanation: " + e.getMessage());
+						log.error("Something of inexiplicable in the line {}", pathACEString);
+						log.error(" - explanation: {}", e.getMessage());
 						result = new ParseLineResults(LineType.OTHER);
 					}
 
@@ -293,15 +287,15 @@ public class PathAuthzDBReader {
 
 		File file = new File(fileName);
 		if (!file.exists()) {
-			log.warn("The AuthzDB File '" + fileName + "' does not exists");
+			log.warn("The AuthzDB File '{}' does not exists", fileName);
 			return false;
 		}
 		if (!file.isFile()) {
-			log.warn("The AuthzDB File '" + fileName + "' is a directory");
+			log.warn("The AuthzDB File '{}' is a directory", fileName);
 			return false;
 		}
 		if (!file.canRead()) {
-			log.warn("The AuthzDB File '" + fileName + "' cannot be read");
+			log.warn("The AuthzDB File '{}' cannot be read", fileName);
 			return false;
 		}
 		return true;

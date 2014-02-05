@@ -20,26 +20,25 @@
  */
 package it.grid.storm.authz.path.model;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
  */
 public class PathACE {
 
-	private static final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(PathACE.class);
 
 	public static final String ALL_GROUPS_PATTERN = "@ALL@?|\\*";
 	public static final String ALL_GROUPS = "@ALL@";
@@ -214,8 +213,7 @@ public class PathACE {
 
 		Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
 		if (allGroupsMatcher.matches() || localGroupName.equals(subjectGroup)) {
-			log.debug("ACE (" + toString() + ") matches with the requestor '"
-				+ subjectGroup + "'");
+			log.debug("ACE ({}) matches with the requestor '{}'", this, subjectGroup);
 			return true;
 		}
 		return false;
@@ -227,18 +225,17 @@ public class PathACE {
 	@Override
 	public boolean equals(Object other) {
 
-		boolean result = false;
 		if (other instanceof PathACE) {
 			PathACE pathOther = (PathACE) other;
 			if (pathOther.getLocalGroupName() == localGroupName) {
 				if (pathOther.getStorageFileName().equals(storageFileName)) {
 					if (pathOther.getPathAccessMask().equals(pathAccessMask)) {
-						result = true;
+						return true;
 					}
 				}
 			}
 		}
-		return result;
+		return false;
 	}
 
 	@Override
@@ -258,19 +255,9 @@ public class PathACE {
 	@Override
 	public String toString() {
 
-		String result = "";
-		if (localGroupName == null) {
-			result += "NULL";
-		} else {
-			result += localGroupName;
-		}
-		result += " ";
-		result += storageFileName;
-		result += " ";
-		result += pathAccessMask;
-		result += " ";
-		result += isPermitACE ? "PERMIT" : "DENY";
-		return result;
+		return String.format("%s %s %s %s", 
+			localGroupName == null ? "NULL" : localGroupName, storageFileName, 
+				pathAccessMask, isPermitACE ? "PERMIT" : "DENY");
 	}
 
 }
