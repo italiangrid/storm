@@ -45,6 +45,9 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
@@ -57,6 +60,7 @@ import java.util.Map.Entry;
 
 public class PingCommand extends DiscoveryCommand implements Command {
 
+	public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
 	private static final String KEY_ELEMENT_KEY = "key=";
 
 	public PingCommand() {
