@@ -256,16 +256,15 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 
 		if ((directory.exists()) && (directory.isDirectory())) {
 			if (recursive) {
-				// All directory and files contained are removed.
-				log.debug(SRM_COMMAND
-					+ ": Recursive deletion. Removing dir with all files included! ");
+
+				log.debug("{}: Recursive deletion will remove directory and contents.", SRM_COMMAND);
+
 				if (!deleteDirectoryContent(directory)) {
 					return CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
 						"Unable to delete some files within directory.");
 				}
 			}
-			// Now Directory should be Empty;
-			// NON-Recursive Option
+
 			if (!removeFile(directory)) {
 				returnStatus = CommandHelper.buildStatus(
 					TStatusCode.SRM_NON_EMPTY_DIRECTORY, "Directory is not empty");
@@ -274,7 +273,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 					"Directory removed with success!");
 			}
 		} else {
-			log.debug("RMDIR : request with invalid directory specified!");
+			log.debug("{}: request with invalid directory specified!", SRM_COMMAND);
 			if (!directory.exists()) {
 				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 					"Directory does not exists");
@@ -322,8 +321,10 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 				list = file.listFiles();
 				if (list.length > 0) {
 					result = false;
-					log.info(SRM_COMMAND + ": Unable to delete the target file '" + file
-						+ "' . It is a not-empty directory.");
+					
+					log.info("{} : Unable to delete non-empty directory {}", 
+							SRM_COMMAND, file);
+
 				} else {
 					result = file.delete();
 				}
@@ -332,7 +333,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			}
 		} else {
 			result = false;
-			log.debug("RMDIR : the target file '" + file + "' does not exists! ");
+			log.debug("{}: file {} does not exist", SRM_COMMAND, file);
 		}
 		return result;
 	}
