@@ -56,16 +56,14 @@ public class MockSpaceSystem implements SpaceSystem {
 		java.io.File localFile = new java.io.File(pathToFile);
 		try {
 			localFile.createNewFile();
-		} catch (IOException ex) {
-			log.error("IO exception while creating local File named : " + pathToFile,
-				ex);
+		} catch (IOException e) {
+		  log.error(e.getMessage(), e);
 			throw new ReservationException(
-				"IO exception while creating local File named : " + pathToFile);
-		} catch (SecurityException sec_ex) {
-			log.error("Security exception while creating local File named : "
-				+ pathToFile, sec_ex);
+				"IO exception while creating local File named : " + pathToFile,e);
+		} catch (SecurityException e) {
+		  log.error(e.getMessage(), e);
 			throw new ReservationException(
-				"Security exception while creating local File named : " + pathToFile);
+				"Security exception while creating local File named : " + pathToFile, e);
 		}
 		return size;
 	}

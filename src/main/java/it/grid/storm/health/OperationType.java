@@ -19,27 +19,6 @@ package it.grid.storm.health;
 
 import it.grid.storm.scheduler.ChunkType;
 
-/**
- * 
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2008
- * </p>
- * 
- * <p>
- * Company:
- * </p>
- * 
- * @author not attributable
- * @version 1.0
- */
 public class OperationType {
 
 	private int operationIndex = -1;
@@ -97,14 +76,6 @@ public class OperationType {
 	public final static OperationType RS = new OperationType(17, "RS",
 		"srmReserveSpace", OperationTypeCategory.SYNCH_FS_DB);
 
-	/**
-	 * Constructor
-	 * 
-	 * @param protocolName
-	 *          String
-	 * @param protocolSchema
-	 *          String
-	 */
 	public OperationType(int operationIndex, String operationName,
 		String operationDescription, OperationTypeCategory opCat) {
 
@@ -114,12 +85,6 @@ public class OperationType {
 		this.opTypeCategory = opCat;
 	}
 
-	/**
-	 * 
-	 * @param chunkType
-	 *          ChunkType
-	 * @return OperationType
-	 */
 	public static OperationType makeFromChunkType(ChunkType chunkType) {
 
 		OperationType result = OperationType.UNDEF;
@@ -186,5 +151,4 @@ public class OperationType {
 		}
 		return result;
 	}
-
 }

@@ -48,8 +48,8 @@ public class FileSystemCheckerFactory {
 
 		if (instance == null) {
 			log
-				.info("FileSystemCheckerFactory not explicitaly initialized, using default checker type : "
-					+ defaultType);
+				.info("FileSystemCheckerFactory not explicitaly initialized, "
+				  + "using default checker type :{}",  defaultType);
 			init(defaultType);
 		}
 		return instance;
@@ -82,10 +82,10 @@ public class FileSystemCheckerFactory {
 		} else {
 			if (!instance.chosenType.equals(type)) {
 				log
-					.warn("Asked to initialize the already initialized FileSystemCheckerFactory "
-						+ "with FileSystemCheckerType "
-						+ type
-						+ ". Current FileSystemCheckerType is " + instance.chosenType);
+					.warn("FileSystemCheckerFactory already initialized for {}. "
+					  + "Cannot initialize it again for {}.",
+					 instance.chosenType,
+					 type);
 				throw new IllegalStateException(
 					"Asked to initialize the already initialized FileSystemCheckerFactory "
 						+ "with FileSystemCheckerType " + type

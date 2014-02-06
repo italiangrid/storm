@@ -92,13 +92,6 @@ public enum OperationTypeCategory {
 		this.acronym = acronym;
 	}
 
-	/*******************************************************
-	 * Public methods
-	 **/
-
-	/**
-     * 
-     */
 	public boolean contains(OperationType op) {
 
 		boolean result = false;
@@ -108,11 +101,6 @@ public enum OperationTypeCategory {
 		return result;
 	}
 
-	/**
-	 * 
-	 * @param opType
-	 * @return
-	 */
 	public OperationTypeCategory getCategory(OperationType opType) {
 
 		if (ASYNCH.contains(opType)) {
@@ -138,5 +126,4 @@ public enum OperationTypeCategory {
 
 		return this.acronym;
 	}
-
 }

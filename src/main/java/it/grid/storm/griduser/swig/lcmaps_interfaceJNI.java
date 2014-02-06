@@ -37,17 +37,19 @@ class lcmaps_interfaceJNI {
 				+ "'";
 			final org.slf4j.Logger log = org.slf4j.LoggerFactory
 				.getLogger(lcmaps_interfaceJNI.class);
-			log.error("Native code library " + libfile + " failed to load: ",
+
+			log.error("Native code library {} failed to load: {}", 
+			  libfile,
 				e.getMessage());
-			// give some informational details, may be useful when debugging
+
 			final String ldpath = System.getProperty("java.library.path");
 			if (null != ldpath)
-				log.info("Java VM searched for " + libfile + "in java.library.path: "
-					+ ldpath);
+				log.error("Java VM searched for {} in java.library.path: {}",
+				  libfile, ldpath);
 			else
-				log.info("Java VM library search path is null!");
+				log.error("Java VM library search path is null!");
 			log
-				.info("Add the library location to the environment variable LD_LIBRARY_PATH or to the Java property java.library.path");
+				.error("Add the library location to the environment variable LD_LIBRARY_PATH or to the Java property java.library.path");
 			throw new UnsatisfiedLinkError("Native code library " + libfile
 				+ " failed to load: " + e.getMessage());
 		}

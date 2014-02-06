@@ -62,7 +62,7 @@ public class HTTPPluginManager {
 					lock.wait();
 					log.debug("Initialization signaled!");
 				} catch (InterruptedException e) {
-					log.warn("Unexpected InterruptedException :" + e.getMessage());
+					log.warn(e.getMessage(),e);
 				}
 			}
 			if (!initialized) {

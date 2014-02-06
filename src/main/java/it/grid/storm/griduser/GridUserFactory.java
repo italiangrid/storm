@@ -37,26 +37,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 public class GridUserFactory {
 
 	private static final Logger log = GridUserManager.log;
@@ -106,7 +86,7 @@ public class GridUserFactory {
 	GridUserInterface createGridUser(String distinguishName) {
 
 		GridUserInterface user = new GridUser(defaultMapperClass, distinguishName);
-		log.debug("Created new Grid User (NO VOMS) : " + user);
+		log.debug("Created new Grid User (NO VOMS) : {}", user);
 		return user;
 	}
 
@@ -120,7 +100,7 @@ public class GridUserFactory {
 
 		GridUserInterface user = new GridUser(defaultMapperClass, distinguishName,
 			proxyString);
-		log.debug("Created new Grid User (NO VOMS with PROXY) : " + user);
+		log.debug("Created new Grid User (NO VOMS with PROXY) : {}", user);
 		return user;
 	}
 
@@ -137,12 +117,10 @@ public class GridUserFactory {
 		try {
 			user = new VomsGridUser(defaultMapperClass, distinguishName, fqans);
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on VomsGridUser creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			throw e;
 		}
-		log.debug("Created new Grid User (VOMS USER) : " + user);
+		log.debug("Created new Grid User (VOMS USER) : {}", user);
 		return user;
 	}
 
@@ -160,12 +138,10 @@ public class GridUserFactory {
 			user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString,
 				fqans);
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on VomsGridUser creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			throw e;
 		}
-		log.debug("Created new Grid User (VOMS USER with PROXY) : " + user);
+		log.debug("Created new Grid User (VOMS USER with PROXY) : {}" , user);
 		return user;
 	}
 
@@ -182,7 +158,7 @@ public class GridUserFactory {
 		try {
 			fqansList = Arrays.asList((Object[]) inputParam.get(member_Fqans));
 		} catch (NullPointerException e) {
-			log.debug("Empty FQAN[] found." + e);
+			log.debug("Empty FQAN[] found.", e);
 		}
 
 		// Destination Fqans array
@@ -191,30 +167,27 @@ public class GridUserFactory {
 		if (fqansList != null) {
 			// Define FQAN[]
 			fqans = new FQAN[fqansList.size()];
-			log.debug("fqans_vector Size: " + fqansList.size());
+			log.debug("fqans_vector Size: {}" , fqansList.size());
 
 			for (int i = 0; i < fqansList.size(); i++) {
+
 				String fqan_string = (String) fqansList.get(i);
-				log.debug("FQAN[" + i + "]:" + fqan_string);
-				// Create Fqan
+				log.debug("FQAN[{}]: {}",i, fqan_string);
+
 				FQAN fq = new FQAN(fqan_string);
-				// Add this into Array of Fqans
 				fqans[i] = fq;
 			}
 		}
 
-		// Setting up VomsGridUser
 		if (dnString != null) {
-			log.debug("DN: " + dnString);
+			log.debug("DN: {}" , dnString);
 			// Creation of srm GridUser type
 			if (fqans != null && fqans.length > 0) {
 				log.debug("VomsGU with FQAN");
 				try {
 					return createGridUser(dnString, fqans);
 				} catch (IllegalArgumentException e) {
-					log
-						.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-							+ e.getMessage());
+				  log.error(e.getMessage(), e);
 				}
 			} else {
 				return createGridUser(dnString);
@@ -223,14 +196,6 @@ public class GridUserFactory {
 		return null;
 	}
 
-	/**
-	 * Method used by Grid User (or Voms Grid User) to instatiate the mapper.
-	 * 
-	 * @param mapperClass
-	 *          Class
-	 * @return MapperInterface
-	 * @throws GridUserException
-	 */
 	MapperInterface makeMapperInstance(Class mapperClass)
 		throws CannotMapUserException {
 
@@ -256,25 +221,12 @@ public class GridUserFactory {
 			log.error("Unable to instantiate the Mapper Driver. Generic problem..",
 				ex);
 			throw new CannotMapUserException(
-				"Unable to instantiate the Mapper Driver. Generic problem..", ex);
+				"Unable to instantiate the Mapper Driver", ex);
 		}
 
 		return mapperInstance;
 	}
 
-	/**
-	 * PRIVATE METHODs
-	 */
-
-	/**
-	 * 
-	 * Mapper Factory
-	 * 
-	 * @param mapperClassName
-	 *          String
-	 * @return Class
-	 * @throws GridUserException
-	 */
 	private MapperInterface makeMapperClass(String mapperClassName)
 		throws GridUserException {
 
@@ -319,16 +271,12 @@ public class GridUserFactory {
 						try {
 							mapper = (MapperInterface) method.invoke(this, null);
 						} catch (IllegalArgumentException e) {
-							log
-								.error("makeMapperClass EXCEPTION during getInstance method invocation. "
-									+ e);
+						  log.error(e.getMessage(), e);
 							throw new GridUserException(
 								"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
 									+ mapperClassName + "'");
 						} catch (InvocationTargetException e) {
-							log
-								.error("makeMapperClass EXCEPTION during getInstance method invocation. "
-									+ e);
+						  log.error(e.getMessage(), e);
 							throw new GridUserException(
 								"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
 									+ mapperClassName + "'");
@@ -341,29 +289,26 @@ public class GridUserFactory {
 								+ mapperClassName + "'");
 					}
 				} catch (SecurityException e) {
-					log
-						.error("makeMapperClass EXCEPTION during getMethod(\"getInstance\") method invocation. "
-							+ e);
+				  log.error(e.getMessage(), e);
 					throw new GridUserException(
 						"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
 							+ mapperClassName + "'");
 				} catch (NoSuchMethodException e) {
-					log
-						.error("Unable to instantiate the class using eiter no args constructor niether getInstance method. "
-							+ e);
+				  log.error(e.getMessage(), e);
 					throw new GridUserException(
 						"Cannot instantiate Mapper Driver using new or getInstance for Mapper Driver named :'"
 							+ mapperClassName + "'");
 				}
 			}
 
-		} catch (IllegalAccessException ex) {
-			log.error("makeMapperClass EXCEPTION. " + ex);
+		} catch (IllegalAccessException e) {
+		  log.error(e.getMessage(), e);
 			throw new GridUserException(
 				"Cannot create a new Instance of the Mapper Driver named :'"
 					+ mapperClassName + "'");
-		} catch (InstantiationException ex) {
-			log.error("makeMapperClass EXCEPTION. " + ex);
+		} catch (InstantiationException e) {
+
+		  log.error(e.getMessage(), e);
 			throw new GridUserException(
 				"Cannot create a new Instance of the Mapper Driver named :'"
 					+ mapperClassName + "'");

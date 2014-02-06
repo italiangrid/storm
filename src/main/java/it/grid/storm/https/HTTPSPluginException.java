@@ -22,31 +22,22 @@ package it.grid.storm.https;
  */
 public class HTTPSPluginException extends Exception {
 
-	/**
-     * 
-     */
 	private static final long serialVersionUID = 1080597876348642193L;
 
 	public HTTPSPluginException() {
 
-		// TODO Auto-generated constructor stub
 	}
 
 	public HTTPSPluginException(String message) {
 
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 
 	public HTTPSPluginException(Throwable cause) {
-
 		super(cause);
-		// TODO Auto-generated constructor stub
 	}
 
 	public HTTPSPluginException(String message, Throwable cause) {
-
 		super(message, cause);
-		// TODO Auto-generated constructor stub
 	}
 }

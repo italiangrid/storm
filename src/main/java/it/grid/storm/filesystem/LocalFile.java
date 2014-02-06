@@ -86,7 +86,6 @@ public class LocalFile {
 
 	// ---- class private variables ----
 
-	/** Log4J logger. */
 	private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
 	// ---- instance private variables ----
@@ -238,8 +237,7 @@ public class LocalFile {
 			return ChecksumManager.getInstance().getDefaultChecksum(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
-			log.warn("Unable to get local file checksum. FileNotFoundException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			return null;
 		}
 
@@ -251,8 +249,7 @@ public class LocalFile {
 			return ChecksumManager.getInstance().getChecksums(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
-			log.warn("Unable to get local file checksum. FileNotFoundException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			return new HashMap<String, String>(0);
 		}
 
@@ -495,24 +492,16 @@ public class LocalFile {
 	 *         <code>false</code> otherwise.
 	 */
 	public boolean hasChecksum() {
-
 		try {
 			return ChecksumManager.getInstance().hasChecksum(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
-			log
-				.warn("Unable to verify if local file has the checksum. FileNotFoundException: "
-					+ e.getMessage());
+		  log.warn("File not found when checking checksum: {}",e.getMessage());
 			return false;
 		}
 	}
 
-	/**
-	 * Method used to find out if This File is a directory or not, as per contract
-	 * of java.io.File: refer thre for further info.
-	 */
 	public boolean isDirectory() throws SecurityException {
-
 		return localFile.isDirectory();
 	}
 
@@ -522,8 +511,9 @@ public class LocalFile {
 			return FileSystemCheckerFactory.getInstance().createFileSystemChecker()
 				.isGPFS(this.localFile);
 		} catch (Exception e) {
-			log.error("Unable to check if file " + this.localFile.getAbsolutePath()
-				+ " is on GPFS. IllegalArgumentException " + e.getMessage());
+			log.error("Unable to check if file {} is on GPFS. {}",
+			  this.localFile.getAbsolutePath(),
+			  e.getMessage(),e);
 			throw new FSException("Unable to check if file "
 				+ this.localFile.getAbsolutePath()
 				+ " is on GPFS. IllegalArgumentException " + e.getMessage());
@@ -547,15 +537,19 @@ public class LocalFile {
 
 			if (fileSizeInBlocks >= localFile.length()) {
 
-				log.debug("File is on disk: blockSize=" + fileSizeInBlocks
-					+ " fileSize=" + localFile.length() + " file="
-					+ localFile.getAbsolutePath());
+				log.debug("File {} is on disk: blockSize={} fileSize={}",
+				  localFile.getAbsolutePath(),
+				  fileSizeInBlocks,
+				  localFile.length());
+				  
 				return true;
 
 			} else {
-				log.debug("File is NOT on disk: blockSize=" + fileSizeInBlocks
-					+ " fileSize=" + localFile.length() + " file="
-					+ localFile.getAbsolutePath());
+
+				log.debug("File {} is NOT on disk: blockSize={} fileSize={}",
+				  localFile.getAbsolutePath(),
+				  fileSizeInBlocks,
+				  localFile.length());
 				return false;
 			}
 		}

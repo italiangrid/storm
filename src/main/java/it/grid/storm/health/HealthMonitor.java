@@ -31,14 +31,11 @@ public class HealthMonitor {
 	private Timer healthTimer = null;
 	private Hashtable<String, BookKeeper> bookKeepers;
 
-	// private boolean perfEnabled = false;
-	// private int perfLogQueueTimeInterval = 20; //20 sec
 	public static int perfGlanceTimeInterval = 15; // 15 sec
 
 	public HealthMonitor(int delay, int period) {
 
 		healthTimer = new Timer();
-		// Set monitoring the HEARTHBEAT
 		this.heartbeat(delay * 1000, period * 1000);
 
 		// Create the Book Keepers
@@ -50,15 +47,9 @@ public class HealthMonitor {
 		HEARTLOG.info("HEART MONITOR Initialized");
 	}
 
-	// public void setPerformanceEnabled(boolean status) {
-	// this.perfEnabled = status;
-	// }
-
 	public void initializePerformanceMonitor(int logTimeInterval,
 		int defaultGlangeTimeInterval) {
 
-		// this.perfLogQueueTimeInterval = logTimeInterval;
-		// this.perfGlanceTimeInterval = defaultGlangeTimeInterval;
 		if (defaultGlangeTimeInterval > logTimeInterval) {
 			HealthDirector.getPerformanceLogger().warn(
 				"WARNING: Log Book has the time "
@@ -73,15 +64,12 @@ public class HealthMonitor {
 		// this.perfEnabled = true;
 		healthTimer.scheduleAtFixedRate(new PerformancePulse(), 0,
 			pulseTimeInterval);
-		PERFLOG.info("Set PERFORMANCE MONITOR in Timer Task (PERIOD:"
-			+ perfGlanceTimeInterval + ")");
+		PERFLOG.info("Set PERFORMANCE MONITOR in Timer Task (PERIOD:{})",
+		  perfGlanceTimeInterval);
+		
 		PERFLOG.info("--- PERFORMANCE MONITOR Initialized");
 	}
 
-	/**
-	 * 
-	 * @return BookKeepers list
-	 */
 	public ArrayList<BookKeeper> getBookKeepers() {
 
 		return new ArrayList<BookKeeper>(bookKeepers.values());
@@ -105,14 +93,10 @@ public class HealthMonitor {
 		}
 	}
 
-	/**
-	 * heartbeat
-	 * 
-	 */
 	public void heartbeat(int delay, int period) {
 
 		healthTimer.scheduleAtFixedRate(new Hearthbeat(), delay, period);
-		HEARTLOG.info("Set HEARTHBEAT in Timer Task (DELAY:" + delay + " PERIOD:"
-			+ period + ")");
+		HEARTLOG.info("Set HEARTHBEAT in Timer Task (DELAY: {}, PERIOD: {})", delay,
+		  period);
 	}
 }

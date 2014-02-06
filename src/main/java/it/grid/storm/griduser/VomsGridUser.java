@@ -47,8 +47,6 @@ class VomsGridUser extends GridUser implements Serializable {
 
 		super(mapper, distinguishedName, proxy);
 		if (fqansArray == null || fqansArray.length == 0) {
-			log.error("Unable to create VomsGridUser. Inavlid fqansArray argument: "
-				+ fqansArray);
 			throw new IllegalArgumentException(
 				"Unable to create VomsGridUser. Inavlid fqansArray argument: "
 					+ fqansArray);
@@ -61,16 +59,12 @@ class VomsGridUser extends GridUser implements Serializable {
 
 		super(mapper, distinguishedName);
 		if (fqansArray == null || fqansArray.length == 0) {
-			log.error("Unable to create VomsGridUser. Inavlid fqansArray argument: "
-				+ fqansArray);
 			throw new IllegalArgumentException(
 				"Unable to create VomsGridUser. Inavlid fqansArray argument: "
 					+ fqansArray);
 		}
 		this.setFqans(fqansArray);
 	}
-
-	// --- SETTER Methods --- //
 
 	private void setFqans(FQAN[] fqans) {
 
@@ -89,7 +83,6 @@ class VomsGridUser extends GridUser implements Serializable {
 
 	}
 
-	// --- GETTER Methods --- //
 
 	/**
 	 * Return <code>true</code> if any VOMS attributes are stored in this object.
@@ -106,11 +99,6 @@ class VomsGridUser extends GridUser implements Serializable {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.griduser.GridUser#getFQANsAsString()
-	 */
 	@Override
 	public FQAN[] getFQANs() {
 
@@ -121,11 +109,6 @@ class VomsGridUser extends GridUser implements Serializable {
 		return FQANs;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.griduser.GridUser#getFQANsAsString()
-	 */
 	@Override
 	public String[] getFQANsAsString() {
 
@@ -136,11 +119,6 @@ class VomsGridUser extends GridUser implements Serializable {
 		return FQANs;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.griduser.GridUser#getVO()
-	 */
 	public VO getVO() {
 
 		VO result = VO.makeNoVo();
@@ -212,5 +190,4 @@ class VomsGridUser extends GridUser implements Serializable {
 		}
 		return result;
 	}
-
 }

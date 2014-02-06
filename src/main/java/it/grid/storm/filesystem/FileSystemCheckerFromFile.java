@@ -38,7 +38,6 @@ abstract class FileSystemCheckerFromFile implements FileSystemChecker {
 	private static final String GPFS_FILESYSTEM_NAME = "gpfs";
 
 	protected FileSystemCheckerFromFile(Logger log) {
-
 		this.log = log;
 	}
 
@@ -122,8 +121,8 @@ abstract class FileSystemCheckerFromFile implements FileSystemChecker {
 		try {
 			mtab = new BufferedReader(new FileReader(getFilePath()));
 		} catch (FileNotFoundException e) {
-			log.error("Error while trying to create a reader for mtab file at "
-				+ getFilePath() + ". FileNotFoundException : " + e.getMessage());
+		  log.error(e.getMessage(),e);
+		  
 			throw new FileSystemCheckerException(
 				"Error while trying to create a reader for mtab file at "
 					+ getFilePath() + ". FileNotFoundException : " + e.getMessage());
@@ -140,8 +139,7 @@ abstract class FileSystemCheckerFromFile implements FileSystemChecker {
 				}
 			}
 		} catch (IOException e) {
-			log.error("Error while trying to read mtab file at " + getFilePath()
-				+ ". IOException : " + e.getMessage());
+		  log.error(e.getMessage(), e);
 			throw new FileSystemCheckerException(
 				"Error while trying to read mtab file at " + getFilePath()
 					+ ". IOException : " + e.getMessage());
