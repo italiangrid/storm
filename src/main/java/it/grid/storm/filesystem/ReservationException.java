@@ -37,8 +37,14 @@ public class ReservationException extends Exception {
 		if (error != null)
 			this.error = error;
 	}
+	
+  public ReservationException(String error, Throwable cause) {
+    super(error, cause);
+  }
 
-	public String toString() {
+
+
+  public String toString() {
 
 		return error;
 	}

@@ -29,51 +29,6 @@ import it.grid.storm.srm.types.TTURL;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description
- * </p>
- * This interface represents the main entry point for namespace operation. The
- * results of retrived informations depends on namespace configuration. The
- * namespace configuration is read back every time that it changes, so it is
- * possible mutates the namespace configuration at run time.
- * 
- * 
- * The namespace configuration is divided in three main section: 1) Virtual File
- * System definition 2) Mapping rules definition 3) Approachable rules
- * definition
- * 
- * 
- * VFS Configuration
- * 
- * 
- * 
- * Mapping Rule
- * 
- * 
- * 
- * Approachable Rule
- * 
- * 
- * 
- * 
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public interface NamespaceInterface {
 
 	/**
@@ -464,6 +419,5 @@ public interface NamespaceInterface {
 	 */
 	public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
 		throws NamespaceException;
-
 
 }
