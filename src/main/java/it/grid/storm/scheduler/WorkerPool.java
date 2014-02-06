@@ -59,7 +59,6 @@ public class WorkerPool {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkerPool.class);
 
-	// These values are not configurable in this version!
 	private long keepAliveTime = 10000; // 10 seconds.
 	private TimeUnit unit = TimeUnit.MILLISECONDS;
 
@@ -88,16 +87,19 @@ public class WorkerPool {
 	 */
 	public void submit(Task task) throws SchedulerException {
 
-		log.debug("Taskqueue Size:" + this.queueSize);
-		log.debug("Taskqueue RemCap:" + workers.getQueue().remainingCapacity());
+	  log.trace("WorkerPool.submit");
+		log.debug("Taskqueue Size: {}", queueSize);
+		log.debug("Taskqueue Remaining Capacity: {}", 
+		  workers.getQueue().remainingCapacity());
+
 		task.enqueueEvent();
 
 		try {
-			log.debug("Submitting task with name = " + task.getName());
+			log.debug("Submitting task {}" , task.getName());
 			workers.execute(task);
-		} catch (RejectedExecutionException ret) {
-			log.error("Task " + task.getName() + "was rejected!", ret);
-			throw new SchedulerException(task.getName(), ret);
+		} catch (RejectedExecutionException e) {
+		  log.error("Task {} was rejected. {}", task.getName(), e.getMessage(), e);
+			throw new SchedulerException(task.getName(), e);
 		}
 	}
 
@@ -109,11 +111,10 @@ public class WorkerPool {
 	 */
 	public void remove(Task task) throws SchedulerException {
 
-		log.debug("Abort request");
+	  log.trace("WorkerPool.remove");
 		task.abortEvent();
-		log.debug("Aborting request with name : " + task.getName());
+		log.debug("Aborting task {}", task.getName());
 		boolean taskFound = false;
-		// Looking for the task within the Queue
 		BlockingQueue queue = workers.getQueue();
 		taskFound = queue.contains(task);
 
