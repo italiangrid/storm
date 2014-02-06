@@ -33,10 +33,6 @@ import org.slf4j.LoggerFactory;
 
 public class TapeRecallMySQLHelper extends SQLHelper {
 
-	@SuppressWarnings("unused")
-	private static final Logger log = LoggerFactory
-		.getLogger(TapeRecallMySQLHelper.class);
-
 	private final static String TABLE_NAME = "tape_recall";
 
 	// primary key COL_TASK_ID + COL_REQUEST_TOKEN

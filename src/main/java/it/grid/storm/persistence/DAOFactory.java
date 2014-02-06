@@ -23,8 +23,6 @@
 
 package it.grid.storm.persistence;
 
-import it.grid.storm.persistence.dao.CopyChunkDAO;
-import it.grid.storm.persistence.dao.PermissionDAO;
 import it.grid.storm.persistence.dao.PtGChunkDAO;
 import it.grid.storm.persistence.dao.PtPChunkDAO;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
@@ -55,10 +53,6 @@ public interface DAOFactory {
 	public TapeRecallDAO getTapeRecallDAO(boolean test)
 		throws DataAccessException;
 
-	public PermissionDAO getPermissionDAO() throws DataAccessException;
-
-	public CopyChunkDAO getCopyChunkDAO() throws DataAccessException;
-
 	public PtGChunkDAO getPtGChunkDAO() throws DataAccessException;
 
 	public PtPChunkDAO getPtPChunkDAO() throws DataAccessException;
@@ -67,7 +61,4 @@ public interface DAOFactory {
 
 	public RequestSummaryDAO getRequestSummaryDAO() throws DataAccessException;
 
-	/**
-	 * public PendingRequestDAO getPendingRequestDAO() throws DataAccessException;
-	 **/
 }

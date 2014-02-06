@@ -36,7 +36,7 @@ public class PersistenceDirector {
 	private static DataSourceConnectionFactory connFactory;
 
 	static {
-		log.debug("Initializing Persistence Director...");
+		log.trace("Initializing Persistence Director...");
 		dbMan = initializeDataBase();
 		daoFactory = initializeFactory();
 		connFactory = connectToDateSource();
@@ -45,68 +45,53 @@ public class PersistenceDirector {
 	private static DataBaseStrategy initializeDataBase() {
 
 		dbVendor = config.getBEPersistenceDBVendor();
-		log.debug("DBMS Vendor =  " + dbVendor);
-		log.debug("DBMS URL    =  " + config.getBEPersistenceDBMSUrl());
+		log.debug("DBMS Vendor =  {}",dbVendor);
+		log.debug("DBMS URL    =  {}", config.getBEPersistenceDBMSUrl());
 		return DataBaseStrategy.getInstance(dbVendor);
 	}
 
-	/**
-	 * Use an ad hoc String mapping scheme, and introduce an if-else branch for
-	 * each alternative.
-	 */
 	private static DAOFactory initializeFactory() {
 
 		if (dbVendor.equalsIgnoreCase("MySql")) {
 			return MySqlDAOFactory.getInstance();
-		} else if (dbVendor.equalsIgnoreCase("memory")) {
-			return new MemoryDAOFactory();
-		} else if (dbVendor.equalsIgnoreCase("mock")) {
-			return new MockDAOFactory();
-		} else {
-			log.error("Persistence Data Source was setted in a BAD way..");
-			throw new IllegalArgumentException("Unknown datastore identifier.");
-		}
+		} 
+		  
+		log.error("Unknown datastore id: {}", dbVendor);
+		throw new IllegalArgumentException("Unknown datastore identifier: "
+		  +dbVendor);
 	}
 
 	private static DataSourceConnectionFactory connectToDateSource() {
 
 		DataSourceConnectionFactory result = null;
-		// Collect Logging information
-		StringBuffer sf = new StringBuffer();
-		sf.append("Connecting to Data Source..." + "\n");
-		sf.append("  Connection String = " + dbMan.getConnectionString() + "\n");
-
 		boolean poolMode = config.getBEPersistencePoolDB();
 		int maxActive = config.getBEPersistencePoolDBMaxActive();
 		int maxWait = config.getBEPersistencePoolDBMaxWait();
-		sf.append("  Pool Mode = " + poolMode + "\n");
-		if (poolMode) {
-			sf.append("    pool Max Active = " + maxActive + "\n");
-			sf.append("    pool Max Wait =  " + maxWait + "\n");
-		}
-		log.debug(sf.toString());
+
+		log.debug("Datasource connection string = {}", dbMan.getConnectionString());
+
+		log.debug("Pool mode = {}", poolMode);
+		log.debug("Pool Max Active = {}", maxActive);
+		log.debug("Pool Max Wait = {}", maxWait);
 
 		if (poolMode) {
-			log.debug("Setup Connection Pool");
 			try {
 				DBConnectionPool.initPool(dbMan, maxActive, maxWait);
 				result = DBConnectionPool.getPoolInstance();
-			} catch (PersistenceException ex1) {
-				log.error("Connection In Pool Mode to Data Source FAIL ", ex1);
+			} catch (PersistenceException e) {
+			  log.error(e.getMessage(), e);
 			}
 		} else {
-			log.debug("Setup Shared Connection");
 			try {
 				result = new DBConnection(dbMan);
-			} catch (PersistenceException ex) {
-				log.error("Connection to Data Source FAIL", ex);
+			} catch (PersistenceException e) {
+				log.error(e.getMessage(), e);
 			}
 		}
 		return result;
 	}
 
 	public static DAOFactory getDAOFactory() {
-
 		return daoFactory;
 	}
 

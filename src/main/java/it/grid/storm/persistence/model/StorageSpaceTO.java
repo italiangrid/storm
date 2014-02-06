@@ -43,19 +43,14 @@ import org.slf4j.LoggerFactory;
  */
 public class StorageSpaceTO implements Serializable, Comparable<StorageSpaceTO> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -87317982494792808L;
 
-	/**
-	 * Logger.
-	 */
 	private static final Logger log = LoggerFactory
 		.getLogger(StorageSpaceTO.class);
 
 	// ----- PRIMARY KEY ----//
 	private Long storageSpaceId = null; // Persistence Object IDentifier
+
 	// ----- FIELDS ----//
 	private String ownerName = null;
 	private String voName = null;
@@ -103,7 +98,7 @@ public class StorageSpaceTO implements Serializable, Comparable<StorageSpaceTO> 
 	public StorageSpaceTO(StorageSpaceData spaceData) {
 
 		if (spaceData != null) {
-			StorageSpaceTO.log.debug("Building StorageSpaceTO with " + spaceData);
+			log.debug("Building StorageSpaceTO with {}" , spaceData);
 			if (spaceData.getOwner() != null) {
 				ownerName = spaceData.getOwner().getDn();
 				voName = getVOName(spaceData.getOwner());

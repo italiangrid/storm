@@ -78,7 +78,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					.getQueryNumberInProgress(dbConnection, voName);
 			}
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement.toString());
 
 			res = prepStatement.executeQuery();
 
@@ -86,8 +86,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				status = res.getInt(1);
 			}
 		} catch (SQLException e) {
-			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+		  log.error(e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -115,15 +114,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				prepStatement = sqlHelper.getQueryNumberQueued(dbConnection, voName);
 			}
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement.toString());
 			res = prepStatement.executeQuery();
 
 			if (res.first() == true) {
 				status = res.getInt(1);
 			}
 		} catch (SQLException e) {
-			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+		  log.error(e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -152,7 +150,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					.getQueryReadyForTakeOver(dbConnection, voName);
 			}
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement.toString());
 			res = prepStatement.executeQuery();
 
 			if (res.first() == true) {
@@ -186,7 +184,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			res = prepStatement.executeQuery();
 
 			if (res.first() == false) {
-				log.error("No tasks with GroupTaskId='" + groupTaskId + "'");
+				log.error("No tasks with GroupTaskId='{}'", groupTaskId);
 				throw new DataAccessException(
 					"No recall table row retrieved executing query: '"
 						+ prepStatement.toString() + "'");
@@ -218,13 +216,14 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper
 				.getQueryGetGroupTasks(dbConnection, groupTaskId);
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement.toString());
 			res = prepStatement.executeQuery();
 			response = res.first();
 			if (response == false) {
-				log.info("No tasks found with GroupTaskId='" + groupTaskId + "'");
+				log.info("No tasks found with GroupTaskId='{}'",groupTaskId);
 			}
 		} catch (SQLException e) {
+		  log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
 				+ prepStatement.toString() + "' " + e.getMessage(), e);
 		} finally {
@@ -245,13 +244,15 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 			prepStatement = sqlHelper.getQueryGetTask(dbConnection, taskId,
 				requestToken);
-			log.debug("QUERY: " + prepStatement);
+			log.debug("QUERY: {}", prepStatement.toString());
 			res = prepStatement.executeQuery();
 
 			if (res.first() == false) {
-				log.error("No task found for requestToken=" + requestToken + " "
-					+ " taskId=" + taskId.toString() + ". Query = "
-					+ prepStatement.toString());
+				log.error("No task found for requestToken={} taskId={}. Query={}",
+				  requestToken ,
+				  taskId.toString(),
+				  prepStatement.toString());
+				  
 				throw new DataAccessException("No task found for requestToken="
 					+ requestToken + " " + "taskId=" + taskId.toString() + ". Query = "
 					+ prepStatement.toString());
@@ -259,6 +260,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			task = new TapeRecallTO();
 			setTaskInfo(task, res);
 		} catch (SQLException e) {
+		  log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
 				+ prepStatement.toString() + "' " + e.getMessage(), e);
 		} finally {
@@ -282,12 +284,11 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper.getQueryGetTask(dbConnection, taskId,
 				requestToken);
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement.toString());
 			res = prepStatement.executeQuery();
 			response = res.first();
-			log.debug("Task for requestToken=" + requestToken + " " + " taskId="
-				+ taskId.toString() + " does " + (response ? "" : "NOT ") + "exists");
 		} catch (SQLException e) {
+		  log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
 				+ prepStatement.toString() + "' " + e.getMessage(), e);
 		} finally {
@@ -296,13 +297,6 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		return response;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.persistence.dao.TapeRecallDAO#insertCloneTask(it.grid.storm
-	 * .persistence.model.TapeRecallTO, int[], java.util.UUID)
-	 */
 	@Override
 	public UUID insertCloneTask(TapeRecallTO task, int[] statuses,
 		UUID proposedGroupTaskId) throws DataAccessException {

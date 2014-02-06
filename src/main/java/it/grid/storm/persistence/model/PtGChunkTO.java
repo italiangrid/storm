@@ -51,24 +51,12 @@ import org.slf4j.LoggerFactory;
  */
 public class PtGChunkTO {
 
-	private static final Logger log = LoggerFactory.getLogger(PtGChunkTO.class); // Logger
-																																								// of
-																																								// error
-																																								// messages!
-																																								// Common
-																																								// to
-																																								// all
-																																								// Asynch
-																																								// package!
+	private static final Logger log = LoggerFactory.getLogger(PtGChunkTO.class); 
 
-	private TRequestToken requestToken; // This is the requestToken of the
-																			// multifile srm request to which this
-																			// chunk belongs
+	private TRequestToken requestToken; 
 
-	private TSURL fromSURL; // SURL that the srm command wants to get
-	private TStorageSystemInfo storageSystemInfo; // TStorageSystemInfo associated
-																								// to fromSURL: it may be
-																								// useless in StoRM!
+	private TSURL fromSURL; 
+	private TStorageSystemInfo storageSystemInfo; 
 
 	private TLifeTimeInSeconds lifeTime; // requested lifetime for fromSURL -
 																				// BEWARE!!! It is the pin time!!!
@@ -265,9 +253,7 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_QUEUED! "
-					+ e);
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -284,9 +270,7 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_DONE, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_DONE! "
-					+ e);
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -303,9 +287,7 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_REQUEST! "
-					+ e);
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -323,9 +305,7 @@ public class PtGChunkTO {
 			status = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
 				explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_AUTHORIZATION_FAILURE! "
-					+ e);
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -342,9 +322,7 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_ABORTED, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_ABORTED! "
-					+ e);
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -362,9 +340,8 @@ public class PtGChunkTO {
 			status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,
 				explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_REQUEST_INPROGRESS! "
-					+ e);
+
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -381,9 +358,8 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INTERNAL_ERROR! "
-					+ e);
+			
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -401,9 +377,8 @@ public class PtGChunkTO {
 			status = new TReturnStatus(TStatusCode.SRM_FATAL_INTERNAL_ERROR,
 				explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_FATAL_INTERNAL_ERROR! "
-					+ e);
+
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -420,9 +395,8 @@ public class PtGChunkTO {
 			}
 			status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, explanation);
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.debug("UNEXPECTED ERROR! Unable to set SRM request status to SRM_INVALID_PATH! "
-					+ e);
+
+			log.debug(e.getMessage(), e);
 		}
 	}
 

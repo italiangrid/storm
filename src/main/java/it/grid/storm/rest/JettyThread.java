@@ -1,6 +1,8 @@
 package it.grid.storm.rest;
 
 import org.eclipse.jetty.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Thread that starts a Jetty server. The thread is passed an instance of
@@ -11,6 +13,8 @@ import org.eclipse.jetty.server.Server;
  * @author valerioventuri
  */
 public class JettyThread extends Thread {
+
+  private static final Logger log = LoggerFactory.getLogger(JettyThread.class);
 
 	/**
 	 * The {@link Server} object.
@@ -39,8 +43,8 @@ public class JettyThread extends Thread {
 			server.join();
 
 		} catch (Exception e) {
+		  log.error(e.getMessage(), e);
 
-			e.printStackTrace();
 			System.exit(1);
 		}
 	}
