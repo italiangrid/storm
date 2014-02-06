@@ -109,10 +109,9 @@ public class PtPChunkCatalog {
 					.toArray(new Long[ids.size()]));
 
 				if (reduced.isEmpty()) {
-					log
-						.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical files for transited expired entries failed! "
-							+ "No data could be translated from persitence for PtP Chunks with ID "
-							+ ids);
+					log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical "
+						+ "files for transited expired entries failed! No data could be "
+						+ "translated from persitence for PtP Chunks with ID {}", ids);
 				}
 				ArrayList<TSURL> surls = new ArrayList<TSURL>(reduced.size());
 				for (ReducedPtPChunkData data : reduced) {
@@ -164,9 +163,6 @@ public class PtPChunkCatalog {
 
 		}
 		dao.update(to);
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(),
-		// cd.getStatus().getStatusCode());
 	}
 
 	/**
@@ -179,19 +175,14 @@ public class PtPChunkCatalog {
 		PtPPersistentChunkData inputChunk) {
 
 		PtPChunkDataTO auxTO = dao.refresh(inputChunk.getPrimaryKey());
-		log.debug("PtP CHUNK CATALOG refreshStatus: retrieved data " + auxTO);
+		log.debug("PtP CHUNK CATALOG refreshStatus: retrieved data {}", auxTO);
 		if (auxTO == null) {
-			log
-				.warn("PtP CHUNK CATALOG! Empty TO found in persistence for specified request: "
-					+ inputChunk.getPrimaryKey());
+			log.warn("PtP CHUNK CATALOG! Empty TO found in persistence for specified "
+				+ "request: {}", inputChunk.getPrimaryKey());
 			return null;
-		} else {
-			PtPPersistentChunkData data = makeOne(auxTO, inputChunk.getRequestToken());
-			// TODO MICHELE SURL STORE
-			// SurlStatusStore.getInstance().storeSurlStatus(data.getSURL(),
-			// data.getStatus().getStatusCode());
-			return data;
 		}
+		PtPPersistentChunkData data = makeOne(auxTO, inputChunk.getRequestToken());
+		return data;
 	}
 
 	/**
@@ -211,7 +202,7 @@ public class PtPChunkCatalog {
 		final TRequestToken rt) {
 
 		Collection<PtPChunkDataTO> chunkTOs = dao.find(rt);
-		log.debug("PtPChunkCatalog: retrieved data " + chunkTOs);
+		log.debug("PtPChunkCatalog: retrieved data {}", chunkTOs);
 		return buildChunkDataList(chunkTOs);
 	}
 
@@ -245,8 +236,8 @@ public class PtPChunkCatalog {
 			// Check for max value allowed
 			long max = Configuration.getInstance().getPinLifetimeMaximum();
 			if (pinLifeTime > max) {
-				log.warn("PinLifeTime is greater than the max value "
-					+ "allowed. Drop the value to the max = " + max + " seconds");
+				log.warn("PinLifeTime is greater than the max value allowed. Drop the "
+					+ "value to the max = {} seconds", max);
 				pinLifeTime = max;
 			}
 			pinLifetime = TLifeTimeInSeconds.make(pinLifeTime, TimeUnit.SECONDS);
@@ -367,9 +358,8 @@ public class PtPChunkCatalog {
 			}
 
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+			log.error("Unexpected error on voms grid user creation. "
+				+ "IllegalArgumentException: {}", e.getMessage(), e);
 		}
 
 		// transferURL
@@ -389,25 +379,25 @@ public class PtPChunkCatalog {
 		} catch (InvalidPtPPersistentChunkDataAttributesException e) {
 			dao.signalMalformedPtPChunk(auxTO);
 			log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
-				+ " from persistence. Dropping chunk from request: " + rt);
+				+ " from persistence. Dropping chunk from request: {}", rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
 		} catch (InvalidPtPDataAttributesException e) {
 			dao.signalMalformedPtPChunk(auxTO);
 			log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
-				+ " from persistence. Dropping chunk from request: " + rt);
+				+ " from persistence. Dropping chunk from request: {}", rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
 		} catch (InvalidFileTransferDataAttributesException e) {
 			dao.signalMalformedPtPChunk(auxTO);
 			log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
-				+ " from persistence. Dropping chunk from request: " + rt);
+				+ " from persistence. Dropping chunk from request: {}", rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
 		} catch (InvalidSurlRequestDataAttributesException e) {
 			dao.signalMalformedPtPChunk(auxTO);
 			log.warn("PtP CHUNK CATALOG! Retrieved malformed PtP chunk data"
-				+ " from persistence. Dropping chunk from request: " + rt);
+				+ " from persistence. Dropping chunk from request: {}", rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
 		}
@@ -526,36 +516,6 @@ public class PtPChunkCatalog {
 		TRequestToken rt) {
 
 		return lookupReducedPtPChunkData(rt, new ArrayList<TSURL>(0));
-		// Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs =
-		// dao.findReduced(rt.getValue(), null);
-		// log.debug("PtP CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
-		// ArrayList<ReducedPtPChunkData> list = new
-		// ArrayList<ReducedPtPChunkData>();
-		// if(reducedChunkDataTOs.isEmpty())
-		// {
-		// log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " + rt);
-		// }
-		// else
-		// {
-		// ReducedPtPChunkData reducedChunkData;
-		// for(ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
-		// {
-		// reducedChunkData = makeOneReduced(reducedChunkDataTO);
-		// if(reducedChunkData != null)
-		// {
-		// list.add(reducedChunkData);
-		// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(),
-		// reducedChunkData.status().getStatusCode());
-		// if(!this.isComplete(reducedChunkDataTO))
-		// {
-		// this.completeTO(reducedChunkDataTO, reducedChunkData);
-		// dao.updateIncomplete(reducedChunkDataTO);
-		// }
-		// }
-		// }
-		// log.debug("PtP CHUNK CATALOG: returning " + list);
-		// }
-		// return list;
 	}
 
 	public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(
@@ -563,38 +523,8 @@ public class PtPChunkCatalog {
 
 		Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao.findReduced(
 			requestToken.getValue(), surls);
-		log.debug("PtP CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
+		log.debug("PtP CHUNK CATALOG: retrieved data {}", reducedChunkDataTOs);
 		return buildReducedChunkDataList(reducedChunkDataTOs);
-		// ArrayList<ReducedPtPChunkData> list = new
-		// ArrayList<ReducedPtPChunkData>();
-		// if (reducedChunkDataTOs.isEmpty())
-		// {
-		// log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " +
-		// requestToken);
-		// }
-		// else
-		// {
-		// ReducedPtPChunkData reducedChunkData;
-		// for (ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
-		// {
-		// reducedChunkData = makeOneReduced(reducedChunkDataTO);
-		// if (reducedChunkData != null)
-		// {
-		// list.add(reducedChunkData);
-		// // TODO MICHELE SURL STORE
-		// //
-		// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(),
-		// // reducedChunkData.status().getStatusCode());
-		// if (!this.isComplete(reducedChunkDataTO))
-		// {
-		// this.completeTO(reducedChunkDataTO, reducedChunkData);
-		// dao.updateIncomplete(reducedChunkDataTO);
-		// }
-		// }
-		// }
-		// log.debug("PtP CHUNK CATALOG: returning " + list);
-		// }
-		// return list;
 	}
 
 	public Collection<PtPPersistentChunkData> lookupPtPChunkData(TSURL surl) {
@@ -622,7 +552,7 @@ public class PtPChunkCatalog {
 		}
 		Collection<PtPChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
 			surlsArray, user.getDn());
-		log.debug("PtP CHUNK CATALOG: retrieved data " + chunkDataTOs);
+		log.debug("PtP CHUNK CATALOG: retrieved data {}", chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs);
 	}
 
@@ -638,7 +568,7 @@ public class PtPChunkCatalog {
 		}
 		Collection<PtPChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
 			surlsArray);
-		log.debug("PtP CHUNK CATALOG: retrieved data " + chunkDataTOs);
+		log.debug("PtP CHUNK CATALOG: retrieved data {}", chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs);
 	}
 
@@ -649,23 +579,21 @@ public class PtPChunkCatalog {
 		PtPPersistentChunkData chunk;
 		for (PtPChunkDataTO chunkTO : chunkDataTOs) {
 			chunk = makeOne(chunkTO);
-			if (chunk != null) {
-				list.add(chunk);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-				// chunk.getStatus().getStatusCode());
-				if (!this.isComplete(chunkTO)) {
-					try {
-						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-					} catch (InvalidReducedPtPChunkDataAttributesException e) {
-						log
-							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-								+ e);
-					}
-				}
+			if (chunk == null) {
+				continue;
+			}
+			list.add(chunk);
+			if (isComplete(chunkTO)) {
+				continue;
+			}
+			try {
+				dao.updateIncomplete(completeTO(chunkTO, chunk));
+			} catch (InvalidReducedPtPChunkDataAttributesException e) {
+				log.warn("PtG CHUNK CATALOG! unable to add missing informations on "
+					+ "DB to the request: {}", e.getMessage());
 			}
 		}
-		log.debug("PtPChunkCatalog: returning " + list + "\n\n");
+		log.debug("PtPChunkCatalog: returning {}\n\n", list);
 		return list;
 	}
 
@@ -690,16 +618,13 @@ public class PtPChunkCatalog {
 			reducedChunkData = makeOneReduced(reducedChunkDataTO);
 			if (reducedChunkData != null) {
 				list.add(reducedChunkData);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(),
-				// reducedChunkData.status().getStatusCode());
 				if (!this.isComplete(reducedChunkDataTO)) {
 					this.completeTO(reducedChunkDataTO, reducedChunkData);
 					dao.updateIncomplete(reducedChunkDataTO);
 				}
 			}
 		}
-		log.debug("PtP CHUNK CATALOG: returning " + list);
+		log.debug("PtP CHUNK CATALOG: returning {}", list);
 		return list;
 	}
 
@@ -719,37 +644,8 @@ public class PtPChunkCatalog {
 
 		Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao
 			.findReduced(Arrays.asList(volids));
-		log.debug("PtP CHUNK CATALOG: fetched data " + reducedChunkDataTOs);
+		log.debug("PtP CHUNK CATALOG: fetched data {}", reducedChunkDataTOs);
 		return buildReducedChunkDataList(reducedChunkDataTOs);
-		// List<ReducedPtPChunkData> list = new ArrayList<ReducedPtPChunkData>();
-		// if(reducedChunkDataTOs.isEmpty())
-		// {
-		// log.debug("PtP CHUNK CATALOG! No chunks found in persistence for " +
-		// volids);
-		// }
-		// else
-		// {
-		// ReducedPtPChunkData reducedChunkData;
-		// for(ReducedPtPChunkDataTO reducedChunkDataTO : reducedChunkDataTOs)
-		// {
-		// reducedChunkData = makeOneReduced(reducedChunkDataTO);
-		// if(reducedChunkData != null)
-		// {
-		// list.add(reducedChunkData);
-		// // TODO MICHELE SURL STORE
-		// //
-		// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.toSURL(),
-		// reducedChunkData.status().getStatusCode());
-		// if(!this.isComplete(reducedChunkDataTO))
-		// {
-		// this.completeTO(reducedChunkDataTO, reducedChunkData);
-		// dao.updateIncomplete(reducedChunkDataTO);
-		// }
-		// }
-		// }
-		// log.debug("PtP CHUNK CATALOG: returning " + list);
-		// }
-		// return list;
 	}
 
 	private ReducedPtPChunkData makeOneReduced(
@@ -833,9 +729,6 @@ public class PtPChunkCatalog {
 	synchronized public boolean isSRM_SPACE_AVAILABLE(TSURL surl) {
 
 		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
-		// TODO MICHELE SURL STORE
-		// return
-		// TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
 	/**
@@ -876,15 +769,6 @@ public class PtPChunkCatalog {
 			}
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(primaryKeys);
-		// TODO MICHELE SURL STORE
-		// for(TSURL surl : surls)
-		// {
-		// if(surl != null)
-		// {
-		// SurlStatusStore.getInstance().storeSurlStatus(surl,
-		// TStatusCode.SRM_SUCCESS);
-		// }
-		// }
 	}
 
 	/**
@@ -911,9 +795,6 @@ public class PtPChunkCatalog {
 		}
 		dao.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl.uniqueId(),
 			surl.toString(), explanation);
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(surl,
-		// TStatusCode.SRM_ABORTED);
 	}
 
 	public void updateStatus(TRequestToken requestToken, TSURL surl,

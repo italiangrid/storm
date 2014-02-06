@@ -28,7 +28,6 @@ import it.grid.storm.srm.types.TStatusCode;
  * 
  * @author Michele Dibenedetto
  */
-// TODO MICHELE USER_SURL new class
 public class ReducedCopyChunkDataTO {
 
 	/* Database table request_Get fields BEGIN */

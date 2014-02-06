@@ -139,16 +139,13 @@ public class BoLChunkDAO {
 		// insertion
 		try {
 
-			// WARNING!!!! We are forced to run a query to get the ID of the request,
-			// which should
-			// NOT be so
-			// because the corresponding request object should have been changed with
-			// the extra
-			// field! However, it is not possible
-			// at the moment to perform such change because of strict deadline and the
-			// change could
-			// wreak havoc
-			// the code. So we are forced to make this query!!!
+			/* WARNING!!!! We are forced to run a query to get the ID of the request,
+			 * which should NOT be so because the corresponding request object should 
+			 * have been changed with the extra field! However, it is not possible
+			 * at the moment to perform such change because of strict deadline and 
+			 * the change could wreak havoc the code. So we are forced to make this 
+			 * query!!!
+			 */
 
 			// begin transaction
 			con.setAutoCommit(false);
@@ -163,7 +160,7 @@ public class BoLChunkDAO {
 			id.setString(1, to.getRequestToken());
 			logWarnings(id.getWarnings());
 
-			log.debug("BoL CHUNK DAO: addChild; " + id.toString());
+			log.debug("BoL CHUNK DAO: addChild; {}", id.toString());
 			rsid = id.executeQuery();
 			logWarnings(id.getWarnings());
 
@@ -180,12 +177,12 @@ public class BoLChunkDAO {
 			// update primary key reading the generated key
 			to.setPrimaryKey(id_s);
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: unable to complete addChild! BoLChunkDataTO: "
-				+ to + "; exception received:" + e);
+			log.error("BoL CHUNK DAO: unable to complete addChild! BoLChunkDataTO: {}; "
+				+ "exception received: {}", to, e.getMessage(), e);
 			rollback(con);
 		} catch (Exception e) {
-			log.error("BoL CHUNK DAO: unable to complete addChild! BoLChunkDataTO: "
-				+ to + "; exception received:" + e);
+			log.error("BoL CHUNK DAO: unable to complete addChild! BoLChunkDataTO: {}; "
+				+ "exception received: {}", to, e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(rsid);
@@ -254,7 +251,7 @@ public class BoLChunkDAO {
 			addNew.setInt(9, to.getDeferredStartTime());
 			logWarnings(addNew.getWarnings());
 
-			log.trace("BoL CHUNK DAO: addNew; " + addNew.toString());
+			log.trace("BoL CHUNK DAO: addNew; {}", addNew.toString());
 			addNew.execute();
 			logWarnings(addNew.getWarnings());
 
@@ -272,7 +269,7 @@ public class BoLChunkDAO {
 				addProtocols.setString(2, i.next());
 				logWarnings(addProtocols.getWarnings());
 
-				log.trace("BoL CHUNK DAO: addNew; " + addProtocols.toString());
+				log.trace("BoL CHUNK DAO: addNew; {}", addProtocols.toString());
 				addProtocols.execute();
 				logWarnings(addProtocols.getWarnings());
 			}
@@ -289,13 +286,12 @@ public class BoLChunkDAO {
 			// update primary key reading the generated key
 			to.setPrimaryKey(id_s);
 		} catch (SQLException e) {
-			log
-				.error("BoL CHUNK DAO: Rolling back! Unable to complete addNew! BoLChunkDataTO: "
-					+ to + "; exception received:" + e);
+			log.error("BoL CHUNK DAO: Rolling back! Unable to complete addNew! "
+				+ "BoLChunkDataTO: {}; exception received: {}", to, e.getMessage(), e);
 			rollback(con);
 		} catch (Exception e) {
-			log.error("BoL CHUNK DAO: unable to complete addNew! BoLChunkDataTO: "
-				+ to + "; exception received:" + e);
+			log.error("BoL CHUNK DAO: unable to complete addNew! BoLChunkDataTO: {}; "
+				+ "exception received: {}", to, e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(rs_new);
@@ -343,7 +339,7 @@ public class BoLChunkDAO {
 			addDirOption.setInt(3, to.getNumLevel());
 			logWarnings(addDirOption.getWarnings());
 
-			log.trace("BoL CHUNK DAO: addNew; " + addDirOption.toString());
+			log.trace("BoL CHUNK DAO: addNew; {}", addDirOption.toString());
 			addDirOption.execute();
 			logWarnings(addDirOption.getWarnings());
 
@@ -363,14 +359,13 @@ public class BoLChunkDAO {
 			addBoL.setString(3, to.getFromSURL());
 			logWarnings(addBoL.getWarnings());
 
-			// TODO MICHELE USER_SURL set new fields
 			addBoL.setString(4, to.normalizedStFN());
 			logWarnings(addBoL.getWarnings());
 
 			addBoL.setInt(5, to.sulrUniqueID());
 			logWarnings(addBoL.getWarnings());
 
-			log.trace("BoL CHUNK DAO: addNew; " + addBoL.toString());
+			log.trace("BoL CHUNK DAO: addNew; {}", addBoL.toString());
 			addBoL.execute();
 			logWarnings(addBoL.getWarnings());
 
@@ -394,8 +389,6 @@ public class BoLChunkDAO {
 			addChild.execute();
 			logWarnings(addChild.getWarnings());
 
-			// rs_s = addChild.getGeneratedKeys();
-			// return extractID(rs_s);
 			return id_g;
 		} finally {
 			close(rs_do);
@@ -422,7 +415,6 @@ public class BoLChunkDAO {
 		}
 		PreparedStatement updateFileReq = null;
 		try {
-			// TODO MICHELE USER_SURL set new fields
 			// ready updateFileReq...
 			updateFileReq = con
 				.prepareStatement("UPDATE request_queue rq JOIN (status_BoL sb, request_BoL rb) ON (rq.ID=rb.request_queueID AND sb.request_BoLID=rb.ID)"
@@ -441,7 +433,6 @@ public class BoLChunkDAO {
 			updateFileReq.setInt(4, to.getLifeTime());
 			logWarnings(updateFileReq.getWarnings());
 
-			// TODO MICHELE USER_SURL fill new fields
 			updateFileReq.setString(5, to.normalizedStFN());
 			logWarnings(updateFileReq.getWarnings());
 
@@ -451,11 +442,11 @@ public class BoLChunkDAO {
 			updateFileReq.setLong(7, to.getPrimaryKey());
 			logWarnings(updateFileReq.getWarnings());
 			// execute update
-			log.trace("BoL CHUNK DAO: update method; " + updateFileReq.toString());
+			log.trace("BoL CHUNK DAO: update method; {}", updateFileReq.toString());
 			updateFileReq.executeUpdate();
 			logWarnings(updateFileReq.getWarnings());
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: Unable to complete update! " + e);
+			log.error("BoL CHUNK DAO: Unable to complete update! {}", e.getMessage(), e);
 		} finally {
 			close(updateFileReq);
 		}
@@ -467,16 +458,14 @@ public class BoLChunkDAO {
 	 * 
 	 * @param chunkTO
 	 */
-	// TODO MICHELE USER_SURL new method
 	public synchronized void updateIncomplete(ReducedBoLChunkDataTO chunkTO) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: updateIncomplete - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: updateIncomplete - unable to get a valid connection!");
 			return;
 		}
-		String str = "UPDATE request_BoL SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=? "
-			+ "WHERE ID=?";
+		String str = "UPDATE request_BoL SET normalized_sourceSURL_StFN=?, "
+			+ "sourceSURL_uniqueID=? WHERE ID=?";
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
@@ -491,11 +480,12 @@ public class BoLChunkDAO {
 			stmt.setLong(3, chunkTO.primaryKey());
 			logWarnings(stmt.getWarnings());
 
-			log.trace("BoL CHUNK DAO - update incomplete: " + stmt.toString());
+			log.trace("BoL CHUNK DAO - update incomplete: {}", stmt.toString());
 			stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: Unable to complete update incomplete! " + e);
+			log.error("BoL CHUNK DAO: Unable to complete update incomplete! {}", 
+				e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -533,16 +523,13 @@ public class BoLChunkDAO {
 
 			logWarnings(find.getWarnings());
 			BoLChunkDataTO aux = null;
-			// The result shoul be un
-			// TODO REMOVE THIS WHILE
 			while (rs.next()) {
 				aux = new BoLChunkDataTO();
 				aux.setStatus(rs.getInt("statusCode"));
 			}
 			return aux;
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: " + e);
-			/* Return null TransferObject! */
+			log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
 			return null;
 		} finally {
 			close(rs);
@@ -586,7 +573,7 @@ public class BoLChunkDAO {
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO: find method; " + find.toString());
+			log.trace("BoL CHUNK DAO: find method; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			while (rs.next()) {
@@ -595,7 +582,6 @@ public class BoLChunkDAO {
 			close(rs);
 			close(find);
 
-			// TODO MICHELE USER_SURL get new fields
 			// get chunks of the request
 			str = "SELECT sb.statusCode, rq.timeStamp, rq.pinLifetime, rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
 				+ "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
@@ -612,7 +598,7 @@ public class BoLChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO: find method; " + find.toString());
+			log.trace("BoL CHUNK DAO: find method; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -626,7 +612,6 @@ public class BoLChunkDAO {
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rb.normalized_sourceSURL_StFN"));
@@ -643,7 +628,7 @@ public class BoLChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("BOL CHUNK DAO: " + e);
+			log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
 			/* Return empty Collection! */
 			return new ArrayList<BoLChunkDataTO>();
 		} finally {
@@ -660,14 +645,12 @@ public class BoLChunkDAO {
 		String reqtoken) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
 			return new ArrayList<ReducedBoLChunkDataTO>();
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields
 			// get reduced chunks
 			String str = "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
 				+ "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
@@ -680,8 +663,7 @@ public class BoLChunkDAO {
 			find.setString(1, reqtoken);
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO! findReduced with request token; "
-				+ find.toString());
+			log.trace("BoL CHUNK DAO! findReduced with request token; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -691,19 +673,17 @@ public class BoLChunkDAO {
 				chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rb.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSurlUniqueID(uniqueID);
 				}
-
 				list.add(chunkDataTO);
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("BOL CHUNK DAO: " + e);
+			log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
 			/* Return empty Collection! */
 			return new ArrayList<ReducedBoLChunkDataTO>();
 		} finally {
@@ -721,17 +701,12 @@ public class BoLChunkDAO {
 		TRequestToken requestToken, int[] surlUniqueIDs, String[] surls) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
+			return new ArrayList<ReducedBoLChunkDataTO>();
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields and select on the uniqueID and on
-			// the fromSurl
-			// TODO MICHELE USER_SURL when the uniqueID and normalized surl will be
-			// made on the FrontEnd remove the String[] surls parameter
 			/*
 			 * NOTE: we search also on the fromSurl because otherwise we lost all
 			 * request_Bol that have not the uniqueID set because are not yet been
@@ -752,8 +727,7 @@ public class BoLChunkDAO {
 			find.setString(1, requestToken.getValue());
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; "
-				+ find.toString());
+			log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -763,20 +737,18 @@ public class BoLChunkDAO {
 				chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rb.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSurlUniqueID(uniqueID);
 				}
-
 				list.add(chunkDataTO);
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: " + e);
-			return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+			log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
+			return new ArrayList<ReducedBoLChunkDataTO>();
 		} finally {
 			close(rs);
 			close(find);
@@ -792,17 +764,12 @@ public class BoLChunkDAO {
 		String griduser, int[] surlUniqueIDs, String[] surls) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
+			return new ArrayList<ReducedBoLChunkDataTO>();
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields and select on the uniqueID and on
-			// the fromSurl
-			// TODO MICHELE USER_SURL when the uniqueID and normalized surl will be
-			// made on the FrontEnd remove the String[] surls parameter
 			/*
 			 * NOTE: we search also on the fromSurl because otherwise we lost all
 			 * request_Bol that have not the uniqueID set because are not yet been
@@ -823,8 +790,7 @@ public class BoLChunkDAO {
 			find.setString(1, griduser);
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; "
-				+ find.toString());
+			log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -834,20 +800,18 @@ public class BoLChunkDAO {
 				chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rb.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSurlUniqueID(uniqueID);
 				}
-
 				list.add(chunkDataTO);
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO: " + e);
-			return new ArrayList<ReducedBoLChunkDataTO>(); // return empty Collection!
+			log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
+			return new ArrayList<ReducedBoLChunkDataTO>();
 		} finally {
 			close(rs);
 			close(find);
@@ -860,13 +824,10 @@ public class BoLChunkDAO {
 	 * in the isSRM_SUCCESS method invocation. In case of any error, 0 is
 	 * returned.
 	 */
-	// TODO MICHELE USER_SURL use the unique ID to perform the select on the
-	// request_Bol table
 	public synchronized int numberInSRM_SUCCESS(int surlUniqueID) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: numberInSRM_SUCCESS - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: numberInSRM_SUCCESS - unable to get a valid connection!");
 			return 0;
 		}
 		String str = "SELECT COUNT(rb.ID) "
@@ -886,8 +847,7 @@ public class BoLChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 			logWarnings(find.getWarnings());
 
-			log.trace("BoL CHUNK DAO - numberInSRM_SUCCESS method: "
-				+ find.toString());
+			log.trace("BoL CHUNK DAO - numberInSRM_SUCCESS method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -897,9 +857,8 @@ public class BoLChunkDAO {
 			}
 			return numberFileSuccessful;
 		} catch (SQLException e) {
-			log
-				.error("BoL CHUNK DAO! Unable to determine numberInSRM_SUCCESS! Returning 0! "
-					+ e);
+			log.error("BoL CHUNK DAO! Unable to determine numberInSRM_SUCCESS! "
+				+ "Returning 0! ", e.getMessage(), e);
 			return 0;
 		} finally {
 			close(rs);
@@ -922,8 +881,7 @@ public class BoLChunkDAO {
 	public synchronized void signalMalformedBoLChunk(BoLChunkDataTO auxTO) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: signalMalformedBoLChunk - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: signalMalformedBoLChunk - unable to get a valid connection!");
 			return;
 		}
 		String signalSQL = "UPDATE status_BoL SET statusCode="
@@ -937,13 +895,13 @@ public class BoLChunkDAO {
 			signal.setString(1, "Request is malformed!");
 			logWarnings(signal.getWarnings());
 
-			log.trace("BoL CHUNK DAO: signalMalformed; " + signal.toString());
+			log.trace("BoL CHUNK DAO: signalMalformed; {}", signal.toString());
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
-			log.error("BoLChunkDAO! Unable to signal in DB that the"
-				+ " request was malformed! Request: " + auxTO.toString()
-				+ "; Exception: " + e.toString());
+			log.error("BoLChunkDAO! Unable to signal in DB that the request was "
+				+ "malformed! Request: {}; Exception: {}", auxTO.toString(), 
+				e.toString(), e);
 		} finally {
 			close(signal);
 		}
@@ -956,15 +914,10 @@ public class BoLChunkDAO {
 	 * 
 	 * @return
 	 */
-	// TODO MICHELE USER_SURL debug
 	public synchronized List<TSURL> transitExpiredSRM_SUCCESS() {
 
-		// TODO: put a limit on the queries.....
-		// TODO MICHELE USER_SURL moved the checks for surl requests from the surl
-		// tring to the surl unique ID
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: transitExpiredSRM_SUCCESS - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: transitExpiredSRM_SUCCESS - unable to get a valid connection!");
 			return new ArrayList<TSURL>();
 		}
 
@@ -998,8 +951,8 @@ public class BoLChunkDAO {
 						TSURL tsurl = TSURL.makeFromStringWellFormed(sourceSURL);
 						uniqueID = tsurl.uniqueId();
 					} catch (InvalidTSURLAttributesException e) {
-						log.warn("BoLChunkDAO! unable to build the TSURL from "
-							+ sourceSURL + " : InvalidTSURLAttributesException " + e);
+						log.warn("BoLChunkDAO! unable to build the TSURL from {}: "
+							+ "InvalidTSURLAttributesException ", sourceSURL, e.getMessage());
 					}
 				}
 				expiredSurlMap.put(sourceSURL, uniqueID);
@@ -1007,12 +960,12 @@ public class BoLChunkDAO {
 
 			if (expiredSurlMap.isEmpty()) {
 				commit(con);
-				log
-					.trace("BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+				log.trace("BoLChunkDAO! No chunk of BoL request was transited from "
+					+ "SRM_SUCCESS to SRM_RELEASED.");
 				return new ArrayList<TSURL>();
 			}
 		} catch (SQLException e) {
-			log.error("BoLChunkDAO! SQLException." + e);
+			log.error("BoLChunkDAO! SQLException.", e.getMessage(), e);
 			rollback(con);
 			return new ArrayList<TSURL>();
 		} finally {
@@ -1040,8 +993,8 @@ public class BoLChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 			logWarnings(prepStatement.getWarnings());
 
-			log.trace("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: "
-				+ prepStatement.toString());
+			log.trace("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: {}", 
+				prepStatement.toString());
 
 			int count = prepStatement.executeUpdate();
 			logWarnings(prepStatement.getWarnings());
@@ -1050,14 +1003,12 @@ public class BoLChunkDAO {
 				log.trace("BoLChunkDAO! No chunk of BoL request was"
 					+ " transited from SRM_SUCCESS to SRM_RELEASED.");
 			} else {
-				log.info("BoLChunkDAO! " + count
-					+ " chunks of BoL requests were transited from"
-					+ " SRM_SUCCESS to SRM_RELEASED.");
+				log.info("BoLChunkDAO! {} chunks of BoL requests were transited from "
+					+ "SRM_SUCCESS to SRM_RELEASED.", count);
 			}
 		} catch (SQLException e) {
-			log
-				.error("BoLChunkDAO! Unable to transit expired SRM_SUCCESS chunks of BoL requests, to SRM_RELEASED! "
-					+ e);
+			log.error("BoLChunkDAO! Unable to transit expired SRM_SUCCESS chunks of "
+				+ "BoL requests, to SRM_RELEASED! ", e.getMessage(), e);
 			rollback(con);
 			return new ArrayList<TSURL>();
 		} finally {
@@ -1096,8 +1047,8 @@ public class BoLChunkDAO {
 						TSURL tsurl = TSURL.makeFromStringWellFormed(sourceSURL);
 						uniqueID = tsurl.uniqueId();
 					} catch (InvalidTSURLAttributesException e) {
-						log.warn("BoLChunkDAO! unable to build the TSURL from "
-							+ sourceSURL + " : InvalidTSURLAttributesException " + e);
+						log.warn("BoLChunkDAO! unable to build the TSURL from {}: "
+							+ "InvalidTSURLAttributesException ", sourceSURL, e.getMessage());
 					}
 				}
 				pinnedSurlSet.add(uniqueID);
@@ -1127,8 +1078,8 @@ public class BoLChunkDAO {
 						TSURL tsurl = TSURL.makeFromStringWellFormed(sourceSURL);
 						uniqueID = tsurl.uniqueId();
 					} catch (InvalidTSURLAttributesException e) {
-						log.warn("BoLChunkDAO! unable to build the TSURL from "
-							+ sourceSURL + " : InvalidTSURLAttributesException " + e);
+						log.warn("BoLChunkDAO! unable to build the TSURL from {}: "
+							+ "InvalidTSURLAttributesException {}", sourceSURL, e.getMessage());
 					}
 				}
 				pinnedSurlSet.add(uniqueID);
@@ -1137,7 +1088,7 @@ public class BoLChunkDAO {
 			commit(con);
 
 		} catch (SQLException e) {
-			log.error("BoLChunkDAO! SQLException." + e);
+			log.error("BoLChunkDAO! SQLException. {}", e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(prepStatement);
@@ -1151,9 +1102,8 @@ public class BoLChunkDAO {
 				try {
 					surl = TSURL.makeFromStringValidate(surlEntry.getKey());
 				} catch (InvalidTSURLAttributesException e) {
-					log
-						.error("Invalid SURL, cannot release the pin (Extended Attribute): "
-							+ surlEntry.getKey());
+					log.error("Invalid SURL, cannot release the pin "
+						+ "(Extended Attribute): {}", surlEntry.getKey());
 					continue;
 				}
 				expiredSurlList.add(surl);
@@ -1161,11 +1111,8 @@ public class BoLChunkDAO {
 				try {
 					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 				} catch (Throwable e) {
-					log
-						.error(String.format(
-							"Invalid SURL %s cannot release the pin. %s: %s",
-							surlEntry.getKey(), e.getClass().getCanonicalName(),
-							e.getMessage()));
+					log.error("Invalid SURL {} cannot release the pin. {}: {}", 
+						surlEntry.getKey(), e.getClass().getCanonicalName(), e.getMessage());
 					continue;
 				}
 
@@ -1188,14 +1135,9 @@ public class BoLChunkDAO {
 		String surl, String explanation) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_ABORTED - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_ABORTED - unable to get a valid connection!");
 			return;
 		}
-		// TODO MICHELE USER_SURL use the unique ID to perform the select on the
-		// request_Bol table (removed a bug)
-		// TODO MICHELE USER_SURL when the uniqueID and normalized surl is provided
-		// by the FrontEnd remove the String surl parameter
 		String str = "UPDATE "
 			+ "status_BoL sb JOIN request_BoL rb ON sb.request_BoLID=rb.ID "
 			+ "SET sb.statusCode=?, sb.explanation=?, sb.transferURL=NULL "
@@ -1221,20 +1163,19 @@ public class BoLChunkDAO {
 			stmt.setString(5, surl);
 			logWarnings(stmt.getWarnings());
 
-			log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_ABORTED: "
-				+ stmt.toString());
+			log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_ABORTED: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count > 0) {
-				log.info("BoL CHUNK DAO! " + count
-					+ " chunks were transited from SRM_SUCCESS to SRM_ABORTED.");
+				log.info("BoL CHUNK DAO! {} chunks were transited from SRM_SUCCESS "
+					+ "to SRM_ABORTED.", count);
 			} else {
-				log.trace("BoL CHUNK DAO! No chunks were transited "
-					+ "from SRM_SUCCESS to SRM_ABORTED.");
+				log.trace("BoL CHUNK DAO! No chunks were transited from SRM_SUCCESS "
+					+ "to SRM_ABORTED.");
 			}
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO! Unable to transitSRM_SUCCESStoSRM_ABORTED! "
-				+ e);
+			log.error("BoL CHUNK DAO! Unable to transitSRM_SUCCESStoSRM_ABORTED! {}", 
+				e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -1250,17 +1191,10 @@ public class BoLChunkDAO {
 	public synchronized void transitSRM_SUCCESStoSRM_RELEASED(long[] ids) {
 
 		if (!checkConnection()) {
-			log
-				.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
+			log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
 			return;
 		}
-		String str =
-		// "UPDATE "
-		// +
-		// "status_BoL s JOIN (request_BoL rg, request_queue r) ON s.request_BoLID=rg.ID AND rg.request_queueID=r.ID "
-		// + "SET s.statusCode=? " + "WHERE s.statusCode=? AND s.ID IN "
-		// + makeWhereString(ids);
-		"UPDATE " + "status_BoL " + "SET statusCode=? "
+		String str = "UPDATE status_BoL SET statusCode=? "
 			+ "WHERE statusCode=? AND request_BoLID IN " + makeWhereString(ids);
 		PreparedStatement stmt = null;
 		try {
@@ -1274,23 +1208,20 @@ public class BoLChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: "
-				+ stmt.toString());
+			log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: {}", 
+				stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("BoL CHUNK DAO! No chunk of BoL request "
 					+ "was transited from SRM_SUCCESS to SRM_RELEASED.");
 			} else {
-				log
-					.info("BoL CHUNK DAO! "
-						+ count
-						+ " chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.");
+				log.info("BoL CHUNK DAO! {} chunks of BoL requests were transited "
+					+ "from SRM_SUCCESS to SRM_RELEASED.", count);
 			}
 		} catch (SQLException e) {
-			log
-				.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS to SRM_RELEASED! "
-					+ e);
+			log.error("BoL CHUNK DAO! Unable to transit chunks from SRM_SUCCESS "
+				+ "to SRM_RELEASED! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -1308,8 +1239,7 @@ public class BoLChunkDAO {
 			 * the where subquery.
 			 */
 			if (!checkConnection()) {
-				log
-					.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
+				log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
 				return;
 			}
 			String str = "UPDATE "
@@ -1328,21 +1258,20 @@ public class BoLChunkDAO {
 					StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 				logWarnings(stmt.getWarnings());
 
-				log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: "
-					+ stmt.toString());
+				log.trace("BoL CHUNK DAO - transitSRM_SUCCESStoSRM_RELEASED: {}", 
+					stmt.toString());
 				int count = stmt.executeUpdate();
 				logWarnings(stmt.getWarnings());
 				if (count == 0) {
 					log.trace("BoL CHUNK DAO! No chunk of BoL request was "
 						+ "transited from SRM_SUCCESS to SRM_RELEASED.");
 				} else {
-					log.info("BoL CHUNK DAO! " + count
-						+ " chunks of BoL requests were transited "
-						+ "from SRM_SUCCESS to SRM_RELEASED.");
+					log.info("BoL CHUNK DAO! {} chunks of BoL requests were transited "
+						+ "from SRM_SUCCESS to SRM_RELEASED.", count);
 				}
 			} catch (SQLException e) {
 				log.error("BoL CHUNK DAO! Unable to transit chunks "
-					+ "from SRM_SUCCESS to SRM_RELEASED! " + e);
+					+ "from SRM_SUCCESS to SRM_RELEASED! {}", e.getMessage(), e);
 			} finally {
 				close(stmt);
 			}
@@ -1372,8 +1301,8 @@ public class BoLChunkDAO {
 			try {
 				stmt.close();
 			} catch (Exception e) {
-				log.error("BoL CHUNK DAO! Unable to close Statement " + stmt.toString()
-					+ " - Exception: " + e);
+				log.error("BoL CHUNK DAO! Unable to close Statement {} - Exception: {}", 
+					stmt.toString(), e.getMessage(), e);
 			}
 		}
 	}
@@ -1385,7 +1314,7 @@ public class BoLChunkDAO {
 				con.commit();
 				con.setAutoCommit(true);
 			} catch (SQLException e) {
-				log.error("BoL, SQL EXception", e);
+				log.error("BoL, SQL EXception {}", e.getMessage(), e);
 			}
 		}
 	}
@@ -1401,7 +1330,7 @@ public class BoLChunkDAO {
 				con.setAutoCommit(true);
 				log.error("BoL CHUNK DAO: roll back successful!");
 			} catch (SQLException e2) {
-				log.error("BoL CHUNK DAO: roll back failed! " + e2);
+				log.error("BoL CHUNK DAO: roll back failed! {}", e2.getMessage(), e2);
 			}
 		}
 	}
@@ -1417,12 +1346,11 @@ public class BoLChunkDAO {
 		}
 		if (rs.next()) {
 			return rs.getInt(1);
-		} else {
-			log.error("BoL CHUNK DAO! It was not possible to establish "
-				+ "the assigned autoincrement primary key!");
-			throw new Exception(
-				"BoL CHUNK DAO! It was not possible to establish the assigned autoincrement primary key!");
 		}
+		log.error("BoL CHUNK DAO! It was not possible to establish "
+			+ "the assigned autoincrement primary key!");
+		throw new Exception(
+			"BoL CHUNK DAO! It was not possible to establish the assigned autoincrement primary key!");
 	}
 
 	/**
@@ -1431,9 +1359,9 @@ public class BoLChunkDAO {
 	private void logWarnings(SQLWarning w) {
 
 		if (w != null) {
-			log.debug("BoL CHUNK DAO: " + w.toString());
+			log.debug("BoL CHUNK DAO: {}", w.toString());
 			while ((w = w.getNextWarning()) != null) {
-				log.debug("BoL CHUNK DAO: " + w.toString());
+				log.debug("BoL CHUNK DAO: {}", w.toString());
 			}
 		}
 	}
@@ -1487,7 +1415,7 @@ public class BoLChunkDAO {
 				requestedSURL = SURL.makeSURLfromString(surls[i]);
 			} catch (NamespaceException e) {
 				log.error(e.getMessage());
-				log.debug("Skip '" + surls[i] + "' during query creation");
+				log.debug("Skip '{}' during query creation", surls[i]);
 				continue;
 			}
 
@@ -1524,9 +1452,11 @@ public class BoLChunkDAO {
 				response = con.isValid(0);
 			}
 		} catch (ClassNotFoundException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConnection! " + e);
+			log.error("BoL CHUNK DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConenction! " + e);
+			log.error("BoL CHUNK DAO! Exception in setUpConenction! {}", 
+				e.getMessage(), e);
 		}
 		return response;
 	}
@@ -1558,8 +1488,8 @@ public class BoLChunkDAO {
 			try {
 				con.close();
 			} catch (SQLException e) {
-				log
-					.error("BoL CHUNK DAO! Exception in takeDownConnection method: " + e);
+				log.error("BoL CHUNK DAO! Exception in takeDownConnection method: {}", 
+					e.getMessage(), e);
 			}
 		}
 	}
@@ -1642,22 +1572,19 @@ public class BoLChunkDAO {
 				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("BOL CHUNK DAO - updateStatusOnMatchingStatus: "
-				+ stmt.toString());
+			log.trace("BOL CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
-				log.trace("BOL CHUNK DAO! No chunk of BOL request was"
-					+ " updated from " + expectedStatusCode + " to " + newStatusCode
-					+ ".");
+				log.trace("BOL CHUNK DAO! No chunk of BOL request was updated from {} "
+					+ "to {}.", expectedStatusCode, newStatusCode);
 			} else {
-				log.debug("BOL CHUNK DAO! " + count
-					+ " chunks of BOL requests were updated from " + expectedStatusCode
-					+ " to " + newStatusCode + ".");
+				log.debug("BOL CHUNK DAO! {} chunks of BOL requests were updated "
+					+ "from {} to {}.", count, expectedStatusCode, newStatusCode);
 			}
 		} catch (SQLException e) {
-			log.error("BOL CHUNK DAO! Unable to updated from " + expectedStatusCode
-				+ " to " + newStatusCode + " !" + e);
+			log.error("BOL CHUNK DAO! Unable to updated from {} to {}!", 
+				expectedStatusCode, newStatusCode, e);
 		} finally {
 			close(stmt);
 		}
@@ -1705,7 +1632,6 @@ public class BoLChunkDAO {
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields
 			// get chunks of the request
 			String str = "SELECT rq.ID, rq.r_token, sb.statusCode, rq.timeStamp, rq.pinLifetime, "
 				+ "rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, "
@@ -1725,7 +1651,7 @@ public class BoLChunkDAO {
 
 			List<BoLChunkDataTO> list = new ArrayList<BoLChunkDataTO>();
 
-			log.trace("BOL CHUNK DAO - find method: " + find.toString());
+			log.trace("BOL CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			BoLChunkDataTO chunkDataTO = null;
@@ -1739,7 +1665,6 @@ public class BoLChunkDAO {
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rb.normalized_sourceSURL_StFN"));
@@ -1756,7 +1681,7 @@ public class BoLChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("BOL CHUNK DAO: " + e);
+			log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<BoLChunkDataTO>();
 		} finally {

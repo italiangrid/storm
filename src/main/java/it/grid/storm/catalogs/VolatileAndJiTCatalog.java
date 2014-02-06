@@ -167,17 +167,12 @@ public class VolatileAndJiTCatalog {
 	 */
 	synchronized public boolean expireGetJiTs(PFN pfn, LocalUser localUser) {
 
-		boolean ok = pfn != null && localUser != null;
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked on null attributes; pfn="
-					+ pfn + " localUser=" + localUser);
-			return false;
-		} else {
-			boolean result = true;
-			result = result && expireJiT(pfn, localUser, FilesystemPermission.Read);
-			return result;
+		if (pfn != null && localUser != null) {
+			return expireJiT(pfn, localUser, FilesystemPermission.Read);
 		}
+		log.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked "
+			+ "on null attributes; pfn={} localUser={}", pfn, localUser);
+		return false;
 	}
 
 	/**
@@ -197,13 +192,7 @@ public class VolatileAndJiTCatalog {
 	synchronized public boolean expireJiT(PFN pfn, LocalUser localUser,
 		FilesystemPermission acl) {
 
-		boolean ok = pfn != null && localUser != null && acl != null;
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! expireJiT invoked on null attributes; pfn="
-					+ pfn + " localUser=" + localUser + " acl=" + acl);
-			return false;
-		} else {
+		if (pfn != null && localUser != null && acl != null) {
 			String fileName = pfn.getValue();
 			int uid = localUser.getUid();
 			int intacl = acl.getInt();
@@ -216,24 +205,20 @@ public class VolatileAndJiTCatalog {
 			long pinTime = 0; // set to zero the lifetime!
 			int n = dao.numberJiT(fileName, uid, intacl);
 			if (n == 0) {
-				log.warn("VolatileAndJiT CATALOG: expireJiT found no entry for ("
-					+ fileName + "," + uid + "," + intacl + ")!");
+				log.warn("VolatileAndJiT CATALOG: expireJiT found no entry for ({}, {}, "
+					+ "{})!", fileName, uid, intacl);
 				return false;
-			} else {
-				dao.forceUpdateJiT(fileName, uid, intacl, pinStart, pinTime);
-				if (n > 1) {
-					log
-						.warn("VolatileAndJiT CATALOG: expireJiT found more than one entry for ("
-							+ fileName
-							+ ","
-							+ uid
-							+ ","
-							+ intacl
-							+ "); the catalogue could be corrupt!");
-				}
-				return true;
+			} 
+			dao.forceUpdateJiT(fileName, uid, intacl, pinStart, pinTime);
+			if (n > 1) {
+				log.warn("VolatileAndJiT CATALOG: expireJiT found more than one entry "
+					+ "for ({}, {}, {}); the catalogue could be corrupt!", fileName, uid, intacl);
 			}
+			return true;
 		}
+		log.error("VolatileAndJiT CATALOG: programming bug! expireJiT invoked on "
+			+ "null attributes; pfn={} localUser={} acl={}", pfn, localUser, acl);
+		return false;
 	}
 
 	/**
@@ -257,18 +242,14 @@ public class VolatileAndJiTCatalog {
 	 */
 	synchronized public boolean expirePutJiTs(PFN pfn, LocalUser localUser) {
 
-		boolean ok = pfn != null && localUser != null;
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! expirePutJiTs invoked on null attributes; pfn="
-					+ pfn + " localUser=" + localUser);
-			return false;
-		} else {
-			boolean result = true;
-			result = result && expireJiT(pfn, localUser, FilesystemPermission.Read);
-			result = result && expireJiT(pfn, localUser, FilesystemPermission.Write);
-			return result;
+		if (pfn != null && localUser != null) {
+			return expireJiT(pfn, localUser, FilesystemPermission.Read)
+				&& expireJiT(pfn, localUser, FilesystemPermission.Write);
 		}
+		
+		log.error("VolatileAndJiT CATALOG: programming bug! expirePutJiTs invoked "
+			+ "on null attributes; pfn={} localUser={}", pfn, localUser);
+		return false;
 	}
 
 	/**
@@ -290,22 +271,19 @@ public class VolatileAndJiTCatalog {
 		 * set up on them.
 		 */
 		Collection[] expired = dao.removeExpired(rightNow.getTimeInMillis() / 1000);
-		Collection expiredVolatile = expired[0]; // collection of expired Volatile
-																							// entries
-		Collection expiredJiT = expired[1]; // collection of expired JiTs
+		Collection expiredVolatile = expired[0];
+		Collection expiredJiT = expired[1];
 		if (expiredVolatile.size() == 0) {
 			log.debug("VolatileAndJiT CATALOG! No expired Volatile entries found.");
 		} else {
-			log
-				.info("VolatileAndJiT CATALOG! Found and purged the following expired Volatile entries:\n "
-					+ volatileString(expired[0]));
+			log.info("VolatileAndJiT CATALOG! Found and purged the following expired "
+				+ "Volatile entries:\n {}", volatileString(expired[0]));
 		}
 		if (expiredJiT.size() == 0) {
 			log.debug("VolatileAndJiT CATALOG! No JiT entries found.");
 		} else {
-			log
-				.info("VolatileAndJiT CATALOG! Found and purged the following expired JiT ACLs entries:\n "
-					+ jitString(expired[1]));
+			log.info("VolatileAndJiT CATALOG! Found and purged the following expired "
+				+ "JiT ACLs entries:\n {}", jitString(expired[1]));
 		}
 		// Remove ACLs
 		JiTData aux = null;
@@ -316,39 +294,30 @@ public class VolatileAndJiTCatalog {
 			int jituid = aux.uid();
 			int jitgid = aux.gid();
 			try {
-				log.info("VolatileAndJiT CATALOG. Removing ACL " + jitacl + " on file "
-					+ jitfile + " for user " + jituid + "," + jitgid);
+				log.info("VolatileAndJiT CATALOG. Removing ACL {} on file {} for "
+					+ "user {},{}", jitacl, jitfile, jituid, jitgid);
 				LocalFile auxFile = NamespaceDirector.getNamespace()
 					.resolveStoRIbyPFN(PFN.make(jitfile)).getLocalFile();
 				LocalUser auxUser = new LocalUser(jituid, jitgid);
 				FilesystemPermission auxACL = new FilesystemPermission(jitacl);
 
 				AclManager manager = AclManagerFSAndHTTPS.getInstance();
-				// TODO ACL manager
 				if (auxFile == null) {
-					log
-						.warn("VolatileAndJiT CATALOG! Unable to setting up the ACL. LocalFile is null!");
+					log.warn("VolatileAndJiT CATALOG! Unable to setting up the ACL. "
+						+ "LocalFile is null!");
 				} else {
 					try {
 						manager.revokeUserPermission(auxFile, auxUser, auxACL);
 					} catch (IllegalArgumentException e) {
-						log
-							.error("Unable to revoke user permissions on the file. IllegalArgumentException: "
-								+ e.getMessage());
+						log.error("Unable to revoke user permissions on the file. "
+							+ "IllegalArgumentException: {}", e.getMessage(), e);
 					}
 				}
-				// auxFile.revokeUserPermission(auxUser, auxACL);
 			} catch (Exception e) {
-				// log exceptions
-				log
-					.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but physical ACL "
-						+ jitacl
-						+ " for user "
-						+ jituid
-						+ ","
-						+ jitgid
-						+ " could NOT be removed from " + jitfile);
-				log.error("VolatileAndJiT CATALOG! " + e);
+				log.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but "
+					+ "physical ACL {} for user {}, could NOT be removed from {}", 
+					jitacl, jituid, jitgid, jitfile);
+				log.error("VolatileAndJiT CATALOG! {}", e.getMessage(), e);
 			}
 		}
 		// Delete files
@@ -356,7 +325,7 @@ public class VolatileAndJiTCatalog {
 		for (Iterator i = expiredVolatile.iterator(); i.hasNext();) {
 			auxPFN = (String) i.next();
 			try {
-				log.info("VolatileAndJiT CATALOG. Deleting file " + auxPFN);
+				log.info("VolatileAndJiT CATALOG. Deleting file {}", auxPFN);
 				LocalFile auxFile = NamespaceDirector.getNamespace()
 					.resolveStoRIbyPFN(PFN.make(auxPFN)).getLocalFile();
 				boolean ok = auxFile.delete();
@@ -364,11 +333,9 @@ public class VolatileAndJiTCatalog {
 					throw new Exception("Java File deletion failed!");
 				}
 			} catch (Exception e) {
-				// log exceptions
-				log
-					.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but physical file "
-						+ auxPFN + " could NOT be deleted!");
-				log.error("VolatileAndJiT CATALOG! " + e);
+				log.error("VolatileAndJiT CATALOG! Entry removed from Catalog, but "
+					+ "physical file {} could NOT be deleted!", auxPFN);
+				log.error("VolatileAndJiT CATALOG! {}", e.getMessage(), e);
 			}
 		}
 	}
@@ -383,14 +350,12 @@ public class VolatileAndJiTCatalog {
 	 */
 	synchronized public void removeAllJiTsOn(PFN pfn) {
 
-		boolean ok = pfn != null;
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! removeAllJiTsOn invoked on null pfn!");
-		} else {
-			String fileName = pfn.getValue();
-			dao.removeAllJiTsOn(fileName);
+		if (pfn != null) {
+			dao.removeAllJiTsOn(pfn.getValue());
+			return;
 		}
+		log.error("VolatileAndJiT CATALOG: programming bug! removeAllJiTsOn "
+			+ "invoked on null pfn!");
 	}
 
 	/**
@@ -400,13 +365,12 @@ public class VolatileAndJiTCatalog {
 	 */
 	synchronized public void removeVolatile(PFN pfn) {
 
-		boolean ok = pfn != null;
-		if (!ok) {
-			log
-				.warn("VolatileAndJiT CATALOG: programming bug! removeVolatile invoked on null pfn!");
-		} else {
+		if (pfn != null) {
 			dao.removeVolatile(pfn.getValue());
+			return;
 		}
+		log.warn("VolatileAndJiT CATALOG: programming bug! removeVolatile invoked "
+			+ "on null pfn!");
 	}
 
 	/**
@@ -429,20 +393,9 @@ public class VolatileAndJiTCatalog {
 	synchronized public void trackJiT(PFN pfn, LocalUser localUser,
 		FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
 
-		boolean ok = pfn != null && localUser != null && acl != null
-			&& start != null && pinLifetime != null;
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! TrackACL invoked on null attributes; pfn="
-					+ pfn
-					+ " localUser="
-					+ localUser
-					+ " acl="
-					+ acl
-					+ " start="
-					+ start
-					+ " pinLifetime=" + pinLifetime);
-		} else {
+		if (pfn != null && localUser != null && acl != null && start != null 
+			&& pinLifetime != null) {
+			
 			String fileName = pfn.getValue();
 			int uid = localUser.getUid();
 			int gid = localUser.getPrimaryGid();
@@ -456,12 +409,16 @@ public class VolatileAndJiTCatalog {
 			} else {
 				dao.updateJiT(fileName, uid, intacl, pinStart, pinTime);
 				if (n > 1) {
-					log.warn("VolatileAndJiT CATALOG: More than one entry found for ("
-						+ fileName + "," + uid + "," + intacl
-						+ "); the catalogue could be corrupt!");
+					log.warn("VolatileAndJiT CATALOG: More than one entry found for "
+						+ "({}, {}, {}); the catalogue could be corrupt!", fileName, uid, 
+						intacl);
 				}
 			}
+			return;
 		}
+		log.error("VolatileAndJiT CATALOG: programming bug! TrackACL invoked on "
+			+ "null attributes; pfn={} localUser={} acl={} start={} pinLifetime={}", 
+			pfn, localUser, acl, start, pinLifetime);
 	}
 
 	/**
@@ -486,12 +443,8 @@ public class VolatileAndJiTCatalog {
 	synchronized public void trackVolatile(PFN pfn, Calendar start,
 		TLifeTimeInSeconds fileLifetime) {
 
-		boolean ok = pfn != null && fileLifetime != null && start != null;
-		if (!ok) {
-			log
-				.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="
-					+ pfn + " start=" + start + " fileLifetime=" + fileLifetime);
-		} else {
+		if (pfn != null && fileLifetime != null && start != null) {
+			
 			String fileName = pfn.getValue();
 			long fileTime = fileLifetime.value();
 			if (fileTime <= 0) {
@@ -501,49 +454,52 @@ public class VolatileAndJiTCatalog {
 																												// milliseconds!
 			int n = dao.numberVolatile(fileName);
 			if (n == -1) {
-				log
-					.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "
-						+ pfn + "! Volatile entry NOT processed!");
+				log.error("VolatileAndJiT CATALOG! DB problem does not allow to count "
+					+ "number of Volatile entries for {}! Volatile entry NOT processed!", 
+					pfn);
 			} else if (n == 0) {
 				dao.addVolatile(fileName, fileStart, fileTime);
 			} else {
 				dao.updateVolatile(fileName, fileStart, fileTime);
 				if (n > 1) {
-					log.warn("VolatileAndJiT CATALOG: More than one entry found for "
-						+ fileName + "; the catalogue could be corrupt!");
+					log.warn("VolatileAndJiT CATALOG: More than one entry found for {}; "
+						+ "the catalogue could be corrupt!", fileName);
 				}
 			}
+			return;
 		}
+		log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked "
+			+ "on null attributes; pfn={} start={} fileLifetime={}", pfn, start, 
+			fileLifetime);
 	}
 
 	synchronized public void setStartTime(PFN pfn, Calendar start)
 		throws Exception {
 
 		if (pfn == null || start == null) {
-			log
-				.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked on null attributes; pfn="
-					+ pfn + " start=" + start);
-		} else {
-			String fileName = pfn.getValue();
-			long fileStart = start.getTimeInMillis() / 1000; // seconds needed and not
-																												// milliseconds!
-			int n = dao.numberVolatile(fileName);
-			if (n == -1) {
-				log
-					.error("VolatileAndJiT CATALOG! DB problem does not allow to count number of Volatile entries for "
-						+ pfn + "! Volatile entry NOT processed!");
-			} else {
-				if (n == 0) {
-					throw new Exception("Unable to update row volatile for pfn \'" + pfn
-						+ "\' , not on the database!");
-				} else {
-					dao.updateVolatile(fileName, fileStart);
-					if (n > 1) {
-						log.warn("VolatileAndJiT CATALOG: More than one entry found for "
-							+ fileName + "; the catalogue could be corrupt!");
-					}
-				}
-			}
+			log.warn("VolatileAndJiT CATALOG: programming bug! volatileEntry invoked "
+				+ "on null attributes; pfn={} start={}", pfn, start);
+			return;
+		}
+		
+		String fileName = pfn.getValue();
+		long fileStart = start.getTimeInMillis() / 1000; // seconds needed and not
+																											// milliseconds!
+		int n = dao.numberVolatile(fileName);
+		if (n == -1) {
+			log.error("VolatileAndJiT CATALOG! DB problem does not allow to count "
+				+ "number of Volatile entries for {}! Volatile entry NOT processed!",
+				pfn);
+			return;
+		}
+		if (n == 0) {
+			throw new Exception("Unable to update row volatile for pfn \'" + pfn
+				+ "\' , not on the database!");
+		}
+		dao.updateVolatile(fileName, fileStart);
+		if (n > 1) {
+			log.warn("VolatileAndJiT CATALOG: More than one entry found for {}; "
+				+ "the catalogue could be corrupt!", fileName);
 		}
 	}
 
@@ -559,36 +515,35 @@ public class VolatileAndJiTCatalog {
 	 */
 	synchronized public List volatileInfoOn(PFN pfn) {
 
-		boolean ok = pfn != null;
 		ArrayList aux = new ArrayList();
-		if (!ok) {
-			log
-				.error("VolatileAndJiT CATALOG: programming bug! volatileInfoOn invoked on null PFN!");
-			return aux;
-		} else {
-			Collection<Long> c = dao.volatileInfoOn(pfn.getValue());
-			if (c.size() == 2) {
-				Iterator<Long> i = c.iterator();
-				// start time
-				long startInMillis = i.next().longValue() * 1000;
-				Calendar auxcal = Calendar.getInstance();
-				auxcal.setTimeInMillis(startInMillis);
-				aux.add(auxcal);
-				// lifeTime
-				long lifetimeInSeconds = ((Long) i.next()).longValue();
-				TLifeTimeInSeconds auxLifeTime = TLifeTimeInSeconds.makeEmpty();
-				try {
-					auxLifeTime = TLifeTimeInSeconds.make(lifetimeInSeconds,
-						TimeUnit.SECONDS);
-				} catch (IllegalArgumentException e) {
-					log
-						.error("VolatileAndJiT CATALOG: programming bug! Retrieved long does not allow TLifeTimeCreation! long is: "
-							+ lifetimeInSeconds + "; exception is: " + e);
-				}
-				aux.add(auxLifeTime);
-			}
+		if (pfn == null) {
+			log.error("VolatileAndJiT CATALOG: programming bug! volatileInfoOn "
+				+ "invoked on null PFN!");
 			return aux;
 		}
+		Collection<Long> c = dao.volatileInfoOn(pfn.getValue());
+		if (c.size() != 2) {
+			return aux;
+		}
+		Iterator<Long> i = c.iterator();
+		// start time
+		long startInMillis = i.next().longValue() * 1000;
+		Calendar auxcal = Calendar.getInstance();
+		auxcal.setTimeInMillis(startInMillis);
+		aux.add(auxcal);
+		// lifeTime
+		long lifetimeInSeconds = ((Long) i.next()).longValue();
+		TLifeTimeInSeconds auxLifeTime = TLifeTimeInSeconds.makeEmpty();
+		try {
+			auxLifeTime = TLifeTimeInSeconds
+				.make(lifetimeInSeconds, TimeUnit.SECONDS);
+		} catch (IllegalArgumentException e) {
+			log.error("VolatileAndJiT CATALOG: programming bug! Retrieved long does "
+				+ "not allow TLifeTimeCreation! long is: {}; error is: {}", 
+				lifetimeInSeconds, e.getMessage(), e);
+		}
+		aux.add(auxLifeTime);
+		return aux;
 	}
 
 	/**

@@ -43,7 +43,6 @@ public class BoLChunkDataTO {
 	private long primaryKey = -1; // ID primary key of record in DB
 	private String fromSURL = " ";
 	private boolean dirOption; // initialised in constructor
-	// TODO MICHELE USER_SURL added new fields
 	private String normalizedStFN = null;
 	private Integer surlUniqueID = null;
 	/* Database table request_Get fields END */

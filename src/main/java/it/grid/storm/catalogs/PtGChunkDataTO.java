@@ -43,7 +43,6 @@ public class PtGChunkDataTO {
 	private long primaryKey = -1; // ID primary key of record in DB
 	private boolean dirOption; // initialised in constructor
 	private String fromSURL = " ";
-	// TODO MICHELE USER_SURL added new fields
 	private String normalizedStFN = null;
 	private Integer surlUniqueID = null;
 	/* Database table request_Get fields END */
@@ -68,7 +67,6 @@ public class PtGChunkDataTO {
 		this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
 		this.status = StatusCodeConverter.getInstance().toDB(
 			TStatusCode.SRM_REQUEST_QUEUED);
-		// TODO MICHELE why? this field is from the DB like the fromSURL...
 		this.dirOption = false;
 		//
 		this.allLevelRecursive = false;

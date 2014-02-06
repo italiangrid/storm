@@ -29,6 +29,8 @@ import it.grid.storm.srm.types.TRequestToken;
  */
 public class NoDataFoundException extends Exception {
 
+	private static final long serialVersionUID = -718255813130266566L;
+
 	private TRequestToken requestToken;
 
 	/**

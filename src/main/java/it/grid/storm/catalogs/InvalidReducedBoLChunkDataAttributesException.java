@@ -30,6 +30,8 @@ import it.grid.storm.srm.types.TReturnStatus;
  */
 public class InvalidReducedBoLChunkDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = -8145580437017768234L;
+
 	// booleans that indicate whether the corresponding variable is null
 	private boolean nullFromSURL;
 	private boolean nullStatus;

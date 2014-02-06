@@ -32,11 +32,10 @@ import it.grid.storm.srm.types.TSpaceToken;
 
 public class InvalidSpaceDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = -5317879266114702669L;
+
 	private boolean nullAuth = true;
-	private boolean nullType = true;
 	private boolean nullToken = true;
-	private boolean negSpaceDes = true;
-	private boolean negSpaceGuar = true;
 
 	public InvalidSpaceDataAttributesException(GridUserInterface guser) {
 

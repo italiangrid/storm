@@ -24,7 +24,7 @@ public class ResponsivenessCache {
 
 	public ResponsivenessCacheEntry addEntry(Node node) {
 
-		log.debug("Adding cache entry for " + node);
+		log.debug("Adding cache entry for {}", node);
 		ResponsivenessCacheEntry newEntry = this.new ResponsivenessCacheEntry(node,
 			Responsiveness.UNKNOWN);
 		cache.put(node, newEntry);
@@ -43,14 +43,14 @@ public class ResponsivenessCache {
 		ResponsivenessCacheEntry entry = getEntry(node);
 		if (entry != null) {
 			if (isExpired(entry)) {
-				log.debug("Cache entry " + entry.toString() + " expired. Refresching");
+				log.debug("Cache entry {} expired. Refreshing..", entry.toString());
 				resp = entry.refresh();
 			} else {
-				log.debug("Found valid cache entry for " + entry.toString());
+				log.debug("Found valid cache entry for {}", entry.toString());
 				resp = entry.getStatus();
 			}
 		} else {
-			log.debug("Missing cache entry for " + node + " .Adding and refresching");
+			log.debug("Missing cache entry for {}. Adding and refreshing..", node);
 			entry = addEntry(node);
 			resp = entry.refresh();
 		}
@@ -64,7 +64,7 @@ public class ResponsivenessCache {
 	public boolean isExpired(ResponsivenessCacheEntry entry) {
 
 		if (entry != null) {
-			return entry.isExpired(this.entryLifetime);
+			return entry.isExpired(entryLifetime);
 		}
 		return true;
 	}
@@ -129,9 +129,9 @@ public class ResponsivenessCache {
 			} else {
 				respness = Responsiveness.UNRESPONSIVE;
 			}
-			this.checkTime = new Date().getTime();
-			this.setStatus(respness);
-			return this.status;
+			checkTime = new Date().getTime();
+			setStatus(respness);
+			return status;
 		}
 
 		/*

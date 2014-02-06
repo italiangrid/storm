@@ -18,17 +18,23 @@
 package it.grid.storm.catalogs;
 
 import java.util.Map;
+
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Dibenedetto
  * 
  */
 public abstract class SurlRequestData implements RequestData {
+
+	private static final Logger log = LoggerFactory
+		.getLogger(SurlRequestData.class);
 
 	protected TSURL SURL;
 	protected TReturnStatus status;
@@ -42,8 +48,6 @@ public abstract class SurlRequestData implements RequestData {
 		this.SURL = toSURL;
 		this.status = status;
 	}
-
-	protected abstract Logger getLog();
 
 	/**
 	 * Method that returns the TURL for this chunk of the srm request.
@@ -83,9 +87,8 @@ public abstract class SurlRequestData implements RequestData {
 				status = new TReturnStatus(statusCode, explanation);
 			}
 		} catch (InvalidTReturnStatusAttributeException e) {
-			getLog().warn(
-				"UNEXPECTED ERROR! Unable to set SRM request status to SRM_ABORTED! "
-					+ e);
+			log.error("Unable to set SRM request status to [{},{}]. Error: {}", 
+				statusCode.getValue(), explanation, e.getMessage(), e);
 		}
 	}
 
