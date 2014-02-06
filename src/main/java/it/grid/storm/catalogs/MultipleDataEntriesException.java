@@ -29,6 +29,8 @@ import it.grid.storm.srm.types.TRequestToken;
  */
 public class MultipleDataEntriesException extends Exception {
 
+	private static final long serialVersionUID = 427636739469695868L;
+
 	private TRequestToken requestToken;
 
 	/**

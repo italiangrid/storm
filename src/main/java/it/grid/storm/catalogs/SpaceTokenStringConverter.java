@@ -32,8 +32,7 @@ import it.grid.storm.srm.types.TSpaceToken;
  */
 class SpaceTokenStringConverter {
 
-	private static SpaceTokenStringConverter stc = new SpaceTokenStringConverter(); // only
-																																									// instance
+	private static SpaceTokenStringConverter stc = new SpaceTokenStringConverter();
 
 	private SpaceTokenStringConverter() {
 

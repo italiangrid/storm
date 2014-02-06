@@ -123,7 +123,6 @@ public class CopyChunkDAO {
 		}
 		PreparedStatement updateFileReq = null;
 		try {
-			// TODO MICHELE USER_SURL set new fields
 			// ready updateFileReq...
 			updateFileReq = con
 				.prepareStatement("UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
@@ -148,7 +147,6 @@ public class CopyChunkDAO {
 			updateFileReq.setString(5, to.overwriteOption());
 			logWarnings(updateFileReq.getWarnings());
 
-			// TODO MICHELE USER_SURL fill new fields
 			updateFileReq.setString(6, to.normalizedSourceStFN());
 			logWarnings(updateFileReq.getWarnings());
 
@@ -168,7 +166,8 @@ public class CopyChunkDAO {
 			updateFileReq.executeUpdate();
 			logWarnings(updateFileReq.getWarnings());
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: Unable to complete update! " + e);
+			log.error("COPY CHUNK DAO: Unable to complete update! {}", 
+				e.getMessage(), e);
 		} finally {
 			close(updateFileReq);
 		}
@@ -180,7 +179,6 @@ public class CopyChunkDAO {
 	 * 
 	 * @param chunkTO
 	 */
-	// TODO MICHELE USER_SURL new method
 	public synchronized void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
 
 		if (!checkConnection()) {
@@ -210,11 +208,12 @@ public class CopyChunkDAO {
 			stmt.setLong(5, chunkTO.primaryKey());
 			logWarnings(stmt.getWarnings());
 
-			log.trace("COPY CHUNK DAO - update incomplete: " + stmt.toString());
+			log.trace("COPY CHUNK DAO - update incomplete: {}", stmt.toString());
 			stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: Unable to complete update incomplete! " + e);
+			log.error("COPY CHUNK DAO: Unable to complete update incomplete! {}", 
+				e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -254,7 +253,6 @@ public class CopyChunkDAO {
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields
 			/* get chunks of the request */
 			str = "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
 				+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
@@ -289,7 +287,6 @@ public class CopyChunkDAO {
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedSourceStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -298,7 +295,6 @@ public class CopyChunkDAO {
 				}
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedTargetStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -310,7 +306,7 @@ public class CopyChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: " + e);
+			log.error("COPY CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<CopyChunkDataTO>();
 		} finally {
@@ -332,7 +328,6 @@ public class CopyChunkDAO {
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields
 			/* get chunks of the request */
 			str = "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
 				+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
@@ -350,7 +345,7 @@ public class CopyChunkDAO {
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
-			log.debug("COPY CHUNK DAO: find method; " + find.toString());
+			log.debug("COPY CHUNK DAO: find method; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -366,7 +361,6 @@ public class CopyChunkDAO {
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedSourceStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -375,7 +369,6 @@ public class CopyChunkDAO {
 				}
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedTargetStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -387,7 +380,7 @@ public class CopyChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: " + e);
+			log.error("COPY CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<CopyChunkDataTO>();
 		} finally {
@@ -438,9 +431,9 @@ public class CopyChunkDAO {
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
-			log.error("CopyChunkDAO! Unable to signal in DB that the"
-				+ "request was malformed! Request: " + auxTO.toString()
-				+ "; Exception: " + e.toString());
+			log.error("CopyChunkDAO! Unable to signal in DB that the request was "
+				+ "malformed! Request: {}; Error: {}", auxTO.toString(), 
+				e.getMessage(), e);
 		} finally {
 			close(signal);
 		}
@@ -455,8 +448,8 @@ public class CopyChunkDAO {
 			try {
 				stmt.close();
 			} catch (Exception e) {
-				log.error("COPY CHUNK DAO! Unable to close Statement "
-					+ stmt.toString() + " - Exception: " + e);
+				log.error("COPY CHUNK DAO! Unable to close Statement {} - Error: {}", 
+					stmt.toString(), e.getMessage(), e);
 			}
 		}
 	}
@@ -470,7 +463,8 @@ public class CopyChunkDAO {
 			try {
 				rset.close();
 			} catch (Exception e) {
-				log.error("COPY CHUNK DAO! Unable to close ResultSet! Exception: " + e);
+				log.error("COPY CHUNK DAO! Unable to close ResultSet! Error: {}",
+					e.getMessage(), e);
 			}
 		}
 	}
@@ -481,9 +475,9 @@ public class CopyChunkDAO {
 	private void logWarnings(SQLWarning w) {
 
 		if (w != null) {
-			log.debug("COPY CHUNK DAO: " + w.toString());
+			log.debug("COPY CHUNK DAO: {}", w.toString());
 			while ((w = w.getNextWarning()) != null) {
-				log.debug("COPY CHUNK DAO: " + w.toString());
+				log.debug("COPY CHUNK DAO: {}", w.toString());
 			}
 		}
 	}
@@ -505,9 +499,11 @@ public class CopyChunkDAO {
 				response = con.isValid(0);
 			}
 		} catch (ClassNotFoundException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! " + e);
+			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! " + e);
+			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		}
 		return response;
 	}
@@ -539,8 +535,8 @@ public class CopyChunkDAO {
 			try {
 				con.close();
 			} catch (SQLException e) {
-				log.error("COPY CHUNK DAO! Exception in takeDownConnection method: "
-					+ e);
+				log.error("COPY CHUNK DAO! Exception in takeDownConnection method: {}", 
+					e.getMessage(), e);
 			}
 		}
 	}
@@ -623,22 +619,19 @@ public class CopyChunkDAO {
 				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("COPY CHUNK DAO - updateStatusOnMatchingStatus: "
-				+ stmt.toString());
+			log.trace("COPY CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
-				log.trace("COPY CHUNK DAO! No chunk of COPY request was"
-					+ " updated from " + expectedStatusCode + " to " + newStatusCode
-					+ ".");
+				log.trace("COPY CHUNK DAO! No chunk of COPY request was updated "
+					+ "from {} to {}.", expectedStatusCode, newStatusCode);
 			} else {
-				log.debug("COPY CHUNK DAO! " + count
-					+ " chunks of COPY requests were updated from " + expectedStatusCode
-					+ " to " + newStatusCode + ".");
+				log.debug("COPY CHUNK DAO! {} chunks of COPY requests were updated "
+					+ "from {} to {}.", count, expectedStatusCode, newStatusCode);
 			}
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Unable to updated from " + expectedStatusCode
-				+ " to " + newStatusCode + " !" + e);
+			log.error("COPY CHUNK DAO! Unable to updated from {} to {}! {}", 
+				expectedStatusCode, newStatusCode, e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -740,7 +733,7 @@ public class CopyChunkDAO {
 
 			List<CopyChunkDataTO> list = new ArrayList<CopyChunkDataTO>();
 
-			log.trace("COPY CHUNK DAO - find method: " + find.toString());
+			log.trace("COPY CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			CopyChunkDataTO chunkDataTO = null;
@@ -755,7 +748,6 @@ public class CopyChunkDAO {
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedSourceStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -764,7 +756,6 @@ public class CopyChunkDAO {
 				}
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedTargetStFN(rs
 					.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
@@ -775,7 +766,7 @@ public class CopyChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: " + e);
+			log.error("COPY CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<CopyChunkDataTO>();
 		} finally {

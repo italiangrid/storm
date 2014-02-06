@@ -12,6 +12,8 @@
 package it.grid.storm.catalogs;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TFileStorageType;
@@ -40,6 +42,9 @@ import it.grid.storm.srm.types.TTURL;
 public class PtPPersistentChunkData extends IdentityPtPData implements
 	PersistentChunkData {
 
+	private static final Logger log = LoggerFactory
+		.getLogger(PtPPersistentChunkData.class);
+
 	/**
 	 * long representing the primary key for the persistence layer, in the
 	 * status_Put table
@@ -66,6 +71,7 @@ public class PtPPersistentChunkData extends IdentityPtPData implements
 		super(auth, toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken,
 			expectedFileSize, transferProtocols, overwriteOption, status, transferURL);
 		if (requestToken == null) {
+			log.debug("PtPPersistentChunkData: requestToken is null!");
 			throw new InvalidPtPPersistentChunkDataAttributesException(requestToken,
 				toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken,
 				expectedFileSize, transferProtocols, overwriteOption, status,
@@ -99,12 +105,6 @@ public class PtPPersistentChunkData extends IdentityPtPData implements
 	public TRequestToken getRequestToken() {
 
 		return requestToken;
-	}
-
-	@Override
-	protected Logger getLog() {
-
-		return PtPPersistentChunkData.log;
 	}
 
 	@Override

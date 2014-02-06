@@ -33,7 +33,6 @@ public class ReducedPtPChunkDataTO {
 
 	private long primaryKey = -1; // ID primary key of record in DB
 	private String toSURL = " ";
-	// TODO MICHELE USER_SURL added new fields
 	private String normalizedStFN = null;
 	private Integer surlUniqueID = null;
 

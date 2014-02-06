@@ -48,7 +48,6 @@ public class PtPChunkDataTO {
 	private long primaryKey = -1; // ID primary key of status_Put record in DB
 	private String toSURL = " ";
 	private long expectedFileSize = 0;
-	// TODO MICHELE USER_SURL added new fields
 	private String normalizedStFN = null;
 	private Integer surlUniqueID = null;
 	/* Database table request_Get fields END */

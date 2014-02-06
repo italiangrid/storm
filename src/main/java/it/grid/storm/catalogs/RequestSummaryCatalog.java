@@ -126,47 +126,39 @@ public class RequestSummaryCatalog {
 	synchronized public Collection<RequestSummaryData> fetchNewRequests(
 		int capacity) {
 
-		// log.debug("Retrieving a maximum of " + capacity +
-		// " new requests. (remaining capacity in Crusher Scheduler) ");
-		Collection<RequestSummaryDataTO> c = dao.findNew(capacity);
-
-		if ((c != null) && (!c.isEmpty())) {
-			log.debug("REQUEST SUMMARY CATALOG: retrieved data " + c);
-		}
 		List<RequestSummaryData> list = new ArrayList<RequestSummaryData>();
-		if (!c.isEmpty()) {
-			int fetched = c.size();
-			log.debug("REQUEST SUMMARY CATALOG: " + fetched
-				+ " new requests picked up. "); // info
-			for (RequestSummaryDataTO auxTO : c) {
-				try {
-					RequestSummaryData aux = makeOne(auxTO);
-					if (aux != null) {
-						RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; "
-							+ aux.requestToken() + " associated to " + aux.gridUser().getDn()
-							+ " included for processing ");
-						list.add(aux);
-					}
-				} catch (IllegalArgumentException e) {
-					RequestSummaryCatalog.log
-						.error("REQUEST SUMMARY CATALOG; Failure performing makeOne operation. IllegalArgumentException: "
-							+ e.getMessage());
-				}
+		
+		Collection<RequestSummaryDataTO> c = dao.findNew(capacity);
+		if (c == null || c.isEmpty()) {
+			return list;
+		}
+		int fetched = c.size();
+		log.debug("REQUEST SUMMARY CATALOG: {} new requests picked up.", fetched);
+		for (RequestSummaryDataTO auxTO : c) {
+			RequestSummaryData aux = null;
+			try {
+				aux = makeOne(auxTO);
+			} catch (IllegalArgumentException e) {
+				log.error("REQUEST SUMMARY CATALOG: Failure while performing makeOne "
+					+ "operation. IllegalArgumentException: {}", e.getMessage(), e);
+				continue;
 			}
-			int ret = list.size();
-			if (ret < fetched) {
-				RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG: including "
-					+ ret
-					+ " requests for processing, since the dropped ones were malformed!");
-			} else {
-				RequestSummaryCatalog.log
-					.debug("REQUEST SUMMARY CATALOG: including for processing all " + ret
-						+ " requests.");
+			if (aux != null) {
+				log.debug("REQUEST SUMMARY CATALOG: {} associated to {} included "
+					+ "for processing", aux.requestToken(), aux.gridUser().getDn());
+				list.add(aux);
 			}
+		}
+		int ret = list.size();
+		if (ret < fetched) {
+			log.warn("REQUEST SUMMARY CATALOG: including {} requests for processing, "
+				+ "since the dropped ones were malformed!", ret);
+		} else {
+			log.debug("REQUEST SUMMARY CATALOG: including for processing all {} "
+				+ "requests.", ret);
 		}
 		if (!list.isEmpty()) {
-			RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG: returning "
-				+ list + "\n\n");
+			log.debug("REQUEST SUMMARY CATALOG: returning {}\n\n", list);
 		}
 		return list;
 	}
@@ -187,7 +179,7 @@ public class RequestSummaryCatalog {
 			sb.append("TRequestType could not be created from its String representation ");
 			sb.append(to.requestType());
 			sb.append("\n");
-			RequestSummaryCatalog.log.warn(sb.toString());
+			log.warn(sb.toString());
 			throw new IllegalArgumentException(
 				"Invalid TRequestType in the provided RequestSummaryDataTO");
 		}
@@ -195,18 +187,14 @@ public class RequestSummaryCatalog {
 		try {
 			auxrtoken = new TRequestToken(to.requestToken(), to.timestamp());
 		} catch (InvalidTRequestTokenAttributesException e) {
-			RequestSummaryCatalog.log
-				.warn("Unable to create TRequestToken from RequestSummaryDataTO. "
-					+ "InvalidTRequestTokenAttributesException: " + e.getMessage());
+			log.warn("Unable to create TRequestToken from RequestSummaryDataTO. "
+					+ "InvalidTRequestTokenAttributesException: {}", e.getMessage());
 			throw new IllegalArgumentException(
 				"Unable to create TRequestToken from RequestSummaryDataTO.");
 		}
 		GridUserInterface auxgu;
 
 		try {
-			// auxgu = loadVomsGridUser(auxClientDN,auxTO.requestToken());
-			// //BEWARE!!! NO VOMS ATTRIBUTES ARE LOADED AS OF TODAY!!!
-			// VOMS attributes workaround
 			auxgu = loadVomsGridUser(to.clientDN(), to.vomsAttributes(),
 				to.requestToken());
 		} catch (MalformedGridUserException e) {
@@ -217,8 +205,7 @@ public class RequestSummaryCatalog {
 			sb.append(to.vomsAttributes());
 			sb.append(" and from request token String ");
 			sb.append(to.requestToken());
-			RequestSummaryCatalog.log.warn(sb.toString()
-				+ " MalformedGridUserException: " + e.getMessage());
+			log.warn("{}. MalformedGridUserException: {}", sb.toString(), e.getMessage());
 			throw new IllegalArgumentException(
 				"Unable to load Voms Grid User from RequestSummaryDataTO. "
 					+ "MalformedGridUserException: " + e.getMessage());
@@ -229,27 +216,23 @@ public class RequestSummaryCatalog {
 			data.setPrimaryKey(to.primaryKey());
 		} catch (InvalidRequestSummaryDataAttributesException e) {
 			dao.failRequest(to.primaryKey(), "The request data is malformed!");
-			RequestSummaryCatalog.log
-				.warn("REQUEST SUMMARY CATALOG! Unable to create RequestSummaryData. "
-					+ "InvalidRequestSummaryDataAttributesException: " + e.getMessage());
-			RequestSummaryCatalog.log.warn(e.getMessage(), e);
+			log.warn("REQUEST SUMMARY CATALOG! Unable to create RequestSummaryData. "
+					+ "InvalidRequestSummaryDataAttributesException: {}", e.getMessage(), e);
 			throw new IllegalArgumentException("Unable to reate RequestSummaryData");
 		}
 		TReturnStatus status = null;
 		if (to.getStatus() != null) {
-			TStatusCode code = StatusCodeConverter.getInstance().toSTORM(
-				to.getStatus());
+			TStatusCode code = StatusCodeConverter.getInstance().toSTORM(to.getStatus());
 			if (code == TStatusCode.EMPTY) {
-				log
-					.warn("RequestSummaryDataTO retrieved StatusCode was not recognised: "
-						+ to.getStatus());
+				log.warn("RequestSummaryDataTO retrieved StatusCode was not "
+					+ "recognised: {}", to.getStatus());
 			} else {
 				try {
 					status = new TReturnStatus(code, to.getErrstring());
 				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unable to build TReturnStatus from " + code + " "
-						+ to.getErrstring() + ".InvalidTReturnStatusAttributeException : "
-						+ e.getMessage());
+					log.warn("Unable to build TReturnStatus from {} {}. "
+						+ "InvalidTReturnStatusAttributeException: {}", code, 
+						to.getErrstring(), e.getMessage());
 				}
 			}
 		}
@@ -287,9 +270,8 @@ public class RequestSummaryCatalog {
 	private GridUserInterface loadVomsGridUser(String dn, String fqans_string,
 		String rtoken) throws MalformedGridUserException {
 
-		RequestSummaryCatalog.log
-			.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for "
-				+ dn + " " + rtoken);
+		log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser "
+			+ "for {} {}", dn, rtoken);
 		// set up proxy from file, if it exists!
 		String proxyString = null;
 		FQAN[] fqans_vector = null;
@@ -308,31 +290,29 @@ public class RequestSummaryCatalog {
 				in.close();
 				out.close();
 				proxyString = new String(out.toByteArray());
-				RequestSummaryCatalog.log
-					.debug("REQUEST SUMMARY CATALOG: Loaded proxy file "
-						+ proxyFile.getAbsolutePath() + " for request " + rtoken);
-				RequestSummaryCatalog.log
-					.debug("REQUEST SUMMARY CATALOG: proxy content is " + proxyString);
+				log.debug("REQUEST SUMMARY CATALOG: Loaded proxy file {} for "
+					+ "request {}", proxyFile.getAbsolutePath(), rtoken);
+				log.debug("REQUEST SUMMARY CATALOG: proxy content is {}", proxyString);
 			} else {
-				RequestSummaryCatalog.log
-					.debug("REQUEST SUMMARY CATALOG: No proxy file "
-						+ proxyFile.getAbsolutePath() + " found for request " + rtoken);
+				log.debug("REQUEST SUMMARY CATALOG: No proxy file {} found for request", 
+					proxyFile.getAbsolutePath(), rtoken);
 			}
 		} catch (FileNotFoundException e) {
 			// This should not happen given the existence test just performed!
-			RequestSummaryCatalog.log
-				.error("REQUEST SUMMARY CATALOG! The file containing the proxy was deleted just before reading its content! No proxy has been loaded!");
+			log.error("REQUEST SUMMARY CATALOG! The file containing the proxy was "
+				+ "deleted just before reading its content! No proxy has been loaded!", e);
 		} catch (IOException e) {
 			// Some generic IO error occured!
-			RequestSummaryCatalog.log
-				.error("REQUEST SUMMARY CATALOG! The file containing the proxy could not be read! No proxy has been loaded! "
-					+ e);
+			log.error("REQUEST SUMMARY CATALOG! The file containing the proxy could "
+				+ "not be read! No proxy has been loaded! {}", e.getMessage(), e);
 		} catch (Exception e) {
 			// An unexpected error occured: I am including this generic catch
 			// because the underlaying filesystem has ACLs, and I do not know
 			// how exactly Java behaves!
-			RequestSummaryCatalog.log
-				.error("REQUEST SUMMARY CATALOG! There was an unexpected error while attempting to read the file containing the proxy! No proxy has been loaded!");
+			log.error("REQUEST SUMMARY CATALOG! There was an unexpected error while "
+				+ "attempting to read the file containing the proxy! No proxy has been "
+				+ "loaded!");
+			log.error(e.getMessage(), e);
 		}
 
 		/**
@@ -354,59 +334,50 @@ public class RequestSummaryCatalog {
 			fqans_string = null;
 		}
 
-		RequestSummaryCatalog.log
-			.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser for "
-				+ dn + " " + fqans_string + " " + proxyString);
+		log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser "
+			+ "for {} {} {}", dn, fqans_string, proxyString);
 		if ((dn != null) && (fqans_vector != null) && (fqans_vector.length > 0)
 			&& (proxyString != null)) {
 			// all credentials available!
-			RequestSummaryCatalog.log
-				.debug("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy certificate found for request "
-					+ rtoken);
+			log.debug("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy "
+				+ "certificate found for request {}", rtoken);
 			GridUserInterface gridUser = null;
 			try {
 				gridUser = GridUserManager.makeVOMSGridUser(dn, proxyString,
 					fqans_vector);
 			} catch (IllegalArgumentException e) {
-				log
-					.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-						+ e.getMessage());
+				log.error("Unexpected error on voms grid user creation. "
+					+ "IllegalArgumentException: {}", e.getMessage(), e);
 			}
 			return gridUser;
 		} else if ((dn != null)
 			&& (fqans_vector != null && fqans_vector.length > 0)
 			&& (proxyString == null)) {
 			// voms credentials without proxy
-			RequestSummaryCatalog.log
-				.debug("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for request "
-					+ rtoken);
+			log.debug("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for "
+				+ "request {}", rtoken);
 			GridUserInterface gridUser = null;
 			try {
 				gridUser = GridUserManager.makeVOMSGridUser(dn, fqans_vector);
 			} catch (IllegalArgumentException e) {
-				log
-					.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-						+ e.getMessage());
+				log.error("Unexpected error on voms grid user creation. "
+					+ "IllegalArgumentException: {}", e.getMessage(), e);
 			}
 			return gridUser;
 		} else if ((dn != null) && (fqans_string == null) && (proxyString != null)) {
 			// NON-voms credentials with proxy
-			RequestSummaryCatalog.log
-				.debug("REQUEST SUMMARY CATALOG! DN and Proxy found for request "
-					+ rtoken);
+			log.debug("REQUEST SUMMARY CATALOG! DN and Proxy found for request {}", rtoken);
 			return GridUserManager.makeGridUser(dn, proxyString);
 		} else if ((dn != null) && (fqans_string == null) && (proxyString == null)) {
 			// NON-voms credentials without proxy
-			RequestSummaryCatalog.log
-				.debug("REQUEST SUMMARY CATALOG! DN only found for request " + rtoken);
+			log.debug("REQUEST SUMMARY CATALOG! DN only found for request {}", rtoken);
 			return GridUserManager.makeGridUser(dn);
 		} else {
 			// unmanageble combination!
-			RequestSummaryCatalog.log
-				.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials data for request "
-					+ rtoken);
-			RequestSummaryCatalog.log.warn("REQUEST SUMMARY CATALOG! proxy="
-				+ fqans_string + "\n dn=" + dn + "\n attributes=" + fqans_string);
+			log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials "
+				+ "data for request {}", rtoken);
+			log.warn("REQUEST SUMMARY CATALOG! proxy={}\n dn={}\n attributes={}", 
+				proxyString, dn, fqans_string);
 			throw new MalformedGridUserException();
 		}
 
@@ -506,9 +477,9 @@ public class RequestSummaryCatalog {
 				}
 				dao.abortChunksOfRequest(rt.toString(), aux);
 			} catch (ClassCastException e) {
-				RequestSummaryCatalog.log
-					.error("REQUEST SUMMARY CATALOG! Unexpected error in abortChunksOfRequest: the supplied Collection did not contain TSURLs! "
-						+ c + e);
+				log.error("REQUEST SUMMARY CATALOG! Unexpected error in "
+					+ "abortChunksOfRequest: the supplied Collection did not contain "
+					+ "TSURLs! Error: {}", e.getMessage(), e);
 			}
 		}
 	}
@@ -532,10 +503,9 @@ public class RequestSummaryCatalog {
 				}
 				dao.abortChunksOfInProgressRequest(rt.toString(), aux);
 			} catch (ClassCastException e) {
-				RequestSummaryCatalog.log
-					.error("REQUEST SUMMARY CATALOG! Unexpected error "
-						+ "in abortChunksOfInProgressRequest: the supplied "
-						+ "Collection did not contain TSURLs! " + tsurls + e);
+				log.error("REQUEST SUMMARY CATALOG! Unexpected error in "
+					+ "abortChunksOfInProgressRequest: the supplied Collection did not "
+					+ "contain TSURLs! Error: {}", e.getMessage());
 			}
 		}
 	}
@@ -553,19 +523,16 @@ public class RequestSummaryCatalog {
 			try {
 				RequestSummaryData data = makeOne(to);
 				if (data != null) {
-					RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; "
-						+ data.requestToken() + " associated to " + data.gridUser().getDn()
-						+ " retrieved");
+					log.debug("REQUEST SUMMARY CATALOG: {} associated to {} retrieved", 
+						data.requestToken(), data.gridUser().getDn());
 					return data;
 				}
 			} catch (IllegalArgumentException e) {
-				RequestSummaryCatalog.log
-					.error("REQUEST SUMMARY CATALOG; Failure performing makeOne operation. IllegalArgumentException: "
-						+ e.getMessage());
+				log.error("REQUEST SUMMARY CATALOG; Failure performing makeOne operation. "
+					+ "IllegalArgumentException: {}", e.getMessage(), e);
 			}
 		} else {
-			RequestSummaryCatalog.log.debug("REQUEST SUMMARY CATALOG; "
-				+ requestToken + " token not found");
+			log.debug("REQUEST SUMMARY CATALOG: {} token not found", requestToken);
 		}
 		return null;
 	}
@@ -620,18 +587,17 @@ public class RequestSummaryCatalog {
 		if (nrExpiredTasks > minChunkSize) {
 			// calculate number of chunks with an approximation to the next whole
 			int nrChunks = (int) Math.ceil((double) nrExpiredTasks / garbageChunkSize);
-			log.debug("Purging the expired requests in " + nrChunks
-				+ " steps (expired requests:" + nrExpiredTasks + ")");
+			log.debug("Purging the expired requests in {} steps (expired "
+				+ "requests: {})", nrChunks, nrExpiredTasks);
 			for (int i = 0; i < nrChunks; i++) {
 				expiredRequests.addAll(dao.purgeExpiredRequests());
 			}
-			log.info("REQUEST SUMMARY CATALOG; removed from DB < "
-				+ expiredRequests.size() + " > expired requests");
+			log.info("REQUEST SUMMARY CATALOG; removed from DB < {} > expired "
+				+ "requests", expiredRequests.size());
 		} else {
 			// not enough events to remove. Skip the purging phase
-			log
-				.debug("Skipping the purging phase of expired requests. (expired requests:"
-					+ nrExpiredTasks + ")");
+			log.debug("Skipping the purging phase of expired requests. (expired "
+				+ "requests: {})", nrExpiredTasks);
 		}
 		return expiredRequests;
 	}
@@ -639,24 +605,23 @@ public class RequestSummaryCatalog {
 	private void removeOrphanProxies(ArrayList<String> expiredRequests) {
 
 		if (expiredRequests.isEmpty()) {
-
-		} else {
-			for (String rt : expiredRequests) {
-				String proxyFileName = Configuration.getInstance().getProxyHome()
-					+ File.separator + rt;
-				File proxyFile = new File(proxyFileName);
-				if (proxyFile.exists()) {
-					boolean deleted = proxyFile.delete();
-					if (!deleted) {
-						RequestSummaryCatalog.log
-							.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file "
-								+ proxyFileName + " failed!");
-					} else {
-						RequestSummaryCatalog.log
-							.info("REQUEST SUMMARY CATALOG: removed proxy file "
-								+ proxyFileName);
-					}
-				}
+			return;
+		}
+		
+		for (String rt : expiredRequests) {
+			String proxyFileName = Configuration.getInstance().getProxyHome()
+				+ File.separator + rt;
+			File proxyFile = new File(proxyFileName);
+			if (!proxyFile.exists()) {
+				continue;
+			}
+			boolean deleted = proxyFile.delete();
+			if (deleted) {
+				log.info("REQUEST SUMMARY CATALOG: removed proxy file {}", 
+					proxyFileName);
+			} else {
+				log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file {} "
+					+ "failed!", proxyFileName);
 			}
 		}
 	}

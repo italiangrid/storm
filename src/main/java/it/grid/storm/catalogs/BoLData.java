@@ -147,16 +147,11 @@ public class BoLData extends AnonymousFileTransferData {
 		try {
 			lifeTime = TLifeTimeInSeconds.make(lifeTimeInSeconds, TimeUnit.SECONDS);
 		} catch (IllegalArgumentException e) {
+			log.error(e.getMessage(), e);
 			return;
 		}
 
 		this.lifeTime = lifeTime;
-	}
-
-	@Override
-	protected Logger getLog() {
-
-		return BoLData.log;
 	}
 
 }
