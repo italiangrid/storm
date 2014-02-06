@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 public class NamedThread extends Thread {
 
 	public static final String DEFAULT_NAME = "StoRM-Thread";
-	public static volatile boolean traceLevel = false;
 	private static final AtomicInteger created = new AtomicInteger();
 	private static final AtomicInteger alive = new AtomicInteger();
 	private static final Logger log = LoggerFactory.getLogger(NamedThread.class);
@@ -27,14 +26,14 @@ public class NamedThread extends Thread {
 	public NamedThread(Runnable target, String name) {
 
 		super(target, name + "-" + created.incrementAndGet());
-		boolean debug = traceLevel;
-		if (debug)
-			log.trace("Created " + getName());
+
+		log.trace("Created  thread {}", getName());
+		
 		setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 
 			public void uncaughtException(Thread t, Throwable e) {
 
-				log.error("UNCAUGHT in thread " + t.getName(), e);
+				log.error("UNCAUGHT in thread {}", t.getName(), e);
 			}
 		});
 
@@ -42,16 +41,14 @@ public class NamedThread extends Thread {
 
 	public void run() {
 
-		boolean debug = traceLevel;
-		if (debug)
-			log.debug("Running " + getName());
+	  log.trace("NamedThread.run name={}", getName());
+
 		try {
 			alive.incrementAndGet();
 			super.run();
 		} finally {
 			alive.decrementAndGet();
-			if (debug)
-				log.debug("Exiting " + getName());
+			log.trace("NamedThread.run name={} done.", getName());
 		}
 	}
 
@@ -63,16 +60,6 @@ public class NamedThread extends Thread {
 	public static int getThreadAlive() {
 
 		return alive.get();
-	}
-
-	public static boolean getDebugStatus() {
-
-		return traceLevel;
-	}
-
-	public static void setTrace(boolean debug) {
-
-		traceLevel = debug;
 	}
 
 }

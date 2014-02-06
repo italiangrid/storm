@@ -31,7 +31,7 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 	protected void beforeExecute(Thread t, Runnable r) {
 
 		super.beforeExecute(t, r);
-		log.debug(String.format("Thread %s: start %s", t, r));
+		log.debug("Thread {}: start {}", t, r);
 		startTime.set(System.nanoTime());
 	}
 
@@ -45,7 +45,7 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 			if (t == null && r instanceof Future<?>) {
 				try {
 					Object result = ((Future<?>) r).get();
-					log.debug("Thread ended with result: " + result);
+					log.debug("Thread ended with result: {}", result);
 				} catch (CancellationException ce) {
 					t = ce;
 				} catch (ExecutionException ee) {
@@ -53,15 +53,14 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt(); // ignore/reset
 				}
-				log.debug(String.format("Throwable %s: end %s, time=%dns", t, r,
-					taskTime));
+				log.debug("Throwable {}. end {}, time={}ns",
+				  t,r,taskTime);
 			} else {
-				// Something was wrong
-				log.warn("Throwable : " + t);
+			  log.debug("Throwable {}", t);
+
 			}
 		} finally {
 			super.afterExecute(r, t);
 		}
 	}
-
 }

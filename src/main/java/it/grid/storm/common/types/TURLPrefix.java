@@ -29,7 +29,7 @@ import it.grid.storm.namespace.model.Protocol;
  */
 public class TURLPrefix {
 
-	private static Logger log = LoggerFactory.getLogger(TURLPrefix.class);
+	private static final Logger log = LoggerFactory.getLogger(TURLPrefix.class);
 	public static final String PNAME_TURL_PREFIX = "turlPrefix";
 	private ArrayList<Protocol> desiredProtocols;
 
@@ -109,8 +109,7 @@ public class TURLPrefix {
 				for (Object value : valueArray) {
 					Protocol protocol = Protocol.getProtocol(value.toString());
 					if (protocol.equals(Protocol.UNKNOWN)) {
-						log.warn("Unable to decode protocol " + value.toString()
-							+ " . Unknown protocol");
+						log.warn("Protocol {} is unknown." , value);
 					} else {
 						protocols.add(protocol);
 					}
