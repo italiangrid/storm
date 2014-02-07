@@ -165,17 +165,22 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 	public Boolean completeRequest(TapeRecallStatus recallStatus) {
 
 		if (TapeRecallStatus.ABORTED.equals(recallStatus)) {
+			log.debug("Recalling file {} from tape aborted", 
+				bupLocalFile.getAbsolutePath());
 			requestData.changeStatusSRM_ABORTED("Recalling file from tape aborted");
 			return false;
 		}
 		
 		if (!TapeRecallStatus.SUCCESS.equals(recallStatus)) {
+			log.debug("Error recalling file {} from tape", 
+				bupLocalFile.getAbsolutePath());
 			requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
 			return false;
 		}
 		
 		try {
 			if (bupLocalFile.isOnDisk()) {
+				log.debug("File {} recalled from tape", bupLocalFile.getAbsolutePath());
 				requestData.changeStatusSRM_SUCCESS("File recalled from tape");
 				return true;
 			}
@@ -200,16 +205,16 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 		TSURL surl = requestData.getSURL();
 		TRequestToken rToken = requestData.getRequestToken();
-		String user = gu.getDn();
+		String dn = gu.getDn();
 
-		log.debug("Handling BoL chunk for user DN: {}; for SURL: {}", user, surl);
+		log.debug("Handling BoL chunk for user DN: {}; for SURL: {}", dn, surl);
 
 		if (!verifySurlStatusTransition(surl, rToken)) {
 			failure = true;
 			log.info("Unable to perform the BOL request, surl busy");
 			requestData.changeStatusSRM_FILE_BUSY("Requested file is"
 				+ " busy (in an incompatible state with BOL)");
-			printOutcome(user, surl, requestData.getStatus());
+			printOutcome(dn, surl, requestData.getStatus());
 			return;
 		}
 		
@@ -218,27 +223,27 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
 		} catch (IllegalArgumentException e) {
 			log.error("Unable to build a stori for surl '{}' and user '{}'. "
-				+ "IllegalArgumentException: {}", surl, user, e.getMessage(), e);
+				+ "IllegalArgumentException: {}", surl, dn, e.getMessage(), e);
 			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
 			failure = true;
 		} catch (UnapprochableSurlException e) {
 			log.info("Unable to build a stori for surl '{}' and user '{}'. "
-				+ "UnapprochableSurlException: {}", surl, user, e.getMessage());
+				+ "UnapprochableSurlException: {}", surl, dn, e.getMessage());
 			requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
 			failure = true;
 		} catch (NamespaceException e) {
 			log.error("Unable to build a stori for surl '{}' and user '{}'. "
-				+ "NamespaceException: {}", surl, user, e.getMessage(), e);
+				+ "NamespaceException: {}", surl, dn, e.getMessage(), e);
 			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
 			failure = true;
 		} catch (InvalidSURLException e) {
 			log.info("Unable to build a stori for surl '{}' and user '{}'. "
-				+ "InvalidSURLException: {}", surl, user, e.getMessage());
+				+ "InvalidSURLException: {}", surl, dn, e.getMessage());
 			requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
 			failure = true;
 		} finally {
 			if (failure) {
-				printOutcome(user, surl, requestData.getStatus());
+				printOutcome(dn, surl, requestData.getStatus());
 				return;
 			}
 		}
@@ -253,12 +258,12 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			log.debug(emsg);
 			requestData.changeStatusSRM_AUTHORIZATION_FAILURE(emsg);
 			failure = true;
-			printOutcome(user, surl, requestData.getStatus());
+			printOutcome(dn, surl, requestData.getStatus());
 			return;
 		}
 
 		manageIsPermit(fileStoRI);
-		printOutcome(user, surl, requestData.getStatus());
+		printOutcome(dn, surl, requestData.getStatus());
 	}
 
 	@Override
@@ -309,7 +314,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 			if ((!localFile.exists()) || (localFile.isDirectory())) {
 
-				String emsg = "The requested file either does not exist, or it is a directory!";
+				String emsg = "The requested file either does not exist, or is a directory!";
 				requestData.changeStatusSRM_INVALID_PATH(emsg);
 				failure = true;
 				log.debug("BoLChunk: {}", emsg);

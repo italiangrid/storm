@@ -195,7 +195,7 @@ public class PathAuthz implements PathAuthzInterface {
 			int localGroup = guser.getLocalUser().getPrimaryGid();
 			groupName = LocalGroups.getInstance().getGroupName(localGroup);
 		} catch (CannotMapUserException e) {
-			log.error("Unable to retrieve the local group for ''", guser, e);
+			log.error("Unable to retrieve the local group for '{}'", guser, e);
 			groupName = "unknown";
 		}
 

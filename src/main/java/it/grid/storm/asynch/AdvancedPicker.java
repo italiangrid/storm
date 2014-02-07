@@ -207,8 +207,8 @@ public class AdvancedPicker {
 					
 					} else {
 					
-						log.warn("ADVANCED PICKER received request {} of type which is NOT "
-							+ "currently supported. Dropping request... ", rt, rtype);
+						log.warn("ADVANCED PICKER received request {} of type {} which is "
+							+ "NOT currently supported. Dropping request... ", rt, rtype);
 						
 						log.warn("ADVANCED PICKER: Beware that the global status of "
 							+ "request {} will transit to SRM_FAILURE, but each chunk in the "

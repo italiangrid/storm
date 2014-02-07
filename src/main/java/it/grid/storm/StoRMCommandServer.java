@@ -144,9 +144,8 @@ public class StoRMCommandServer {
 			
 		} catch (IOException e) {
 			
-			String emsg = String.format("Could not bind to port %d: %s", 
-				listeningPort, e.getMessage());
-			log.error(emsg, e);
+			log.error("Could not bind to port {}: {}", listeningPort, 
+				e.getMessage(), e);
 			
 			System.exit(1);
 		}
@@ -164,10 +163,8 @@ public class StoRMCommandServer {
 					}
 				} catch (IOException e) {
 	
-					String emsg = String.format(
-						"UNEXPECTED ERROR! Something went wrong with server.accept(): %s",
-						e.getMessage());
-					log.error(emsg, e);
+					log.error("UNEXPECTED ERROR! Something went wrong with "
+						+ "server.accept(): {}", e.getMessage(), e);
 
 					System.exit(1);
 				}
@@ -205,9 +202,9 @@ public class StoRMCommandServer {
 				// input stream from client
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream())); 
 			} catch (IOException e) {
-				log
-					.error("UNEXPECTED ERROR! Unable to get a reader for the client socket. IOException : "
-						+ e.getMessage(), e);
+				
+				log.error("UNEXPECTED ERROR! Unable to get a reader for the client "
+					+ "socket. IOException: {}", e.getMessage(), e);
 				return;
 			}
 			BufferedWriter out;
@@ -215,9 +212,9 @@ public class StoRMCommandServer {
 			  // output stream to the client
 				out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())); 
 			} catch (IOException e) {
-				log
-					.error("UNEXPECTED ERROR! Unable to get a writer for the client socket. IOException : "
-						+ e.getMessage(), e);
+				
+				log.error("UNEXPECTED ERROR! Unable to get a writer for the client "
+					+ "socket. IOException: {}", e.getMessage(), e);
 				return;
 			}
 			String response = REQUEST_FAILURE_RESPONSE;
@@ -226,9 +223,9 @@ public class StoRMCommandServer {
 			try {
 				inputLine = in.readLine();
 			} catch (IOException e) {
-				log
-					.error("UNEXPECTED ERROR! Unable to read from the client socket. IOException : "
-						+ e.getMessage(),e);
+				
+				log.error("UNEXPECTED ERROR! Unable to read from the client socket. "
+					+ "IOException: {}", e.getMessage(), e);
 				return;
 			}
 			if (inputLine != null) {
@@ -312,9 +309,8 @@ public class StoRMCommandServer {
 						inputLine = in.readLine();
 					} catch (IOException e) {
 
-						String emsg = String.format("UNEXPECTED ERROR! Unable to read from "
-							+ "the client socket. IOException : %s", e.getMessage());
-						log.error(emsg, e);
+						log.error("UNEXPECTED ERROR! Unable to read from the client socket. "
+							+ "IOException : {}", e.getMessage(), e);
 						return;
 					}
 				} while (inputLine != null && acceptCommands);
@@ -337,9 +333,8 @@ public class StoRMCommandServer {
 				}
 			} catch (Exception e) {
 
-				String emsg = String.format("Unable to start the xmlrpc server. "
-					+ "Exception: %s", e.getMessage());
-				log.error(emsg, e);
+				log.error("Unable to start the xmlrpc server. Exception: {}", 
+					e.getMessage(), e);
 				
 				stopServices();
 				return false;
@@ -350,9 +345,8 @@ public class StoRMCommandServer {
 				}
 			} catch (Exception e) {
 
-				String emsg = String.format("Unable to start the Rest server. "
-					+ "Exception: %s", e.getMessage());
-				log.error(emsg, e);
+				log.error("Unable to start the Rest server. Exception: {}", 
+					e.getMessage(), e);
 
 				stopServices();
 				return false;
@@ -394,9 +388,8 @@ public class StoRMCommandServer {
 					out.newLine();
 				} catch (IOException e) {
 
-					String emsg = String.format("UNEXPECTED ERROR! Unable to write on "
-						+ "the client socket. IOException : %s", e.getMessage());
-					log.error(emsg, e);
+					log.error("UNEXPECTED ERROR! Unable to write on the client socket. "
+						+ "IOException : {}", e.getMessage(), e);
 
 				}
 				try {
@@ -404,9 +397,8 @@ public class StoRMCommandServer {
 					in.close();
 				} catch (IOException e) {
 
-					String emsg = String.format("UNEXPECTED ERROR! Unable to close client "
-						+ "socket streams. IOException : %s", e.getMessage());
-					log.error(emsg, e);
+					log.error("UNEXPECTED ERROR! Unable to close client socket streams. "
+						+ "IOException : {}", e.getMessage(), e);
 
 				}
 			} finally {
@@ -414,9 +406,8 @@ public class StoRMCommandServer {
 					socket.close();
 				} catch (IOException e) {
 
-					String emsg = String.format("UNEXPECTED ERROR! Unable to close client "
-						+ "socket. IOException : %s", e.getMessage());
-					log.error(emsg, e);
+					log.error("UNEXPECTED ERROR! Unable to close client socket. "
+						+ "IOException : {}", e.getMessage(), e);
 
 				}
 			}
@@ -475,13 +466,11 @@ public class StoRMCommandServer {
 
 		private boolean servicesStarting() {
 
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		private boolean servicesStopping() {
 
-			// TODO Auto-generated method stub
 			return false;
 		}
 	}
@@ -532,7 +521,7 @@ public class StoRMCommandServer {
 			} catch (NumberFormatException e) {
 				
 				log.error("Configuration file refresh rate: NOT an integer! "
-					+ "Disabling refresh by default!", e);
+					+ "Disabling refresh by default! {}", e.getMessage(), e);
 			}
 		} else {
 			

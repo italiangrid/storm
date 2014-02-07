@@ -300,9 +300,8 @@ public class StoRM {
 
 		} catch (Exception e) {
 
-			String emsg = String.format("Unable to stop internal HTTP Server "
-				+ "listening for RESTFul services: %s", e.getMessage());
-			log.error(emsg, e);
+			log.error("Unable to stop internal HTTP Server listening for RESTFul "
+				+ "services: {}", e.getMessage(), e);
 		}
 
 		this.isRestServerRunning = false;
