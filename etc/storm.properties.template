@@ -249,14 +249,5 @@ purge.size=800
 #Time after that the GC consider a _terminated_ request as garbage
 expired.request.time=86400
 
-
-#############################################
-############  PRIVATE PARAMETERS ############
-#############################################
-# ==========================================
-# -- READ ONLY Properties
-# ==========================================
-#
-# READ ONLY key; please don't edit that value
-storm.properties.version = $Revision$
-#
+# Skip ACL setup for PtG requests
+ptg.skip-acl-setup = false

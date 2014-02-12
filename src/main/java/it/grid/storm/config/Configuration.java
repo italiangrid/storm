@@ -166,6 +166,7 @@ public class Configuration {
 	private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
 	private static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
 	private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
+	private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
 
 	
 	private Configuration() {
@@ -2262,6 +2263,10 @@ public class Configuration {
 	public String getXmlRpcToken() {
 		
 		return cr.getConfiguration().getString(XMLRPC_SECURITY_TOKEN_KEY);
+	}
+	
+	public Boolean getPTGSkipACLSetup(){
+	  return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP, false);
 	}
 	
 	@Override

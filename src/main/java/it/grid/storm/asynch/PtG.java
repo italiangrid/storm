@@ -20,6 +20,7 @@ import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -97,21 +98,29 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 	private TTURL bupTURL;
 
 	private boolean downgradedToAnonymous = false;
+	private boolean setupACLs = true;
 
 	/**
 	 * Constructor requiring the GridUser, the RequestSummaryData and the
 	 * PtGChunkData about this chunk. If the supplied attributes are null, an
 	 * InvalidPtGChunkAttributesException is thrown.
 	 */
-	public PtG(PtGData requestData) throws IllegalArgumentException {
+	public PtG(PtGData reqData) throws IllegalArgumentException {
 
-		if (requestData == null) {
+		if (reqData == null) {
 			throw new IllegalArgumentException(
 				"Unable to build the object, invalid arguments: requestData="
-					+ requestData);
+					+ reqData);
 		}
-		this.requestData = requestData;
+
+		requestData = reqData;
 		start = Calendar.getInstance();
+		
+		if (Configuration.getInstance().getPTGSkipACLSetup()){
+		  setupACLs = false;
+		  log.debug("Skipping ACL setup on PTG as requested by configuration.");
+		}
+
 	}
 
 	/**
@@ -523,14 +532,23 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 		throws CannotMapUserException {
 
 		if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
+		  
+		  if (!setupACLs)
+		    return verifyPath(fileStoRI);
+
 			return verifyPath(fileStoRI)
 				&& setParentsAcl(fileStoRI, ((IdentityInputData) requestData).getUser()
 					.getLocalUser());
 		}
+
 		if (verifyPath(fileStoRI)) {
-			setHttpsServiceParentAcl(fileStoRI);
+
+		  if (setupACLs)
+		    setHttpsServiceParentAcl(fileStoRI);
+
 			return true;
 		}
+
 		return false;
 	}
 
@@ -591,17 +609,26 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
 		if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
 			
-			if (managePermitReadFileStep(fileStoRI, fileStoRI.getLocalFile(),
-				((IdentityInputData) requestData).getUser().getLocalUser(), turl)) {
+		  if (setupACLs){
+		    
+		    if (managePermitReadFileStep(fileStoRI, fileStoRI.getLocalFile(),
+		      ((IdentityInputData) requestData).getUser().getLocalUser(), turl)) {
 				
-				setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
-				return true;
-			}
-			return false;
+			    setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
+
+			    return true;
+		    } else {
+		      // we had an error setting up the ACL on file
+		      return false;
+		    }
+		  }
 		}
 		
-		setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
-		setHttpsServiceAcl(fileStoRI.getLocalFile(), FilesystemPermission.Read);
+		if (setupACLs){
+		  setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
+		  setHttpsServiceAcl(fileStoRI.getLocalFile(), FilesystemPermission.Read);
+		}
+		
 		return true;
 	}
 
