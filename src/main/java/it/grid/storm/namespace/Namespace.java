@@ -53,26 +53,6 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class Namespace implements NamespaceInterface {
 
 	private static final String SPACE_FILE_NAME_SUFFIX = ".space";
@@ -80,12 +60,6 @@ public class Namespace implements NamespaceInterface {
 	private final Logger log = NamespaceDirector.getLogger();
 	private final NamespaceParser parser;
 
-	/**
-	 * Class CONSTRUCTOR
-	 * 
-	 * @param parser
-	 *          NamespaceParser
-	 */
 	public Namespace(NamespaceParser parser) {
 
 		this.parser = parser;
@@ -379,7 +353,8 @@ public class Namespace implements NamespaceInterface {
 		}
 		
 		MappingRule winnerRule = getWinnerRule(surl, vfsApproachable);
-		log.debug("For surl " + surl + " the winner Rule is " + winnerRule.getRuleName());
+		log.debug("For surl {} the winner rule is {}", surl, 
+		  winnerRule.getRuleName());
 		
 		return winnerRule.getMappedFS();
 	}
@@ -601,7 +576,7 @@ public class Namespace implements NamespaceInterface {
 		}
 		
 		String stfnPath = surl.sfn().stfn().toString();
-		log.debug("Searching winner rule for " + stfnPath);
+		log.debug("Searching winner rule for {}", stfnPath);
 		MappingRule winnerRule = null;
 		int minDistance = Integer.MAX_VALUE;
 		for (MappingRule rule : rules) {
@@ -643,8 +618,9 @@ public class Namespace implements NamespaceInterface {
 		while (scan.hasMoreElements()) {
 			vfs_root = (String) scan.nextElement();
 			int d = NamespaceUtil.computeDistanceFromPath(vfs_root, path);
-			log.debug("Pondering VFS Root :'" + vfs_root + "' against '" + path
-				+ "' DISTANCE = " + d);
+			log.debug("Pondering VFS Root '{}' against '{}'. Distance = {}",
+			  vfs_root, path, d);
+
 			if (d < distance) {
 				boolean enclosed = NamespaceUtil.isEnclosed(vfs_root, absolutePath);
 				if (enclosed) { // Found a compatible Mapping rule
@@ -652,27 +628,23 @@ public class Namespace implements NamespaceInterface {
 					vfsWinner = table.get(vfs_root);
 					vfsNameWinner = vfsWinner.getAliasName();
 					vfs_root_winner = vfs_root;
-					log.debug("Partial winner is " + vfs_root_winner + " (VFS :'"
-						+ vfsNameWinner + "'");
+					log.debug("Partial winner is {} (VFS: {})", 
+					  vfs_root_winner, vfsNameWinner);
 					found = true;
 				}
 			}
 		}
 		if (found) {
-			log.debug("VFS winner is " + vfs_root_winner + " (VFS :'" + vfsNameWinner
-				+ "'");
+		  log.debug("Partial winner is {} (VFS: {})", 
+		    vfs_root_winner, vfsNameWinner);
 		} else {
-			log.error("Unable to found a VFS compatible with path :'" + absolutePath
-				+ "'");
+			log.error("Unable to found a VFS compatible with path: '{}'",
+			  absolutePath);
 			throw new NamespaceException(
 				"Unable to found a VFS compatible with path :'" + absolutePath + "'");
 		}
 		return vfsWinner;
 	}
-
-	/*****************************************
-	 * Methods used for manage SPACE
-	 *****************************************/
 
 	public String makeSpaceFileURI(GridUserInterface user)
 		throws NamespaceException {
@@ -680,33 +652,35 @@ public class Namespace implements NamespaceInterface {
 		String result = null;
 		TreeSet<ApproachableRule> appRules = new TreeSet<ApproachableRule>(
 			getApproachableRules(user));
-		log.debug("Compatible Approachable rules : " + appRules);
+
+		log.debug("Compatible Approachable rules: {}", 
+		  appRules);
+
 		if (appRules.isEmpty()) {
 			if (user instanceof AbstractGridUser) {
-				log.error("No approachable rules found for user with DN='"
-					+ user.getDn() + "' and VO = '" + ((AbstractGridUser) user).getVO()
-					+ "'");
+
+				log.error("No approachable rules found for user with DN='{}' "
+				  + "and VO='{}'", user.getDn(), 
+				  ((AbstractGridUser) user).getVO());
+
 				throw new NamespaceException(
 					"No approachable rules found for user with DN='" + user.getDn()
 						+ "' and VO = '" + ((AbstractGridUser) user).getVO() + "'");
 			} else {
-				log.error("No approachable rules found for user with DN='"
-					+ user.getDn() + "' User certificate has not VOMS extension");
+				log.error("No approachable rules found for user with DN='{}'. "
+				  + "No VOMS extensions found.", user.getDn());
+
 				throw new NamespaceException(
 					"No approachable rules found for user with DN='" + user.getDn()
 						+ "' User certificate has not VOMS extension");
 			}
 		}
 		ApproachableRule firstAppRule = appRules.first();
-		log.debug("Default APP_RULE is the first (in respsect of name): "
-			+ firstAppRule);
-		// Retrieve the Relative Path for Space Files
-		String spacePath = getRelativePathForSpaceFile(firstAppRule);
+		log.debug("First approachable rule: {}", firstAppRule);
 
-		// Retrieve default VFS for the first Approachable Rule compatible for the
-		// user.
+		String spacePath = getRelativePathForSpaceFile(firstAppRule);
 		VirtualFSInterface vfs = getApproachableDefaultVFS(firstAppRule);
-		log.debug("Default VFS for Space Files : " + vfs);
+		log.debug("Default VFS for Space Files: {}", vfs);
 
 		// Build the Space file path
 		String rootPath = vfs.getRootPath();
@@ -726,14 +700,11 @@ public class Namespace implements NamespaceInterface {
 
 	public String makeSpaceFileNameForUser(GridUserInterface user) {
 
-		/**
-		 * @todo Instead of Local User name, extract from DN the NAME_SURNAME
-		 */
 		String userName = null;
 		try {
 			userName = user.getLocalUser().getLocalUserName();
 		} catch (CannotMapUserException ex) {
-			log.error("Cannot map user.");
+			log.error("Cannot map user: {}", ex.getMessage(), ex);
 		}
 		if (userName == null) {
 			userName = "unknown";
@@ -812,7 +783,7 @@ public class Namespace implements NamespaceInterface {
 
 		List<VirtualFSInterface> listVFS = appRule.getApproachableVFS();
 		if (listVFS != null && !listVFS.isEmpty()) {
-			log.debug(" VFS List = " + listVFS);
+			log.debug(" VFS List = {}" , listVFS);
 			// Looking for the default element, signed with a '*' char at the end
 			// Various VFS names exists. The default is '*' tagged or the first.
 			String vfsName = null;
@@ -828,9 +799,9 @@ public class Namespace implements NamespaceInterface {
 			} else {
 				defaultVFSName = vfsName;
 			}
-			log.debug(" Default VFS detected : '" + defaultVFSName + "'");
+			log.debug(" Default VFS detected : '{}'",defaultVFSName);
 			defaultVFS = parser.getVFS(defaultVFSName);
-			log.debug(" VFS Description " + defaultVFS);
+			log.debug(" VFS Description {}", defaultVFS);
 			return defaultVFS;
 		} else {
 			throw new NamespaceException(
@@ -846,20 +817,8 @@ public class Namespace implements NamespaceInterface {
 		return result;
 	}
 
-	/******************************************
-	 * VERSION 1.4 *
-	 *******************************************/
-	/**
-	 * 
-	 * @param spaceToken
-	 *          TSpaceToken
-	 * @return VirtualFSInterface
-	 * @throws NamespaceException
-	 */
 	public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
 		throws NamespaceException {
-
-		/** @todo IMPLEMENT */
 		return null;
 	}
 
@@ -882,7 +841,7 @@ public class Namespace implements NamespaceInterface {
 				stfnRoots.add(stfnRoot);
 			}
 		}
-		log.debug("FITTING: List of StFNRoots approachables = " + stfnRoots);
+		log.debug("FITTING: List of StFNRoots approachables = {}", stfnRoots);
 
 		// Build SURL and retrieve the StFN part.
 		String stfn = SURL.makeSURLfromString(surlString).getStFN();
@@ -893,14 +852,13 @@ public class Namespace implements NamespaceInterface {
 
 		for (Object element : stfnRoots) {
 			stfnRoot = (String) element;
-			log.debug("FITTING: considering StFNRoot = " + stfnRoot
-				+ " against StFN = " + stfn);
+			log.debug("FITTING: considering StFNRoot = {} agaist StFN = {}", 
+			  stfnRoot, stfn);
 			ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil
 				.getPathElement(stfnRoot);
 			stfnRootArray.retainAll(stfnArray);
 			if (!(stfnRootArray.isEmpty())) {
 				result = true;
-				log.debug("FIT!");
 				break;
 			}
 		}

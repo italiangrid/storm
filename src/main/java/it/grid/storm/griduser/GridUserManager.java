@@ -35,26 +35,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 public class GridUserManager {
 
 	static final Logger log = LoggerFactory.getLogger(GridUserManager.class);
@@ -81,16 +61,10 @@ public class GridUserManager {
 		return config.getGridUserMapperClassname();
 	}
 
-	/**
-	 * PUBLIC and STATIC methods
-	 */
-
 	public static GridUserInterface makeVOMSGridUser(String dn, String proxy,
 		FQAN[] fqans) throws IllegalArgumentException {
 
 		if (proxy == null || dn == null || fqans == null || fqans.length == 0) {
-			log.error("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn
-				+ "\' fqans=\'" + fqans + "\' proxy=\'" + proxy + "\'");
 			throw new IllegalArgumentException(
 				"Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn
 					+ "\' fqans=\'" + fqans + "\' proxy=\'" + proxy + "\'");
@@ -99,25 +73,16 @@ public class GridUserManager {
 		try {
 			gridUser = userFactory.createGridUser(dn, fqans, proxy);
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 		}
 		return gridUser;
 
 	}
 
-	/**
-	 * @param dn
-	 * @param vo
-	 * @return
-	 */
 	public static GridUserInterface makeVOMSGridUser(String dn, String vo)
 		throws IllegalArgumentException {
 
 		if (vo == null || dn == null) {
-			log.error("Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn
-				+ "\' vo=\'" + vo + "\'");
 			throw new IllegalArgumentException(
 				"Unable to make VomsGridUser. Inavlid arguments: dn=\'" + dn
 					+ "\' vo=\'" + vo + "\'");
@@ -128,25 +93,15 @@ public class GridUserManager {
 		try {
 			gridUser = userFactory.createGridUser(dn, fqans);
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 		}
 		return gridUser;
 	}
 
-	/**
-	 * @param dn
-	 * @param fqans
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
 	public static GridUserInterface makeVOMSGridUser(String dn,
 		String[] fqansString) throws IllegalArgumentException {
 
 		if (fqansString == null || fqansString.length == 0) {
-			log.error("Unable to make VomsGridUser. Invalid fqansString argument: "
-				+ fqansString);
 			throw new IllegalArgumentException(
 				"Unable to make VomsGridUser. Invalid fqansString argument: "
 					+ fqansString);
@@ -158,18 +113,10 @@ public class GridUserManager {
 		return userFactory.createGridUser(dn, fqans);
 	}
 
-	/**
-	 * @param dn
-	 * @param fqans
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
 	public static GridUserInterface makeVOMSGridUser(String dn, FQAN[] fqans)
 		throws IllegalArgumentException {
 
 		if (fqans == null || fqans.length == 0) {
-			log
-				.error("Unable to make VomsGridUser. Invalid fqans argument: " + fqans);
 			throw new IllegalArgumentException(
 				"Unable to make VomsGridUser. Invalid fqans argument: " + fqans);
 		}
@@ -187,7 +134,6 @@ public class GridUserManager {
 	}
 
 	public static GridUserInterface makeSAGridUser() {
-
 		GridUserInterface result = null;
 		String dn = "/DC=it/DC=infngrid/OU=Services/CN=storm";
 		result = userFactory.createGridUser(dn);

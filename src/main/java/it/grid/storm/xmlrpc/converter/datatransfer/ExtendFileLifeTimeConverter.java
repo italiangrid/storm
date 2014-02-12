@@ -85,17 +85,17 @@ public class ExtendFileLifeTimeConverter implements Converter {
 		try {
 			requestToken = TRequestToken.decode(inputParam,
 				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken=" + requestToken.toString());
+			log.debug("requestToken={}" , requestToken.toString());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			requestToken = null;
-			log.error("requestToken=NULL");
+			log.error("requestToken=NULL",e);
 		}
 
 		ArrayOfSURLs arrayOfSURLs;
 		try {
 			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e) {
-			log.error("Empty surlArray!");
+			log.error("Empty surlArray!",e);
 			arrayOfSURLs = null;
 		}
 
@@ -138,8 +138,8 @@ public class ExtendFileLifeTimeConverter implements Converter {
 				ArrayOfTSURLLifetimeReturnStatus.PNAME_ARRAYOFFILESTATUSES);
 		}
 
-		log.debug("ExtendFileLifeTimeConverter - Sending: "
-			+ outputParam.toString());
+		log.debug("ExtendFileLifeTimeConverter - Sending: {}"
+			, outputParam.toString());
 
 		// Return global structure.
 		return outputParam;

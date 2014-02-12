@@ -273,7 +273,7 @@ public class SpaceHelper {
 		spaceData = catalog.getStorageSpaceByAlias(SSDesc);
 
 		if ((spaceData != null) && (spaceData.getAvailableSpaceSize().value() == 0)) {
-			log.debug("AvailableSize=" + spaceData.getAvailableSpaceSize().value());
+			log.debug("AvailableSize={}" , spaceData.getAvailableSpaceSize().value());
 			return true;
 		} else {
 			return false;
@@ -334,9 +334,8 @@ public class SpaceHelper {
 			&& !(spaceData.getUsedSpaceSize().value() < 0)) {
 			response = true;
 		}
-		log.debug("The storage area is initialized with token alias "
-			+ spaceData.getSpaceTokenAlias() + " is " + (response ? "" : "not")
-			+ "initialized");
+		log.debug("The storage area is initialized with token alias {} is {} initialized"
+			, spaceData.getSpaceTokenAlias() , (response ? "" : "not"));
 		return response;
 	}
 
@@ -355,7 +354,7 @@ public class SpaceHelper {
 		try {
 			token = fs.getSpaceToken();
 		} catch (NamespaceException e) {
-			log.warn("Unable to retrieve SpaceToken for stori:'" + stori + "'");
+			log.warn("Unable to retrieve SpaceToken for stori:'{}'" , stori);
 		}
 
 		return token;
@@ -427,14 +426,13 @@ public class SpaceHelper {
 
 		if (tokenArray == null || tokenArray.size() == 0) {
 			// the VOSpaceArea does not exist yet
-			SpaceHelper.log.debug("VoSpaceArea " + spaceTokenAlias
-				+ " still does not exists. Start creation process.");
+			SpaceHelper.log.debug("VoSpaceArea {} still does not exists. Start creation process." , spaceTokenAlias);
 
 			PFN sfname = null;
 			try {
 				sfname = PFN.make(spaceFileName);
 			} catch (InvalidPFNAttributeException e1) {
-				log.error("Error building PFN with " + spaceFileName + " : " + e1);
+				log.error("Error building PFN with {} : " , spaceFileName , e1);
 			}
 
 			StorageSpaceData ssd = null;
@@ -450,18 +448,18 @@ public class SpaceHelper {
 
 				} catch (InvalidTSizeAttributesException e) {
 					// never thrown
-					log.error("Unexpected InvalidTSizeAttributesException: "
-						+ e.getMessage());
+					log.error("Unexpected InvalidTSizeAttributesException: {}"
+						, e.getMessage(),e);
 				}
 				spaceToken = ssd.getSpaceToken();
 			} catch (InvalidSpaceDataAttributesException e) {
-				log.error("Error building StorageSpaceData: " + e);
+				log.error("Error building StorageSpaceData: " , e);
 			}
 
 			try {
 				spaceCatalog.addStorageSpace(ssd);
 			} catch (DataAccessException e) {
-				log.error("Error storing StorageSpaceData on the DB: " + e);
+				log.error("Error storing StorageSpaceData on the DB: " , e);
 			}
 			// Track into global set to remove obsolete SA_token
 			ReservedSpaceCatalog.addSpaceToken(spaceToken);
@@ -483,11 +481,11 @@ public class SpaceHelper {
 				catalog_ssd = spaceCatalog.getStorageSpace(spaceToken);
 			} catch (TransferObjectDecodingException e) {
 				log
-					.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-						+ e.getMessage());
+					.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: {}"
+						, e.getMessage(),e);
 			} catch (DataAccessException e) {
-				log.error("Unable to build get StorageSpaceTO. DataAccessException: "
-					+ e.getMessage());
+				log.error("Unable to build get StorageSpaceTO. DataAccessException: {}"
+					, e.getMessage(),e);
 			}
 
 			if (catalog_ssd != null) {
@@ -506,16 +504,15 @@ public class SpaceHelper {
 			if (equal) {
 				// Do nothing if equals, everything are already present into
 				// the DB
-				SpaceHelper.log.debug("VOSpaceArea for space token description "
-					+ spaceTokenAlias + " is already up to date.");
+				SpaceHelper.log.debug("VOSpaceArea for space token description {} is already up to date."
+					, spaceTokenAlias);
 				ReservedSpaceCatalog.addSpaceToken(spaceToken);
 
 			} else {
 				// If the new data has been modified, update the data into the
 				// catalog
-				SpaceHelper.log.debug("VOSpaceArea for space token description "
-					+ spaceTokenAlias
-					+ " is different in some parameters. Updating the catalog.");
+				SpaceHelper.log.debug("VOSpaceArea for space token description {} is different in some parameters. Updating the catalog."
+					, spaceTokenAlias);
 				try {
 					catalog_ssd.setOwner(storageAreaOwner);
 					catalog_ssd.setTotalSpaceSize(totalOnLineSize);
@@ -550,8 +547,8 @@ public class SpaceHelper {
 			// is not allowed
 			if (tokenArray.size() > 1) {
 				SpaceHelper.log
-					.error("Error: multiple Space Token found for the same space Alias: "
-						+ spaceTokenAlias + ". Only one has been evaluated!");
+					.error("Error: multiple Space Token found for the same space Alias: {}. Only one has been evaluated!"
+						, spaceTokenAlias);
 			}
 
 		}
@@ -577,7 +574,7 @@ public class SpaceHelper {
 
 		Iterator<TSpaceToken> iter = ReservedSpaceCatalog.getTokenSet().iterator();
 		while (iter.hasNext()) {
-			log.debug("VO SA token REGISTRED:" + iter.next().getValue());
+			log.debug("VO SA token REGISTRED: {}" , iter.next().getValue());
 		}
 
 		GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
@@ -585,8 +582,7 @@ public class SpaceHelper {
 		// Remove obsolete space
 		ArrayOfTSpaceToken token_a = spacec.getSpaceTokens(stormServiceUser, null);
 		for (int i = 0; i < token_a.size(); i++) {
-			log.debug("VO SA token IN CATALOG:"
-				+ token_a.getTSpaceToken(i).getValue());
+			log.debug("VO SA token IN CATALOG: {}" , token_a.getTSpaceToken(i).getValue());
 		}
 
 		if ((token_a != null) && (token_a.size() > 0)) {
@@ -596,8 +592,7 @@ public class SpaceHelper {
 					token_a.getTSpaceToken(i))) {
 					// This VOSA_token is no more used, removing it from persistence
 					TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
-					log.debug("VO SA token " + tokenToRemove
-						+ " is no more used, removing it from persistence.");
+					log.debug("VO SA token {}  is no more used, removing it from persistence." , tokenToRemove);
 					spacec.release(stormServiceUser, tokenToRemove);
 				}
 			}

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 public class BackgroundDU {
 
-	private static final Logger LOG = LoggerFactory.getLogger(BackgroundDU.class);
+	private static final Logger log= LoggerFactory.getLogger(BackgroundDU.class);
 
 	private List<CallableDU> todoTasks = new ArrayList<CallableDU>();
 
@@ -117,7 +117,7 @@ public class BackgroundDU {
 		}
 		// Clean todo Task list;
 		todoTasks.clear();
-		LOG.info("Submitted all the DU task.");
+		log.info("Submitted all the DU task.");
 		completionTaskHandle = singleExec.submit(new CompletionTask());
 	}
 
@@ -140,24 +140,19 @@ public class BackgroundDU {
 		}
 		try {
 			completionTaskHandle.get(millisecToWait, TimeUnit.MILLISECONDS);
-		} catch (TimeoutException te) {
-			LOG.debug("Timeout excep. " + te);
-		} catch (InterruptedException ie) {
-			LOG.debug("Interrupted excep. " + ie);
-		} catch (ExecutionException ee) {
-			LOG.debug("Execution excep. " + ee);
+		} catch (Throwable e){
+		  log.debug(e.getMessage(),e);
 		} finally {
 			completionTaskHandle.cancel(true);
-			LOG.debug("Completion task forced to be canceled.");
+			log.debug("Completion task forced to be canceled.");
 		}
 		try {
-			LOG.debug("Shutting down..");
+			log.debug("Shutting down..");
 			shutdown(false, 1000);
-			LOG.debug("Shutted down!");
+			log.debug("Shutted down!");
 		} catch (InterruptedException ie) {
-			LOG.debug("Interrupted excep. " + ie);
+			log.debug("Interrupted excep. " + ie);
 		}
-
 	}
 
 	/**
@@ -176,8 +171,8 @@ public class BackgroundDU {
 		throws InterruptedException {
 
 		if (interrupt) {
-			LOG.debug("Tasks killed: " + exec.shutdownNow().size());
-			LOG.debug("Tasks killed: " + singleExec.shutdownNow().size());
+			log.debug("Tasks killed: {}", exec.shutdownNow().size());
+			log.debug("Tasks killed: {}",singleExec.shutdownNow().size());
 		} else {
 			exec.shutdown();
 			singleExec.shutdown();
@@ -186,11 +181,11 @@ public class BackgroundDU {
 			exec.awaitTermination(waitMillis, TimeUnit.MILLISECONDS);
 			singleExec.awaitTermination(waitMillis, TimeUnit.MILLISECONDS);
 		} finally {
-			LOG.debug("Tasks killed: " + exec.shutdownNow().size());
-			LOG.debug("Tasks killed: " + singleExec.shutdownNow().size());
+			log.debug("Tasks killed: {}", exec.shutdownNow().size());
+			log.debug("Tasks killed: {}", singleExec.shutdownNow().size());
 		}
-		LOG.debug("EXEC is terminated? : " + exec.isTerminated());
-		LOG.debug("SingleEXEC is terminated? : " + singleExec.isTerminated());
+		log.debug("EXEC is terminated? : {}" , exec.isTerminated());
+		log.debug("SingleEXEC is terminated? : {}" , singleExec.isTerminated());
 	}
 
 	/**
@@ -198,19 +193,15 @@ public class BackgroundDU {
 	 */
 	private void processCompletedTask(DUResult duResult) {
 
-		LOG.trace("******* Store the result of DU ('" + duResult.getAbsRootPath()
-			+ "')*******");
-		LOG.debug("---- DU RESULT of '" + duResult.getAbsRootPath() + "' ----");
-		LOG.info(duResult.toString());
+	  log.trace("BackgroundDU.processCompletedTask. duResult={}", duResult);
+
+		log.info(duResult.toString());
 		if (duResult.getCmdResult().equals(ExitCode.SUCCESS)) {
 			successResults.add(duResult);
 		} else {
 			failureResults.add(duResult);
 		}
-		LOG.debug("------------------------------------------------------");
-
 		SpaceInfoManager.getInstance().updateSA(duResult);
-
 	}
 
 	/**
@@ -221,7 +212,7 @@ public class BackgroundDU {
 
 		private boolean completeTask() throws InterruptedException {
 
-			LOG.debug("Checking for complete a task..");
+		  log.trace("BackgroundDU.CompletionTask.completeTask");
 			boolean poison = false;
 			Future<DUResult> completedTask;
 			DUResult duResult = null;
@@ -230,12 +221,12 @@ public class BackgroundDU {
 				completedTask = completionService.take();
 				// Add the processed task.
 				completedTasks.add(completedTask);
-				LOG.debug("Completed Tasks: " + completedTasks.size());
+				log.debug("Completed Tasks: {}", completedTasks.size());
 				// Wait 1 second to check if there is a result
 				duResult = completedTask.get(1, TimeUnit.SECONDS);
-				LOG.debug("Completed Task : " + duResult.toString());
+				log.debug("Completed Task : {}", duResult.toString());
 				if (duResult.isPoisoned()) {
-					LOG.debug("POISONED the DU Completion Service!!!");
+					log.debug("POISONED the DU Completion Service!!!");
 					poison = true;
 				} else {
 					toCheckTasks.remove(completedTask);
@@ -243,21 +234,21 @@ public class BackgroundDU {
 			} catch (ExecutionException e) {
 				Throwable cause = e.getCause();
 				if (!(cause instanceof InterruptedException)) {
-					LOG.error("Completion Task failed with unhandled exception", cause);
+					log.error("Completion Task failed with unhandled exception", cause);
 				}
 			} catch (TimeoutException e) {
-				LOG.info("Completion Task terminated due to a TimeOut. Cause: "
-					+ e.getCause().getMessage());
+				log.info("Completion Task terminated due to a TimeOut. Cause: {}"
+					, e.getCause().getMessage());
 			} catch (CancellationException e) {
-				LOG.info("Completion Task was cancelled. Cause: "
-					+ e.getCause().getMessage());
+				log.info("Completion Task was cancelled. Cause: {}"
+					, e.getCause().getMessage());
 			}
 
 			if (duResult != null) {
 				// a DUResult was created, store the results.
 				processCompletedTask(duResult);
 			} else {
-				LOG
+				log
 					.warn("DU completed but unable to manage the result (something wrong was happen).");
 			}
 			return poison;
@@ -271,7 +262,7 @@ public class BackgroundDU {
 					poison_pill = completeTask();
 				}
 			} catch (InterruptedException ie) {
-				LOG.info("CompletionTask has been terminated by an interruption. ");
+				log.info("CompletionTask has been terminated by an interruption. ");
 				Thread.currentThread().interrupt();
 			}
 		}

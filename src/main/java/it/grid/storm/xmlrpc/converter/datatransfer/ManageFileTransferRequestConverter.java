@@ -60,11 +60,11 @@ public class ManageFileTransferRequestConverter extends
 		try {
 			requestToken = TRequestToken.decode(inputParam,
 				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken=" + requestToken.toString());
+			log.debug("requestToken={}" , requestToken.toString());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			log
-				.debug("No request token provided by user. InvalidTRequestTokenAttributesException: "
-					+ e.getMessage());
+				.debug("No request token provided by user. InvalidTRequestTokenAttributesException: {}"
+					, e.getMessage(),e);
 		}
 
 		/* (3) anyURI[] arrayOfSURLs */
@@ -72,7 +72,7 @@ public class ManageFileTransferRequestConverter extends
 		try {
 			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e) {
-			log.debug("Empty surlArray!");
+			log.debug("Empty surlArray!",e);
 			arrayOfSURLs = null;
 		}
 

@@ -30,6 +30,8 @@ import it.grid.storm.srm.types.TReturnStatus;
  */
 public class InvalidReducedPtGChunkDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = -7943458526292568164L;
+
 	// booleans that indicate whether the corresponding variable is null
 	private boolean nullFromSURL;
 	private boolean nullStatus;

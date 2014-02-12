@@ -23,33 +23,19 @@ import java.net.InetAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * GUID Value Object.
- * <p>
- * Used to retain/generate a GUID/UUID.
- * <p>
- */
 
 public class GUID implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1750955753676929827L;
 
 	private static final Logger log = LoggerFactory.getLogger(GUID.class);
 
 	private byte guidValue[] = new byte[16];
 
-	/** Creates a new instance of GUID */
 	public GUID() {
-
 		buildNewGUID();
 	}
 
-	/**
-	 * Creates a new instance of GUID using a fixed guid.
-	 */
 	public GUID(String guidString) {
 
 		int pos = 0;

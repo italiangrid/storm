@@ -51,8 +51,8 @@ public class SmartRoundRobinStrategy<E extends Node> extends
 			try {
 				responsiveFound = manager.isResponsive(node);
 			} catch (Exception e) {
-				log.warn("Unable to check the status of the The GFTP "
-					+ node.toString() + " . .Exception : " + e.getMessage());
+				log.warn("Unable to check the status of the The GFTP {}. "
+					+ "Exception: ", node.toString(), e.getMessage());
 				throw new BalancingStrategyException(
 					"Unable to check the status of the The GFTP");
 			}

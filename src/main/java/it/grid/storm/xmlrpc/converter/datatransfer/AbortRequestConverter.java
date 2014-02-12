@@ -72,10 +72,10 @@ public class AbortRequestConverter implements Converter {
 		try {
 			requestToken = TRequestToken.decode(inputParam,
 				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken=" + requestToken.toString());
+			log.debug("requestToken={}" , requestToken.toString());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			requestToken = null;
-			log.debug("requestToken=NULL");
+			log.debug("requestToken=NULL",e);
 		}
 		AbortInputData inputData;
 		if (guser != null) {
@@ -100,7 +100,7 @@ public class AbortRequestConverter implements Converter {
 		if (returnStatus != null) {
 			returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 		}
-		log.debug("AbortRequestConverter - Sending: " + outputParam.toString());
+		log.debug("AbortRequestConverter - Sending: {}" , outputParam.toString());
 
 		// Return global structure.
 		return outputParam;

@@ -20,26 +20,6 @@ package it.grid.storm.griduser;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 public class VONameMatchingRule {
 
 	private static final String ADMIT_ALL = ".*";
@@ -47,12 +27,6 @@ public class VONameMatchingRule {
 	private final String voNameString;
 	private Pattern voNamePattern = null;
 
-	/**
-	 * Default Constructor
-	 * 
-	 * @param regularExpressionRule
-	 *          String
-	 */
 	public VONameMatchingRule(String regularExpressionRule) {
 
 		if ((regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
@@ -68,12 +42,6 @@ public class VONameMatchingRule {
 		return new VONameMatchingRule(ADMIT_ALL);
 	}
 
-	/**
-	 * init
-	 * 
-	 * @param regularExpressionRule
-	 *          String
-	 */
 	private void initPattern() {
 
 		// VOName
@@ -85,18 +53,10 @@ public class VONameMatchingRule {
 	}
 
 	private static boolean isMatchAll(String pattern) {
-
 		return pattern == null || pattern.trim().equals("*")
 			|| pattern.trim().equals(".*");
 	}
 
-	/**
-	 * Match voName with this MatchingRule
-	 * 
-	 * @param voName
-	 *          String
-	 * @return boolean
-	 */
 	public boolean match(String voName) {
 
 		boolean result = false;
@@ -114,8 +74,6 @@ public class VONameMatchingRule {
 	}
 
 	public boolean isMatchAll() {
-
 		return isMatchAll(voNameString);
 	}
-
 }

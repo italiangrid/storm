@@ -153,9 +153,4 @@ public class CopyData extends SurlMultyOperationRequestData {
 		setStatus(TStatusCode.SRM_FATAL_INTERNAL_ERROR, explanation);
 	}
 
-	@Override
-	protected Logger getLog() {
-
-		return CopyData.log;
-	}
 }

@@ -32,6 +32,8 @@ import it.grid.storm.srm.types.TLifeTimeInSeconds;
  */
 public class InvalidReducedPtPChunkDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = 4945626188325362854L;
+
 	// booleans that indicate whether the corresponding variable is null
 	private boolean nullToSURL;
 	private boolean nullStatus;

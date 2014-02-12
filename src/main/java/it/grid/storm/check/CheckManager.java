@@ -64,22 +64,20 @@ public abstract class CheckManager {
 		getLogger().debug("Executing check schedule");
 		CheckResponse result = new CheckResponse(CheckStatus.SUCCESS, "");
 		for (Check check : checkSchedule) {
-			getLogger().info("Executing check : " + check.getName());
-			getLogger().info("Check description : " + check.getDescription());
+			getLogger().info("Executing check : {}", check.getName());
+			getLogger().info("Check description : {}", check.getDescription());
 			CheckResponse response;
 			try {
 				response = check.execute();
 			} catch (GenericCheckException e) {
-				getLogger().warn(
-					"Received a GenericCheckException during " + check.getName()
-						+ " check execution : " + e.getMessage());
+				getLogger().warn("Received a GenericCheckException during {} check "
+					+ "execution : {}", check.getName(), e.getMessage());
 				response = new CheckResponse(CheckStatus.INDETERMINATE,
 					"Received a GenericCheckException during " + check.getName()
 						+ " check execution : " + e.getMessage());
 			}
-			getLogger().info(
-				"Check \'" + check.getName() + "\' response is : "
-					+ response.toString());
+			getLogger().info("Check '{}' response is : {}", check.getName(), 
+				response.toString());
 			if (!response.isSuccessfull() && check.isCritical()) {
 				result.setStatus(CheckStatus.and(result.getStatus(),
 					CheckStatus.CRITICAL_FAILURE));
@@ -87,10 +85,8 @@ public abstract class CheckManager {
 				result.setStatus(CheckStatus.and(result.getStatus(),
 					response.getStatus()));
 			}
-			getLogger()
-				.debug(
-					"Partial result is "
-						+ (result.isSuccessfull() ? "success" : "failure"));
+			getLogger().debug("Partial result is {}", 
+				result.isSuccessfull() ? "success" : "failure");
 		}
 		return result;
 	}

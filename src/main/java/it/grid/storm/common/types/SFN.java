@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SFN {
 
-	static private Logger log = LoggerFactory.getLogger(SFN.class);
+	private static final Logger log = LoggerFactory.getLogger(SFN.class);
 
 	private Machine m = null;
 	private Port p = null;
@@ -223,7 +223,6 @@ public class SFN {
 	 * @throws ParsingSFNAttributesException
 	 * @throws InvalidSFNAttributesException
 	 */
-	// TODO MICHELE USER_SURL created
 	private static SFN makeFromQueryForm(String surlString, int colon, int slash,
 		int question) throws ParsingSFNAttributesException,
 		InvalidSFNAttributesException {
@@ -233,8 +232,8 @@ public class SFN {
 		try {
 			machine = Machine.make(machineString);
 		} catch (InvalidMachineAttributeException e) {
-			log.warn("SFN: Unable to build -machine- attribute with the String '"
-				+ machineString + "'." + e);
+		  log.warn("SFN: Unable to build -machine- attribute from {}. {}", 
+		    machineString, e.getMessage());
 		}
 		if ((colon + 1) == slash) {
 			// slash found right after colon! There is no port!
@@ -246,12 +245,8 @@ public class SFN {
 		Port port = null;
 		try {
 			port = Port.make(Integer.parseInt(portString));
-		} catch (InvalidPortAttributeException e) {
-			log.warn("SFN: Unable to build -port- attribute with the String '"
-				+ portString + "'." + e);
-		} catch (NumberFormatException e) {
-			log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"
-				+ portString + "'." + e);
+		} catch (Throwable e) {
+			log.warn("SFN: Unable to build -port- attribute from {}. {}", portString, e.getMessage());
 		}
 		// EndPoint
 		String endpointString = surlString.substring(slash, question);
@@ -259,8 +254,8 @@ public class SFN {
 		try {
 			endpoint = EndPoint.make(endpointString);
 		} catch (InvalidEndPointAttributeException e) {
-			log.warn("SFN: Unable to build -endpoint- attribute with the String '"
-				+ endpointString + "'." + e);
+			log.warn("SFN: Unable to build -endpoint- attribute from {}. {}", 
+			  endpointString, e.getMessage());
 		}
 		// StFN checks only for a starting / while the rest can be empty! So it is
 		// sufficient to choose whatever String starts at the /... even just the
@@ -279,8 +274,9 @@ public class SFN {
 		try {
 			stfn = StFN.make(stfnString);
 		} catch (InvalidStFNAttributeException e) {
-			log.warn("SFN: Unable to build -stfn- attribute with the String '"
-				+ stfnString + "'." + e);
+			log.warn("SFN: Unable to build -stfn- attribute from {}. {}",
+			  stfnString,
+			  e.getMessage());
 		}
 		return SFN.makeInQueryForm(machine, port, endpoint, stfn);
 	}
@@ -297,7 +293,6 @@ public class SFN {
 	 * @throws ParsingSFNAttributesException
 	 * @throws InvalidSFNAttributesException
 	 */
-	// TODO MICHELE USER_SURL created
 	private static SFN makeFromSimpleForm(String surlString, int colon, int slash)
 		throws ParsingSFNAttributesException, InvalidSFNAttributesException {
 
@@ -306,8 +301,9 @@ public class SFN {
 		try {
 			machine = Machine.make(machineString);
 		} catch (InvalidMachineAttributeException e) {
-			log.warn("SFN: Unable to build -machine- attribute with the String '"
-				+ machineString + "'." + e);
+
+		  log.warn("SFN: Unable to build -machine- attribute from {}. {}", 
+		    machineString, e.getMessage());
 		}
 		if ((colon + 1) == slash) {
 			/* Slash found right after colon! There is no port! */
@@ -320,12 +316,9 @@ public class SFN {
 		Port port = null;
 		try {
 			port = Port.make(Integer.parseInt(portString));
-		} catch (InvalidPortAttributeException e) {
-			log.warn("SFN: Unable to build -port- attribute with the String '"
-				+ portString + "'." + e);
-		} catch (NumberFormatException e) {
-			log.warn("SFN: Unable to build -port- attribute with the String (NFE) '"
-				+ portString + "'." + e);
+		} catch (Throwable e) {
+		  log.warn("SFN: Unable to build -port- attribute from {}. {}", 
+		    portString, e.getMessage());
 		}
 		// StFN checks only for a starting / while the rest can be empty! So it is
 		// sufficient to choose whatever String starts at the /... even just the
@@ -336,8 +329,9 @@ public class SFN {
 		try {
 			stfn = StFN.make(stfnString);
 		} catch (InvalidStFNAttributeException e) {
-			log.warn("SFN: Unable to build -stfn- attribute with the String '"
-				+ stfnString + "'." + e);
+		  log.warn("SFN: Unable to build -stfn- attribute from {}. {}",
+			  stfnString,
+			  e.getMessage());
 		}
 		return SFN.makeInSimpleForm(machine, port, stfn);
 	}
@@ -353,7 +347,6 @@ public class SFN {
 	 * @throws ParsingSFNAttributesException
 	 * @throws InvalidSFNAttributesException
 	 */
-	// TODO MICHELE USER_SURL created
 	private static SFN makeFromQueryFormNoPort(String surlString, int question,
 		int slash) throws ParsingSFNAttributesException,
 		InvalidSFNAttributesException {
@@ -363,8 +356,9 @@ public class SFN {
 		try {
 			machineType = Machine.make(machine);
 		} catch (InvalidMachineAttributeException e) {
-			log.warn("SFN: Unable to build -machine- attribute with the String '"
-				+ machine + "'." + e);
+
+		  log.warn("SFN: Unable to build -machine- attribute from {}. {}", 
+		    machine, e.getMessage());
 		}
 		// EndPoint
 		String endpoint = surlString.substring(slash, question);
@@ -372,8 +366,9 @@ public class SFN {
 		try {
 			endpointType = EndPoint.make(endpoint);
 		} catch (InvalidEndPointAttributeException e) {
-			log.warn("SFN: Unable to build -endpoint- attribute with the String '"
-				+ endpoint + "'." + e);
+
+			log.warn("SFN: Unable to build -endpoint- attribute from {}. {}", 
+			  endpoint, e.getMessage());
 		}
 		// StFN checks only for a starting / while the rest can be empty! So it is
 		// sufficient to choose whatever String starts at the /... even just the
@@ -392,8 +387,9 @@ public class SFN {
 		try {
 			stfn = StFN.make(stfnString);
 		} catch (InvalidStFNAttributeException e) {
-			log.warn("SFN: Unable to build -stfn- attribute with the String '"
-				+ stfnString + "'." + e);
+		  log.warn("SFN: Unable to build -stfn- attribute from {}. {}",
+			  stfnString,
+			  e.getMessage());
 		}
 		return SFN.makeInQueryForm(machineType, endpointType, stfn);
 	}
@@ -409,7 +405,6 @@ public class SFN {
 	 * @throws ParsingSFNAttributesException
 	 * @throws InvalidSFNAttributesException
 	 */
-	// TODO MICHELE USER_SURL created
 	private static SFN makeFromSimpleFormNoPort(String surlString, int slash)
 		throws ParsingSFNAttributesException, InvalidSFNAttributesException {
 
@@ -418,8 +413,8 @@ public class SFN {
 		try {
 			machineType = Machine.make(machine);
 		} catch (InvalidMachineAttributeException e) {
-			log.warn("SFN: Unable to build -machine- attribute with the String '"
-				+ machine + "'." + e);
+		  log.warn("SFN: Unable to build -machine- attribute from {}. {}", 
+		    machine, e.getMessage());
 		}
 		// StFN checks only for a starting / while the rest can be empty! So it
 		// is sufficient to choose whatever String starts at the /... even just
@@ -430,8 +425,9 @@ public class SFN {
 		try {
 			stfn = StFN.make(stfnString);
 		} catch (InvalidStFNAttributeException e) {
-			log.warn("SFN: Unable to build -stfn- attribute with the String '"
-				+ stfnString + "'." + e);
+		  log.warn("SFN: Unable to build -stfn- attribute from {}. {}",
+			  stfnString,
+			  e.getMessage());
 		}
 		return SFN.makeInSimpleForm(machineType, stfn);
 

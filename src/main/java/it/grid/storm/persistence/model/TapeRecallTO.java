@@ -440,18 +440,16 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 				|| TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
 				this.inProgressInstant = inProgressInstant;
 			} else {
-				log
-					.error("Unable to force the in progress transition time-stamp, current status "
-						+ this.status + " is not congruent");
+				log.error("Unable to force the in progress transition time-stamp. "
+					  + "Invalid status: {}", status);
 			}
 		}
 		if (finalStateInstant != null) {
 			if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
 				this.finalStateInstant = finalStateInstant;
 			} else {
-				log
-					.error("Unable to force the in final status transition time-stamp, current status "
-						+ this.status + " is not final");
+				log.error("Unable to force the in final status transition time-stamp. "
+				  + "current status {} is not finale", status);
 			}
 		}
 	}
@@ -464,9 +462,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 				.randomUUID().toString().substring(FAKE_PREFIX.length())), Calendar
 				.getInstance().getTime()));
 		} catch (InvalidTRequestTokenAttributesException e) {
-			// never thrown
-			log.error("Unexpected InvalidTRequestTokenAttributesException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(), e);
 		}
 	}
 }

@@ -109,7 +109,7 @@ public class ConveterFactory {
 		case SPTG:
 			return new ManageFileTransferRequestConverter();
 		default:
-			log.error("No Converter available for OperationType " + type);
+			log.error("No Converter available for OperationType {}" , type);
 			throw new StoRMXmlRpcException(
 				"No Converter available for OperationType " + type);
 		}

@@ -54,8 +54,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving read operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving read operation authorization on file '{}' User provides "
+			+ "a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -79,8 +79,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving write operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving write operation authorization on file '{}' User provides "
+			+ "a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -104,8 +104,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving prepareToPut operation authorization on file '"
-			+ filePath + "\' User provides a VOMS proxy");
+		log.info("Serving prepareToPut operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -129,8 +129,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving prepareToPut Overwrite operation authorization on file '"
-			+ filePath + "\' User provides a VOMS proxy");
+		log.info("Serving prepareToPut Overwrite operation authorization on "
+			+ "file '{}'. User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -155,8 +155,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving prepareToGet operation authorization on file '"
-			+ filePath + "\' User provides a VOMS proxy");
+		log.info("Serving prepareToGet operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -180,8 +180,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving rm operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving rm operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		File file = new File(parameters.getFilePathDecoded());
 		if (file.isDirectory()) {
@@ -213,8 +213,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving ls operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving ls operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -238,8 +238,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving mkdir operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving mkdir operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -263,8 +263,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving cpFrom operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving cpFrom operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -288,8 +288,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving cpTo Overwrite operation authorization on file '"
-			+ filePath + "\' User provides a VOMS proxy");
+		log.info("Serving cpTo Overwrite operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -314,8 +314,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving cpTo operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving cpTo operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -339,8 +339,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving mvFrom operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving mvFrom operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -357,8 +357,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving mvTo operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving mvTo operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -383,8 +383,8 @@ public class AuthorizationResource {
 		@QueryParam(Constants.FQANS_KEY) String FQANS)
 		throws WebApplicationException {
 
-		log.info("Serving mvTo operation authorization on file '" + filePath
-			+ "\' User provides a VOMS proxy");
+		log.info("Serving mvTo operation authorization on file '{}'. "
+			+ "User provides a VOMS proxy", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -405,8 +405,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log
-			.info("Serving read operation authorization on file '" + filePath + "\'");
+		log.info("Serving read operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -427,8 +426,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving write operation authorization on file '" + filePath
-			+ "\'");
+		log.info("Serving write operation authorization on file '{}'", filePath);
 
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
@@ -444,8 +442,8 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving prepareToPut Overwrite operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving prepareToPut Overwrite operation authorization on "
+			+ "file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -467,8 +465,8 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving prepareToPut operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving prepareToPut operation authorization on "
+			+ "file '{}'", filePath);
 
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
@@ -492,8 +490,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving prepareToGet operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving prepareToGet operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -515,7 +512,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving rm operation authorization on file '" + filePath + "\'");
+		log.info("Serving rm operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		File file = new File(parameters.getFilePathDecoded());
 		if (file.isDirectory()) {
@@ -545,7 +542,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving ls operation authorization on file '" + filePath + "\'");
+		log.info("Serving ls operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -567,8 +564,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving mkdir operation authorization on file '" + filePath
-			+ "\'");
+		log.info("Serving mkdir operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -590,8 +586,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving cpFrom operation authorization on file '" + filePath
-			+ "\'");
+		log.info("Serving cpFrom operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -612,8 +607,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving cpTo Overwrite operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving cpTo Overwrite operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -635,8 +629,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log
-			.info("Serving cpTo operation authorization on file '" + filePath + "\'");
+		log.info("Serving cpTo operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -658,8 +651,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log.info("Serving mvFrom operation authorization on file '" + filePath
-			+ "\'");
+		log.info("Serving mvFrom operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -680,8 +672,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log
-			.info("Serving mvTo operation authorization on file '" + filePath + "\'");
+		log.info("Serving mvTo operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -703,8 +694,7 @@ public class AuthorizationResource {
 		@PathParam("filePath") String filePath,
 		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		log
-			.info("Serving mvTo operation authorization on file '" + filePath + "\'");
+		log.info("Serving mvTo operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath, DN);
 		return PermissionEvaluator.evaluateVomsGridUserPermission(
 			parameters.getDNDecoded(), parameters.getFQANSDecoded(),
@@ -723,8 +713,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousReadPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous read operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous read operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), PathOperation.READ_FILE).toString();
@@ -742,8 +731,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousWritePermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous write operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous write operation authorization on file '{}'", filePath);
 
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
@@ -756,9 +744,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousPTPOverwritePermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log
-			.info("Serving Anonymous prepareToPut Overwrite operation authorization on file '"
-				+ filePath + "\'");
+		log.info("Serving Anonymous prepareToPut Overwrite operation "
+			+ "authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return new Boolean(PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
@@ -777,8 +764,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousPTPPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous prepareToPut operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous prepareToPut operation authorization on "
+			+ "file '{}'", filePath);
 
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
@@ -799,8 +786,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousPTGPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous prepareToGet operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous prepareToGet operation authorization on "
+			+ "file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.PTG).toString();
@@ -819,8 +806,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousRmPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous rm operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous rm operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		File file = new File(parameters.getFilePathDecoded());
 		if (file.isDirectory()) {
@@ -846,8 +832,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousLsPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous ls operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous ls operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.LS).toString();
@@ -866,8 +851,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous mkdir operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous mkdir operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.MD).toString();
@@ -886,8 +870,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousCpFromPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous cpFrom operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous cpFrom operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.CPfrom).toString();
@@ -906,8 +889,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousCpToPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous cpTo operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous cpTo operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.CPto).toString();
@@ -926,9 +908,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousCpToOverwritePermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log
-			.info("Serving Anonymous cpTo Overwrite operation authorization on file '"
-				+ filePath + "\'");
+		log.info("Serving Anonymous cpTo Overwrite operation authorization on"
+			+ " file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return new Boolean(PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.CPto_Overwrite)
@@ -948,8 +929,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousMvFromPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous mvFrom operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous mvFrom operation authorization on "
+			+ "file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.MV_source).toString();
@@ -968,8 +949,8 @@ public class AuthorizationResource {
 	public String evaluateAnonymousMvToOverwritePermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous mvTo operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous mvTo operation authorization on "
+			+ "file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return new Boolean(PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.MV_dest_Overwrite)
@@ -989,8 +970,7 @@ public class AuthorizationResource {
 	public String evaluateAnonymousMvToPermission(
 		@PathParam("filePath") String filePath) throws WebApplicationException {
 
-		log.info("Serving Anonymous mvTo operation authorization on file '"
-			+ filePath + "\'");
+		log.info("Serving Anonymous mvTo operation authorization on file '{}'", filePath);
 		RequestParameters parameters = new RequestParameters(filePath);
 		return PermissionEvaluator.evaluateAnonymousPermission(
 			parameters.getFilePathDecoded(), SRMFileRequest.MV_dest).toString();

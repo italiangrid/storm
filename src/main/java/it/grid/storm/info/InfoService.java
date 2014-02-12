@@ -8,7 +8,6 @@ public class InfoService {
 	private static final Logger log = LoggerFactory.getLogger(InfoService.class);
 
 	public static String getResourcePackage() {
-
 		return "it.grid.storm.info.remote.resources";
 	}
 

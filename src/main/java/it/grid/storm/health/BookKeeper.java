@@ -28,56 +28,26 @@ public abstract class BookKeeper {
 
 	protected ArrayList<LogEvent> logbook = new ArrayList<LogEvent>();
 
-	/**
-	 * 
-	 * @param logEvent
-	 *          LogEvent
-	 */
 	public abstract void addLogEvent(LogEvent logEvent);
 
-	/**
-	 * Removes all event's in logbook field
-	 */
 	public synchronized void cleanLogBook() {
-
 		logbook.clear();
 	}
 
-	// ////////////////////////////////////////
-
-	/**
-	 * 
-	 * @param msg
-	 *          String
-	 */
 	protected void logDebug(String msg) {
 
 		if ((HealthDirector.isBookKeepingConfigured())
 			&& (HealthDirector.isBookKeepingEnabled())) {
-			bookKeepingLog.debug("BK: " + msg);
+			bookKeepingLog.debug("BK: {}", msg);
 		}
-		/**
-		 * if ((HealthDirector.isPerformanceMonitorConfigured())&&(HealthDirector.
-		 * isPerformanceMonitorEnabled())) { performanceLog.debug("P: " + msg); }
-		 **/
 	}
 
-	/**
-	 * 
-	 * @param msg
-	 *          String
-	 */
 	protected void logInfo(String msg) {
 
 		if ((HealthDirector.isBookKeepingConfigured())
 			&& (HealthDirector.isBookKeepingEnabled())) {
 			bookKeepingLog.info(msg);
 		}
-		/**
-		 * if ((HealthDirector.isPerformanceMonitorConfigured())&&(HealthDirector.
-		 * isPerformanceMonitorEnabled())) { performanceLog.info(msg); }
-		 **/
-
 	}
 
 }

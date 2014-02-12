@@ -110,7 +110,7 @@ public class ReservedSpaceCatalog {
 	 */
 	public ReservedSpaceCatalog() {
 
-		ReservedSpaceCatalog.log.debug("Building Reserve Space Catalog...");
+		log.debug("Building Reserve Space Catalog...");
 		// Binding to the persistence component
 		daoFactory = PersistenceDirector.getDAOFactory();
 	}
@@ -137,15 +137,14 @@ public class ReservedSpaceCatalog {
 			try {
 				result = new StorageSpaceData(ssTO);
 			} catch (IllegalArgumentException e) {
-				log
-					.error("Error building StorageSpaceData from StorageSpaceTO IllegalArgumentException: "
-						+ e.getLocalizedMessage());
+				log.error("Error building StorageSpaceData from StorageSpaceTO "
+					+ "IllegalArgumentException: {}", e.getLocalizedMessage(), e);
 				throw new TransferObjectDecodingException(
-					"Unable to build StorageSpaceData " + "from StorageSpaceTO");
+					"Unable to build StorageSpaceData from StorageSpaceTO");
 			}
 		} else {
-			log
-				.info("Unable to build StorageSpaceData. No StorageSpaceTO built from the DB");
+			log.info("Unable to build StorageSpaceData. No StorageSpaceTO built "
+				+ "from the DB");
 		}
 		return result;
 	}
@@ -190,9 +189,9 @@ public class ReservedSpaceCatalog {
 
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();
-			ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(), 
 				daEx);
 		}
 
@@ -207,9 +206,9 @@ public class ReservedSpaceCatalog {
 		}
 		try {
 			ssDAO.updateStorageSpace(ssTO);
-			ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
+			log.debug("StorageSpaceTO updated in Persistence");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error(
+			log.error(
 				"Error while inserting new row in StorageSpace", daEx);
 		}
 
@@ -222,12 +221,12 @@ public class ReservedSpaceCatalog {
 		throws DataAccessException {
 
 		ssDAO = daoFactory.getStorageSpaceDAO();
-		ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+		log.debug("Storage Space DAO retrieved.");
 		StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
 		log.debug("Storage Space TO Created");
 		ssTO.setUpdateTime(new Date());
 		ssDAO.updateStorageSpaceFreeSpace(ssTO);
-		ReservedSpaceCatalog.log.debug("StorageSpaceTO updated in Persistence");
+		log.debug("StorageSpaceTO updated in Persistence");
 
 	}
 
@@ -271,7 +270,8 @@ public class ReservedSpaceCatalog {
 			ssDAO = daoFactory.getStorageSpaceDAO();
 			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			log.error("Error while retrieving StorageSpaceDAO.", daEx);
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
+				daEx);
 		}
 
 		// Add the row to the persistence..
@@ -279,7 +279,8 @@ public class ReservedSpaceCatalog {
 			ssDAO.updateAllStorageSpace(ssTO);
 			log.debug("StorageSpaceTO updated in Persistence");
 		} catch (DataAccessException daEx) {
-			log.error("Error while inserting new row in StorageSpace", daEx);
+			log.error("Error while inserting new row in StorageSpace: {}", 
+				daEx.getMessage(), daEx);
 		}
 	}
 
@@ -297,7 +298,8 @@ public class ReservedSpaceCatalog {
 			ssDAO = daoFactory.getStorageSpaceDAO();
 			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			log.debug("Error while retrieving StorageSpaceDAO.", daEx);
+			log.debug("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
+				daEx);
 		}
 
 		// Get StorageSpaceTO form persistence
@@ -309,13 +311,13 @@ public class ReservedSpaceCatalog {
 				try {
 					result = new StorageSpaceData(cl.toArray(new StorageSpaceTO[0])[0]);
 				} catch (IllegalArgumentException e) {
-					log
-						.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: "
-							+ e.getLocalizedMessage());
+					log.error("unable to build StorageSpaceData from StorageSpaceTO "
+						+ "IllegalArgumentException: {}", e.getMessage(), e);
 				}
 			}
 		} catch (DataAccessException daEx) {
-			log.debug("Error while retrieving StorageSpace", daEx);
+			log.debug("Error while retrieving StorageSpace: {}", daEx.getMessage(),
+				daEx);
 		}
 
 		return result;
@@ -337,7 +339,8 @@ public class ReservedSpaceCatalog {
 			ssDAO = daoFactory.getStorageSpaceDAO();
 			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			log.debug("Error while retrieving StorageSpaceDAO.", daEx);
+			log.debug("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
+				daEx);
 		}
 		// Get StorageSpaceTO form persistence
 		try {
@@ -349,13 +352,12 @@ public class ReservedSpaceCatalog {
 					try {
 						result.add(new StorageSpaceData(storagesSpaceTO));
 					} catch (IllegalArgumentException e) {
-						log
-							.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: "
-								+ e.getLocalizedMessage());
+						log.error("unable to build StorageSpaceData from StorageSpaceTO. "
+							+ "IllegalArgumentException: {}", e.getMessage(), e);
 					}
 				} else {
-					log
-						.warn("Received a collection of StorageSpaceTO containing null elements, skipping them");
+					log.warn("Received a collection of StorageSpaceTO containing null "
+						+ "elements, skipping them");
 				}
 			}
 		} catch (DataAccessException daEx) {
@@ -381,7 +383,8 @@ public class ReservedSpaceCatalog {
 			ssDAO = daoFactory.getStorageSpaceDAO();
 			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			log.debug("Error while retrieving StorageSpaceDAO.", daEx);
+			log.debug("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
+				daEx);
 		}
 		// GetStorageSpaceTO form persistence
 		try {
@@ -393,17 +396,17 @@ public class ReservedSpaceCatalog {
 					try {
 						result.add(new StorageSpaceData(storagesSpaceTO));
 					} catch (IllegalArgumentException e) {
-						log
-							.error("unable to build StorageSpaceData from StorageSpaceTO IllegalArgumentException: "
-								+ e.getLocalizedMessage());
+						log.error("unable to build StorageSpaceData from StorageSpaceTO "
+							+ "IllegalArgumentException: {}", e.getMessage(), e);
 					}
 				} else {
-					log
-						.warn("Received a collection of StorageSpaceTO containing null elements, skipping them");
+					log.warn("Received a collection of StorageSpaceTO containing null "
+						+ "elements, skipping them");
 				}
 			}
 		} catch (DataAccessException daEx) {
-			log.debug("Error while retrieving StorageSpace", daEx);
+			log.debug("Error while retrieving StorageSpace: {}", daEx.getMessage(),
+				daEx);
 		}
 		return result;
 	}
@@ -421,28 +424,27 @@ public class ReservedSpaceCatalog {
 
 		ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
-		ReservedSpaceCatalog.log.debug("Retrieving space tokens...");
+		log.debug("Retrieving space tokens...");
 
 		// Retrieve the Data Access Object from the factory
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();
-			ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
 				daEx);
 		}
 
 		// Get StorageSpaceTO form persistence
 		try {
 
-			Collection listOfStorageSpace = ssDAO.getStorageSpaceByOwner(user,
+			Collection<?> listOfStorageSpace = ssDAO.getStorageSpaceByOwner(user,
 				spaceAlias);
 
 			int nItems = listOfStorageSpace.size();
-			ReservedSpaceCatalog.log
-				.debug("getSpaceTokens : Number of Storage spaces retrieved with Alias '"
-					+ spaceAlias + "': " + nItems);
-			Iterator j_ssTO = listOfStorageSpace.iterator();
+			log.debug("getSpaceTokens : Number of Storage spaces retrieved with "
+				+ "Alias '{}': {}", spaceAlias, nItems);
+			Iterator<?> j_ssTO = listOfStorageSpace.iterator();
 
 			while (j_ssTO.hasNext()) {
 				StorageSpaceTO ssTO = (StorageSpaceTO) j_ssTO.next();
@@ -450,16 +452,15 @@ public class ReservedSpaceCatalog {
 					TSpaceToken spaceToken = TSpaceToken.make(ssTO.getSpaceToken());
 					result.addTSpaceToken(spaceToken);
 				} catch (InvalidTSpaceTokenAttributesException ex2) {
-					ReservedSpaceCatalog.log
-						.error("Retrieved invalid Space token from DB");
+					log.error("Retrieved invalid Space token from DB");
 				}
 			}
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpace",
+			log.error("Error while retrieving StorageSpace: {}", daEx.getMessage(),
 				daEx);
 		} catch (Exception e) {
-			ReservedSpaceCatalog.log.error(
-				"Exception while retrieving Storage Space", e);
+			log.error("Exception while retrieving Storage Space: {}", e.getMessage(),
+				e);
 		}
 		return result;
 	}
@@ -475,26 +476,25 @@ public class ReservedSpaceCatalog {
 
 		ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
-		ReservedSpaceCatalog.log.debug("Retrieving space tokens...");
+		log.debug("Retrieving space tokens...");
 
 		// Retrieve the Data Access Object from the factory
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();
-			ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
 				daEx);
 		}
 
 		// Get StorageSpaceTO form persistence
 		try {
-			Collection listOfStorageSpace = ssDAO
+			Collection<?> listOfStorageSpace = ssDAO
 				.getStorageSpaceByAliasOnly(spaceAlias);
 
 			int nItems = listOfStorageSpace.size();
-			ReservedSpaceCatalog.log.debug("Number of Storage spaces retrieved: "
-				+ nItems);
-			Iterator j_ssTO = listOfStorageSpace.iterator();
+			log.debug("Number of Storage spaces retrieved: {}", nItems);
+			Iterator<?> j_ssTO = listOfStorageSpace.iterator();
 
 			while (j_ssTO.hasNext()) {
 				StorageSpaceTO ssTO = (StorageSpaceTO) j_ssTO.next();
@@ -502,16 +502,15 @@ public class ReservedSpaceCatalog {
 					TSpaceToken spaceToken = TSpaceToken.make(ssTO.getSpaceToken());
 					result.addTSpaceToken(spaceToken);
 				} catch (InvalidTSpaceTokenAttributesException ex2) {
-					ReservedSpaceCatalog.log
-						.error("Retrieved invalid Space token from DB");
+					log.error("Retrieved invalid Space token from DB");
 				}
 			}
 
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpace",
+			log.error("Error while retrieving StorageSpace: {}", daEx.getMessage(),
 				daEx);
 		} catch (Exception e) {
-			ReservedSpaceCatalog.log.error("Error getting data!", e);
+			log.error("Error getting data! Error: {}", e.getMessage(), e);
 		}
 		return result;
 	}
@@ -527,25 +526,24 @@ public class ReservedSpaceCatalog {
 
 		ArrayOfTSpaceToken result = new ArrayOfTSpaceToken();
 
-		ReservedSpaceCatalog.log.debug("Retrieving space tokens...");
+		log.debug("Retrieving space tokens...");
 
 		// Retrieve the Data Access Object from the factory
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();
-			ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(),
 				daEx);
 		}
 
 		// Get StorageSpaceTO form persistence
 		try {
-			Collection listOfStorageSpace = ssDAO.getStorageSpaceBySpaceType(stype);
+			Collection<?> listOfStorageSpace = ssDAO.getStorageSpaceBySpaceType(stype);
 
 			int nItems = listOfStorageSpace.size();
-			ReservedSpaceCatalog.log.debug("Number of Storage spaces retrieved: "
-				+ nItems);
-			Iterator j_ssTO = listOfStorageSpace.iterator();
+			log.debug("Number of Storage spaces retrieved: {}", nItems);
+			Iterator<?> j_ssTO = listOfStorageSpace.iterator();
 
 			while (j_ssTO.hasNext()) {
 				StorageSpaceTO ssTO = (StorageSpaceTO) j_ssTO.next();
@@ -553,17 +551,14 @@ public class ReservedSpaceCatalog {
 					TSpaceToken spaceToken = TSpaceToken.make(ssTO.getSpaceToken());
 					result.addTSpaceToken(spaceToken);
 				} catch (InvalidTSpaceTokenAttributesException ex2) {
-					ReservedSpaceCatalog.log
-						.error("Retrieved invalid Space token from DB");
+					log.error("Retrieved invalid Space token from DB");
 				}
 			}
 
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpace",
-				daEx);
+			log.error("Error while retrieving StorageSpace: {}", daEx.getMessage(), daEx);
 		} catch (Exception e) {
-			ReservedSpaceCatalog.log.error(
-				"Generic Error while retrieving StorageSpace", e);
+			log.error("Generic Error while retrieving StorageSpace: {}", e.getMessage(), e);
 		}
 		return result;
 	}
@@ -580,25 +575,23 @@ public class ReservedSpaceCatalog {
 	 */
 	public boolean release(GridUserInterface user, final TSpaceToken spaceToken) {
 
-		ReservedSpaceCatalog.log
-			.debug("Delete storage spaceToken info from persistence: " + spaceToken);
+		log.debug("Delete storage spaceToken info from persistence: {}", spaceToken);
 
 		// Retrieve the Data Access Object from the factory
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();
-			ReservedSpaceCatalog.log.debug("Storage Space DAO retrieved.");
+			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("Error while retrieving StorageSpaceDAO.",
-				daEx);
+			log.error("Error while retrieving StorageSpaceDAO: {}", 
+				daEx.getMessage(), daEx);
 		}
 		boolean rowRemoved = true;
 		// Delete the row from persistence.
 		try {
 			ssDAO.removeStorageSpace(user, spaceToken.getValue());
-			ReservedSpaceCatalog.log.debug("spaceToken removed from DB.");
+			log.debug("spaceToken removed from DB.");
 		} catch (DataAccessException daEx) {
-			ReservedSpaceCatalog.log.error("spaceToken not found in the DB: "
-				+ spaceToken.getValue());
+			log.error("spaceToken not found in the DB: {}", spaceToken.getValue());
 			rowRemoved = false;
 		}
 		return rowRemoved;
@@ -611,7 +604,7 @@ public class ReservedSpaceCatalog {
 	 */
 	public void purge() {
 
-		ReservedSpaceCatalog.log.debug("Space Garbage Collector start!");
+		log.debug("Space Garbage Collector start!");
 		Calendar rightNow = Calendar.getInstance();
 
 		// Retrieve the Data Access Object from the factory
@@ -619,16 +612,16 @@ public class ReservedSpaceCatalog {
 			ssDAO = daoFactory.getStorageSpaceDAO();
 			log.debug("Storage Space DAO retrieved.");
 		} catch (DataAccessException daEx) {
-			log.error("Error while retrieving StorageSpaceDAO.", daEx);
+			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(), 
+				daEx);
 		}
 		// Get the Collection of Space Resrvation Expired
-		Collection expiredSpaceTO;
+		Collection<?> expiredSpaceTO;
 		try {
 			expiredSpaceTO = ssDAO.getExpired(rightNow.getTimeInMillis() / 1000);
 		} catch (DataAccessException e) {
 			// No space expired FOUND
-			ReservedSpaceCatalog.log
-				.info("Space Garbage Collector: no space expired found.");
+			log.info("Space Garbage Collector: no space expired found.");
 			return;
 		}
 
@@ -637,34 +630,27 @@ public class ReservedSpaceCatalog {
 		// 2) Remove the entry from the DB
 
 		StorageSpaceTO spaceTO = null;
-		ReservedSpaceCatalog.log
-			.debug("Space Garbage Collector: Number of SpaceFile to remove "
-				+ expiredSpaceTO.size() + ".");
+		log.debug("Space Garbage Collector: Number of SpaceFile to remove {}.", 
+			expiredSpaceTO.size());
 
-		for (Iterator i = expiredSpaceTO.iterator(); i.hasNext();) {
+		for (Iterator<?> i = expiredSpaceTO.iterator(); i.hasNext();) {
 			spaceTO = (StorageSpaceTO) i.next();
 			// Deleteing space File
 			String spaceFileName = spaceTO.getSpaceFile();
 			File sfile = new File(spaceFileName);
-			ReservedSpaceCatalog.log
-				.debug("Space Garbage Collector: SpaceFile to remove " + spaceFileName
-					+ ".");
+			log.debug("Space Garbage Collector: SpaceFile to remove {}.", spaceFileName);
 
 			if (sfile.delete()) {
-				ReservedSpaceCatalog.log.debug("Space Garbage Collector: SpaceFile "
-					+ spaceFileName + " removed.");
+				log.debug("Space Garbage Collector: SpaceFile {} removed.", spaceFileName);
 			} else {
-				ReservedSpaceCatalog.log
-					.warn("Space Garbage Collector: problem removing " + spaceFileName
-						+ "!");
+				log.warn("Space Garbage Collector: problem removing {}", spaceFileName);
 			}
 
 			// Removing space entry from the DB
 			try {
 				ssDAO.removeStorageSpace(spaceTO.getSpaceToken());
 			} catch (DataAccessException e) {
-				ReservedSpaceCatalog.log
-					.warn("Space Garbage Collector: error removing space entry from catalog.");
+				log.warn("Space Garbage Collector: error removing space entry from catalog.");
 			}
 
 		}

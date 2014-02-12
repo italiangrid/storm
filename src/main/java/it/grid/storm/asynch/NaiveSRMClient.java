@@ -90,8 +90,7 @@ public class NaiveSRMClient implements SRMClient {
 			srmClientStubs.ISRM _srm = setUpGSI(gu, toSURL);
 
 			// prepare srm request and execute it
-			srmClientStubs.SrmPrepareToPutRequest req = new srmClientStubs.SrmPrepareToPutRequest(); // srm
-																																																// request
+			srmClientStubs.SrmPrepareToPutRequest req = new srmClientStubs.SrmPrepareToPutRequest();
 			// set authorization ID
 			String stubuid = gu.getDn();
 			req.setAuthorizationID(stubuid);
@@ -123,10 +122,8 @@ public class NaiveSRMClient implements SRMClient {
 				.intValue()));
 
 			// set request specific info
-			srmClientStubs.TPutFileRequest stubpfr = new srmClientStubs.TPutFileRequest(); // ws
-																																											// put
-																																											// file
-																																											// request!
+			// ws put file request!
+			srmClientStubs.TPutFileRequest stubpfr = new srmClientStubs.TPutFileRequest();
 			// set file size
 			org.apache.axis.types.UnsignedLong ulFileSize = new org.apache.axis.types.UnsignedLong(
 				filesize.value());
@@ -134,23 +131,18 @@ public class NaiveSRMClient implements SRMClient {
 			// set target SURL
 			stubpfr.setTargetSURL(new org.apache.axis.types.URI(toSURL.toString()));
 
-			// set array of requests
-			srmClientStubs.TPutFileRequest[] stubpfrArray = new srmClientStubs.TPutFileRequest[1]; // ws
-																																															// array
-																																															// of
-																																															// put
-																																															// file
-																																															// request!
+			// set array of requests ws array of put file request!
+			srmClientStubs.TPutFileRequest[] stubpfrArray = new srmClientStubs.TPutFileRequest[1];
 			stubpfrArray[0] = stubpfr;
 			srmClientStubs.ArrayOfTPutFileRequest arrayOfPut = new srmClientStubs.ArrayOfTPutFileRequest(
 				stubpfrArray);
 			req.setArrayOfFileRequests(arrayOfPut);
 
 			// execute request!
-			log.debug("NAIVE SRM CLIENT: sending request " + arrayOfPut);
+			log.debug("NAIVE SRM CLIENT: sending request {}", arrayOfPut);
 			srmClientStubs.SrmPrepareToPutResponse response = _srm
 				.srmPrepareToPut(req);
-			log.debug("NAIVE SRM CLIENT: received reply " + response);
+			log.debug("NAIVE SRM CLIENT: received reply {}", response);
 
 			// get TRequestToken
 			it.grid.storm.srm.types.TRequestToken requestToken = new WSRequestTokenConverter()
@@ -256,10 +248,10 @@ public class NaiveSRMClient implements SRMClient {
 				stubSurlArray);
 			req.setArrayOfTargetSURLs(arrayOfTSURL);
 
-			log.debug("NAIVE SRM CLIENT: invoking status of put with " + req);
+			log.debug("NAIVE SRM CLIENT: invoking status of put with {}", req);
 			srmClientStubs.SrmStatusOfPutRequestResponse response = _srm
 				.srmStatusOfPutRequest(req);
-			log.debug("NAIVE SRM CLIENT: received response " + response);
+			log.debug("NAIVE SRM CLIENT: received response {}", response);
 
 			// process response
 			srmClientStubs.ArrayOfTPutRequestFileStatus arrayOfPutStatuses = response
@@ -333,12 +325,6 @@ public class NaiveSRMClient implements SRMClient {
 		TSURL toSURL) throws SRMClientException {
 
 		return null;
-		/*
-		 * try { return new SRMPutDoneReply(new
-		 * it.grid.storm.srm.types.TReturnStatus
-		 * (it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS,"DUMMY SUCCESS")); }
-		 * catch (Exception e) { throw new SRMClientException(); }
-		 */
 	}
 
 	/**
@@ -364,86 +350,31 @@ public class NaiveSRMClient implements SRMClient {
 
 		// set proxy in stub
 		if (((AbstractGridUser) gu).getUserCredentials() == null) {
-			log.error("ERROR in NaiveSRMClient! No proxy present for " + gu.getDn());
+			log.error("ERROR in NaiveSRMClient! No proxy present for {}", gu.getDn());
 		}
+		// String containing the proxy seen as an input stream!
 		InputStream proxy = new ByteArrayInputStream(((AbstractGridUser) gu)
-			.getUserCredentials().getBytes()); // String containing the proxy seen as
-																					// an input stream!
+			.getUserCredentials().getBytes());
+		// GSSCredential containing the proxy!
 		GSSCredential globusProxy = new GlobusGSSCredentialImpl(
-			new GlobusCredential(proxy), GSSCredential.INITIATE_AND_ACCEPT); // GSSCredential
-																																				// containing
-																																				// the
-																																				// proxy!
-		((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS, globusProxy); // set
-																																								// the
-																																								// proxy
-																																								// to
-																																								// be
-																																								// used
-																																								// during
-																																								// GSI
-																																								// connection!
+			new GlobusCredential(proxy), GSSCredential.INITIATE_AND_ACCEPT);
+		// set the proxy to be used during GSI connection!
+		((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_CREDENTIALS, globusProxy); 
+		// set the authorization that will be performed by the web service for the
+		// supplied credentails!
 		((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_AUTHORIZATION,
-			NoAuthorization.getInstance()); // set the authorization that will be
-																			// performed by the web service for the
-																			// supplied credentails!
+			NoAuthorization.getInstance());
+		// set the supply of both private and public key of credentials
 		((Stub) _srm)._setProperty(GSIHTTPTransport.GSI_MODE,
-			GSIHTTPTransport.GSI_MODE_NO_DELEG); // set the supply of both private and
-																						// public key of credentials
+			GSIHTTPTransport.GSI_MODE_NO_DELEG); 
 
 		// set service endpoint address
-		String sea = "httpg://" + toSURL.sfn().machine() + ":"
-			+ toSURL.sfn().port() + "/";
+		String sea = String.format("httpg://%s:%s/", toSURL.sfn().machine(), toSURL
+			.sfn().port());
 		((Stub) _srm)._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, sea);
 
 		// return the interface
 		return _srm;
 	}
 
-	/**
-	 * Private method that returns a String representation of
-	 * srmClientStubs.SrmPrepareToPutResponse
-	 */
-	/*
-	 * private String
-	 * srmPtPResponseToString(srmClientStubs.SrmPrepareToPutResponse response) {
-	 * StringBuffer sb = new StringBuffer(); if (response==null) {
-	 * sb.append("srmClientStubs.SrmPrepareToPutResponse is null!"); } else {
-	 * sb.append("srmClientStubs.SrmPrepareToPutResponse:\n");
-	 * srmClientStubs.TRequestToken stubrt = response.getRequestToken(); if
-	 * (stubrt==null) { sb.append("srmClientStubs.TRequestToken is null!\n"); }
-	 * else { sb.append("srmClientStubs.TRequestToken is ");
-	 * sb.append(stubrt.getValue()); sb.append("\n"); }
-	 * srmClientStubs.TReturnStatus stubretstat = response.getReturnStatus(); if
-	 * (stubretstat==null) { sb.append("srmClientStubs.TReturnStatus is null!\n");
-	 * } else { sb.append("srmClientStubs.TReturnStatus has ");
-	 * srmClientStubs.TStatusCode stubstatcode = stubretstat.getStatusCode(); if
-	 * (stubstatcode==null) { sb.append("TStatusCode=null and "); } else {
-	 * sb.append("TStatusCode="); sb.append(stubstatcode.getValue());
-	 * sb.append(" and "); } String aux = stubretstat.getExplanation(); if
-	 * (aux==null) { sb.append("explanationString=null"); } else {
-	 * sb.append("explanationString="); sb.append(aux); } sb.append("\n"); }
-	 * srmClientStubs.ArrayOfTPutRequestFileStatus stubaprfs =
-	 * response.getArrayOfFileStatuses(); if (stubaprfs==null) {
-	 * sb.append("srmClientStubs.ArrayOfTPutRequestFileStatus is null!\n"); } else
-	 * { srmClientStubs.TPutRequestFileStatus[] stubprfs =
-	 * stubaprfs.getPutStatusArray(); int arraysize = stubprfs.length;
-	 * sb.append("srmClientStubs.ArrayOfTPutRequestFileStatus has ");
-	 * sb.append(arraysize); sb.append(" elements\n");
-	 * srmClientStubs.TPutRequestFileStatus stubaux; srmClientStubs.TReturnStatus
-	 * stubauxretstat; srmClientStubs.TStatusCode stubauxstatcode; String
-	 * auxString; for (int i=0; i<arraysize; i++) { sb.append("Element ");
-	 * sb.append(i); stubaux = stubprfs[i]; if (stubaux==null) {
-	 * sb.append(": null srmClientStubs.TPutRequestFileStatus!"); } else {
-	 * stubauxretstat = stubaux.getStatus(); if (stubauxretstat==null) {
-	 * sb.append(": srmClientStubs.TReturnStatus is null!"); } else {
-	 * sb.append(": srmClientStubs.TReturnStatus has "); stubauxstatcode =
-	 * stubauxretstat.getStatusCode(); if (stubauxstatcode==null) {
-	 * sb.append("TStatusCode=null and "); } else { sb.append("TStatusCode=");
-	 * sb.append(stubauxstatcode.getValue()); sb.append(" and "); } auxString =
-	 * stubauxretstat.getExplanation(); if (auxString==null) {
-	 * sb.append("explanationString=null"); } else {
-	 * sb.append("explanationString="); sb.append(auxString); } } }
-	 * sb.append("\n"); } } } return sb.toString(); }
-	 */
 }

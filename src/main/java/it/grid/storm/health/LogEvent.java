@@ -42,24 +42,6 @@ public class LogEvent implements Delayed {
 	private String requestToken = null;
 	private boolean successResult = false;
 
-	/**
-	 * Constructor for ASYNCHRONOUS Event
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param surl
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param requestToken
-	 *          String
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, String surl,
 		long startTime, long duration, String requestToken, boolean successResult) {
 
@@ -81,20 +63,6 @@ public class LogEvent implements Delayed {
 
 	}
 
-	/**
-	 * Constructor for SYNCHRONOUS Event
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, long startTime,
 		long duration, boolean successResult) {
 
@@ -117,23 +85,9 @@ public class LogEvent implements Delayed {
 			+ (timeToLive * LogEvent.THOUSAND);
 		this.birthTime = System.currentTimeMillis();
 
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): " + timeToLive);
+		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
-	/**
-	 * Constructor for SYNCHRONOUS Event with surl
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, String surl,
 		long startTime, long duration, boolean successResult) {
 
@@ -155,7 +109,7 @@ public class LogEvent implements Delayed {
 			+ (timeToLive * LogEvent.THOUSAND);
 		this.birthTime = System.currentTimeMillis();
 
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): " + timeToLive);
+		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
 	public OperationType getOperationType() {
@@ -218,28 +172,17 @@ public class LogEvent implements Delayed {
 		return sb.toString();
 	}
 
-	// ************** Methods of Delayed Interface *****************
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.concurrent.Delayed#getDelay(java.util.concurrent.TimeUnit)
-	 */
 	public long getDelay(TimeUnit unit) {
 
 		long result = -1;
 		result = unit.convert(deathTime - System.currentTimeMillis(),
 			TimeUnit.MILLISECONDS);
-		HealthDirector.LOGGER.debug("Event TimeToLive : " + timeToLive
-			+ " ... remaining : " + result);
+		HealthDirector.LOGGER.debug("Event TimeToLive : {} result: {}",
+		  timeToLive, result);
+
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
 	public int compareTo(Delayed other) {
 
 		LogEvent otherEvent = (LogEvent) other;
@@ -251,5 +194,4 @@ public class LogEvent implements Delayed {
 		}
 		return 0;
 	}
-
 }

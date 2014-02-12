@@ -18,8 +18,7 @@ import org.slf4j.LoggerFactory;
 public class BackgroundDUTasks {
 
 	private Set<BgDUTask> tasks = new HashSet<BgDUTask>();
-	private static final Logger LOG = LoggerFactory
-		.getLogger(BackgroundDUTasks.class);
+
 	private static final AtomicInteger taskId = new AtomicInteger();
 
 	public void addTask(TSpaceToken token, String path) throws SAInfoException {

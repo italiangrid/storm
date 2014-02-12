@@ -30,19 +30,6 @@ package it.grid.storm.griduser;
 
 import it.grid.storm.common.types.*;
 
-/**
- * Title:
- * <p>
- * Description:
- * <p>
- * Copyright: Copyright (c) 2006
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 class GridUser extends AbstractGridUser {
 
 	GridUser(MapperInterface mapper, String distinguishedName) {
@@ -55,17 +42,7 @@ class GridUser extends AbstractGridUser {
 		super(mapper, distinguishedName, proxy);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.griduser.AbstractGridUser#getVO()
-	 */
-	/**
-	 * Return the main Virtual Organization of the User. Since User is presenting
-	 * without VOMS Proxy, then default VO is named NO_VO.
-	 */
 	public VO getVO() {
-
 		VO vo = VO.makeNoVo();
 		return vo;
 	}

@@ -85,6 +85,7 @@ public class PtGPersistentChunkData extends IdentityPtGData implements
 		super(auth, fromSURL, lifeTime, dirOption, desiredProtocols, fileSize,
 			status, transferURL);
 		if (requestToken == null) {
+			log.debug("PtGPersistentChunkData: requestToken is null!");
 			throw new InvalidPtGPersistentChunkDataAttributesException(requestToken,
 				fromSURL, lifeTime, dirOption, desiredProtocols, fileSize, status,
 				transferURL);
@@ -128,12 +129,6 @@ public class PtGPersistentChunkData extends IdentityPtGData implements
 	public void changeStatusSRM_FILE_PINNED(String explanation) {
 
 		setStatus(TStatusCode.SRM_FILE_PINNED, explanation);
-	}
-
-	@Override
-	protected Logger getLog() {
-
-		return PtGPersistentChunkData.log;
 	}
 
 	/*

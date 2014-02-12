@@ -115,8 +115,7 @@ public class TapeRecallBuilder {
 		try {
 			result = TapeRecallStatus.getRecallTaskStatus(taskStatus);
 		} catch (Exception e) {
-			log.error("Task Status '" + taskStatus + "' is not in a valid format.");
-			e.printStackTrace();
+			log.error("Task Status '{}' is not in a valid format." , taskStatus , e);
 		}
 		return result;
 	}
@@ -131,8 +130,7 @@ public class TapeRecallBuilder {
 		try {
 			result = Integer.parseInt(number);
 		} catch (Exception e) {
-			log.error("Number'" + number + "' is not in a valid format.");
-			e.printStackTrace();
+			log.error("Number '{}' is not in a valid format." , number , e);
 		}
 		return result;
 	}
@@ -148,8 +146,7 @@ public class TapeRecallBuilder {
 		try {
 			date = formatter.parse(dateString);
 		} catch (ParseException e) {
-			log.error("Date '" + dateString + "' is not in a valid format.");
-			e.printStackTrace();
+			log.error("Date '{}' is not in a valid format." , dateString , e);
 		}
 		return date;
 	}

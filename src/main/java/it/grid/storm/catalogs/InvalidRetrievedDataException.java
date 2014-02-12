@@ -28,6 +28,8 @@ package it.grid.storm.catalogs;
  */
 public class InvalidRetrievedDataException extends Exception {
 
+	private static final long serialVersionUID = -3645913441787012438L;
+
 	private String requestToken;
 	private String requestType;
 	private int totalFilesInThisRequest;

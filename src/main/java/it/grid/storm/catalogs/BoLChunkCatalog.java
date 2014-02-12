@@ -118,35 +118,30 @@ public class BoLChunkCatalog {
 	synchronized public Collection<BoLPersistentChunkData> lookup(TRequestToken rt) {
 
 		Collection<BoLChunkDataTO> chunkCollection = dao.find(rt);
-		log.debug("BoL CHUNK CATALOG: retrieved data " + chunkCollection);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", chunkCollection);
 		List<BoLPersistentChunkData> list = new ArrayList<BoLPersistentChunkData>();
 
 		if (chunkCollection.isEmpty()) {
-			log
-				.warn("BoL CHUNK CATALOG! No chunks found in persistence for specified request: "
-					+ rt);
-		} else {
-			// TODO MICHELE USER_SURL here I can update all requests that has
-			// not the new fields set alltogether in a bunch, adding a method to
-			// the DAO for this purpose
-			BoLPersistentChunkData chunk;
-			for (BoLChunkDataTO chunkTO : chunkCollection) {
-				chunk = makeOne(chunkTO, rt);
-				if (chunk != null) {
-					list.add(chunk);
-					// TODO MICHELE SURL STORE
-					// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-					// chunk.getStatus().getStatusCode());
-					if (!this.isComplete(chunkTO)) {
-						try {
-							dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-						} catch (InvalidReducedBoLChunkDataAttributesException e) {
-							log
-								.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-									+ e);
-						}
-					}
-				}
+			log.warn("BoL CHUNK CATALOG! No chunks found in persistence for specified "
+				+ "request: {}", rt);
+			return list;
+		}
+		
+		BoLPersistentChunkData chunk;
+		for (BoLChunkDataTO chunkTO : chunkCollection) {
+			chunk = makeOne(chunkTO, rt);
+			if (chunk == null) {
+				continue;
+			}
+			list.add(chunk);
+			if (isComplete(chunkTO)) {
+				continue;
+			}
+			try {
+				dao.updateIncomplete(completeTO(chunkTO, chunk));
+			} catch (InvalidReducedBoLChunkDataAttributesException e) {
+				log.warn("BoL CHUNK CATALOG! unable to add missing informations on DB "
+					+ "to the request: {}", e.getMessage());
 			}
 		}
 		log.debug("BoL CHUNK CATALOG: returning " + list);
@@ -184,7 +179,7 @@ public class BoLChunkCatalog {
 			long max = Configuration.getInstance().getPinLifetimeMaximum();
 			if (pinLifeTime > max) {
 				log.warn("PinLifeTime is greater than the max value allowed. "
-					+ "Drop the value to the max = " + max + " seconds");
+					+ "Drop the value to the max = {} seconds", max);
 				pinLifeTime = max;
 			}
 			lifeTime = TLifeTimeInSeconds.make(pinLifeTime, TimeUnit.SECONDS);
@@ -250,7 +245,7 @@ public class BoLChunkCatalog {
 		} catch (InvalidSurlRequestDataAttributesException e) {
 			dao.signalMalformedBoLChunk(auxTO);
 			log.warn("BoL CHUNK CATALOG! Retrieved malformed BoL "
-				+ "chunk data from persistence. Dropping chunk from request " + rt);
+				+ "chunk data from persistence. Dropping chunk from request {}", rt);
 			log.warn(e.getMessage(), e);
 			log.warn(errorSb.toString());
 		}
@@ -401,38 +396,30 @@ public class BoLChunkCatalog {
 		// Call the dao refresh method to synch with the db status
 		BoLChunkDataTO auxTO = dao.refresh(inputChunk.getPrimaryKey());
 
-		log.debug("BoL CHUNK CATALOG: retrieved data " + auxTO);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", auxTO);
 		if (auxTO == null) {
-			log
-				.warn("BoL CHUNK CATALOG! Empty TO found in persistence for specified request: "
-					+ inputChunk.getPrimaryKey());
-		} else {
-			/*
-			 * In this first version the only field updated is the Status. Once
-			 * updated, the new status is rewritten into the input ChunkData
-			 */
+			log.warn("BoL CHUNK CATALOG! Empty TO found in persistence for specified "
+				+ "request: {}", inputChunk.getPrimaryKey());
+			return inputChunk;
+		}
+		
+		/*
+		 * In this first version the only field updated is the Status. Once
+		 * updated, the new status is rewritten into the input ChunkData
+		 */
 
-			// status
-			TReturnStatus status = null;
-			TStatusCode code = StatusCodeConverter.getInstance().toSTORM(
-				auxTO.getStatus());
-			if (code != TStatusCode.EMPTY) {
-				try {
-					status = new TReturnStatus(code, auxTO.getErrString());
-				} catch (InvalidTReturnStatusAttributeException e) {
-					log
-						.debug("BoL Chunk: Unable to build the Return Status from the String '"
-							+ auxTO.getErrString()
-							+ " and code '"
-							+ auxTO.getStatus()
-							+ "''." + e);
+		// status
+		TReturnStatus status = null;
+		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.getStatus());
+		if (code != TStatusCode.EMPTY) {
+			try {
+				status = new TReturnStatus(code, auxTO.getErrString());
+			} catch (InvalidTReturnStatusAttributeException e) {
+				log.debug("BoL Chunk: Unable to build the Return Status from the String "
+					+ "'{}' and code '{}'.", auxTO.getErrString(), auxTO.getStatus());
 				}
 			}
 			inputChunk.setStatus(status);
-			// TODO MICHELE SURL STORE
-			// SurlStatusStore.getInstance().storeSurlStatus(inputChunk.getSURL(),
-			// status.getStatusCode());
-		}
 		return inputChunk;
 	}
 
@@ -453,26 +440,23 @@ public class BoLChunkCatalog {
 
 		Collection<ReducedBoLChunkDataTO> reducedChunkDataTOs = dao.findReduced(rt
 			.getValue());
-		log.debug("BoL CHUNK CATALOG: retrieved data " + reducedChunkDataTOs);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", reducedChunkDataTOs);
 		ArrayList<ReducedBoLChunkData> list = new ArrayList<ReducedBoLChunkData>();
 		if (reducedChunkDataTOs.isEmpty()) {
-			log.debug("BoL CHUNK CATALOG! No chunks found in persistence for " + rt);
+			log.debug("BoL CHUNK CATALOG! No chunks found in persistence for {}", rt);
 		} else {
 			ReducedBoLChunkData reducedChunkData = null;
 			for (ReducedBoLChunkDataTO reducedChunkDataTO : reducedChunkDataTOs) {
 				reducedChunkData = makeOneReduced(reducedChunkDataTO);
 				if (reducedChunkData != null) {
 					list.add(reducedChunkData);
-					// TODO MICHELE SURL STORE
-					// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(),
-					// reducedChunkData.status().getStatusCode());
 					if (!this.isComplete(reducedChunkDataTO)) {
-						this.completeTO(reducedChunkDataTO, reducedChunkData);
+						completeTO(reducedChunkDataTO, reducedChunkData);
 						dao.updateIncomplete(reducedChunkDataTO);
 					}
 				}
 			}
-			log.debug("BoL CHUNK CATALOG: returning " + list);
+			log.debug("BoL CHUNK CATALOG: returning {}", list);
 		}
 		return list;
 	}
@@ -517,7 +501,7 @@ public class BoLChunkCatalog {
 		}
 		Collection<BoLChunkDataTO> chunkDataTOCollection = dao.find(surlsUniqueIDs,
 			surlsArray, user.getDn());
-		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", chunkDataTOCollection);
 		return buildChunkDataList(chunkDataTOCollection);
 	}
 
@@ -533,7 +517,7 @@ public class BoLChunkCatalog {
 		}
 		Collection<BoLChunkDataTO> chunkDataTOCollection = dao.find(surlsUniqueIDs,
 			surlsArray);
-		log.debug("PtG CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", chunkDataTOCollection);
 		return buildChunkDataList(chunkDataTOCollection);
 	}
 
@@ -541,29 +525,24 @@ public class BoLChunkCatalog {
 		Collection<BoLChunkDataTO> chunkDataTOCollection) {
 
 		List<BoLPersistentChunkData> list = new ArrayList<BoLPersistentChunkData>();
-		// TODO MICHELE USER_SURL here I can update all requests that has
-		// not the new fields set alltogether in a bunch, adding a method to
-		// the DAO for this purpose
 		BoLPersistentChunkData chunk;
 		for (BoLChunkDataTO chunkTO : chunkDataTOCollection) {
 			chunk = makeOne(chunkTO);
-			if (chunk != null) {
-				list.add(chunk);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(chunk.getSURL(),
-				// chunk.getStatus().getStatusCode());
-				if (!this.isComplete(chunkTO)) {
-					try {
-						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-					} catch (InvalidReducedBoLChunkDataAttributesException e) {
-						log
-							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-								+ e);
-					}
-				}
+			if (chunk == null) {
+				continue;
+			}
+			list.add(chunk);
+			if (isComplete(chunkTO)) {
+				continue;
+			}
+			try {
+				dao.updateIncomplete(this.completeTO(chunkTO, chunk));
+			} catch (InvalidReducedBoLChunkDataAttributesException e) {
+				log.warn("BoL CHUNK CATALOG! unable to add missing informations "
+					+ "on DB to the request: {}", e.getMessage());
 			}
 		}
-		log.debug("BoL CHUNK CATALOG: returning " + list);
+		log.debug("BoL CHUNK CATALOG: returning {}", list);
 		return list;
 	}
 
@@ -604,38 +583,8 @@ public class BoLChunkCatalog {
 		}
 		Collection<ReducedBoLChunkDataTO> chunkDataTOCollection = dao.findReduced(
 			gu.getDn(), surlsUniqueIDs, surls);
-		log.debug("BoL CHUNK CATALOG: retrieved data " + chunkDataTOCollection);
+		log.debug("BoL CHUNK CATALOG: retrieved data {}", chunkDataTOCollection);
 		return buildReducedChunkDataList(chunkDataTOCollection);
-		// ArrayList<ReducedBoLChunkData> list = new
-		// ArrayList<ReducedBoLChunkData>();
-		// if(chunkDataTOCollection.isEmpty())
-		// {
-		// log.debug("BoL CHUNK CATALOG! No chunks found in persistence for " + gu +
-		// " " + chunkDataTOCollection);
-		// }
-		// else
-		// {
-		// ReducedBoLChunkData reducedChunkData;
-		// for(ReducedBoLChunkDataTO reducedChunkDataTO : chunkDataTOCollection)
-		// {
-		// reducedChunkData = makeOneReduced(reducedChunkDataTO);
-		// if(reducedChunkData != null)
-		// {
-		// list.add(reducedChunkData);
-		// // TODO MICHELE SURL STORE
-		// //
-		// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(),
-		// reducedChunkData.status().getStatusCode());
-		// if(!this.isComplete(reducedChunkDataTO))
-		// {
-		// this.completeTO(reducedChunkDataTO, reducedChunkData);
-		// dao.updateIncomplete(reducedChunkDataTO);
-		// }
-		// }
-		// }
-		// log.debug("BoL CHUNK CATALOG: returning " + list);
-		// }
-		// return list;
 	}
 
 	private Collection<ReducedBoLChunkData> buildReducedChunkDataList(
@@ -647,16 +596,13 @@ public class BoLChunkCatalog {
 			reducedChunkData = makeOneReduced(reducedChunkDataTO);
 			if (reducedChunkData != null) {
 				list.add(reducedChunkData);
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(reducedChunkData.fromSURL(),
-				// reducedChunkData.status().getStatusCode());
 				if (!this.isComplete(reducedChunkDataTO)) {
 					this.completeTO(reducedChunkDataTO, reducedChunkData);
 					dao.updateIncomplete(reducedChunkDataTO);
 				}
 			}
 		}
-		log.debug("BoL CHUNK CATALOG: returning " + list);
+		log.debug("BoL CHUNK CATALOG: returning {}", list);
 		return list;
 	}
 
@@ -747,10 +693,6 @@ public class BoLChunkCatalog {
 
 		/* add the entry and update the Primary Key field */
 		dao.addChild(to);
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(),
-		// chunkData.getStatus().getStatusCode());
-		/* set the assigned PrimaryKey! */
 		chunkData.setPrimaryKey(to.getPrimaryKey());
 	}
 
@@ -793,10 +735,6 @@ public class BoLChunkCatalog {
 
 		/* add the entry and update the Primary Key field! */
 		dao.addNew(to, gu.getDn());
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(chunkData.getSURL(),
-		// chunkData.getStatus().getStatusCode());
-		/* set the assigned PrimaryKey! */
 		chunkData.setPrimaryKey(to.getPrimaryKey());
 	}
 
@@ -809,9 +747,6 @@ public class BoLChunkCatalog {
 	synchronized public boolean isSRM_FILE_PINNED(TSURL surl) {
 
 		return (dao.numberInSRM_SUCCESS(surl.uniqueId()) > 0);
-		// TODO MICHELE SURL STORE
-		// return
-		// TStatusCode.SRM_SUCCESS.equals(SurlStatusStore.getInstance().getSurlStatus(surl));
 	}
 
 	/**
@@ -831,9 +766,6 @@ public class BoLChunkCatalog {
 		int index = 0;
 		for (ReducedBoLChunkData chunkData : chunks) {
 			if (chunkData != null) {
-				// TODO MICHELE SURL STORE
-				// SurlStatusStore.getInstance().storeSurlStatus(chunkData.fromSURL(),
-				// chunkData.status().getStatusCode());
 				primaryKeys[index] = chunkData.primaryKey();
 				index++;
 			}
@@ -863,10 +795,6 @@ public class BoLChunkCatalog {
 		}
 		dao.transitSRM_SUCCESStoSRM_ABORTED(surl.uniqueId(), surl.toString(),
 			explanation);
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(surl,TStatusCode.SRM_ABORTED);
-		// PinnedFilesCatalog.getInstance().removeAllJit(surl);
-		// PinnedfilesCatalog.getInstance().removeVolatile(surl);
 	}
 
 	/**
@@ -877,12 +805,6 @@ public class BoLChunkCatalog {
 	synchronized public void transitExpiredSRM_SUCCESS() {
 
 		dao.transitExpiredSRM_SUCCESS();
-		// TODO MICHELE SURL STORE
-		// for (TSURL surl : expiredSurls)
-		// {
-		// SurlStatusStore.getInstance().storeSurlStatus(surl,
-		// TStatusCode.SRM_RELEASED);
-		// }
 	}
 
 	public void updateFromPreviousStatus(TRequestToken requestToken,

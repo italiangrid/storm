@@ -32,46 +32,26 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractDAO {
 
-	/**
-     * 
-     */
 	private static final Logger log = LoggerFactory.getLogger(AbstractDAO.class);
 
-	/**
-     * 
-     */
 	private DataSourceConnectionFactory connFactory;
 
-	/**
-     * 
-     */
 	public AbstractDAO() {
-
 		connFactory = PersistenceDirector.getConnectionFactory();
 	}
 
-	/**
-	 * @param conn
-	 */
 	protected void commit(Connection conn) {
 
 		try {
 			conn.commit();
 			conn.setAutoCommit(true);
 		} catch (SQLException e) {
-			log.error("Cannot commit transaction", e);
+			log.error(e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Retrieve a connection Accessor method.
-	 * 
-	 * @return Connection
-	 * @throws DataAccessException
-	 */
 	protected Connection getConnection() throws DataAccessException {
 
-		// Retrieve a Connection
 		Connection conn = null;
 		try {
 			conn = connFactory.borrowConnection();
@@ -81,14 +61,6 @@ public abstract class AbstractDAO {
 		return conn;
 	}
 
-	/**
-	 * Retrieve a Statement from connection Accessor method.
-	 * 
-	 * @param conn
-	 *          Connection
-	 * @return Statement
-	 * @throws DataAccessException
-	 */
 	protected Statement getStatement(Connection conn) throws DataAccessException {
 
 		Statement stat = null;
@@ -98,9 +70,9 @@ public abstract class AbstractDAO {
 		} else {
 			try {
 				stat = conn.createStatement();
-			} catch (SQLException ex1) {
-				log.error("Error while creating the statement");
-				throw new DataAccessException(ex1);
+			} catch (SQLException e) {
+			  log.error(e.getMessage(), e);
+				throw new DataAccessException(e);
 			}
 		}
 		return stat;
@@ -163,9 +135,9 @@ public abstract class AbstractDAO {
 		if (resultSet != null) {
 			try {
 				resultSet.close();
-			} catch (SQLException ex1) {
-				log.error("Error while releasing the result set");
-				throw new DataAccessException(ex1);
+			} catch (SQLException e) {
+			  log.error(e.getMessage(), e);
+				throw new DataAccessException(e);
 			}
 		}
 	}
@@ -175,9 +147,9 @@ public abstract class AbstractDAO {
 		if (statement != null) {
 			try {
 				statement.close();
-			} catch (SQLException ex2) {
-				log.error("Error while releasing the statement");
-				throw new DataAccessException(ex2);
+			} catch (SQLException e) {
+			  log.error(e.getMessage(), e);
+				throw new DataAccessException(e);
 			}
 		}
 	}
@@ -188,9 +160,9 @@ public abstract class AbstractDAO {
 		if (connection != null) {
 			try {
 				connFactory.giveBackConnection(connection);
-			} catch (PersistenceException ex3) {
-				log.error("Error while releasing the connection");
-				throw new DataAccessException(ex3);
+			} catch (PersistenceException e) {
+			  log.error(e.getMessage(), e);
+				throw new DataAccessException(e);
 			}
 		}
 	}
@@ -206,7 +178,7 @@ public abstract class AbstractDAO {
 			conn.setAutoCommit(true);
 
 		} catch (SQLException e) {
-			log.error("Cannot rollback transaction", e);
+		  log.error(e.getMessage(), e);
 		}
 	}
 

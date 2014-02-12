@@ -17,15 +17,14 @@
 
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
-
 import org.apache.commons.configuration.event.ConfigurationEvent;
 import org.apache.commons.configuration.event.ConfigurationListener;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileAuthzDBListener implements ConfigurationListener {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDBListener.class);
 	private String authzFileName;
 
 	public FileAuthzDBListener(String authzFileName) {
@@ -43,13 +42,13 @@ public class FileAuthzDBListener implements ConfigurationListener {
 
 		if (!configurationEvent.isBeforeUpdate()) {
 			// only display events after the modification was done
-			log.debug("Authz DB File " + this.authzFileName + " is changed!");
-			log.debug("  - Type = " + configurationEvent.getType());
+			log.debug("Authz DB File {} is changed!", authzFileName);
+			log.debug("  - Type = {}" + configurationEvent.getType());
 			if (configurationEvent.getPropertyName() != null) {
-				log.debug("Property name = " + configurationEvent.getPropertyName());
+				log.debug("Property name = {}", configurationEvent.getPropertyName());
 			}
 			if (configurationEvent.getPropertyValue() != null) {
-				log.debug("Property value = " + configurationEvent.getPropertyValue());
+				log.debug("Property value = {}", configurationEvent.getPropertyValue());
 			}
 		}
 	}

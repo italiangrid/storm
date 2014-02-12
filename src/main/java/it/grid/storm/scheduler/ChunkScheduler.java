@@ -151,8 +151,7 @@ public class ChunkScheduler implements Scheduler, Streets {
 
 	public void schedule(Delegable chunk) throws SchedulerException {
 
-		// Debugging info logging
-		log.debug("Delegable Chunk " + chunk.getName() + " arrived at scheduler");
+		log.debug("Scheduling chunk: {}", chunk.getName());
 		Chooser c = (Chooser) chunk;
 		c.choose(this);
 	}
@@ -214,82 +213,58 @@ public class ChunkScheduler implements Scheduler, Streets {
 	public void ptgStreet(Delegable chunk) {
 
 		// Debugging info logging
-		log.debug("Chunk (declared PTG) " + chunk.getName()
-			+ " entered into PTG-street");
+		log.trace("ptgStreet got chunk: {}", chunk.getName());
 
-		// Build a generic Chunk Task
-		// ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_GET);
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			ptg_workers.submit(chunkTask);
-			log.debug("PtG QuotaJobResultsHandler Pool SIZE = "
-				+ getStatus(Scheduler.PtG_WorkerPoolType).getPoolSize());
-		} catch (SchedulerException ex) {
-			log.error("PrepareToGet_Street", ex);
+		} catch (SchedulerException e) {
+		  log.error(e.getMessage(),e);
 		}
 	}
 
 	public void ptpStreet(Delegable chunk) {
 
-		// Debugging info logging
-		log.debug("Chunk (declared PTP) " + chunk.getName()
-			+ " entered into PTP-street");
-
-		// Build a generic Chunk Task
-		// ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.PREPARE_TO_PUT);
+	  log.trace("ptpStreet got chunk: {}", chunk.getName());
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			ptp_workers.submit(chunkTask);
-			log.debug("PtP QuotaJobResultsHandler Pool SIZE = "
-				+ getStatus(Scheduler.PtP_WorkerPoolType).getPoolSize());
-		} catch (SchedulerException ex) {
-			log.error("PrepareToPut_Street submission error", ex);
+		} catch (SchedulerException e) {
+		  log.error(e.getMessage(),e);
 		}
 
 	}
 
 	public void copyStreet(Delegable chunk) {
 
-		// Debugging info logging
-		log.debug("Chunk (declared COPY) " + chunk.getName()
-			+ " entered into COPY-street");
+	  log.trace("copyStreet got chunk: {}", chunk.getName());
 
-		// Build a generic Chunk Task
-		// ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.COPY);
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			copy_workers.submit(chunkTask);
-			log.debug("Copy QuotaJobResultsHandler Pool SIZE = "
-				+ getStatus(Scheduler.Copy_WorkerPoolType).getPoolSize());
-		} catch (SchedulerException ex) {
-			log.error("Copy_Street", ex);
+		} catch (SchedulerException e) {
+		  log.error(e.getMessage(),e);
 		}
 	}
 
 	public void bolStreet(Delegable chunk) {
 
-		// Debugging info logging
-		log.debug("Chunk (declared BOL) " + chunk.getName()
-			+ " entered into BOL-street");
+	  log.trace("bolStret got chunk: {}", chunk.getName());
 
-		// Build a generic Chunk Task
-		// ChunkTask chunkTask = new ChunkTask(chunk, ChunkType.BOL);
 		ChunkTask chunkTask = new ChunkTask(chunk);
 		try {
 			bol_workers.submit(chunkTask);
-			log.debug("BoL QuotaJobResultsHandler Pool SIZE = "
-				+ getStatus(Scheduler.BoL_WorkerPoolType).getPoolSize());
-		} catch (SchedulerException ex) {
-			log.error("BoL_Street", ex);
+		} catch (SchedulerException e) {
+		  log.error(e.getMessage(),e);
 		}
 	}
 
 	public void abort(Delegable task) throws SchedulerException {
-
+	  log.warn("abort is not implemented");
 	}
 
 	public void suspend(Delegable task) throws SchedulerException {
-
+	  log.warn("suspend is not implemented");
 	}
 
 }

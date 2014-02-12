@@ -45,7 +45,6 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSURL;
@@ -62,23 +61,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 
-/**
- * <p>
- * Title:
- * </p>
- * <p>
- * Description:
- * </p>
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class StoRIImpl implements StoRI {
 
 	private Logger log = NamespaceDirector.getLogger();
@@ -111,58 +93,52 @@ public class StoRIImpl implements StoRI {
 	// Boolean status for full detailed metadata
 	private boolean volatileInformationAreSet = false;
 
-	/*****************************************************************************
-	 * BUILDING METHODs
-	 ****************************************************************************/
-
 	public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule,
 		String relativeStFN, StoRIType type) {
 
 		if (vfs != null) {
 			this.vfs = vfs;
-			this.capability = (Capability) vfs.getCapabilities();
+			capability = (Capability) vfs.getCapabilities();
 		} else {
-			log.error("!!! StoRI built without VFS!!?!");
+			log.error("StoRI built without VFS!");
 		}
-		/**
-		 * Retrieve from StFN the various part.
-		 */
+
 		if (winnerRule != null) {
-			this.stfnRoot = winnerRule.getStFNRoot();
-			this.stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
+			stfnRoot = winnerRule.getStFNRoot();
+			stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
 			
-			this.vfsRoot = vfs.getRootPath();
+			vfsRoot = vfs.getRootPath();
 			
 			this.relativeStFN = relativeStFN;
 
-			this.stfnPath = NamespaceUtil.getStFNPath(stfn);
+			stfnPath = NamespaceUtil.getStFNPath(stfn);
 
-			this.relativePath = NamespaceUtil.consumeFileName(relativeStFN);
+			relativePath = NamespaceUtil.consumeFileName(relativeStFN);
 
 			if (relativePath != null) {
 				if (relativePath.startsWith(NamingConst.SEPARATOR)) {
-					this.relativePath = relativePath.substring(1);
+					relativePath = relativePath.substring(1);
 				}
 			} else {
-				this.relativePath = "/";
+				relativePath = "/";
 			}
 
-			this.fileName = NamespaceUtil.getFileName(relativeStFN);
-			log.debug("StFN Filename : " + fileName + " [StFN = '" + relativeStFN
-				+ "']");
+			fileName = NamespaceUtil.getFileName(relativeStFN);
+			log.debug("StFN Filename : {} [StFN = '{}']", fileName,
+			  relativeStFN);
 
 			if (type == null) {
 				if (relativeStFN.endsWith(NamingConst.SEPARATOR)) {
-					this.type = StoRIType.FOLDER;
+					type = StoRIType.FOLDER;
 				} else {
-					this.type = StoRIType.UNKNOWN;
+					type = StoRIType.UNKNOWN;
 				}
 			} else {
 				this.type = type;
 			}
 
 		} else {
-			log.warn("StoRI built without MAPPIG RULE!!");
+			log.warn("StoRI built without mapping rule");
 		}
 	}
 
@@ -192,10 +168,11 @@ public class StoRIImpl implements StoRI {
 		this.stfnRoot = null;
 
 		this.fileName = NamespaceUtil.getFileName(stfnStr);
-		log.debug("StFN Filename : " + fileName + " [StFN = '" + stfnStr + "']");
+		log.debug("StFN Filename : {} [StFN = '{}']", fileName,
+			  stfnStr);
 
 		this.stfnPath = NamespaceUtil.getStFNPath(stfnStr);
-		log.debug("StFN StFNPath : " + stfnPath + " [StFN = '" + stfnStr + "']");
+		log.debug("StFN StFNPath : {} [StFN = '{}']", stfnPath, stfnStr);
 
 	}
 
@@ -206,20 +183,19 @@ public class StoRIImpl implements StoRI {
 		if (spaceDriver == null) {
 			try {
 				this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-			} catch (NamespaceException ex) {
-				log.error("Error while retrieving Space System Driver for VFS ", ex);
+			} catch (NamespaceException e) {
+			  log.error(e.getMessage(), e);
 				throw new ReservationException(
-					"Error while retrieving Space System Driver for VFS ");
+					"Error while retrieving Space System Driver for VFS", e);
 			}
 		}
 
 		try {
 			vfs.useAllSpaceForFile(token, this);
-		} catch (NamespaceException ex1) {
-			log.error("Error while using Space with token '" + token + "' for "
-				+ this.fileName, ex1);
-			throw new ReservationException("Error while using Space with token '"
-				+ token + "' for " + this.fileName);
+		} catch (NamespaceException e) {
+		  log.error("Error using space token {} for file {}: {}",
+		    token, fileName, e.getMessage(),e);
+			throw new ReservationException(e.getMessage(), e);
 		}
 
 	}
@@ -227,24 +203,22 @@ public class StoRIImpl implements StoRI {
 	public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize)
 		throws ReservationException, ExpiredSpaceTokenException {
 
-		// Retrieve SpaceSystem Driver
 		if (spaceDriver == null) {
 			try {
 				this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-			} catch (NamespaceException ex) {
-				log.error("Error while retrieving Space System Driver for VFS ", ex);
+			} catch (NamespaceException e) {
+			  log.error(e.getMessage(),e);
 				throw new ReservationException(
-					"Error while retrieving Space System Driver for VFS ");
+					"Error while retrieving Space System Driver for VFS", e);
 			}
 		}
 
 		try {
 			vfs.useSpaceForFile(token, this, totSize);
-		} catch (NamespaceException ex1) {
-			log.error("Error while using Space with token '" + token + "' for "
-				+ this.fileName, ex1);
-			throw new ReservationException("Error while using Space with token '"
-				+ token + "' for " + this.fileName);
+		} catch (NamespaceException e) {
+		  log.error("Error using space token {} for file {}: {}",
+		    token, fileName, e.getMessage(),e);
+			throw new ReservationException(e.getMessage(), e);
 		}
 
 	}
@@ -255,51 +229,32 @@ public class StoRIImpl implements StoRI {
 		if (spaceDriver == null) {
 			try {
 				this.spaceDriver = vfs.getSpaceSystemDriverInstance();
-			} catch (NamespaceException ex) {
-				log.error("Error while retrieving Space System Driver for VFS ", ex);
+			} catch (NamespaceException e) {
+				log.error("Error while retrieving Space System Driver for VFS {}",
+				  e.getMessage(), e);
+
 				throw new ReservationException(
-					"Error while retrieving Space System Driver for VFS ");
+					"Error while retrieving Space System Driver for VFS", e);
 			}
 		}
 
-		// Make SILHOUETTE for File
 		try {
 			vfs.makeSilhouetteForFile(this, totSize);
-		} catch (NamespaceException ex1) {
-			log.error("Error while constructing 'Space Silhouette' for "
-				+ this.fileName, ex1);
+		} catch (NamespaceException e) {
+		  log.error(e.getMessage(),e);
 			throw new ReservationException(
-				"Error while constructing 'Space Silhouette' for " + this.fileName);
+				"Error while constructing 'Space Silhouette' for " + this.fileName, e);
 		}
 
 		log.debug("Space built. Space " + this.getSpace().getSpaceFile().getPath());
-
-		// Make "space" physically in underlying file system
 		this.getSpace().allot();
-
 	}
 
 	public String getAbsolutePath() {
 		return vfs.getRootPath() + NamingConst.SEPARATOR + relativeStFN;
 	}
 
-	/*****************************************************************************
-	 * BUSINESS METHODs
-	 ****************************************************************************/
-
-	/**
-	 * Returns the SURL lifetime. This method queries the DB and retrieves also
-	 * the startTime. The DB is queried only on the first invocation of this or
-	 * the getFileStartTime() methods, therefore subsequent invocations of these
-	 * two methods are computationally lighter.
-	 * 
-	 * If the file is PERMANENT, or this StoRI refeers to a non-valid file then -1
-	 * is returned.
-	 * 
-	 * @return TLifeTimeInSeconds
-	 */
 	public TLifeTimeInSeconds getFileLifeTime() {
-
 		if (!(volatileInformationAreSet)) {
 			setVolatileInformation();
 		}
@@ -311,18 +266,6 @@ public class StoRIImpl implements StoRI {
 		return this.fileName;
 	}
 
-	/**
-	 * Returns the SURL start time (time from which starts the lifetime). This
-	 * method queries the DB and retrieves also the lifetime of the SURL. The DB
-	 * is queried only on the first invocation of this or the getFileLifeTime()
-	 * methods, therefore subsequent invocations of these two methods are
-	 * computationally lighter.
-	 * 
-	 * If the file is permanent or this StoRI refeers to a non-valid file then
-	 * NULL is retuned!
-	 * 
-	 * @return Date
-	 */
 	public Date getFileStartTime() {
 
 		if (!(volatileInformationAreSet)) {
@@ -360,8 +303,8 @@ public class StoRIImpl implements StoRI {
 			} else { // Creation of StoRI LIST
 				NamespaceInterface namespace = NamespaceDirector.getNamespace();
 				for (String childPath : pathList) {
-					log.debug("<GetChildren>:Creation of new StoRI with path : "
-						+ childPath);
+					log.debug("<GetChildren>:Creation of new StoRI with path: {}",
+					  childPath);
 					try {
 					  
 					  StoRI childStorI = namespace.resolveStoRIbyAbsolutePath(childPath);
@@ -392,7 +335,6 @@ public class StoRIImpl implements StoRI {
 	}
 
 	public MappingRule getMappingRule() {
-
 		return this.winnerRule;
 	}
 
@@ -424,9 +366,8 @@ public class StoRIImpl implements StoRI {
 		if (pfn == null) {
 			try {
 				this.pfn = PFN.make(getAbsolutePath());
-			} catch (InvalidPFNAttributeException ex) {
-				log.error("Unable to build the PFN in the VFS '" + getVFSName()
-					+ "' with this path :'" + getAbsolutePath() + "'");
+			} catch (InvalidPFNAttributeException e) {
+			  log.error(e.getMessage(),e);
 			}
 		}
 		return this.pfn;
@@ -485,30 +426,18 @@ public class StoRIImpl implements StoRI {
 		if (this.surl == null) {
 			try {
 				this.surl = TSURL.makeFromStringValidate(buildSURLString());
-			} catch (InvalidTSURLAttributesException ex) {
-				log.error("Unable to build the SURL with relative path : '"
-					+ relativePath + "'", ex);
-			} catch (NamespaceException ex) {
-				/** @todo Handle this exception */
-				log.error("Unable to build the SURL with relative path : '"
-					+ relativePath + "'", ex);
+			} catch (Throwable e) {
+				log.error("Unable to build the SURL with relative path: {}. {}",
+				  relativePath, e.getMessage(), e);
 			}
-
 		}
 		return surl;
 	}
-
-	/*****************************************************************************
-	 * READ METHODs
-	 * 
-	 * @throws Exception
-	 ***************************************************************************/
 
 	public TTURL getTURL(TURLPrefix desiredProtocols)
 		throws IllegalArgumentException, InvalidGetTURLProtocolException,
 		TURLBuildingException {
 
-		// TransportProtocol protocolPrefix = null;
 		TTURL resultTURL = null;
 
 		if (desiredProtocols == null || desiredProtocols.size() == 0) {
@@ -519,24 +448,26 @@ public class StoRIImpl implements StoRI {
 					+ desiredProtocols);
 		} else {
 
-			/**
-			 * Retrieve Protocol to build the TURL
-			 */
 			// Within the request there are some protocol preferences
 			// Calculate the intersection between Desired Protocols and Available
 			// Protocols
 			ArrayList<Protocol> desiredP = new ArrayList<Protocol>(
 				desiredProtocols.getDesiredProtocols());
+
 			ArrayList<Protocol> availableP = new ArrayList<Protocol>(
 				this.capability.getAllManagedProtocols());
+
 			desiredP.retainAll(availableP);
+
 			if (desiredP.isEmpty()) {
-				// No match found!
 				log
 					.error("stori:No match with Protocol Preferences and Protocol Managed!");
 				throw new InvalidGetTURLProtocolException(desiredProtocols);
+
 			} else {
-				log.debug("Protocol matching.. Intersection size:" + desiredP.size());
+
+				log.debug("Protocol matching.. Intersection size: {}", 
+				  desiredP.size());
 
 				Protocol choosen = null;
 				Authority authority = null;
@@ -545,15 +476,15 @@ public class StoRIImpl implements StoRI {
 				while (!turlBuilt && index < desiredP.size()) {
 					choosen = desiredP.get(index);
 					authority = null;
-					log.debug("Selected Protocol :" + choosen);
+					log.debug("Selected Protocol: {}", choosen);
 					if (capability.isPooledProtocol(choosen)) {
 						log.debug("The protocol selected is in POOL Configuration");
 						try {
 							authority = getPooledAuthority(choosen);
 						} catch (BalancingStrategyException e) {
 							log
-								.warn("Unable to get the pool member to be used to build the turl. BalancerException : "
-									+ e.getMessage());
+								.warn("Unable to get the pool member to be used to build the turl. BalancerException :  {}",
+								  e.getMessage());
 							index++;
 							continue;
 						}
@@ -564,9 +495,9 @@ public class StoRIImpl implements StoRI {
 							.getManagedProtocolByScheme(choosen);
 						if (protList.size() > 1) { // Strange case
 							log
-								.warn("More than one protocol "
-									+ choosen
-									+ " defined but NOT in POOL Configuration. Taking the first one.");
+								.warn("More than one protocol {}"
+									+ " defined but NOT in POOL Configuration. Taking the first one.",
+									choosen);
 						}
 						transProt = protList.get(0);
 						authority = transProt.getAuthority();
@@ -585,7 +516,6 @@ public class StoRIImpl implements StoRI {
 	}
 
 	public VirtualFSInterface getVirtualFileSystem() {
-
 		return this.vfs;
 	}
 
@@ -615,14 +545,13 @@ public class StoRIImpl implements StoRI {
 			try {
 				localFile.setGroupOwnership(groupName);
 			} catch (FSException e) {
-				log.warn("Unable to change in the new group owner ('" + groupName
-					+ "') of the file: " + localFile.getAbsolutePath());
+				log.warn("Unable to change in the new group owner '{}' for file '{}': {}",
+				  groupName, localFile.getAbsolutePath(), e.getMessage(), e);
 			}
 		} else {
-			log.warn("The group for Read buffer in Tape support '" + groupName
-				+ "' is not defined.");
+			log.warn("The group for Read buffer in Tape support '{}' is not defined",
+			  groupName);
 		}
-
 	}
 
 	public void setGroupTapeWrite() {
@@ -635,22 +564,20 @@ public class StoRIImpl implements StoRI {
 			try {
 				localFile.setGroupOwnership(groupName);
 			} catch (FSException e) {
-				log.warn("Unable to change in the new group owner ('" + groupName
-					+ "') of the file: " + localFile.getAbsolutePath());
+				log.warn("Unable to change in the new group owner '{}' for file '{}': {}",
+				  groupName, localFile.getAbsolutePath(), e.getMessage(), e);
 			}
 		} else {
-			log.warn("The group for Write buffer in Tape support '" + groupName
-				+ "' is not defined.");
+			log.warn("The group for Write buffer in Tape support '{}' is not defined",
+			  groupName);
 		}
 	}
 
 	public void setMappingRule(MappingRule winnerRule) {
-
 		this.winnerRule = winnerRule;
 	}
 
 	public void setSpace(Space space) {
-
 		this.space = space;
 	}
 
@@ -688,7 +615,6 @@ public class StoRIImpl implements StoRI {
 	}
 
 	private String buildSURLString() throws NamespaceException {
-
 		String stfn = stfnRoot + NamingConst.SEPARATOR + relativeStFN;
 		SURL surl = new SURL(stfn);
 		return surl.toString();
@@ -720,10 +646,9 @@ public class StoRIImpl implements StoRI {
 			try {
 				result = TURLBuilder.buildHTTPTURL(authority, this.getLocalFile());
 			} catch (HTTPSPluginException e) {
-				log.error("Unable to build the TURL for protocol "
-					+ protocol.toString() + " for authority " + authority.toString()
-					+ " and file " + this.getLocalFile().toString()
-					+ " . HTTPSPluginException: " + e.getMessage());
+				log.error("Unable to build the TURL for protocol {} for authority {} and file {}. {}",
+				  protocol, authority, this.getLocalFile().toString(), 
+				  e.getMessage(),e);
 				throw new InvalidProtocolForTURLException(e, protocol.getSchema());
 			}
 			break; // HTTP Protocol
@@ -731,10 +656,9 @@ public class StoRIImpl implements StoRI {
 			try {
 				result = TURLBuilder.buildHTTPSTURL(authority, this.getLocalFile());
 			} catch (HTTPSPluginException e) {
-				log.error("Unable to build the TURL for protocol "
-					+ protocol.toString() + " for authority " + authority.toString()
-					+ " and file " + this.getLocalFile().toString()
-					+ " . HTTPSPluginException: " + e.getMessage());
+				log.error("Unable to build the TURL for protocol {} for authority {} and file {}. {}",
+				  protocol, authority, this.getLocalFile().toString(), 
+				  e.getMessage(),e);
 				throw new InvalidProtocolForTURLException(e, protocol.getSchema());
 			}
 			break; // HTTPS Protocol

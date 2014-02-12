@@ -65,9 +65,8 @@ public class WSTurlConverter {
 			}
 			return it.grid.storm.srm.types.TTURL.makeFromString(auxString);
 		} catch (InvalidTTURLAttributesException e) {
-			log
-				.debug("Unexpected error in WSTurlConverter! This is a programming bug! Could not translate TTURL from WS! "
-					+ e);
+			log.debug("Unexpected error in WSTurlConverter! This is a programming "
+				+ "bug! Could not translate TTURL from WS! {}", e);
 			throw new WSConversionException(e.toString());
 		}
 	}

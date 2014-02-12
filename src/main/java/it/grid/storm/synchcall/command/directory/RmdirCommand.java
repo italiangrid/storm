@@ -19,6 +19,9 @@ package it.grid.storm.synchcall.command.directory;
 
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -57,6 +60,7 @@ import it.grid.storm.synchcall.data.directory.RmdirOutputData;
 
 public class RmdirCommand extends DirectoryCommand implements Command {
 
+  public static final Logger log = LoggerFactory.getLogger(RmdirCommand.class);
 	private static final String SRM_COMMAND = "srmRmdir";
 	private final NamespaceInterface namespace;
 
@@ -103,25 +107,29 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 						stori = namespace.resolveStoRIbySURL(surl,
 							((IdentityInputData) inputData).getUser());
 					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl " + surl + " for user "
-							+ DataHelper.getRequestor(inputData)
-							+ " UnapprochableSurlException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {} for user {}: {}",
+					    surl,
+					    DataHelper.getRequestor(inputData),
+					    e.getMessage());
+					  
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					} catch (NamespaceException e) {
-						log.info("Unable to build a stori for surl " + surl + " for user "
-							+ DataHelper.getRequestor(inputData)
-							+ " NamespaceException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {} for user {}: {}",
+					    surl,
+					    DataHelper.getRequestor(inputData),
+					    e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					} catch (InvalidSURLException e) {
-						log.info("Unable to build a stori for surl " + surl + " for user "
-							+ DataHelper.getRequestor(inputData)
-							+ " InvalidSURLException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {} for user {}: {}",
+					    surl,
+					    DataHelper.getRequestor(inputData),
+					    e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_INVALID_PATH, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
@@ -131,22 +139,25 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 					try {
 						stori = namespace.resolveStoRIbySURL(surl);
 					} catch (UnapprochableSurlException e) {
-						log.info("Unable to build a stori for surl " + surl
-							+ " UnapprochableSurlException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {}: {}",
+					    surl,
+					    e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					} catch (NamespaceException e) {
-						log.info("Unable to build a stori for surl " + surl
-							+ " NamespaceException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {}: {}",
+					    surl,
+					    e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
 						return new RmdirOutputData(returnStatus);
 					} catch (InvalidSURLException e) {
-						log.info("Unable to build a stori for surl " + surl
-							+ " InvalidSURLException: " + e.getMessage());
+					  log.info("Unable to build a stori for surl {}: {}",
+					    surl,
+					    e.getMessage());
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_INVALID_PATH, e.getMessage());
 						printRequestOutcome(returnStatus, inputData);
@@ -154,9 +165,8 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 					}
 				}
 			} catch (IllegalArgumentException e) {
-				log
-					.error("srmRmdir: Unable to build StoRI by surl and user. IllegalArgumentException: "
-						+ e.getMessage());
+			  log.error("StoRI from surl build error: {}",
+			    e.getMessage(), e);
 				returnStatus = CommandHelper.buildStatus(
 					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 				printRequestOutcome(returnStatus, inputData);
@@ -193,16 +203,13 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.RMD);
 		}
 		if (!isSpaceAuthorized) {
-			log
-				.debug("srmRmdir: User not authorized to perform srmRmdir request on the storage area: "
-					+ token);
+			log.debug("User not authorized to perform srmRmdir on SA: {}", token);
 			returnStatus = CommandHelper.buildStatus(
 				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				"User not authorized to perform srmRmdir request on the storage area");
+				"User not authorized to perform srmRmdir on storage area");
 			printRequestOutcome(returnStatus, inputData);
 			outData = new RmdirOutputData(returnStatus);
 			return outData;
-
 		}
 
 		AuthzDecision decision;
@@ -214,9 +221,10 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 				SRMFileRequest.RMD, stori.getStFN());
 		}
 		if (decision.equals(AuthzDecision.PERMIT)) {
-			log.debug("RMDIR is authorized for " + DataHelper.getRequestor(inputData)
-				+ " and the directory = " + stori.getPFN() + " with recursove opt = "
-				+ recursive);
+			log.debug("srmRmDir authorized for {}. Dir={}. Recursive={}",
+			  DataHelper.getRequestor(inputData), 
+			  stori.getPFN(),
+			  recursive);
 			returnStatus = manageAuthorizedRMDIR(stori.getLocalFile(),
 				recursive.booleanValue());
 		} else {
@@ -248,16 +256,15 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 
 		if ((directory.exists()) && (directory.isDirectory())) {
 			if (recursive) {
-				// All directory and files contained are removed.
-				log.debug(SRM_COMMAND
-					+ ": Recursive deletion. Removing dir with all files included! ");
+
+				log.debug("{}: Recursive deletion will remove directory and contents.", SRM_COMMAND);
+
 				if (!deleteDirectoryContent(directory)) {
 					return CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
 						"Unable to delete some files within directory.");
 				}
 			}
-			// Now Directory should be Empty;
-			// NON-Recursive Option
+
 			if (!removeFile(directory)) {
 				returnStatus = CommandHelper.buildStatus(
 					TStatusCode.SRM_NON_EMPTY_DIRECTORY, "Directory is not empty");
@@ -266,7 +273,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 					"Directory removed with success!");
 			}
 		} else {
-			log.debug("RMDIR : request with invalid directory specified!");
+			log.debug("{}: request with invalid directory specified!", SRM_COMMAND);
 			if (!directory.exists()) {
 				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 					"Directory does not exists");
@@ -314,8 +321,10 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 				list = file.listFiles();
 				if (list.length > 0) {
 					result = false;
-					log.info(SRM_COMMAND + ": Unable to delete the target file '" + file
-						+ "' . It is a not-empty directory.");
+					
+					log.info("{} : Unable to delete non-empty directory {}", 
+							SRM_COMMAND, file);
+
 				} else {
 					result = file.delete();
 				}
@@ -324,7 +333,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			}
 		} else {
 			result = false;
-			log.debug("RMDIR : the target file '" + file + "' does not exists! ");
+			log.debug("{}: file {} does not exist", SRM_COMMAND, file);
 		}
 		return result;
 	}

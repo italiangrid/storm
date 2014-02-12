@@ -18,7 +18,6 @@
 package it.grid.storm.authz.path.model;
 
 import it.grid.storm.authz.AuthzDecision;
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 
@@ -26,9 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
 import java.util.Collections;
+
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
@@ -47,13 +47,12 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
 	}
 
-	protected static final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(PathAuthzAlgBestMatch.class);
 
 	@Override
 	public String getDescription() {
 
-		String description = "< Best Match Path Authorization Algorithm >";
-		return description;
+		return "< Best Match Path Authorization Algorithm >";
 	}
 
 	/**
@@ -71,14 +70,13 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 		}
 
 		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
-		log.debug("There are '" + orderedACEs.size()
-			+ "' ACEs regarding the subject '" + subject + "'");
-
+		log.debug("There are '{}' ACEs regarding the subject '{}'", 
+			orderedACEs.size(), subject);
 		// Retrieve the list of Path Operation needed to authorize the SRM request
 		PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
 		ArrayList<PathOperation> ops = new ArrayList<PathOperation>(
 			requestedOps.getPathOperations());
-		log.trace("<Best-Match> Operation to authorize: " + ops);
+		log.trace("<Best-Match> Operation to authorize: {}", ops);
 		HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
 
 		String explanation = "Operations to authorize to '" + subject + "' are :"
@@ -91,13 +89,13 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 					if (oAce.ace.isPermitAce()) {
 						// Path Operation is PERMIT
 						explanation += "PERMIT, thanks to ACE: '" + oAce + "'\n";
-						log.trace("Path Operation '" + op + "' is PERMIT");
+						log.trace("Path Operation '{}' is PERMIT", op);
 						decision.put(op, AuthzDecision.PERMIT);
 						break;
 					} else {
 						// Path Operation is DENY
 						explanation += "DENY, thanks to ACE: '" + oAce + "'\n";
-						log.trace("Path Operation '" + op + "' is DENY");
+						log.trace("Path Operation '{}' is DENY", op);
 						decision.put(op, AuthzDecision.DENY);
 						break;
 					}
@@ -109,8 +107,7 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 		}
 
 		// Print the decision
-		log.debug("Decision explanation : \n --------------" + explanation
-			+ "--------------");
+		log.debug("Decision explanation : \n --------------{}--------------", explanation);
 
 		// Make the final results
 		// - PERMIT if and only if ALL the permissions are PERMIT
@@ -139,19 +136,18 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
 		// Retrieve the best ACE within compatible ones.
 		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
-		log.debug("There are '" + orderedACEs.size()
-			+ "' ACEs regarding the subject '" + subject + "'");
+		log.debug("There are '{}' ACEs regarding the subject '{}'", 
+			orderedACEs.size(), subject);
 
-		log.trace("<Best-Match> Operation to authorize to '" + subject + "' is : "
-			+ op);
+		log.trace("<Best-Match> Operation to authorize to '{}' is : {}", subject, op);
 
 		for (OrderedACE oAce : orderedACEs) {
 			if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
 				if (oAce.ace.isPermitAce()) {
-					log.trace("Path Operation '" + op + "' is PERMIT");
+					log.trace("Path Operation '{}' is PERMIT", op);
 					return AuthzDecision.PERMIT;
 				} else {
-					log.trace("Path Operation '" + op + "' is DENY");
+					log.trace("Path Operation '{}' is DENY", op);
 					return AuthzDecision.DENY;
 				}
 			}
@@ -169,20 +165,20 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
 		// Retrieve the best ACE within compatible ones.
 		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
-		log.debug("There are '" + orderedACEs.size() + "' ACEs regarding file '"
-			+ fileName + "'");
+		log.debug("There are '{}' ACEs regarding file '{}'", orderedACEs.size(), 
+			fileName);
 
-		log.trace("<Best-Match> Operation that needs anonymous authorization is : "
-			+ pathOperation);
+		log.trace("<Best-Match> Operation that needs anonymous authorization "
+			+ "is: {}", pathOperation);
 
 		for (OrderedACE oAce : orderedACEs) {
 			if (oAce.ace.isAllGroupsACE()
 				&& oAce.ace.getPathAccessMask().containsPathOperation(pathOperation)) {
 				if (oAce.ace.isPermitAce()) {
-					log.trace("Path Operation '" + pathOperation + "' is PERMIT");
+					log.trace("Path Operation '{}' is PERMIT", pathOperation);
 					return AuthzDecision.PERMIT;
 				} else {
-					log.trace("Path Operation '" + pathOperation + "' is DENY");
+					log.trace("Path Operation '{}' is DENY", pathOperation);
 					return AuthzDecision.DENY;
 				}
 			}
@@ -200,11 +196,11 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
 		// Retrieve the best ACE within compatible ones.
 		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
-		log.debug("There are '" + orderedACEs.size() + "' ACEs regarding file '"
-			+ fileName + "'");
+		log.debug("There are '' ACEs regarding file '{}'", orderedACEs.size(), 
+			fileName);
 
-		log.trace("<Best-Match> Operation that needs anonymous authorization is : "
-			+ pathOperation);
+		log.trace("<Best-Match> Operation that needs anonymous authorization "
+			+ "is: {}", pathOperation);
 		PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
 		ArrayList<PathOperation> ops = new ArrayList<PathOperation>(
 			requestedOps.getPathOperations());
@@ -214,10 +210,10 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 				if (oAce.ace.isAllGroupsACE()
 					&& oAce.ace.getPathAccessMask().containsPathOperation(op)) {
 					if (oAce.ace.isPermitAce()) {
-						log.trace("Path Operation '" + pathOperation + "' is PERMIT");
+						log.trace("Path Operation '{}' is PERMIT", pathOperation);
 						decision.put(op, AuthzDecision.PERMIT);
 					} else {
-						log.trace("Path Operation '" + pathOperation + "' is DENY");
+						log.trace("Path Operation '{}' is DENY", pathOperation);
 						decision.put(op, AuthzDecision.DENY);
 					}
 				}
@@ -246,12 +242,12 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 		if ((acl != null) && (!(acl.isEmpty()))) {
 			for (PathACE pathACE : acl) {
 				if (pathACE.subjectMatch(subjectGroup)) {
-					log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE
-						+ "' match with subject='" + subjectGroup + "'");
+					log.trace("<BestMatch>-compatibleACE: ACE:'{}' match with "
+						+ "subject='{}'", pathACE, subjectGroup);
 					compatibleACE.add(pathACE);
 				} else {
-					log.trace("<BestMatch>-compatibleACE: ACE:'" + pathACE
-						+ "' DOESN'T match with subject='" + subjectGroup + "'");
+					log.trace("<BestMatch>-compatibleACE: ACE:'{}' DOESN'T match with "
+						+ "subject='{}'", pathACE, subjectGroup);
 				}
 			}
 		} else {

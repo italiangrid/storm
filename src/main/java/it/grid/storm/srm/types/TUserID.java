@@ -52,10 +52,14 @@ public class TUserID implements Serializable {
 	public static TUserID makeEmpty() {
 
 		try {
+
 			return new TUserID("Unknown.");
+
 		} catch (InvalidTUserIDAttributeException e) {
-			log.error("Strange. Exception shold be never thrown here." + e);
-		}
+
+			log.error("Invalid TUserID: {}", e.getMessage(), e);
+		} 
+
 		return null;
 	}
 

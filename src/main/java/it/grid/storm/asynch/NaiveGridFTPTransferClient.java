@@ -95,7 +95,7 @@ public class NaiveGridFTPTransferClient implements GridFTPTransferClient {
 				proxy), GSSCredential.INITIATE_AND_ACCEPT));
 			client.setType(Session.TYPE_IMAGE);
 			FeatureList fl = client.getFeatureList();
-			log.debug("NAIVE GSIFTP CLIENT: Remote server supports " + fl.toString());
+			log.debug("NAIVE GSIFTP CLIENT: Remote server supports {}", fl.toString());
 			if (!fl.contains(FeatureList.DCAU)) {
 				log.debug("NAIVE GSIFTP CLIENT: disabling DCAU");
 				client.setLocalNoDataChannelAuthentication(); // compatibility with old

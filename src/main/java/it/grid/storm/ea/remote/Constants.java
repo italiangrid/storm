@@ -26,11 +26,4 @@ public class Constants {
 	public static final String CHECKSUM_VALUE_KEY = "value";
 
 	public static final String VERSION = "1.0";
-
-	/*
-	 * 
-	 * GET: /RESOURCE/VERSION/path/ADLER_32
-	 * 
-	 * PUT: /RESOURCE/VERSION/path/ADLER_32?CHECKSUM_VALUE_KEY=value
-	 */
 }

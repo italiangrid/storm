@@ -115,19 +115,19 @@ public class CallableDU implements Callable<DUResult> {
 		ExecCommand ec = new ExecCommand(commandList, this.timeout);
 
 		cmdResult = ExitCode.getExitCode(ec.runCommand());
-		LOG.debug("Command result: " + cmdResult);
+		LOG.debug("Command result: {}" , cmdResult);
 		String output = ec.getOutput();
-		LOG.debug(" Output: '" + output + "'");
+		LOG.debug(" Output: '{}'" , output);
 		if (output != null) {
 			String[] outputArray = output.split("\\s");
 			for (int i = 0; i < outputArray.length; i++) {
-				LOG.trace("outputArray[" + i + "]=" + outputArray[i]);
+				LOG.trace("outputArray[{}]={}" , i , outputArray[i]);
 			}
 			try {
 				size = Long.valueOf(outputArray[0]).longValue();
 			} catch (NumberFormatException nfe) {
-				LOG.error("Unable to retrieve the disk usage of '" + this.rootPath
-					+ "'. " + nfe.getMessage());
+				LOG.error("Unable to retrieve the disk usage of '{}'. {}" , this.rootPath
+					, nfe.getMessage(),nfe);
 			}
 		}
 
@@ -136,8 +136,7 @@ public class CallableDU implements Callable<DUResult> {
 			// Size is present?
 			if (size > 0) {
 				cmdResult = ExitCode.PARTIAL_SUCCESS;
-				LOG.info("IO Error occurred 'du: cannot access '" + this.rootPath
-					+ "': No such file or ..' but SUCCESSFully managed.");
+				LOG.info("IO Error occurred 'du: cannot access '{}': No such file or ..' but SUCCESSFully managed." , this.rootPath);
 			}
 		}
 
@@ -146,10 +145,7 @@ public class CallableDU implements Callable<DUResult> {
 			// Size is yet undefined?
 			if (size < 0) {
 				cmdResult = ExitCode.IO_ERROR;
-				LOG
-					.warn("DU of "
-						+ this.rootPath
-						+ " successfully ended, but an IO_ERROR occurred retrieving command output.");
+				LOG.warn("DU of {} successfully ended, but an IO_ERROR occurred retrieving command output." , this.rootPath);
 			}
 		}
 

@@ -32,6 +32,8 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public class InvalidRequestSummaryDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = -7729349713696058669L;
+
 	// booleans true if the corresponding variablesare null or negative
 	private boolean nullRequestType = true;
 	private boolean nullRequestToken = true;

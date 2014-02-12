@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.model;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.namespace.model.SAAuthzType;
@@ -29,10 +28,11 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileAuthzDB implements AuthzDBInterface {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDB.class);
 	private final PropertiesConfiguration authzDB;
 
 	private final String acePrefix = "ace";
@@ -107,7 +107,7 @@ public class FileAuthzDB implements AuthzDBInterface {
 		while (scanKeys.hasNext()) {
 			String key = scanKeys.next();
 			String value = authzDB.getString(key);
-			log.debug("KEY:" + key + " VALUE:" + value);
+			log.debug("KEY: {} VALUE: {}", key, value);
 			/** @todo IMPLEMENT PARSING OF VALUE */
 
 		}

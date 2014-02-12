@@ -70,10 +70,10 @@ public class RmConverter implements Converter {
 	 */
 	public InputData convertToInputData(Map inputParam) {
 
-		log.debug("RmConverter :Call received :Creation of RmdirInputData = "
-			+ inputParam.size());
-		log.debug("RmConverter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+		log.debug("RmConverter :Call received :Creation of RmdirInputData = {}"
+			, inputParam.size());
+		log.debug("RmConverter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		GridUserInterface guser = GridUserManager.decode(inputParam);
 

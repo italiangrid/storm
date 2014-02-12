@@ -28,7 +28,7 @@ public class InvalidPtGAttributesException extends Exception {
 
 	public String toString() {
 
-		return "Invalid attributes when creating PtG: null-GridUser=" + nullGu
-			+ " null-PtGChunkData=" + nullChunkData;
+		return String.format("Invalid attributes when creating PtG: "
+			+ "null-GridUser=%b, null-PtGChunkData=%b", nullGu, nullChunkData);
 	}
 }

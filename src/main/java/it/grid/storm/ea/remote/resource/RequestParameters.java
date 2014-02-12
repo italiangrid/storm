@@ -35,9 +35,7 @@ class RequestParameters {
 		try {
 			filePathDecoded = URLDecoder.decode(filePath, Constants.ENCODING_SCHEME);
 		} catch (UnsupportedEncodingException e) {
-			log
-				.error("Unable to decode filePath parameter. UnsupportedEncodingException : "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.BAD_REQUEST);
 			responseBuilder
@@ -45,12 +43,13 @@ class RequestParameters {
 					+ Constants.ENCODING_SCHEME + "\'");
 			throw new WebApplicationException(responseBuilder.build());
 		}
-		log.debug("Decoded filePath = " + filePathDecoded);
+
+		log.debug("Decoded filePath = {}", filePathDecoded);
 
 		if (filePathDecoded == null || filePathDecoded.trim().equals("")) {
 			log
-				.error("Unable to evaluate permissions. Some parameters are missing : filePath "
-					+ filePathDecoded);
+				.error("Unable to evaluate permissions. Some parameters are missing : filePath {}",
+				  filePathDecoded);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.BAD_REQUEST);
 			responseBuilder
@@ -69,9 +68,7 @@ class RequestParameters {
 		try {
 			checksumDecoded = URLDecoder.decode(checksum, Constants.ENCODING_SCHEME);
 		} catch (UnsupportedEncodingException e) {
-			log
-				.error("Unable to decode checksum parameter. UnsupportedEncodingException : "
-					+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.BAD_REQUEST);
 			responseBuilder
@@ -83,8 +80,8 @@ class RequestParameters {
 
 		if (checksum == null || checksum.trim().equals("")) {
 			log
-				.error("Unable to evaluate permissions. Some parameters are missing : checksum "
-					+ checksumDecoded);
+				.error("Unable to evaluate permissions. Some parameters are missing : checksum {}"
+					, checksumDecoded);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.BAD_REQUEST);
 			responseBuilder

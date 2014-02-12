@@ -17,16 +17,15 @@
 
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
-
 import java.io.File;
 
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDBReloadingStrategy.class);
 	private long reloadingTime;
 	private boolean notifing = false;
 
@@ -89,8 +88,7 @@ public class FileAuthzDBReloadingStrategy extends FileChangedReloadingStrategy {
 		boolean result = file.lastModified() > lastModified;
 		if (result) {
 			notifyNeeded();
-			log.debug(" AuthZ DB " + file.getName()
-				+ " is CHANGED ---> Notify needed..");
+			log.debug(" AuthZ DB {} is CHANGED ---> Notify needed..", file.getName());
 		}
 		return result;
 	}

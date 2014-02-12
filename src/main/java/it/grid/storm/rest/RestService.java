@@ -63,7 +63,8 @@ public class RestService {
 
 		int restServicePort = config.getRestServicesPort();
 
-		log.debug("RESTFul services will be listening on port " + restServicePort);
+		log.debug("RESTFul services will be listening on port {}", 
+		  restServicePort);
 
 		return restServicePort;
 	}
@@ -135,7 +136,7 @@ public class RestService {
 	 */
 	public static void stop() throws Exception {
 
-		log.info("Starting RESTFul services ... ");
+		log.info("Stopping RESTFul services ... ");
 
 		server.stop();
 

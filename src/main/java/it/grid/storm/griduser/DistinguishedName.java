@@ -28,7 +28,6 @@
 
 package it.grid.storm.griduser;
 
-import it.grid.storm.authz.path.model.PathOperation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,42 +37,10 @@ import javax.security.auth.x500.X500Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 public class DistinguishedName implements SubjectAttribute {
 
 	private static final Logger log = LoggerFactory
 		.getLogger(DistinguishedName.class);
-	/**
-	 * C Country Name ST State Or ProvinceName O Organization Name OU
-	 * Organizational Unit Name L Locality Name CN Common Name EMail EMail address
-	 * DC Domain Component
-	 * 
-	 * "/C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Luca Magnoni/Email=luca.magnoni@cnaf.infn.it"
-	 * "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti"
-	 * 
-	 * New in StoRM 1.4: service certificate support (please note the '/' char
-	 * into the CN value...)
-	 * "/DC=org/DC=doegrids/OU=Services/CN=sam/cdfsam1.cr.cnaf.infn.it"
-	 */
 
 	private String countryName = null;
 	private String provinceName = null;
@@ -102,7 +69,6 @@ public class DistinguishedName implements SubjectAttribute {
 			}
 			if (commaIndex > -1) {
 				parseDNcommed();
-				// Java 1.6 - use the new constructor
 				builderWithMap(stringDN);
 			}
 
@@ -128,7 +94,6 @@ public class DistinguishedName implements SubjectAttribute {
 		if (pairs.size() > 0) {
 			log
 				.error("To use this functionality (DN rfc 2253) you have to recompile with Java 1.6");
-			// x500DN = new X500Principal(stringDN, pairs);
 		}
 
 	}
@@ -178,23 +143,6 @@ public class DistinguishedName implements SubjectAttribute {
 	}
 
 	private void parseDNslahed() {
-
-		/**
-		 * New parser. Split by / doesn't work since DN could contain attributes
-		 * with a '/' char as valid value.
-		 * 
-		 * The idea is start from the end of the DN string:
-		 * 
-		 * - get last index of '=' char - get last index of '\' char on the left of
-		 * the '=' - Substring from the index obtained. - Add the resulting
-		 * substring as an attribute-value pair of the DN - Cycle on each pair
-		 * 
-		 * In this way, at the end of the cycle the List will contains the whole set
-		 * of attribute-value pairs composing the DN, in the reverse order. Then, a
-		 * reverse add to a string buffer, separated with ',' , compose the final DN
-		 * representation in comma separated String.
-		 * 
-		 */
 
 		ArrayList<String> list = new ArrayList<String>();
 		String DN = distinguishedName;
@@ -248,7 +196,6 @@ public class DistinguishedName implements SubjectAttribute {
 	private void parseDNcommed() {
 
 		String[] attributes = distinguishedName.split(",");
-		// TODO set properly the canonizedDN string
 		assignAttributes(attributes);
 	}
 

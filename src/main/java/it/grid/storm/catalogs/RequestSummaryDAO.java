@@ -143,11 +143,8 @@ public class RequestSummaryDAO {
 				howMuch = freeSlot;
 			}
 
-			// String query =
-			// "SELECT ID, config_RequestTypeID, r_token, client_dn FROM request_queue WHERE status="+StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED)+" LIMIT "+howMuch;
-			String query = "SELECT ID, config_RequestTypeID, r_token, timeStamp, client_dn, proxy FROM request_queue WHERE status=?"
-				+ " LIMIT ?";
-			// log.debug("REQUEST SUMMARY DAO - findNew: executing "+query);
+			String query = "SELECT ID, config_RequestTypeID, r_token, timeStamp, "
+				+ "client_dn, proxy FROM request_queue WHERE status=? LIMIT ?";
 
 			// get id, request type, request token and client_DN of newly added
 			// requests, which must be in SRM_REQUEST_QUEUED state
@@ -165,9 +162,6 @@ public class RequestSummaryDAO {
 			RequestSummaryDataTO aux = null; // RequestSummaryDataTO made from
 			// retrieved row
 			long auxid; // primary key of retrieved row
-			// String auxreqtype = null; // request type of retrieved row
-			// String auxreqtok = null; // request token of retrieved row
-			// String auxdn = null; // dn of retrieved row
 			while (rs.next()) {
 				auxid = rs.getLong("ID");
 				rowids.add(new Long(auxid));
@@ -208,8 +202,7 @@ public class RequestSummaryDAO {
 				logWarnings(stmt.getWarnings());
 				stmt.setString(1, "Request handled!");
 				logWarnings(stmt.getWarnings());
-				log
-					.trace("REQUEST SUMMARY DAO - findNew: executing " + stmt.toString());
+				log.trace("REQUEST SUMMARY DAO - findNew: executing {}", stmt.toString());
 				stmt.executeUpdate();
 				close(stmt);
 			}
@@ -220,19 +213,15 @@ public class RequestSummaryDAO {
 			con.setAutoCommit(true);
 			logWarnings(con.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO - findNew: Unable to complete picking... rolling back! "
-					+ e);
-			rollback(con);
+			log.error("REQUEST SUMMARY DAO - findNew: Unable to complete picking. "
+				+ "Error: {}. Rolling back!", e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(stmt);
 		}
 		// return collection of requests
 		if (!list.isEmpty()) {
-			log.debug("REQUEST SUMMARY DAO - findNew: returning " + list);
-		} else {
-			// log.debug("REQUEST SUMMARY DAO - findNew: returning EMPTY LIST");
+			log.debug("REQUEST SUMMARY DAO - findNew: returning {}", list);
 		}
 		return list;
 	}
@@ -263,13 +252,12 @@ public class RequestSummaryDAO {
 			logWarnings(signal.getWarnings());
 			signal.setLong(2, index);
 			logWarnings(signal.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failRequest executing: " + signal);
+			log.trace("REQUEST SUMMARY DAO! failRequest executing: {}", signal);
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO! Unable to transit request identified by ID "
-					+ index + " to SRM_FAILURE! Exception: " + e.toString());
+			log.error("REQUEST SUMMARY DAO! Unable to transit request identified by "
+				+ "ID {} to SRM_FAILURE! Error: {}", index, e.getMessage(), e);
 		} finally {
 			close(signal);
 		}
@@ -283,7 +271,6 @@ public class RequestSummaryDAO {
 	 * of the global request. In case of any error, nothing gets done and no
 	 * exception is thrown, but proper error messagges get logged.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public void failPtGRequest(long index, String explanation) {
 
 		if (!checkConnection()) {
@@ -314,7 +301,7 @@ public class RequestSummaryDAO {
 			logWarnings(request.getWarnings());
 			request.setLong(3, index);
 			logWarnings(request.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: " + request);
+			log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: {}", request);
 			request.executeUpdate();
 			logWarnings(request.getWarnings());
 
@@ -328,7 +315,7 @@ public class RequestSummaryDAO {
 			logWarnings(chunk.getWarnings());
 			chunk.setLong(3, index);
 			logWarnings(chunk.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: " + chunk);
+			log.trace("REQUEST SUMMARY DAO! failPtGRequest executing: {}", chunk);
 			chunk.executeUpdate();
 			logWarnings(chunk.getWarnings());
 
@@ -338,12 +325,9 @@ public class RequestSummaryDAO {
 			con.setAutoCommit(true);
 			logWarnings(con.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO! Unable to transit PtG request identified by ID "
-					+ index
-					+ " to SRM_FAILURE! Exception: "
-					+ e.toString()
-					+ "\nRolling back...");
+			log.error("REQUEST SUMMARY DAO! Unable to transit PtG request identified "
+				+ "by ID {} to SRM_FAILURE! Error: {}\nRolling back...", index, 
+				e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(request);
@@ -389,7 +373,7 @@ public class RequestSummaryDAO {
 			logWarnings(request.getWarnings());
 			request.setLong(3, index);
 			logWarnings(request.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: " + request);
+			log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: {}", request);
 			request.executeUpdate();
 			logWarnings(request.getWarnings());
 
@@ -403,7 +387,7 @@ public class RequestSummaryDAO {
 			logWarnings(chunk.getWarnings());
 			chunk.setLong(3, index);
 			logWarnings(chunk.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: " + chunk);
+			log.trace("REQUEST SUMMARY DAO! failPtPRequest executing: {}", chunk);
 			chunk.executeUpdate();
 			logWarnings(chunk.getWarnings());
 
@@ -413,12 +397,9 @@ public class RequestSummaryDAO {
 			con.setAutoCommit(true);
 			logWarnings(con.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO! Unable to transit PtP request identified by ID "
-					+ index
-					+ " to SRM_FAILURE! Exception: "
-					+ e.toString()
-					+ "\nRolling back...");
+			log.error("REQUEST SUMMARY DAO! Unable to transit PtP request identified "
+				+ "by ID {} to SRM_FAILURE! Error: {}\nRolling back...", index, 
+				e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(request);
@@ -464,7 +445,7 @@ public class RequestSummaryDAO {
 			logWarnings(request.getWarnings());
 			request.setLong(3, index);
 			logWarnings(request.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: " + request);
+			log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: {}", request);
 			request.executeUpdate();
 			logWarnings(request.getWarnings());
 
@@ -478,7 +459,7 @@ public class RequestSummaryDAO {
 			logWarnings(chunk.getWarnings());
 			chunk.setLong(3, index);
 			logWarnings(chunk.getWarnings());
-			log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: " + chunk);
+			log.trace("REQUEST SUMMARY DAO! failCopyRequest executing: {}", chunk);
 			chunk.executeUpdate();
 			logWarnings(chunk.getWarnings());
 
@@ -488,12 +469,9 @@ public class RequestSummaryDAO {
 			con.setAutoCommit(true);
 			logWarnings(con.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO! Unable to transit Copy request identified by ID "
-					+ index
-					+ " to SRM_FAILURE! Exception: "
-					+ e.toString()
-					+ "\nRolling back...");
+			log.error("REQUEST SUMMARY DAO! Unable to transit Copy request identified "
+				+ "by ID {} to SRM_FAILURE! Error: {}\nRolling back...", index, 
+				e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(request);
@@ -525,12 +503,11 @@ public class RequestSummaryDAO {
 			logWarnings(update.getWarnings());
 			update.setString(3, rt);
 			logWarnings(update.getWarnings());
-			log
-				.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
+			log.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing {}", update);
 			update.executeUpdate();
 			logWarnings(update.getWarnings());
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO: " + e);
+			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
 		}
@@ -560,13 +537,12 @@ public class RequestSummaryDAO {
 			update.setInt(4,
 				StatusCodeConverter.getInstance().toDB(expectedStatusCode));
 			logWarnings(update.getWarnings());
-			log
-				.trace("REQUEST SUMMARY DAO - updateGlobalStatusOnMatchingGlobalStatus: executing "
-					+ update);
+			log.trace("REQUEST SUMMARY DAO - updateGlobalStatusOnMatchingGlobalStatus: "
+				+ "executing {}", update);
 			update.executeUpdate();
 			logWarnings(update.getWarnings());
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO: " + e);
+			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
 		}
@@ -583,8 +559,8 @@ public class RequestSummaryDAO {
 		String explanation) {
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - updateGlobalStatusPinFileLifetime: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - updateGlobalStatusPinFileLifetime: "
+				+ "unable to get a valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -606,14 +582,13 @@ public class RequestSummaryDAO {
 			update.setString(3, rt);
 			logWarnings(update.getWarnings());
 
-			log
-				.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing " + update);
+			log.trace("REQUEST SUMMARY DAO - updateGlobalStatus: executing {}", update);
 
 			update.executeUpdate();
 			logWarnings(update.getWarnings());
 
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO: " + e);
+			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
 		}
@@ -626,12 +601,10 @@ public class RequestSummaryDAO {
 	 * token is null, or not found, or not in the SRM_REQUEST_QUEUED state, then
 	 * nothing happens.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public void abortRequest(String rt) {
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - abortRequest: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - abortRequest: unable to get a valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -646,15 +619,12 @@ public class RequestSummaryDAO {
 			query.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
 			logWarnings(query.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - abortRequest - " + query);
+			log.trace("REQUEST SUMMARY DAO - abortRequest - {}", query);
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (rs.next()) {
-				// token found...
-				// get ID
 				long id = rs.getLong("ID");
 				String type = rs.getString("config_RequestTypeID");
-				// update global request status
 				update = con
 					.prepareStatement("UPDATE request_queue SET status=?, errstring=? WHERE ID=?");
 				logWarnings(con.getWarnings());
@@ -665,7 +635,7 @@ public class RequestSummaryDAO {
 				logWarnings(update.getWarnings());
 				update.setLong(3, id);
 				logWarnings(update.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - abortRequest - " + update);
+				log.trace("REQUEST SUMMARY DAO - abortRequest - {}", update);
 				update.executeUpdate();
 				logWarnings(update.getWarnings());
 				close(update);
@@ -705,16 +675,17 @@ public class RequestSummaryDAO {
 					logWarnings(update.getWarnings());
 					update.setLong(3, id);
 					logWarnings(update.getWarnings());
-					log.trace("REQUEST SUMMARY DAO - abortRequest - " + update);
+					log.trace("REQUEST SUMMARY DAO - abortRequest - {}", update);
 					update.executeUpdate();
 					logWarnings(update.getWarnings());
 				} else {
-					log
-						.error("REQUEST SUMMARY DAO - Unable to complete abortRequest: could not update file statuses because the request type could not be translated from the DB!");
+					log.error("REQUEST SUMMARY DAO - Unable to complete abortRequest: "
+							+ "could not update file statuses because the request type could "
+							+ "not be translated from the DB!");
 				}
 			}
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - abortRequest: " + e);
+			log.error("REQUEST SUMMARY DAO - abortRequest: {}", e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -729,12 +700,11 @@ public class RequestSummaryDAO {
 	 * token is null, or not found, or not in the SRM_REQUEST_INPROGRESS state,
 	 * then nothing happens.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public void abortInProgressRequest(String rt) {
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - abortInProgressRequest: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - abortInProgressRequest: unable to get "
+				+ "a valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -746,12 +716,9 @@ public class RequestSummaryDAO {
 			logWarnings(con.getWarnings());
 			query.setString(1, rt);
 			logWarnings(query.getWarnings());
-			query.setInt(
-				2,
-				StatusCodeConverter.getInstance().toDB(
-					TStatusCode.SRM_REQUEST_INPROGRESS));
+			query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
 			logWarnings(query.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + query);
+			log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - {}", query);
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (rs.next()) {
@@ -770,7 +737,7 @@ public class RequestSummaryDAO {
 				logWarnings(update.getWarnings());
 				update.setLong(3, id);
 				logWarnings(update.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + update);
+				log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - {}", update);
 				update.executeUpdate();
 				logWarnings(update.getWarnings());
 				close(update);
@@ -810,16 +777,18 @@ public class RequestSummaryDAO {
 					logWarnings(update.getWarnings());
 					update.setLong(3, id);
 					logWarnings(update.getWarnings());
-					log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - " + update);
+					log.trace("REQUEST SUMMARY DAO - abortInProgressRequest - {}", update);
 					update.executeUpdate();
 					logWarnings(update.getWarnings());
 				} else {
-					log
-						.error("REQUEST SUMMARY DAO - Unable to complete abortInProgressRequest: could not update file statuses because the request type could not be translated from the DB!");
+					log.error("REQUEST SUMMARY DAO - Unable to complete "
+						+ "abortInProgressRequest: could not update file statuses because "
+						+ "the request type could not be translated from the DB!");
 				}
 			}
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - abortInProgressRequest: " + e);
+			log.error("REQUEST SUMMARY DAO - abortInProgressRequest: {}", 
+				e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -832,12 +801,11 @@ public class RequestSummaryDAO {
 	 * SRM_REQUEST_QUEUED state, to SRM_ABORTED. If the supplied token is null, or
 	 * not found, or not in the SRM_REQUEST_QUEUED state, then nothing happens.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public void abortChunksOfRequest(String rt, Collection<String> surls) {
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - abortChunksOfRequest: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: unable to get a "
+				+ "valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -852,12 +820,10 @@ public class RequestSummaryDAO {
 			query.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
 			logWarnings(query.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - " + query);
+			log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - {}", query);
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (rs.next()) {
-				// token found...
-				// get ID
 				long id = rs.getLong("ID");
 				String type = rs.getString("config_RequestTypeID");
 				// update single chunk file statuses
@@ -902,16 +868,18 @@ public class RequestSummaryDAO {
 					logWarnings(update.getWarnings());
 					update.setLong(3, id);
 					logWarnings(update.getWarnings());
-					log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - " + update);
+					log.trace("REQUEST SUMMARY DAO - abortChunksOfRequest - {}", update);
 					update.executeUpdate();
 					logWarnings(update.getWarnings());
 				} else {
-					log
-						.error("REQUEST SUMMARY DAO - Unable to complete abortChunksOfRequest: could not update file statuses because the request type could not be translated from the DB!");
+					log.error("REQUEST SUMMARY DAO - Unable to complete "
+						+ "abortChunksOfRequest: could not update file statuses because "
+						+ "the request type could not be translated from the DB!");
 				}
 			}
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: " + e);
+			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: {}", 
+				e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -925,12 +893,11 @@ public class RequestSummaryDAO {
 	 * null, or not found, or not in the SRM_REQUEST_INPROGRESS state, then
 	 * nothing happens.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public void abortChunksOfInProgressRequest(String rt, Collection<String> surls) {
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: unable "
+				+ "to get a valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -942,18 +909,12 @@ public class RequestSummaryDAO {
 			logWarnings(con.getWarnings());
 			query.setString(1, rt);
 			logWarnings(query.getWarnings());
-			query.setInt(
-				2,
-				StatusCodeConverter.getInstance().toDB(
-					TStatusCode.SRM_REQUEST_INPROGRESS));
+			query.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
 			logWarnings(query.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - "
-				+ query);
+			log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - {}", query);
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (rs.next()) {
-				// token found...
-				// get ID
 				long id = rs.getLong("ID");
 				String type = rs.getString("config_RequestTypeID");
 				// update single chunk file statuses
@@ -998,17 +959,19 @@ public class RequestSummaryDAO {
 					logWarnings(update.getWarnings());
 					update.setLong(3, id);
 					logWarnings(update.getWarnings());
-					log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - "
-						+ update);
+					log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest "
+						+ "- {}", update);
 					update.executeUpdate();
 					logWarnings(update.getWarnings());
 				} else {
-					log
-						.error("REQUEST SUMMARY DAO - Unable to complete abortChunksOfInProgressRequest: could not update file statuses because the request type could not be translated from the DB!");
+					log.error("REQUEST SUMMARY DAO - Unable to complete "
+						+ "abortChunksOfInProgressRequest: could not update file statuses "
+						+ "because the request type could not be translated from the DB!");
 				}
 			}
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: " + e);
+			log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: {}", 
+				e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -1044,8 +1007,7 @@ public class RequestSummaryDAO {
 		ResultSet rs = null;
 		String result = "";
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - typeOf: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - typeOf: unable to get a valid connection!");
 			return result;
 		}
 		try {
@@ -1054,14 +1016,14 @@ public class RequestSummaryDAO {
 			logWarnings(con.getWarnings());
 			query.setString(1, rt);
 			logWarnings(query.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - typeOf - " + query);
+			log.trace("REQUEST SUMMARY DAO - typeOf - {}", query);
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (rs.next()) {
 				result = rs.getString("config_RequestTypeID");
 			}
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - typeOf - " + e);
+			log.error("REQUEST SUMMARY DAO - typeOf - {}", e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -1080,8 +1042,7 @@ public class RequestSummaryDAO {
 		ResultSet rs = null;
 		RequestSummaryDataTO to = null;
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - find: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - find: unable to get a valid connection!");
 			return null;
 		}
 		try {
@@ -1094,7 +1055,7 @@ public class RequestSummaryDAO {
 			rs = query.executeQuery();
 			logWarnings(query.getWarnings());
 			if (!rs.first()) {
-				log.debug("No requests found with token " + rt);
+				log.debug("No requests found with token {}", rt);
 				return null;
 			}
 			to = new RequestSummaryDataTO();
@@ -1131,12 +1092,12 @@ public class RequestSummaryDAO {
 			to.setRemainingDeferredStartTime(rs.getInt("remainingDeferredStartTime"));
 
 			if (rs.next()) {
-				log.warn("More than a row matches token " + rt);
+				log.warn("More than a row matches token {}", rt);
 			}
 			close(rs);
 			close(query);
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO - find - " + e);
+			log.error("REQUEST SUMMARY DAO - find - {}", e.getMessage(), e);
 		} finally {
 			close(rs);
 			close(query);
@@ -1155,7 +1116,6 @@ public class RequestSummaryDAO {
 	 * Notice that in case of errors only error messages get logged. An empty List
 	 * is also returned.
 	 */
-	// TODO MICHELE USER_SURL debug
 	public List<String> purgeExpiredRequests() {
 
 		PreparedStatement ps = null;
@@ -1163,8 +1123,8 @@ public class RequestSummaryDAO {
 		List<String> requestTokens = new ArrayList<String>();
 		List<Long> ids = new ArrayList<Long>();
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - purgeExpiredRequests: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests: unable to get a "
+				+ "valid connection!");
 			return requestTokens;
 		}
 		try {
@@ -1184,7 +1144,7 @@ public class RequestSummaryDAO {
 
 			ps = con.prepareStatement(stmt);
 			logWarnings(con.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + ps);
+			log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - {}", ps);
 
 			rs = ps.executeQuery();
 			logWarnings(ps.getWarnings());
@@ -1203,42 +1163,19 @@ public class RequestSummaryDAO {
 
 				ps = con.prepareStatement(stmt);
 				logWarnings(con.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
+				log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - {}", stmt);
 
 				int deleted = ps.executeUpdate();
 				logWarnings(ps.getWarnings());
 				if (deleted > 0) {
-					log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "
-						+ deleted + " expired requests.");
+					log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted {} "
+						+ "expired requests.", deleted);
 				} else {
-					log
-						.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No deleted expired requests.");
+					log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No deleted "
+						+ "expired requests.");
 				}
 
 				close(ps);
-				// REMOVE ORPHANED DIR OPTION
-
-				// WARNING!! The subquery "WHERE ID NOT IN ..." does not work
-				// for more than 1000 entries
-				// for a bug of MySQL, fixed in 5.1
-				// http://forums.mysql.com/read.php?121,143298,201486
-				// Change using left inner join
-
-				// stmt =
-				// "DELETE FROM request_DirOption "+
-				// "   WHERE ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Get) "+
-				// "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_BoL) "+
-				// "   AND ID NOT IN (SELECT DISTINCT request_DirOptionID FROM request_Copy)";
-
-				// QUERY : DELETE request_DirOption from request_DirOption left
-				// JOIN request_Get ON request_DirOption.ID =
-				// request_Get.request_DirOptionID LEFT JOIN request_BoL ON
-				// request_DirOption.ID = request_BoL.request_DirOptionID LEFT
-				// JOIN request_Copy ON request_DirOption.ID =
-				// request_Copy.request_DirOptionID where
-				// request_Copy.request_DirOptionID IS NULL AND
-				// request_Get.request_DirOptionID IS NULL AND
-				// request_BoL.request_DirOptionID IS NULL ;
 
 				stmt = "DELETE request_DirOption FROM request_DirOption "
 					+ " LEFT JOIN request_Get ON request_DirOption.ID = request_Get.request_DirOptionID"
@@ -1250,16 +1187,16 @@ public class RequestSummaryDAO {
 
 				ps = con.prepareStatement(stmt);
 				logWarnings(con.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - " + stmt);
+				log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - {}", stmt);
 				deleted = ps.executeUpdate();
 				logWarnings(ps.getWarnings());
 
 				if (deleted > 0) {
-					log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted "
-						+ deleted + " DirOption related to expired requests.");
+					log.info("REQUEST SUMMARY DAO - purgeExpiredRequests - Deleted {} "
+						+ "DirOption related to expired requests.", deleted);
 				} else {
-					log
-						.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No Deleted DirOption related to expired requests.");
+					log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - No Deleted "
+						+ "DirOption related to expired requests.");
 				}
 				close(ps);
 
@@ -1270,9 +1207,8 @@ public class RequestSummaryDAO {
 			con.setAutoCommit(true);
 			logWarnings(con.getWarnings());
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: "
-					+ e);
+			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back "
+				+ "because of error: {}", e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(rs);
@@ -1291,8 +1227,8 @@ public class RequestSummaryDAO {
 		int rowCount = 0;
 
 		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - getNumberExpired: unable to get a valid connection!");
+			log.error("REQUEST SUMMARY DAO - getNumberExpired: unable to get a "
+				+ "valid connection!");
 			return 0;
 		}
 
@@ -1315,21 +1251,20 @@ public class RequestSummaryDAO {
 
 			ps = con.prepareStatement(stmt);
 			logWarnings(con.getWarnings());
-			log.trace("REQUEST SUMMARY DAO - Number of expired requests: " + ps);
+			log.trace("REQUEST SUMMARY DAO - Number of expired requests: {}", ps);
 			rs = ps.executeQuery();
 			logWarnings(ps.getWarnings());
 
 			// Get the number of rows from the result set
 			rs.next();
 			rowCount = rs.getInt(1);
-			log.debug("Nr of expired requests is: " + rowCount);
+			log.debug("Nr of expired requests is: {}", rowCount);
 
 			close(rs);
 			close(ps);
 		} catch (SQLException e) {
-			log
-				.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: "
-					+ e);
+			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back "
+				+ "because of error: {}", e.getMessage(), e);
 			rollback(con);
 		} finally {
 			close(rs);
@@ -1368,16 +1303,17 @@ public class RequestSummaryDAO {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
 			if (con == null) {
-				log
-					.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
+				log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
 			} else {
 				logWarnings(con.getWarnings());
 				response = con.isValid(0);
 			}
 		} catch (ClassNotFoundException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! " + e);
+			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! " + e);
+			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		}
 		return response;
 	}
@@ -1391,9 +1327,8 @@ public class RequestSummaryDAO {
 			try {
 				con.close();
 			} catch (SQLException e) {
-				log
-					.error("REQUEST SUMMARY DAO! Exception in takeDownConnection method: "
-						+ e);
+				log.error("REQUEST SUMMARY DAO! Exception in takeDownConnection "
+					+ "method: {}", e.getMessage(), e);
 			}
 		}
 	}
@@ -1424,8 +1359,8 @@ public class RequestSummaryDAO {
 			try {
 				stmt.close();
 			} catch (Exception e) {
-				log.error("REQUEST SUMMARY DAO! Unable to close Statement "
-					+ stmt.toString() + " - Exception: " + e);
+				log.error("REQUEST SUMMARY DAO! Unable to close Statement {} - "
+					+ "Error: {}", stmt.toString(), e.getMessage(), e);
 			}
 		}
 	}
@@ -1439,8 +1374,8 @@ public class RequestSummaryDAO {
 			try {
 				rset.close();
 			} catch (Exception e) {
-				log.error("REQUEST SUMMARY DAO! Unable to close ResultSet! Exception: "
-					+ e);
+				log.error("REQUEST SUMMARY DAO! Unable to close ResultSet! Error: {}", 
+					e.getMessage(), e);
 			}
 		}
 	}
@@ -1456,7 +1391,7 @@ public class RequestSummaryDAO {
 				logWarnings(con.getWarnings());
 				log.error("PICKER2: roll back successful!");
 			} catch (SQLException e2) {
-				log.error("PICKER2: roll back failed! " + e2);
+				log.error("PICKER2: roll back failed! {}", e2.getMessage(), e2);
 			}
 		}
 	}
@@ -1467,9 +1402,9 @@ public class RequestSummaryDAO {
 	private void logWarnings(SQLWarning warning) {
 
 		if (warning != null) {
-			log.debug("REQUEST SUMMARY DAO: " + warning.toString());
+			log.debug("REQUEST SUMMARY DAO: {}", warning.toString());
 			while ((warning = warning.getNextWarning()) != null) {
-				log.debug("REQUEST SUMMARY DAO: " + warning.toString());
+				log.debug("REQUEST SUMMARY DAO: {}", warning.toString());
 			}
 		}
 	}

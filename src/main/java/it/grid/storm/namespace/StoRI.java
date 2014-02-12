@@ -17,40 +17,29 @@
 
 package it.grid.storm.namespace;
 
-import java.util.*;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.StFN;
+import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.ReservationException;
+import it.grid.storm.filesystem.Space;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.srm.types.TDirOption;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TTURL;
 
-import it.grid.storm.common.types.*;
-import it.grid.storm.filesystem.*;
-import it.grid.storm.namespace.model.*;
-import it.grid.storm.srm.types.*;
-import it.grid.storm.namespace.ExpiredSpaceTokenException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public interface StoRI {
 
-	/*****************************************************************************
-	 * BUILDING METHODs
-	 ****************************************************************************/
-
 	public void setStoRIType(StoRIType type);
 
-	/*****************************************************************************
-	 * READ METHODs
-	 ***************************************************************************/
-
-	/**
-	 * getTURL
-	 * 
-	 * Create new Transport URL selecting correct protocol between
-	 * TransferProtocols specified by input parameter and TransferProtocol
-	 * assigned at Virtual Organization at Creation time. *
-	 * 
-	 * @param prefixOfAcceptedTransferProtocols
-	 *          TURLPrefix Collection of @link TransferProcol specified in SRM
-	 *          Request.
-	 * @return TTURL : TransportURL for StoRI.
-	 * @throws InvalidGetTURLNullPrefixAttributeException
-	 * @throws Exception
-	 */
 	public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols)
 		throws IllegalArgumentException, InvalidGetTURLProtocolException,
 		TURLBuildingException;
@@ -97,10 +86,6 @@ public interface StoRI {
 
 	public MappingRule getMappingRule();
 
-	/*****************************************************************************
-	 * BUSINESS METHODs
-	 ****************************************************************************/
-
 	public ArrayList<StoRI> getChildren(TDirOption dirOption)
 		throws InvalidDescendantsEmptyRequestException,
 		InvalidDescendantsAuthRequestException,
@@ -111,11 +96,6 @@ public interface StoRI {
 
 	public boolean hasJustInTimeACLs();
 
-	/**
-	 * Method that returns an ordered list of parent StoRI objects, starting from
-	 * the root and excluding the StoRI itself. If no parents are present, an
-	 * empty List is returned instead.
-	 */
 	public List<StoRI> getParents();
 
 	public void allotSpaceForFile(TSizeInBytes totSize)

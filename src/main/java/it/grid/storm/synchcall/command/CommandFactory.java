@@ -94,9 +94,9 @@ public class CommandFactory {
 			return new PrepareToGetRequestStatusCommand();
 
 		default:
-			log.error("No Command available for OperationType " + type);
-			throw new IllegalArgumentException(
-				"No Command available for OperationType " + type);
+		  String msg = String.format("No command found for OperationType %s", type);
+			log.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 
 	}

@@ -33,7 +33,7 @@ public class StormLcmapsJNAMapper implements MapperInterface {
 
 	private static final Logger log = LoggerFactory
 		.getLogger(StormLcmapsJNAMapper.class);
-	/** To synchronize on LCMAPS invocation. */
+
 	private final Object lock = new Object();
 
 	private final String LCMAPS_DEFAULT_LOG_FILE = "/var/log/lcmaps.log";
@@ -51,9 +51,6 @@ public class StormLcmapsJNAMapper implements MapperInterface {
 		return instance;
 	}
 
-	/**
-	 * @return lcmaps log file path
-	 */
 	private String getLcmapsLogFile() {
 
 		String lcmapsLogFile = System.getenv(LCMAPS_LOG_FILE_PATH_ENV_VARIABLE);
@@ -63,12 +60,6 @@ public class StormLcmapsJNAMapper implements MapperInterface {
 		return lcmapsLogFile.trim();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.griduser.MapperInterface#map(java.lang.String,
-	 * java.lang.String[])
-	 */
 	public LocalUser map(final String dn, final String[] fqans)
 		throws CannotMapUserException {
 
@@ -82,12 +73,12 @@ public class StormLcmapsJNAMapper implements MapperInterface {
 			Errors error = StormLcmapsLibrary.Errors.getError(retVal);
 			if (!error.equals(Errors.UNKNOW_ERROR)) {
 				log
-					.error("Unable to call successfully native map_user() method. Return value is "
-						+ error.toString());
+					.error("Unable to call successfully native map_user() method. "
+					  + "Return value is {}", error);
 			} else {
 				log
-					.error("Unable to call successfully native map_user() method. Return value is "
-						+ retVal + " . This is an unknown return value");
+					.error("Unable to call successfully native map_user() method. "
+					  + "Unknown return value: {}", retVal);
 			}
 			throw new CannotMapUserException(
 				"LCMAPS error, cannot map user credentials to local user.");

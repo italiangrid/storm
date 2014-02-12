@@ -31,22 +31,17 @@ public class DataBaseStrategy {
 	private String dbUsr;
 	private String dbPwd;
 	private SQLFormat formatter;
-	// public static final DataBaseStrategy HSQL = new DataBaseStrategy("hsql",
-	// "org.hsqldb.jdbcDriver",
-	// "jdbc:hsqldb://", null);
+
 	public static final DataBaseStrategy MYSQL = new DataBaseStrategy("mysql",
 		"com.mysql.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
+
 	private static final Map<String, DataBaseStrategy> DATABASES = new HashMap<String, DataBaseStrategy>();
 
 	static {
 		DataBaseStrategy.DATABASES.put(DataBaseStrategy.MYSQL.toString(),
 			DataBaseStrategy.MYSQL);
-		// DATABASES.put(HSQL.toString(), HSQL);
 	}
 
-	/**
-	 * Prevent instantiation and subclassing with a private constructor.
-	 */
 	private DataBaseStrategy(String dbmsVendor, String driverName, String prefix,
 		SQLFormat formatter) {
 
@@ -56,15 +51,12 @@ public class DataBaseStrategy {
 		this.formatter = formatter;
 	}
 
-	// ********************** Common Methods ********************** //
 
 	public String getDbmsVendor() {
-
 		return dbmsVendor;
 	}
 
 	public String getDriverName() {
-
 		return driverName;
 	}
 
@@ -146,7 +138,6 @@ public class DataBaseStrategy {
 		return dbmsVendor;
 	}
 
-	// ********************** Common CLASS Methods ********************** //
 
 	public static DataBaseStrategy getInstance(String vendor) {
 

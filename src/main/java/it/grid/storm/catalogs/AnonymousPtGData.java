@@ -75,6 +75,8 @@ public class AnonymousPtGData extends AnonymousFileTransferData implements
 
 		super(SURL, desiredProtocols, status, transferURL);
 		if (lifeTime == null || dirOption == null || fileSize == null) {
+			log.debug("Invalid arguments: lifeTime={}, dirOption={}, fileSize={}", 
+				lifeTime, dirOption, fileSize);
 			throw new InvalidPtGDataAttributesException(SURL, lifeTime, dirOption,
 				desiredProtocols, fileSize, status, transferURL);
 
@@ -231,9 +233,4 @@ public class AnonymousPtGData extends AnonymousFileTransferData implements
 		return true;
 	}
 
-	@Override
-	protected Logger getLog() {
-
-		return log;
-	}
 }

@@ -37,20 +37,11 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 	private static DBConnectionPool instance = new DBConnectionPool();
 	private static long handle = -1;
 
-	/***********************************************************
-	 * CLASS Constructors
-	 */
-
-	/**
-	 * Private constructor. Singleton pattern.
-	 */
 	private DBConnectionPool() {
-
 		super();
 	}
 
 	public static DBConnectionPool getPoolInstance() {
-
 		if (handle == -1) {
 			return null; 
 		} else {
@@ -58,30 +49,23 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		}
 	}
 
-	/**
-	 * 
-	 * @param db
-	 *          DataBase
-	 * @param maxActive
-	 *          int
-	 * @param maxWait
-	 *          int
-	 */
 	public static void initPool(DataBaseStrategy db, int maxActive, int maxWait)
 		throws PersistenceException {
-
 		instance.init(db, maxActive, maxWait);
 	}
+	
+	
+	private void handleSQLException(SQLException e) throws PersistenceException{
+	  
+		  log.error("SQL Error: {}, SQLState: {}, VendorError: {}.",
+		    e.getMessage(),
+		    e.getSQLState(),
+		    e.getErrorCode(),
+		    e);
 
-	/***********************************************************
-	 * PUBLIC METHODs
-	 */
-
-	/**
-	 * 
-	 * @return Connection
-	 * @throws PersistenceException
-	 */
+			throw new PersistenceException(e);
+	  
+	}
 	public Connection borrowConnection() throws PersistenceException {
 
 		Connection result = null;
@@ -90,48 +74,25 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		}
 		try {
 			result = sharedDatasource.getConnection();
-		} catch (SQLException sqle) {
-			log.error("SQLException: " + sqle.getMessage() + "/n" + "SQLState: "
-				+ sqle.getSQLState() + "/n" + "VendorError: " + sqle.getErrorCode(),
-				sqle);
-			throw new PersistenceException("Problem retrieving connection from pool",
-				sqle);
+		} catch (SQLException e) {
+		  handleSQLException(e);
 		}
 		return result;
 	}
 
-	/**
-	 * 
-	 * @param con
-	 *          Connection
-	 * @throws PersistenceException
-	 */
 	public void giveBackConnection(Connection con) throws PersistenceException {
 
 		if (con != null) {
 			try {
 				shutdown(con);
-			} catch (SQLException sqle) {
-				log.error("SQLException: " + sqle.getMessage() + "/n" + "SQLState: "
-					+ sqle.getSQLState() + "/n" + "VendorError: " + sqle.getErrorCode(),
-					sqle);
-				throw new PersistenceException("Closing existing connection problem",
-					sqle);
+			} catch (SQLException e) {
+			  handleSQLException(e);
 			}
 		} else {
 			throw new PersistenceException("Closing NON-Existing connection");
 		}
 	}
 
-	/********************************************
-	 * VALIDATION Methods
-	 */
-
-	/**
-	 * 
-	 * @return String
-	 * @throws PersistenceException
-	 */
 	public String getPoolInfo() throws PersistenceException {
 
 		String result = "";
@@ -154,19 +115,6 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		return result;
 	}
 
-	/***********************************************************
-	 * PRIVATE METHODs
-	 */
-
-	/**
-	 * 
-	 * @param db
-	 *          DataBase
-	 * @param maxActive
-	 *          int
-	 * @param maxWait
-	 *          int
-	 */
 	private void init(DataBaseStrategy db, int maxActive, int maxWait) {
 
 		instance.setDatabaseStrategy(db);
@@ -174,7 +122,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		try {
 			connectionPoolDatasource.setDriver(db.getDriverName());
 		} catch (Exception ex) {
-			log.error("Exception while getting driver", ex);
+			log.error("Exception while getting driver: {}", ex.getMessage(), ex);
 		}
 
 		connectionPoolDatasource.setUrl(db.getConnectionString());
@@ -203,9 +151,9 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 	public static void printInfo(DBConnectionPool pool) {
 
 		try {
-			log.info("DATABASE POOL INFO: " + pool.getPoolInfo());
+			log.info("DATABASE POOL INFO: {}" , pool.getPoolInfo());
 		} catch (PersistenceException ex2) {
-			log.error(ex2.getMessage());
+			log.error(ex2.getMessage(),ex2);
 		}
 
 	}

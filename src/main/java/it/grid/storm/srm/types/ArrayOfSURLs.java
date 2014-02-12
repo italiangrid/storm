@@ -94,7 +94,7 @@ public class ArrayOfSURLs implements Serializable {
 			 */
 			list = Arrays.asList((Object[]) inputParam.get(name));
 		} catch (NullPointerException e) {
-			// log.warn("Empty SURL array found!");
+
 		}
 
 		if (list == null) {
