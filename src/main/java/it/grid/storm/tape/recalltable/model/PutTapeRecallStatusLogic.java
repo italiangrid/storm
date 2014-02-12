@@ -11,9 +11,6 @@
 
 package it.grid.storm.tape.recalltable.model;
 
-import java.util.Date;
-import java.util.UUID;
-
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.StoRI;
@@ -22,10 +19,12 @@ import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 
+import java.util.Date;
+import java.util.UUID;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
