@@ -447,8 +447,6 @@ as better explained [here](#launchyaim).
 
 ### General YAIM variables <a name="yaimvariables">&nbsp;</a>
 
-[basic]({{site.baseurl}}/documentation/examples/1.11.2/basic-storm-standalone-configuration.html)
-
 Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by providing a value to the general variables summarized in Tab.1.
 
 | Var. Name		  	| Description	| Mandatory |
