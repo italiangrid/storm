@@ -12,7 +12,7 @@ StoRM service overview.
 #### [System Administrator Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }}) &nbsp;<span class="label label-info">updated</span>
 
 Guide to install and configure StoRM.
-<br/>_Older versions_ : [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
+<br/>_Older versions_ : [1.11.3][sysadmin-1.11.3], [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
 
 #### [WebDAV service user guide]({{site.baseurl}}/documentation/webdav-guide/{{ site.webdav_guide_version }}) &nbsp;<span class="label label-info">updated</span>
 
@@ -46,6 +46,7 @@ Useful recipes for StoRM advanced configuration.
 Conferences, tutorials, presentations and papers.
 
 
+[sysadmin-1.11.3]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3/
 [sysadmin-1.11.2]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.2/
 [sysadmin-1.11.1]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1/
 [webdav-2.0.2]: {{site.baseurl}}/documentation/webdav-guide/2.0.2/
