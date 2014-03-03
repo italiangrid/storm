@@ -17,19 +17,19 @@ webdav_guide_version: 3.0.0
 storm_components:
     - name: StoRM Backend
       package: storm-backend-server
-      latest: 1.11.3
+      latest: 1.11.4
       new: true
       repo: StoRM
       visibility: show
     - name: StoRM Frontend
       package: storm-frontend-server
       latest: 1.8.4
-      new: true
-      repo: StoRM
+      new: false
+      repo: StoRM emi
       visibility: show
     - name: StoRM GridHTTPs Server
       package: storm-gridhttps-server
-      latest: 3.0.0
+      latest: 3.0.1
       new: true
       repo: StoRM
       visibility: show
@@ -48,8 +48,8 @@ storm_components:
     - name: StoRM client
       package: storm-srm-client
       latest: 1.6.1
-      new: true
-      repo: StoRM
+      new: false
+      repo: StoRM emi
       visibility: hide
     - name: StoRM GridHTTPs plugin
       package: storm-gridhttps-plugin
@@ -65,7 +65,7 @@ storm_components:
       visibility: hide
     - name: YAIM StoRM
       package: yaim-storm
-      latest: 4.3.4
+      latest: 4.3.5
       new: true
       repo: StoRM
       visibility: hide

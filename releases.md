@@ -6,10 +6,25 @@ layout: default
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-<span class="label" style="margin-top: -20px;">20.12.2013</span> <span class="label label-info" style="margin-top: -20px;">current</span>
-### StoRM v.1.11.3
+<span class="label" style="margin-top: -20px;">17.03.2014</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+### StoRM v.1.11.4
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component			   | Version	|
+|:---------------------|:-----------|
+|StoRM Backend 		   |[1.11.4]({{site.baseurl}}/release-notes/storm-backend-server/1.11.4/)|
+|StoRM GridHTTPs Server|[3.0.1]({{site.baseurl}}/release-notes/storm-gridhttps-server/3.0.1/)|
+|YAIM StoRM			   |[4.3.5]({{site.baseurl}}/release-notes/yaim-storm/4.3.5/)|
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.4.html).
+
+___
+
+<span class="label" style="margin-top: -20px;">20.12.2013</span>
+### StoRM v.1.11.3
+
+This release mainly provides fixes for security vulnerabilities.
 
 | Component			   | Version	|
 |:---------------------|:-----------|
