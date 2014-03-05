@@ -13,9 +13,10 @@ This is the latest release for StoRM, available on StoRM repositories.
 
 | Component			   | Version	|
 |:---------------------|:-----------|
-|StoRM Backend 		   |[1.11.4]({{site.baseurl}}/release-notes/storm-backend-server/1.11.4/)|
+|StoRM Backend         |[1.11.4]({{site.baseurl}}/release-notes/storm-backend-server/1.11.4/)|
+|StoRM Frontend        |[1.8.5]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.5/)|
 |StoRM GridHTTPs Server|[3.0.1]({{site.baseurl}}/release-notes/storm-gridhttps-server/3.0.1/)|
-|YAIM StoRM			   |[4.3.5]({{site.baseurl}}/release-notes/yaim-storm/4.3.5/)|
+|YAIM StoRM            |[4.3.5]({{site.baseurl}}/release-notes/yaim-storm/4.3.5/)|
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.4.html).
 

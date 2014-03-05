@@ -5,8 +5,6 @@ release_date: 17.03.2014
 rfcs:
 - id: STOR-307
   title: StoRM returns SRM_INVALID_PATH instead of SRM_AUTHORIZATION_FAILURE
-- id: STOR-500
-  title: StoRM monitoring.log no longer updated in 1.11.3
 - id: STOR-501
   title: StoRM Backend fails to map the correct VFS when storage-area accesspoints are nested
 - id: STOR-505

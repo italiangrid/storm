@@ -46,6 +46,9 @@ components:
     - name: StoRM Backend
       package: storm-backend-server
       version: 1.11.4
+    - name: StoRM Frontend
+      package: storm-frontend-server
+      version: 1.8.5
     - name: StoRM GridHTTPs
       package: storm-gridhttps-server
       version: 3.0.1

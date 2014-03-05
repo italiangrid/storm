@@ -23,9 +23,9 @@ storm_components:
       visibility: show
     - name: StoRM Frontend
       package: storm-frontend-server
-      latest: 1.8.4
-      new: false
-      repo: StoRM emi
+      latest: 1.8.5
+      new: true
+      repo: StoRM
       visibility: show
     - name: StoRM GridHTTPs Server
       package: storm-gridhttps-server
