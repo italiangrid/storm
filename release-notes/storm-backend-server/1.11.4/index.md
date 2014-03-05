@@ -28,7 +28,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.4]({{ site.baseurl }
 
 This release provides several bug fixes.
 
-<span class="label label-info">Important</span> From StoRM v1.11.3 a security authentication token is used
+<span class="label label-info">Important</span> Since version 1.11.3 a security authentication token is used
 to secure all communication among the storm-frontend and grihttps services and the 
 backend. The token is configured using the `STORM_BE_XMLRPC_TOKEN` YAIM variable for
 the three services. More details in the [System administrator guide][storm-sysadmin-guide].

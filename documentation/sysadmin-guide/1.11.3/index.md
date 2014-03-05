@@ -271,6 +271,7 @@ permissions, you could use the following command (assuming that the gridhttps
 server runs as user `gridhttps`, which is the default): 
 
 ```bash
+setfacl -m g:gridhttps:x <sa-root-directory>
 find <sa-root-directory> -type d -exec setfacl -m g:gridhttps:x {} \;
 ```
 
