@@ -29,7 +29,6 @@ import it.grid.storm.health.LogEvent;
 import it.grid.storm.health.OperationType;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
