@@ -32,6 +32,7 @@ import it.grid.storm.xmlrpc.converter.ConveterFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +111,7 @@ public class XMLRPCExecutor {
 		String dn, long startTime, long duration, boolean successResult) {
 
 		LogEvent event = new LogEvent(opType, dn, startTime, duration,
-			successResult);
+			successResult, TimeUnit.NANOSECONDS);
 		if (!(bookKeepers.isEmpty())) {
 			log.debug("Found # {}  bookeepers." , bookKeepers.size());
 			for (int i = 0; i < bookKeepers.size(); i++) {

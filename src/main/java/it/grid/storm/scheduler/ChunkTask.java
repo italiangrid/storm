@@ -29,6 +29,7 @@ import it.grid.storm.health.LogEvent;
 import it.grid.storm.health.OperationType;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -151,11 +152,11 @@ public class ChunkTask extends Task {
 		if (todo instanceof RequestChunk) {
 			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
 				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.requestToken, this.successResult);
+				this.requestToken, this.successResult, TimeUnit.MILLISECONDS);
 		} else {
 			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
 				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.successResult);
+				this.successResult, TimeUnit.MILLISECONDS);
 		}
 		for (int i = 0; i < bks.size(); i++) {
 			bks.get(i).addLogEvent(event);

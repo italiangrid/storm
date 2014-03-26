@@ -43,13 +43,14 @@ public class LogEvent implements Delayed {
 	private boolean successResult = false;
 
 	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long duration, String requestToken, boolean successResult) {
+		long startTime, long duration, String requestToken, boolean successResult, 
+		TimeUnit durationUnit) {
 
 		this.opType = opType;
 		this.userDN = userDN;
 		this.surl = surl;
 		this.startTime = startTime;
-		this.duration = duration;
+		this.duration = TimeUnit.MILLISECONDS.convert(duration, durationUnit);
 		this.requestToken = requestToken;
 		Date date = new Date(startTime);
 		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
@@ -64,51 +65,18 @@ public class LogEvent implements Delayed {
 	}
 
 	public LogEvent(OperationType opType, String userDN, long startTime,
-		long duration, boolean successResult) {
+		long duration, boolean successResult, TimeUnit durationUnit) {
 
-		this.opType = opType;
-		this.userDN = userDN;
-		// Empty SURL
-		this.surl = TSURL.makeEmpty().toString();
-		this.startTime = startTime;
-		// Store the duration in MicroSeconds (10^-6 sec)
-		this.duration = TimeUnit.MICROSECONDS.convert(duration,
-			TimeUnit.NANOSECONDS);
-		this.requestToken = "SYNCH";
-		Date date = new Date(startTime);
-		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
-		this.startTimeStr = formatter.format(date);
-		this.successResult = successResult;
-
-		this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
-		this.deathTime = System.currentTimeMillis()
-			+ (timeToLive * LogEvent.THOUSAND);
-		this.birthTime = System.currentTimeMillis();
-
+		this(opType, userDN, TSURL.makeEmpty().toString(), startTime, duration, 
+			"SYNCH", successResult, TimeUnit.NANOSECONDS);
 		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
 	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long duration, boolean successResult) {
+		long startTime, long duration, boolean successResult, TimeUnit durationUnit) {
 
-		this.opType = opType;
-		this.userDN = userDN;
-		this.surl = surl;
-		this.startTime = startTime;
-		// Store the duration in MicroSeconds (10^-6 sec)
-		this.duration = TimeUnit.MICROSECONDS.convert(duration,
+		this(opType, userDN, surl, startTime, duration, "SYNCH", successResult, 
 			TimeUnit.NANOSECONDS);
-		this.requestToken = "SYNCH";
-		Date date = new Date(startTime);
-		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
-		this.startTimeStr = formatter.format(date);
-		this.successResult = successResult;
-
-		this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
-		this.deathTime = System.currentTimeMillis()
-			+ (timeToLive * LogEvent.THOUSAND);
-		this.birthTime = System.currentTimeMillis();
-
 		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
