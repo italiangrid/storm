@@ -97,10 +97,10 @@ public class XMLRPCExecutor {
 		duration = System.nanoTime() - duration;
 
 		logExecution(convertOperationType(type),
-			DataHelper.getRequestor(inputData), startTime, duration,
+			DataHelper.getRequestor(inputData), startTime,
+			TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS),
 			outputData.isSuccess());
-		// TODO rewrite the display method
-		// log.debug("Output Map: " + ParameterDisplayHelper.display(outputParam));
+
 		return outputParam;
 	}
 
@@ -111,7 +111,7 @@ public class XMLRPCExecutor {
 		String dn, long startTime, long duration, boolean successResult) {
 
 		LogEvent event = new LogEvent(opType, dn, startTime, duration,
-			successResult, TimeUnit.NANOSECONDS);
+			successResult);
 		if (!(bookKeepers.isEmpty())) {
 			log.debug("Found # {}  bookeepers." , bookKeepers.size());
 			for (int i = 0; i < bookKeepers.size(); i++) {

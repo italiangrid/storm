@@ -152,11 +152,11 @@ public class ChunkTask extends Task {
 		if (todo instanceof RequestChunk) {
 			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
 				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.requestToken, this.successResult, TimeUnit.MILLISECONDS);
+				this.requestToken, this.successResult);
 		} else {
 			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
 				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.successResult, TimeUnit.MILLISECONDS);
+				this.successResult);
 		}
 		for (int i = 0; i < bks.size(); i++) {
 			bks.get(i).addLogEvent(event);
