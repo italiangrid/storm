@@ -98,7 +98,7 @@ public class XMLRPCExecutor {
 
 		logExecution(convertOperationType(type),
 			DataHelper.getRequestor(inputData), startTime,
-			TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS),
+			TimeUnit.NANOSECONDS.toMillis(duration),
 			outputData.isSuccess());
 
 		return outputParam;
