@@ -32,6 +32,7 @@ import it.grid.storm.xmlrpc.converter.ConveterFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,10 +97,10 @@ public class XMLRPCExecutor {
 		duration = System.nanoTime() - duration;
 
 		logExecution(convertOperationType(type),
-			DataHelper.getRequestor(inputData), startTime, duration,
+			DataHelper.getRequestor(inputData), startTime,
+			TimeUnit.NANOSECONDS.toMillis(duration),
 			outputData.isSuccess());
-		// TODO rewrite the display method
-		// log.debug("Output Map: " + ParameterDisplayHelper.display(outputParam));
+
 		return outputParam;
 	}
 
