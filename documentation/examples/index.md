@@ -15,9 +15,11 @@ How to enable StoRM GridHTTPs on a standalone deployment of StoRM.
 Examples of several Storage Area configurations.
 Old versions: [1.11.2][example3old1]
 
-
+#### [Using Argus as authorization system and ban a specific user][example4]
+Example of how to avoid a specific user to access a storage-area.
 
 [example1]: {{site.baseurl}}/documentation/examples/basic-storm-standalone-configuration/1.11.2/basic-storm-standalone-configuration.html
 [example2]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html
 [example3]: {{site.baseurl}}/documentation/examples/storage-area-configuration-examples/1.11.3/storage-area-configuration-examples.html
 [example3old1]: {{site.baseurl}}/documentation/examples/storage-area-configuration-examples/1.11.2/storage-area-configuration-examples.html
+[example4]: {{site.baseurl}}/documentation/examples/argus-ban-user-example/1.11.4/argus-ban-user-example.html

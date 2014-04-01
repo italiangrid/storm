@@ -32,11 +32,12 @@ version: {{ page.version }}
   * [GridFTP Advanced Configuration](#gftp_advconf)
   * [GridHTTPs Advanced Configuration](#ghttp_advconf)
   * [StoRM EMIR Configuration](#emir_advconf)
+  * [Users blacklisting with ARGUS](#argus_advconf)
 * [Appendix A](#AppendixA)
 
 ## Installation Prerequisites <a name="installprereq">&nbsp;</a>
 
-All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
+All the StoRM components are certified to work on Scientific Linux SL5/64 (x86\_64) and Scientific Linux SL6/64 (x86\_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
 All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
 ### General EMI 3 installation instructions <a name="emi3instructions">&nbsp;</a>
@@ -1627,6 +1628,96 @@ Start the service:
 
 Verify the pubblication by inspecting this <a href="http://emitbdsr1.cern.ch:9126/services">page</a> searching for an entity with "Name" attribute equal to StoRM YAIM variable "SITE\_NAME". It is recommended to set back the logging level to error and restart the service. Stopping emier-serp will cause the entry to be deleted.
 
+## Users blacklisting with ARGUS <a name="argus_advconf">&nbsp;</a>
+
+In order to create and manage a list of banned users, StoRM can be configured to use ARGUS authorization system.
+The Argus authorization service allows administrators to define policies that answer questions like _Can user X perform action Y on resource Z at this time?_ See [Argus twiki](https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZIntro) to get more information about this framework.
+StoRM doesn't integrate all the services provided by Argus. It allows only to define a list of banned users. 
+To configure the Frontend to communicate with Argus PEP server you must set the following YAIM variables.
+First of all we need to tell YAIM that you want to use ARGUS:
+
+	USE_ARGUS = yes
+
+and specify the complete service endpoint of Argus PEP server:
+
+	ARGUS_PEPD_ENDPOINTS = "https://<ARGUS-service-hostname>:8154/authz"
+
+Then you have to choose an entity identifier for StoRM service (it's a string that represents the entity-id that you'll use for each StoRM's Argus policy):
+
+	STORM_PEPC_RESOURCEID = "storm"
+
+and enable Frontend's user blacklisting with:
+
+	STORM_FE_USER_BLACKLISTING = true
+
+The StoRM configuration is completed. But before running YAIM configuration it's necessary to define at least a policy for every VO that your StoRM instance supports. To do this, we have to add some valid policies. We can write a file in [Simplified Policy Language][SPLguide] and then import it or we can use the [pap-admin CLI][pap_admin_CLI] directly.
+For example, if your StoRM instance supports ```testers.eu-emi.eu``` and ```dteam``` VOs, you have to write the following policies:
+
+```bash
+resource "storm" {
+    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
+    action ".*" {
+        rule permit { vo="testers.eu-emi.eu" }
+    }
+}
+resource "storm" {
+    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
+    action ".*" {
+        rule permit { vo="dteam" }
+    }
+}
+```
+See [Simplified Policy Language guide][SPLguide] to learn how to write valid Argus policies.
+If you have a storage area not owned by a VO but readable and writable with a particular x509 certificate (see [this example][X509_SA_conf_example]), you can add an ARGUS policy as follow:
+
+```bash
+resource "storm" {
+    action ".*" {
+        rule permit { subject-issuer="CN=Test CA,O=IGI,C=IT" }
+    }
+}
+```
+Finally, if you want to ban a particular user you can add a policy as follow:
+
+```bash
+resource ".*" {
+    action ".*" {
+        rule deny { subject="CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT" }
+    }
+}
+```
+
+Save all these policies on a file and import it via pap-admin command ```add-policies-from-file```:
+
+```bash
+pap-admin add-policies-from-file <filepath>
+```
+
+This command append the contained policies so, if you want to replace the existing policies, you have to do a:
+
+```bash
+pap-admin remove-all-policies
+```
+
+before, and then import your file.
+Clear the cache and reload the policies to finish:
+
+```bash
+service argus-pepd clearcache
+service argus-pdp reloadpolicy
+```
+
+You can add your policies also by using only the pap-admin CLI. In our case you can launch:
+
+```bash
+pap-admin-rap
+pap-admin add-policy --resource "storm" --action ".*" --obligation "http://glite.org/xacml/obligation/local-environment-map" permit vo="testers.eu-emi.eu"
+pap-admin add-policy --resource "storm" --action ".*" permit subject-issuer="CN=Test CA,O=IGI,C=IT"
+pap-admin ban subject "CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT"
+service argus-pepd clearcache
+service argus-pdp reloadpolicy
+```
+
 ## Appendix A <a name="AppendixA">&nbsp;</a>
 
 ### A.1 How-to configure LDAP Server to share users' accounts
@@ -1898,3 +1989,8 @@ $ id -g storm
 ```
 
 Verify that the obtained values are equals to the previous defined.
+
+
+[X509_SA_conf_example]: http://lapvianello.cnaf.infn.it:4000/storm/documentation/examples/storage-area-configuration-examples/1.11.3/storage-area-configuration-examples.html#sa-anonymous-rw-x509
+[SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
+[pap_admin_CLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI
