@@ -13,6 +13,8 @@ rfcs:
   title: Improved Space Helper messaging
 - id: STOR-520
   title: If 'logging.xml' file is malformed, during bootstrap phase, the Backend dies without writing the parsing error on stderr log file
+- id: STOR-598
+  title: heartbeat.log average duration logged in microsec instead of millisec
 features:
 - id: STOR-524
   title: Proper use of string formatting in log calls

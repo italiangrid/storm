@@ -35,6 +35,8 @@ rfcs:
   title: If 'logging.xml' file is malformed, during bootstrap phase, the Backend dies without writing the parsing error on stderr log file
 - id: STOR-561
   title: YAIM does not setup STORM_GRIDHTTPS_USER environment variable
+- id: STOR-598
+  title: heartbeat.log average duration logged in microsec instead of millisec
 features:
 - id: STOR-504
   title: StoRM should publish information only about VOs which have configured storage areas
