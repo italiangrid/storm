@@ -28,20 +28,20 @@ import org.apache.commons.dbcp.datasources.SharedPoolDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DBConnectionPool implements DataSourceConnectionFactory {
+public class DBConnectionPoolLegacy implements DataSourceConnectionFactory {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(DBConnectionPool.class);
+		.getLogger(DBConnectionPoolLegacy.class);
 	private DataBaseStrategy db;
 	private static SharedPoolDataSource sharedDatasource;
-	private static DBConnectionPool instance = new DBConnectionPool();
+	private static DBConnectionPoolLegacy instance = new DBConnectionPoolLegacy();
 	private static long handle = -1;
 
-	private DBConnectionPool() {
+	private DBConnectionPoolLegacy() {
 		super();
 	}
 
-	public static DBConnectionPool getPoolInstance() {
+	public static DBConnectionPoolLegacy getPoolInstance() {
 		if (handle == -1) {
 			return null; 
 		} else {
@@ -136,7 +136,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		sharedDatasource.setMaxWait(maxWait);
 		
 		
-		sharedDatasource.setValidationQuery("SELECT 1");
+		sharedDatasource.setValidationQuery("select 1");
 		sharedDatasource.setTestOnBorrow(true);
 		sharedDatasource.setTestWhileIdle(true);
 		sharedDatasource.setTestOnReturn(true);
@@ -154,7 +154,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		conn = null;
 	}
 	
-	public static void printInfo(DBConnectionPool pool) {
+	public static void printInfo(DBConnectionPoolLegacy pool) {
 
 		try {
 			log.info("DATABASE POOL INFO: {}" , pool.getPoolInfo());

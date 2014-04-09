@@ -89,6 +89,7 @@ public class Configuration {
 	private static final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
 	private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
 	private static final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
+	private static final String BE_PERSISTENCE_DB_NAME_LEGACY_KEY = "persistence.internal-db-legacy.db-name";
 	private static final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
 	private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = ""
 		+ DB_USER_NAME_KEY;
@@ -166,7 +167,7 @@ public class Configuration {
 	private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
 	private static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
 	private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
-	private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
+	private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";	
 
 	
 	private Configuration() {
@@ -932,6 +933,22 @@ public class Configuration {
 		}
 	}
 
+	/**
+	 * Method used in Persistence Component it returns the name of the DB to use.
+	 * If no value is found in the configuration medium, then the default value is
+	 * returned instead. key="persistence.db.name.legacy"; default value="storm_db";
+	 */
+	public String getBEPersistenceDBNameLegacy() {
+
+		if (!cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_NAME_LEGACY_KEY)) {
+			// return default
+			return "storm_db";
+		} else {
+			// load from external source
+			return cr.getConfiguration().getString(BE_PERSISTENCE_DB_NAME_LEGACY_KEY);
+		}
+	}
+	
 	/**
 	 * Method used in Persistence Component it returns the name of the DB user
 	 * that must be used. If no value is found in the configuration medium, then

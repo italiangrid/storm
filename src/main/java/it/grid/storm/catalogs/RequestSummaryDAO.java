@@ -18,6 +18,9 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.DataSourceConnectionFactory;
+import it.grid.storm.persistence.PersistenceDirectorLegacy;
+import it.grid.storm.persistence.exceptions.PersistenceException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TStatusCode;
@@ -47,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * @version 3.0
  * @date May 2005
  */
-public class RequestSummaryDAO {
+public class RequestSummaryDAO extends ConnectionPoolManagerStrategy{
 
 	private static final Logger log = LoggerFactory
 		.getLogger(RequestSummaryDAO.class);
@@ -65,23 +68,11 @@ public class RequestSummaryDAO {
 	/** Connection to DB - WARNING!!! It is kept open all the time! */
 	private Connection con = null;
 
-	/** milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance()
-		.getDBReconnectPeriod() * 1000;
-	/** initial delay in milliseconds before starting timer */
-	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
-	/** timer thread that will run a task to alert when reconnecting is necessary! */
-	private Timer clock = null;
-	/**
-	 * timer task that will update the boolean signaling that a reconnection is
-	 * needed!
-	 */
-	private TimerTask clockTask = null;
-	/** boolean that tells whether reconnection is needed because of MySQL bug! */
-	private boolean reconnect = false;
 
 	private static final RequestSummaryDAO dao = new RequestSummaryDAO();
 
+	
+	
 	private RequestSummaryDAO() {
 
 		int aux = Configuration.getInstance().getPickingMaxBatchSize();
@@ -90,17 +81,7 @@ public class RequestSummaryDAO {
 		} else {
 			limit = 1;
 		}
-		setUpConnection();
-		clock = new Timer();
-		clockTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				reconnect = true;
-			}
-		}; // clock task
-		clock.scheduleAtFixedRate(clockTask, delay, period);
+				
 	}
 
 	/**
@@ -124,13 +105,9 @@ public class RequestSummaryDAO {
 		ResultSet rs = null;
 		List<RequestSummaryDataTO> list = new ArrayList<RequestSummaryDataTO>(); // ArrayList
 																																							// containing
-																																							// all
+		con = setUpConnection();																																		// all
 																																							// retrieved
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - findNew: unable to get a valid connection!");
-			return list;
-		}
+		
 		// RequestSummaryDataTO
 		try {
 			// start transaction
@@ -188,8 +165,8 @@ public class RequestSummaryDAO {
 				list.add(aux);
 			}
 			close(rs);
-			close(stmt);
-
+			close(stmt);			
+			
 			// transit state from SRM_REQUEST_QUEUED to SRM_REQUEST_INPROGRESS
 			if (!list.isEmpty()) {
 				logWarnings(con.getWarnings());
@@ -218,6 +195,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(stmt);
+			takeDownConnection(con);
 		}
 		// return collection of requests
 		if (!list.isEmpty()) {
@@ -234,12 +212,9 @@ public class RequestSummaryDAO {
 	 * exception is thrown, but proper error messagges get logged.
 	 */
 	public void failRequest(long index, String explanation) {
-
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - failRequest: unable to get a valid connection!");
-			return;
-		}
+		
+		con = setUpConnection();
+		
 		String signalSQL = "UPDATE request_queue r " + "SET r.status="
 			+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
 			+ ", r.errstring=? " + "WHERE r.ID=?";
@@ -260,6 +235,7 @@ public class RequestSummaryDAO {
 				+ "ID {} to SRM_FAILURE! Error: {}", index, e.getMessage(), e);
 		} finally {
 			close(signal);
+			takeDownConnection(con);
 		}
 	}
 
@@ -273,11 +249,8 @@ public class RequestSummaryDAO {
 	 */
 	public void failPtGRequest(long index, String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - failPtGRequest: unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String requestSQL = "UPDATE request_queue r "
 			+ "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
 		String chunkSQL = "UPDATE "
@@ -332,6 +305,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(request);
 			close(chunk);
+			takeDownConnection(con);
 		}
 	}
 
@@ -345,11 +319,8 @@ public class RequestSummaryDAO {
 	 */
 	public void failPtPRequest(long index, String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - failPtPRequest: unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+				
 		String requestSQL = "UPDATE request_queue r "
 			+ "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
 		String chunkSQL = "UPDATE "
@@ -404,6 +375,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(request);
 			close(chunk);
+			takeDownConnection(con);
 		}
 	}
 
@@ -417,11 +389,8 @@ public class RequestSummaryDAO {
 	 */
 	public void failCopyRequest(long index, String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - failCopyRequest: unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String requestSQL = "UPDATE request_queue r "
 			+ "SET r.status=?, r.errstring=? " + "WHERE r.ID=?";
 		String chunkSQL = "UPDATE "
@@ -476,6 +445,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(request);
 			close(chunk);
+			takeDownConnection(con);
 		}
 	}
 
@@ -487,11 +457,8 @@ public class RequestSummaryDAO {
 	 */
 	public void updateGlobalStatus(String rt, int status, String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - updateGlobalStatus: unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		try {
 			update = con
@@ -510,6 +477,7 @@ public class RequestSummaryDAO {
 			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -517,12 +485,8 @@ public class RequestSummaryDAO {
 		TRequestToken requestToken, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("REQUEST SUMMARY DAO - updateGlobalStatusOnMatchingGlobalStatus: "
-					+ "unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		try {
 			update = con
@@ -545,6 +509,7 @@ public class RequestSummaryDAO {
 			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -558,11 +523,8 @@ public class RequestSummaryDAO {
 	public void updateGlobalStatusPinFileLifetime(String rt, int status,
 		String explanation) {
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - updateGlobalStatusPinFileLifetime: "
-				+ "unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 
 		String query = "UPDATE request_queue SET status=?, errstring=?, "
@@ -591,6 +553,7 @@ public class RequestSummaryDAO {
 			log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
 		} finally {
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -603,10 +566,8 @@ public class RequestSummaryDAO {
 	 */
 	public void abortRequest(String rt) {
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - abortRequest: unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		PreparedStatement query = null;
 		ResultSet rs = null;
@@ -690,6 +651,7 @@ public class RequestSummaryDAO {
 			close(rs);
 			close(query);
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -702,11 +664,8 @@ public class RequestSummaryDAO {
 	 */
 	public void abortInProgressRequest(String rt) {
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - abortInProgressRequest: unable to get "
-				+ "a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		PreparedStatement query = null;
 		ResultSet rs = null;
@@ -793,6 +752,7 @@ public class RequestSummaryDAO {
 			close(rs);
 			close(query);
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -803,11 +763,8 @@ public class RequestSummaryDAO {
 	 */
 	public void abortChunksOfRequest(String rt, Collection<String> surls) {
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: unable to get a "
-				+ "valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		PreparedStatement query = null;
 		ResultSet rs = null;
@@ -884,6 +841,7 @@ public class RequestSummaryDAO {
 			close(rs);
 			close(query);
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -895,11 +853,8 @@ public class RequestSummaryDAO {
 	 */
 	public void abortChunksOfInProgressRequest(String rt, Collection<String> surls) {
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: unable "
-				+ "to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement update = null;
 		PreparedStatement query = null;
 		ResultSet rs = null;
@@ -976,6 +931,7 @@ public class RequestSummaryDAO {
 			close(rs);
 			close(query);
 			close(update);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1003,13 +959,12 @@ public class RequestSummaryDAO {
 	 */
 	public String typeOf(String rt) {
 
+		con = setUpConnection();
+		
 		PreparedStatement query = null;
 		ResultSet rs = null;
 		String result = "";
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - typeOf: unable to get a valid connection!");
-			return result;
-		}
+		
 		try {
 			query = con
 				.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
@@ -1027,6 +982,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(query);
+			takeDownConnection(con);
 		}
 		return result;
 	}
@@ -1041,10 +997,9 @@ public class RequestSummaryDAO {
 		PreparedStatement query = null;
 		ResultSet rs = null;
 		RequestSummaryDataTO to = null;
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - find: unable to get a valid connection!");
-			return null;
-		}
+		
+		con = setUpConnection();
+		
 		try {
 			query = con
 				.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
@@ -1101,6 +1056,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(query);
+			takeDownConnection(con);
 		}
 		return to;
 	}
@@ -1117,16 +1073,14 @@ public class RequestSummaryDAO {
 	 * is also returned.
 	 */
 	public List<String> purgeExpiredRequests() {
-
+		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		List<String> requestTokens = new ArrayList<String>();
 		List<Long> ids = new ArrayList<Long>();
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests: unable to get a "
-				+ "valid connection!");
-			return requestTokens;
-		}
+		
+		con = setUpConnection();
+		
 		try {
 			// start transaction
 			con.setAutoCommit(false);
@@ -1213,6 +1167,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(ps);
+			takeDownConnection(con);
 		}
 		return requestTokens;
 	}
@@ -1226,12 +1181,8 @@ public class RequestSummaryDAO {
 
 		int rowCount = 0;
 
-		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - getNumberExpired: unable to get a "
-				+ "valid connection!");
-			return 0;
-		}
-
+		con = setUpConnection();
+				
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 
@@ -1269,6 +1220,7 @@ public class RequestSummaryDAO {
 		} finally {
 			close(rs);
 			close(ps);
+			takeDownConnection(con);
 		}
 
 		return rowCount;
@@ -1292,64 +1244,7 @@ public class RequestSummaryDAO {
 		return sb.toString();
 	}
 
-	/**
-	 * Auxiliary method that sets up the connection to the DB, as well as the
-	 * prepared statement.
-	 */
-	private boolean setUpConnection() {
-
-		boolean response = false;
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that tales down a connection to the DB.
-	 */
-	private void takeDownConnection() {
-
-		if (con != null) {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				log.error("REQUEST SUMMARY DAO! Exception in takeDownConnection "
-					+ "method: {}", e.getMessage(), e);
-			}
-		}
-	}
-
-	/**
-	 * Auxiliary method that checks if time for resetting the connection has come,
-	 * and eventually takes it down and up back again.
-	 */
-	private boolean checkConnection() {
-
-		boolean response = true;
-		if (reconnect) {
-			takeDownConnection();
-			response = setUpConnection();
-			if (response) {
-				reconnect = false;
-			}
-		}
-		return response;
-	}
-
+	
 	/**
 	 * Auxiliary method used to close a Statement
 	 */
@@ -1383,7 +1278,7 @@ public class RequestSummaryDAO {
 	/**
 	 * Auxiliary method used to roll back a transaction
 	 */
-	private void rollback(Connection con) {
+	protected void rollback(Connection con) {
 
 		if (con != null) {
 			try {
@@ -1408,5 +1303,6 @@ public class RequestSummaryDAO {
 			}
 		}
 	}
+	
 
 }

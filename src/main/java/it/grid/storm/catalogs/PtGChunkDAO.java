@@ -30,7 +30,6 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @version 3.0
  * @date June 2005
  */
-public class PtGChunkDAO {
+public class PtGChunkDAO extends ConnectionPoolManagerStrategy{
 
 	private static final Logger log = LoggerFactory.getLogger(PtGChunkDAO.class);
 
@@ -78,39 +77,12 @@ public class PtGChunkDAO {
 
 	/** Connection to DB - WARNING!!! It is kept open all the time! */
 	private Connection con = null;
-	/** boolean that tells whether reconnection is needed because of MySQL bug! */
-	private boolean reconnect = false;
 
 	/** Singleton instance */
 	private final static PtGChunkDAO dao = new PtGChunkDAO();
 
-	/** timer thread that will run a task to alert when reconnecting is necessary! */
-	private Timer clock = null;
-	/**
-	 * timer task that will update the boolean signaling that a reconnection is
-	 * needed!
-	 */
-	private TimerTask clockTask = null;
-	/** milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance()
-		.getDBReconnectPeriod() * 1000;
-	/** initial delay in milliseconds before starting timer */
-	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
-
 	private PtGChunkDAO() {
 
-		setUpConnection();
-
-		clock = new Timer();
-		clockTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				reconnect = true;
-			}
-		}; // clock task
-		clock.scheduleAtFixedRate(clockTask, delay, period);
 	}
 
 	/**
@@ -133,10 +105,9 @@ public class PtGChunkDAO {
 	// TODO MICHELE USER_SURL refactored
 	public synchronized void addChild(PtGChunkDataTO to) {
 
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: addChild - unable to get a valid connection!");
-			return;
-		}
+		
+		con = setUpConnection();
+		
 		String str = null;
 		PreparedStatement id = null; // statement to find out the ID associated to
 																	// the request token
@@ -191,6 +162,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rsid);
 			close(id);
+			takeDownConnection(con);
 		}
 	}
 
@@ -204,10 +176,8 @@ public class PtGChunkDAO {
 	 */
 	public synchronized void addNew(PtGChunkDataTO to, String client_dn) {
 
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: addNew - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = null;
 		/* Result set containing the ID of the inserted new request */
 		ResultSet rs_new = null;
@@ -299,6 +269,7 @@ public class PtGChunkDAO {
 			close(rs_new);
 			close(addNew);
 			close(addProtocols);
+			takeDownConnection(con);
 		}
 	}
 
@@ -414,10 +385,8 @@ public class PtGChunkDAO {
 	 */
 	public synchronized void update(PtGChunkDataTO to) {
 
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: update - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement updateFileReq = null;
 		try {
 			// ready updateFileReq...
@@ -459,6 +428,7 @@ public class PtGChunkDAO {
 				e.getMessage(), e);
 		} finally {
 			close(updateFileReq);
+			takeDownConnection(con);
 		}
 	}
 
@@ -470,11 +440,8 @@ public class PtGChunkDAO {
 	 */
 	public synchronized void updateIncomplete(ReducedPtGChunkDataTO chunkTO) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: updateIncomplete - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE request_Get rg SET rg.normalized_sourceSURL_StFN=?, rg.sourceSURL_uniqueID=? "
 			+ "WHERE rg.ID=?";
 		PreparedStatement stmt = null;
@@ -499,6 +466,7 @@ public class PtGChunkDAO {
 				e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -517,10 +485,8 @@ public class PtGChunkDAO {
 
 	public synchronized PtGChunkDataTO refresh(long primary_key) {
 
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: refresh - unable to get a valid connection!");
-			return null;
-		}
+		con = setUpConnection();
+		
 		String queryString = null;
 		PreparedStatement find = null;
 		ResultSet rs = null;
@@ -553,6 +519,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -583,10 +550,8 @@ public class PtGChunkDAO {
 	 */
 	public synchronized Collection<PtGChunkDataTO> find(TRequestToken requestToken) {
 
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<PtGChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		String strToken = requestToken.toString();
 		String str = null;
 		PreparedStatement find = null;
@@ -678,6 +643,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -688,11 +654,8 @@ public class PtGChunkDAO {
 	public synchronized Collection<ReducedPtGChunkDataTO> findReduced(
 		String reqtoken) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedPtGChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -735,17 +698,15 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
 	public synchronized Collection<ReducedPtGChunkDataTO> findReduced(
 		TRequestToken requestToken, int[] surlsUniqueIDs, String[] surlsArray) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedPtGChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 
@@ -794,6 +755,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -805,11 +767,8 @@ public class PtGChunkDAO {
 	public synchronized Collection<ReducedPtGChunkDataTO> findReduced(
 		String griduser, int[] surlUniqueIDs, String[] surls) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedPtGChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -860,6 +819,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -882,11 +842,8 @@ public class PtGChunkDAO {
 	 */
 	public synchronized void signalMalformedPtGChunk(PtGChunkDataTO auxTO) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: signalMalformedPtGChunk - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String signalSQL = "UPDATE status_Get SET statusCode="
 			+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
 			+ ", explanation=? WHERE request_GetID=" + auxTO.primaryKey();
@@ -906,6 +863,7 @@ public class PtGChunkDAO {
 				+ "malformed! Request: {}; Exception: {}", auxTO.toString(), e.toString());
 		} finally {
 			close(signal);
+			takeDownConnection(con);
 		}
 	}
 
@@ -921,11 +879,8 @@ public class PtGChunkDAO {
 	// request_Get table
 	public synchronized int numberInSRM_FILE_PINNED(int surlUniqueID) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: numberInSRM_FILE_PINNED - unable to get a valid connection!");
-			return 0;
-		}
+		con = setUpConnection();
+		
 		String str = "SELECT COUNT(rg.ID) "
 			+ "FROM status_Get sg JOIN request_Get rg "
 			+ "ON (sg.request_GetID=rg.ID) "
@@ -959,6 +914,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -973,11 +929,8 @@ public class PtGChunkDAO {
 	public synchronized List<TSURL> transitExpiredSRM_FILE_PINNED() {
 
 		// tring to the surl unique ID
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: transitExpiredSRM_FILE_PINNED - unable to get a valid connection!");
-			return new ArrayList<TSURL>();
-		}
+		con = setUpConnection();
+		
 		HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
 		String str = null;
 		// Statement statement = null;
@@ -1028,10 +981,12 @@ public class PtGChunkDAO {
 			return new ArrayList<TSURL>();
 		} finally {
 			close(preparedStatement);
+			takeDownConnection(con);
 		}
 
 		/* Update status of all expired surls to SRM_RELEASED */
 
+		con = setUpConnection();
 		preparedStatement = null;
 		try {
 
@@ -1071,6 +1026,7 @@ public class PtGChunkDAO {
 			return new ArrayList<TSURL>();
 		} finally {
 			close(preparedStatement);
+			takeDownConnection(con);
 		}
 
 		/*
@@ -1081,6 +1037,8 @@ public class PtGChunkDAO {
 
 		/* Find all not expired surls from PtG and BoL */
 
+		con = setUpConnection();
+		
 		HashSet<Integer> pinnedSurlSet = new HashSet<Integer>();
 		try {
 
@@ -1149,6 +1107,7 @@ public class PtGChunkDAO {
 			rollback(con);
 		} finally {
 			close(preparedStatement);
+			takeDownConnection(con);
 		}
 
 		ArrayList<TSURL> expiredSurlList = new ArrayList<TSURL>();
@@ -1194,11 +1153,9 @@ public class PtGChunkDAO {
 	 */
 	public synchronized void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: transitSRM_FILE_PINNEDtoSRM_RELEASED - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
+		
 		String str = "UPDATE status_Get sg SET sg.statusCode=? "
 			+ "WHERE sg.statusCode=? AND sg.request_GetID IN " + makeWhereString(ids);
 		PreparedStatement stmt = null;
@@ -1229,6 +1186,7 @@ public class PtGChunkDAO {
 				+ " from SRM_FILE_PINNED to SRM_RELEASED! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1249,11 +1207,7 @@ public class PtGChunkDAO {
 		 * have to be released. This is done adding the r.r_token="..." clause in
 		 * the where subquery.
 		 */
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: transitSRM_FILE_PINNEDtoSRM_RELEASED - "
-				+ "unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
 		
 		String str = "UPDATE "
 			+ "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
@@ -1284,6 +1238,7 @@ public class PtGChunkDAO {
 				+ "SRM_FILE_PINNED to SRM_RELEASED! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1291,11 +1246,8 @@ public class PtGChunkDAO {
 		int[] surlUniqueIDs, String[] surls, TStatusCode statusCode,
 		String explanation) {
 
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: updateStatus - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE "
 			+ "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
 			+ "SET sg.statusCode=? , sg.explanation=? " + "WHERE rq.r_token='"
@@ -1327,6 +1279,7 @@ public class PtGChunkDAO {
 				e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1398,11 +1351,8 @@ public class PtGChunkDAO {
 					+ " withExplaination=" + withExplanation + " explanation="
 					+ explanation);
 		}
-		if (!checkConnection()) {
-			log
-				.error("PTG CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE status_Get sg JOIN (request_Get rg, request_queue rq) "
 			+ "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
 			+ "SET sg.statusCode=? ";
@@ -1442,6 +1392,7 @@ public class PtGChunkDAO {
 				expectedStatusCode, newStatusCode, e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1475,7 +1426,7 @@ public class PtGChunkDAO {
 		}
 	}
 
-	private void commit(Connection con) {
+	protected void commit(Connection con) {
 
 		if (con != null) {
 			try {
@@ -1490,7 +1441,7 @@ public class PtGChunkDAO {
 	/**
 	 * Auxiliary method used to roll back a failed transaction
 	 */
-	private void rollback(Connection con) {
+	protected void rollback(Connection con) {
 
 		if (con != null) {
 			try {
@@ -1603,65 +1554,8 @@ public class PtGChunkDAO {
 		return sb.toString();
 	}
 
-	/**
-	 * Auxiliary method that sets up the connection to the DB, as well as the
-	 * prepared statement.
-	 */
-	private boolean setUpConnection() {
 
-		boolean response = false;
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("PTG CHUNK DAO! Exception in setUpConnection! "
-					+ "DriverManager could not create connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("PTG CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("PTG CHUNK DAO! Exception in setUpConenction! {}", 
-				e.getMessage(), e);
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that checks if time for resetting the connection has come,
-	 * and eventually takes it down and up back again.
-	 */
-	private boolean checkConnection() {
-
-		boolean response = true;
-		if (reconnect) {
-			log.debug("PTG CHUNK DAO! Reconnecting to DB! ");
-			takeDownConnection();
-			response = setUpConnection();
-			if (response) {
-				reconnect = false;
-			}
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that tales down a connection to the DB.
-	 */
-	private void takeDownConnection() {
-
-		if (con != null) {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				log.error("PTG CHUNK DAO! Exception in takeDownConnection method: {}", 
-					e.getMessage(), e);
-			}
-		}
-	}
+	
 
 	public Collection<PtGChunkDataTO> find(int[] surlsUniqueIDs,
 		String[] surlsArray, String dn) throws IllegalArgumentException {
@@ -1698,10 +1592,8 @@ public class PtGChunkDAO {
 				+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
 				+ " surlsArray=" + surlsArray + " withDn=" + withDn + " dn=" + dn);
 		}
-		if (!checkConnection()) {
-			log.error("PTG CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<PtGChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 
@@ -1777,6 +1669,7 @@ public class PtGChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
