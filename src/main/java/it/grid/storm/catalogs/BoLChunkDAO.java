@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @date Aug 2009
  */
-public class BoLChunkDAO {
+public class BoLChunkDAO extends ConnectionPoolManagerStrategy{
 
 	private static final Logger log = LoggerFactory.getLogger(BoLChunkDAO.class);
 
@@ -78,37 +78,10 @@ public class BoLChunkDAO {
 	private Connection con = null;
 	private final static BoLChunkDAO dao = new BoLChunkDAO();
 
-	/**
-	 * timer thread that will run a taask to alert when reconnecting is necessary!
-	 */
-	private Timer clock = null;
-	/**
-	 * timer task that will update the boolean signalling that a reconnection is
-	 * neede!
-	 */
-	private TimerTask clockTask = null;
-	/** milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance()
-		.getDBReconnectPeriod() * 1000;
-	/** initial delay in millseconds before starting timer */
-	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
-	/** boolean that tells whether reconnection is needed because of MySQL bug! */
-	private boolean reconnect = false;
+	
 
 	private BoLChunkDAO() {
 
-		setUpConnection();
-
-		clock = new Timer();
-		clockTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				reconnect = true;
-			}
-		}; // clock task
-		clock.scheduleAtFixedRate(clockTask, delay, period);
 	}
 
 	/**
@@ -128,10 +101,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void addChild(BoLChunkDataTO to) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: addChild - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = null;
 		PreparedStatement id = null; // statement to find out the ID associated to
 																	// the request token
@@ -187,6 +158,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rsid);
 			close(id);
+			takeDownConnection(con);
 		}
 	}
 
@@ -199,10 +171,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void addNew(BoLChunkDataTO to, String client_dn) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: addNew - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = null;
 		/* Result set containing the ID of the inserted new request */
 		ResultSet rs_new = null;
@@ -297,6 +267,7 @@ public class BoLChunkDAO {
 			close(rs_new);
 			close(addNew);
 			close(addProtocols);
+			takeDownConnection(con);
 		}
 	}
 
@@ -409,10 +380,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void update(BoLChunkDataTO to) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: update - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		PreparedStatement updateFileReq = null;
 		try {
 			// ready updateFileReq...
@@ -449,6 +418,7 @@ public class BoLChunkDAO {
 			log.error("BoL CHUNK DAO: Unable to complete update! {}", e.getMessage(), e);
 		} finally {
 			close(updateFileReq);
+			takeDownConnection(con);
 		}
 	}
 
@@ -460,10 +430,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void updateIncomplete(ReducedBoLChunkDataTO chunkTO) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: updateIncomplete - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE request_BoL SET normalized_sourceSURL_StFN=?, "
 			+ "sourceSURL_uniqueID=? WHERE ID=?";
 		PreparedStatement stmt = null;
@@ -488,6 +456,7 @@ public class BoLChunkDAO {
 				e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -500,10 +469,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized BoLChunkDataTO refresh(long primary_key) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: refresh - unable to get a valid connection!");
-			return null;
-		}
+		con = setUpConnection();
+		
 		String str = null;
 		PreparedStatement find = null;
 		ResultSet rs = null;
@@ -534,6 +501,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -553,10 +521,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized Collection<BoLChunkDataTO> find(TRequestToken requestToken) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<BoLChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		String strToken = requestToken.toString();
 		String str = null;
 		PreparedStatement find = null;
@@ -633,7 +599,8 @@ public class BoLChunkDAO {
 			return new ArrayList<BoLChunkDataTO>();
 		} finally {
 			close(rs);
-			close(find);
+			close(find);		
+			takeDownConnection(con);
 		}
 	}
 
@@ -644,10 +611,8 @@ public class BoLChunkDAO {
 	public synchronized Collection<ReducedBoLChunkDataTO> findReduced(
 		String reqtoken) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedBoLChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -689,6 +654,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -700,10 +666,8 @@ public class BoLChunkDAO {
 	public synchronized Collection<ReducedBoLChunkDataTO> findReduced(
 		TRequestToken requestToken, int[] surlUniqueIDs, String[] surls) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedBoLChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -752,6 +716,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -763,10 +728,8 @@ public class BoLChunkDAO {
 	public synchronized Collection<ReducedBoLChunkDataTO> findReduced(
 		String griduser, int[] surlUniqueIDs, String[] surls) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedBoLChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -815,6 +778,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -826,10 +790,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized int numberInSRM_SUCCESS(int surlUniqueID) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: numberInSRM_SUCCESS - unable to get a valid connection!");
-			return 0;
-		}
+		con = setUpConnection();
+		
 		String str = "SELECT COUNT(rb.ID) "
 			+ "FROM status_BoL sb JOIN request_BoL rb "
 			+ "ON (sb.request_BoLID=rb.ID) "
@@ -863,6 +825,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -880,10 +843,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void signalMalformedBoLChunk(BoLChunkDataTO auxTO) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: signalMalformedBoLChunk - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String signalSQL = "UPDATE status_BoL SET statusCode="
 			+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
 			+ ", explanation=? WHERE request_BoLID=" + auxTO.getPrimaryKey();
@@ -904,6 +865,7 @@ public class BoLChunkDAO {
 				e.toString(), e);
 		} finally {
 			close(signal);
+			takeDownConnection(con);
 		}
 	}
 
@@ -916,10 +878,7 @@ public class BoLChunkDAO {
 	 */
 	public synchronized List<TSURL> transitExpiredSRM_SUCCESS() {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: transitExpiredSRM_SUCCESS - unable to get a valid connection!");
-			return new ArrayList<TSURL>();
-		}
+		con = setUpConnection();
 
 		HashMap<String, Integer> expiredSurlMap = new HashMap<String, Integer>();
 		String str = null;
@@ -970,10 +929,12 @@ public class BoLChunkDAO {
 			return new ArrayList<TSURL>();
 		} finally {
 			close(prepStatement);
+			takeDownConnection(con);
 		}
 
 		/* Update status of all successful surls to SRM_RELEASED */
 
+		con = setUpConnection();
 		prepStatement = null;
 		try {
 
@@ -1013,6 +974,7 @@ public class BoLChunkDAO {
 			return new ArrayList<TSURL>();
 		} finally {
 			close(prepStatement);
+			takeDownConnection(con);
 		}
 
 		/*
@@ -1034,6 +996,8 @@ public class BoLChunkDAO {
 
 			ResultSet res = null;
 
+			con = setUpConnection();
+			
 			prepStatement = con.prepareStatement(str);
 			res = prepStatement.executeQuery();
 			logWarnings(prepStatement.getWarnings());
@@ -1092,6 +1056,7 @@ public class BoLChunkDAO {
 			rollback(con);
 		} finally {
 			close(prepStatement);
+			takeDownConnection(con);
 		}
 
 		/* Remove the Extended Attribute pinned if there is not a valid surl on it */
@@ -1134,10 +1099,8 @@ public class BoLChunkDAO {
 	public synchronized void transitSRM_SUCCESStoSRM_ABORTED(int surlUniqueID,
 		String surl, String explanation) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_ABORTED - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE "
 			+ "status_BoL sb JOIN request_BoL rb ON sb.request_BoLID=rb.ID "
 			+ "SET sb.statusCode=?, sb.explanation=?, sb.transferURL=NULL "
@@ -1178,6 +1141,7 @@ public class BoLChunkDAO {
 				e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1190,10 +1154,8 @@ public class BoLChunkDAO {
 	 */
 	public synchronized void transitSRM_SUCCESStoSRM_RELEASED(long[] ids) {
 
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE status_BoL SET statusCode=? "
 			+ "WHERE statusCode=? AND request_BoLID IN " + makeWhereString(ids);
 		PreparedStatement stmt = null;
@@ -1224,6 +1186,7 @@ public class BoLChunkDAO {
 				+ "to SRM_RELEASED! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1238,10 +1201,8 @@ public class BoLChunkDAO {
 			 * have to be released. This is done adding the r.r_token="..." clause in
 			 * the where subquery.
 			 */
-			if (!checkConnection()) {
-				log.error("BoL CHUNK DAO: transitSRM_SUCCESStoSRM_RELEASED - unable to get a valid connection!");
-				return;
-			}
+			con = setUpConnection();
+			
 			String str = "UPDATE "
 				+ "status_BoL sb JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
 				+ "SET sb.statusCode=? " + "WHERE sb.statusCode=? AND rq.r_token='"
@@ -1274,6 +1235,7 @@ public class BoLChunkDAO {
 					+ "from SRM_SUCCESS to SRM_RELEASED! {}", e.getMessage(), e);
 			} finally {
 				close(stmt);
+				takeDownConnection(con);
 			}
 		}
 	}
@@ -1307,7 +1269,7 @@ public class BoLChunkDAO {
 		}
 	}
 
-	private void commit(Connection con) {
+	protected void commit(Connection con) {
 
 		if (con != null) {
 			try {
@@ -1322,7 +1284,7 @@ public class BoLChunkDAO {
 	/**
 	 * Auxiliary method used to roll back a failed transaction
 	 */
-	private void rollback(Connection con) {
+	protected void rollback(Connection con) {
 
 		if (con != null) {
 			try {
@@ -1434,65 +1396,9 @@ public class BoLChunkDAO {
 		return sb.toString();
 	}
 
-	/**
-	 * Auxiliary method that sets up the connection to the DB, as well as the
-	 * prepared statement.
-	 */
-	private boolean setUpConnection() {
+	
 
-		boolean response = false;
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("BoL CHUNK DAO! Exception in setUpConnection!"
-					+ " DriverManager could not create connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConenction! {}", 
-				e.getMessage(), e);
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that checks if time for resetting the connection has come,
-	 * and eventually takes it down and up back again.
-	 */
-	private boolean checkConnection() {
-
-		boolean response = true;
-		if (reconnect) {
-			log.debug("BoL CHUNK DAO! Reconnecting to DB! ");
-			takeDownConnection();
-			response = setUpConnection();
-			if (response) {
-				reconnect = false;
-			}
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that tales down a connection to the DB.
-	 */
-	private void takeDownConnection() {
-
-		if (con != null) {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				log.error("BoL CHUNK DAO! Exception in takeDownConnection method: {}", 
-					e.getMessage(), e);
-			}
-		}
-	}
+	
 
 	public synchronized void updateStatusOnMatchingStatus(
 		TRequestToken requestToken, TStatusCode expectedStatusCode,
@@ -1543,11 +1449,8 @@ public class BoLChunkDAO {
 					+ " withExplaination=" + withExplanation + " explanation="
 					+ explanation);
 		}
-		if (!checkConnection()) {
-			log
-				.error("BOL CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+		
 		String str = "UPDATE status_BoL sb JOIN (request_BoL rb, request_queue rq) "
 			+ "ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
 			+ "SET sb.statusCode=? ";
@@ -1587,6 +1490,7 @@ public class BoLChunkDAO {
 				expectedStatusCode, newStatusCode, e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -1625,10 +1529,8 @@ public class BoLChunkDAO {
 				+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
 				+ " surlsArray=" + surlsArray + " withDn=" + withDn + " dn=" + dn);
 		}
-		if (!checkConnection()) {
-			log.error("BoL CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<BoLChunkDataTO>();
-		}
+		con = setUpConnection();
+		
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
@@ -1687,6 +1589,7 @@ public class BoLChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 

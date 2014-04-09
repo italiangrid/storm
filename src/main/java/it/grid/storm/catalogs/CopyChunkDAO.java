@@ -49,9 +49,10 @@ import org.slf4j.LoggerFactory;
  * @version 2.0
  * @date September 2005
  */
-public class CopyChunkDAO {
+public class CopyChunkDAO extends ConnectionPoolManagerStrategy{
 
-	private static final Logger log = LoggerFactory.getLogger(CopyChunkDAO.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(CopyChunkDAO.class);
 
 	/* String with the name of the class for the DB driver */
 	private final String driver = Configuration.getInstance().getDBDriver();
@@ -64,37 +65,14 @@ public class CopyChunkDAO {
 
 	/* Connection to DB - WARNING!!! It is kept open all the time! */
 	private Connection con = null;
-	/* boolean that tells whether reconnection is needed because of MySQL bug! */
-	private boolean reconnect = false;
 
 	/* Singleton instance */
 	private final static CopyChunkDAO dao = new CopyChunkDAO();
 
-	/* timer thread that will run a task to alert when reconnecting is necessary! */
-	private Timer clock = null;
-	/*
-	 * timer task that will update the boolean signaling that a reconnection is
-	 * needed!
-	 */
-	private TimerTask clockTask = null;
-	/* milliseconds that must pass before reconnecting to DB */
-	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
-	/* initial delay in milliseconds before starting timer */
-	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+	
 
 	private CopyChunkDAO() {
 
-		setUpConnection();
-		clock = new Timer();
-		clockTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				reconnect = true;
-			}
-		}; // clock task
-		clock.scheduleAtFixedRate(clockTask, delay, period);
 	}
 
 	/**
@@ -117,19 +95,17 @@ public class CopyChunkDAO {
 	 */
 	public synchronized void update(CopyChunkDataTO to) {
 
-		if (!checkConnection()) {
-			log.error("COPY CHUNK DAO: update - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+
 		PreparedStatement updateFileReq = null;
 		try {
 			// ready updateFileReq...
 			updateFileReq = con
-				.prepareStatement("UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
-					+ "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) "
-					+ "SET sc.statusCode=?, sc.explanation=?, rq.fileLifetime=?, rq.config_FileStorageTypeID=?, rq.config_OverwriteID=?, "
-					+ "rc.normalized_sourceSURL_StFN=?, rc.sourceSURL_uniqueID=?, rc.normalized_targetSURL_StFN=?, rc.targetSURL_uniqueID=? "
-					+ "WHERE rc.ID=?");
+					.prepareStatement("UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
+							+ "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) "
+							+ "SET sc.statusCode=?, sc.explanation=?, rq.fileLifetime=?, rq.config_FileStorageTypeID=?, rq.config_OverwriteID=?, "
+							+ "rc.normalized_sourceSURL_StFN=?, rc.sourceSURL_uniqueID=?, rc.normalized_targetSURL_StFN=?, rc.targetSURL_uniqueID=? "
+							+ "WHERE rc.ID=?");
 			logWarnings(con.getWarnings());
 
 			updateFileReq.setInt(1, to.status());
@@ -166,10 +142,11 @@ public class CopyChunkDAO {
 			updateFileReq.executeUpdate();
 			logWarnings(updateFileReq.getWarnings());
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: Unable to complete update! {}", 
-				e.getMessage(), e);
+			log.error("COPY CHUNK DAO: Unable to complete update! {}",
+					e.getMessage(), e);
 		} finally {
 			close(updateFileReq);
+			takeDownConnection(con);
 		}
 	}
 
@@ -181,13 +158,10 @@ public class CopyChunkDAO {
 	 */
 	public synchronized void updateIncomplete(ReducedCopyChunkDataTO chunkTO) {
 
-		if (!checkConnection()) {
-			log
-				.error("COPY CHUNK DAO: updateIncomplete - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+
 		String str = "UPDATE request_Copy SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=?, normalized_targetSURL_StFN=?, targetSURL_uniqueID=? "
-			+ "WHERE ID=?";
+				+ "WHERE ID=?";
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
@@ -212,17 +186,19 @@ public class CopyChunkDAO {
 			stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO: Unable to complete update incomplete! {}", 
-				e.getMessage(), e);
+			log.error(
+					"COPY CHUNK DAO: Unable to complete update incomplete! {}",
+					e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
 	/**
-	 * Method that queries the MySQL DB to find all entries matching the supplied
-	 * TRequestToken. The Collection contains the corresponding CopyChunkDataTO
-	 * objects.
+	 * Method that queries the MySQL DB to find all entries matching the
+	 * supplied TRequestToken. The Collection contains the corresponding
+	 * CopyChunkDataTO objects.
 	 * 
 	 * A complex query establishes all chunks associated with the request token,
 	 * by properly joining request_queue, request_Copy and status_Copy. The
@@ -242,12 +218,10 @@ public class CopyChunkDAO {
 	 * NOTE! Chunks in SRM_ABORTED status are NOT returned!
 	 */
 	public synchronized Collection<CopyChunkDataTO> find(
-		TRequestToken requestToken) {
+			TRequestToken requestToken) {
 
-		if (!checkConnection()) {
-			log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<CopyChunkDataTO>();
-		}
+		con = setUpConnection();
+
 		String strToken = requestToken.toString();
 		String str = null;
 		PreparedStatement find = null;
@@ -255,10 +229,10 @@ public class CopyChunkDAO {
 		try {
 			/* get chunks of the request */
 			str = "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
-				+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
-				+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
-				+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-				+ "WHERE rq.r_token=? AND sc.statusCode<>?";
+					+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
+					+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
+					+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
+					+ "WHERE rq.r_token=? AND sc.statusCode<>?";
 
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
@@ -267,8 +241,10 @@ public class CopyChunkDAO {
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
-			find.setInt(2,
-				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+			find.setInt(
+					2,
+					StatusCodeConverter.getInstance().toDB(
+							TStatusCode.SRM_ABORTED));
 			logWarnings(find.getWarnings());
 
 			log.debug("COPY CHUNK DAO: find method; " + find.toString());
@@ -281,14 +257,15 @@ public class CopyChunkDAO {
 				chunkDataTO.setRequestToken(strToken);
 				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
 				chunkDataTO.setFileStorageType(rs
-					.getString("rq.config_FileStorageTypeID"));
-				chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+						.getString("rq.config_FileStorageTypeID"));
+				chunkDataTO.setOverwriteOption(rs
+						.getString("rq.config_OverwriteID"));
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
 				chunkDataTO.setNormalizedSourceStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
@@ -296,7 +273,7 @@ public class CopyChunkDAO {
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
 				chunkDataTO.setNormalizedTargetStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
@@ -312,17 +289,16 @@ public class CopyChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 
 	}
 
 	public synchronized Collection<CopyChunkDataTO> find(
-		TRequestToken requestToken, int[] surlUniqueIDs, String[] surls) {
+			TRequestToken requestToken, int[] surlUniqueIDs, String[] surls) {
 
-		if (!checkConnection()) {
-			log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<CopyChunkDataTO>();
-		}
+		con = setUpConnection();
+
 		String strToken = requestToken.toString();
 		String str = null;
 		PreparedStatement find = null;
@@ -330,13 +306,12 @@ public class CopyChunkDAO {
 		try {
 			/* get chunks of the request */
 			str = "SELECT rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
-				+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
-				+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
-				+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-				+ "WHERE rq.r_token=? AND ( rc.sourceSURL_uniqueID IN "
-				+ makeSURLUniqueIDWhere(surlUniqueIDs)
-				+ " AND rc.sourceSURL IN "
-				+ makeSurlString(surls) + " ) ";
+					+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
+					+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
+					+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
+					+ "WHERE rq.r_token=? AND ( rc.sourceSURL_uniqueID IN "
+					+ makeSURLUniqueIDWhere(surlUniqueIDs)
+					+ " AND rc.sourceSURL IN " + makeSurlString(surls) + " ) ";
 
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
@@ -355,14 +330,15 @@ public class CopyChunkDAO {
 				chunkDataTO.setRequestToken(strToken);
 				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
 				chunkDataTO.setFileStorageType(rs
-					.getString("rq.config_FileStorageTypeID"));
-				chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+						.getString("rq.config_FileStorageTypeID"));
+				chunkDataTO.setOverwriteOption(rs
+						.getString("rq.config_OverwriteID"));
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
 				chunkDataTO.setNormalizedSourceStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
@@ -370,7 +346,7 @@ public class CopyChunkDAO {
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
 				chunkDataTO.setNormalizedTargetStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
@@ -386,37 +362,36 @@ public class CopyChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 
 	}
 
 	/**
-	 * Method used in extraordinary situations to signal that data retrieved from
-	 * the DB was malformed and could not be translated into the StoRM object
-	 * model.
+	 * Method used in extraordinary situations to signal that data retrieved
+	 * from the DB was malformed and could not be translated into the StoRM
+	 * object model.
 	 * 
-	 * This method attempts to change the status of the request to SRM_FAILURE and
-	 * record it in the DB.
+	 * This method attempts to change the status of the request to SRM_FAILURE
+	 * and record it in the DB.
 	 * 
 	 * This operation could potentially fail because the source of the malformed
 	 * problems could be a problematic DB; indeed, initially only log messagges
 	 * where recorded.
 	 * 
-	 * Yet it soon became clear that the source of malformed data were the clients
-	 * and/or FE recording info in the DB. In these circumstances the client would
-	 * its request as being in the SRM_IN_PROGRESS state for ever. Hence the
-	 * pressing need to inform it of the encountered problems.
+	 * Yet it soon became clear that the source of malformed data were the
+	 * clients and/or FE recording info in the DB. In these circumstances the
+	 * client would its request as being in the SRM_IN_PROGRESS state for ever.
+	 * Hence the pressing need to inform it of the encountered problems.
 	 */
 	public synchronized void signalMalformedCopyChunk(CopyChunkDataTO auxTO) {
 
-		if (!checkConnection()) {
-			log
-				.error("COPY CHUNK DAO: signalMalformedCopyChunk - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
+
 		String signalSQL = "UPDATE status_Copy SET statusCode="
-			+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
-			+ ", explanation=? WHERE request_CopyID=" + auxTO.primaryKey();
+				+ StatusCodeConverter.getInstance().toDB(
+						TStatusCode.SRM_FAILURE)
+				+ ", explanation=? WHERE request_CopyID=" + auxTO.primaryKey();
 
 		PreparedStatement signal = null;
 		try {
@@ -431,11 +406,13 @@ public class CopyChunkDAO {
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
-			log.error("CopyChunkDAO! Unable to signal in DB that the request was "
-				+ "malformed! Request: {}; Error: {}", auxTO.toString(), 
-				e.getMessage(), e);
+			log.error(
+					"CopyChunkDAO! Unable to signal in DB that the request was "
+							+ "malformed! Request: {}; Error: {}",
+					auxTO.toString(), e.getMessage(), e);
 		} finally {
 			close(signal);
+			takeDownConnection(con);
 		}
 	}
 
@@ -448,8 +425,9 @@ public class CopyChunkDAO {
 			try {
 				stmt.close();
 			} catch (Exception e) {
-				log.error("COPY CHUNK DAO! Unable to close Statement {} - Error: {}", 
-					stmt.toString(), e.getMessage(), e);
+				log.error(
+						"COPY CHUNK DAO! Unable to close Statement {} - Error: {}",
+						stmt.toString(), e.getMessage(), e);
 			}
 		}
 	}
@@ -463,8 +441,9 @@ public class CopyChunkDAO {
 			try {
 				rset.close();
 			} catch (Exception e) {
-				log.error("COPY CHUNK DAO! Unable to close ResultSet! Error: {}",
-					e.getMessage(), e);
+				log.error(
+						"COPY CHUNK DAO! Unable to close ResultSet! Error: {}",
+						e.getMessage(), e);
 			}
 		}
 	}
@@ -482,122 +461,63 @@ public class CopyChunkDAO {
 		}
 	}
 
-	/**
-	 * Auxiliary method that sets up the conenction to the DB.
-	 */
-	private boolean setUpConnection() {
-
-		boolean response = false;
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log
-					.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that checks if time for resetting the connection has come,
-	 * and eventually takes it down and up back again.
-	 */
-	private synchronized boolean checkConnection() {
-
-		boolean response = true;
-		if (reconnect) {
-			log.debug("COPY CHUNK DAO! Reconnecting to DB! ");
-			takeDownConnection();
-			response = setUpConnection();
-			if (response) {
-				reconnect = false;
-			}
-		}
-		return response;
-	}
-
-	/**
-	 * Auxiliary method that takes down a conenctin to the DB.
-	 */
-	private void takeDownConnection() {
-
-		if (con != null) {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				log.error("COPY CHUNK DAO! Exception in takeDownConnection method: {}", 
-					e.getMessage(), e);
-			}
-		}
-	}
-
 	public synchronized void updateStatusOnMatchingStatus(
-		TRequestToken requestToken, TStatusCode expectedStatusCode,
-		TStatusCode newStatusCode, String explanation) {
+			TRequestToken requestToken, TStatusCode expectedStatusCode,
+			TStatusCode newStatusCode, String explanation) {
 
 		if (requestToken == null || requestToken.getValue().trim().isEmpty()
-			|| explanation == null) {
+				|| explanation == null) {
 			throw new IllegalArgumentException(
-				"Unable to perform the updateStatusOnMatchingStatus, "
-					+ "invalid arguments: requestToken=" + requestToken + " explanation="
-					+ explanation);
+					"Unable to perform the updateStatusOnMatchingStatus, "
+							+ "invalid arguments: requestToken=" + requestToken
+							+ " explanation=" + explanation);
 		}
 		doUpdateStatusOnMatchingStatus(requestToken, null, null,
-			expectedStatusCode, newStatusCode, explanation, true, false, true);
+				expectedStatusCode, newStatusCode, explanation, true, false,
+				true);
 	}
 
 	public synchronized void updateStatusOnMatchingStatus(
-		TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls,
-		TStatusCode expectedStatusCode, TStatusCode newStatusCode)
-		throws IllegalArgumentException {
+			TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls,
+			TStatusCode expectedStatusCode, TStatusCode newStatusCode)
+			throws IllegalArgumentException {
 
 		if (requestToken == null || requestToken.getValue().trim().isEmpty()
-			|| surlsUniqueIDs == null || surls == null || surlsUniqueIDs.length == 0
-			|| surls.length == 0 || surlsUniqueIDs.length != surls.length) {
+				|| surlsUniqueIDs == null || surls == null
+				|| surlsUniqueIDs.length == 0 || surls.length == 0
+				|| surlsUniqueIDs.length != surls.length) {
 			throw new IllegalArgumentException(
-				"Unable to perform the updateStatusOnMatchingStatus, "
-					+ "invalid arguments: requestToken=" + requestToken
-					+ "surlsUniqueIDs=" + surlsUniqueIDs + " surls=" + surls);
+					"Unable to perform the updateStatusOnMatchingStatus, "
+							+ "invalid arguments: requestToken=" + requestToken
+							+ "surlsUniqueIDs=" + surlsUniqueIDs + " surls="
+							+ surls);
 		}
 		doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
-			expectedStatusCode, newStatusCode, null, true, true, false);
+				expectedStatusCode, newStatusCode, null, true, true, false);
 	}
 
 	public synchronized void doUpdateStatusOnMatchingStatus(
-		TRequestToken requestToken, int[] surlUniqueIDs, String[] surls,
-		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
-		String explanation, boolean withRequestToken, boolean withSurls,
-		boolean withExplanation) throws IllegalArgumentException {
+			TRequestToken requestToken, int[] surlUniqueIDs, String[] surls,
+			TStatusCode expectedStatusCode, TStatusCode newStatusCode,
+			String explanation, boolean withRequestToken, boolean withSurls,
+			boolean withExplanation) throws IllegalArgumentException {
 
 		if ((withRequestToken && requestToken == null)
-			|| (withExplanation && explanation == null)
-			|| (withSurls && (surlUniqueIDs == null || surls == null))) {
+				|| (withExplanation && explanation == null)
+				|| (withSurls && (surlUniqueIDs == null || surls == null))) {
 			throw new IllegalArgumentException(
-				"Unable to perform the doUpdateStatusOnMatchingStatus, "
-					+ "invalid arguments: withRequestToken=" + withRequestToken
-					+ " requestToken=" + requestToken + " withSurls=" + withSurls
-					+ " surlUniqueIDs=" + surlUniqueIDs + " surls=" + surls
-					+ " withExplaination=" + withExplanation + " explanation="
-					+ explanation);
+					"Unable to perform the doUpdateStatusOnMatchingStatus, "
+							+ "invalid arguments: withRequestToken="
+							+ withRequestToken + " requestToken="
+							+ requestToken + " withSurls=" + withSurls
+							+ " surlUniqueIDs=" + surlUniqueIDs + " surls="
+							+ surls + " withExplaination=" + withExplanation
+							+ " explanation=" + explanation);
 		}
-		if (!checkConnection()) {
-			log
-				.error("COPY CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
-			return;
-		}
+		con = setUpConnection();
 		String str = "UPDATE request_queue rq JOIN (status_Copy sc, request_Copy rc) "
-			+ "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) "
-			+ "SET sc.statusCode=? ";
+				+ "ON (rq.ID=rc.request_queueID AND sc.request_CopyID=rc.ID) "
+				+ "SET sc.statusCode=? ";
 		if (withExplanation) {
 			str += " , " + buildExpainationSet(explanation);
 		}
@@ -612,28 +532,35 @@ public class CopyChunkDAO {
 		try {
 			stmt = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
-			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+			stmt.setInt(1, StatusCodeConverter.getInstance()
+					.toDB(newStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			stmt
-				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+			stmt.setInt(2,
+					StatusCodeConverter.getInstance().toDB(expectedStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("COPY CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
+			log.trace("COPY CHUNK DAO - updateStatusOnMatchingStatus: {}",
+					stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
-				log.trace("COPY CHUNK DAO! No chunk of COPY request was updated "
-					+ "from {} to {}.", expectedStatusCode, newStatusCode);
+				log.trace(
+						"COPY CHUNK DAO! No chunk of COPY request was updated "
+								+ "from {} to {}.", expectedStatusCode,
+						newStatusCode);
 			} else {
-				log.debug("COPY CHUNK DAO! {} chunks of COPY requests were updated "
-					+ "from {} to {}.", count, expectedStatusCode, newStatusCode);
+				log.debug(
+						"COPY CHUNK DAO! {} chunks of COPY requests were updated "
+								+ "from {} to {}.", count, expectedStatusCode,
+						newStatusCode);
 			}
 		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Unable to updated from {} to {}! {}", 
-				expectedStatusCode, newStatusCode, e.getMessage(), e);
+			log.error("COPY CHUNK DAO! Unable to updated from {} to {}! {}",
+					expectedStatusCode, newStatusCode, e.getMessage(), e);
 		} finally {
 			close(stmt);
+			takeDownConnection(con);
 		}
 	}
 
@@ -673,58 +600,57 @@ public class CopyChunkDAO {
 	}
 
 	public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs,
-		String[] surlsArray, String dn) throws IllegalArgumentException {
+			String[] surlsArray, String dn) throws IllegalArgumentException {
 
 		if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0
-			|| surlsArray == null || surlsArray.length == 0 || dn == null) {
+				|| surlsArray == null || surlsArray.length == 0 || dn == null) {
 			throw new IllegalArgumentException("Unable to perform the find, "
-				+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-				+ " surlsArray=" + surlsArray + " dn=" + dn);
+					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
+					+ " surlsArray=" + surlsArray + " dn=" + dn);
 		}
 		return find(surlsUniqueIDs, surlsArray, dn, true);
 	}
 
 	public synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs,
-		String[] surlsArray) throws IllegalArgumentException {
+			String[] surlsArray) throws IllegalArgumentException {
 
 		if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0
-			|| surlsArray == null || surlsArray.length == 0) {
+				|| surlsArray == null || surlsArray.length == 0) {
 			throw new IllegalArgumentException("Unable to perform the find, "
-				+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-				+ " surlsArray=" + surlsArray);
+					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
+					+ " surlsArray=" + surlsArray);
 		}
 		return find(surlsUniqueIDs, surlsArray, null, false);
 	}
 
 	private synchronized Collection<CopyChunkDataTO> find(int[] surlsUniqueIDs,
-		String[] surlsArray, String dn, boolean withDn)
-		throws IllegalArgumentException {
+			String[] surlsArray, String dn, boolean withDn)
+			throws IllegalArgumentException {
 
 		if ((withDn && dn == null) || surlsUniqueIDs == null
-			|| surlsUniqueIDs.length == 0 || surlsArray == null
-			|| surlsArray.length == 0) {
+				|| surlsUniqueIDs.length == 0 || surlsArray == null
+				|| surlsArray.length == 0) {
 			throw new IllegalArgumentException("Unable to perform the find, "
-				+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-				+ " surlsArray=" + surlsArray + " withDn=" + withDn + " dn=" + dn);
+					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
+					+ " surlsArray=" + surlsArray + " withDn=" + withDn
+					+ " dn=" + dn);
 		}
-		if (!checkConnection()) {
-			log.error("COPY CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<CopyChunkDataTO>();
-		}
+		con = setUpConnection();
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
 			String str = "SELECT rq.r_token, rq.s_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, "
-				+ "rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, "
-				+ "rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, "
-				+ "d.allLevelRecursive, d.numOfLevels "
-				+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
-				+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
-				+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
-				+ "WHERE ( rc.sourceSURL_uniqueID IN "
-				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
-				+ " AND rc.sourceSURL IN "
-				+ makeSurlString(surlsArray) + " )";
+					+ "rq.fileLifetime, rc.ID, rc.sourceSURL, rc.targetSURL, rc.normalized_sourceSURL_StFN, "
+					+ "rc.sourceSURL_uniqueID, rc.normalized_targetSURL_StFN, rc.targetSURL_uniqueID, d.isSourceADirectory, "
+					+ "d.allLevelRecursive, d.numOfLevels "
+					+ "FROM request_queue rq JOIN (request_Copy rc, status_Copy sc) "
+					+ "ON (rc.request_queueID=rq.ID AND sc.request_CopyID=rc.ID) "
+					+ "LEFT JOIN request_DirOption d ON rc.request_DirOptionID=d.ID "
+					+ "WHERE ( rc.sourceSURL_uniqueID IN "
+					+ makeSURLUniqueIDWhere(surlsUniqueIDs)
+					+ " AND rc.sourceSURL IN "
+					+ makeSurlString(surlsArray)
+					+ " )";
 			if (withDn) {
 				str += " AND rq.client_dn=\'" + dn + "\'";
 			}
@@ -742,14 +668,15 @@ public class CopyChunkDAO {
 				chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
 				chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
 				chunkDataTO.setFileStorageType(rs
-					.getString("rq.config_FileStorageTypeID"));
-				chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+						.getString("rq.config_FileStorageTypeID"));
+				chunkDataTO.setOverwriteOption(rs
+						.getString("rq.config_OverwriteID"));
 				chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
 				chunkDataTO.setLifeTime(rs.getInt("rq.fileLifetime"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rc.ID"));
 				chunkDataTO.setFromSURL(rs.getString("rc.sourceSURL"));
 				chunkDataTO.setNormalizedSourceStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				int uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setSourceSurlUniqueID(new Integer(uniqueID));
@@ -757,7 +684,7 @@ public class CopyChunkDAO {
 
 				chunkDataTO.setToSURL(rs.getString("rc.targetSURL"));
 				chunkDataTO.setNormalizedTargetStFN(rs
-					.getString("rc.normalized_sourceSURL_StFN"));
+						.getString("rc.normalized_sourceSURL_StFN"));
 				uniqueID = rs.getInt("rc.sourceSURL_uniqueID");
 				if (!rs.wasNull()) {
 					chunkDataTO.setTargetSurlUniqueID(new Integer(uniqueID));
@@ -772,6 +699,7 @@ public class CopyChunkDAO {
 		} finally {
 			close(rs);
 			close(find);
+			takeDownConnection(con);
 		}
 	}
 
@@ -788,8 +716,8 @@ public class CopyChunkDAO {
 	private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
 
 		return " ( rc.sourceSURL_uniqueID IN "
-			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rc.sourceSURL IN "
-			+ makeSurlString(surls) + " ) ";
+				+ makeSURLUniqueIDWhere(surlsUniqueIDs)
+				+ " AND rc.sourceSURL IN " + makeSurlString(surls) + " ) ";
 	}
 
 }
