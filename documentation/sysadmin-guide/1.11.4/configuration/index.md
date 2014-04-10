@@ -6,7 +6,7 @@ version: 1.11.4
 
 # StoRM System Administration Guide
 
-version: {{ page.version }}
+version: {{page.version}}
 
 [<< System Administration Guide][sysadmin_index]
 
