@@ -6,7 +6,7 @@ version: 1.11.4
 
 # StoRM System Administration Guide
 
-version: {{ page.version }}
+version: {{ page.version }}
 
 ### [Installation]({{ site.baseurl }}/documentation/sysadmin-guide/{{ page.version }}/installation)
 
@@ -21,7 +21,3 @@ version: {{ page.version }}
 
 * [YAIM configuration]({{ site.baseurl }}/documentation/sysadmin-guide/{{ page.version }}/configuration/#configuration)
 * [Advanced configuration]({{ site.baseurl }}/documentation/sysadmin-guide/{{ page.version }}/configuration/#advconf)
-
-
-
-
