@@ -62,6 +62,7 @@ public class ChunkTask extends Task {
 	private final boolean isAsynchTask;
 	private final boolean isChunkTask;
 
+	private boolean executionLogged = true;
 	private boolean successResult = false;
 
 	public ChunkTask(Delegable todo) {
@@ -117,16 +118,11 @@ public class ChunkTask extends Task {
 	@Override
 	public void run() {
 
-		this.run(true);
-	}
-	
-	public void run(boolean logExecution) {
-
-		this.runEvent();
+		runEvent();
 		todo.doIt();
-		this.endEvent();
-		if (logExecution)
-			this.logExecution();
+		endEvent();
+		if (isExecutionLogged())
+			logExecution();
 	}
 
 	protected void endEvent() {
@@ -263,43 +259,15 @@ public class ChunkTask extends Task {
 		return true;
 	}
 
-	/**
-	 * 
-	 * @param o
-	 *          Object
-	 * @return boolean
-	 */
-	// @Override
-	// public boolean equals(Object obj) {
-	// if (obj==this) {
-	// return true;
-	// }
-	// if (!(obj instanceof ChunkTask)) {
-	// return false;
-	// }
-	// ChunkTask other = (ChunkTask) obj;
-	// if (!(other.chunkType.equals(this.chunkType))) {
-	// return false;
-	// }
-	// if (!(other.getName().equals(this.getName()))) {
-	// return false;
-	// }
-	// if (!(other.todo.equals(this.todo))) {
-	// return false;
-	// } else {
-	// return true;
-	// }
-	// }
+	public boolean isExecutionLogged() {
+		
+		return executionLogged;
+	}
 
-	// @Override
-	// public int hashCode() {
-	// int hash = 17;
-	// if (this.taskName.length()!=0) {
-	// hash = 37*hash + taskName.hashCode();
-	// }
-	// hash = 37*hash + this.todo.hashCode();
-	// hash = 37*hash + this.chunkType.hashCode();
-	// return hash;
-	// }
+	
+	public void setExecutionLogged(boolean executionLogged) {
+	
+		this.executionLogged = executionLogged;
+	}
 
 }
