@@ -19,6 +19,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import it.grid.storm.asynch.BuilderException;
 import it.grid.storm.asynch.PtP;
 import it.grid.storm.asynch.PtPBuilder;
@@ -27,7 +28,7 @@ import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
-import it.grid.storm.synchcall.data.datatransfer.FileTransferOutputData;
+import it.grid.storm.synchcall.data.datatransfer.PrepareToPutOutputData;
 
 /**
  * @author Michele Dibenedetto
@@ -60,9 +61,9 @@ public class PrepareToPutRequestCommand implements Command {
 				"Unable to build PtP request from the InputData");
 		}
 		ChunkTask ptpTask = new ChunkTask(request);
-		ptpTask.run();
+		ptpTask.run(false);
 		try {
-			return new FileTransferOutputData(request.getRequestData().getSURL(),
+			return new PrepareToPutOutputData(request.getRequestData().getSURL(),
 				request.getRequestData().getTransferURL(), request.getRequestData()
 					.getStatus(), request.getRequestData().getGeneratedRequestToken());
 		} catch (IllegalArgumentException e) {

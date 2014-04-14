@@ -117,10 +117,16 @@ public class ChunkTask extends Task {
 	@Override
 	public void run() {
 
+		this.run(true);
+	}
+	
+	public void run(boolean logExecution) {
+
 		this.runEvent();
 		todo.doIt();
 		this.endEvent();
-		this.logExecution();
+		if (logExecution)
+			this.logExecution();
 	}
 
 	protected void endEvent() {
