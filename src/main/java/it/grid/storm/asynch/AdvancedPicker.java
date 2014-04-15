@@ -105,7 +105,6 @@ public class AdvancedPicker {
 
 			@Override
 			public void run() {
-
 				retrieve();
 			}
 		}; // retrieving task
@@ -145,9 +144,20 @@ public class AdvancedPicker {
 		SchedulerStatus status = s.getStatus(0);
 		
 		crusherCapacity = status.getRemainingSize();
+		Collection<RequestSummaryData> requests; 
+		
+		try{
 
-		Collection<RequestSummaryData> requests = RequestSummaryCatalog
-			.getInstance().fetchNewRequests(crusherCapacity);
+		  requests = RequestSummaryCatalog
+		    .getInstance().fetchNewRequests(crusherCapacity);
+
+		}catch(Throwable t){
+
+		  log.error("Error fetching new requests from database: {}", 
+		    t.getMessage(), t);
+		  
+		  return;
+		}
 		
 		if (requests.isEmpty()) {
 		
