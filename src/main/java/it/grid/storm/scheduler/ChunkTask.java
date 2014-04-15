@@ -154,7 +154,7 @@ public class ChunkTask extends Task {
 	public void logExecution() {
 
 		if (!isAsynchTask()) {
-			log.debug("Booking Synch chunck execution disabled!");
+			log.debug("logExecution disabled for synch chuncks");
 			return;
 		}
 
@@ -163,7 +163,6 @@ public class ChunkTask extends Task {
 		if (bks.isEmpty()) {
 			return;
 		}
-		// if isAsynchTask then todo is instance of PersistentRequestChunk
 		LogEvent event = new LogEvent(buildOperationType(), userDN, surl,
 			getStartExecutionTime(), howlongInExecution(),
 			requestToken, successResult);
