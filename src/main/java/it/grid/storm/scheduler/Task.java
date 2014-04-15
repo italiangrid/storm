@@ -53,15 +53,15 @@ public abstract class Task implements Runnable, Comparable {
 
 	protected Task() {
 
-		taskName = UNDEF_TASKNAME;
-		creationTime = System.currentTimeMillis();
+		this(UNDEF_TASKNAME);
 	}
 
 	protected Task(String name) {
 
 		taskName = name;
-		if (taskName == null)
+		if (taskName == null) {
 			taskName = UNDEF_TASKNAME;
+		}
 		creationTime = System.currentTimeMillis();
 	}
 
