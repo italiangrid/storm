@@ -59,7 +59,6 @@ public class PrepareToGetRequestCommand implements Command {
 				"Unable to build PtG request from the InputData");
 		}
 		ChunkTask ptgTask = new ChunkTask(request);
-		ptgTask.setExecutionLogged(false);
 		ptgTask.run();
 		try {
 			return new PrepareToGetOutputData(request.getRequestData().getSURL(),

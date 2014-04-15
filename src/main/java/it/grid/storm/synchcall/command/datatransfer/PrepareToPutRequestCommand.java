@@ -61,7 +61,6 @@ public class PrepareToPutRequestCommand implements Command {
 				"Unable to build PtP request from the InputData");
 		}
 		ChunkTask ptpTask = new ChunkTask(request);
-		ptpTask.setExecutionLogged(false);
 		ptpTask.run();
 		try {
 			return new PrepareToPutOutputData(request.getRequestData().getSURL(),

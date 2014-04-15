@@ -30,6 +30,9 @@ import it.grid.storm.health.OperationType;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <p>
  * Title:
@@ -55,36 +58,43 @@ import java.util.ArrayList;
  */
 public class ChunkTask extends Task {
 
+	private static final Logger log = LoggerFactory
+		.getLogger(ChunkTask.class);
+
 	private final Delegable todo;
 	private final String userDN;
 	private final String surl;
 	private final String requestToken;
-	private final boolean isAsynchTask;
-	private final boolean isChunkTask;
 
-	private boolean executionLogged = true;
 	private boolean successResult = false;
 
 	public ChunkTask(Delegable todo) {
 
-		super();
+		super(todo.getName());
 		this.todo = todo;
-		this.taskName = todo.getName();
 		if (todo instanceof Request) {
-			this.userDN = ((Request) todo).getUserDN();
-			this.surl = ((Request) todo).getSURL();
+			userDN = ((Request) todo).getUserDN();
+			surl = ((Request) todo).getSURL();
 			if (todo instanceof PersistentRequestChunk) {
-				this.requestToken = ((PersistentRequestChunk) todo).getRequestToken();
+				requestToken = ((PersistentRequestChunk) todo).getRequestToken();
 			} else {
-				this.requestToken = "Empty";
+				requestToken = "Empty";
 			}
 		} else {
-			this.userDN = "unknonw";
-			this.surl = "unknonw";
-			this.requestToken = "unknonw";
+			userDN = "unknonw";
+			surl = "unknonw";
+			requestToken = "unknonw";
 		}
-		this.isAsynchTask = todo instanceof PersistentRequestChunk;
-		this.isChunkTask = todo instanceof RequestChunk;
+	}
+
+	private boolean isAsynchTask() {
+
+		return todo instanceof PersistentRequestChunk;
+	}
+	
+	private boolean isChunkTask() {
+
+		return todo instanceof RequestChunk;
 	}
 
 	public void setResult(boolean result) {
@@ -121,20 +131,19 @@ public class ChunkTask extends Task {
 		runEvent();
 		todo.doIt();
 		endEvent();
-		if (isExecutionLogged())
-			logExecution();
+		logExecution();
 	}
 
 	protected void endEvent() {
 
 		super.endEvent();
 		if (todo instanceof Request) {
-			this.successResult = ((Request) todo).isResultSuccess();
+			successResult = ((Request) todo).isResultSuccess();
 		}
-		if (isAsynchTask) {
+		if (isAsynchTask()) {
 			((PersistentRequestChunk) todo).persistStatus();
 		}
-		if (isChunkTask) {
+		if (isChunkTask()) {
 			((RequestChunk) todo).updateGlobalStatus();
 		}
 	}
@@ -144,21 +153,21 @@ public class ChunkTask extends Task {
 	 */
 	public void logExecution() {
 
+		if (!isAsynchTask()) {
+			log.debug("Booking Synch chunck execution disabled!");
+			return;
+		}
+
 		ArrayList<BookKeeper> bks = HealthDirector.getHealthMonitor()
 			.getBookKeepers();
 		if (bks.isEmpty()) {
 			return;
 		}
-		LogEvent event;
-		if (todo instanceof RequestChunk) {
-			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
-				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.requestToken, this.successResult);
-		} else {
-			event = new LogEvent(buildOperationType(), this.userDN, this.surl,
-				this.getStartExecutionTime(), this.howlongInExecution(),
-				this.successResult);
-		}
+		// if isAsynchTask then todo is instance of PersistentRequestChunk
+		LogEvent event = new LogEvent(buildOperationType(), userDN, surl,
+			getStartExecutionTime(), howlongInExecution(),
+			requestToken, successResult);
+		log.debug("Booking Asynch event {}", event);
 		for (int i = 0; i < bks.size(); i++) {
 			bks.get(i).addLogEvent(event);
 		}
@@ -194,7 +203,7 @@ public class ChunkTask extends Task {
 
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (isAsynchTask ? 1231 : 1237);
+		result = prime * result + (isAsynchTask() ? 1231 : 1237);
 		result = prime * result
 			+ ((requestToken == null) ? 0 : requestToken.hashCode());
 		result = prime * result + (successResult ? 1231 : 1237);
@@ -222,7 +231,7 @@ public class ChunkTask extends Task {
 			return false;
 		}
 		ChunkTask other = (ChunkTask) obj;
-		if (isAsynchTask != other.isAsynchTask) {
+		if (isAsynchTask() != other.isAsynchTask()) {
 			return false;
 		}
 		if (requestToken == null) {
@@ -257,17 +266,6 @@ public class ChunkTask extends Task {
 			return false;
 		}
 		return true;
-	}
-
-	public boolean isExecutionLogged() {
-		
-		return executionLogged;
-	}
-
-	
-	public void setExecutionLogged(boolean executionLogged) {
-	
-		this.executionLogged = executionLogged;
 	}
 
 }
