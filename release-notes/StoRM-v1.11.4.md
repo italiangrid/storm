@@ -37,6 +37,8 @@ rfcs:
   title: YAIM does not setup STORM_GRIDHTTPS_USER environment variable
 - id: STOR-598
   title: heartbeat.log average duration logged in microsec instead of millisec
+- id: STOR-602
+  title: Synchronous PTG or PTP are logged twice into heartbeat.log
 features:
 - id: STOR-504
   title: StoRM should publish information only about VOs which have configured storage areas

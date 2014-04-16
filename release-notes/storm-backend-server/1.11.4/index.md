@@ -15,6 +15,8 @@ rfcs:
   title: If 'logging.xml' file is malformed, during bootstrap phase, the Backend dies without writing the parsing error on stderr log file
 - id: STOR-598
   title: heartbeat.log average duration logged in microsec instead of millisec
+- id: STOR-602
+  title: Synchronous PTG or PTP are logged twice into heartbeat.log
 features:
 - id: STOR-524
   title: Proper use of string formatting in log calls
