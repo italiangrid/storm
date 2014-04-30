@@ -1,0 +1,7 @@
+[StoRM-Develop-SL6]
+name=StoRM-Develop-SL6
+baseurl=http://radiohead.cnaf.infn.it:9999/job/repo_storm_develop_SL6//lastSuccessfulBuild/artifact/yum/
+protect=1
+enabled=1
+priority=1
+gpgcheck=0
