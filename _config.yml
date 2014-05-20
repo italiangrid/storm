@@ -1,4 +1,4 @@
-exclude: [README.md]
+exclude: [README.md, _bin]
 
 markdown: redcarpet
 redcarpet:
