@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.4 release notes"
-release_date: 17.03.2014
+release_date: 23.05.2014
 rfcs:
 - id: STOR-307
   title: StoRM returns SRM_INVALID_PATH instead of SRM_AUTHORIZATION_FAILURE

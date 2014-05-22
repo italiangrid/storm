@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.5 release notes"
-release_date: 17.03.2014
+release_date: 23.05.2014
 rfcs:
 - id: STOR-500
   title: StoRM monitoring.log no longer updated in 1.11.3

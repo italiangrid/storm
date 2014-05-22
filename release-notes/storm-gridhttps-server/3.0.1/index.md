@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM GridHTTPs v. 3.0.1 release notes"
-release_date: 17.03.2014
+release_date: 23.05.2014
 rfcs:
 - id: STOR-479
   title: Associate properly the WebDAV returned code to the type of SRMOperationException
