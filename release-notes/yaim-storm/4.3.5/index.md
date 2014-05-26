@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.5 release notes"
-release_date: 17.03.2014
+release_date: 23.05.2014
 rfcs:
 - id: STOR-506
   title: YAIM-StoRM does not support configuring multiple access points for a given storage area
