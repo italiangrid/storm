@@ -8,7 +8,7 @@
 		</tr>
 	</thead>
 	<tbody>
-	{% for component in site.storm_components %}
+	{% for component in site.data.storm_components %}
 		<tr {% if component.visibility == "hide" %} class="hide" style="display: none;" {% endif %}>
 			<td align=left>{{ component.name }}</td>
 			<td align=left>

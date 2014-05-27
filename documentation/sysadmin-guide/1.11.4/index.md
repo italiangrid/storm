@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.3
+version: 1.11.4
 ---
 
 # StoRM System Administration Guide
@@ -32,11 +32,11 @@ version: {{ page.version }}
   * [GridFTP Advanced Configuration](#gftp_advconf)
   * [GridHTTPs Advanced Configuration](#ghttp_advconf)
   * [StoRM EMIR Configuration](#emir_advconf)
-* [Appendix A](#AppendixA)
+  * [Users blacklisting with ARGUS](#argus_advconf)
 
 ## Installation Prerequisites <a name="installprereq">&nbsp;</a>
 
-All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
+All the StoRM components are certified to work on Scientific Linux SL5/64 (x86\_64) and Scientific Linux SL6/64 (x86\_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
 All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
 ### General EMI 3 installation instructions <a name="emi3instructions">&nbsp;</a>
@@ -271,7 +271,6 @@ permissions, you could use the following command (assuming that the gridhttps
 server runs as user `gridhttps`, which is the default): 
 
 ```bash
-setfacl -m g:gridhttps:x <sa-root-directory>
 find <sa-root-directory> -type d -exec setfacl -m g:gridhttps:x {} \;
 ```
 
@@ -413,6 +412,8 @@ The storm-srm-client is distributed with the UI EMI components, but if you need 
 $ yum install emi-storm-srm-client-mp
 ```
 
+<hr/>
+
 ## Configuration <a name="configuration">&nbsp;</a>
 
 StoRM is configured by using the YAIM tool, that is a set of configuration scripts that read a set of configuration files.
@@ -448,8 +449,6 @@ as better explained [here](#launchyaim).
 
 ### General YAIM variables <a name="yaimvariables">&nbsp;</a>
 
-[basic]({{site.baseurl}}/documentation/examples/1.11.2/basic-storm-standalone-configuration.html)
-
 Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by providing a value to the general variables summarized in Tab.1.
 
 | Var. Name		  	| Description	| Mandatory |
@@ -467,6 +466,8 @@ Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by pr
 {% assign label_title="Table 1" %}
 {% assign label_description="General YAIM Variables." %}
 {% include documentation/label.html %}
+
+
 
 ### Frontend configuration <a name="feconf">&nbsp;</a>
 
@@ -522,6 +523,8 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 {% assign label_description="YAIM variables no more used from StoRM v.1.11.2" %}
 {% include documentation/label.html %}
 
+
+
 ### Backend configuration <a name="beconf">&nbsp;</a>
 
 Specific YAIM variables are in the following file:
@@ -543,7 +546,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |:--------------------------------------|:--------------|
 |STORM\_ACLMODE							|ACL enforcing mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on STORM\_{SA}\_ACLMODE variable. Available values: aot, jit (use aot for WLCG experiments).<br/>Optional variable. Default value: **aot**
 |STORM\_ANONYMOUS\_HTTP\_READ			|Storage Area anonymous read access via HTTP. Note: you may change the settings for each SA acting on STORM\_{SA}\_ANONYMOUS\_HTTP\_READ variable.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_AUTH							|Authorization mechanism (default value for all Storage Ar- eas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_AUTH variable Available values: permit-all, deny-all, FILENAME.<br/>Optional variable. Default value: **permit-all**
+|STORM\_AUTH							|Authorization mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_AUTH variable Available values: permit-all, deny-all, FILENAME.<br/>Optional variable. Default value: **permit-all**
 |STORM\_BACKEND\_HOST					|Host name of the StoRM Backend server. **Mandatory**.
 |STORM\_BACKEND\_REST\_SERVICES\_PORT	|StoRM backend server rest port. Optional variable. Default value: **9998**
 |STORM\_CERT\_DIR						|Host certificate directory for StoRM Backend service.<br/>Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
@@ -610,15 +613,15 @@ You can edit the optional variables summarized in Table 5.
 |:--------------------------------------|:--------------|
 |STORM\_{SA}\_VONAME					|Name of the VO that will use the Storage Area. Use the complete name, e.g., "lights.infn.it" or **'*'** to specify that there is no VO associated to the storage area (it's readable and writable from everyone - less than other filters). This variable becames **mandatory if the value of {SA} is not the name of a VO**.
 |STORM\_{SA}\_ANONYMOUS\_HTTP\_READ		|Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM\_{SA}\_ACCESSPOINT				|List space-separated of paths exposed by the SRM into the SURL. Optional variable. Default value: **{SA}**
+|STORM\_{SA}\_ACLMODE					|See STORM\_ACLMODE definition. Optional variable. Default value: **$STORM\_ACLMODE**
+|STORM\_{SA}\_AUTH						|See STORM\_AUTH definition. Optional variable. Default value: **$STORM\_AUTH**
+|STORM\_{SA}\_DEFAULT\_ACL\_LIST		|A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 \[groupname2:permission2\] \[...\]
 |STORM\_{SA}\_DN\_C\_REGEX				|Regular expression specifying the format of C (Country) field of DNs that will use the Storage Area. Optional variable.
 |STORM\_{SA}\_DN\_O\_REGEX				|Regular expression specifying the format of O (Organization name) field of DNs that will use the Storage Area. Optional variable.
 |STORM\_{SA}\_DN\_OU\_REGEX				|Regular expression specifying the format of OU (Organizational Unit) field of DNs that will use the Storage Area. Optional variable.
 |STORM\_{SA}\_DN\_L\_REGEX				|Regular expression specifying the format of L (Locality) field of DNs that will use the Storage Area. Optional variable.
 |STORM\_{SA}\_DN\_CN\_REGEX				|Regular expression specifying the format of CN (Common Name) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_ACCESSPOINT				|Path exposed by the SRM into the SURL. Optional variable. Default value: **{SA}**
-|STORM\_{SA}\_ACLMODE					|See STORM\_ACLMODE definition. Optional variable. Default value: **$STORM_ACLMODE**
-|STORM\_{SA}\_AUTH						|See STORM\_AUTH definition. Optional variable. Default value: **$STORM_AUTH**
-|STORM\_{SA}\_DEFAULT\_ACL\_LIST		|A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 \[groupname2:permission2\] \[...\]
 |STORM\_{SA}\_FILE\_SUPPORT				|Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
 |STORM\_{SA}\_GRIDFTP\_SUPPORT			|Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
 |STORM\_{SA}\_RFIO\_SUPPORT				|Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
@@ -627,7 +630,7 @@ You can edit the optional variables summarized in Table 5.
 |STORM\_{SA}\_HTTPS\_SUPPORT			|Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
 |STORM\_{SA}\_FSTYPE					|See STORM\_{SA}\_FSTYPE definition. Optional variable. Available values: posixfs, gpfs. Default value: **$STORM\_FSTYPE**
 |STORM\_{SA}\_GRIDFTP\_POOL\_LIST		|See STORM\_GRIDFTP\_POOL\_LIST definition. Optional variable. Default value: **$STORM\_GRIDFTP\_POOL\_LIST**
-|STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY	|See STORM\_GRIDFTP\_POOL\_STRATEGY definition.	Optional variable. Default value: **$STORM_GRIDFTP_POOL_STRATEGY**
+|STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY	|See STORM\_GRIDFTP\_POOL\_STRATEGY definition.	Optional variable. Default value: **$STORM\_GRIDFTP\_POOL\_STRATEGY**
 |STORM\_{SA}\_ONLINE\_SIZE				|Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
 |STORM\_{SA}\_USED\_ONLINE\_SIZE		|Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
 |STORM\_{SA}\_QUOTA						|Enables the quota management for the Storage Area and it works only on GPFS filesystem. Optional variable. Available values: true, false. Default value: **false**
@@ -645,6 +648,8 @@ You can edit the optional variables summarized in Table 5.
 {% assign label_title="Table 5" %}
 {% assign label_description="Storage Area Variables." %}
 {% include documentation/label.html %}
+
+
 
 ### GridHTTPs configuration <a name="ghttpconf">&nbsp;</a>
 
@@ -682,6 +687,8 @@ and check the other variables to evaluate if you like the default set or if you 
 {% assign label_description="Specific StoRM GridHTTPs Variables." %}
 {% include documentation/label.html %}
 
+
+
 ### Launching YAIM configuration <a name="launchyaim">&nbsp;</a>
 
 After having built the **site-info.def** services file, you can configure the needed profile by using YAIM as follows:
@@ -710,6 +717,8 @@ $ service storm-frontend-server status
 $ service storm-globus-gridftp status
 $ service storm-gridhttps-server status
 ```
+
+
 
 ## Advanced Configuration <a name="advconf">&nbsp;</a>
 
@@ -807,6 +816,8 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 |:------------------|:------------------|
 |	```wsdl.file```	|	WSDL file, complete with path, to be returned in case of GET request
 
+
+
 #### Logging files and logging level <a name="loggingfe_advconf">&nbsp;</a>
 
 The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
@@ -817,6 +828,8 @@ At each SRM request, the FE logs also this important information:
 	03/19 11:51:42 0x88d4ab8 main: AUDIT - Pending tasks: 0
 
 about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
+
+
 
 ##### Monitoring
 
@@ -875,6 +888,8 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
 - Operations never performed are not printed in Aggregate Detailed Monitoring.
 - Operation performed in current Monitoring Round are aggregated in Aggregate Detailed Monitoring.
 
+
+
 ##### gSOAP tracefile
 
 If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
@@ -885,12 +900,16 @@ To enable gSOAP logging, set the following environment variables :
 
 and restart the Frontend daemon by calling directly the init script /etc/init.d/storm-frontend-server and see if the error messages contained in /tmp/tracefile could help. Please be very careful, it prints really a huge amount of information.
 
+
+
 ### Backend Advanced Configuration <a name="be_advconf">&nbsp;</a>
 
 The Backend is the core of StoRM. It executes all SRM requests, interacts with other Grid service, with database to retrieve SRM requests, with file-system to set up space and file, etc. It has a modular architecture made by several internal components. The Backend needs to be configured for two main aspects:
 
 - _Service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _Storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
+
+
 
 ### Backend Service Information: storm.properties <a name="besi_advconf">&nbsp;</a>
 
@@ -1055,6 +1074,8 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 |	```asynch.srmclient```					|	The complete class-name of the *SRMClient* implementation providing SRM client features to be used to perform srm operations to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.SRM22Client**
 |	```asynch.srmcopy.gridftp.timeout```	|	Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
 |	```asynch.gridftpclient```				|	The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
+
+
 
 ### Backend Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
 
@@ -1361,6 +1382,8 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - ```<vo-name>dteam</vo-name>``` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
+
+
 ### Backend Storage Usage Initialization: used-space.ini <a name="besui_advconf">&nbsp;</a>
 
 StoRM maintains the information about the status of managed storage areas (such as free, used, busy, available, guaranteed and reserved space), and store them into the DB. Whenever it is consumed or released some storage space by creating or deleting files, the status is updated and stored in the DB. The storage space status stored into the DB is authorative. The information about the Storage Space stored into the DB are used also as information source for the Information Provider through the DIP (Dynamic Info Provider). There are cases in which the status of a storage area must be initialized, for example in the case of a fresh StoRM installation configured to manage a storage space already populated with files, where the space used is not zero.
@@ -1403,7 +1426,9 @@ This file can be produced in two ways:
 StoRM Backend will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
 
 > **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
- 
+
+
+
 ### Backend logging: logging.xml <a name="belog_advconf">&nbsp;</a>
 
 The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
@@ -1463,6 +1488,8 @@ The logging level can be specified by editing the configuration file:
 
 The supported logging levels are: ERROR, WARN, INFO, DUMP and ALL.
 
+
+
 ### Redirect LCMAPS logging to a particular file (instead of syslog)
 
 Administrators can redirect the LCMAPS logging to a different log file than the one used by syslog by setting the ```LLGT_LOG_FILE``` environment variable.
@@ -1475,6 +1502,8 @@ insert:
 	export LLGT_LOG_FILE="/var/log/storm/storm-gridftp-lcmaps.log"
 
 After restarting the service, all LCMAPS calls will be logged to the new file.
+
+
 
 ## GridHTTPs Advanced Configuration <a name="ghttp_advconf">&nbsp;</a>
 
@@ -1542,6 +1571,8 @@ GridHTTPs manage file transfers and file creation. So it computes checksum durin
 |:----------------------|:--------------------------|
 |```compute-checksum```		|If compute-checksum is true, for every file created a valid adler32 checksum value is computed. Available values: true, false.<br/>Default value: **true**
 
+
+
 ### GridHTTPs' logging files and logging level <a name="ghttplog_advconf">&nbsp;</a>
 
 GridHTTPs' log files are located in */var/log/storm/* directory. They are the followings:
@@ -1565,6 +1596,8 @@ The supported logging levels are: FATAL, ERROR, WARN, INFO, DEBUG and TRACE.
 <br/><br/>
 The suggest logging level for production endpoint is INFO. In case the log level is modified, GridHTTPs service has to be restarted to read the new value.
 
+
+
 ### GridHTTPs plugin information: storm.gridhttps.plugin.properties <a name="ghttpplug_advconf">&nbsp;</a>
 
 StoRM GridHTTPs Plugin is shipped with StoRM Backend metapackage and it is installed on Backend host. Its configuration information are stored in:
@@ -1582,6 +1615,8 @@ The GridHTTPs Plugin lives within Backend Java process; in case a parameter is m
 |:----------------------|:--------------------------|
 |```gridhttps.server.user.uid```	|The User ID associated to the local user running the GridHTTPs server service
 |```gridhttps.server.user.gid```	|The primary Group ID associated to the local user running the GridHTTPs server service
+
+
 
 ## StoRM EMIR Configuration <a name="emir_advconf">&nbsp;</a>
 
@@ -1630,274 +1665,100 @@ Start the service:
 
 Verify the pubblication by inspecting this <a href="http://emitbdsr1.cern.ch:9126/services">page</a> searching for an entity with "Name" attribute equal to StoRM YAIM variable "SITE\_NAME". It is recommended to set back the logging level to error and restart the service. Stopping emier-serp will cause the entry to be deleted.
 
-## Appendix A <a name="AppendixA">&nbsp;</a>
 
-### A.1 How-to configure LDAP Server to share users' accounts
 
-This is a short tutorial that wants to describe how to install and configure a LDAP Server in order to share users' accounts whitin a local network. In particular, we will see how to install and configure a client/server OpenLDAP service on Scientific Linux hosts.
+## Users blacklisting with ARGUS <a name="argus_advconf">&nbsp;</a>
 
-#### A.1.1 OpenLDAP Server installation and configuration <a name="LDAPServerIC">&nbsp;</a>
+In order to create and manage a list of banned users, StoRM can be configured to use ARGUS authorization system.
+The Argus authorization service allows administrators to define policies that answer questions like _Can user X perform action Y on resource Z at this time?_ See [Argus twiki](https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZIntro) to get more information about this framework.
+StoRM doesn't integrate all the services provided by Argus. It allows only to define a list of banned users. 
+To configure the Frontend to communicate with Argus PEP server you must set the following YAIM variables.
+First of all we need to tell YAIM that you want to use ARGUS:
 
-To install OpenLDAP service on server, as root user on a SL5 host, we have to install *openldap-servers* package:
+	USE_ARGUS = yes
 
-```bash
-$ yum install openldap-servers
-```
+and specify the complete service endpoint of Argus PEP server:
 
-Instead, as root user on a SL6 host we have to install both *openldap* and *openldap-servers* packages:
+	ARGUS_PEPD_ENDPOINTS = "https://<ARGUS-service-hostname>:8154/authz"
 
-```bash
-$ yum install openldap openldap-servers
-```
+Then you have to choose an entity identifier for StoRM service (it's a string that represents the entity-id that you'll use for each StoRM's Argus policy):
 
-OpenLDAP installs several files in /etc and other places. The *slapd* daemon's configuration file is slapd.conf and can be found in /etc/openldap. First of all make sure service is not running:
+	STORM_PEPC_RESOURCEID = "storm"
 
-```bash
-(SL5) $ service ldap stop
-(SL6) $ service slapd stop
-```
+and enable Frontend's user blacklisting with:
 
-Then, edit **/etc/openldap/slapd.conf**. We have to edit 5 entries: *database*, *suffix*, *rootdn*, *rootpw* and *directory*. It should look something like:
+	STORM_FE_USER_BLACKLISTING = true
 
-	  database        bdb
-	  suffix          "dc=example,dc=com"
-	  rootdn          "cn=Manager,dc=example,dc=com"
-	  # Cleartext passwords, especially for the rootdn, should be avoided. 
-	  # See slappasswd(8) and slapd.conf(5) for details.
-	  # Use of strong authentication encouraged.
-	  # rootpw        secret
-	  directory 	  /var/lib/ldap
-	
-For example, define ourselves as a company called storm.cnaf.infn.it. We can leave default value for *database* entry, *bdb*, that stands for Berkeley Database. The *suffix* entry is our main domain or organization. So, we can changed it to:
-
-	  suffix          "dc=storm,dc=cnaf,dc=infn.it"
-
-The dc stands for domainComponent. Next, the *rootdn*. This means root Distinguished Name. Every entry in an LDAP database has a distinguished name. The default is Manager. In our example we will use root instead of Manager, so according to the suffix we have to change it to:
-
-	  rootdn          "cn=root,dc=storm,dc=cnaf,dc=infn.it"
-
-Next the *password*. If we desire an encrypted password, we can launch slappasswd command, insert our password and replace *secret* with the outputted string. So it will look something like:
-
-	  rootpw         {SSHA}ca6CWAHXogaQ2Cib9sxOYRwHRzyKoSXA
-
-We can leave default value for *directory* entry: /var/lib/ldap.
-Now we have to clean up previous LDAP content and configuration with the following command:
+The StoRM configuration is completed. But before running YAIM configuration it's necessary to define at least a policy for every VO that your StoRM instance supports. To do this, we have to add some valid policies. We can write a file in [Simplified Policy Language][SPLguide] and then import it or we can use the [pap-admin CLI][pap_admin_CLI] directly.
+For example, if your StoRM instance supports ```testers.eu-emi.eu``` and ```dteam``` VOs, you have to write the following policies:
 
 ```bash
-(SL5) $ rm -rf /var/lib/ldap/*
-(SL6) $ rm -rf /etc/openldap/slapd.d/*
+resource "storm" {
+    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
+    action ".*" {
+        rule permit { vo="testers.eu-emi.eu" }
+    }
+}
+resource "storm" {
+    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
+    action ".*" {
+        rule permit { vo="dteam" }
+    }
+}
 ```
-
-Then we have to create the DB_CONFIG file into /var/lib/ldap/ directory (or copy it from OpenLDAP example file /etc/openldap/DB_CONFIG.example).
-
-**/etc/openldap/DB_CONFIG.example**:
-
-	  # $OpenLDAP: pkg/ldap/servers/slapd/DB_CONFIG,v 1.3.2.4 2007/12/18 11:53:27 ghenry Exp $
-  	  # Example DB_CONFIG file for use with slapd(8) BDB/HDB databases.
-  	  #
-  	  # See the Oracle Berkeley DB documentation
-  	  #	<http://www.oracle.com/technology/documentation/berkeley-db/db/ref/env/db_config.html>
-  	  # for detail description of DB_CONFIG syntax and semantics.
-  	  #
-	  # Hints can also be found in the OpenLDAP Software FAQ
-  	  # <http://www.openldap.org/faq/index.cgi?file=2>
-	  # in particular:
-	  #   <http://www.openldap.org/faq/index.cgi?file=1075>
-	  # Note: most DB_CONFIG settings will take effect only upon rebuilding
-	  # the DB environment.
-	  # one 0.25 GB cache
-	  set_cachesize 0 268435456 1
-	  # Data Directory
-	  #set_data_dir db
-	  # Transaction Log settings
-	  set_lg_regionmax 262144
-	  set_lg_bsize 2097152
-	  #set_lg_dir logs
-	  # Note: special DB_CONFIG flags are no longer needed for "quick"
-	  # slapadd(8) or slapindex(8) access (see their -q option).
-	
-To initialize the LDAP database we have to create a pair of files, one for the organization and one for the root DN. For example, create storm.cnaf.infn.it.ldif as follow:
-
-	  dn: dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: dcObject
-	  objectClass: organization
-	  dc: storm
-	  o: StoRM
-	
-It contains the organization entry. Then create root.storm.cnaf.infn.it.ldif as follow:
-
-	  dn: cn=root,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: organizationalRole
-	  cn: root
-
-and this contains the root DN. Now we have to initialize DB files for content in /var/lib/ldap directory:
+See [Simplified Policy Language guide][SPLguide] to learn how to write valid Argus policies.
+If you have a storage area not owned by a VO but readable and writable with a particular x509 certificate (see [this example][X509_SA_conf_example]), you can add an ARGUS policy as follow:
 
 ```bash
-$ echo "" | slapadd -f /etc/openldap/slapd.conf
+resource "storm" {
+    action ".*" {
+        rule permit { subject-issuer="CN=Test CA,O=IGI,C=IT" }
+    }
+}
 ```
-
-This is required, otherwise you will get this error:
-	  
-	  bdb_db_open: database "dc=example,dc=com": db_open(/var/lib/ldap/id2entry.bdb) failed:
-	  No such file or directory (2).
-
-Now, only if host is SL6, convert configuration file into dynamic configuration under /etc/openldap/slapd.d directory:
-	
-```bash  
-$ slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
-```
-
-For both SL5 and SL6, set permissions:
+Finally, if you want to ban a particular user you can add a policy as follow:
 
 ```bash
-	  chown -R ldap:ldap /var/lib/ldap 
+resource ".*" {
+    action ".*" {
+        rule deny { subject="CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT" }
+    }
+}
 ```
 
-and, only on SL6, add:
+Save all these policies on a file and import it via pap-admin command ```add-policies-from-file```:
 
 ```bash
-	  chown -R ldap:ldap /etc/openldap/slapd.d
+pap-admin add-policies-from-file <filepath>
 ```
 
-Now we can initialize LDAP DB with already defined initial content, by launching the following commands:
+This command append the contained policies so, if you want to replace the existing policies, you have to do a:
 
 ```bash
-	  slapadd -l storm.cnaf.infn.it.ldif
-	  slapadd -l root.storm.cnaf.infn.it.ldif
+pap-admin remove-all-policies
 ```
 
-So we are ready to add to our LDAP database the necessary users and groups. In particular we need storm and gridhttps users and also relative groups. But, how can we organize our directory tree? In a UNIX file system, the top level is the root. Underneath the root you have numerous files and directories. As mentioned above, LDAP directories are set up in much the same manner. Into the directory's base are conventionally created containers that logically separate data. For historical reasons, most LDAP directories set these logical separations up as OU entries. OU stands for "Organizational Unit", which in X.500 was used to indicate the functional organization within a company. Current LDAP implementations have kept the ou= naming convention. In our case, we can define a pair of Organizationa Unit: People and Group as follow:
-
-**People.storm.cnaf.infn.it.ldif**
-
-	  dn: ou=People,dc=storm,dc=cnaf,dc=infn.it
-  	  objectClass: organizationalUnit
-	  objectClass: top
-	  ou: People
-
-**Group.storm.cnaf.infn.it.ldif**
-
-	  dn: ou=Group,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: organizationalUnit
-	  objectClass: top
- 	  ou: Group
-
-Then, we can define storm and gridhttps users and groups, as follow: 
-
-**storm.People.storm.cnaf.infn.it.ldif**:
-
-	  dn: uid=storm,ou=People,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: account
-	  objectClass: posixAccount
-	  objectClass: top
-	  objectClass: shadowAccount
-	  cn: storm
-	  gidNumber: 494
-	  homeDirectory: /home/storm
-	  uid: storm
-	  uidNumber: 495
-	
-**storm.Group.storm.cnaf.infn.it.ldif**:
-
-	  dn: cn=storm,ou=Group,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: posixGroup
-	  objectClass: top
-	  cn: storm
-	  gidNumber: 494
-	
-**gridhttps.People.storm.cnaf.infn.it.ldif**:
-
-	  dn: uid=gridhttps,ou=People,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: account
-	  objectClass: posixAccount
-	  objectClass: top
-  	  objectClass: shadowAccount
-	  cn: gridhttps
-	  gidNumber: 504
-	  homeDirectory: /home/gridhttps
-	  uid: gridhttps
-	  uidNumber: 503
-
-**gridhttps.Group.storm.ldif**:
-
-	  dn: cn=gridhttps,ou=Group,dc=storm,dc=cnaf,dc=infn.it
-	  objectClass: posixGroup
-	  objectClass: top
-	  cn: gridhttps
-	  gidNumber: 504
-
-Set the various GIDs and UIDs values as you want. Then we can add the users and groups defined to the LDAP server database, with the following commands:
-
-	  slapadd -l storm.Group.storm.cnaf.infn.it.ldif
-	  slapadd -l gridhttps.Group.storm.cnaf.infn.it.ldif
-	  slapadd -l storm.People.storm.cnaf.infn.it.ldif
-	  slapadd -l gridhttps.People.storm.cnaf.infn.it.ldif
-	
-Using a free program like Apache Directory Studio we can easily connect to the LDAP server and add other entries, export ldif configurations, etc. Important: as you can see from the files above, a user must contain account, posixAccount and shadowAccount objectClasses, a group instead must define only a posixGroup objectClass.
-
-To start server:
+before, and then import your file.
+Clear the cache and reload the policies to finish:
 
 ```bash
-(SL5) $ service ldap start
-(SL6) $ service slapd start
+service argus-pepd clearcache
+service argus-pdp reloadpolicy
 ```
 
-#### A.1.2 OpenLDAP Client installation and configuration <a name="LDAPClientIC">&nbsp;</a>
-
-To install OpenLDAP service on a client, as root user on a SL5 host, we have to install *openldap-clients* and *nss_ldap* packages:
+You can add your policies also by using only the pap-admin CLI. In our case you can launch:
 
 ```bash
-$ yum install openldap-clients nss_ldap
+pap-admin-rap
+pap-admin add-policy --resource "storm" --action ".*" --obligation "http://glite.org/xacml/obligation/local-environment-map" permit vo="testers.eu-emi.eu"
+pap-admin add-policy --resource "storm" --action ".*" permit subject-issuer="CN=Test CA,O=IGI,C=IT"
+pap-admin ban subject "CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT"
+service argus-pepd clearcache
+service argus-pdp reloadpolicy
 ```
 
-Instead, as root user on a SL6 host we have to install both *openldap-clients* and *nss-pam-ldapd* packages:
 
-```bash
-$ yum install openldap-clients nss-pam-ldapd
-```
 
-Be sure that service *nscd* is stopped:
-
-```bash
-$ service nscd status
-```
-
-Modify **/etc/nsswitch.conf** by adding "*ldap*" to the following lines:
-	     
-	  passwd: files ldap
-	  shadow: files ldap
-	  group: files ldap
-
-If SL5, modify both **/etc/ldap.conf** and **/etc/openldap/ldap.conf** by adding:
-	
-	  uri ldap://<ldap-server-hostname>
-	  base dc=storm,dc=cnaf,dc=infn.it
-
-If SL6 modify both **/etc/openldap/ldap.conf** and **/etc/nslcd.conf** by adding: 
-
-	  uri ldap://<ldap-server-hostname>
-	  base dc=storm,dc=cnaf,dc=infn.it
-
-#### A.1.3 Test client-server LDAP installation <a name="TestLDAP">&nbsp;</a>
-
-From a configured client we need to know UIDs and/or GIDs of server's LDAP users. That users has not to be defined as UNIX-users on clients. To query the LDAP server from one of the clients type, for example, you can list all the contents in db:
-
-```bash
-$ ldapsearch -x -b 'dc=storm,dc=cnaf,dc=infn.it'
-```
-
-you can search a particular uid or group:
-
-```bash
-$ ldapsearch -x "uid=storm"
-$ ldapsearch -x "group=storm"
-```
-
-or you can get the UID or GID of a username: 
-
-```bash
-$ id -u storm
-$ id -g storm
-```
-
-Verify that the obtained values are equals to the previous defined.
+[X509_SA_conf_example]: {{site.baseurl}}/documentation/examples/storage-area-configuration-examples/1.11.3/storage-area-configuration-examples.html#sa-anonymous-rw-x509
+[SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
+[pap_admin_CLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI

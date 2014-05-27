@@ -33,7 +33,7 @@ To install the repository files, run the following commands (as root):
 
 ### Current release
 
-The current release is [StoRM v.1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
+The current release is [StoRM v.1.11.4]({{ site.baseurl }}/release-notes/StoRM-v1.11.4.html).
 
 {% include download/component-table.html %}
 
@@ -75,7 +75,7 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 
-[devel_repo_sl5]: http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL5/lastSuccessfulBuild/artifact/storm.repo
-[devel_repo_sl6]: http://radiohead.cnaf.infn.it:9999/view/STORM/job/storm-repo_SL6/lastSuccessfulBuild/artifact/storm.repo
+[devel_repo_sl5]: {{site.baseurl}}/repo/storm_develop_sl5.repo
+[devel_repo_sl6]: {{site.baseurl}}/repo/storm_develop_sl6.repo
 [preview_repo_sl5]: {{site.baseurl}}/repo/storm_preview_sl5.repo
 [preview_repo_sl6]: {{site.baseurl}}/repo/storm_preview_sl6.repo

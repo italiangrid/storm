@@ -1,0 +1,7 @@
+[StoRM-Develop-SL5-source]
+name=StoRM-Develop-SL5-source
+baseurl=http://radiohead.cnaf.infn.it:9999/job/repo_storm_develop_SL5//lastSuccessfulBuild/artifact/src/
+protect=1
+enabled=0
+priority=1
+gpgcheck=0

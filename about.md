@@ -7,14 +7,14 @@ title: About us
 
 Here are the main StoRM developers:
 
-{% assign author=site.authors.andrea %}
+{% assign author=site.data.authors.andrea %}
 {% include author.html %}
 
-{% assign author=site.authors.valerio %}
+{% assign author=site.data.authors.valerio %}
 {% include author.html %}
 
-{% assign author=site.authors.daniele %}
+{% assign author=site.data.authors.daniele %}
 {% include author.html %}
 
-{% assign author=site.authors.enrico %}
+{% assign author=site.data.authors.enrico %}
 {% include author.html %}
