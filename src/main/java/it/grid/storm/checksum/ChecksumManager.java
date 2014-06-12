@@ -77,16 +77,13 @@ public class ChecksumManager {
 	public String getDefaultChecksum(String fileName)
 		throws FileNotFoundException {
 
-		log.debug("Requesting checksum for file: " + fileName);
+		log.debug("Requesting checksum for file: {}", fileName);
 
 		String checksum = null;
 		try {
 			checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
 		} catch (ExtendedAttributesException e) {
-
-			log.warn("Error manipulating EA for default algorithm "
-				+ defaultAlgorithm + " on file: " + fileName
-				+ " ExtendedAttributesException: " + e.getMessage());
+		  log.warn(e.getMessage(),e);
 		}
 
 		return checksum;

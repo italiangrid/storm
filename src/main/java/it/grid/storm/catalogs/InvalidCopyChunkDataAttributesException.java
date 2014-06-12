@@ -37,6 +37,8 @@ import it.grid.storm.srm.types.TReturnStatus;
  */
 public class InvalidCopyChunkDataAttributesException extends Exception {
 
+	private static final long serialVersionUID = 6786154038995023512L;
+
 	// booleans that indicate whether the corresponding variable is null
 	private boolean nullRequestToken;
 	private boolean nullFromSURL;

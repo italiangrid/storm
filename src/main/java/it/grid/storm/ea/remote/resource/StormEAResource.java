@@ -50,22 +50,23 @@ public class StormEAResource {
 
 		RequestParameters parameters = new RequestParameters.Builder(filePath)
 			.build();
-		log.info("Getting " + Constants.ADLER_32 + " checksum for file "
-			+ parameters.getFilePathDecoded());
+		log.info("Getting {} checksum for file {}",
+		  Constants.ADLER_32,
+			parameters.getFilePathDecoded());
+
 		String checksum;
 		try {
 			checksum = StormEA.getChecksum(parameters.getFilePathDecoded(),
 				Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
-			log.error("Unable to get file checksum. ExtendedAttributesException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 			responseBuilder
 				.entity("Unable to get the checksum, Extended attributes management failure");
 			throw new WebApplicationException(responseBuilder.build());
 		}
-		log.info("Retrieved checksum is " + checksum);
+		log.info("Checksum for file {} is {}", filePath, checksum);
 		return checksum;
 	}
 
@@ -78,15 +79,17 @@ public class StormEAResource {
 
 		RequestParameters parameters = new RequestParameters.Builder(filePath)
 			.checksum(checksum).build();
-		log.info("Setting " + Constants.ADLER_32 + " \'"
-			+ parameters.getChecksumDecoded() + "\' checksum for file "
-			+ parameters.getFilePathDecoded());
+
+		log.info("Setting {} checksum for file {} with value {}",
+		  Constants.ADLER_32,
+		  parameters.getFilePathDecoded(),
+		  parameters.getChecksumDecoded());
+
 		try {
 			StormEA.setChecksum(parameters.getFilePathDecoded(),
 				parameters.getChecksumDecoded(), Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
-			log.error("Unable to set file checksum. ExtendedAttributesException: "
-				+ e.getMessage());
+		  log.error(e.getMessage(), e);
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 			responseBuilder
@@ -94,5 +97,4 @@ public class StormEAResource {
 			throw new WebApplicationException(responseBuilder.build());
 		}
 	}
-
 }

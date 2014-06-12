@@ -48,18 +48,8 @@ public class InvalidCopyPersistentChunkAttributesException extends
 	@Override
 	public String toString() {
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("InvalidCopyPersistentChunkAttributesException [nullrsd=");
-		builder.append(nullrsd);
-		builder.append(", nullgsm=");
-		builder.append(nullgsm);
-		builder.append(", negativeN=");
-		builder.append(negativeN);
-		builder.append(", nullGu=");
-		builder.append(nullGu);
-		builder.append(", nullChunkData=");
-		builder.append(nullChunkData);
-		builder.append("]");
-		return builder.toString();
+		return String.format("InvalidCopyPersistentChunkAttributesException "
+			+ "[nullrsd=%b, nullgsm=%b, negativeN=%b, nullGu=%b, nullChunkData=%b]",
+			nullrsd, nullgsm, negativeN, nullGu, nullChunkData);
 	}
 }

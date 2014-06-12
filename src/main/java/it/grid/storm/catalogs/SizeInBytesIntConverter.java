@@ -32,8 +32,7 @@ import it.grid.storm.srm.types.TSizeInBytes;
  */
 public class SizeInBytesIntConverter {
 
-	private static SizeInBytesIntConverter stc = new SizeInBytesIntConverter(); // only
-																																							// instance
+	private static SizeInBytesIntConverter stc = new SizeInBytesIntConverter();
 
 	private SizeInBytesIntConverter() {
 

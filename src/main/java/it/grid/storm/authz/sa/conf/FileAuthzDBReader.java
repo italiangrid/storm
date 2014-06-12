@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.AuthzDBReaderInterface;
 import it.grid.storm.authz.sa.model.FileAuthzDB;
@@ -31,12 +30,11 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileAuthzDBReader implements AuthzDBReaderInterface {
 
-	private final Logger log = AuthzDirector.getLogger();
-
-	private long period = 5000; // repeat every sec.
+	private static final Logger log = LoggerFactory.getLogger(FileAuthzDBReader.class);
 
 	private String authzDBPath;
 
@@ -106,7 +104,7 @@ public class FileAuthzDBReader implements AuthzDBReaderInterface {
 			authzDBs.put(authzDBName, fileAuthzDB);
 			long pTime = System.currentTimeMillis();
 			parsedTime.put(authzDBName, new Long(pTime));
-			log.debug("Bound FileAuthzDBReader with " + authzDBName);
+			log.debug("Bound FileAuthzDBReader with {}", authzDBName);
 		} catch (ConfigurationException ex) {
 			ex.printStackTrace();
 			throw new AuthzDBReaderException("Unable to parse the AuthzDB '"

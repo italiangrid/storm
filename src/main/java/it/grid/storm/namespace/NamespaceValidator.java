@@ -24,32 +24,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class NamespaceValidator {
 
 	private Logger log = LoggerFactory.getLogger(NamespaceValidator.class);
 
 	public boolean validateSchema(String SchemaUrl, String XmlDocumentUrl) {
-
 		boolean valid = false;
 		SAXParser parser = new SAXParser();
 		try {
@@ -71,36 +50,21 @@ public class NamespaceValidator {
 				log.info("Namespace Document is valid with Schema");
 				valid = true;
 			}
-		} catch (java.io.IOException ioe) {
-			log.error("IOException" + ioe.getMessage());
-		} catch (SAXException e) {
-			log.error("SAXException" + e.getMessage());
+		} catch (Throwable e) {
+		  log.error(e.getMessage(), e);
 		}
 		return valid;
 	}
 
-	/**
-	 * manageErrorWithinNamespace
-	 * 
-	 * @param handler
-	 *          Validator
-	 */
 	private void manageErrorWithinNamespace(
 		it.grid.storm.namespace.NamespaceValidator.Validator handler) {
 
-		StringBuffer sb = new StringBuffer();
-		sb.append("##############################################" + "\n");
-		sb.append("###   WARNING :  namespace.xml   INVALID   ###" + "\n");
-		sb.append("##############################################" + "\n");
-		sb.append("# Please check it. " + "\n");
-		sb.append("# The error is : " + handler.saxParseException.getMessage()
-			+ "\n");
-		sb.append("#   at line : " + handler.saxParseException.getLineNumber()
-			+ ", column " + handler.saxParseException.getColumnNumber() + "\n");
-		sb.append("#   in entity : " + handler.saxParseException.getSystemId()
-			+ "\n");
-		sb.append("##############################################" + "\n");
-		log.error("\n" + sb.toString());
+	  log.error("namespace.xml validation error.");
+	  log.error("Error: {} line: {}, column: {}, entity: {}", 
+	    handler.saxParseException.getMessage(),
+	    handler.saxParseException.getLineNumber(),
+	    handler.saxParseException.getColumnNumber(),
+	    handler.saxParseException.getSystemId());
 	}
 
 	private class Validator extends DefaultHandler {
@@ -111,11 +75,12 @@ public class NamespaceValidator {
 		@Override
 		public void error(SAXParseException exception) throws SAXException {
 
-			log.error("ERROR : " + exception.getMessage());
-			log.error(" at line " + exception.getLineNumber() + ", column "
-				+ exception.getColumnNumber());
-			log.error(" in entity " + exception.getSystemId());
-
+		  log.error("XML error: {}. Line: {}, column: {}, entity: {}",
+		    exception.getMessage(),
+		    exception.getLineNumber(),
+		    exception.getColumnNumber(),
+		    exception.getSystemId());
+		  
 			validationError = true;
 			saxParseException = exception;
 		}
@@ -123,10 +88,11 @@ public class NamespaceValidator {
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXException {
 
-			log.error("FATAL ERROR: " + exception.getMessage());
-			log.error(" at line " + exception.getLineNumber() + ", column "
-				+ exception.getColumnNumber());
-			log.error(" in entity " + exception.getSystemId());
+		  log.error("XML FATAL error: {}. Line: {}, column: {}, entity: {}",
+		    exception.getMessage(),
+		    exception.getLineNumber(),
+		    exception.getColumnNumber(),
+		    exception.getSystemId());
 
 			validationError = true;
 			saxParseException = exception;
@@ -135,10 +101,11 @@ public class NamespaceValidator {
 		@Override
 		public void warning(SAXParseException exception) throws SAXException {
 
-			log.error("Warning: " + exception.getMessage());
-			log.error(" at line " + exception.getLineNumber() + ", column "
-				+ exception.getColumnNumber());
-			log.error(" in entity " + exception.getSystemId());
+		  log.warn("XML warning: {}. Line: {}, column: {}, entity: {}",
+		    exception.getMessage(),
+		    exception.getLineNumber(),
+		    exception.getColumnNumber(),
+		    exception.getSystemId());
 
 		}
 	}

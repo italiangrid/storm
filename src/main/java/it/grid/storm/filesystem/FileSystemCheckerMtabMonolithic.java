@@ -146,8 +146,7 @@ public class FileSystemCheckerMtabMonolithic implements FileSystemChecker {
 		try {
 			mtab = new BufferedReader(new FileReader(MTAB_FILE_PATH));
 		} catch (FileNotFoundException e) {
-			log.error("Error while trying to create a reader for mtab file at "
-				+ MTAB_FILE_PATH + ". FileNotFoundException : " + e.getMessage());
+		  log.error(e.getMessage(), e);
 			throw new FileSystemCheckerException(
 				"Error while trying to create a reader for mtab file at "
 					+ MTAB_FILE_PATH + ". FileNotFoundException : " + e.getMessage());
@@ -164,8 +163,7 @@ public class FileSystemCheckerMtabMonolithic implements FileSystemChecker {
 				}
 			}
 		} catch (IOException e) {
-			log.error("Error while trying to read mtab file at " + MTAB_FILE_PATH
-				+ ". IOException : " + e.getMessage());
+		  log.error(e.getMessage(), e);
 			throw new FileSystemCheckerException(
 				"Error while trying to read mtab file at " + MTAB_FILE_PATH
 					+ ". IOException : " + e.getMessage());

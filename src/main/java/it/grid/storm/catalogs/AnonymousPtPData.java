@@ -37,7 +37,8 @@ import it.grid.storm.srm.types.TTURL;
 public class AnonymousPtPData extends AnonymousFileTransferData implements
 	PtPData {
 
-	static final Logger log = LoggerFactory.getLogger(AnonymousPtPData.class);
+	private static final Logger log = LoggerFactory.getLogger(AnonymousPtPData.class);
+
 	protected TSpaceToken spaceToken;
 	protected TLifeTimeInSeconds pinLifetime;
 	protected TLifeTimeInSeconds fileLifetime;
@@ -58,6 +59,10 @@ public class AnonymousPtPData extends AnonymousFileTransferData implements
 		if (pinLifetime == null || fileLifetime == null || spaceToken == null
 			|| fileStorageType == null || expectedFileSize == null
 			|| overwriteOption == null) {
+			log.debug("Invalid arguments: pinLifetime={}, fileLifetime={}, "
+				+ "spaceToken={}, fileStorageType={}, expectedFileSize={}, "
+				+ "overwriteOption={}", pinLifetime, fileLifetime, spaceToken, 
+				fileStorageType, expectedFileSize, overwriteOption);
 			throw new InvalidPtPDataAttributesException(toSURL, pinLifetime,
 				fileLifetime, fileStorageType, spaceToken, expectedFileSize,
 				transferProtocols, overwriteOption, status, transferURL);
@@ -68,12 +73,6 @@ public class AnonymousPtPData extends AnonymousFileTransferData implements
 		this.fileStorageType = fileStorageType;
 		this.expectedFileSize = expectedFileSize;
 		this.overwriteOption = overwriteOption;
-	}
-
-	@Override
-	protected Logger getLog() {
-
-		return log;
 	}
 
 	/*

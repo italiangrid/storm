@@ -41,7 +41,6 @@ public class CopyChunkDataTO {
 	private long primaryKey = -1; // ID primary key of record in DB
 	private String fromSURL = " ";
 	private String toSURL = " ";
-	// TODO MICHELE USER_SURL added new fields
 	private String normalizedSourceStFN = null;
 	private Integer sourceSurlUniqueID = null;
 	private String normalizedTargetStFN = null;

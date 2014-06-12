@@ -75,10 +75,10 @@ public class AbortFilesConverter implements Converter {
 		try {
 			requestToken = TRequestToken.decode(inputParam,
 				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken=" + requestToken.toString());
+			log.debug("requestToken={}" , requestToken.toString());
 		} catch (InvalidTRequestTokenAttributesException e) {
 			requestToken = null;
-			log.debug("requestToken=NULL");
+			log.debug("requestToken=NULL",e);
 		}
 
 		ArrayOfSURLs arrayOfSURLs;
@@ -121,7 +121,7 @@ public class AbortFilesConverter implements Converter {
 				ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
 		}
 
-		log.debug("AbortFilesConverter - Sending: " + outputParam.toString());
+		log.debug("AbortFilesConverter - Sending: {}" , outputParam.toString());
 
 		// Return global structure.
 		return outputParam;

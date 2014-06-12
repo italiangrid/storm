@@ -21,7 +21,6 @@
 package it.grid.storm.authz.path;
 
 import it.grid.storm.authz.AuthzDecision;
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.PathAuthzInterface;
 import it.grid.storm.authz.path.conf.PathAuthzDB;
 import it.grid.storm.authz.path.model.PathOperation;
@@ -33,13 +32,14 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
  */
 public class PathAuthz implements PathAuthzInterface {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(PathAuthz.class);
 	private final PathAuthzDB pathAuthzDB;
 
 	public PathAuthz(PathAuthzDB pathAuthzDB) {
@@ -61,13 +61,11 @@ public class PathAuthz implements PathAuthzInterface {
 			groupName = LocalGroups.getInstance().getGroupName(
 				guser.getLocalUser().getPrimaryGid());
 		} catch (CannotMapUserException e) {
-			log.error("Unable to retrieve the local group for '" + guser + "'");
+			log.error("Unable to retrieve the local group for '{}'", guser, e);
 			return AuthzDecision.INDETERMINATE;
 		}
-		log
-			.debug("<PathAuthz> Compute authorization for groupName:'" + groupName
-				+ "', filename:'" + fileStFN + "', pathOperation:'" + pathOperation
-				+ "'");
+		log.debug("<PathAuthz> Compute authorization for groupName:'{}', "
+			+ "filename:'{}', pathOperation:'{}'", groupName, fileStFN, pathOperation);
 		return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
 	}
 
@@ -79,13 +77,11 @@ public class PathAuthz implements PathAuthzInterface {
 			groupName = LocalGroups.getInstance().getGroupName(
 				guser.getLocalUser().getPrimaryGid());
 		} catch (CannotMapUserException e) {
-			log.error("Unable to retrieve the local group for '" + guser + "'");
+			log.error("Unable to retrieve the local group for '{}'", guser, e);
 			return AuthzDecision.INDETERMINATE;
 		}
-		log
-			.debug("<PathAuthz> Compute authorization for groupName:'" + groupName
-				+ "', filename:'" + fileStFN + "', pathOperation:'" + pathOperation
-				+ "'");
+		log.debug("<PathAuthz> Compute authorization for groupName:'{}', "
+			+ "filename:'{}', pathOperation:'{}'", groupName, fileStFN, pathOperation);
 		return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
 	}
 
@@ -93,9 +89,8 @@ public class PathAuthz implements PathAuthzInterface {
 	public AuthzDecision authorizeAnonymous(PathOperation pathOperation,
 		StFN fileStFN) {
 
-		log
-			.debug("<PathAuthz> Compute authorization for anonymous user on filename:'"
-				+ fileStFN + "', pathOperation:'" + pathOperation + "'");
+		log.debug("<PathAuthz> Compute authorization for anonymous user on "
+			+ "filename:'{}', pathOperation:'{}'", fileStFN, pathOperation);
 		return pathAuthzDB.evaluateAnonymous(fileStFN, pathOperation);
 	}
 
@@ -103,9 +98,8 @@ public class PathAuthz implements PathAuthzInterface {
 	public AuthzDecision authorizeAnonymous(SRMFileRequest srmPathOp,
 		StFN fileStFN) {
 
-		log
-			.debug("<PathAuthz> Compute authorization for anonymous user on filename:'"
-				+ fileStFN + "', SRMFileRequest:'" + srmPathOp + "'");
+		log.debug("<PathAuthz> Compute authorization for anonymous user on "
+			+ "filename:'{}', SRMFileRequest:'{}'", fileStFN, srmPathOp);
 		return pathAuthzDB.evaluateAnonymous(fileStFN, srmPathOp);
 	}
 
@@ -201,7 +195,7 @@ public class PathAuthz implements PathAuthzInterface {
 			int localGroup = guser.getLocalUser().getPrimaryGid();
 			groupName = LocalGroups.getInstance().getGroupName(localGroup);
 		} catch (CannotMapUserException e) {
-			log.error("Unable to retrieve the local group for '" + guser + "'");
+			log.error("Unable to retrieve the local group for '{}'", guser, e);
 			groupName = "unknown";
 		}
 

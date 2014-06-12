@@ -37,17 +37,14 @@ public class PerformanceStatus {
 	private Hashtable<OperationType, PerformanceEvent> perfStatus = new Hashtable<OperationType, PerformanceEvent>();
 	private static int timeWindows = HealthDirector.getHealthMonitor().perfGlanceTimeInterval;
 
-	/**
-	 * 
-	 * @param eventToAnalyze
-	 */
 	public PerformanceStatus(ArrayList<LogEvent> eventToAnalyze) {
 
 		PERF_LOG.debug("PERFORMANCE STATUS");
 		PerformanceEvent pEvent;
 		OperationType ot;
 		if (eventToAnalyze != null) {
-			PERF_LOG.debug("PERFORMANCE STATUS :" + eventToAnalyze.size());
+			PERF_LOG.debug("PERFORMANCE STATUS : {}",
+			  eventToAnalyze.size());
 			for (LogEvent event : eventToAnalyze) {
 				ot = event.getOperationType();
 				if (perfStatus.containsKey(ot)) {

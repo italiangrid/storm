@@ -29,51 +29,6 @@ import it.grid.storm.srm.types.TTURL;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description
- * </p>
- * This interface represents the main entry point for namespace operation. The
- * results of retrived informations depends on namespace configuration. The
- * namespace configuration is read back every time that it changes, so it is
- * possible mutates the namespace configuration at run time.
- * 
- * 
- * The namespace configuration is divided in three main section: 1) Virtual File
- * System definition 2) Mapping rules definition 3) Approachable rules
- * definition
- * 
- * 
- * VFS Configuration
- * 
- * 
- * 
- * Mapping Rule
- * 
- * 
- * 
- * Approachable Rule
- * 
- * 
- * 
- * 
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public interface NamespaceInterface {
 
 	/**
@@ -97,6 +52,33 @@ public interface NamespaceInterface {
 	 *           : Occur when
 	 */
 	public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user)
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable and writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getApproachableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableByAnonymousVFS()
+		throws NamespaceException;
+
+	/**
+	 * 
+	 * @return List : Return a List of readable or writable by anonymous users
+	 *         VirtualFS instances
+	 * @throws NamespaceException
+	 */
+	public List<VirtualFSInterface> getReadableOrApproachableByAnonymousVFS()
 		throws NamespaceException;
 
 	/**
@@ -130,18 +112,21 @@ public interface NamespaceInterface {
 	 * @return StoRI
 	 * @throws NamespaceException
 	 * @throws UnapprochableSurlException
+	 * @throws InvalidSURLException 
 	 */
 	public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user)
-		throws IllegalArgumentException, UnapprochableSurlException;
+		throws IllegalArgumentException, UnapprochableSurlException, NamespaceException, InvalidSURLException;
 
 	/**
 	 * 
 	 * @param surl
 	 *          TSURL
 	 * @return StoRI
+	 * @throws IllegalArgumentException 
 	 * @throws NamespaceException
+	 * @throws InvalidSURLException 
 	 */
-	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException;
+	public StoRI resolveStoRIbySURL(TSURL surl) throws UnapprochableSurlException, IllegalArgumentException, NamespaceException, InvalidSURLException;
 
 	/**
 	 * 
@@ -152,9 +137,11 @@ public interface NamespaceInterface {
 	 * @return VirtualFSInterface
 	 * @throws NamespaceException
 	 * @throws UnapprochableSurlException
+	 * @throws InvalidSURLException 
+	 * @throws IllegalArgumentException 
 	 */
 	public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
-		throws UnapprochableSurlException;
+		throws UnapprochableSurlException, IllegalArgumentException, InvalidSURLException, NamespaceException;
 
 	/**
 	 * 
@@ -432,6 +419,5 @@ public interface NamespaceInterface {
 	 */
 	public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
 		throws NamespaceException;
-
 
 }

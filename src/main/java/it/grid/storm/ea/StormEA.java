@@ -93,8 +93,9 @@ public class StormEA {
 	public static void removeChecksum(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_CHECKSUM)) {
-			log.info("Cannot remove '" + EA_CHECKSUM
-				+ "' EA because the attribute was not found: " + fileName);
+		  log.info("Cannot remove '{}' EA. Attribute not found for file: {}",
+		    EA_CHECKSUM,
+		    fileName);
 			return;
 		}
 

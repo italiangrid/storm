@@ -21,7 +21,6 @@ import it.grid.storm.check.GenericCheckException;
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 
@@ -59,21 +58,20 @@ public class NamespaceFSAssociationCheck implements Check {
 
 		this();
 		if (mountPoints == null || vfsSet == null) {
-			log
-				.error("Unable to create NamespaceFSAssociationCheck received null arguments: mountPoints="
-					+ mountPoints + " vfsSet=" + vfsSet);
+			log.error("Unable to create NamespaceFSAssociationCheck received null "
+				+ "arguments: mountPoints={} vfsSet={}", mountPoints, vfsSet);
 			throw new IllegalArgumentException(
 				"Unable to create NamespaceFSAssociationCheck received null arguments");
 		}
 		if (!verifyMountPoints(mountPoints)) {
-			log
-				.error("Unable to create NamespaceFSAssociationCheck received invalid mountPoints");
+			log.error("Unable to create NamespaceFSAssociationCheck received "
+				+ "invalid mountPoints");
 			throw new IllegalArgumentException(
 				"Unable to create NamespaceFSAssociationCheck received invalid mountPoints");
 		}
 		if (!verifyVfsSet(vfsSet)) {
-			log
-				.error("Unable to create NamespaceFSAssociationCheck received invalid vfsSet");
+			log.error("Unable to create NamespaceFSAssociationCheck received "
+				+ "invalid vfsSet");
 			throw new IllegalArgumentException(
 				"Unable to create NamespaceFSAssociationCheck received invalid vfsSet");
 		}
@@ -93,12 +91,12 @@ public class NamespaceFSAssociationCheck implements Check {
 				return false;
 			}
 			if (vfs.getFSType() == null) {
-				log.info("The vfs " + vfs.getAliasName() + " has null FSType");
+				log.info("The vfs {} has null FSType", vfs.getAliasName());
 				return false;
 			}
 
 			if (vfs.getRootPath() == null) {
-				log.info("The vfs " + vfs.getAliasName() + " has null rootPath");
+				log.info("The vfs {} has null rootPath", vfs.getAliasName());
 				return false;
 			}
 
@@ -119,7 +117,7 @@ public class NamespaceFSAssociationCheck implements Check {
 				return false;
 			}
 			if (mountPoints.get(key) == null) {
-				log.info("The mountPoint key " + key + " points to a null value");
+				log.info("The mountPoint key {} points to a null value", key);
 				return false;
 			}
 		}
@@ -147,16 +145,16 @@ public class NamespaceFSAssociationCheck implements Check {
 					mountPoints);
 			}
 			if (!currentResponse) {
-				log.error("Check on VFS " + vfs.getAliasName() + " failed. Type ="
-					+ vfs.getFSType() + " , root path =" + vfs.getRootPath());
+				log.error("Check on VFS {} failed. FSType={}, rootPath={}", 
+					vfs.getAliasName(), vfs.getFSType(), vfs.getRootPath());
 				errorMessage += "Check on VFS " + vfs.getAliasName()
 					+ " failed. Type =" + vfs.getFSType() + " , root path ="
 					+ vfs.getRootPath();
 			}
-			log.debug("Check response for path " + vfs.getRootPath() + " is "
-				+ (currentResponse ? "success" : "failure"));
+			log.debug("Check response for path {} is {}", vfs.getRootPath(), 
+				currentResponse ? "success" : "failure");
 			status = CheckStatus.and(status, currentResponse);
-			log.debug("Partial result is " + status.toString());
+			log.debug("Partial result is {}", status.toString());
 		}
 
 		return new CheckResponse(status, errorMessage);
@@ -170,9 +168,8 @@ public class NamespaceFSAssociationCheck implements Check {
 		throws IllegalArgumentException {
 
 		if (FSType == null) {
-			log
-				.error("Unable to check posix filesystem declaration received null argument: FSType= "
-					+ FSType);
+			log.error("Unable to check posix filesystem declaration received null "
+				+ "argument: FSType={}", FSType);
 			throw new IllegalArgumentException(
 				"Unable to check posix filesystem declaration received null argument");
 		}
@@ -192,28 +189,27 @@ public class NamespaceFSAssociationCheck implements Check {
 		Map<String, String> mountPoints) {
 
 		boolean response = false;
-		log.debug("Checking fs at " + fsRootPath + " as a " + fsType);
+		log.debug("Checking fs at {} as a {}", fsRootPath, fsType);
 		String canonicalpath;
 		try {
 			canonicalpath = new File(fsRootPath).getCanonicalPath();
 		} catch (IOException e) {
-			log.error("unable to build the canonical path for root \'" + fsRootPath
-				+ "\' . IOException : " + e.getMessage());
+			log.error("unable to build the canonical path for root '{}'. "
+				+ "IOException: {}", fsRootPath, e.getMessage());
 			return false;
 		}
 		String mountPointFSType = getMountPointFSTypeBestmatch(canonicalpath,
 			mountPoints);
 		if (mountPointFSType != null) {
-			log.debug("Found on a mountPoint of a \'" + mountPointFSType + "\' FS");
+			log.debug("Found on a mountPoint of a '{}' FS", mountPointFSType);
 			if (fsType.equals(mountPointFSType)) {
 				response = true;
 			} else {
-				log.warn("Mount point File System type " + mountPointFSType
-					+ " differs from the declared " + fsType + ". Check failed");
+				log.warn("Mount point File System type {} differs from the declared. "
+					+ "Check failed", mountPointFSType, fsType);
 			}
 		} else {
-			log.warn("No file systems are mounted at path " + fsRootPath
-				+ "! Check failed");
+			log.warn("No file systems are mounted at path! Check failed", fsRootPath);
 		}
 		return response;
 	}
@@ -226,7 +222,7 @@ public class NamespaceFSAssociationCheck implements Check {
 	private String getMountPointFSTypeBestmatch(String fsRootPath,
 		Map<String, String> mountPoints) {
 
-		log.debug("Retrieving mout point for path " + fsRootPath);
+		log.debug("Retrieving mout point for path {}", fsRootPath);
 		String fsType = null;
 		int minDistance = -1;
 		int pathSize = conputePathSize(fsRootPath);

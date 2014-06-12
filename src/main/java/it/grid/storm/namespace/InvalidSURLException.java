@@ -15,23 +15,38 @@
  * the License.
  */
 
-package it.grid.storm.persistence.dao;
+/**
+ * This class represents an Exception throws if TDirOptionData is not well
+ * formed. *
+ * 
+ * @author Magnoni Luca
+ * @author Cnaf - INFN Bologna
+ * @date
+ * @version 1.0
+ */
 
-import java.util.Collection;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.CopyChunkTO;
-import it.grid.storm.srm.types.TRequestToken;
+package it.grid.storm.namespace;
 
-public interface CopyChunkDAO {
+import it.grid.storm.srm.types.*;
 
-	public CopyChunkTO getCopyChunkDataById(Long ssId) throws DataAccessException;
+public class InvalidSURLException extends Exception {
 
-	public void addCopyChunkData(CopyChunkTO copyChunkTO)
-		throws DataAccessException;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private TSURL surl = null;
 
-	public Collection getCopyChunksDataByToken(TRequestToken token)
-		throws DataAccessException;
+	public InvalidSURLException(TSURL surl, String message) {
 
-	public void removeCopyChunksData(CopyChunkTO copyChunkTO)
-		throws DataAccessException;
+		super(message);
+		this.surl = surl;
+	}
+
+	public String toString() {
+
+		return String.format("InvalidSURLException for SURL='%s': %s", this.surl,
+			this.getMessage());
+	}
+
 }

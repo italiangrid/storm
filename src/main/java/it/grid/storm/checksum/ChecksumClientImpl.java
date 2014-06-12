@@ -132,7 +132,7 @@ public class ChecksumClientImpl implements ChecksumClient {
 
 		connection.disconnect();
 
-		log.trace("Checksum server status response: " + responseBody);
+		log.trace("Checksum server status response: {}", responseBody);
 
 		if (connection.getResponseCode() != 200) {
 			return new ChecksumServerStatus(false, "HTML error: "

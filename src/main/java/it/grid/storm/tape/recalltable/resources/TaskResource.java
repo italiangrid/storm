@@ -107,7 +107,7 @@ public class TaskResource {
 
 		String inputString = buildInputString(input);
 		
-		log.debug("putTaskStatus() - Input:" + inputString);
+		log.debug("putTaskStatus() - Input: {}" , inputString);
 
 		PutTapeRecallStatusValidator validator = 
 			new PutTapeRecallStatusValidator(inputString);
@@ -127,7 +127,7 @@ public class TaskResource {
 		
 		} catch (TapeRecallException e) {
 			
-			log.error("Error serving request. TapeRecallException: " + e.getMessage());
+			log.error("Error serving request. TapeRecallException: {}" , e.getMessage() , e);
 			
 			response = 
 				Response.status(Status.INTERNAL_SERVER_ERROR).build();
@@ -147,11 +147,11 @@ public class TaskResource {
 	public void putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId, InputStream input)
 		throws TapeRecallException {
 
-		log.debug("Requested to change recall table value for taskId " + groupTaskId);
+		log.debug("Requested to change recall table value for taskId {}" , groupTaskId);
 
 		String inputStr = buildInputString(input);
 		
-		log.debug("@PUT (input string) = '" + inputStr + "'");
+		log.debug("@PUT (input string) = '{}'" , inputStr);
 
 		// Retrieve Tasks corresponding to taskId
 		// - the relationship between groupTaskId and entries within the DB is
@@ -165,14 +165,14 @@ public class TaskResource {
 			
 			if (!rtCat.existsGroupTask(groupTaskId)) {
 				
-				log.info("Received a tape recall status update but no Recall Group Task found with ID = '" + groupTaskId + "'");
+				log.info("Received a tape recall status update but no Recall Group Task found with ID = '{}'" , groupTaskId);
 				
 				throw new TapeRecallException("No Recall Group Task found with ID = '" + groupTaskId + "'");
 			}
 		
 		} catch (DataAccessException e) {
 			
-			log.error("Unable to retrieve Recall Group Task with ID = '" + groupTaskId + "' " + e.getMessage());
+			log.error("Unable to retrieve Recall Group Task with ID = '{}' DataAccessException: {}" , groupTaskId , e.getMessage() , e);
 			
 			throw new TapeRecallException("Unable to retrieve recall group task " +
 					"with ID = '" + groupTaskId + "' " + e.getMessage());
@@ -211,14 +211,14 @@ public class TaskResource {
 		
 		if (key.equals(keyRetryValue)) { // **** Set the Retry value
 		
-			log.debug("Changing retry attempt of task " + groupTaskId + " to " + intValue);
+			log.debug("Changing retry attempt of task {} to {}" , groupTaskId , intValue);
 		
 			rtCat.changeGroupTaskRetryValue(groupTaskId, intValue);
 		
 		} else {
 			
 			if (key.equals(keyStatus)) { // **** Set the Status
-				log.debug("Changing status of task " + groupTaskId + " to " + intValue);
+				log.debug("Changing status of task {} to {}" , groupTaskId , intValue);
 				
 				try {
 			
@@ -227,9 +227,7 @@ public class TaskResource {
 				
 				} catch (DataAccessException e) {
 				
-					log.error("Unable to change the status for group task id "
-						+ groupTaskId + " to status " + intValue
-						+ " . DataAccessException : " + e.getMessage());
+					log.error("Unable to change the status for group task id {} to status {} DataAccessException : {}" , groupTaskId , intValue , e.getMessage() , e);
 					
 					throw new TapeRecallException(
 						"Unable to change the status for group task id " + groupTaskId
@@ -272,7 +270,7 @@ public class TaskResource {
 		
 		result = Response.created(newResource).build();
 		
-		log.debug("New task resource created: " + newResource);
+		log.debug("New task resource created: {}" , newResource);
 		
 		return result;
 	}

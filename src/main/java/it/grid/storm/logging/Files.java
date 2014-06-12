@@ -21,13 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-/** A utility class for working with files. */
 public final class Files {
 
-	/** Constructor. */
-	private Files() {
-
-	}
+	private Files() {}
 
 	/**
 	 * A convenience method for getting a file and requiring it to be a readable
@@ -44,7 +40,6 @@ public final class Files {
 	 *           read
 	 */
 	public static File getReadableFile(String filePath) throws IOException {
-
 		return getFile(filePath, true, true, true, false);
 	}
 

@@ -32,6 +32,7 @@ import it.grid.storm.xmlrpc.converter.ConveterFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,31 +66,30 @@ public class XMLRPCExecutor {
 
 		long startTime = System.currentTimeMillis();
 		long duration = System.nanoTime();
-		log.debug("Executing a \'" + type.toString() + "\'" + "Call");
-		log.debug("  Structure size  : " + inputParam.size());
+		log.debug("Executing a '{}' call" , type.toString());
+		log.debug("  Structure size  : {}" , inputParam.size());
 		Converter converter = ConveterFactory.getConverter(type);
 		SynchcallDispatcher dispatcher = SynchcallDispatcherFactory.getDispatcher();
 
-		log.debug("Converting input data with Converter "
-			+ converter.getClass().getName());
+		log.debug("Converting input data with Converter {}", converter.getClass().getName());
 		InputData inputData = converter.convertToInputData(inputParam);
 
-		log.debug("Dispatching request using SynchcallDispatcher "
-			+ dispatcher.getClass().getName());
+		log.debug("Dispatching request using SynchcallDispatcher {}"
+			, dispatcher.getClass().getName());
 		OutputData outputData;
 		try {
 			outputData = dispatcher.processRequest(type, inputData);
 		} catch (IllegalArgumentException e) {
 			log
-				.error("Unable to process the request. Error from the SynchcallDispatcher. IllegalArgumentException: "
-					+ e.getMessage());
+				.error("Unable to process the request. Error from the SynchcallDispatcher. IllegalArgumentException: {}"
+					, e.getMessage(),e);
 			throw new StoRMXmlRpcException(
 				"Unable to process the request. IllegalArgumentException: "
 					+ e.getMessage());
 		} catch (CommandException e) {
 			log
-				.error("Unable to execute the request. Error from the SynchcallDispatcher. CommandException: "
-					+ e.getMessage());
+				.error("Unable to execute the request. Error from the SynchcallDispatcher. CommandException: {}"
+					, e.getMessage(),e);
 			throw new StoRMXmlRpcException(
 				"Unable to process the request. CommandException: " + e.getMessage());
 		}
@@ -97,10 +97,10 @@ public class XMLRPCExecutor {
 		duration = System.nanoTime() - duration;
 
 		logExecution(convertOperationType(type),
-			DataHelper.getRequestor(inputData), startTime, duration,
+			DataHelper.getRequestor(inputData), startTime,
+			TimeUnit.NANOSECONDS.toMillis(duration),
 			outputData.isSuccess());
-		// TODO rewrite the display method
-		// log.debug("Output Map: " + ParameterDisplayHelper.display(outputParam));
+
 		return outputParam;
 	}
 
@@ -113,7 +113,7 @@ public class XMLRPCExecutor {
 		LogEvent event = new LogEvent(opType, dn, startTime, duration,
 			successResult);
 		if (!(bookKeepers.isEmpty())) {
-			log.debug("Found # " + bookKeepers.size() + "bookeepers.");
+			log.debug("Found # {}  bookeepers." , bookKeepers.size());
 			for (int i = 0; i < bookKeepers.size(); i++) {
 				bookKeepers.get(i).addLogEvent(event);
 			}

@@ -45,6 +45,9 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
@@ -57,6 +60,7 @@ import java.util.Map.Entry;
 
 public class PingCommand extends DiscoveryCommand implements Command {
 
+	public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
 	private static final String KEY_ELEMENT_KEY = "key=";
 
 	public PingCommand() {
@@ -83,10 +87,9 @@ public class PingCommand extends DiscoveryCommand implements Command {
 				try {
 					otherInfo = new TExtraInfo(entry.getKey().toString(), entry
 						.getValue().toString());
-					log.debug("srmPing: Found the value for key='" + key + "' = '"
-						+ otherInfo + "'");
+					log.debug("srmPing: {} -> {}", key, otherInfo);
 				} catch (InvalidTExtraInfoAttributeException ex) {
-					log.error("Invalid KEY requested in Ping.");
+					log.error(ex.getMessage(),ex);
 					otherInfo = new TExtraInfo();
 				}
 				extraInfoArray.addTExtraInfo(otherInfo);
@@ -97,12 +100,10 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
 		outputData.setExtraInfoArray(extraInfoArray);
 
-		String infoLogs = "srmPing: " + "<"
-			+ DataHelper.getRequestor(inputData).toString() + ">" + "[AuthID:'"
-			+ inputData.getAuthorizationID() + "']" + "return values: ["
-			+ extraInfoArray + "]";
-
-		log.info(infoLogs);
+		log.info("srmPing: <{}> [AuthID: {}] extraInfo: {}",
+			DataHelper.getRequestor(inputData),
+			inputData.getAuthorizationID(),
+			extraInfoArray);
 
 		return outputData;
 	}
@@ -123,8 +124,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 		if (result.substring(0, 4).equalsIgnoreCase(KEY_ELEMENT_KEY)) {
 			result = result.substring(4);
 		}
-		log.debug("Retrieved KEY:'" + result + "' from AuthorizationID : '"
-			+ authorizationID + "'");
 		return result;
 	}
 
@@ -137,34 +136,24 @@ public class PingCommand extends DiscoveryCommand implements Command {
 		Properties properties = new Properties();
 
 		Configuration config = Configuration.getInstance();
-		String configurationPATH = config.namespaceConfigPath(); // Default =
-																															// "./etc/"
-		String pingPropertiesFileName = config.getPingValuesPropertiesFilename(); // Default
-																																							// =
-																																							// "ping-values.properties"
+		String configurationPATH = config.namespaceConfigPath(); 
+		String pingPropertiesFileName = config.getPingValuesPropertiesFilename(); 
 		String propertiesFile = configurationPATH + File.separator
 			+ pingPropertiesFileName;
 
-		// Check if the file Exists
 		if (new File(propertiesFile).exists()) {
-			// Read properties file.
 			try {
 				properties.load(new FileInputStream(propertiesFile));
-				log.debug("srmPing: Loaded PING values from the properties file: '"
-					+ pingPropertiesFileName + "'");
 			} catch (IOException e) {
-				log.error("Error while readind Ping Values in file : '"
-					+ propertiesFile + "' EXCEPTION:" + e);
+				log.error("Error loading ping properties from file {}. {}", 
+						propertiesFile, e.getMessage(), e);
 			}
 		}
 
-		// Add in properties the Mandatory Properties Values
 		properties.put(Constants.BE_VERSION.getKey(),
 			Constants.BE_VERSION.getValue());
 		properties.put(Constants.BE_OS_DISTRIBUTION.getKey(),
 			Constants.BE_OS_DISTRIBUTION.getValue());
-		log.debug("srmPing: Loaded NR " + properties.size()
-			+ " PING key/value couple.");
 		return properties;
 	}
 
@@ -191,7 +180,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 				arrayResult.addTExtraInfo(new TExtraInfo(key, Constants.BE_OS_PLATFORM
 					.getValue()));
 			} catch (InvalidTExtraInfoAttributeException e) {
-				log.warn("Really strange!");
+				log.error(e.getMessage(),e);
 			}
 			break;
 		case BE_OS_KERNEL_RELEASE:
@@ -199,7 +188,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 				arrayResult.addTExtraInfo(new TExtraInfo(key,
 					Constants.BE_OS_KERNEL_RELEASE.getValue()));
 			} catch (InvalidTExtraInfoAttributeException e) {
-				log.warn("Really strange!");
+				log.error(e.getMessage(),e);
 			}
 			break;
 		case TEST_POST_NEW_TASK:
@@ -220,7 +209,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 				extraInfo = new TExtraInfo(SpecialKey.UNKNOWN.toString(),
 					SpecialKey.UNKNOWN.getDescription() + ":'" + key + "'");
 			} catch (InvalidTExtraInfoAttributeException e) {
-				log.warn("Really strange!");
+				log.error(e.getMessage(),e);
 			}
 			arrayResult.addTExtraInfo(extraInfo);
 			break;
@@ -239,16 +228,14 @@ public class PingCommand extends DiscoveryCommand implements Command {
 		ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
 		Properties pingValues = loadProperties();
 		TExtraInfo otherInfo = new TExtraInfo();
-		log.debug("srmPing: Found a request to retrieve ALL key values. (NR:"
-			+ pingValues.size() + ")");
-		// Insert all keys/values in to the results
+
 		for (Enumeration<?> e = pingValues.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = pingValues.getProperty(key);
 			try {
 				otherInfo = new TExtraInfo(key, value);
 			} catch (InvalidTExtraInfoAttributeException ex) {
-				log.error("Invalid KEY (key='" + key + "') requested in Ping.");
+				log.error(ex.getMessage(),ex);
 				otherInfo = new TExtraInfo();
 			}
 			arrayResult.addTExtraInfo(otherInfo);
@@ -264,29 +251,23 @@ public class PingCommand extends DiscoveryCommand implements Command {
 	private ArrayOfTExtraInfo test_post_new_task(String param) {
 
 		ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
-		// Recall Table Catalog
 		String errorStr;
-		// Parsing of the inputString to extract the fields of RecallTask
+
 		TapeRecallData rtd;
 		try {
 			rtd = TapeRecallData.buildFromString(param);
-			log.debug("RTD=" + rtd.toString());
-			// Store the new Recall Task if it is all OK.
 			TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
 			try {
 				new TapeRecallCatalog().insertNewTask(task);
 			} catch (DataAccessException e) {
-				errorStr = "Unable to use RecallTable DB.";
-				log.error(errorStr);
+				log.error(e.getMessage(),e);
 				return arrayResult;
 			}
 			URI newResource = URI.create("/" + task.getTaskId());
-			log.debug("New task resource created: " + newResource);
+			log.debug("New resource created: {}", newResource);
 
 		} catch (TapeRecallException e) {
-			errorStr = "Unable to use build the recall task from the provided string \'"
-				+ param + "\'";
-			log.error(errorStr);
+			log.error(e.getMessage(),e);
 			return arrayResult;
 		}
 

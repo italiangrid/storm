@@ -31,16 +31,22 @@ import it.grid.storm.srm.types.*;
 
 public class MalformedSURLException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private TSURL surl = null;
 
-	public MalformedSURLException(TSURL surl) {
+	public MalformedSURLException(TSURL surl, String message) {
 
+		super(message);
 		this.surl = surl;
 	}
 
 	public String toString() {
 
-		return ("Malformed SURL does not contains StFNRoot: " + surl);
+		return String.format("MalformedSURLException for SURL='%s': %s", this.surl,
+			this.getMessage());
 	}
 
 }

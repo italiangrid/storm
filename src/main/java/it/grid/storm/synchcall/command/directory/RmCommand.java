@@ -23,7 +23,9 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -63,7 +65,7 @@ import org.slf4j.LoggerFactory;
 public class RmCommand implements Command {
 
 	private static final String SRM_COMMAND = "srmRm";
-	private final Logger log = LoggerFactory.getLogger(RmCommand.class);
+	private static final Logger log = LoggerFactory.getLogger(RmCommand.class);
 	private final String funcName = "srmRm";
 	private final NamespaceInterface namespace;
 
@@ -106,9 +108,9 @@ public class RmCommand implements Command {
 		ArrayOfSURLs surlArray = inputData.getSurlArray();
 		ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
-		log.debug("srmRm: DirManager: Rm: SURLVectorSize: " + surlArray.size());
+		log.debug("srmRm: DirManager: Rm: SURLVectorSize: {}", surlArray.size());
 		for (TSURL surl : inputData.getSurlArray().getArrayList()) {
-			log.debug("srmRm: DirManager: Rm: SURL: " + surl);
+			log.debug("srmRm: DirManager: Rm: SURL: {}" ,surl);
 			TSURLReturnStatus fileStatus = new TSURLReturnStatus();
 			fileStatus.setSurl(surl);
 			TReturnStatus returnStatus = null;
@@ -120,11 +122,35 @@ public class RmCommand implements Command {
 							stori = namespace.resolveStoRIbySURL(surl,
 								((IdentityInputData) inputData).getUser());
 						} catch (UnapprochableSurlException e) {
-							log.info("Unable to build a stori for surl " + surl
-								+ " for user " + DataHelper.getRequestor(inputData)
-								+ " UnapprochableSurlException: " + e.getMessage());
+						  log.info("Unable to build a stori for surl {} for user {}. {}", 
+						    surl, 
+						    DataHelper.getRequestor(inputData), 
+						    e.getMessage());
+
 							globalStatus = CommandHelper.buildStatus(
-								TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
+								TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+							printRequestOutcome(globalStatus, inputData);
+							outputData.setStatus(globalStatus);
+							outputData.setSurlStatus(null);
+							return outputData;
+						} catch (NamespaceException e) {
+						  log.info("Unable to build a stori for surl {} for user {}. {}", 
+						    surl, 
+						    DataHelper.getRequestor(inputData), 
+						    e.getMessage());
+							globalStatus = CommandHelper.buildStatus(
+								TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+							printRequestOutcome(globalStatus, inputData);
+							outputData.setStatus(globalStatus);
+							outputData.setSurlStatus(null);
+							return outputData;
+						} catch (InvalidSURLException e) {
+						  log.info("Unable to build a stori for surl {} for user {}. {}", 
+						    surl, 
+						    DataHelper.getRequestor(inputData), 
+						    e.getMessage());
+							globalStatus = CommandHelper.buildStatus(
+								TStatusCode.SRM_INVALID_PATH, e.getMessage());
 							printRequestOutcome(globalStatus, inputData);
 							outputData.setStatus(globalStatus);
 							outputData.setSurlStatus(null);
@@ -134,10 +160,28 @@ public class RmCommand implements Command {
 						try {
 							stori = namespace.resolveStoRIbySURL(surl);
 						} catch (UnapprochableSurlException e) {
-							log.info("Unable to build a stori for surl " + surl
-								+ " UnapprochableSurlException: " + e.getMessage());
+							log.info("Unable to build a stori for surl {}. {}",
+							  surl, e.getMessage());
 							globalStatus = CommandHelper.buildStatus(
-								TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified");
+								TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+							printRequestOutcome(globalStatus, inputData);
+							outputData.setStatus(globalStatus);
+							outputData.setSurlStatus(null);
+							return outputData;
+						} catch (NamespaceException e) {
+							log.info("Unable to build a stori for surl {}. {}",
+							  surl, e.getMessage());
+							globalStatus = CommandHelper.buildStatus(
+								TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+							printRequestOutcome(globalStatus, inputData);
+							outputData.setStatus(globalStatus);
+							outputData.setSurlStatus(null);
+							return outputData;
+						} catch (InvalidSURLException e) {
+							log.info("Unable to build a stori for surl {}. {}",
+							  surl, e.getMessage());
+							globalStatus = CommandHelper.buildStatus(
+								TStatusCode.SRM_INVALID_PATH, e.getMessage());
 							printRequestOutcome(globalStatus, inputData);
 							outputData.setStatus(globalStatus);
 							outputData.setSurlStatus(null);
@@ -145,19 +189,18 @@ public class RmCommand implements Command {
 						}
 					}
 				} catch (IllegalArgumentException e) {
-					log
-						.error("SrmRm: Unable to build StoRI by surl and user. IllegalArgumentException: "
-							+ e.getMessage());
-					globalStatus = CommandHelper
-						.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-							"Unable to build a STORI from surl");
+				  
+				  log.error("SrmRm: StoRI from surl error: {}", e.getMessage(), e);
+				  
+					globalStatus = CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
 					printRequestOutcome(globalStatus, inputData);
 					outputData.setStatus(globalStatus);
 					outputData.setSurlStatus(null);
 					return outputData;
 				}
 			} else {
-				log.error("srmRm: Malformed SURL passed from converter ");
+				log.error("srmRm: Invalid SURL {}", surl);
 				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
 					"Invalid SURL");
 				printSurlOutcome(returnStatus, inputData, surl);
@@ -184,9 +227,8 @@ public class RmCommand implements Command {
 					}
 					if (decision.equals(AuthzDecision.PERMIT)) {
 
-						log.debug("srmRm: authorized for "
-							+ DataHelper.getRequestor(inputData) + " for file = "
-							+ stori.getPFN());
+						log.debug("srmRm: authorized for {} on file= {}",
+						  DataHelper.getRequestor(inputData) , stori.getPFN());
 
 						// Prior to delete the file get the actual file size to update
 						// properly the DB
@@ -198,8 +240,8 @@ public class RmCommand implements Command {
 							returnStatus = manageAuthorizedRM(surl, stori);
 						} catch (IllegalArgumentException e) {
 							log
-								.error("srmRm: IllegalArgumentException from manageAuthorizedRM: "
-									+ e);
+								.error("srmRm: {}", e.getMessage(), e);
+
 							globalStatus = CommandHelper.buildStatus(
 								TStatusCode.SRM_INTERNAL_ERROR,
 								"Error while performing an authorized rm");
@@ -208,8 +250,7 @@ public class RmCommand implements Command {
 							outputData.setSurlStatus(null);
 							return outputData;
 						} catch (UnknownSurlException e) {
-							log.error("srmRm: UnknownSurlException from manageAuthorizedRM: "
-								+ e);
+							log.error("srmRm: {}", e.getMessage(), e);
 							returnStatus = CommandHelper.buildStatus(
 								TStatusCode.SRM_INVALID_PATH, "The SURL is unknown");
 						}
@@ -230,16 +271,17 @@ public class RmCommand implements Command {
 						}
 					} else {
 						log
-							.debug("srmRm: User not authorized to delete the file AuthzDecision is :'"
-								+ decision + "')");
+							.debug("srmRm: User not authorized to delete file. AuthzDecision: {}",
+							  decision);
 						returnStatus = CommandHelper.buildStatus(
 							TStatusCode.SRM_AUTHORIZATION_FAILURE,
 							"User is not authorized to delete the file");
 					}
 				} else {
 					log
-						.debug("srmRm: User not authorized to perform srmRm request on the storage area: "
-							+ token);
+						.debug("srmRm: User not authorized to perform srmRm on SA: {}", 
+						  token);
+
 					returnStatus = CommandHelper.buildStatus(
 						TStatusCode.SRM_AUTHORIZATION_FAILURE,
 						"User not authorized to perform "
@@ -352,39 +394,18 @@ public class RmCommand implements Command {
 			}
 		}
 
-		// Build the ReturnStatus
 		try {
 			returnStatus = new TReturnStatus(statusCode, explanation);
 		} catch (InvalidTReturnStatusAttributeException ex1) {
-			log.debug("srmRm: Error creating returnStatus " + ex1);
+			log.debug("srmRm: {}", ex1.getMessage(), ex1);
 		}
 
 		return returnStatus;
 	}
 
-	private boolean removeTarget(LocalFile file/* , LocalUser lUser */) {
+	private boolean removeTarget(LocalFile file) {
 
 		boolean result = false;
-		// Check Permission
-		// FilesystemPermission groupPermission = null;
-		// try {
-		// groupPermission = file.getGroupPermission(lUser);
-		// } catch (CannotMapUserException ex) {
-		// /**
-		// * @todo : Why this exception?
-		// */
-		// log.debug("srmRm: WHY THIS? " + ex);
-		// }
-
-		// FilesystemPermission userPermission = null;
-		// try {
-		// userPermission = file.getUserPermission(lUser);
-		// } catch (CannotMapUserException ex1) {
-		// /**
-		// * @todo : Why this exception?
-		// */
-		// log.debug("srmRm: WHY THIS? " + ex1);
-		// }
 
 		/**
 		 * Same situation in Rmdir This check is really needed here? The check can
@@ -392,23 +413,14 @@ public class RmCommand implements Command {
 		 * case add check for null permission.
 		 */
 
-		// Check if user or group permission are null to prevent Null Pointer
 		boolean canDelete = true;
 
-		/*
-		 * if(userPermission!=null) { canDelete = userPermission.canDelete();
-		 * log.debug("removeTarget:userP:"+userPermission.canDelete()); } if
-		 * ((groupPermission!=null)&&(!canDelete)) {
-		 * log.debug("removeTarget:groupP:"+groupPermission.canDelete()); canDelete
-		 * = groupPermission.canDelete(); }
-		 */
-
-		// if ( (userPermission.canDelete()) || (groupPermission.canDelete())) {
 		if (canDelete) {
 			result = file.delete();
 		} else {
-			log.debug("srmRm : Unable to delete the file '" + file
-				+ "'. Permission denied.");
+
+			log.debug("srmRm : Unable to delete the file {}. Permission denied.", 
+			  file);
 		}
 		return result;
 	}

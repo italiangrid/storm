@@ -42,7 +42,7 @@ public class TelnetClientHandler extends SimpleChannelUpstreamHandler {
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
 
-		log.warn("Server unreachable " + e.getCause().getMessage());
+		log.warn("Server unreachable {}", e.getCause().getMessage());
 		this.state.setError();
 		state.updated();
 	}

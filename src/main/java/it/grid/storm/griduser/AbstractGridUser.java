@@ -33,26 +33,6 @@ import it.grid.storm.common.types.VO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.0
- */
 public abstract class AbstractGridUser implements GridUserInterface {
 
 	protected static final Logger log = LoggerFactory
@@ -62,16 +42,10 @@ public abstract class AbstractGridUser implements GridUserInterface {
 	protected MapperInterface userMapperClass = null;
 	protected LocalUser localUser = null;
 
-	/**
-	 * @param mapperClass
-	 * @param distinguishedName
-	 */
 	protected AbstractGridUser(MapperInterface mapperClass,
 		String distinguishedName) {
 
 		if (mapperClass == null || distinguishedName == null) {
-			log.error("Provided null parameter: mapperClass=\'" + mapperClass
-				+ "\' distinguishedName=\'" + distinguishedName + "\'");
 			throw new IllegalArgumentException(
 				"Provided null parameter: mapperClass=\'" + mapperClass
 					+ "\' distinguishedName=\'" + distinguishedName + "\'");
@@ -80,11 +54,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
 		this.setDistinguishedName(distinguishedName);
 	}
 
-	/**
-	 * @param mapperClass
-	 * @param distinguishedName
-	 * @param proxy
-	 */
 	protected AbstractGridUser(MapperInterface mapperClass,
 		String distinguishedName, String proxy) {
 
@@ -92,13 +61,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
 		this.setProxyString(proxy);
 	}
 
-	/**
-	 * used by the GridUserFactory to set User Mapper Instance. This method has
-	 * package visibility.
-	 * 
-	 * @param mapper
-	 *          MapperInterface
-	 */
 	void setUserMapper(MapperInterface mapperClass) {
 
 		if (mapperClass == null) {
@@ -107,13 +69,6 @@ public abstract class AbstractGridUser implements GridUserInterface {
 		this.userMapperClass = mapperClass;
 	}
 
-	/**
-	 * used by the GridUserFactory to set Distinguished Name. This method has
-	 * package visibility.
-	 * 
-	 * @param dnString
-	 *          String
-	 */
 	void setDistinguishedName(String dnString) {
 
 		if (dnString == null) {
@@ -122,68 +77,32 @@ public abstract class AbstractGridUser implements GridUserInterface {
 		this.subjectDN = new DistinguishedName(dnString);
 	}
 
-	/**
-	 * Get GridUser Distinguish Name.
-	 * 
-	 * @return String
-	 */
 	public String getDn() {
 
 		String dn = this.subjectDN.getDN();
 		return dn;
 	}
 
-	/**
-	 * Get GridUser Domain Name. Used for metadada purpose.
-	 * 
-	 * @return DistinguishedName
-	 */
 	public DistinguishedName getDistinguishedName() {
 
 		return subjectDN;
 	}
 
-	/**
-	 * used by the GridUserFactory to set Proxy String. This method has package
-	 * visibility.
-	 * 
-	 * @param proxy
-	 *          String
-	 */
 	void setProxyString(String proxy) {
 
 		this.proxyString = proxy;
 	}
 
-	/**
-	 * Get Proxy certificate if there. Else return null.
-	 * 
-	 * 
-	 * @return String
-	 */
 	public String getProxyString() {
 
 		return this.proxyString;
 	}
 
-	/**
-	 * Get Proxy certificate if there. Else return null.
-	 * 
-	 * 
-	 * @return String
-	 */
 	public String getUserCredentials() {
 
 		return this.proxyString;
 	}
 
-	/**
-	 * Return the local user on wich the GridUser is mapped. This method is
-	 * abstract.
-	 * 
-	 * @throws CannotMapUserException
-	 * @return LocalUser
-	 */
 	public LocalUser getLocalUser() throws CannotMapUserException {
 
 		if (localUser == null) {
@@ -193,37 +112,21 @@ public abstract class AbstractGridUser implements GridUserInterface {
 				} else {
 					localUser = userMapperClass.map(getDn(), null);
 				}
-			} catch (CannotMapUserException ex) {
-				// log the operation that failed
-				log.error("Error in mapping '" + subjectDN.getX500DN_rfc1779()
-					+ "' to a local user: " + ex.getMessage());
-				// re-throw same exception
-				throw ex;
+			} catch (CannotMapUserException e) {
+			  log.error("Mapping error: {}. Subject='{}'",e.getMessage(),
+			    subjectDN.getX500DN_rfc1779(),e);
+				throw e;
 			}
 		}
 		return localUser;
 	}
 
-	/**
-	 * @return
-	 */
 	public abstract String[] getFQANsAsString();
 
-	/**
-	 * @return
-	 */
 	public abstract FQAN[] getFQANs();
 
-	/**
-	 * @return
-	 */
 	public abstract boolean hasVoms();
 
-	/**
-	 * Return the main Virtual Organization of the User. This method is abstract.
-	 * 
-	 * @return VO
-	 */
 	public abstract VO getVO();
 
 }

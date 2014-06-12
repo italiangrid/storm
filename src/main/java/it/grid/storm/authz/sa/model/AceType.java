@@ -32,16 +32,18 @@ public class AceType {
 
 	public static AceType getAceType(String aceTp) {
 
-		if (aceTp.toUpperCase().equals(ALLOW.toString()))
+		if (aceTp.toUpperCase().equals(ALLOW.toString())) {
 			return AceType.ALLOW;
-		if (aceTp.toUpperCase().equals(DENY.toString()))
+		}
+		if (aceTp.toUpperCase().equals(DENY.toString())) {
 			return AceType.DENY;
+		}
 		return AceType.UNKNOWN;
 	}
 
 	public String toString() {
 
-		return this.aceType;
+		return aceType;
 	}
 
 }

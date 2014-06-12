@@ -84,13 +84,9 @@ public class DetectiveGlance {
 		totSYNCHRequest += nrSynchRequest;
 	}
 
-	/**
-	 * 
-	 * @return StoRMStatus
-	 */
 	public StoRMStatus haveaLook() {
 
-		log.debug(" The glange of the Detective..");
+	  log.trace("DetectiveGlance.haveaLook");
 		StoRMStatus stormStatus = new StoRMStatus();
 		stormStatus.setHeapFreeSize(getHeapFreeSize());
 		stormStatus.setMAXHeapSize(getHeapMaxSize());
@@ -127,7 +123,6 @@ public class DetectiveGlance {
 			stormStatus.setSynchRequest(synchRequest);
 
 			stormStatus.calculateLifeTime();
-
 			bk.cleanLogBook();
 			log.debug(" .. glance completed.");
 		} else {
@@ -135,5 +130,4 @@ public class DetectiveGlance {
 		}
 		return stormStatus;
 	}
-
 }

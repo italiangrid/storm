@@ -66,9 +66,8 @@ class PermissionEvaluator {
 			fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
 				filePathDecoded);
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to determine a VFS that maps the requested file path \'"
-					+ filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+			log.error("Unable to determine a VFS that maps the requested file "
+				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.NOT_FOUND);
 			responseBuilder
@@ -77,23 +76,21 @@ class PermissionEvaluator {
 		}
 		if (!fileVFS.getCapabilities().getAllManagedProtocols()
 			.contains(Protocol.HTTPS)) {
-			log.debug("User\'" + gu
-				+ "\' not authorize to access the requeste file \'" + filePathDecoded
-				+ "\' via HTTPS");
+			log.debug("User '{}' is not authorized to access the requeste file '{}' via "
+				+ "HTTPS", gu, filePathDecoded);
 			return new Boolean(false);
 		}
 		if (!fileVFS.isApproachableByUser(gu)) {
-			log.debug("User\'" + gu
-				+ "\' not authorize to approach the requeste Storage Area \'"
-				+ fileVFS.getAliasName() + "\' via HTTPS");
+			log.debug("User '{}' is not authorized to approach the requested "
+				+ "Storage Area '{}' via HTTPS", gu, fileVFS.getAliasName());
 			return new Boolean(false);
 		}
 		StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
 		AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu,
 			operation, fileStFN);
-		log.info("Authorization decision for user " + DNDecoded
-			+ (FQANSDecoded == null ? "" : " - " + FQANSDecoded) + " requesting "
-			+ operation + " on " + filePathDecoded + " is [" + decision + "]");
+		log.info("Authorization decision for user '{}{}' requesting {} on {} is "
+			+ "[{}]", DNDecoded, FQANSDecoded == null ? "" : " - " + FQANSDecoded, 
+				operation, filePathDecoded, decision);
 		return evaluateDecision(decision);
 	}
 
@@ -117,9 +114,8 @@ class PermissionEvaluator {
 			fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
 				filePathDecoded);
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to determine a VFS that maps the requested file path \'"
-					+ filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+			log.error("Unable to determine a VFS that maps the requested file "
+				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.NOT_FOUND);
 			responseBuilder
@@ -127,17 +123,16 @@ class PermissionEvaluator {
 			throw new WebApplicationException(responseBuilder.build());
 		}
 		if (!fileVFS.isApproachableByUser(gu)) {
-			log.debug("User\'" + gu
-				+ "\' not authorize to approach the requeste Storage Area \'"
-				+ fileVFS.getAliasName() + "\'");
+			log.debug("User '{}' is not authorized to approach the requeste Storage "
+				+ "Area '{}'", gu, fileVFS.getAliasName());
 			return new Boolean(false);
 		}
 		StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
 		AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu,
 			request, fileStFN);
-		log.info("Authorization decision for user " + DNDecoded
-			+ (FQANSDecoded == null ? "" : " - " + FQANSDecoded) + " requesting "
-			+ request + " on " + filePathDecoded + " is [" + decision + "]");
+		log.info("Authorization decision for user '{}{}' requesting {} on {} is "
+			+ "[{}]", DNDecoded, FQANSDecoded == null ? "" : " - " + FQANSDecoded, 
+				request, filePathDecoded, decision);
 		return evaluateDecision(decision);
 	}
 
@@ -149,9 +144,8 @@ class PermissionEvaluator {
 			fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
 				filePathDecoded);
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to determine a VFS that maps the requested file path \'"
-					+ filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+			log.error("Unable to determine a VFS that maps the requested file "
+				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.NOT_FOUND);
 			responseBuilder
@@ -160,12 +154,12 @@ class PermissionEvaluator {
 		}
 		if (!fileVFS.getCapabilities().getAllManagedProtocols()
 			.contains(Protocol.HTTP)) {
-			log.debug("The requeste Storage Area \'" + fileVFS.getAliasName()
-				+ "\' is not appoachable via HTTPS");
+			log.debug("The requeste Storage Area '{}' is not approachable via "
+				+ "HTTPS", fileVFS.getAliasName());
 			return Boolean.FALSE;
 		}
-		log.info("Authorization decision for Anonymous user requesting " + request
-			+ " on " + filePathDecoded + " is [" + AuthzDecision.PERMIT + "]");
+		log.info("Authorization decision for Anonymous user requesting {} on {} "
+			+ "is [{}]", request, filePathDecoded, AuthzDecision.PERMIT);
 		return Boolean.TRUE;
 	}
 
@@ -177,9 +171,8 @@ class PermissionEvaluator {
 			fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
 				filePathDecoded);
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to determine a VFS that maps the requested file path \'"
-					+ filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+			log.error("Unable to determine a VFS that maps the requested file "
+				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.NOT_FOUND);
 			responseBuilder
@@ -188,15 +181,15 @@ class PermissionEvaluator {
 		}
 		if (!fileVFS.isApproachableByAnonymous()
 			&& !(request.isReadOnly() && fileVFS.isHttpWorldReadable())) {
-			log.debug("The requeste Storage Area \'" + fileVFS.getAliasName()
-				+ "\' is not appoachable by anonymous users");
+			log.debug("The requeste Storage Area '{}' is not approachable by "
+				+ "anonymous users", fileVFS.getAliasName());
 			return new Boolean(false);
 		}
 		StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
 		AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
 			request, fileStFN);
-		log.info("Authorization decision for Anonymous user requesting " + request
-			+ " on " + filePathDecoded + " is [" + decision + "]");
+		log.info("Authorization decision for Anonymous user requesting {} "
+			+ "on {} is [{}]", request, filePathDecoded, decision);
 		return evaluateDecision(decision);
 	}
 
@@ -209,14 +202,14 @@ class PermissionEvaluator {
 				return new Boolean(false);
 			} else {
 				if (decision.equals(AuthzDecision.INDETERMINATE)) {
-					log
-						.warn("Authorization decision is INDETERMINATE! Unable to determine authorization of the user to perform requested operation on the resource");
+					log.warn("Authorization decision is INDETERMINATE! Unable to "
+						+ "determine authorization of the user to perform requested "
+						+ "operation on the resource");
 					return new Boolean(false);
 				} else {
-					log
-						.warn("Authorization decision has an unknown value \'"
-							+ decision
-							+ "\' ! Unable to determine authorization of the user to perform requested operation on the resource");
+					log.warn("Authorization decision has an unknown value '{}'! "
+						+ "Unable to determine authorization of the user to perform "
+						+ "requested operation on the resource", decision);
 					return new Boolean(false);
 				}
 			}
@@ -233,8 +226,8 @@ class PermissionEvaluator {
 
 				VFSRootPath = fileVFS.getRootPath();
 				if (VFSRootPath == null) {
-					log.error("Unable to build StFN for path \'" + filePathDecoded
-						+ "\'. VFS: " + fileVFS.getAliasName() + " has null RootPath");
+					log.error("Unable to build StFN for path '{}'. VFS: {} has null "
+						+ "RootPath", filePathDecoded, fileVFS.getAliasName());
 					ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 					responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 					responseBuilder
@@ -247,13 +240,13 @@ class PermissionEvaluator {
 				if (VFSRootPath.endsWith("/")) {
 					VFSRootPath = VFSRootPath.substring(0, VFSRootPath.length() - 1);
 				}
-				log.debug("Chosen VFSRootPath " + VFSRootPath);
+				log.debug("Chosen VFSRootPath {}", VFSRootPath);
 				List<MappingRule> VFSMappingRules = fileVFS.getMappingRules();
 				if (VFSMappingRules != null && VFSMappingRules.size() > 0) {
 					VFSStFNRoot = VFSMappingRules.get(0).getStFNRoot();
 					if (VFSStFNRoot == null) {
-						log.error("Unable to build StFN for path \'" + filePathDecoded
-							+ "\'. VFS: " + fileVFS.getAliasName() + " has null StFNRoot");
+						log.error("Unable to build StFN for path '{}'. VFS: {} has null "
+							+ "StFNRoot", filePathDecoded, fileVFS.getAliasName());
 						ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 						responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 						responseBuilder
@@ -266,10 +259,10 @@ class PermissionEvaluator {
 					if (VFSStFNRoot.endsWith("/")) {
 						VFSStFNRoot = VFSStFNRoot.substring(0, VFSStFNRoot.length() - 1);
 					}
-					log.debug("Chosen StFNRoot " + VFSStFNRoot);
+					log.debug("Chosen StFNRoot {}", VFSStFNRoot);
 				} else {
-					log
-						.error("Unable to determine the StFNRoot for file path's VFS. VFSMappingRules is empty!");
+					log.error("Unable to determine the StFNRoot for file path's VFS. "
+						+ "VFSMappingRules is empty!");
 					ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 					responseBuilder.status(Response.Status.NOT_FOUND);
 					responseBuilder
@@ -277,8 +270,8 @@ class PermissionEvaluator {
 					throw new WebApplicationException(responseBuilder.build());
 				}
 			} else {
-				log.error("None of the VFS maps the requested file path \'"
-					+ filePathDecoded + "\'. fileVFS is null!");
+				log.error("None of the VFS maps the requested file path '{}'. "
+					+ "fileVFS is null!", filePathDecoded);
 				ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 				responseBuilder.status(Response.Status.NOT_FOUND);
 				responseBuilder
@@ -286,9 +279,8 @@ class PermissionEvaluator {
 				throw new WebApplicationException(responseBuilder.build());
 			}
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to determine a VFS that maps the requested file path \'"
-					+ filePathDecoded + "\'. NamespaceException: " + e.getMessage());
+			log.error("Unable to determine a VFS that maps the requested file "
+				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.NOT_FOUND);
 			responseBuilder
@@ -296,8 +288,8 @@ class PermissionEvaluator {
 			throw new WebApplicationException(responseBuilder.build());
 		}
 		if (!filePathDecoded.startsWith(VFSRootPath)) {
-			log
-				.error("The provided file path does not starts with the VFSRoot of its VFS");
+			log.error("The provided file path does not starts with the VFSRoot "
+				+ "of its VFS");
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 			responseBuilder
@@ -310,8 +302,8 @@ class PermissionEvaluator {
 		try {
 			return StFN.make(fileStFNpath);
 		} catch (InvalidStFNAttributeException e) {
-			log.error("Unable to build StFN for path \'" + fileStFNpath
-				+ "\'. InvalidStFNAttributeException: " + e.getMessage());
+			log.error("Unable to build StFN for path '{}'. "
+				+ "InvalidStFNAttributeException: {}", fileStFNpath, e.getMessage());
 			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
 			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
 			responseBuilder
@@ -332,9 +324,9 @@ class PermissionEvaluator {
 
 		} catch (IllegalArgumentException e) {
 			// never thrown
-			log.error("Unable to build the GridUserInterface object for DN \'"
-				+ DNDecoded + "\' and FQANS \'" + Arrays.toString(FQANSArray)
-				+ "\'. IllegalArgumentException: " + e.getMessage());
+			log.error("Unable to build the GridUserInterface object for DN '{}' "
+				+ "and FQANS '{}'. IllegalArgumentException: {}", DNDecoded, 
+				Arrays.toString(FQANSArray), e.getMessage());
 			ResponseBuilderImpl builder = new ResponseBuilderImpl();
 			builder.status(Response.Status.BAD_REQUEST);
 			builder.entity("Unable to build a GridUser for DN \'" + DNDecoded
@@ -382,9 +374,8 @@ class PermissionEvaluator {
 		try {
 			gridUser = GridUserManager.makeVOMSGridUser(dn, fqansVector);
 		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException "
-					+ e.getMessage());
+			log.error("Unexpected error on voms grid user creation. Contact "
+				+ "StoRM Support : IllegalArgumentException {}", e.getMessage(), e);
 		}
 		return gridUser;
 	}

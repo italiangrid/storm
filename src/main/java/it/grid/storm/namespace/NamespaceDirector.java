@@ -29,26 +29,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class NamespaceDirector {
 
 	private static final Logger log = LoggerFactory
@@ -121,9 +101,9 @@ public class NamespaceDirector {
 
 		}
 
-		log.debug("Namespace Configuration PATH : " + configurationPATH);
-		log.debug("Namespace Configuration FILENAME : " + namespaceConfigFileName);
-		log.debug("Namespace Configuration GLANCE RATE : " + refreshInSeconds);
+		log.debug("Namespace Configuration PATH : {}" , configurationPATH);
+		log.debug("Namespace Configuration FILENAME : {}" , namespaceConfigFileName);
+		log.debug("Namespace Configuration GLANCE RATE : {}" , refreshInSeconds);
 
 		parser = new XMLNamespaceParser(loader, verboseMode, testingMode);
 		namespaceIstance = new Namespace(parser);

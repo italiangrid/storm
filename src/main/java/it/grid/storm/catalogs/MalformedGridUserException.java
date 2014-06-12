@@ -27,6 +27,8 @@ package it.grid.storm.catalogs;
  */
 public class MalformedGridUserException extends Exception {
 
+	private static final long serialVersionUID = 5607710323595609428L;
+
 	public String toString() {
 
 		return "MalformedGridUserException";

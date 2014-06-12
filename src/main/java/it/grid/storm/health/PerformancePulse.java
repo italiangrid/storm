@@ -39,11 +39,6 @@ public class PerformancePulse extends TimerTask {
 		perfMonitor = new PerformanceGlance();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.TimerTask#run()
-	 */
 	@Override
 	public void run() {
 

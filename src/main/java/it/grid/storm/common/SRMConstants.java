@@ -39,9 +39,5 @@ public class SRMConstants {
 	 */
 	public static final boolean fullDetailedList = false;
 
-	public SRMConstants() {
-
-		// TODO Auto-generated constructor stub
-	}
 
 }

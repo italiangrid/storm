@@ -48,7 +48,7 @@ public class SimpleClassLoaderCheckManager extends CheckManager {
 		URL location = null;
 		if (source != null) {
 			location = source.getLocation();
-			log.info("location: " + location);
+			log.info("location: {}", location);
 		}
 		String packageResourcePath = "it" + File.separatorChar + "grid"
 			+ File.separatorChar + "storm" + File.separatorChar + "check"
@@ -69,18 +69,18 @@ public class SimpleClassLoaderCheckManager extends CheckManager {
 					Check check = (Check) constructor.newInstance();
 					checks.add(check);
 				} catch (IllegalArgumentException e) {
-					log.error(e.getMessage());
+					log.error(e.getMessage(), e);
 				} catch (InstantiationException e) {
-					log.error(e.getMessage());
+					log.error(e.getMessage(), e);
 				} catch (IllegalAccessException e) {
-					log.error(e.getMessage());
+					log.error(e.getMessage(), e);
 				} catch (InvocationTargetException e) {
-					log.error(e.getMessage());
+					log.error(e.getMessage(), e);
 				}
 			} catch (SecurityException e1) {
-				log.error(e1.getMessage());
+				log.error(e1.getMessage(), e1);
 			} catch (NoSuchMethodException e1) {
-				log.error(e1.getMessage());
+				log.error(e1.getMessage(), e1);
 			}
 		}
 	}

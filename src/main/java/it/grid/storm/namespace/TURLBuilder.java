@@ -46,33 +46,22 @@ public class TURLBuilder {
 		try {
 			turlString = protocol.getProtocolPrefix() + authority.toString()
 				+ extraSlashes + physicalFN.getValue();
-			log.debug("turlString used to build the TURL : " + turlString);
+			log.debug("turlString used to build the TURL : {}", turlString);
 			turl = TTURL.makeFromString(turlString);
 		} catch (InvalidTTURLAttributesException ex) {
-			log.error("Error while constructing TURL with Authority :'" + authority
-				+ "'; EXCEP: " + ex);
+			log.error("Error while constructing TURL with Authority '{}': {}",
+			  authority, ex.getMessage(), ex);
 		}
 		return turl;
 	}
 
-	/**
-	 * buildFileTURL
-	 * 
-	 * @return TTURL
-	 */
 	public static TTURL buildFileTURL(Authority authority, PFN physicalFN) {
 
-		// Authority for Protocol File is empty
 		String extraSlashesForFile = Configuration.getInstance()
 			.getExtraSlashesForFileTURL();
 		return buildTURL(Protocol.FILE, authority, extraSlashesForFile, physicalFN);
 	}
 
-	/**
-	 * buildGsiftpTURL
-	 * 
-	 * @return TTURL
-	 */
 	public static TTURL buildGsiftpTURL(Authority authority, PFN physicalFN) {
 
 		String extraSlashesForGSIFTP = Configuration.getInstance()
@@ -81,11 +70,6 @@ public class TURLBuilder {
 			physicalFN);
 	}
 
-	/**
-	 * buildRFIOTURL
-	 * 
-	 * @return TTURL
-	 */
 	public static TTURL buildRFIOTURL(Authority authority, PFN physicalFN) {
 
 		String extraSlashesForRFIO = Configuration.getInstance()
@@ -93,11 +77,6 @@ public class TURLBuilder {
 		return buildTURL(Protocol.RFIO, authority, extraSlashesForRFIO, physicalFN);
 	}
 
-	/**
-	 * buildROOTTURL
-	 * 
-	 * @return TTURL
-	 */
 	public static TTURL buildROOTTURL(Authority authority, PFN physicalFN) {
 
 		String extraSlashesForROOT = Configuration.getInstance()
@@ -105,54 +84,22 @@ public class TURLBuilder {
 		return buildTURL(Protocol.ROOT, authority, extraSlashesForROOT, physicalFN);
 	}
 
-	/**
-	 * buildHHTPTURL
-	 * 
-	 * @param authority
-	 * @param physicalFN
-	 * @return
-	 * @throws Exception
-	 * @throws IllegalStateException
-	 */
-	// TODO HTTPS TURL
 	public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile)
 		throws HTTPSPluginException {
 
-		// ????? NEEDED ??? String extraSlashesFor?? =
-		// Configuration.getInstance().getExtraSlashesFor??PTURL();
-		// return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP,
-		// physicalFN) ;
-
 		String serviceRelativePath = HTTPPluginManager
 			.getHTTPSPluginInstance()
-			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());// HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());
+
 		return buildTURL(Protocol.HTTP, authority, "", serviceRelativePath);
 	}
 
-	/**
-	 * buildHHTPTURL
-	 * 
-	 * @param authority
-	 * @param physicalFN
-	 * @return
-	 * @throws Exception
-	 * @throws IllegalStateException
-	 */
-	// TODO HTTPS TURL
 	public static TTURL buildHTTPSTURL(Authority authority, LocalFile localFile)
 		throws HTTPSPluginException {
 
-		// ????? NEEDED ??? String extraSlashesFor?? =
-		// Configuration.getInstance().getExtraSlashesFor??PTURL();
-		// return buildTURL(Protocol.HTTP, authority, extraSlashesForGSIFTP,
-		// physicalFN) ;
-
-		// String servicePath =
-		// HTTPPluginManager.getHTTPSPluginInstance().getServicePath(); //
-		// HTTPSPluginInterface.getServicePath();
 		String serviceRelativePath = HTTPPluginManager
 			.getHTTPSPluginInstance()
-			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());// HTTPSPluginInterface.MapLocalPath(localFile.getAbsolutePath());
+			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());
 		return buildTURL(Protocol.HTTPS, authority, "", serviceRelativePath);
 	}
 
@@ -164,16 +111,12 @@ public class TURLBuilder {
 		try {
 			turlString = protocol.getProtocolPrefix() + authority.toString()
 				+ extraSlashes + serviceRelativePath;
-			log.debug("turlString used to build the TURL : " + turlString);
+			log.debug("turlString used to build the TURL : {}", turlString);
 			turl = TTURL.makeFromString(turlString);
-		} catch (InvalidTTURLAttributesException ex) {
-			log.error("Error while constructing TURL with Authority :'" + authority
-				+ "'; EXCEP: " + ex);
+		} catch (InvalidTTURLAttributesException e) {
+			log.error("Error while constructing TURL with Authority '{}'. {}",
+			  authority, e.getMessage(), e);
 		}
 		return turl;
 	}
-
-	// TODO MICHELE HTTPS here add the method that builds the HTTPS turl using the
-	// installed connector
-
 }

@@ -71,10 +71,10 @@ public class RmdirConverter implements Converter {
 	public InputData convertToInputData(Map inputParam) {
 
 		log
-			.debug("srmRmdir: Converter :Call received :Creation of RmdirInputData = "
-				+ inputParam.size());
-		log.debug("srmRmdir: Converter: Input Structure toString: "
-			+ ParameterDisplayHelper.display(inputParam));
+			.debug("srmRmdir: Converter :Call received :Creation of RmdirInputData = {}"
+				, inputParam.size());
+		log.debug("srmRmdir: Converter: Input Structure toString: {}"
+			, ParameterDisplayHelper.display(inputParam));
 
 		/* Creation of VomsGridUser */
 		GridUserInterface guser = GridUserManager.decode(inputParam);
@@ -84,7 +84,7 @@ public class RmdirConverter implements Converter {
 		try {
 			surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
 		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("srmRm: ErrorCreating surl: " + e1.toString());
+			log.debug("srmRm: ErrorCreating surl: {}" , e1.toString(),e1);
 		}
 
 		/* (4) recursive */

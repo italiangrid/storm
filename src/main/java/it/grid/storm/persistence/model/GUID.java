@@ -18,10 +18,13 @@
 package it.grid.storm.persistence.model;
 
 import java.io.Serializable;
+
 import java.net.InetAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//FIXME: Why isn't storm using the standard UUID class?
+
 
 /**
  * GUID Value Object.
@@ -32,24 +35,16 @@ import org.slf4j.LoggerFactory;
 
 public class GUID implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7241176020077117264L;
 
 	private static final Logger log = LoggerFactory.getLogger(GUID.class);
 
 	private byte guidValue[] = new byte[16];
 
-	/** Creates a new instance of GUID */
 	public GUID() {
-
 		buildNewGUID();
 	}
 
-	/**
-	 * Creates a new instance of GUID using a fixed guid.
-	 */
 	public GUID(String guidString) {
 
 		int pos = 0;
@@ -70,25 +65,12 @@ public class GUID implements Serializable {
 		}
 	}
 
-	/**
-	 * Calculates the byte from a hex string.
-	 * 
-	 * @param hex
-	 *          A string hex value.
-	 * @return a byte value.
-	 */
+	
 	private byte getByteValue(String hex) {
 
 		return (byte) Integer.parseInt(hex, 16);
 	}
 
-	/**
-	 * Calculates the hex string from a byte.
-	 * 
-	 * @param val
-	 *          A byte value.
-	 * @return a string hex value.
-	 */
 	private String getHexString(byte val) {
 
 		String hexString;
@@ -104,16 +86,6 @@ public class GUID implements Serializable {
 		return hexString.toUpperCase();
 	}
 
-	/**
-	 * Set the bytes in the array from another array.
-	 * 
-	 * @param lg
-	 *          The other array of bytes.
-	 * @param count
-	 *          How many there are.
-	 * @param startPos
-	 *          The point in the main byte array these should go.
-	 */
 	private void setByteValues(byte[] lg, int startPos, int count) {
 
 		for (int i = 0; i < count; i++) {
@@ -121,17 +93,6 @@ public class GUID implements Serializable {
 		}
 	}
 
-	/**
-	 * Sets the byte in the array to the bytes in a long value. In reverse
-	 * order(IE Least significant byte goes first)
-	 * 
-	 * @param lg
-	 *          The long value.
-	 * @param count
-	 *          How many there are.
-	 * @param startPos
-	 *          The point in the main byte array these should go.
-	 */
 	private void setByteValues(long lg, int startPos, int count) {
 
 		for (int i = 0; i < count; i++) {
@@ -140,10 +101,6 @@ public class GUID implements Serializable {
 		}
 	}
 
-	/**
-	 * Creates a new GUID from nowhere. Actually it uses the time, IPAddress and a
-	 * random number. Stores it all in the main byte array.
-	 */
 	private void buildNewGUID() {
 
 		try {
@@ -170,16 +127,10 @@ public class GUID implements Serializable {
 			setByteValues(lg, 14, 2);
 
 		} catch (Exception e) {
-			log.error("Error while generating a GUID", e);
+			log.error("GUID generation error : {}", e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Stores the 16 bytes seperately, this returns that array Not sure why
-	 * though.
-	 * 
-	 * @return array of bytes.
-	 */
 	public byte[] getBytes() {
 
 		return guidValue;

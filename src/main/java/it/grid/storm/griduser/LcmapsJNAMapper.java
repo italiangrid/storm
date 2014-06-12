@@ -35,7 +35,7 @@ import com.sun.jna.LastErrorException;
 public class LcmapsJNAMapper implements MapperInterface {
 
 	private static final Object lock = new Object();
-	/** To log LCMAPS failures. */
+
 	private static final Logger log = LoggerFactory
 		.getLogger(LcmapsJNAMapper.class);
 
@@ -63,24 +63,23 @@ public class LcmapsJNAMapper implements MapperInterface {
 
 		LocalUser mappedUser = null;
 		synchronized (LcmapsJNAMapper.lock) {
-			log.debug("Mapping user with dn = " + dn + " and fqans = "
-				+ ArrayUtils.toString(fqans));
+		  log.debug("Mapping user with dn = {} and fqans='{}'",
+		    dn, ArrayUtils.toString(fqans));
 
 			log.debug("Initializing Lcmaps");
 			String lcmapsLogFile = getLcmapsLogFile();
-			log.debug("Lcmaps log file is " + lcmapsLogFile);
+			log.debug("Lcmaps log file is {}", lcmapsLogFile);
 
 			int retVal = LcmapsInterface.INSTANCE.lcmaps_init_and_logfile(
 				lcmapsLogFile, null, LCMAPS_LOG_TYPE);
 			if (retVal != 0) {
-				log.error("Unable to initialize lcmaps. Return value is " + retVal);
+				log.error("Unable to initialize lcmaps. Return value is {}" , retVal);
 				throw new CannotMapUserException(
 					"Unable to initialize lcmaps. Return value is " + retVal);
 			}
 			retVal = LcmapsAccountInterface.INSTANCE
 				.lcmaps_account_info_init(account);
 			if (retVal != 0) {
-				log.error("Unable to initialize lcmaps. Return value is " + retVal);
 				throw new CannotMapUserException(
 					"Unable to initialize lcmaps. Return value is " + retVal);
 			}
@@ -89,39 +88,38 @@ public class LcmapsJNAMapper implements MapperInterface {
 				retVal = LcmapsPoolindexInterface.INSTANCE
 					.lcmaps_return_account_without_gsi(dn, fqans, numFqans, 0, account);
 			} catch (LastErrorException e) {
-				log.error("Unable to map user dn <" + dn + "> fqans <"
-					+ ArrayUtils.toString(fqans) + "> . LastErrorException: "
-					+ e.getMessage() + " , error code = " + e.getErrorCode());
+				log.error("Unable to map user dn <{}> fqans <{}>. Error: {}. Error code: {}",
+				  dn, ArrayUtils.toString(fqans),
+				  e.getMessage(),
+				  e.getErrorCode(),
+				  e);
 				throw new CannotMapUserException(
 					"Unable to initialize lcmaps. Return value is " + retVal);
 			}
 			if (retVal != 0) {
-				log.error("Unable to map user dn <" + dn + "> fqans <"
-					+ ArrayUtils.toString(fqans) + "> . Return value is " + retVal);
+				log.error("Unable to map user dn <{}> fqans <{}>. Retval: {}",
+				  dn, ArrayUtils.toString(fqans),
+				  retVal);
 				throw new CannotMapUserException("Unable to map user dn <" + dn
 					+ "> fqans <" + ArrayUtils.toString(fqans) + "> . Return value is "
 					+ retVal);
 			}
+
 			if (account.uid < 0) {
-				log.error("Unacceptable lower than zero uid returned by Lcmaps : "
-					+ account.uid + " . Mapping error");
+			  log.error("Negative uid returned by lcmaps: {}", account.uid);
 				throw new CannotMapUserException(
 					"Unacceptable lower than zero uid returned by Lcmaps : "
 						+ account.uid + " . Mapping error");
 			}
 			if (account.npgid < 0 || account.nsgid < 0) {
-				log
-					.error("Unacceptable primary or secondary gid array size returned by Lcmaps : primary = "
-						+ account.npgid
-						+ ", secondary = "
-						+ account.nsgid
-						+ ",. Mapping error");
+			  log.error("Negative primary or secondary gid array size. npgid: {} nsgid: {}",
+			    account.npgid, account.nsgid);
+
 				throw new CannotMapUserException(
-					"Unacceptable primary or secondary gid array size returned by Lcmaps : primary = "
+					"Negative primary or secondary gid array size returned by Lcmaps : primary = "
 						+ account.npgid
 						+ ", secondary = "
-						+ account.nsgid
-						+ ",. Mapping error");
+						+ account.nsgid +". Mapping error");
 			}
 			int[] gids = null;
 			int numGids = account.npgid + account.nsgid;
@@ -147,8 +145,9 @@ public class LcmapsJNAMapper implements MapperInterface {
 					gids = account.pgid_list.getPointer().getIntArray(0, account.npgid);
 				}
 			}
-			log.info("Mapped user to : <uid=" + account.uid + ",gids="
-				+ ArrayUtils.toString(gids) + ">");
+			log.info("Mapped user to : <uid={},gids={}>",
+			  account.uid,
+			  ArrayUtils.toString(gids)); 
 			mappedUser = new LocalUser(account.uid, gids, numGids);
 		}
 		return mappedUser;

@@ -153,7 +153,6 @@ public class PtPChunkDAO {
 			updatePut.setString(7, to.overwriteOption());
 			logWarnings(updatePut.getWarnings());
 
-			// TODO MICHELE USER_SURL fill new fields
 			updatePut.setString(8, to.normalizedStFN());
 			logWarnings(updatePut.getWarnings());
 
@@ -163,11 +162,11 @@ public class PtPChunkDAO {
 			updatePut.setLong(10, to.primaryKey());
 			logWarnings(updatePut.getWarnings());
 			// run updateStatusPut...
-			log.trace("PtP CHUNK DAO - update method: " + updatePut.toString());
+			log.trace("PtP CHUNK DAO - update method: {}", updatePut.toString());
 			updatePut.executeUpdate();
 			logWarnings(updatePut.getWarnings());
 		} catch (SQLException e) {
-			log.error("PtP CHUNK DAO: Unable to complete update! " + e);
+			log.error("PtP CHUNK DAO: Unable to complete update! {}", e.getMessage(), e);
 		} finally {
 			close(updatePut);
 		}
@@ -179,7 +178,6 @@ public class PtPChunkDAO {
 	 * 
 	 * @param chunkTO
 	 */
-	// TODO MICHELE USER_SURL new method
 	public synchronized void updateIncomplete(ReducedPtPChunkDataTO chunkTO) {
 
 		if (!checkConnection()) {
@@ -203,11 +201,12 @@ public class PtPChunkDAO {
 			stmt.setLong(3, chunkTO.primaryKey());
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - update incomplete: " + stmt.toString());
+			log.trace("PtP CHUNK DAO - update incomplete: {}", stmt.toString());
 			stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
-			log.error("PtP CHUNK DAO: Unable to complete update incomplete! " + e);
+			log.error("PtP CHUNK DAO: Unable to complete update incomplete! {}", 
+				e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -247,7 +246,7 @@ public class PtPChunkDAO {
 			stmt.setLong(1, primary_key);
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - refresh method: " + stmt.toString());
+			log.trace("PtP CHUNK DAO - refresh method: {}", stmt.toString());
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			while (rs.next()) {
@@ -263,7 +262,7 @@ public class PtPChunkDAO {
 			stmt.setLong(1, primary_key);
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - refresh method: " + stmt.toString());
+			log.trace("PtP CHUNK DAO - refresh method: {}", stmt.toString());
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 
@@ -279,7 +278,6 @@ public class PtPChunkDAO {
 				chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
 				chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 				chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
@@ -307,16 +305,16 @@ public class PtPChunkDAO {
 				}
 				if (rs.next()) {
 					log.warn("ATTENTION in PtP CHUNK DAO! Possible DB corruption! "
-						+ "refresh method invoked for specific chunk with id "
-						+ primary_key + ", but found more than one such chunks!");
+						+ "refresh method invoked for specific chunk with id {}, but found "
+						+ "more than one such chunks!", primary_key);
 				}
 			} else {
 				log.warn("ATTENTION in PtP CHUNK DAO! Possible DB corruption! "
-					+ "refresh method invoked for specific chunk with id " + primary_key
-					+ ", but chunk NOT found in persistence!");
+					+ "refresh method invoked for specific chunk with id {}, but chunk "
+					+ "NOT found in persistence!", primary_key);
 			}
 		} catch (SQLException e) {
-			log.error("PtP CHUNK DAO! Unable to refresh chunk! " + e);
+			log.error("PtP CHUNK DAO! Unable to refresh chunk! {}", e.getMessage(), e);
 			chunkDataTO = null;
 		} finally {
 			close(rs);
@@ -363,7 +361,7 @@ public class PtPChunkDAO {
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - find method: " + find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -373,7 +371,6 @@ public class PtPChunkDAO {
 			close(rs);
 			close(find);
 
-			// TODO MICHELE USER_SURL get new fields
 			// get chunks of the request
 			str = "SELECT rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode "
 				+ "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
@@ -391,7 +388,7 @@ public class PtPChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - find method: " + find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			PtPChunkDataTO chunkDataTO = null;
@@ -421,7 +418,6 @@ public class PtPChunkDAO {
 				chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 				chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
 
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
@@ -437,7 +433,7 @@ public class PtPChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO: " + e);
+			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<PtPChunkDataTO>();
 		} finally {
@@ -489,8 +485,7 @@ public class PtPChunkDAO {
 				}
 			}
 			logWarnings(find.getWarnings());
-			log.trace("PtP CHUNK DAO! findReduced with request token; "
-				+ find.toString());
+			log.trace("PtP CHUNK DAO! findReduced with request token; {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -502,7 +497,6 @@ public class PtPChunkDAO {
 					.getString("rq.config_FileStorageTypeID"));
 				reducedChunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 				reducedChunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
-				// TODO MICHELE USER_SURL fill new fields
 				reducedChunkDataTO.setNormalizedStFN(rs
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
@@ -515,7 +509,7 @@ public class PtPChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO: " + e);
+			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<ReducedPtPChunkDataTO>();
 		} finally {
@@ -550,7 +544,7 @@ public class PtPChunkDAO {
 				logWarnings(con.getWarnings());
 
 				List<ReducedPtPChunkDataTO> list = new ArrayList<ReducedPtPChunkDataTO>();
-				log.trace("PtP CHUNK DAO! fetchReduced; " + find.toString());
+				log.trace("PtP CHUNK DAO! fetchReduced; {}", find.toString());
 				rs = find.executeQuery();
 				logWarnings(find.getWarnings());
 
@@ -562,7 +556,6 @@ public class PtPChunkDAO {
 						.getString("rq.config_FileStorageTypeID"));
 					reducedChunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 					reducedChunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
-					// TODO MICHELE USER_SURL fill new fields
 					reducedChunkDataTO.setNormalizedStFN(rs
 						.getString("rp.normalized_targetSURL_StFN"));
 					int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
@@ -575,7 +568,7 @@ public class PtPChunkDAO {
 				}
 				return list;
 			} catch (SQLException e) {
-				log.error("PTP CHUNK DAO: " + e);
+				log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 				/* return empty Collection */
 				return new ArrayList<ReducedPtPChunkDataTO>();
 			} finally {
@@ -620,14 +613,14 @@ public class PtPChunkDAO {
 			signal.setString(1, "This chunk of the request is malformed!");
 			logWarnings(signal.getWarnings());
 
-			log.trace("PtP CHUNK DAO - signalMalformedPtPChunk method: "
-				+ signal.toString());
+			log.trace("PtP CHUNK DAO - signalMalformedPtPChunk method: {}", 
+				signal.toString());
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to signal in DB that a chunk of "
-				+ "the request was malformed! Request: " + auxTO.toString()
-				+ "; Exception: " + e.toString());
+				+ "the request was malformed! Request: {}; Error: {}", auxTO.toString(), 
+				e.getMessage(), e);
 		} finally {
 			close(signal);
 		}
@@ -646,11 +639,7 @@ public class PtPChunkDAO {
 				.error("PtP CHUNK DAO: numberInSRM_SPACE_AVAILABLE - unable to get a valid connection!");
 			return 0;
 		}
-		/*
-		 * TODO MICHELE USER_SURL now that we have the unique ID the RIGHT can be
-		 * removed (not added the search on the id, but removed at all because we
-		 * check that the status is SRM_SPACE_AVAILABLE)
-		 */
+		
 		String str = "SELECT COUNT(rp.ID) FROM status_Put sp JOIN request_Put rp "
 			+ "ON (sp.request_PutID=rp.ID) "
 			+ "WHERE rp.targetSURL_uniqueID=? AND sp.statusCode=?";
@@ -664,15 +653,12 @@ public class PtPChunkDAO {
 			stmt.setInt(1, surlUniqueID);
 			logWarnings(stmt.getWarnings());
 
-			stmt
-				.setInt(
-					2,
-					StatusCodeConverter.getInstance().toDB(
-						TStatusCode.SRM_SPACE_AVAILABLE));
+			stmt.setInt(2,StatusCodeConverter.getInstance().toDB(
+				TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - numberInSRM_SPACE_AVAILABLE method: "
-				+ stmt.toString());
+			log.trace("PtP CHUNK DAO - numberInSRM_SPACE_AVAILABLE method: {}", 
+				stmt.toString());
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 
@@ -683,7 +669,7 @@ public class PtPChunkDAO {
 			return numberSpaceAvailable;
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to determine "
-				+ "numberInSRM_SPACE_AVAILABLE! Returning 0! " + e);
+				+ "numberInSRM_SPACE_AVAILABLE! Returning 0! {}", e.getMessage(), e);
 			return 0;
 		} finally {
 			close(rs);
@@ -724,8 +710,7 @@ public class PtPChunkDAO {
 						TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: "
-				+ stmt.toString());
+			log.trace("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: {}", stmt.toString());
 
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
@@ -735,7 +720,7 @@ public class PtPChunkDAO {
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to select expired "
-				+ "SRM_SPACE_AVAILABLE chunks of PtP requests.", e);
+				+ "SRM_SPACE_AVAILABLE chunks of PtP requests. {}", e.getMessage(), e);
 			/* make an empty list! */
 			ids = new ArrayList<Long>();
 
@@ -776,15 +761,12 @@ public class PtPChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 			logWarnings(stmt.getWarnings());
 
-			stmt
-				.setInt(
-					2,
-					StatusCodeConverter.getInstance().toDB(
+			stmt.setInt(2, StatusCodeConverter.getInstance().toDB(
 						TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PtP CHUNK DAO - "
-				+ "transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: " + stmt.toString());
+				+ "transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: {}", stmt.toString());
 
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
@@ -793,13 +775,12 @@ public class PtPChunkDAO {
 				log.trace("PtPChunkDAO! No chunk of PtP request was "
 					+ "transited from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
 			} else {
-				log.info("PtPChunkDAO! " + count
-					+ " chunks of PtP requests were transited "
-					+ "from SRM_SPACE_AVAILABLE to SRM_SUCCESS.");
+				log.info("PtPChunkDAO! {} chunks of PtP requests were transited "
+					+ "from SRM_SPACE_AVAILABLE to SRM_SUCCESS.", count);
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to transit chunks from "
-				+ "SRM_SPACE_AVAILABLE to SRM_SUCCESS! " + e);
+				+ "SRM_SPACE_AVAILABLE to SRM_SUCCESS! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -835,10 +816,7 @@ public class PtPChunkDAO {
 			stmt.setString(2, explanation);
 			logWarnings(stmt.getWarnings());
 
-			stmt
-				.setInt(
-					3,
-					StatusCodeConverter.getInstance().toDB(
+			stmt.setInt(3, StatusCodeConverter.getInstance().toDB(
 						TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
@@ -849,20 +827,20 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PtP CHUNK DAO - "
-				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED: " + stmt.toString());
+				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 
 			if (count > 0) {
-				log.info("PtP CHUNK DAO! " + count + " chunks were transited from "
-					+ "SRM_SPACE_AVAILABLE to SRM_ABORTED.");
+				log.info("PtP CHUNK DAO! {} chunks were transited from "
+					+ "SRM_SPACE_AVAILABLE to SRM_ABORTED.", count);
 			} else {
 				log.trace("PtP CHUNK DAO! No chunks "
 					+ "were transited from SRM_SPACE_AVAILABLE to SRM_ABORTED.");
 			}
 		} catch (SQLException e) {
 			log.error("PtP CHUNK DAO! Unable to "
-				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED! " + e);
+				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED! {}", e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -877,8 +855,8 @@ public class PtPChunkDAO {
 			try {
 				stmt.close();
 			} catch (Exception e) {
-				log.error("PTP CHUNK DAO! Unable to close Statement " + stmt.toString()
-					+ " - Exception: " + e);
+				log.error("PTP CHUNK DAO! Unable to close Statement {} - Error: {}", 
+					stmt.toString(), e.getMessage(), e);
 			}
 		}
 	}
@@ -892,7 +870,8 @@ public class PtPChunkDAO {
 			try {
 				rset.close();
 			} catch (Exception e) {
-				log.error("PTP CHUNK DAO! Unable to close ResultSet! Exception: " + e);
+				log.error("PTP CHUNK DAO! Unable to close ResultSet! Error: {}", 
+					e.getMessage(), e);
 			}
 		}
 	}
@@ -903,9 +882,9 @@ public class PtPChunkDAO {
 	private void logWarnings(SQLWarning w) {
 
 		if (w != null) {
-			log.debug("PTP CHUNK DAO: " + w.toString());
+			log.debug("PTP CHUNK DAO: {}", w.toString());
 			while ((w = w.getNextWarning()) != null) {
-				log.debug("PTP CHUNK DAO: " + w.toString());
+				log.debug("PTP CHUNK DAO: {}", w.toString());
 			}
 		}
 	}
@@ -927,25 +906,6 @@ public class PtPChunkDAO {
 		return sb.toString();
 	}
 
-	// /**
-	// * Method that returns a String containing all IDs.
-	// */
-	// private String makeWhereString(long[] rowids) {
-	//
-	// StringBuffer sb = new StringBuffer("(");
-	// int n = rowids.length;
-	// for(int i = 0; i < n; i++)
-	// {
-	// sb.append(rowids[i]);
-	// if(i < (n - 1))
-	// {
-	// sb.append(",");
-	// }
-	// }
-	// sb.append(")");
-	// return sb.toString();
-	// }
-
 	/**
 	 * Auxiliary method that sets up the conenction to the DB.
 	 */
@@ -962,9 +922,11 @@ public class PtPChunkDAO {
 				response = con.isValid(0);
 			}
 		} catch (ClassNotFoundException e) {
-			log.error("PTP CHUNK DAO! Exception in setUpConenction! " + e);
+			log.error("PTP CHUNK DAO! Exception in setUpConenction! {}", 
+				e.getMessage(), e);
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO! Exception in setUpConnection! " + e);
+			log.error("PTP CHUNK DAO! Exception in setUpConnection! {}", 
+				e.getMessage(), e);
 		}
 		return response;
 	}
@@ -996,8 +958,8 @@ public class PtPChunkDAO {
 			try {
 				con.close();
 			} catch (SQLException e) {
-				log.error("PTP CHUNK DAO! Exception in "
-					+ "takeDownConnection method - could not close connection! " + e);
+				log.error("PTP CHUNK DAO! Exception in takeDownConnection method - "
+					+ "could not close connection! {}", e.getMessage(), e);
 			}
 		}
 	}
@@ -1063,19 +1025,19 @@ public class PtPChunkDAO {
 			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(statusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PTP CHUNK DAO - updateStatus: " + stmt.toString());
+			log.trace("PTP CHUNK DAO - updateStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
-				log.trace("PTP CHUNK DAO! No chunk of PTP request was" + " updated to "
-					+ statusCode + ".");
+				log.trace("PTP CHUNK DAO! No chunk of PTP request was updated to {}.", 
+					statusCode);
 			} else {
-				log.info("PTP CHUNK DAO! " + count
-					+ " chunks of PTP requests were updated to " + statusCode + ".");
+				log.info("PTP CHUNK DAO! {} chunks of PTP requests were updated "
+					+ "to {}.", count, statusCode);
 			}
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO! Unable to updated from to " + statusCode + " !"
-				+ e);
+			log.error("PTP CHUNK DAO! Unable to updated from to {}! {}", statusCode, 
+				e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -1175,22 +1137,19 @@ public class PtPChunkDAO {
 				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PTP CHUNK DAO - updateStatusOnMatchingStatus: "
-				+ stmt.toString());
+			log.trace("PTP CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
-				log.trace("PTP CHUNK DAO! No chunk of PTP request was"
-					+ " updated from " + expectedStatusCode + " to " + newStatusCode
-					+ ".");
+				log.trace("PTP CHUNK DAO! No chunk of PTP request was updated "
+					+ "from {} to {}.", expectedStatusCode, newStatusCode);
 			} else {
-				log.debug("PTP CHUNK DAO! " + count
-					+ " chunks of PTP requests were updated from " + expectedStatusCode
-					+ " to " + newStatusCode + ".");
+				log.debug("PTP CHUNK DAO! {} chunks of PTP requests were updated "
+					+ "from {} to {}.", count, expectedStatusCode, newStatusCode);
 			}
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO! Unable to updated from " + expectedStatusCode
-				+ " to " + newStatusCode + " !" + e);
+			log.error("PTP CHUNK DAO! Unable to updated from {} to {}! Error: {}", 
+				expectedStatusCode, newStatusCode, e.getMessage(), e);
 		} finally {
 			close(stmt);
 		}
@@ -1238,7 +1197,6 @@ public class PtPChunkDAO {
 		PreparedStatement find = null;
 		ResultSet rs = null;
 		try {
-			// TODO MICHELE USER_SURL get new fields
 			// get chunks of the request
 			String str = "SELECT rq.ID, rq.r_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, "
 				+ "rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
@@ -1259,7 +1217,7 @@ public class PtPChunkDAO {
 
 			List<PtPChunkDataTO> list = new ArrayList<PtPChunkDataTO>();
 
-			log.trace("PtP CHUNK DAO - find method: " + find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			PtPChunkDataTO chunkDataTO = null;
@@ -1289,7 +1247,6 @@ public class PtPChunkDAO {
 				chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
 				chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
 
-				// TODO MICHELE USER_SURL fill new fields
 				chunkDataTO.setNormalizedStFN(rs
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
@@ -1304,7 +1261,7 @@ public class PtPChunkDAO {
 			}
 			return list;
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO: " + e);
+			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<PtPChunkDataTO>();
 		} finally {
@@ -1333,7 +1290,7 @@ public class PtPChunkDAO {
 			find.setLong(1, requestQueueId);
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - findProtocols method: " + find.toString());
+			log.trace("PtP CHUNK DAO - findProtocols method: {}", find.toString());
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -1343,7 +1300,7 @@ public class PtPChunkDAO {
 
 			return protocols;
 		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO: " + e);
+			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
 			return new ArrayList<String>();
 		} finally {
@@ -1401,7 +1358,7 @@ public class PtPChunkDAO {
 				requestedSURL = SURL.makeSURLfromString(surls[i]);
 			} catch (NamespaceException e) {
 				log.error(e.getMessage());
-				log.debug("Skip '" + surls[i] + "' during query creation");
+				log.debug("Skip '{}' during query creation", surls[i]);
 				continue;
 			}
 			

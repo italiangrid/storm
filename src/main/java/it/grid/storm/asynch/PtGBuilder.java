@@ -60,13 +60,12 @@ public class PtGBuilder {
 			status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,
 				"Synchronous request created");
 		} catch (InvalidTReturnStatusAttributeException e) {
-			log
-				.error("Unable to build TReturnStatus. InvalidTReturnStatusAttributeException: "
-					+ e.getMessage());
+			log.error("Unable to build TReturnStatus. "
+				+ "InvalidTReturnStatusAttributeException: {}", e.getMessage(), e);
 			throw new BuilderException(
 				"Error building PtG TReturnStatus. Building failed");
 		}
-		;
+
 		TTURL transferURL = TTURL.makeEmpty();
 		PtGData data;
 		try {
@@ -80,21 +79,19 @@ public class PtGBuilder {
 			}
 			data.store();
 		} catch (InvalidPtGDataAttributesException e) {
-			log
-				.error("Unable to build PtGChunkData. InvalidPtGChunkDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtGChunkData. "
+				+ "InvalidPtGChunkDataAttributesException: {}", e.getMessage(), e);
 			throw new BuilderException(
 				"Error building PtG PtGChunkData. Building failed");
 		} catch (InvalidFileTransferDataAttributesException e) {
-			log
-				.error("Unable to build PtGChunkData. InvalidFileTransferChunkDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtGChunkData. "
+				+ "InvalidFileTransferChunkDataAttributesException: {}", 
+				e.getMessage(), e);
 			throw new BuilderException(
 				"Error building PtG PtGChunkData. Building failed");
 		} catch (InvalidSurlRequestDataAttributesException e) {
-			log
-				.error("Unable to build PtGChunkData. InvalidSurlRequestDataAttributesException: "
-					+ e.getMessage());
+			log.error("Unable to build PtGChunkData. "
+				+ "InvalidSurlRequestDataAttributesException: {}", e.getMessage(), e);
 			throw new BuilderException(
 				"Error building PtG PtGChunkData. Building failed");
 		}

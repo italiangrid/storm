@@ -172,7 +172,7 @@ public class SurlStatusCommandHelper {
 				throw new IllegalStateException(
 					"Unexpected IllegalArgumentException in getSurlsStatus: " + e);
 			} catch (UnknownSurlException e) {
-				log.info("Requested surl " + surl + " is unknown");
+				log.info("Requested surl {} is unknown", surl);
 			}
 		}
 		if (surlsStatuses.isEmpty()) {

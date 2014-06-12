@@ -77,9 +77,8 @@ public class PushCopyGetVisitor implements CopyVisitor {
 			parameters.add(4, copy.getLocalrt());
 			return copy.buildOperationResult(parameters, ResultType.GET);
 		} catch (Exception e) {
-			copy.getLog().error(
-				"ERROR IN PushCopyChunk! Cannot initiate local PtG! Requested SURL: "
-					+ copy.getRequestData().getSURL());
+			copy.getLog().error("ERROR IN PushCopyChunk! Cannot initiate local PtG! "
+				+ "Requested SURL: {}", copy.getRequestData().getSURL());
 			copy.getLog().error(e.getMessage(), e);
 			return copy.buildOperationResult("Cannot initiate local PtG! " + e,
 				ResultType.GET);

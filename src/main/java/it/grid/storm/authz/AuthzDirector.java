@@ -40,9 +40,7 @@ public class AuthzDirector {
 
 	private static final Logger log = LoggerFactory
 		.getLogger(AuthzDirector.class);
-	private static int refreshInSeconds = 5; // Default value;
 	private static String configurationPATH;
-	private static String stormPropertiesFileName;
 
 	// Map between 'SpaceToken' and the related 'SpaceAuthz'
 	private static Map<TSpaceToken, SpaceAuthzInterface> spaceAuthzs = null;
@@ -69,24 +67,23 @@ public class AuthzDirector {
 				if (authzTp.equals(SAAuthzType.AUTHZDB)) {
 					// The Space Authz is based on Authz DB
 					authzName = vfs.getStorageAreaAuthzDB();
-					log.debug("Loading AuthzDB '" + authzName + "'");
+					log.debug("Loading AuthzDB '{}'", authzName);
 					if (existsAuthzDBFile(authzName)) {
 						// Digest the Space AuthzDB File
 						TSpaceToken spaceToken = vfs.getSpaceToken();
 						SpaceAuthzInterface spaceAuthz = new SpaceDBAuthz(authzName);
 						spaceAuthzMap.put(spaceToken, spaceAuthz);
 					} else {
-						log.error("File AuthzDB '" + authzName + "' related to '" + vfsName
-							+ "' does not exists.");
+						log.error("File AuthzDB '{}' related to '{}' does not exists.", 
+							authzName, vfsName);
 					}
 				} else {
 					authzName = vfs.getStorageAreaAuthzFixed();
 				}
-				log.debug("VFS ['" + vfsName + "'] = " + authzTp + " : " + authzName);
+				log.debug("VFS ['{}'] = {} : {}", vfsName, authzTp, authzName);
 			}
 		} catch (NamespaceException e) {
-			log.warn("Unable to initialize AUTHZ DB!" + e.getMessage());
-			log.warn(".. (Workaround): AuthzDirector INITIALIZED evenly..");
+			log.error("Unable to initialize AUTHZ DB! Error: {}", e.getMessage(), e);
 		}
 
 		return spaceAuthzMap;
@@ -103,8 +100,8 @@ public class AuthzDirector {
 
 		String fileName = configurationPATH + File.separator + dbFileName;
 		boolean exists = (new File(fileName)).exists();
-		if (!(exists)) {
-			log.warn("The AuthzDB File '" + dbFileName + "' does not exists");
+		if (!exists) {
+			log.warn("The AuthzDB File '{}' does not exists", dbFileName);
 		}
 		return exists;
 	}
@@ -112,14 +109,6 @@ public class AuthzDirector {
 	// ****************************************
 	// PUBLIC METHODS
 	// ****************************************
-
-	/**
-	 * Retrieve the Logger used in all the package AUTHZ
-	 */
-	public static Logger getLogger() {
-
-		return log;
-	}
 
 	/******************************
 	 * SPACE AUTHORIZATION ENGINE
@@ -142,11 +131,11 @@ public class AuthzDirector {
 		// Retrieve the SpaceAuthz related to the Space Token
 		if ((spaceAuthzs != null) && (spaceAuthzs.containsKey(token))) {
 			spaceAuthz = spaceAuthzs.get(token);
-			log.debug("Space Authz related to S.Token ='" + token + "' is '"
-				+ spaceAuthz.getSpaceAuthzID() + "'");
+			log.debug("Space Authz related to S.Token ='{}' is '{}'", token, 
+				spaceAuthz.getSpaceAuthzID());
 		} else {
-			log.debug("Space Authz related to S.Token ='" + token
-				+ "' does not exists. Use the MOCK one.");
+			log.debug("Space Authz related to S.Token ='{}' does not exists. "
+				+ "Use the MOCK one.", token);
 		}
 		return spaceAuthz;
 	}
@@ -167,7 +156,7 @@ public class AuthzDirector {
 		try {
 			authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
 		} catch (Exception e) {
-			log.error("Unable to build a PathAuthzDBReader : " + e);
+			log.error("Unable to build a PathAuthzDBReader: {}", e.getMessage(), e);
 			throw new DirectorException("Unable to build a PathAuthzDBReader");
 		}
 		AuthzDirector.pathAuthz = new PathAuthz(authzDBReader.getPathAuthzDB());

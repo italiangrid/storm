@@ -27,8 +27,7 @@ package it.grid.storm.asynch;
  */
 public class NoSRMClientFoundException extends Exception {
 
-	private String explanation = ""; // String containing an explanation of the
-																		// error
+	private String explanation = "";
 
 	/**
 	 * Constructor that requires a String explaining the error.

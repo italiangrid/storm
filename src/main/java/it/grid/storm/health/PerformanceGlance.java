@@ -48,9 +48,9 @@ public class PerformanceGlance {
 			performanceStatus = pbk.getPerformanceStatus();
 			ArrayList<LogEvent> zombies = pbk.removeZombieEvents();
 			HealthDirector.LOGGER
-				.debug("Removed # <" + zombies.size() + "> zombies.");
-			HealthDirector.LOGGER.debug("have a look : " + performanceStatus);
-			// *********************** pbk.cleanLogBook();
+				.debug("Removed # <{}> zombies.", zombies.size());
+
+			HealthDirector.LOGGER.debug("have a look : {}", performanceStatus);
 		}
 
 		HealthDirector.LOGGER.debug(".. glance ended.");

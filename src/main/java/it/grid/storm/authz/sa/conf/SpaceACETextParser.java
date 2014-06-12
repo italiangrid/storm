@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.conf;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.model.AceType;
 import it.grid.storm.authz.sa.model.SpaceACE;
 import it.grid.storm.authz.sa.model.SpaceAccessMask;
@@ -26,10 +25,11 @@ import it.grid.storm.authz.sa.model.SubjectPattern;
 import it.grid.storm.authz.sa.model.SubjectType;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SpaceACETextParser {
 
-	private static final Logger LOG = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(SpaceACETextParser.class);
 
 	private SpaceACETextParser() {
 
@@ -40,31 +40,6 @@ public class SpaceACETextParser {
 		return parseACE(aceString);
 	}
 
-	/**
-	 * String invalidReason = "none"; String[] fields = new String[4]; // //
-	 * Retrieve fields from the line; // //== ACE # == int i0 = 0; int i1 =
-	 * line.indexOf('='); if (i1>0) { fields[0] = line.substring(i0, i1); } else {
-	 * valid = false; invalidReason = "Unable to found 'ace.xx='"; } // ==
-	 * DNPattern|FQANPattern # == i0 = line.indexOf("dn:"); i1 =
-	 * line.indexOf("fqan:"); if ((i0 < 0) && (i1 < 0)) { valid = false;
-	 * invalidReason = "Unable to found 'dn:' or 'fqan:'"; } else { if (i0 > 0) {
-	 * // found DN if (i1 > 0) { // found also fqan! ERROR valid = false;
-	 * invalidReason = "Found both 'dn:' and 'fqan:'. Only one is allowed."; }
-	 * else { // only DN subjectType = SubjectType.DN; fields[1] = } } else { //
-	 * found FQAN
-	 * 
-	 * } }
-	 * 
-	 * 
-	 * if (validate) { valid = validate(line); } return result;
-	 **/
-	/**
-	 * ace.1=dn:/DC=ch/DC=cern/OU=Organic
-	 * Units/OU=Users/CN=elanciot/CN=576215/CN=Elisa Lanciotti:DURWSCP:ALLOW
-	 * ace.3=fqan:EVERYONE:RQ:ALLOW - field[0] = ace number - field[0] = subject
-	 * string ==> subject-type + subject - field[1] = space access mask - field[2]
-	 * = ace type
-	 */
 	private static SpaceACE parseACE(String aceString)
 		throws AuthzDBReaderException {
 
@@ -80,7 +55,7 @@ public class SpaceACETextParser {
 				+ " is not well formed");
 		}
 		for (int i = 0; i < fields.length; i++) {
-			LOG.debug("Field[" + i + "]='" + fields[i] + "'");
+			log.debug("Field[{}]='{}'", i, fields[i]);
 		}
 		// FIELD 0 = SubjectType + SubjectPattern
 		SubjectType subjectType = parseSubjectType(fields[0].substring(1));
@@ -126,7 +101,7 @@ public class SpaceACETextParser {
 			throw new AuthzDBReaderException("Number Format error in '" + aceString
 				+ "'");
 		}
-		LOG.debug("number = " + aceNumber);
+		log.debug("number = {}", aceNumber);
 		return aceNumber;
 	}
 

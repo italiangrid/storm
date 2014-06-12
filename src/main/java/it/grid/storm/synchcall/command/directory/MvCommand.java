@@ -18,6 +18,10 @@
 package it.grid.storm.synchcall.command.directory;
 
 import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -28,7 +32,9 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -61,6 +67,8 @@ import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 public class MvCommand extends DirectoryCommand implements Command {
 
+  public static final Logger log = LoggerFactory.getLogger(MvCommand.class);
+
 	private static final String SRM_COMMAND = "SrmMv";
 	private final NamespaceInterface namespace;
 
@@ -92,99 +100,167 @@ public class MvCommand extends DirectoryCommand implements Command {
 			|| (inputData.getToSURL() == null)) {
 			outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
 				"Invalid parameter specified."));
-			log.warn("srmMv: Request failed with [status: " + outputData.getStatus()
-				+ "]");
+			log.warn("srmMv: Request failed with [status: {}]",
+			  outputData.getStatus());
+
 			return outputData;
 		}
 
 		TSURL fromSURL = inputData.getFromSURL();
-		StoRI fromStori;
-		if (!fromSURL.isEmpty()) {
-			try {
-
-				if (inputData instanceof IdentityInputData) {
-					try {
-						fromStori = namespace.resolveStoRIbySURL(fromSURL,
-							((IdentityInputData) inputData).getUser());
-					} catch (UnapprochableSurlException e) {
-						log.info("srmMv: Unable to build a stori for surl " + fromSURL
-							+ " for user " + DataHelper.getRequestor(inputData)
-							+ " UnapprochableSurlException: " + e.getMessage());
-						outputData.setStatus(CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
-						printRequestOutcome(outputData.getStatus(), inputData);
-						return outputData;
-					}
-				} else {
-					try {
-						fromStori = namespace.resolveStoRIbySURL(fromSURL);
-					} catch (UnapprochableSurlException e) {
-						log.info("srmMv: Unable to build a stori for surl " + fromSURL
-							+ " UnapprochableSurlException: " + e.getMessage());
-						outputData.setStatus(CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
-						printRequestOutcome(outputData.getStatus(), inputData);
-						return outputData;
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				log.warn("srmMv: Unable to build StoRI by SURL:[" + fromSURL
-					+ "]. IllegalArgumentException: " + e.getMessage());
-				outputData.setStatus(CommandHelper.buildStatus(
-					TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
-				printRequestOutcome(outputData.getStatus(), inputData);
-				return outputData;
-			}
-		} else {
+		
+		if (fromSURL.isEmpty()) {
 			log.warn("srmMv: unable to perform the operation, empty fromSurl");
 			outputData.setStatus(CommandHelper.buildStatus(
 				TStatusCode.SRM_INVALID_PATH, "Invalid fromSURL specified!"));
 			printRequestOutcome(outputData.getStatus(), inputData);
 			return outputData;
 		}
-
+		
 		TSURL toSURL = inputData.getToSURL();
-		StoRI toStori;
-		if (!toSURL.isEmpty()) {
-			try {
-				if (inputData instanceof IdentityInputData) {
-					try {
-						toStori = namespace.resolveStoRIbySURL(toSURL,
-							((IdentityInputData) inputData).getUser());
-					} catch (UnapprochableSurlException e) {
-						log.info("srmMv: Unable to build a stori for surl " + toSURL
-							+ " for user " + DataHelper.getRequestor(inputData)
-							+ " UnapprochableSurlException: " + e.getMessage());
-						outputData.setStatus(CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
-						printRequestOutcome(outputData.getStatus(), inputData);
-						return outputData;
-					}
-				} else {
-					try {
-						toStori = namespace.resolveStoRIbySURL(toSURL);
-					} catch (UnapprochableSurlException e) {
-						log.info("srmMv: Unable to build a stori for surl " + toSURL
-							+ " UnapprochableSurlException: " + e.getMessage());
-						outputData.setStatus(CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
-						printRequestOutcome(outputData.getStatus(), inputData);
-						return outputData;
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				log.error("srmMv: Unable to build StoRI by SURL:[" + toSURL
-					+ "]. IllegalArgumentException: " + e.getMessage());
-				outputData.setStatus(CommandHelper.buildStatus(
-					TStatusCode.SRM_INTERNAL_ERROR,
-					"Unable to build StoRI by destination SURL"));
-				printRequestOutcome(outputData.getStatus(), inputData);
-				return outputData;
-			}
-		} else {
+		
+		if (toSURL.isEmpty()) {
 			log.error("srmMv: unable to perform the operation, empty toSurl");
 			outputData.setStatus(CommandHelper.buildStatus(
 				TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
+			printRequestOutcome(outputData.getStatus(), inputData);
+			return outputData;
+		}
+		
+		StoRI fromStori = null;
+		try {
+			if (inputData instanceof IdentityInputData) {
+				try {
+					fromStori = namespace.resolveStoRIbySURL(fromSURL,
+						((IdentityInputData) inputData).getUser());
+				} catch (UnapprochableSurlException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (NamespaceException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (InvalidSURLException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+				}
+			} else {
+				try {
+					fromStori = namespace.resolveStoRIbySURL(fromSURL);
+				} catch (UnapprochableSurlException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (NamespaceException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (InvalidSURLException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			log.warn("srmMv: Unable to build StoRI by SURL: {}. {}", fromSURL
+				,e.getMessage());
+			outputData.setStatus(CommandHelper.buildStatus(
+				TStatusCode.SRM_INVALID_REQUEST, "Unable to build StoRI by SURL"));
+			printRequestOutcome(outputData.getStatus(), inputData);
+			return outputData;
+		}
+
+		StoRI toStori = null;;
+		try {
+			if (inputData instanceof IdentityInputData) {
+				try {
+					toStori = namespace.resolveStoRIbySURL(toSURL,
+						((IdentityInputData) inputData).getUser());
+				} catch (UnapprochableSurlException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (NamespaceException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (InvalidSURLException e) {
+					log.info("srmMv: Unable to build a stori for surl {} for user {}. {}", 
+					  fromSURL, 
+					  DataHelper.getRequestor(inputData), 
+					  e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				}
+			} else {
+				try {
+					toStori = namespace.resolveStoRIbySURL(toSURL);
+				} catch (UnapprochableSurlException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (NamespaceException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (InvalidSURLException e) {
+					log.info("srmMv: Unable to build a stori for surl {}. {}",fromSURL
+						,e.getMessage());
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("srmMv: Unable to build StoRI by SURL: {}. {}", fromSURL
+				,e.getMessage(),e);
+			outputData.setStatus(CommandHelper.buildStatus(
+				TStatusCode.SRM_INTERNAL_ERROR,
+				"Unable to build StoRI by destination SURL"));
 			printRequestOutcome(outputData.getStatus(), inputData);
 			return outputData;
 		}
@@ -200,13 +276,10 @@ public class MvCommand extends DirectoryCommand implements Command {
 			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MV);
 		}
 		if (!isSpaceAuthorized) {
-			log
-				.debug("srmMv: User not authorized to perform srmMv request on the storage area: "
-					+ token);
+			log.debug("srmMv: User not authorized to perform srmMv on SA: {}", token);
 			outputData.setStatus(CommandHelper.buildStatus(
 				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				": User not authorized to perform srmMv request on the storage area: "
-					+ token));
+				": User not authorized to perform srmMv on SA: " + token));
 			printRequestOutcome(outputData.getStatus(), inputData);
 			return outputData;
 		}
@@ -224,31 +297,48 @@ public class MvCommand extends DirectoryCommand implements Command {
 				try {
 					toStori = buildDestinationStoryForFolder(toSURL, fromStori, data);
 				} catch (IllegalArgumentException e) {
-					log.debug("srmMv : Unable to build StoRI by SURL '" + toSURL
-						+ "'. IllegalArgumentException: " + e.getMessage());
+					log.debug("srmMv : Unable to build StoRI for SURL {}. {}",
+					  toSURL, e.getMessage());
+
 					outputData.setStatus(CommandHelper.buildStatus(
 						TStatusCode.SRM_INTERNAL_ERROR, "Unable to build StoRI by SURL"));
 					printRequestOutcome(outputData.getStatus(), inputData);
 					return outputData;
 				} catch (UnapprochableSurlException e) {
-					log.info("srmMv: Unable to build a stori for surl " + toSURL
-						+ " for user " + DataHelper.getRequestor(inputData)
-						+ " UnapprochableSurlException: " + e.getMessage());
+				  log.info("srmMv: Unable to build a stori for surl {} for user {}. {}",
+				    toSURL, DataHelper.getRequestor(inputData),e.getMessage());
+
 					outputData.setStatus(CommandHelper.buildStatus(
-						TStatusCode.SRM_INVALID_PATH, "Invalid SURL path specified"));
+						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
 					printRequestOutcome(outputData.getStatus(), inputData);
 					return outputData;
 				} catch (InvalidTSURLAttributesException e) {
-					log
-						.error("Unable to create toSURL. InvalidTSURLAttributesException: "
-							+ e.getMessage());
+				  log.info("srmMv: Unable to build a stori for surl {} for user {}. {}",
+				    toSURL, DataHelper.getRequestor(inputData),e.getMessage());
+
 					outputData.setStatus(CommandHelper.buildStatus(
 						TStatusCode.SRM_INVALID_PATH, "Invalid toSURL specified!"));
 					printRequestOutcome(outputData.getStatus(), inputData);
 					return outputData;
+				} catch (NamespaceException e) {
+				  log.info("srmMv: Unable to build a stori for surl {} for user {}. {}",
+				    toSURL, DataHelper.getRequestor(inputData),e.getMessage());
+				  
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
+				} catch (InvalidSURLException e) {
+				  log.info("srmMv: Unable to build a stori for surl {} for user {}. {}",
+				    toSURL, DataHelper.getRequestor(inputData),e.getMessage());
+				  
+					outputData.setStatus(CommandHelper.buildStatus(
+						TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+					printRequestOutcome(outputData.getStatus(), inputData);
+					return outputData;
 				}
 			} else {
-				log.debug("srmMv : destination SURL " + toSURL + " already exists! ");
+				log.debug("srmMv : destination SURL {} already exists.", toSURL);
 				outputData.setStatus(CommandHelper
 					.buildStatus(TStatusCode.SRM_DUPLICATION_ERROR,
 						"destination SURL already exists!"));
@@ -278,9 +368,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 		TReturnStatus returnStatus;
 		if ((sourceDecision.equals(AuthzDecision.PERMIT))
 			&& (destinationDecision.equals(AuthzDecision.PERMIT))) {
-			log.debug("SrmMv: Mv authorized for "
-				+ DataHelper.getRequestor(inputData) + " for Source file = "
-				+ fromStori.getPFN() + " to Target file =" + toStori.getPFN());
+		  
+			log.debug("SrmMv: Mv authorized for user {}. Source: {}. Target: {}",
+			  DataHelper.getRequestor(inputData),
+			  fromStori.getPFN(),
+			  toStori.getPFN());
+
 			returnStatus = manageAuthorizedMV(fromStori, toStori.getLocalFile());
 			if (returnStatus.isSRM_SUCCESS()) {
 				LocalUser user = null;
@@ -289,7 +382,12 @@ public class MvCommand extends DirectoryCommand implements Command {
 						user = ((IdentityInputData) inputData).getUser().getLocalUser();
 					} catch (CannotMapUserException e) {
 						log
-							.warn("srmMv: failed to get the requesting local user,unable to set user acls on the created file");
+							.warn("srmMv: user mapping error {}", e.getMessage());
+
+						if (log.isDebugEnabled()){
+						  log.error(e.getMessage(),e);
+						}
+						
 						returnStatus
 							.extendExplaination("unable to set user acls on the destination file");
 					}
@@ -300,27 +398,33 @@ public class MvCommand extends DirectoryCommand implements Command {
 					setAcl(fromStori, toStori);
 				}
 			} else {
-				log.warn("srmMv: <" + DataHelper.getRequestor(inputData)
-					+ "> Request for [fromSURL=" + fromSURL + "; toSURL=" + toSURL
-					+ "] failed with [status: " + returnStatus.toString() + "]");
+				log.warn("srmMv: <{}> Request for [fromSURL={}; toSURL={}] failed with [status: {}]",
+				  DataHelper.getRequestor(inputData),
+					fromSURL,
+					toSURL,
+					returnStatus);
 			}
 		} else {
+		  
+		  String errorMsg = "Authorization error";
+		  
 			if (sourceDecision.equals(AuthzDecision.PERMIT)) {
-				returnStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_AUTHORIZATION_FAILURE,
-					"User is not authorized to create and/or write the destination file");
+			  errorMsg = 
+					"User is not authorized to create and/or write the destination file";
 			} else {
 				if (destinationDecision.equals(AuthzDecision.PERMIT)) {
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_AUTHORIZATION_FAILURE,
-						"User is not authorized to read and/or delete the source file");
+				  errorMsg = 
+				    "User is not authorized to read and/or delete the source file";
 				} else {
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_AUTHORIZATION_FAILURE,
-						"User is neither authorized to read and/or delete the source file "
-							+ "nor to create and/or write the destination file");
+				  errorMsg = 
+				    "User is neither authorized to read and/or delete the source file "
+							+ "nor to create and/or write the destination file";
 				}
 			}
+			
+			returnStatus = 
+			  CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, 
+			    errorMsg);
 		}
 		outputData.setStatus(returnStatus);
 		printRequestOutcome(outputData.getStatus(), inputData);
@@ -329,7 +433,8 @@ public class MvCommand extends DirectoryCommand implements Command {
 
 	private StoRI buildDestinationStoryForFolder(TSURL toSURL, StoRI fromStori,
 		InputData inputData) throws IllegalArgumentException,
-		InvalidTSURLAttributesException, UnapprochableSurlException {
+		InvalidTSURLAttributesException, UnapprochableSurlException,
+		NamespaceException, InvalidSURLException {
 
 		StoRI toStori;
 		String toSURLString = toSURL.getSURLString();
@@ -337,7 +442,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 			toSURLString += "/";
 		}
 		toSURLString += fromStori.getFilename();
-		log.debug("srmMv: New toSURL: " + toSURLString);
+		log.debug("srmMv: New toSURL: {}", toSURLString);
 		if (inputData instanceof IdentityInputData) {
 			toStori = namespace.resolveStoRIbySURL(
 				TSURL.makeFromStringValidate(toSURLString),
@@ -356,8 +461,8 @@ public class MvCommand extends DirectoryCommand implements Command {
 				oldFileStoRI.getLocalFile(), newFileStoRI.getLocalFile());
 		} catch (IllegalArgumentException e) {
 			log
-				.error("Unable to move permissions from the old to the new file. IllegalArgumentException: "
-					+ e.getMessage());
+				.error("Unable to move permissions from the old to the new file.{}", 
+				  e.getMessage(), e);
 		}
 	}
 
@@ -373,8 +478,9 @@ public class MvCommand extends DirectoryCommand implements Command {
 					FilesystemPermission.ReadWrite);
 			} catch (IllegalArgumentException e) {
 				log
-					.error("Unable to grant user read and write permission on the new file. IllegalArgumentException: "
-						+ e.getMessage());
+					.error("Unable to grant user read and write permission on file. {}",
+					  e.getMessage(),
+					  e);
 			}
 		} else {
 			// AoT
@@ -384,8 +490,8 @@ public class MvCommand extends DirectoryCommand implements Command {
 					FilesystemPermission.ReadWrite);
 			} catch (IllegalArgumentException e) {
 				log
-					.error("Unable to grant group read and write permission on the new file. IllegalArgumentException: "
-						+ e.getMessage());
+					.error("Unable to grant group read and write permission on file. {}"
+						,e.getMessage(),e);
 			}
 		}
 	}
@@ -434,7 +540,6 @@ public class MvCommand extends DirectoryCommand implements Command {
 		}
 
 		if (sourceExists && targetDirExists && !targetFileExists) {
-			// Request on valid from and to file.
 			log.debug("srmMv : All Check passed.");
 
 			/**
@@ -454,14 +559,11 @@ public class MvCommand extends DirectoryCommand implements Command {
 					"Unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: "
 						+ e);
 			} catch (UnknownSurlException e) {
-				log.debug("Surl " + fromStori.getSURL()
-					+ " not stored, surl is not busy. UnknownSurlException: "
-					+ e.getMessage());
+				log.debug("Unknown surl: {}. {}", fromStori.getSURL(), e.getMessage());
 			}
 
 			if ((surlStatus != null)
 				&& (TStatusCode.SRM_SPACE_AVAILABLE.equals(surlStatus.getStatusCode()))) {
-				// There is an active PrepareToPut!
 				log
 					.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
 				explanation = "There is an active SrmPrepareToPut on from SURL.";

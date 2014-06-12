@@ -49,7 +49,6 @@ import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.gpfsquota.GPFSFilesetQuotaInfo;
-import it.grid.storm.space.gpfsquota.GPFSQuotaInfo;
 import it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;

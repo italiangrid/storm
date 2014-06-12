@@ -104,8 +104,8 @@ public class UsedSpaceFile {
 		try {
 			iniFile = new IniReader().getIniFile(INI_FILENAME);
 		} catch (IllegalArgumentException e) {
-			log.error("Unable to get the Ini file handle for file " + INI_FILENAME
-				+ " in the default ini folder " + IniReader.DEFAULT_CONF_PATH);
+			log.error("Unable to get the Ini file handle for file {}  in the default ini folder {}" , INI_FILENAME
+				, IniReader.DEFAULT_CONF_PATH , e);
 		}
 		return iniFile;
 	}
@@ -172,8 +172,7 @@ public class UsedSpaceFile {
 	public List<SaUsedSize> getDefinedSizes() {
 
 		LinkedList<SaUsedSize> saUsedSizeList = new LinkedList<SaUsedSize>();
-		log.debug("Initializing '" + saNames.size()
-			+ "' not initialized storage areas");
+		log.debug("Initializing '{}' not initialized storage areas" , saNames.size());
 		/* Log initialized storage areas */
 
 		if (iniFile != null) {
@@ -187,45 +186,31 @@ public class UsedSpaceFile {
 						switch (Key.getKey(optionKey)) {
 						case USED_SIZE:
 							if (section.length(optionKey) > 1) {
-								log.warn("Unable to get " + Key.USED_SIZE.getName()
-									+ " value from section [" + saName
-									+ "] . Check for repeated declarations of this "
-									+ "Section or repeated declarations of "
-									+ Key.USED_SIZE.getName() + " in this section");
+								log.warn("Unable to get {} value from section [{}] . Check for repeated declarations of this Section or repeated declarations of {} in this section" , Key.USED_SIZE.getName()
+									, saName , Key.USED_SIZE.getName());
 							} else {
 								try {
 									usedSpace = Long.parseLong(section.get(optionKey));
 								} catch (NumberFormatException e) {
 									log
-										.warn(Key.USED_SIZE.getName()
-											+ " from section ["
-											+ saName
-											+ "] doesn't contain a valid Long value. NumberFormatException: "
-											+ e.getMessage());
+										.warn("{} from section [{}] doesn't contain a valid Long value. NumberFormatException: " , Key.USED_SIZE.getName() , saName , e.getMessage());
 								}
 							}
 							break;
 						case CHECK_TIME:
 							if (section.length(optionKey) > 1) {
-								log.warn("Unable to get " + Key.CHECK_TIME.getName()
-									+ " value from section [" + saName
-									+ "] . Check for repeated declarations of this "
-									+ "Section or repeated declarations of "
-									+ Key.CHECK_TIME.getName() + " in this section");
+								log.warn("Unable to get {} value from section [{}]. Check for repeated declarations of this Section or repeated declarations of {} in this section" , Key.CHECK_TIME.getName()	, saName
+									, Key.CHECK_TIME.getName());
 							} else {
 								try {
 									updateTime = parseDate(section.get(optionKey));
 								} catch (ParseException e) {
-									log.warn(Key.CHECK_TIME.getName() + " from section ["
-										+ saName
-										+ "] doesn't contain a valid Date value. ParseException: "
-										+ e.getMessage());
+									log.warn("{} from section [{}] doesn't contain a valid Date value. ParseException: {}" , Key.CHECK_TIME.getName() , saName , e.getMessage());
 								}
 							}
 							break;
 						default:
-							log.warn("Key: '" + optionKey + "' from section [" + saName
-								+ "] is not recognized as a valid key.");
+							log.warn("Key: '{}' from section [{}] is not recognized as a valid key." , optionKey , saName);
 							break;
 						}
 					}
@@ -233,8 +218,7 @@ public class UsedSpaceFile {
 						saUsedSizeList.add(new SaUsedSize(saName, usedSpace, updateTime));
 					}
 				} else {
-					log.warn("Unable to find section named " + saName
-						+ " in the ini file");
+					log.warn("Unable to find section named {} in the ini file" , saName);
 				}
 			}
 		} else {
@@ -258,20 +242,18 @@ public class UsedSpaceFile {
 		}
 		ArrayList<String> storageAreas = new ArrayList<String>();
 
-		log.debug("Number of ini file sections: " + iniFile.size());
+		log.debug("Number of ini file sections: {}" , iniFile.size());
 		for (String sectionName : iniFile.keySet()) {
-			log.debug("SA candidate from ini file is [" + sectionName + "]");
+			log.debug("SA candidate from ini file is [{}]" , sectionName);
 			// Check the existence in namespace.xml
 			if (saNames.contains(sectionName)) {
 				storageAreas.add(sectionName);
 			} else {
-				log.info("SA defined in the ini file is [" + sectionName
-					+ "] is not going to be updated");
+				log.info("SA defined in the ini file is [{}] is not going to be updated" , sectionName);
 			}
 		}
 		if (storageAreas.size() > 0) {
-			log.info("Found '" + storageAreas.size()
-				+ "' valid storage area defined in used-space.ini");
+			log.info("Found '{}' valid storage area defined in used-space.ini" , storageAreas.size());
 		} else {
 			log
 				.info("Found no defined Storage Area to initialize using used-size.ini file.");
@@ -295,16 +277,13 @@ public class UsedSpaceFile {
 			dateUpdate = formatRFC2822.parse(dateStr);
 			return dateUpdate;
 		} catch (ParseException e) {
-			log.debug("Unable to parse date " + dateStr
-				+ " using RFC2822 formatter.ParseException: " + e.getMessage()
-				+ " Attempting with default formatter");
+			log.debug("Unable to parse date {} using RFC2822 formatter.ParseException: {} Attempting with default formatter" , dateStr , e.getMessage(),e);
 			moreSignificantException = e;
 		}
 		try {
 			dateUpdate = formatDefault.parse(dateStr);
 		} catch (ParseException e) {
-			log.warn("Unable to parse the date '" + dateStr
-				+ "' with default formatter. ParseException: " + e.getMessage());
+			log.warn("Unable to parse the date {} with default formatter. ParseException: {}" , dateStr , e.getMessage());
 			throw moreSignificantException;
 		}
 		return dateUpdate;

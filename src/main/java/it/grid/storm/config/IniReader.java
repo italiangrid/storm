@@ -36,17 +36,11 @@ public class IniReader {
 		.configurationDir();
 	private List<File> iniFiles = new ArrayList<File>();
 
-	/**
-     * 
-     */
 	public IniReader() throws IllegalArgumentException {
 
 		this(DEFAULT_CONF_PATH);
 	}
 
-	/**
-	 * @param configurationPath
-	 */
 	public IniReader(String configurationPath) throws IllegalArgumentException {
 
 		if (configurationPath == null) {
@@ -56,8 +50,9 @@ public class IniReader {
 		}
 		File confFolder = new File(configurationPath);
 		if (!confFolder.isDirectory()) {
-			log.error("The provided configurationPath " + configurationPath
-				+ " is not a valid directory");
+
+			log.error("The provided configurationPath {} is not a valid directory", 
+			  configurationPath);
 			throw new IllegalArgumentException("The provided configurationPath "
 				+ configurationPath + " is not a valid directory");
 		}
@@ -69,8 +64,8 @@ public class IniReader {
 			}
 		}
 		if (iniFiles.size() == 0) {
-			log.error("The provided configurationPath " + configurationPath
-				+ " does not contains ini files");
+			log.error("The provided configurationPath {} does not contains ini files", 
+			  configurationPath);
 			throw new IllegalArgumentException("The provided configurationPath "
 				+ configurationPath + " does not contains ini files");
 		}
@@ -99,15 +94,8 @@ public class IniReader {
 			if (iniFile.getName().equals(iniFileName.trim())) {
 				try {
 					ini = new Ini(new FileReader(iniFile));
-				} catch (InvalidFileFormatException e) {
-					log.error("Unable to parse '" + iniFile
-						+ "' InvalidFileFormatException: ", e);
-				} catch (FileNotFoundException e) {
-					log.error("Unable to find '" + iniFile + "' FileNotFoundException: ",
-						e);
-				} catch (IOException e) {
-					log.error("IO Exception during load '" + iniFile + "' IOException: ",
-						e);
+				} catch (Throwable e) {
+				  log.error(e.getMessage(), e);
 				}
 				break;
 			}

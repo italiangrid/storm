@@ -42,32 +42,14 @@ public class LogEvent implements Delayed {
 	private String requestToken = null;
 	private boolean successResult = false;
 
-	/**
-	 * Constructor for ASYNCHRONOUS Event
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param surl
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param requestToken
-	 *          String
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long duration, String requestToken, boolean successResult) {
+		long startTime, long durationInMilliSec, String requestToken, boolean successResult) {
 
 		this.opType = opType;
 		this.userDN = userDN;
 		this.surl = surl;
 		this.startTime = startTime;
-		this.duration = duration;
+		this.duration = durationInMilliSec;
 		this.requestToken = requestToken;
 		Date date = new Date(startTime);
 		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
@@ -81,81 +63,19 @@ public class LogEvent implements Delayed {
 
 	}
 
-	/**
-	 * Constructor for SYNCHRONOUS Event
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, long startTime,
-		long duration, boolean successResult) {
+		long durationInMilliSec, boolean successResult) {
 
-		this.opType = opType;
-		this.userDN = userDN;
-		// Empty SURL
-		this.surl = TSURL.makeEmpty().toString();
-		this.startTime = startTime;
-		// Store the duration in MicroSeconds (10^-6 sec)
-		this.duration = TimeUnit.MICROSECONDS.convert(duration,
-			TimeUnit.NANOSECONDS);
-		this.requestToken = "SYNCH";
-		Date date = new Date(startTime);
-		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
-		this.startTimeStr = formatter.format(date);
-		this.successResult = successResult;
-
-		this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
-		this.deathTime = System.currentTimeMillis()
-			+ (timeToLive * LogEvent.THOUSAND);
-		this.birthTime = System.currentTimeMillis();
-
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): " + timeToLive);
+		this(opType, userDN, TSURL.makeEmpty().toString(), startTime, durationInMilliSec, 
+			"SYNCH", successResult);
+		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
-	/**
-	 * Constructor for SYNCHRONOUS Event with surl
-	 * 
-	 * @param opType
-	 *          OperationType
-	 * @param userDN
-	 *          String
-	 * @param startTime
-	 *          long
-	 * @param duration
-	 *          long
-	 * @param successResult
-	 *          boolean
-	 */
 	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long duration, boolean successResult) {
+		long startTime, long durationInMilliSec, boolean successResult) {
 
-		this.opType = opType;
-		this.userDN = userDN;
-		this.surl = surl;
-		this.startTime = startTime;
-		// Store the duration in MicroSeconds (10^-6 sec)
-		this.duration = TimeUnit.MICROSECONDS.convert(duration,
-			TimeUnit.NANOSECONDS);
-		this.requestToken = "SYNCH";
-		Date date = new Date(startTime);
-		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
-		this.startTimeStr = formatter.format(date);
-		this.successResult = successResult;
-
-		this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
-		this.deathTime = System.currentTimeMillis()
-			+ (timeToLive * LogEvent.THOUSAND);
-		this.birthTime = System.currentTimeMillis();
-
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): " + timeToLive);
+		this(opType, userDN, surl, startTime, durationInMilliSec, "SYNCH", successResult);
+		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
 	}
 
 	public OperationType getOperationType() {
@@ -183,6 +103,9 @@ public class LogEvent implements Delayed {
 		return this.startTimeStr;
 	}
 
+	/**
+	 * @return duration in millisec
+	 */
 	public long getDuration() {
 
 		return this.duration;
@@ -218,28 +141,17 @@ public class LogEvent implements Delayed {
 		return sb.toString();
 	}
 
-	// ************** Methods of Delayed Interface *****************
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.concurrent.Delayed#getDelay(java.util.concurrent.TimeUnit)
-	 */
 	public long getDelay(TimeUnit unit) {
 
 		long result = -1;
 		result = unit.convert(deathTime - System.currentTimeMillis(),
 			TimeUnit.MILLISECONDS);
-		HealthDirector.LOGGER.debug("Event TimeToLive : " + timeToLive
-			+ " ... remaining : " + result);
+		HealthDirector.LOGGER.debug("Event TimeToLive : {} result: {}",
+		  timeToLive, result);
+
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
 	public int compareTo(Delayed other) {
 
 		LogEvent otherEvent = (LogEvent) other;
@@ -251,5 +163,4 @@ public class LogEvent implements Delayed {
 		}
 		return 0;
 	}
-
 }

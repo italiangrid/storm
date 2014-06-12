@@ -19,7 +19,6 @@ package it.grid.storm.tape.recalltable.model;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.util.SURLValidator;
@@ -144,9 +143,8 @@ public class PutTapeRecallStatusValidator {
 		}
 		try {
 			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-		} catch (UnapprochableSurlException e) {
-			log.warn("Unable to build a stori for surl " + surl
-				+ " UnapprochableSurlException: " + e.getMessage());
+		} catch (Exception e) {
+			log.warn("Unable to build a stori for surl {} UnapprochableSurlException: {}" , surl , e.getMessage(),e);
 			return false;
 		}
 		return true;

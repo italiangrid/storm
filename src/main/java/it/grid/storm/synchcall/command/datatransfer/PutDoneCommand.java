@@ -26,7 +26,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -379,55 +378,27 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 	public static void executePutDone(List<TSURL> spaceAvailableSURLs,
 		GridUserInterface user) {
 
-		// VolatileAndJiTCatalog volatileAndJiTCatalog =
-		// VolatileAndJiTCatalog.getInstance();
-
-		// Now spaceAvailableSURLs contains all the SURLs for which to do a PutDone.
-		// To execute this
-		// operation
-		// three steps are needed for each SURL:
-		// 1- if the SURL is volatile than an entry in the table Volatile must be
-		// created;
-		// 2- JiTs must me removed from the TURL;
-		// 3- compute the checksum and store it in an extended attribute
-		// 4- Tape stuff management.
-		// 5- Update FreeSpace into DB
-		// 6- The status of the SURL in the DB must transit from SRM_SPACE_AVAILABLE
-		// to SRM_SUCCESS.
-		// for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
 		for (TSURL surl : spaceAvailableSURLs) {
 
-			// ReducedPtPChunkData chunkData = spaceAvailableSURLs.get(i);
-			// TSURL surl = spaceAvailableSURLs.get(i);
-			// if (chunkData == null) {
 			if (surl == null) {
 				continue;
 			}
 
-			// TSURL surl = chunkData.toSURL();
-
-			// if (user == null) {
-			//
-			//
-			// if (lockSurl(surl)) {
-			// } else {
-			// continue;
-			// }
-			//
-			// } else {
-			// log.info("Executing PutDone for SURL: " +
-			// spaceAvailableSURLs.get(i).toSURL().getSURLString());
 			log.debug("Executing PutDone for SURL: " + surl.getSURLString());
-			// }
 
 			StoRI stori = null;
 			// Retrieve the StoRI associate to the SURL
 			if (user == null) {
 				try {
 					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-				} catch (UnapprochableSurlException e) {
-					log.info("Unable to build a stori for surl " + surl
-						+ " UnapprochableSurlException: " + e.getMessage());
+				} catch (IllegalArgumentException e) {
+					log.error(String.format(
+						"Unable to build a stori for surl %s, %s: %s", surl, e.getClass()
+							.getName(), e.getMessage()));
+					continue;
+				} catch (Exception e) {
+					log.info(String.format("Unable to build a stori for surl %s, %s: %s",
+						surl, e.getClass().getName(), e.getMessage()));
 					continue;
 				}
 			} else {
@@ -435,12 +406,14 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl,
 						user);
 				} catch (IllegalArgumentException e) {
-					log.error(funcName + "unable to build STORI from surl=" + surl
-						+ " user=" + user);
+					log.error(String.format(
+						"User %s is unable to build a stori for surl %s, %s: %s", user,
+						surl, e.getClass().getName(), e.getMessage()));
 					continue;
-				} catch (UnapprochableSurlException e) {
-					log.info("Unable to build a stori for surl " + surl + " for user "
-						+ user + " UnapprochableSurlException: " + e.getMessage());
+				} catch (Exception e) {
+					log.info(String.format(
+						"User %s is unable to build a stori for surl %s, %s: %s", user,
+						surl, e.getClass().getName(), e.getMessage()));
 					continue;
 				}
 			}
@@ -485,25 +458,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
 			// 3- compute the checksum and store it in an extended attribute
 			LocalFile localFile = stori.getLocalFile();
-
-			// if (Configuration.getInstance().getChecksumEnabled()) {
-			//
-			// boolean checksumComputed = localFile.setChecksum();
-			// if (!checksumComputed) {
-			// // if (arrayOfFileStatus != null) {
-			// // arrayOfFileStatus.getTSURLReturnStatus(i)
-			// // .getStatus()
-			// // .setExplanation("Warning: failed to compute the checksum "
-			// // + "(checksum computation is enabled in the server)");
-			// // } else {
-			// log.warn("Error comuting checksum for file: " +
-			// localFile.getAbsolutePath());
-			// // }
-			// } else {
-			// log.debug("Checksum set to SURL:" + surl.toString());
-			// }
-			//
-			// }
 
 			// 4- Tape stuff management.
 			if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {

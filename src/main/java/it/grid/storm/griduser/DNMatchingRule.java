@@ -35,26 +35,6 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF
- * </p>
- * 
- * @author R.Zappi
- * @version 1.1
- */
 public class DNMatchingRule {
 
 	private static final Logger log = LoggerFactory
@@ -127,17 +107,16 @@ public class DNMatchingRule {
 			for (String rule : regularExpressionRule.split("/")) {
 				if (!rule.contains("=")) {
 					if (!(rule.trim().isEmpty() || rule.equals(ADMIT_ALL))) {
-						log.warn("Malformed DN regex element \'" + rule
-							+ "\' it does not contains \'=\' key-value separator");
+						log.warn("Malformed DN regex element '{}' "
+						  + "it does not contains \'=\' key-value separator", rule);
 					}
 					continue;
 				}
 				String[] ruleCoupple = rule.split("=");
 				if (ruleCoupple.length != 2) {
 					log
-						.warn("Malformed DN regex element \'"
-							+ rule
-							+ "\' it does not contains the key or contains more \'=\' separators");
+						.warn("Malformed DN regex element '{}' it does not contains "
+						  + "the key or contains more \'=\' separators", rule);
 					continue;
 				}
 				switch (DNFields.fromString(ruleCoupple[0])) {
@@ -167,20 +146,6 @@ public class DNMatchingRule {
 		initPatterns();
 	}
 
-	/**
-	 * private method used to initialize everything
-	 * 
-	 * @param countryPatternString
-	 *          String
-	 * @param organizationPatternString
-	 *          String
-	 * @param organizationalUnitPatternString
-	 *          String
-	 * @param localityPatternString
-	 *          String
-	 * @param commonNameString
-	 *          String
-	 */
 	private void initPatterns() {
 
 		// C country
@@ -234,20 +199,6 @@ public class DNMatchingRule {
 			|| pattern.trim().equals(".*");
 	}
 
-	/**
-	 * Constructor with explicited Pattern String
-	 * 
-	 * @param countryPatternString
-	 *          String
-	 * @param organizationPatternString
-	 *          String
-	 * @param organizationalUnitPatternString
-	 *          String
-	 * @param localityPatternString
-	 *          String
-	 * @param commonNameString
-	 *          String
-	 */
 	public DNMatchingRule(String countryPatternString,
 		String organizationPatternString, String organizationalUnitPatternString,
 		String localityPatternString, String commonNamePatternString,
@@ -272,14 +223,6 @@ public class DNMatchingRule {
 			&& isMatchAll(domainComponentPatternString);
 	}
 
-	/**
-	 * 
-	 * @param principalDN
-	 *          DistinguishedName
-	 * @return boolean
-	 * 
-	 * @todo Implement performance. After first false exit with false!
-	 */
 	public boolean match(DistinguishedName principalDN)
 		throws IllegalArgumentException {
 

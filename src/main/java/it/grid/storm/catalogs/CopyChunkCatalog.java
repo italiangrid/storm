@@ -100,9 +100,6 @@ public class CopyChunkCatalog {
 		to.setTargetSurlUniqueID(new Integer(cd.getDestinationSURL().uniqueId()));
 
 		dao.update(to);
-		// TODO MICHELE SURL STORE
-		// SurlStatusStore.getInstance().storeSurlStatus(cd.getSURL(),
-		// cd.getStatus().getStatusCode());
 	}
 
 	/**
@@ -121,7 +118,7 @@ public class CopyChunkCatalog {
 		TRequestToken rt) {
 
 		Collection<CopyChunkDataTO> chunkDataTOs = dao.find(rt);
-		log.debug("COPY CHUNK CATALOG: retrieved data " + chunkDataTOs);
+		log.debug("COPY CHUNK CATALOG: retrieved data {}", chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs, rt);
 	}
 
@@ -132,21 +129,21 @@ public class CopyChunkCatalog {
 		CopyPersistentChunkData chunk;
 		for (CopyChunkDataTO chunkTO : chunkDataTOs) {
 			chunk = makeOne(chunkTO, rt);
-			if (chunk != null) {
-				list.add(chunk);
-				
-				if (!this.isComplete(chunkTO)) {
-					try {
-						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-					} catch (InvalidReducedCopyChunkDataAttributesException e) {
-						log
-							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-								+ e);
-					}
-				}
+			if (chunk == null) {
+				continue;
+			}
+			list.add(chunk);
+			if (isComplete(chunkTO)) {
+				continue;
+			}
+			try {
+				dao.updateIncomplete(completeTO(chunkTO, chunk));
+			} catch (InvalidReducedCopyChunkDataAttributesException e) {
+				log.warn("COPY CHUNK CATALOG! unable to add missing informations on "
+					+ "DB to the request: {}", e.getMessage());
 			}
 		}
-		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+		log.debug("COPY CHUNK CATALOG: returning {}\n\n", list);
 		return list;
 	}
 
@@ -157,21 +154,21 @@ public class CopyChunkCatalog {
 		CopyPersistentChunkData chunk;
 		for (CopyChunkDataTO chunkTO : chunkDataTOs) {
 			chunk = makeOne(chunkTO);
-			if (chunk != null) {
-				list.add(chunk);
-				
-				if (!this.isComplete(chunkTO)) {
-					try {
-						dao.updateIncomplete(this.completeTO(chunkTO, chunk));
-					} catch (InvalidReducedCopyChunkDataAttributesException e) {
-						log
-							.warn("PtG CHUNK CATALOG! unable to add missing informations on DB to the request: "
-								+ e);
-					}
-				}
+			if (chunk == null) {
+				continue;
+			}
+			list.add(chunk);
+			if (isComplete(chunkTO)) {
+				continue;
+			}
+			try {
+				dao.updateIncomplete(completeTO(chunkTO, chunk));
+			} catch (InvalidReducedCopyChunkDataAttributesException e) {
+				log.warn("COPY CHUNK CATALOG! unable to add missing informations on DB "
+					+ "to the request: {}", e.getMessage());
 			}
 		}
-		log.debug("COPY CHUNK CATALOG: returning " + list + "\n\n");
+		log.debug("COPY CHUNK CATALOG: returning {}\n\n", list);
 		return list;
 	}
 
@@ -296,9 +293,8 @@ public class CopyChunkCatalog {
 		TFileStorageType fileStorageType = FileStorageTypeConverter.getInstance()
 			.toSTORM(chunkDataTO.fileStorageType());
 		if (fileStorageType == TFileStorageType.EMPTY) {
-			log.error("\nTFileStorageType could not be "
-				+ "translated from its String representation! String: "
-				+ chunkDataTO.fileStorageType());
+			log.error("\nTFileStorageType could not be translated from its String "
+				+ "representation! String: {}", chunkDataTO.fileStorageType());
 			// fail creation of PtPChunk!
 			fileStorageType = null;
 		}
@@ -357,7 +353,7 @@ public class CopyChunkCatalog {
 		} catch (InvalidSurlRequestDataAttributesException e) {
 			dao.signalMalformedCopyChunk(chunkDataTO);
 			log.warn("COPY CHUNK CATALOG! Retrieved malformed Copy"
-				+ " chunk data from persistence. Dropping chunk from request: " + rt);
+				+ " chunk data from persistence. Dropping chunk from request: {}", rt);
 			log.warn(e.getMessage());
 			log.warn(errorSb.toString());
 		}

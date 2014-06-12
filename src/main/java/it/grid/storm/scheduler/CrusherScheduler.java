@@ -88,8 +88,9 @@ public class CrusherScheduler implements Scheduler
 	}
 
 	public static CrusherScheduler getInstance() {
+	  
+	  log.trace("CrusherScheduler.getInstance");
 
-		log.debug("Called multi-thread scheduler");
 		if (istance == null) {
 			istance = new CrusherScheduler();
 		}
@@ -98,13 +99,14 @@ public class CrusherScheduler implements Scheduler
 
 	public void schedule(Delegable cruncherTask) throws SchedulerException {
 
-		log.debug("Scheduling feed " + cruncherTask.getName());
+	  log.trace("CrusherScheduler.schedule() - cruncherTask: {}", 
+	    cruncherTask.getName());
 
 		try {
 			Task task = new CruncherTask(cruncherTask);
 			crusherPool.submit(task);
-			log.debug("Feed task nr. = " + crusherPool.getTaskCount());
-			log.debug("Scheduled feed " + cruncherTask.getName());
+			log.debug("Feed task nr. = {}" , crusherPool.getTaskCount());
+			log.debug("Scheduled feed {}" , cruncherTask.getName());
 		} catch (SchedulerException se) {
 			log.error(se.getMessage(), se);
 			throw se;

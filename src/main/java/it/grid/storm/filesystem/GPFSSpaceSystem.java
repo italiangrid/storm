@@ -58,7 +58,7 @@ public class GPFSSpaceSystem implements SpaceSystem {
 		throws ReservationException {
 
 		try {
-			log.debug("GPFSSpaceSystem : pathToFile:" + pathToFile);
+			log.debug("GPFSSpaceSystem : pathToFile: {}" , pathToFile);
 			fs.prealloc(pathToFile, size);
 			return size;
 		} catch (Exception e) {

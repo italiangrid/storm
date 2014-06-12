@@ -68,6 +68,7 @@ public class CopyPersistentChunkData extends CopyData implements
 		super(fromSURL, destinationSURL, lifetime, fileStorageType, spaceToken,
 			overwriteOption, status);
 		if (requestToken == null) {
+			log.debug("CopyPersistentChunkData: requestToken is null!");
 			throw new InvalidCopyPersistentChunkDataAttributesException(requestToken,
 				fromSURL, destinationSURL, lifetime, fileStorageType, spaceToken,
 				overwriteOption, status);
@@ -106,9 +107,4 @@ public class CopyPersistentChunkData extends CopyData implements
 		return getPrimaryKey();
 	}
 
-	@Override
-	protected Logger getLog() {
-
-		return CopyPersistentChunkData.log;
-	}
 }

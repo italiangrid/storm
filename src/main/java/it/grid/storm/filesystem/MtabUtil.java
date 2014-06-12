@@ -107,9 +107,8 @@ public class MtabUtil {
 			try {
 				mtab = new BufferedReader(new FileReader(getFilePath()));
 			} catch (FileNotFoundException e) {
-				log.error("Unable to find mtab file at " + getFilePath()
-					+ " . FileNotFoundException: " + e.getMessage());
-				throw new Exception("Unable to get mount points. mtab file not found");
+			  log.error(e.getMessage(), e);
+				throw new Exception("Unable to get mount points. mtab file not found",e);
 			}
 			String line;
 			try {
@@ -120,19 +119,16 @@ public class MtabUtil {
 					LinkedList<String> elementsList = tokenizeLine(line);
 					if ((elementsList.size() - 1) < getMountPointIndex()
 						|| (elementsList.size() - 1) < getFsNameIndex()) {
-						log
-							.warn("Unable to produce a valid file system mount point from line \'"
-								+ line
-								+ "\' . not enough elements in the tokenized array : "
-								+ elementsList.toString() + ". Skipping the line");
+					  log.warn("FS mount point parsing error. "
+					    + "Not enough elements found: {}. Skipping current line...",
+					    elementsList);
 					} else {
 						mountPointToFSMap.put(elementsList.get(getMountPointIndex()),
 							elementsList.get(getFsNameIndex()));
 					}
 				}
 			} catch (IOException e) {
-				log.error("Unable to read from mtab file at " + getFilePath()
-					+ " . IOException: " + e.getMessage());
+			  log.error(e.getMessage(), e);
 				throw new Exception(
 					"Unable to get mount points. Erro reading from mtab");
 			}
@@ -156,21 +152,19 @@ public class MtabUtil {
 			if (skipLineForMountPoints(line)) {
 				continue;
 			}
-			log.debug("Creting an mtab row from string \'" + line + "\'");
+			log.debug("mtab row from string {}", line);
 			MtabRow row = null;
 			try {
 				row = produceRow(line);
 			} catch (IllegalArgumentException e) {
-				log.warn("Unable to produce a valid row from line \'" + line
-					+ "\' . IllegalArgumentException : " + e.getMessage()
-					+ ". Skipping the line");
+			  log.warn("Skipping line {}. {}", line, e.getMessage(), e);
 			}
 			if (row != null) {
 				rows.add(row);
 			}
 		}
-		log.debug("Produced " + rows.size() + " mtab rows from file at "
-			+ MTAB_FILE_PATH);
+		log.debug("Parsed {} mtab rows from file {}",
+		  rows.size(), MTAB_FILE_PATH);
 		return rows;
 	}
 

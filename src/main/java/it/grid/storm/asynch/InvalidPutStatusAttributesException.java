@@ -48,7 +48,7 @@ public class InvalidPutStatusAttributesException extends Exception {
 
 	public String toString() {
 
-		return "nullToTURL=" + nullToTURL + "; nullReturnStatus="
-			+ nullReturnStatus;
+		return String.format("nullToTURL=%b; nullReturnStatus=%b", nullToTURL, 
+			nullReturnStatus);
 	}
 }

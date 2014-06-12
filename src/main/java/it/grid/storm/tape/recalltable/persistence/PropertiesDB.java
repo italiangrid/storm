@@ -58,7 +58,7 @@ public class PropertiesDB {
 		char sep = File.separatorChar;
 		propertiesDBName = configurationDir + sep + "etc" + sep + "db" + sep
 			+ dataFileName;
-		log.debug("Properties RecallTable-DB = " + propertiesDBName);
+		log.debug("Properties RecallTable-DB = {}" , propertiesDBName);
 	}
 
 	public PropertiesDB(boolean test) {
@@ -78,11 +78,10 @@ public class PropertiesDB {
 		try {
 			success = tasksDBfile.createNewFile();
 		} catch (IOException e) {
-			log.error("Error while trying to check : " + propertiesDBName);
-			e.printStackTrace();
+			log.error("Error while trying to check : {}" , propertiesDBName,e);
 		}
 		if (success) {
-			log.debug("TaskDB = '" + propertiesDBName + "' exists ? " + success);
+			log.debug("TaskDB = '{}' exists ? {}" , propertiesDBName , success);
 		}
 	}
 
@@ -174,7 +173,7 @@ public class PropertiesDB {
 		// Check if the Task exists within the Properties DB
 		boolean taskExist = properties.containsKey(taskId.toString());
 		if (!(taskExist)) {
-			log.error("Unable to find the task with ID = " + taskId);
+			log.error("Unable to find the task with ID = {}" , taskId);
 			throw new DataAccessException("Unable to find the task with ID = "
 				+ taskId);
 		} else {
@@ -182,7 +181,7 @@ public class PropertiesDB {
 			String taskStr = task.toString();
 			// Insert the new property entry
 			properties.setProperty(taskId.toString(), taskStr);
-			log.debug("Removed tasks '" + taskId + "'");
+			log.debug("Removed tasks '{}'" , taskId);
 		}
 
 		// Store the properties into disk
@@ -198,12 +197,12 @@ public class PropertiesDB {
 		// Retrieve the Task from taskId
 		String task = properties.getProperty(taskId.toString());
 		if (task == null) {
-			log.error("Unable to find the task with ID = " + taskId);
+			log.error("Unable to find the task with ID = {}" , taskId);
 			throw new DataAccessException("Unable to find the task with ID = "
 				+ taskId);
 		} else {
 			properties.remove(taskId);
-			log.debug("Removed tasks '" + taskId + "'");
+			log.debug("Removed tasks '{}'" , taskId);
 		}
 
 		// Store the properties into disk

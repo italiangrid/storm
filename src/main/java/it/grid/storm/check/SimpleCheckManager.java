@@ -52,8 +52,8 @@ public class SimpleCheckManager extends CheckManager {
 		try {
 			checks.add(getNamespaceFSAssociationCheck());
 		} catch (IllegalStateException e) {
-			log.warn("Skipping NamespaceFSAssociationCheck. IllegalStateException: "
-				+ e.getMessage());
+			log.warn("Skipping NamespaceFSAssociationCheck. "
+				+ "IllegalStateException: {}", e.getMessage());
 		}
 		// checks.add(new NamespaceFSExtendedAttributeDeclarationCheck()); Removed
 		checks.add(new NamespaceFSExtendedAttributeUsageCheck());

@@ -107,21 +107,21 @@ public class TelnetClient {
 
 		bootstrap.setOption("connectTimeoutMillis", 5000); // 5 seconds
 
-		logger.debug("Connecting to Gridftp at " + address.toString());
+		logger.debug("Connecting to Gridftp at {}", address.toString());
 		ChannelFuture channelFuture = bootstrap.connect(address);
 
 		Channel channel = channelFuture.awaitUninterruptibly().getChannel();
 
 		if (!channelFuture.isSuccess()) {
-			logger.info("GridFTP Telnet connection to server " + address.toString()
-				+ "failed. Cause : " + channelFuture.getCause());
+			logger.info("GridFTP Telnet connection to server {} failed. Cause: {}",
+				address.toString(), channelFuture.getCause());
 			bootstrap.releaseExternalResources();
 			return false;
 		}
 		logger.debug("Channel created successfully");
 		if (!channel.isConnected()) {
-			logger.info("GridFTP Telnet connection failed " + address.toString()
-				+ "failed. Cause : " + channelFuture.getCause());
+			logger.info("GridFTP Telnet connection failed {}. Cause: {}", 
+				address.toString(), channelFuture.getCause());
 			bootstrap.releaseExternalResources();
 			return false;
 		}
@@ -141,8 +141,7 @@ public class TelnetClient {
 					failed = true;
 				}
 			} catch (Exception e) {
-				logger.warn("Unable to check handler response. Exception : "
-					+ e.getMessage());
+				logger.warn("Unable to check handler response. Exception: {}", e.getMessage());
 				failedAttempts++;
 				failed = true;
 			}

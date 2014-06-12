@@ -111,8 +111,9 @@ public class TFN {
 			try {
 				m = Machine.make(mString);
 			} catch (InvalidMachineAttributeException e) {
-				log.warn("TFN: Unable to build -machine- attribute with the String '"
-					+ mString + "'." + e);
+
+			  log.warn("TFN: Unable to build -machine- attribute from {}. {}", 
+			    mString, e.getMessage());
 			}
 
 			// Port is empty because it is optional specification
@@ -126,8 +127,8 @@ public class TFN {
 			try {
 				pfn = PFN.make(pfnString);
 			} catch (InvalidPFNAttributeException e) {
-				log.warn("TFN: Unable to build -pfn- attribute with the String '"
-					+ pfnString + "'." + e);
+				log.warn("TFN: Unable to build -pfn- attribute from {}. {}",
+				  pfnString,e.getMessage());
 			}
 			return TFN.make(m, p, pfn);
 		} else if ((slash != -1) && (colon > slash)) {
@@ -145,8 +146,9 @@ public class TFN {
 			try {
 				m = Machine.make(mString);
 			} catch (InvalidMachineAttributeException e) {
-				log.warn("TFN: Unable to build -machine- attribute with the String '"
-					+ mString + "'." + e);
+
+			  log.warn("TFN: Unable to build -machine- attribute from {}. {}", 
+			    mString, e.getMessage());
 			}
 			// Port is empty because it is optional specification
 			Port p = Port.makeEmpty();
@@ -159,8 +161,8 @@ public class TFN {
 			try {
 				pfn = PFN.make(pfnString);
 			} catch (InvalidPFNAttributeException e) {
-				log.warn("TFN: Unable to build -pfn- attribute with the String '"
-					+ pfnString + "'." + e);
+				log.warn("TFN: Unable to build -pfn- attribute from {}. {}",
+				  pfnString,e.getMessage());
 			}
 			return TFN.make(m, p, pfn);
 		} else if ((slash != -1) && (colon < slash)) {
@@ -176,8 +178,9 @@ public class TFN {
 			try {
 				m = Machine.make(mString);
 			} catch (InvalidMachineAttributeException e) {
-				log.warn("TFN: Unable to build -machine- attribute with the String '"
-					+ mString + "'." + e);
+
+			  log.warn("TFN: Unable to build -machine- attribute from {}. {}", 
+			    mString, e.getMessage());
 			}
 			// port
 			if ((colon + 1) == slash)
@@ -190,12 +193,11 @@ public class TFN {
 			try {
 				p = Port.make(Integer.parseInt(pString));
 			} catch (InvalidPortAttributeException e) {
-				log.warn("TFN: Unable to build -port- attribute with the String '"
-					+ pString + "'." + e);
+				log.warn("TFN: Unable to build -port- attribute from {}.{}",
+				  pString, e.getMessage());
 			} catch (NumberFormatException e) {
-				log
-					.warn("TFN: Unable to build -port- attribute with the String (NFE) '"
-						+ pString + "'." + e);
+				log.warn("TFN: Unable to build -port- attribute from {}.{}",
+				  pString, e.getMessage());
 			}
 			// PFN checks only for a starting / while the rest can be empty! So it is
 			// sufficient to choose whatever String starts at the /... even just the
@@ -206,8 +208,9 @@ public class TFN {
 			try {
 				pfn = PFN.make(pfnString);
 			} catch (InvalidPFNAttributeException e) {
-				log.warn("TFN: Unable to build -pfn- attribute with the String '"
-					+ pfnString + "'." + e);
+
+				log.warn("TFN: Unable to build -pfn- attribute from {}. {}",
+				  pfnString,e.getMessage());
 			}
 			return TFN.make(m, p, pfn);
 		} else {

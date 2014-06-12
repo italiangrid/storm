@@ -27,12 +27,10 @@ package it.grid.storm.authz.path.model;
 public enum PathOperation {
 	WRITE_FILE('W', "WRITE_FILE", "Write data"), READ_FILE('R', "READ_FILE",
 		"Read data", true), RENAME('F', "RENAME", "Rename a file or a directory"), DELETE(
-		'D', "DELETE", "Delete a file or a directory"),
-	// TRAVERSE_DIRECTORY('T', "TRAVERSE_DIRECTORY", "Traverse a directory"),
-	LIST_DIRECTORY('L', "LIST_DIRECTORY", "Listing a directory", true), MAKE_DIRECTORY(
-		'M', "CREATE_DIRECTORY", "Create a directory"), CREATE_FILE('N',
-		"CREATE_FILE", "Create a new file"), UNDEFINED('?', "UNDEFINED",
-		"Undefined");
+		'D', "DELETE", "Delete a file or a directory"), LIST_DIRECTORY('L',
+		"LIST_DIRECTORY", "Listing a directory", true), MAKE_DIRECTORY('M',
+		"CREATE_DIRECTORY", "Create a directory"), CREATE_FILE('N', "CREATE_FILE",
+		"Create a new file"), UNDEFINED('?', "UNDEFINED", "Undefined");
 
 	private final char operation;
 	private final String operationName;
@@ -54,6 +52,11 @@ public enum PathOperation {
 		operationName = spaceOpName;
 		operationDescription = spaceOpDesc;
 		this.readonly = readonly;
+	}
+
+	public String getDescription() {
+		
+		return operationDescription;
 	}
 
 	public static PathOperation getSpaceOperation(char op) {

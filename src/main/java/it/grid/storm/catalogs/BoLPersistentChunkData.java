@@ -72,6 +72,7 @@ public class BoLPersistentChunkData extends BoLData implements
 		super(fromSURL, lifeTime, dirOption, desiredProtocols, fileSize, status,
 			transferURL, deferredStartTime);
 		if (requestToken == null) {
+			log.debug("BoLPersistentChunkData: requestToken is null!");
 			throw new InvalidBoLPersistentChunkDataAttributesException(requestToken,
 				fromSURL, lifeTime, dirOption, desiredProtocols, fileSize, status,
 				transferURL);
@@ -103,12 +104,6 @@ public class BoLPersistentChunkData extends BoLData implements
 	public void setPrimaryKey(long l) {
 
 		primaryKey = l;
-	}
-
-	@Override
-	protected Logger getLog() {
-
-		return BoLPersistentChunkData.log;
 	}
 
 	@Override

@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.model;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.SubjectAttribute;
@@ -25,11 +24,8 @@ import it.grid.storm.griduser.SubjectAttribute;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-
 public abstract class FQANPattern implements SubjectPattern {
 
-	protected Logger log = AuthzDirector.getLogger();
 	protected static final String ADMIT_ALL = ".*";
 	protected String groupPatternString = null;
 	protected String rolePatternString = null;

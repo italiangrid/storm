@@ -20,7 +20,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
@@ -501,10 +500,11 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 			
 				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
 			
-			} catch (UnapprochableSurlException e) {
+			} catch (Throwable e) {
 				
-				log.warn("UNEXPECTED: Unable to build a stori for surl " + surl
-					+ " UnapprochableSurlException: " + e.getMessage());
+				log.warn(String.format(
+					"UNEXPECTED: Unable to build a stori for surl %s: %s", surl,
+					e.getMessage()));
 				
 				continue;
 			}

@@ -16,6 +16,7 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 
 /**
@@ -55,5 +56,11 @@ public class PrepareToGetOutputData extends FileTransferOutputData {
 	public TLifeTimeInSeconds getRemainingPinTime() {
 
 		return remainingPinTime;
+	}
+	
+	@Override
+	public boolean isSuccess() {
+
+		return this.getStatus().getStatusCode().equals(TStatusCode.SRM_FILE_PINNED);
 	}
 }

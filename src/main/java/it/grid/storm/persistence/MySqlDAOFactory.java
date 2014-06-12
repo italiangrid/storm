@@ -18,8 +18,6 @@
 package it.grid.storm.persistence;
 
 import it.grid.storm.config.Configuration;
-import it.grid.storm.persistence.dao.CopyChunkDAO;
-import it.grid.storm.persistence.dao.PermissionDAO;
 import it.grid.storm.persistence.dao.PtGChunkDAO;
 import it.grid.storm.persistence.dao.PtPChunkDAO;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
@@ -43,6 +41,7 @@ public class MySqlDAOFactory implements DAOFactory {
 
 	private static final Logger log = LoggerFactory
 		.getLogger(MySqlDAOFactory.class);
+
 	private static final DataBaseStrategy datasource = DataBaseStrategy.MYSQL;
 	private static DataSourceConnectionFactory connFactory = null;
 	private static MySqlDAOFactory factory = new MySqlDAOFactory();
@@ -55,7 +54,7 @@ public class MySqlDAOFactory implements DAOFactory {
      *
      */
 	private MySqlDAOFactory() {
-		MySqlDAOFactory.log.info("DAO factory: " + MySqlDAOFactory.factoryName);
+		log.info("DAO factory: {}", MySqlDAOFactory.factoryName);
 	}
 
 	public static MySqlDAOFactory getInstance() {
@@ -66,10 +65,11 @@ public class MySqlDAOFactory implements DAOFactory {
 	private static void initializeDataSource() {
 
 		Configuration config = Configuration.getInstance();
-		MySqlDAOFactory.datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
-		MySqlDAOFactory.datasource.setDbName(config.getBEPersistenceDBName());
-		MySqlDAOFactory.datasource.setDbUsr(config.getBEPersistenceDBUserName());
-		MySqlDAOFactory.datasource.setDbPwd(config.getBEPersistenceDBPassword());
+
+		datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
+		datasource.setDbName(config.getBEPersistenceDBName());
+		datasource.setDbUsr(config.getBEPersistenceDBUserName());
+		datasource.setDbPwd(config.getBEPersistenceDBPassword());
 
 		boolean pool = config.getBEPersistencePoolDB();
 		if (pool) {
@@ -78,21 +78,18 @@ public class MySqlDAOFactory implements DAOFactory {
 			try {
 				DBConnectionPool.initPool(MySqlDAOFactory.datasource, maxActive,
 					maxWait);
-			} catch (PersistenceException ex) {
-				MySqlDAOFactory.log.error("Exception while setting up Pool", ex);
+			} catch (PersistenceException e) {
+			  log.error(e.getMessage(), e);
 			}
 			MySqlDAOFactory.connFactory = DBConnectionPool.getPoolInstance();
 		} else {
 			try {
 				MySqlDAOFactory.connFactory = new DBConnection(
 					MySqlDAOFactory.datasource);
-			} catch (PersistenceException ex1) {
-				MySqlDAOFactory.log.error("Exception while setting up DB connection",
-					ex1);
+			} catch (PersistenceException e) {
+			  log.error(e.getMessage(), e);
 			}
 		}
-		log.debug("RECALL TABLE Catalog/DAO ");
-
 	}
 
 	/**
@@ -130,33 +127,6 @@ public class MySqlDAOFactory implements DAOFactory {
 		return MySqlDAOFactory.factoryName;
 	}
 
-	/**
-	 * NOT IMPLEMENTED!
-	 */
-
-	/**
-	 * getCopyChunkDAO
-	 * 
-	 * @return CopyChunkDAO
-	 * @throws DataAccessException
-	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
-	 */
-	public CopyChunkDAO getCopyChunkDAO() throws DataAccessException {
-
-		return null;
-	}
-
-	/**
-	 * getPermissionDAO
-	 * 
-	 * @return PermissionDAO
-	 * @throws DataAccessException
-	 * @todo Implement this it.grid.storm.persistence.DAOFactory method
-	 */
-	public PermissionDAO getPermissionDAO() throws DataAccessException {
-
-		return null;
-	}
 
 	/**
 	 * getPtGChunkDAO

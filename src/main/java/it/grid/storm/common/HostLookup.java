@@ -33,8 +33,10 @@ public class HostLookup {
 
 	public String lookup(String hostname) throws UnknownHostException {
 
-		log.debug("Lookup:looking for hostname: " + hostname);
 		InetAddress ia = InetAddress.getByName(hostname);
+		log.debug("Lookup for hostname: {} resulted in {}",
+		  hostname,
+		  ia.getHostAddress());
 		return ia.getHostAddress();
 	}
 

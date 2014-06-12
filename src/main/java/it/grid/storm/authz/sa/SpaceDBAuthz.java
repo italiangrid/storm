@@ -20,7 +20,6 @@
  */
 package it.grid.storm.authz.sa;
 
-import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.sa.model.FileAuthzDB;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.config.Configuration;
@@ -29,13 +28,14 @@ import it.grid.storm.griduser.GridUserInterface;
 import java.io.File;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
  */
 public class SpaceDBAuthz extends SpaceAuthz {
 
-	private final Logger log = AuthzDirector.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(SpaceDBAuthz.class);
 	public final static String UNDEF = "undef-SpaceAuthzDB";
 	private String spaceAuthzDBID = "not-defined";
 	private static String configurationPATH;

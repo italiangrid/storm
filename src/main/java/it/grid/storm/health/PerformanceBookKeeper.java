@@ -51,18 +51,12 @@ public class PerformanceBookKeeper extends BookKeeper {
 		this.visibleToGlancerInMSec = glancerPeriodInSec * THOUSAND;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.health.BookKeeper#addLogEvent(it.grid.storm.health.LogEvent)
-	 */
 	@Override
 	public void addLogEvent(LogEvent logEvent) {
 
 		boolean result = timedLogBook.offer(logEvent);
-		HealthDirector.LOGGER.debug("TimedLOGBOOK (offering result) " + result);
-		HealthDirector.LOGGER.debug("TimedLOGBOOK :" + timedLogBook.size());
+		HealthDirector.LOGGER.debug("TimedLOGBOOK (offering result) {}", result);
+		HealthDirector.LOGGER.debug("TimedLOGBOOK : {}", timedLogBook.size());
 	}
 
 	public long getGlanceWindowInMSec() {
@@ -118,20 +112,20 @@ public class PerformanceBookKeeper extends BookKeeper {
 	public ArrayList<LogEvent> getEventsGlanced(long timeToLiveGraterThan) {
 
 		ArrayList<LogEvent> eGlanced = new ArrayList<LogEvent>();
-		log.debug("time to live - glance: "+timeToLiveGraterThan);
+		log.debug("time to live - glance: {}",timeToLiveGraterThan);
 		removeZombieEvents();
 		for (LogEvent event : timedLogBook) {
-			log.debug("event: "+event.getDelay(TimeUnit.MILLISECONDS));
+			log.debug("event: {}", event.getDelay(TimeUnit.MILLISECONDS));
 			if ((event.getDelay(TimeUnit.MILLISECONDS)) < timeToLiveGraterThan) {
 				eGlanced.add(event);
 			}
 		}
-		log.debug("Nr. Events to analyze: "+eGlanced.size());
+		log.debug("Nr. Events to analyze: {}", eGlanced.size());
+
 		return eGlanced;
 	}
 
 	public PerformanceStatus getPerformanceStatus(long timeToLiveGraterThan) {
-
 		PerformanceStatus pStatus = new PerformanceStatus(
 			getEventsGlanced(timeToLiveGraterThan));
 		return pStatus;

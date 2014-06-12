@@ -33,31 +33,33 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 
 	public synchronized void store() {
 
-		if (!stored) {
-			try {
-				while (!stored) {
-					try {
-						if (this instanceof IdentityInputData) {
-							SurlStatusStore.getInstance().store(
-								generatedRequestToken,
-								((IdentityInputData) this).getUser(),
-								buildSurlStatusMap(SURL, status.getStatusCode(),
-									status.getExplanation()));
-						} else {
-							SurlStatusStore.getInstance().store(
-								generatedRequestToken,
-								buildSurlStatusMap(SURL, status.getStatusCode(),
-									status.getExplanation()));
-						}
-						stored = true;
-					} catch (TokenDuplicationException e) {
-						generatedRequestToken = TRequestToken.getRandom();
+		if (stored) {
+			return;
+		}
+		try {
+			while (!stored) {
+				try {
+					if (this instanceof IdentityInputData) {
+						SurlStatusStore.getInstance().store(
+							generatedRequestToken,
+							((IdentityInputData) this).getUser(),
+							buildSurlStatusMap(SURL, status.getStatusCode(),
+								status.getExplanation()));
+					} else {
+						SurlStatusStore.getInstance().store(
+							generatedRequestToken,
+							buildSurlStatusMap(SURL, status.getStatusCode(),
+								status.getExplanation()));
 					}
+					stored = true;
+				} catch (TokenDuplicationException e) {
+					generatedRequestToken = TRequestToken.getRandom();
 				}
-			} catch (IllegalArgumentException e) {
-				throw new IllegalStateException("Unexpected IllegalArgumentException: "
-					+ e.getMessage());
 			}
+		} catch (IllegalArgumentException e) {
+			log.error(e.getMessage(), e);
+			throw new IllegalStateException("Unexpected IllegalArgumentException: "
+				+ e.getMessage());
 		}
 	}
 
@@ -126,17 +128,16 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 				throw new IllegalStateException("Unexpected IllegalArgumentException "
 					+ "in updating status store: " + e.getMessage());
 			} catch (UnknownTokenException e) {
-				log
-					.warn("Received an UnknownTokenException, probably the token has expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an UnknownTokenException, probably the token has "
+					+ "expired, unable to update its status in the store: {}", 
+					e.getMessage());
 			} catch (ExpiredTokenException e) {
-				log
-					.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an ExpiredTokenException. The token is expired, "
+					+ "unable to update its status in the store: {}", e.getMessage());
 			} catch (UnknownSurlException e) {
-				log
-					.warn("Received an UnknownSurlException, probably the token has expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an UnknownSurlException, probably the token has "
+					+ "expired, unable to update its status in the store: {}", 
+					e.getMessage());
 			}
 		}
 	}
@@ -155,22 +156,22 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 						this.SURL, statusCode, explanation);
 				}
 			} catch (IllegalArgumentException e) {
+				log.error(e.getMessage(), e);
 				// Never thrown
 				throw new IllegalStateException("Unexpected IllegalArgumentException "
 					+ "in updating status store: " + e.getMessage());
 			} catch (UnknownTokenException e) {
 				// Never thrown
-				log
-					.warn("Received an UnknownTokenException, probably the token has expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an UnknownTokenException, probably the token has "
+					+ "expired, unable to update its status in the store: {}", 
+					e.getMessage());
 			} catch (ExpiredTokenException e) {
-				log
-					.warn("Received an ExpiredTokenException. The token is expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an ExpiredTokenException. The token is expired, "
+					+ "unable to update its status in the store: {}", e.getMessage());
 			} catch (UnknownSurlException e) {
-				log
-					.warn("Received an UnknownSurlException, probably the token has expired, unable to update its status in the store : "
-						+ e.getMessage());
+				log.warn("Received an UnknownSurlException, probably the token has "
+					+ "expired, unable to update its status in the store: {}", 
+					e.getMessage());
 			}
 		}
 	}
