@@ -3,6 +3,8 @@ layout: default
 title: "StoRM BackEnd v. 1.11.4 release notes"
 release_date: 23.05.2014
 rfcs:
+- id: STOR-256
+  title: StoRM doesn't survive an update of MySQL
 - id: STOR-307
   title: StoRM returns SRM_INVALID_PATH instead of SRM_AUTHORIZATION_FAILURE
 - id: STOR-501
