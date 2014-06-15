@@ -17,9 +17,13 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.catalogs.PtPChunkDAO;
+import it.grid.storm.catalogs.PtPChunkDataTO;
 import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusChecker;
+import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -63,6 +67,7 @@ import it.grid.storm.synchcall.surl.SurlStatusManager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -162,17 +167,20 @@ public class PtP implements Delegable, Chooser, Request {
 		TSURL surl = requestData.getSURL();
 		TRequestToken rToken = requestData.getRequestToken();
 		
+		SURLStatusChecker checker = SURLStatusCheckerFactory
+		  .createSURLStatusChecker();
+		
+		
 		log.debug("Handling PtP chunk for user DN: {}; for SURL: {}", user, surl);
 		
-		if (!verifySurlStatusTransition(surl, rToken)) {
-			// should return SRM_DUPLICATION_ERROR if file overwrite is disabled, 
-			// instead of SRM_FILE_BUSY
-			failure = true;
-			requestData.changeStatusSRM_FILE_BUSY("The surl " + surl + " is currently busy");
-			log.info("Unable to perform the PTP request, surl busy");
-			printRequestOutcome(requestData);
-			return;
+		if (checker.isSURLBusy(surl.getSURLString(), rToken.getValue())){
+		  failure = true;
+      requestData.changeStatusSRM_FILE_BUSY("The surl " + surl + " is currently busy");
+      log.info("Unable to perform the PTP request, surl busy");
+      printRequestOutcome(requestData);
+      return;
 		}
+		
 		
 		requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");
 		
@@ -258,15 +266,6 @@ public class PtP implements Delegable, Chooser, Request {
 			}
 		}
 		printRequestOutcome(requestData);
-	}
-
-	private boolean verifySurlStatusTransition(TSURL surl,
-		TRequestToken requestToken) {
-
-		Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager
-			.getSurlCurrentStatuses(surl);
-		statuses.remove(requestToken);
-		return TStatusCode.SRM_SPACE_AVAILABLE.isCompatibleWith(statuses.values());
 	}
 
 	/**
@@ -775,67 +774,60 @@ public class PtP implements Delegable, Chooser, Request {
 		}
 
 		try {
-			// set space!
-			boolean successful = localFile.createNewFile();
-			if ((!successful)
-				&& (requestData.overwriteOption().equals(TOverwriteMode.NEVER))) {
+			
+			boolean fileWasCreated = localFile.createNewFile();
 
-				log.debug("PtPChunk - ReserveSpaceStep: no overwrite allowed! "
-					+ "Failing chunk... ");
-				requestData.changeStatusSRM_DUPLICATION_ERROR("Cannot srmPut file "
-					+ "because it already exists!");
-				failure = true;
-				return false;
-				
-			} else if (!successful
-				&& TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager
-					.getSurlStatus(requestData.getSURL()))) {
-				
-				requestData.changeStatusSRM_FILE_BUSY("Requested file is still in "
-						+ "SRM_SPACE_AVAILABLE state!");
-				failure = true;
-				log.debug("ATTENTION in PtPChunk! PtPChunk received request for SURL "
-					+ "that is still in SRM_SPACE_AVAILABLE state!");
-				return false;
-			} else if ((spaceToken.isEmpty()) && (size.isEmpty())) {
-				log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken and no FileSize "
-					+ "specified; mock file will be created... ");
-			} else if ((spaceToken.isEmpty()) && (!size.isEmpty())) {
-				log.debug("PtPChunk - ReserveSpaceStep: no SpaceToken available but "
-					+ "there is a FileSize specified; implicit space reservation "
-					+ "taking place...");
-				fileStoRI.allotSpaceForFile(size);
-			} else if ((!spaceToken.isEmpty()) && (!size.isEmpty())) {
-				log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and "
-					+ "FileSize specified; reserving space by token...");
-				if (!isExistingSpaceToken(spaceToken)) {
-					requestData.changeStatusSRM_INVALID_REQUEST("The provided Space Token "
-						+ "does not exists");
-					log.info("PtPChunk execution failed. The space token {} provided by "
-						+ "user does not exists", spaceToken);
-					return false;
-				} else {
-					fileStoRI.allotSpaceByToken(spaceToken, size);
-				}
-			} else {
-				// spaceToken is NOT empty but size IS!
-				// Use of EMPTY Space Size. That means total size of Storage
-				// Space will be used!!
-				log.debug("PtPChunk - ReserveSpaceStep: SpaceToken available and "
-					+ "FileSize specified; reserving space by token...");
-				if (!isExistingSpaceToken(spaceToken)) {
-					requestData.changeStatusSRM_INVALID_REQUEST("The provided Space Token "
-						+ "does not exists");
-					log.info("PtPChunk execution failed. The space token {} provided by "
-						+ "user does not exists", spaceToken);
-					return false;
-				} else {
-					fileStoRI.allotSpaceByToken(spaceToken);
-				}
+			if (!fileWasCreated){
+			  
+			  // File already exists
+			  if (requestData.overwriteOption().equals(TOverwriteMode.NEVER)){
+			    
+			    log.debug("PtP Chunk(localFile={}): error creating local file. "
+			      + "Overwrite mode is NEVER.", fileStoRI.getAbsolutePath());
+			    
+			    requestData.changeStatusSRM_DUPLICATION_ERROR("Cannot srmPut file "
+	          + "because it already exists!");
+	        
+	        failure = true;
+	        return false;	   
+			  }
 			}
+			
+			if (spaceToken.isEmpty() && (!size.isEmpty())){
+			  log.debug("PtPChunk:  no SpaceToken available but "
+          + "there is a FileSize specified; implicit space reservation "
+          + "taking place...");
+			  
+			  fileStoRI.allotSpaceForFile(size);
+			  
+			}
+			
+			if (!spaceToken.isEmpty()){
+			  
+			  if (!isExistingSpaceToken(spaceToken)) {
+			    requestData.changeStatusSRM_INVALID_REQUEST("The provided Space Token "
+            + "does not exists");
+          log.info("PtPChunk execution failed. The space token {} provided by "
+            + "user does not exists", spaceToken);
+          failure = true;
+          return false;
+          
+			  }
+			  
+			  if (size.isEmpty()){
+			    
+			    fileStoRI.allotSpaceByToken(spaceToken);
+			    
+			  }else {
+			    
+			    fileStoRI.allotSpaceByToken(spaceToken, size);
+			  }
+			}
+			
 			log.debug("PtPChunk: finished ReserveSpaceStep for {}", 
-				fileStoRI.getAbsolutePath());
-			return true;
+			  fileStoRI.getAbsolutePath());
+      return true;
+			
 		} catch (SecurityException e) {
 			// file.createNewFile could not create file because the Java
 			// SecurityManager did not grant
@@ -897,8 +889,6 @@ public class PtP implements Delegable, Chooser, Request {
 			log.error("ERROR in PtPChunk - space Step! Unexpected error in reserve "
 				+ "space step of PtP for file {}! Exception follows: {}",
 				localFile.toString(), e.getMessage(), e);
-			// ROOLBACK??
-			// The file already exists!!!
 			return false;
 		}
 	}

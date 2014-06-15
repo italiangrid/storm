@@ -28,6 +28,8 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.catalogs.surl.SURLStatusChecker;
+import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -540,38 +542,16 @@ public class MvCommand extends DirectoryCommand implements Command {
 		}
 
 		if (sourceExists && targetDirExists && !targetFileExists) {
-			log.debug("srmMv : All Check passed.");
-
-			/**
-			 * CHECK HERE IN CASO DI EGRID SI VUOLE LA CREAZIONE DINAMICA DI
-			 * DIRECTORY?
-			 */
-
-			/**
-			 * Check if there is an active SrmPrepareToPut on the source SURL. In that
-			 * case SrmMv() fails with SRM_FILE_BUSY.
-			 */
-			TReturnStatus surlStatus = null;
-			try {
-				surlStatus = SurlStatusManager.getSurlStatus(fromStori.getSURL());
-			} catch (IllegalArgumentException e) {
-				throw new IllegalStateException(
-					"Unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: "
-						+ e);
-			} catch (UnknownSurlException e) {
-				log.debug("Unknown surl: {}. {}", fromStori.getSURL(), e.getMessage());
-			}
-
-			if ((surlStatus != null)
-				&& (TStatusCode.SRM_SPACE_AVAILABLE.equals(surlStatus.getStatusCode()))) {
-				log
-					.debug("srmMv requests fails because there is a PrepareToPut on the from SURL.");
-				explanation = "There is an active SrmPrepareToPut on from SURL.";
-				return CommandHelper
-					.buildStatus(TStatusCode.SRM_FILE_BUSY, explanation);
-
-			} else {
-				log.debug("srmMv: No PrepareToPut running on from SURL.");
+			
+			SURLStatusChecker checker = SURLStatusCheckerFactory
+			  .createSURLStatusChecker();
+			
+			if(checker.isSURLBusy(fromStori.getSURL().getSURLString())){
+			  log
+        .debug("srmMv request failure: fromSURL is busy.");
+			  explanation = "There is an active SrmPrepareToPut on from SURL.";
+        return CommandHelper
+          .buildStatus(TStatusCode.SRM_FILE_BUSY, explanation);
 			}
 
 			/**
@@ -579,9 +559,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 			 * case SrmMv() fails with SRM_FILE_BUSY.
 			 */
 
-			if ((surlStatus != null)
-				&& (TStatusCode.SRM_FILE_PINNED.equals(surlStatus.getStatusCode()))) {
-				// There is an active PrepareToGet!
+			if (checker.isSURLPinned(fromStori.getSURL().getSURLString())){
 				log
 					.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
 				explanation = "There is an active SrmPrepareToGet on from SURL";
@@ -629,10 +607,6 @@ public class MvCommand extends DirectoryCommand implements Command {
 				}
 			}
 		}
-
-		/**
-		 * VERIFICARE SE I PERMESSI RIMANGONO IMPOSTATI
-		 */
 
 		return CommandHelper.buildStatus(statusCode, explanation);
 	}

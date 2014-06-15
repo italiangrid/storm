@@ -32,33 +32,33 @@ import it.grid.storm.synchcall.data.InputData;
  */
 public interface RequestData extends InputData {
 
-	public TRequestToken getRequestToken();
+  public TRequestToken getRequestToken();
 
-	public abstract TReturnStatus getStatus();
+  public TReturnStatus getStatus();
 
-	public abstract TSURL getSURL();
+  public TSURL getSURL();
 
-	public abstract void changeStatusSRM_ABORTED(String explanation);
+  public void changeStatusSRM_ABORTED(String explanation);
 
-	public abstract void changeStatusSRM_FILE_BUSY(String explanation);
+  public void changeStatusSRM_FILE_BUSY(String explanation);
 
-	public abstract void changeStatusSRM_INVALID_PATH(String explanation);
+  public void changeStatusSRM_INVALID_PATH(String explanation);
 
-	public abstract void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation);
+  public void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation);
 
-	public abstract void changeStatusSRM_INVALID_REQUEST(String explanation);
+  public void changeStatusSRM_INVALID_REQUEST(String explanation);
 
-	public abstract void changeStatusSRM_INTERNAL_ERROR(String explanation);
+  public void changeStatusSRM_INTERNAL_ERROR(String explanation);
 
-	public abstract void changeStatusSRM_NOT_SUPPORTED(String explanation);
+  public void changeStatusSRM_NOT_SUPPORTED(String explanation);
 
-	public abstract void changeStatusSRM_FAILURE(String explanation);
+  public void changeStatusSRM_FAILURE(String explanation);
 
-	public abstract void changeStatusSRM_SUCCESS(String explanation);
+  public void changeStatusSRM_SUCCESS(String explanation);
 
-	public abstract void changeStatusSRM_SPACE_LIFETIME_EXPIRED(String explanation);
+  public void changeStatusSRM_SPACE_LIFETIME_EXPIRED(String explanation);
 
-	public abstract void changeStatusSRM_REQUEST_INPROGRESS(String explanation);
+  public void changeStatusSRM_REQUEST_INPROGRESS(String explanation);
 
-	public abstract void changeStatusSRM_REQUEST_QUEUED(String explanation);
+  public void changeStatusSRM_REQUEST_QUEUED(String explanation);
 }

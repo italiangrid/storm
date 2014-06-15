@@ -67,11 +67,7 @@ public class PtPChunkDataTO {
 	private String clientDN = null;
 	private String vomsAttributes = null;
 
-	/**
-	 * Constructr that initialises PtPChunkDataTO with correct SRM 2.2 default
-	 * values. protocolList GSIFTP fileStorageType VOLATILE overwriteMode NEVER
-	 * status SRM_REQUEST_QUEUED
-	 */
+
 	public PtPChunkDataTO() {
 
 		this.fileStorageType = FileStorageTypeConverter.getInstance().toDB(

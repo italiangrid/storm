@@ -19,6 +19,8 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusChecker;
+import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
@@ -45,8 +47,6 @@ import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -55,14 +55,12 @@ import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,19 +130,21 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
 		String user = DataHelper.getRequestor(requestData);
 		TSURL surl = requestData.getSURL();
-		TRequestToken rToken = requestData.getRequestToken();
 
+		SURLStatusChecker checker = SURLStatusCheckerFactory
+		  .createSURLStatusChecker();
+		
 		log.debug("Handling PtG chunk for user DN: {}; for SURL: {}", user, surl);
 		
-		if (!verifySurlStatusTransition(surl, rToken)) {
-			requestData.changeStatusSRM_FILE_BUSY("Requested file is busy (in an "
-				+ "incompatible state with PTG)");
-			log.info("Unable to perform the PTG request, surl busy");
-			printRequestOutcome(requestData);
-			return;
+		if (checker.isSURLBusy(surl.getSURLString())){
+		  
+		  requestData.changeStatusSRM_FILE_BUSY("Requested file is busy (in an "
+        + "incompatible state with PTG)");
+      log.info("Unable to perform the PTG request, surl busy");
+      printRequestOutcome(requestData);
+      return;
 		}
 
-		/* proceed normally! */
 		StoRI fileStoRI = null;
 		boolean unapprochableSurl = false;
 		try {
@@ -267,14 +267,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 			.add(Protocol.HTTP);
 	}
 
-	private boolean verifySurlStatusTransition(TSURL surl,
-		TRequestToken requestToken) {
-
-		Map<TRequestToken, TReturnStatus> statuses = SurlStatusManager
-			.getSurlCurrentStatuses(surl);
-		statuses.remove(requestToken);
-		return TStatusCode.SRM_FILE_PINNED.isCompatibleWith(statuses.values());
-	}
 
 	/**
 	 * Manager of the IsPermit state: the user may indeed read the specified SURL
