@@ -1,487 +1,488 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<name>StoRM Backend server</name>
-	<groupId>org.italiangrid.storm</groupId>
-	<artifactId>storm-backend-server</artifactId>
-	<version>1.11.5-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <name>StoRM Backend server</name>
+    <groupId>org.italiangrid.storm</groupId>
+    <artifactId>storm-backend-server</artifactId>
+    <version>1.11.5-SNAPSHOT</version>
 
-	<properties>
+    <properties>
 
-		<!-- versions of the project dependencies -->
-		<commonsConfigurationVersion>1.4</commonsConfigurationVersion>
-		<jerseyVersion>1.17.1</jerseyVersion>
-		<jettyVersion>8.1.9.v20130131</jettyVersion>
-		<slf4jVersion>1.7.2</slf4jVersion>
-		<logbackVersion>1.0.9</logbackVersion>
-		<nettyVersion>3.5.0.Final</nettyVersion>
-		<jnaVersion>3.3.0</jnaVersion>
-		<jettisonVersion>1.1</jettisonVersion>
-		<commonsDbcpVersion>1.2.1</commonsDbcpVersion>
-		<commonsIoVersion>2.0.1</commonsIoVersion>
-		<ini4jVersion>0.5.2</ini4jVersion>
-		<axisVersion>1.4</axisVersion>
-		<axisSchemaVersion>1.3</axisSchemaVersion>
-		<xmlrpcVersion>3.0</xmlrpcVersion>
-		<jaxrpcVersion>1.1</jaxrpcVersion>
-		<jsonVersion>20080701</jsonVersion>
-		<cogGlobusVersion>1.4</cogGlobusVersion>
-		<junitVersion>4.8.1</junitVersion>
-		<commonsCliVersion>1.0</commonsCliVersion>
-		<commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
-		<commonsHttpClientVersion>3.1</commonsHttpClientVersion>
-		<activationVersion>1.1.1</activationVersion>
-		<commonsValidatorVersion>1.3.0</commonsValidatorVersion>
-		<wsdl4jVersion>1.5.1</wsdl4jVersion>
-		<xalanVersion>2.7.1</xalanVersion>
-		<mailVersion>1.4.6</mailVersion>
-		<jakartaOroVersion>2.0.8</jakartaOroVersion>
+        <!-- versions of the project dependencies -->
+        <commonsConfigurationVersion>1.4</commonsConfigurationVersion>
+        <jerseyVersion>1.17.1</jerseyVersion>
+        <jettyVersion>8.1.9.v20130131</jettyVersion>
+        <slf4jVersion>1.7.2</slf4jVersion>
+        <logbackVersion>1.0.9</logbackVersion>
+        <nettyVersion>3.5.0.Final</nettyVersion>
+        <jnaVersion>3.3.0</jnaVersion>
+        <jettisonVersion>1.1</jettisonVersion>
+        <commonsDbcpVersion>1.2.1</commonsDbcpVersion>
+        <commonsIoVersion>2.0.1</commonsIoVersion>
+        <ini4jVersion>0.5.2</ini4jVersion>
+        <axisVersion>1.4</axisVersion>
+        <axisSchemaVersion>1.3</axisSchemaVersion>
+        <xmlrpcVersion>3.0</xmlrpcVersion>
+        <jaxrpcVersion>1.1</jaxrpcVersion>
+        <jsonVersion>20080701</jsonVersion>
+        <cogGlobusVersion>1.4</cogGlobusVersion>
+        <junitVersion>4.8.1</junitVersion>
+        <commonsCliVersion>1.0</commonsCliVersion>
+        <commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
+        <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
+        <activationVersion>1.1.1</activationVersion>
+        <commonsValidatorVersion>1.3.0</commonsValidatorVersion>
+        <wsdl4jVersion>1.5.1</wsdl4jVersion>
+        <xalanVersion>2.7.1</xalanVersion>
+        <mailVersion>1.4.6</mailVersion>
+        <jakartaOroVersion>2.0.8</jakartaOroVersion>
 
-		<nativeInterfaceVersion>1.0.1</nativeInterfaceVersion>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <nativeInterfaceVersion>1.0.1</nativeInterfaceVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-	</properties>
+    </properties>
 
-	<build>
+    <build>
 
-		<finalName>storm-backend-server</finalName>
+        <finalName>storm-backend-server</finalName>
 
-		<plugins>
+        <plugins>
 
-			<!-- Enable maven compiler plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
+            <!-- Enable maven compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
 
-			<!-- Enable maven surefire plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.13</version>
-				<configuration>
-					<!-- skips tests by default, until we have not reviewed them and make
-						sure they work -->
-					<skipTests>true</skipTests>
-				</configuration>
-			</plugin>
+            <!-- Enable maven surefire plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.13</version>
+                <configuration>
+                    <!-- skips tests by default, until we have not reviewed them and make
+                        sure they work -->
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
 
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<finalName>storm-backend-server</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
-					<outputDirectory>${project.build.directory}</outputDirectory>
-					<descriptors>
-						<descriptor>${basedir}/src/main/assemblies/assembly.xml</descriptor>
-					</descriptors>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <finalName>storm-backend-server</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <descriptors>
+                        <descriptor>${basedir}/src/main/assemblies/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!-- Enable the wagon plugin (which in turn need some work from the dependency plugin)
-				to deploy to a remote machine. It copies over ssh the storm-backend-server
-				jar, the dependency jars, and all configuration files except those that are
-				not supposed to be overwritten by a re-deployment, i.e. those that are marked
-				config noreplace in the rpm -->
+            <!-- Enable the wagon plugin (which in turn need some work from the dependency plugin)
+                to deploy to a remote machine. It copies over ssh the storm-backend-server
+                jar, the dependency jars, and all configuration files except those that are
+                not supposed to be overwritten by a re-deployment, i.e. those that are marked
+                config noreplace in the rpm -->
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<!-- configure the plugin here -->
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- configure the plugin here -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>wagon-maven-plugin</artifactId>
-				<version>1.0-beta-4</version>
-				<executions>
-					<execution>
-						<id>upload-config</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}/</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>etc</fromDir>
-							<!-- exclude config files that might have edited remotely, the same
-								that are marked config noreplace in rpm -->
-							<excludes>
-								logging.xml, namespace.xml, path-authz.db,
-								init.d/*, logrotate.d/*, sysconfig/*
-							</excludes>
-							<toDir>/etc/storm/backend-server</toDir>
-						</configuration>
-					</execution>
-					<execution>
-						<id>upload-initd</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>etc/init.d</fromDir>
-							<toDir>/etc/init.d</toDir>
-						</configuration>
-					</execution>
-					<execution>
-						<id>upload-sysconfig</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>etc/sysconfig</fromDir>
-							<toDir>/etc/sysconfig</toDir>
-						</configuration>
-					</execution>
-					<execution>
-						<id>upload-logrotated</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>etc/logrotate.d</fromDir>
-							<toDir>/etc/logrotate.d</toDir>
-						</configuration>
-					</execution>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>1.0-beta-4</version>
+                <executions>
+                    <execution>
+                        <id>upload-config</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}/</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>etc</fromDir>
+                            <!-- exclude config files that might have edited remotely, the same
+                                that are marked config noreplace in rpm -->
+                            <excludes>
+                                logging.xml, namespace.xml, path-authz.db,
+                                init.d/*, logrotate.d/*, sysconfig/*
+                            </excludes>
+                            <toDir>/etc/storm/backend-server</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>upload-initd</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>etc/init.d</fromDir>
+                            <toDir>/etc/init.d</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>upload-sysconfig</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>etc/sysconfig</fromDir>
+                            <toDir>/etc/sysconfig</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>upload-logrotated</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>etc/logrotate.d</fromDir>
+                            <toDir>/etc/logrotate.d</toDir>
+                        </configuration>
+                    </execution>
 
-					<execution>
-						<id>upload-deps</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>target/dependency</fromDir>
-							<includes>*</includes>
-							<toDir>/usr/share/java/storm-backend-server</toDir>
-						</configuration>
-					</execution>
+                    <execution>
+                        <id>upload-deps</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>target/dependency</fromDir>
+                            <includes>*</includes>
+                            <toDir>/usr/share/java/storm-backend-server</toDir>
+                        </configuration>
+                    </execution>
 
-					<execution>
-						<id>upload-jar</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-						<configuration>
-							<url>${remoteDeployment.url}</url>
-							<serverId>${remoteDeployment.serverId}</serverId>
-							<fromDir>target</fromDir>
-							<includes>storm-backend-server.jar</includes>
-							<toDir>/usr/share/java/storm-backend-server</toDir>
-						</configuration>
-					</execution>
+                    <execution>
+                        <id>upload-jar</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <url>${remoteDeployment.url}</url>
+                            <serverId>${remoteDeployment.serverId}</serverId>
+                            <fromDir>target</fromDir>
+                            <includes>storm-backend-server.jar</includes>
+                            <toDir>/usr/share/java/storm-backend-server</toDir>
+                        </configuration>
+                    </execution>
 
-				</executions>
-			</plugin>
+                </executions>
+            </plugin>
 
-			<!-- needed so that mvn is not going to try to deploy (classic maven deploy),
-				because we are using mvn deploy to deploy the complete project to a remote machine
-				in development -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
+            <!-- needed so that mvn is not going to try to deploy (classic maven deploy),
+                because we are using mvn deploy to deploy the complete project to a remote machine
+                in development -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
 
-			<plugin>
-      			<groupId>org.apache.maven.plugins</groupId>
-      			<artifactId>maven-jar-plugin</artifactId>
-      			<configuration>
-        			<archive>
-          				<manifest>
-           					<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-          				</manifest>
-        			</archive>
-      			</configuration>
-    		</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
 
-		</plugins>
+        </plugins>
 
-		<!-- Needed by the wagon plugin -->
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>1.0</version>
-			</extension>
-		</extensions>
-	</build>
+        <!-- Needed by the wagon plugin -->
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>1.0</version>
+            </extension>
+        </extensions>
+    </build>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>org.italiangrid</groupId>
-			<artifactId>storm-native-interface</artifactId>
-			<version>${nativeInterfaceVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.italiangrid</groupId>
+            <artifactId>storm-native-interface</artifactId>
+            <version>${nativeInterfaceVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>${commonsConfigurationVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>${commonsConfigurationVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-servlet</artifactId>
-			<version>${jerseyVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-servlet</artifactId>
+            <version>${jerseyVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlet</artifactId>
-			<version>${jettyVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4jVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logbackVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logbackVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty</artifactId>
-			<version>${nettyVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>${nettyVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-			<version>${jnaVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jnaVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.codehaus.jettison</groupId>
-			<artifactId>jettison</artifactId>
-			<version>${jettisonVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>${jettisonVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>${commonsDbcpVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>${commonsDbcpVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>${commonsIoVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonsIoVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.ini4j</groupId>
-			<artifactId>ini4j</artifactId>
-			<version>${ini4jVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>${ini4jVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>${axisVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>axis</groupId>
-			<artifactId>axis-schema</artifactId>
-			<version>${axisSchemaVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.axis</groupId>
+            <artifactId>axis</artifactId>
+            <version>${axisVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis-schema</artifactId>
+            <version>${axisSchemaVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.xmlrpc</groupId>
-			<artifactId>xmlrpc-server</artifactId>
-			<version>${xmlrpcVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml</groupId>
-			<artifactId>jaxrpc</artifactId>
-			<version>${jaxrpcVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-server</artifactId>
+            <version>${xmlrpcVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxrpc</artifactId>
+            <version>${jaxrpcVersion}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>${jsonVersion}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>${jsonVersion}</version>
+        </dependency>
 
-		<!-- not on Maven Central, we have it on our own repository, you can install
-			it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The
-			artifacts not prefix with cog are dependencies. As all of them are very old,
-			and not supported, we have installed the versions distributed with CoG, with
-			the CoG version and groupID -->
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cog-axis</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cog-jglobus</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cog-jobmanager</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cog-url</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cryptix-asn1</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>cryptix32</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>puretls</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>jgss</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.globus</groupId>
-			<artifactId>jce-jdk13-131</artifactId>
-			<version>${cogGlobusVersion}</version>
-		</dependency>
+        <!-- not on Maven Central, we have it on our own repository, you can install
+            it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The
+            artifacts not prefix with cog are dependencies. As all of them are very old,
+            and not supported, we have installed the versions distributed with CoG, with
+            the CoG version and groupID -->
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cog-axis</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cog-jglobus</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cog-jobmanager</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cog-url</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cryptix-asn1</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>cryptix32</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>puretls</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>jgss</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.globus</groupId>
+            <artifactId>jce-jdk13-131</artifactId>
+            <version>${cogGlobusVersion}</version>
+        </dependency>
 
-		<!-- not on Maven Central, we have it on our own repository, taken form
-			the lib directory of the old src code repository https://github.com/italiangrid/storm/commits/BE_1.11/lib/srm22client.jar -->
-		<dependency>
-			<groupId>srm22client</groupId>
-			<artifactId>srm22client</artifactId>
-			<version>0</version>
-		</dependency>
+        <!-- not on Maven Central, we have it on our own repository, taken form
+            the lib directory of the old src code repository https://github.com/italiangrid/storm/commits/BE_1.11/lib/srm22client.jar -->
+        <dependency>
+            <groupId>srm22client</groupId>
+            <artifactId>srm22client</artifactId>
+            <version>0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junitVersion}</version>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junitVersion}</version>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-cli</groupId>
-			<artifactId>commons-cli</artifactId>
-			<version>${commonsCliVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>${commonsCliVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-discovery</groupId>
-			<artifactId>commons-discovery</artifactId>
-			<version>${commonsDiscoveryVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>commons-discovery</groupId>
+            <artifactId>commons-discovery</artifactId>
+            <version>${commonsDiscoveryVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>${commonsHttpClientVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>${commonsHttpClientVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>${activationVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${activationVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>commons-validator</groupId>
-			<artifactId>commons-validator</artifactId>
-			<version>${commonsValidatorVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${commonsValidatorVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>wsdl4j</groupId>
-			<artifactId>wsdl4j</artifactId>
-			<version>${wsdl4jVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>${wsdl4jVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>${xalanVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>${xalanVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>${mailVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>${mailVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-		<!-- not on Maven Central, we have it on our own repository, you can install
-			it from official releases http://archive.apache.org/dist/jakarta/oro/ -->
-		<dependency>
-			<groupId>org.apache.oro</groupId>
-			<artifactId>jakarta-oro</artifactId>
-			<version>${jakartaOroVersion}</version>
-			<scope>runtime</scope>
-		</dependency>
+        <!-- not on Maven Central, we have it on our own repository, you can install
+            it from official releases http://archive.apache.org/dist/jakarta/oro/ -->
+        <dependency>
+            <groupId>org.apache.oro</groupId>
+            <artifactId>jakarta-oro</artifactId>
+            <version>${jakartaOroVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>
