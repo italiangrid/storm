@@ -76,4 +76,8 @@ public class VONameMatchingRule {
 	public boolean isMatchAll() {
 		return isMatchAll(voNameString);
 	}
+	
+	public String getVOName() {
+		return voNameString;
+	}
 }

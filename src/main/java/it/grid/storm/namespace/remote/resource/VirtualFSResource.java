@@ -10,9 +10,12 @@ package it.grid.storm.namespace.remote.resource;
  * OF ANY KIND, either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -31,6 +34,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 /**
@@ -42,17 +46,29 @@ public class VirtualFSResource {
 	private static final Logger log = LoggerFactory
 		.getLogger(VirtualFSResource.class);
 
+	class SAInfo {
+		String name;
+		String token;
+		String voname;
+		String root;
+		String storageclass;
+		List<String> stfnRoot;
+		String retentionPolicy;
+		String accessLatency;
+		List<String> protocols;
+		HttpPerms anonymous;
+	}
+	
 	/**
 	 * @return
 	 * @throws WebApplicationException
 	 */
 	@GET
-	@Path("/" + Constants.LIST_ALL_KEY)
-	@Produces("text/plain")
+	@Path("/" + Constants.LIST_ALL_VFS)
+	@Produces("application/json")
 	public String listVFS() throws WebApplicationException {
 
 		log.info("Serving VFS resource listing");
-		String vfsListString = "";
 		Collection<VirtualFSInterface> vfsCollection = null;
 		try {
 			vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
@@ -65,72 +81,51 @@ public class VirtualFSResource {
 			responseBuilder.entity("Unable to retrieve virtual file systems");
 			throw new WebApplicationException(responseBuilder.build());
 		}
+		Map<String,SAInfo> output = new HashMap<String,SAInfo>();
 		for (VirtualFSInterface vfs : vfsCollection) {
-			if (!vfsListString.equals("")) {
-				vfsListString += Constants.VFS_LIST_SEPARATOR;
-			}
+			
+			SAInfo sa = new SAInfo();
+			sa.name = vfs.getAliasName();
+			sa.token = vfs.getSpaceTokenDescription();
 			try {
-				vfsListString += encodeVFS(vfs);
+				sa.voname = vfs.getApproachableRules().get(0).getSubjectRules()
+					.getVONameMatchingRule().getVOName();
 			} catch (NamespaceException e) {
-				log
-					.error("Unable to encode the virtual file system. NamespaceException : "
-						+ e.getMessage());
-				ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-				responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-				responseBuilder.entity("Unable to encode the virtual file system");
-				throw new WebApplicationException(responseBuilder.build());
+				log.error(e.getMessage());
 			}
-		}
-		return vfsListString;
-	}
-
-	/**
-	 * @param vfs
-	 * @return
-	 * @throws NamespaceException
-	 */
-	private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
-
-		String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getAliasName();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ROOT_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getRootPath();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		List<MappingRule> mappingRules = vfs.getMappingRules();
-		vfsEncoded += Constants.VFS_STFN_ROOT_KEY + Constants.VFS_FIELD_MATCHER;
-		for (int i = 0; i < mappingRules.size(); i++) {
-			MappingRule mappingRule = mappingRules.get(i);
-			if (i > 0) {
-				vfsEncoded += Constants.VFS_STFN_ROOT_SEPARATOR;
+			sa.root = vfs.getRootPath();
+			sa.stfnRoot = new ArrayList<String>();
+			try {
+				for (MappingRule rule: vfs.getMappingRules()) {
+					sa.stfnRoot.add(rule.getStFNRoot());
+				}
+			} catch (NamespaceException e1) {
+				log.error(e1.getMessage());
 			}
-			vfsEncoded += mappingRule.getStFNRoot();
-		}
-		Iterator<Protocol> protocolsIterator = vfs.getCapabilities()
-			.getAllManagedProtocols().iterator();
-		if (protocolsIterator.hasNext()) {
-			vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-			vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
-			vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		}
-		while (protocolsIterator.hasNext()) {
-			vfsEncoded += protocolsIterator.next().getSchema();
-			if (protocolsIterator.hasNext()) {
-				vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
+			sa.protocols = new ArrayList<String>();
+			Iterator<Protocol> protocolsIterator = vfs.getCapabilities()
+				.getAllManagedProtocols().iterator();
+			while (protocolsIterator.hasNext()) {
+				sa.protocols.add(protocolsIterator.next().getSchema());
 			}
-		}
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ANONYMOUS_PERMS_KEY;
-		vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		if (vfs.isHttpWorldReadable()) {
-			if (vfs.isApproachableByAnonymous()) {
-				vfsEncoded += HttpPerms.READWRITE;
+			if (vfs.isHttpWorldReadable()) {
+				if (vfs.isApproachableByAnonymous()) {
+					sa.anonymous = HttpPerms.READWRITE;
+				} else {
+					sa.anonymous = HttpPerms.READ;
+				}
 			} else {
-				vfsEncoded += HttpPerms.READ;
+				sa.anonymous = HttpPerms.NOREAD;
 			}
-		} else {
-			vfsEncoded += HttpPerms.NOREAD;
+			sa.storageclass = vfs.getStorageClassType().getStorageClassTypeString();
+			sa.retentionPolicy = vfs.getProperties().getRetentionPolicy()
+				.getRetentionPolicyName();
+			sa.accessLatency = vfs.getProperties().getAccessLatency()
+				.getAccessLatencyName();
+			output.put(vfs.getAliasName(), sa);
 		}
-		return vfsEncoded;
+		Gson gson = new Gson();
+		return gson.toJson(output);
 	}
+
 }

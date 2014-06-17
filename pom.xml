@@ -37,6 +37,7 @@
 		<xalanVersion>2.7.1</xalanVersion>
 		<mailVersion>1.4.6</mailVersion>
 		<jakartaOroVersion>2.0.8</jakartaOroVersion>
+		<gsonVersion>2.2.4</gsonVersion>
 
 		<nativeInterfaceVersion>1.0.1</nativeInterfaceVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -481,6 +482,12 @@
 			<version>${jakartaOroVersion}</version>
 			<scope>runtime</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gsonVersion}</version>
+</dependency>
 
 	</dependencies>
 
