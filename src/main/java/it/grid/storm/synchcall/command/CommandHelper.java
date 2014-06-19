@@ -131,6 +131,7 @@ public class CommandHelper {
 
 	}
 
+
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, TRequestToken token,
 		List<String> surls) {

@@ -55,8 +55,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
@@ -72,9 +70,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 	private static final Logger log = LoggerFactory
 		.getLogger(PtPAbortExecutor.class);
-
-	// TODO DEFINE THE TIMEOUT FROM CONFIGURATION
-	// CMQ sotto i 3 minuti per discorso tcp timeout?
 
 	static Configuration config = Configuration.getInstance();
 	private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
@@ -100,21 +95,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 		TReturnStatus globalStatus = null;
 
 		log.debug("srmAbortRequest: Start PtPAbortExecutor...");
-
-		/**
-		 * 0) Get all Chunk related to the specified request according with user
-		 * specification (in case of AbortFiles). 1) Wait until the request goes in
-		 * SRM_SPACE_AVAILABLE status. 2) Rollback. For a PtP request the rollback
-		 * means to: - PtP without space reservation: Remove the file (if not
-		 * existing? And if partially wrote?). - PtP with implicit space reservation
-		 * (size specified): Remove the file.(the space is associated directly to
-		 * the file.) - PtP with SpaceToken: Recreaete the SpaceFile, update the
-		 * SpaceCatalog and remove the file. - PtP with SpaceToken and size Recreate
-		 * the space, update the space file, update the space catalog and remove the
-		 * files
-		 */
-
-		/****************** Phase 0 ******************/
 
 		SURLStatusManager checker = SURLStatusManagerFactory
 		  .newSURLStatusManager();
@@ -319,9 +299,8 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 			if (chunkAborted < totalSize) {
 				log.debug("PtPAbortExecutor: Wait for some time...");
-				log.debug("Abort: I'm waiting...");
 				try {
-					long numMillisecondsToSleep = 100; // 1 seconds
+					long numMillisecondsToSleep = 100;
 					Thread.sleep(numMillisecondsToSleep);
 				} catch (InterruptedException e) {
 
@@ -477,10 +456,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 		boolean failure = false;
 		namespace = NamespaceDirector.getNamespace();
 
-		/******************************* Phase (3) ************************************/
-
-		log.debug("PtPAbortExecutor: Phase(3) RollBack start.");
-
 		TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 		surlReturnStatus.setSurl(surl);
 
@@ -500,9 +475,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 			}
 			return surlReturnStatus;
 		}
-
-		log
-			.debug("PtPAbortExecutor: The Chunk is in a VALID state for the RollBack action!");
 		
 		TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
 		
@@ -517,7 +489,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 					break;
 				}
 			}
-			// Manage Rollback
+			
 
 			if (chunkData == null) {
 				throw new IllegalStateException("Unexpected condition. token " + token
@@ -567,6 +539,9 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 		log.debug("PtPAbortExecutor: No space token found.");
 		log.debug("PtPAbortExecutor: Start removing file from the file system...");
 		LocalFile fileToRemove = null;
+		
+		SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
+		
 		if (!surl.isEmpty()) {
 			try {
 				if (inputData instanceof IdentityInputData) {
@@ -590,30 +565,19 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 								"Unable to build a stori for surl %s UnapprochableSurlException: %s",
 								surl, e.getMessage()));
 				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
+				
+				manager.failRequestForSURL(token, surl, 
+					TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+				
 				surlReturnStatus.setStatus(manageStatus(
 					TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
 				return surlReturnStatus;
 			} catch (IllegalArgumentException e) {
 				log.error("Unable to build StoRI by SURL and user", e);
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INTERNAL_ERROR,
-						e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e);
-				}
+				
+				manager.failRequestForSURL(token, surl, 
+					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+				
 				surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
 					e.getMessage()));
 				return surlReturnStatus;
@@ -632,15 +596,10 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 								"Unable to build a stori for surl %s NamespaceException: %s",
 								surl, e.getMessage()));
 				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
+				
+				manager.failRequestForSURL(token, surl, 
+					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+				
 				surlReturnStatus.setStatus(manageStatus(
 					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
 				return surlReturnStatus;
@@ -659,15 +618,10 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 								"Unable to build a stori for surl %s InvalidSURLException: %s",
 								surl, e.getMessage()));
 				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INVALID_PATH, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
+				
+				manager.failRequestForSURL(token, surl, 
+					TStatusCode.SRM_INVALID_PATH, e.getMessage());
+				
 				surlReturnStatus.setStatus(manageStatus(
 					TStatusCode.SRM_INVALID_PATH, e.getMessage()));
 				return surlReturnStatus;
@@ -689,44 +643,23 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 		// Change status to aborted
 		if (failure) {
-			// Something goes wrong during the update catalog operation
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
+			
+			manager.failRequestForSURL(token, surl, 
+				TStatusCode.SRM_ABORTED, "Request aborted.");
+			
 			surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
 				"Database Not Updated."));
 			return surlReturnStatus;
 		}
 
+		manager.abortRequestForSURL(token, surl, "Request aborted.");
+		
 		if (res) {
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
 			surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
 				"File request successfully aborted."));
 			return surlReturnStatus;
 		} else {
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
+			
 			surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
 				"File not removed."));
 			return surlReturnStatus;

@@ -3,6 +3,7 @@ package it.grid.storm.catalogs.surl;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.List;
 import java.util.Map;
@@ -136,5 +137,16 @@ public interface SURLStatusManager {
    * @param explanation a string explaining why the request was aborted
    */
   public void abortAllGetRequestsForSURL(TSURL surl, String explanation);
+  
+  /**
+   * Sets the failed state for a SURL in the request with the give token.
+   *  
+   * @param token the request token
+   * @param surl the surl that has the failure
+   * @param code the error code
+   * @param explanation a string explaining the reason behind the failure
+   */
+  public void failRequestForSURL(TRequestToken token, 
+  	TSURL surl, TStatusCode code, String explanation);
   
 }

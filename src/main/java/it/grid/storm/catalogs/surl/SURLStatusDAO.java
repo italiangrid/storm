@@ -1,5 +1,7 @@
 package it.grid.storm.catalogs.surl;
 
+import it.grid.storm.catalogs.PtGChunkCatalog;
+import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.StatusCodeConverter;
 import it.grid.storm.catalogs.StoRMDataSource;
@@ -516,21 +518,17 @@ public class SURLStatusDAO implements SURLStatusManager{
 
   @Override
   public boolean isSURLBusy(TSURL surl) {
-
-    // TODO Auto-generated method stub
     return false;
   }
 
   @Override
   public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
-
     // TODO Auto-generated method stub
     return false;
   }
 
   @Override
   public boolean isSURLPinned(TSURL surl) {
-
     // TODO Auto-generated method stub
     return false;
   }
@@ -538,15 +536,54 @@ public class SURLStatusDAO implements SURLStatusManager{
   @Override
   public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
-    // TODO Auto-generated method stub
+    
     
   }
 
 
   @Override
   public void abortRequest(TRequestToken token, String explanation) {
+  	
+    
+    
+  }
 
-    // TODO Auto-generated method stub
+  private void updateStatus(TRequestType rt, 
+  	TRequestToken token, TSURL surl, TStatusCode code, String explanation){
+  	
+  	switch(rt){
+  	
+  		case PREPARE_TO_GET:
+  			PtGChunkCatalog.getInstance()
+  				.updateStatus(token, surl, code, explanation);
+  			break;
+  			
+  		case PREPARE_TO_PUT:
+  			PtPChunkCatalog.getInstance()
+  				.updateStatus(token, surl, code, explanation);
+  			break;
+  			
+  		default:
+  			throw new IllegalArgumentException("Unsupported request type for "
+  				+ "updateStatus: "+rt.getValue());
+  	}
+  }
+  
+  private void abortPTGRequest(TRequestToken token, 
+  	TSURL surl, String explanation) {
+
+    
+  }
+  
+  private void abortPTPRequest(TRequestToken token, 
+  	TSURL surl, String explanation) {
+
+    
+  }
+  
+  private void abortBoLRequest(TRequestToken token, 
+  	TSURL surl, String explanation) {
+
     
   }
 
@@ -554,21 +591,28 @@ public class SURLStatusDAO implements SURLStatusManager{
   public void abortRequestForSURL(TRequestToken token, TSURL surl,
     String explanation) {
 
-    // TODO Auto-generated method stub
+    
     
   }
 
   @Override
   public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
 
-    // TODO Auto-generated method stub
+  	
     
   }
 
   @Override
   public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
 
-    // TODO Auto-generated method stub
     
   }
+
+	@Override
+	public void failRequestForSURL(TRequestToken token, TSURL surl,
+		TStatusCode code, String explanation) {
+
+		
+		
+	}
 }

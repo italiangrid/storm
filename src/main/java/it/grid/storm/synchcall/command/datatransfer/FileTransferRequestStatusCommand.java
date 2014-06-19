@@ -19,7 +19,7 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -68,13 +68,21 @@ public abstract class FileTransferRequestStatusCommand extends
     return null;
   }
   
+  private List<String> toStringList(List<TSURL> surls){
+  	List<String> ls = new ArrayList<String>();
+  	for (TSURL s: surls)
+  		ls.add(s.getSURLString());
+  	return ls;
+  }
+  
   protected ManageFileTransferOutputData handleExpiredRequestToken(InputData id){
     ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
       CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
         "Expired request token"));
     
-    SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
-      id, getSrmCommand());
+    printRequestOutcome(outputData.getReturnStatus(),
+      id);
+    
     return outputData;
   }
   
@@ -84,8 +92,7 @@ public abstract class FileTransferRequestStatusCommand extends
       CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
         "Invalid request token"));
     
-    SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
-      id, getSrmCommand());
+    printRequestOutcome(outputData.getReturnStatus(), id);
     return outputData;
   }
 
@@ -111,8 +118,7 @@ public abstract class FileTransferRequestStatusCommand extends
     
     
       
-    SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
-      id, getSrmCommand());
+    printRequestOutcome(outputData.getReturnStatus(),id);
     
     return outputData;
   }
@@ -176,8 +182,7 @@ public abstract class FileTransferRequestStatusCommand extends
         }
       }
       
-      SurlStatusCommandHelper.printRequestOutcome(returnStatus, inputData,
-        getSrmCommand());
+      printRequestOutcome(returnStatus, inputData);
       
       return new ManageFileTransferOutputData(returnStatus);
     }
@@ -198,8 +203,8 @@ public abstract class FileTransferRequestStatusCommand extends
     } else {
       requestStatus = computeRequestStatus(surlReturnStatuses);
     }
-    SurlStatusCommandHelper.printRequestOutcome(requestStatus, inputData,
-      getSrmCommand());
+    
+    printRequestOutcome(requestStatus, inputData);
     return new ManageFileTransferOutputData(requestStatus, surlReturnStatuses);
   }
 
@@ -243,6 +248,22 @@ public abstract class FileTransferRequestStatusCommand extends
     }
     
     return retStatuses;
+  }
+  
+  
+  protected void printRequestOutcome(TReturnStatus status, InputData id){
+  	
+  	TRequestToken token = getTokenFromInputData(id);
+  	List<TSURL> surls = getSURLListFromInputData(id);
+  	
+  	if (surls == null){
+  		CommandHelper.printRequestOutcome(getSrmCommand(), log, 
+  			status, id, token);
+  	}
+  	else{
+  		CommandHelper.printRequestOutcome(getSrmCommand(), log,
+  			status, id, token, toStringList(surls));
+  	}
   }
 
 }

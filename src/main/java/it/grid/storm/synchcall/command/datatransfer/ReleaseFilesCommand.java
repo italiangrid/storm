@@ -38,6 +38,7 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -93,6 +94,13 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
     return null;
   }
+  
+  private List<String> toStringList(List<TSURL> surls){
+  	List<String> ls = new ArrayList<String>();
+  	for (TSURL s: surls)
+  		ls.add(s.getSURLString());
+  	return ls;
+  }
 
   public boolean validInputData(InputData inputData) {
 
@@ -122,8 +130,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
         "Empty request parametes"));
 
-    SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
-      inputData, SRM_COMMAND);
+    logRequestOutcome(outputData.getReturnStatus(), inputData);
 
     return outputData;
 
@@ -138,8 +145,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
         "Internal error: " + e.getMessage()));
 
-    SurlStatusCommandHelper.printRequestOutcome(outputData.getReturnStatus(),
-      in, SRM_COMMAND);
+    logRequestOutcome(outputData.getReturnStatus(), in);
 
     return outputData;
   }
@@ -152,7 +158,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       TStatusCode.SRM_INVALID_REQUEST,
       "No SURLs found matching input request token or list of SURLs.");
 
-    SurlStatusCommandHelper.printRequestOutcome(returnStatus, in, SRM_COMMAND);
+    logRequestOutcome(returnStatus, in);
 
     return new ManageFileTransferOutputData(returnStatus);
 
@@ -212,8 +218,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 		    CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
         "No files released");
 		  
-		  SurlStatusCommandHelper.printRequestOutcome(returnStatus, inputData,
-	      SRM_COMMAND);
+		  logRequestOutcome(returnStatus, inputData);
 		  
 		  return new ManageFileTransferOutputData(returnStatus, surlReturnStatuses);  
 		}
@@ -223,8 +228,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
 		TReturnStatus returnStatus = buildStatus(inputData, surlReturnStatuses);
 				
-		SurlStatusCommandHelper.printRequestOutcome(returnStatus, inputData,
-			SRM_COMMAND);
+		logRequestOutcome(returnStatus, inputData);
 		
 		return new ManageFileTransferOutputData(returnStatus, surlReturnStatuses);
 	}
@@ -380,5 +384,20 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
     CommandHelper.printSurlOutcome(SRM_COMMAND, log, surlStatus.getStatus(),
       inputData, surlStatus.getSurl());
+  }
+  
+  protected void logRequestOutcome(TReturnStatus status, InputData id){
+  	
+  	TRequestToken token = getTokenFromInputData(id);
+  	List<TSURL> surls = getSURLListFromInputData(id);
+  	
+  	if (surls == null){
+  		CommandHelper.printRequestOutcome(SRM_COMMAND, log, 
+  			status, id, token);
+  	}
+  	else{
+  		CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+  			status, id, token, toStringList(surls));
+  	}
   }
 }

@@ -42,7 +42,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -452,13 +451,15 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 		surlReturnStatus.setSurl(surl);
 
+		SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
+		
 		if (TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode())
 			|| TStatusCode.SRM_REQUEST_QUEUED.equals(status.getStatusCode())) { 
 		  
 			try {
-			  
-				SurlStatusManager.updateStatus(token, surl, TStatusCode.SRM_ABORTED,
-					"Request aborted.");
+				
+				manager.abortRequestForSURL(token, surl, "Request aborted.");
+				
 			} catch (IllegalArgumentException e) {
 				log
 					.error("Unexpected IllegalArgumentException during surl statuses update: "
@@ -471,15 +472,8 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 						+ e);
 				throw new IllegalStateException("Unexpected UnknownTokenException: "
 					+ e.getMessage());
-			} catch (UnknownSurlException e) {
-				log
-					.error("Unexpected UnknownSurlException during surl statuses update: "
-						+ e);
-				throw new IllegalStateException("Unexpected UnknownSurlException: "
-					+ e.getMessage());
-			}
+			} 
 
-			
 			surlReturnStatus.setStatus(createReturnStatus(TStatusCode.SRM_SUCCESS,
 				"File request successfully aborted."));
 		} else {

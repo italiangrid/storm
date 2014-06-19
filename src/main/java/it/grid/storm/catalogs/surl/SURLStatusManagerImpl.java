@@ -3,6 +3,7 @@ package it.grid.storm.catalogs.surl;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,14 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     
   }
+
+	@Override
+	public void failRequestForSURL(TRequestToken token, TSURL surl,
+		TStatusCode code, String explanation) {
+
+		// TODO Auto-generated method stub
+		
+	}
   
   
 }
