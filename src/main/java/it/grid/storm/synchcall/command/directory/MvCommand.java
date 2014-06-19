@@ -17,19 +17,14 @@
 
 package it.grid.storm.synchcall.command.directory;
 
-import java.util.Arrays;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.surl.SURLStatusChecker;
-import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -55,8 +50,11 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
+
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -543,10 +541,10 @@ public class MvCommand extends DirectoryCommand implements Command {
 
 		if (sourceExists && targetDirExists && !targetFileExists) {
 			
-			SURLStatusChecker checker = SURLStatusCheckerFactory
-			  .createSURLStatusChecker();
+			SURLStatusManager checker = SURLStatusManagerFactory
+			  .newSURLStatusManager();
 			
-			if(checker.isSURLBusy(fromStori.getSURL().getSURLString())){
+			if(checker.isSURLBusy(fromStori.getSURL())){
 			  log
         .debug("srmMv request failure: fromSURL is busy.");
 			  explanation = "There is an active SrmPrepareToPut on from SURL.";
@@ -559,7 +557,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 			 * case SrmMv() fails with SRM_FILE_BUSY.
 			 */
 
-			if (checker.isSURLPinned(fromStori.getSURL().getSURLString())){
+			if (checker.isSURLPinned(fromStori.getSURL())){
 				log
 					.debug("SrmMv: requests fails because the source SURL is being used from other requests.");
 				explanation = "There is an active SrmPrepareToGet on from SURL";

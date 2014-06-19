@@ -22,8 +22,8 @@ import it.grid.storm.catalogs.PtPChunkDataTO;
 import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
-import it.grid.storm.catalogs.surl.SURLStatusChecker;
-import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -167,20 +167,31 @@ public class PtP implements Delegable, Chooser, Request {
 		TSURL surl = requestData.getSURL();
 		TRequestToken rToken = requestData.getRequestToken();
 		
-		SURLStatusChecker checker = SURLStatusCheckerFactory
-		  .createSURLStatusChecker();
-		
+		SURLStatusManager checker = SURLStatusManagerFactory
+		  .newSURLStatusManager();
 		
 		log.debug("Handling PtP chunk for user DN: {}; for SURL: {}", user, surl);
 		
-		if (checker.isSURLBusy(surl.getSURLString(), rToken.getValue())){
+		if (checker.isSURLBusy(rToken, surl)){
 		  failure = true;
-      requestData.changeStatusSRM_FILE_BUSY("The surl " + surl + " is currently busy");
-      log.info("Unable to perform the PTP request, surl busy");
+      requestData.changeStatusSRM_FILE_BUSY("The surl " + surl + " is currently "
+        + "busy (ongoing put requests)");
+      log.info("Unable to perform the PTP request, surl busy "
+        + "(ongoing put on the same surl)");
       printRequestOutcome(requestData);
       return;
 		}
 		
+		if (checker.isSURLPinned(surl)){
+		  failure = true;
+      requestData.changeStatusSRM_FILE_BUSY("There surl " 
+        + surl + " is currently busy (ongoing get requests).");
+
+      log.info("Unable to perform the PTP request, surl busy "
+        + "(ongoing get on the same surl)");
+      printRequestOutcome(requestData);
+      return;
+		}
 		
 		requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");
 		

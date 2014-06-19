@@ -19,6 +19,8 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -32,7 +34,6 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import org.slf4j.Logger;
@@ -95,11 +96,12 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 			AbortRequestCommand.log
 				.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
 
+			SURLStatusManager manager = SURLStatusManagerFactory
+			  .newSURLStatusManager();
+			
 			try {
-			  
-				SurlStatusManager.checkAndUpdateStatus(inputData.getRequestToken(),
-					TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
-					"User aborted request!");
+			
+			  manager.abortRequest(requestToken, "Request aborted by user");
 				
 			} catch (UnknownTokenException e) {
 
@@ -165,7 +167,8 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 			log.debug("Phase (1.B) AbortRequest: Token not found.");
 		}
 
-		TRequestType rtype = SurlStatusManager.isPersisted(requestToken);
+		TRequestType rtype = RequestSummaryCatalog.getInstance()
+		  .typeOf(requestToken);
 
 		if (rtype == TRequestType.PREPARE_TO_GET) {
 			executor = new PtGAbortExecutor();

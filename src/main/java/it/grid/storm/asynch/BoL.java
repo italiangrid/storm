@@ -22,8 +22,8 @@ import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.BoLData;
 import it.grid.storm.catalogs.RequestData;
-import it.grid.storm.catalogs.surl.SURLStatusChecker;
-import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -204,12 +204,12 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 		TSURL surl = requestData.getSURL();
 		String dn = gu.getDn();
 		
-		SURLStatusChecker checker = SURLStatusCheckerFactory
-		  .createSURLStatusChecker();
+		SURLStatusManager checker = SURLStatusManagerFactory
+		  .newSURLStatusManager();
 
 		log.debug("Handling BoL chunk for user DN: {}; for SURL: {}", dn, surl);
 
-		if (checker.isSURLBusy(surl.getSURLString())){
+		if (checker.isSURLBusy(surl)){
 			failure = true;
 			log.info("Unable to perform the BOL request, surl busy");
 			requestData.changeStatusSRM_FILE_BUSY("Requested file is"

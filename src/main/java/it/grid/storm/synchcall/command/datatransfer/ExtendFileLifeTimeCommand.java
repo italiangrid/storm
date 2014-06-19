@@ -18,6 +18,8 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
@@ -43,22 +45,19 @@ import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeInputData;
-import it.grid.storm.synchcall.data.datatransfer.IdentityExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
+import it.grid.storm.synchcall.data.datatransfer.IdentityExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -354,17 +353,10 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 	 */
 	private boolean isStoRISURLBusy(StoRI element) {
 
-		try {
-			return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager
-				.getSurlStatus(element.getSURL()));
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException(
-				"unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: "
-					+ e);
-		} catch (UnknownSurlException e) {
-			log.debug("Surl " + element.getSURL() + " not stored, surl is not busy");
-			return false;
-		}
+	  SURLStatusManager checker = SURLStatusManagerFactory
+	    .newSURLStatusManager();
+	  
+	  return checker.isSURLBusy(element.getSURL());
 	}
 
 	/**
@@ -603,8 +595,12 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 
 		List<SURLData> listOfSURLsInfo = new LinkedList<SURLData>();
 
-		Map<TSURL, TReturnStatus> surlStatusMap = SurlStatusManager
-			.getSurlsStatus(requestToken);
+		SURLStatusManager checker = SURLStatusManagerFactory
+		  .newSURLStatusManager();
+		
+		Map<TSURL, TReturnStatus> surlStatusMap = 
+		  checker.getSURLStatuses(requestToken);
+		
 		if (!(surlStatusMap == null || surlStatusMap.isEmpty())) {
 			for (Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet()) {
 				listOfSURLsInfo.add(new SURLData(surlStatus.getKey(), surlStatus

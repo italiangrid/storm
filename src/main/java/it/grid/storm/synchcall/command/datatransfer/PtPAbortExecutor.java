@@ -28,6 +28,8 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.PtPPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.InvalidSURLException;
@@ -60,6 +62,7 @@ import it.grid.storm.synchcall.surl.UnknownTokenException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -113,10 +116,15 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 		/****************** Phase 0 ******************/
 
+		SURLStatusManager checker = SURLStatusManagerFactory
+		  .newSURLStatusManager();
+		
 		Map<TSURL, TReturnStatus> surlStatusMap;
+		
 		try {
-			surlStatusMap = SurlStatusManager.getSurlsStatus(inputData
+			surlStatusMap = checker.getSURLStatuses(inputData
 				.getRequestToken());
+			
 		} catch (IllegalArgumentException e) {
 			log
 				.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
@@ -318,12 +326,16 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 				} catch (InterruptedException e) {
 
 				}
-
-				log.debug("PtPAbortExecutor: Wake up! It's time to work...");
+				
 				log.debug("srmAbortRequest: PtPAbortExecutor: refresh surl status");
+				
+				
 				try {
-					surlStatusMap = SurlStatusManager.getSurlsStatus(
-						inputData.getRequestToken(), surlStatusMap.keySet());
+				  List<TSURL> surls = new ArrayList<TSURL>(surlStatusMap.keySet());
+				  
+					surlStatusMap = checker.getSURLStatuses(inputData.getRequestToken(), 
+					  surls);
+					
 				} catch (IllegalArgumentException e) {
 					log
 						.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
@@ -491,11 +503,11 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 		log
 			.debug("PtPAbortExecutor: The Chunk is in a VALID state for the RollBack action!");
-		if (!SurlStatusManager.isPersisted(token).isEmpty()) {
-			/*
-			 * TODO TEMPORARY. catalog direct access needed until a RequestManager
-			 * storing token and request infos will be available
-			 */
+		
+		TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
+		
+		if (!rt.isEmpty()) {
+		
 			Collection<PtPPersistentChunkData> chunksData = PtPChunkCatalog
 				.getInstance().lookup(token);
 			PtPPersistentChunkData chunkData = null;

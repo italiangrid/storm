@@ -19,8 +19,8 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
-import it.grid.storm.catalogs.surl.SURLStatusChecker;
-import it.grid.storm.catalogs.surl.SURLStatusCheckerFactory;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
@@ -131,12 +131,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 		String user = DataHelper.getRequestor(requestData);
 		TSURL surl = requestData.getSURL();
 
-		SURLStatusChecker checker = SURLStatusCheckerFactory
-		  .createSURLStatusChecker();
+		SURLStatusManager checker = SURLStatusManagerFactory
+		  .newSURLStatusManager();
 		
 		log.debug("Handling PtG chunk for user DN: {}; for SURL: {}", user, surl);
 		
-		if (checker.isSURLBusy(surl.getSURLString())){
+		if (checker.isSURLBusy(surl)){
 		  
 		  requestData.changeStatusSRM_FILE_BUSY("Requested file is busy (in an "
         + "incompatible state with PTG)");
