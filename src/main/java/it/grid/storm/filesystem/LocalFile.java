@@ -82,20 +82,14 @@ import org.slf4j.LoggerFactory;
  **/
 public class LocalFile {
 
-	// ---- public factory methods ----
-
-	// ---- class private variables ----
 
 	private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
-	// ---- instance private variables ----
-
 	/** The Filesystem interface to operate on the wrapped pathname. */
 	private final Filesystem fs;
-	private final java.io.File localFile; // Instance of java.io.File to the real
-																				// local file!
+	
+	private final java.io.File localFile; 
 
-	// ---- constructors ----
 
 	/**
 	 * Constructor, taking parent pathname (as a {@link File}), child name (as a
@@ -529,30 +523,15 @@ public class LocalFile {
 	 */
 	public boolean isOnDisk() throws FSException {
 
-		if (!isGPFS()) {
-			return localFile.exists();
-		} else {
-
-			long fileSizeInBlocks = fs.getFileBlockSize(localFile.getAbsolutePath());
-
-			if (fileSizeInBlocks >= localFile.length()) {
-
-				log.debug("File {} is on disk: blockSize={} fileSize={}",
-				  localFile.getAbsolutePath(),
-				  fileSizeInBlocks,
-				  localFile.length());
-				  
-				return true;
-
-			} else {
-
-				log.debug("File {} is NOT on disk: blockSize={} fileSize={}",
-				  localFile.getAbsolutePath(),
-				  fileSizeInBlocks,
-				  localFile.length());
-				return false;
-			}
-		}
+	  final boolean isOnDisk = fs.isFileOnDisk(localFile.getAbsolutePath());
+	  
+	  if (log.isDebugEnabled()){
+	    log.debug("File {} is {} on disk.",
+	      localFile.getAbsolutePath(),
+	      (isOnDisk ? "": "NOT"));  
+	  }
+	  
+	  return isOnDisk; 
 	}
 
 	/**
@@ -566,8 +545,6 @@ public class LocalFile {
 
 		return StormEA.getMigrated(localFile.getAbsolutePath());
 	}
-
-	// --- public ACL manipulation methods --- //
 
 	/**
 	 * Method that returns the size in bytes of This file, as per contract of
