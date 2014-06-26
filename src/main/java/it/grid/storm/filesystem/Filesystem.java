@@ -227,7 +227,11 @@ public class Filesystem {
 		return fs.truncate_file(filename, desired_size);
 	}
 
-	/** @} **/
+
+	
+	public boolean isFileOnDisk(String filename) {
+	  return fs.is_file_on_disk(filename);
+	}
 
 	public long getFileBlockSize(String filename) {
 
