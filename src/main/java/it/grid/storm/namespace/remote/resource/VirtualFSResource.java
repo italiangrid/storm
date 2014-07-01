@@ -20,6 +20,7 @@ import java.util.Map;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.remote.Constants;
@@ -47,6 +48,7 @@ public class VirtualFSResource {
 		.getLogger(VirtualFSResource.class);
 
 	class SAInfo {
+
 		String name;
 		String token;
 		String voname;
@@ -57,8 +59,10 @@ public class VirtualFSResource {
 		String accessLatency;
 		List<String> protocols;
 		HttpPerms anonymous;
+		long availableNearlineSpace;
+		List<String> approachableRules;
 	}
-	
+
 	/**
 	 * @return
 	 * @throws WebApplicationException
@@ -81,9 +85,9 @@ public class VirtualFSResource {
 			responseBuilder.entity("Unable to retrieve virtual file systems");
 			throw new WebApplicationException(responseBuilder.build());
 		}
-		Map<String,SAInfo> output = new HashMap<String,SAInfo>();
+		Map<String, SAInfo> output = new HashMap<String, SAInfo>();
 		for (VirtualFSInterface vfs : vfsCollection) {
-			
+
 			SAInfo sa = new SAInfo();
 			sa.name = vfs.getAliasName();
 			sa.token = vfs.getSpaceTokenDescription();
@@ -96,7 +100,7 @@ public class VirtualFSResource {
 			sa.root = vfs.getRootPath();
 			sa.stfnRoot = new ArrayList<String>();
 			try {
-				for (MappingRule rule: vfs.getMappingRules()) {
+				for (MappingRule rule : vfs.getMappingRules()) {
 					sa.stfnRoot.add(rule.getStFNRoot());
 				}
 			} catch (NamespaceException e1) {
@@ -122,6 +126,33 @@ public class VirtualFSResource {
 				.getRetentionPolicyName();
 			sa.accessLatency = vfs.getProperties().getAccessLatency()
 				.getAccessLatencyName();
+			try {
+				sa.availableNearlineSpace = vfs.getAvailableNearlineSpace().value();
+			} catch (NamespaceException e) {
+				log.error(e.getMessage());
+			}
+			sa.approachableRules = new ArrayList<String>();
+			try {
+				for (ApproachableRule rule : vfs.getApproachableRules()) {
+					if (rule.getSubjectRules().getDNMatchingRule().isMatchAll()
+						&& rule.getSubjectRules().getVONameMatchingRule().isMatchAll()) {
+						continue;
+					}
+					if (!rule.getSubjectRules().getDNMatchingRule().isMatchAll()) {
+						sa.approachableRules.add(rule.getSubjectRules().getDNMatchingRule()
+							.toGlue2String());
+					}
+					if (!rule.getSubjectRules().getVONameMatchingRule().isMatchAll()) {
+						sa.approachableRules.add("vo:"
+							+ rule.getSubjectRules().getVONameMatchingRule().getVOName());
+					}
+				}
+			} catch (NamespaceException e) {
+				log.error(e.getMessage());
+			}
+			if (sa.approachableRules.size() == 0) {
+				sa.approachableRules.add("'ALL'");
+			}
 			output.put(vfs.getAliasName(), sa);
 		}
 		Gson gson = new Gson();
