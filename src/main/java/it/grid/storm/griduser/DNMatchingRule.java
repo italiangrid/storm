@@ -366,7 +366,7 @@ public class DNMatchingRule {
 		return result.toString();
 	}
 	
-	public String toGlue2String() {
+	public String toShortSlashSeparatedString() {
 
 		StringBuffer result = new StringBuffer();
 		if (!countryPatternString.equals(ADMIT_ALL)) {

@@ -140,7 +140,7 @@ public class VirtualFSResource {
 					}
 					if (!rule.getSubjectRules().getDNMatchingRule().isMatchAll()) {
 						sa.approachableRules.add(rule.getSubjectRules().getDNMatchingRule()
-							.toGlue2String());
+							.toShortSlashSeparatedString());
 					}
 					if (!rule.getSubjectRules().getVONameMatchingRule().isMatchAll()) {
 						sa.approachableRules.add("vo:"
