@@ -481,10 +481,12 @@ public class PtP implements Delegable, Chooser, Request {
 					+ fileStoRI.getSURL().toString() + ", but its parent "
 					+ parentStoRI.getSURL().toString();
 				if (!exists) {
-					if(automaticDirectoryCreation)
+					if (automaticDirectoryCreation){
 						continue;
-					else
+					}
+					else{
 						errorString = errorString + " does not exist!";
+					}
 				} else {
 					errorString = errorString + " is not a directory!";
 				}
