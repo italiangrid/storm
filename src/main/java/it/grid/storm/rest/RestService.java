@@ -101,6 +101,8 @@ public class RestService {
 				+ "it.grid.storm.ea.remote.resource,"
 				+ InfoService.getResourcePackage());
 
+		holder.setInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
+
 		ServletContextHandler servletContextHandler = new ServletContextHandler(
 			ServletContextHandler.SESSIONS);
 		servletContextHandler.setContextPath("/");
