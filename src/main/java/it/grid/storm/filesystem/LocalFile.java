@@ -392,15 +392,9 @@ public class LocalFile {
 	 * @see #getExactSize()
 	 */
 	public long getSize() {
-
-		long result = 0;
-		String filename = localFile.getAbsolutePath();
-		File file = new File(filename);
-		if (file.exists()) {
-			result = file.length();
-		}
-		return result;
-		// return fs.getSize(localFile.getAbsolutePath());
+		
+		File file = new File(localFile.getAbsolutePath());
+		return file.exists() ? file.length() : 0;
 	}
 
 	/**

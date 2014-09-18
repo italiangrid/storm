@@ -140,7 +140,7 @@ public class GridUserManager {
 		return result;
 	}
 
-	public static GridUserInterface decode(Map inputParam) {
+	public static GridUserInterface decode(Map<String, Object> inputParam) {
 
 		return userFactory.decode(inputParam);
 	}

@@ -26,8 +26,8 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.SpaceUpdaterHelperFactory;
+import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
@@ -467,15 +467,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			}
 
 			// 5- Update FreeSpace into DB
-			/**
-			 * If Storage Area hard limit is enabled, update space on DB
-			 */
-			VirtualFSInterface fs = stori.getVirtualFileSystem();
-			if ((fs != null) && (fs.getProperties().isOnlineSpaceLimited())) {
-				SpaceHelper sh = new SpaceHelper();
-				// Update the used space into Database
-				sh.decreaseFreeSpaceForSA(log, funcName, user, surl);
-			}
+			SpaceUpdaterHelperInterface sh = SpaceUpdaterHelperFactory
+				.getSpaceUpdaterHelper(stori.getVirtualFileSystem());		
+			sh.increaseUsedSpace(stori.getVirtualFileSystem(), localFile.getSize());
 		}
 	}
 

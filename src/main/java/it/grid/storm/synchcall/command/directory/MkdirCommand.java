@@ -38,7 +38,8 @@ import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.SpaceUpdaterHelperFactory;
+import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -68,6 +69,22 @@ import org.slf4j.LoggerFactory;
 
 public class MkdirCommand extends DirectoryCommand implements Command {
 
+	class MkdirException extends Exception {
+
+		private static final long serialVersionUID = 1L;
+		
+		private TReturnStatus returnStatus;
+		
+		public MkdirException(TStatusCode code, String message) {
+			super(message);
+			this.returnStatus = CommandHelper.buildStatus(code, message);
+		}
+		
+		public TReturnStatus getReturnStatus() {
+			return returnStatus;
+		}
+	}
+	
   public static final Logger log = LoggerFactory.getLogger(MkdirCommand.class);
   
 	private static final String SRM_COMMAND = "SrmMkdir";
@@ -78,6 +95,98 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 		namespace = NamespaceDirector.getNamespace();
 	}
 
+	private void validate(InputData data) throws IllegalArgumentException, 
+		MkdirException {
+		
+		if (data == null) {
+			throw new IllegalArgumentException("Invalid input data: NULL");
+		}
+		if (!(data instanceof MkdirInputData)) {
+			throw new IllegalArgumentException("Invalid input data type");
+		}
+		if (((MkdirInputData) data).getSurl() == null) {
+			throw new MkdirException(TStatusCode.SRM_FAILURE,
+				"SURL specified is NULL");
+		}
+		if (((MkdirInputData) data).getSurl().isEmpty()) {
+			throw new MkdirException(TStatusCode.SRM_FAILURE,
+				"Invalid empty SURL specified");
+		}
+	}
+	
+	private MkdirOutputData exitWithStatus(TReturnStatus returnStatus,
+		MkdirInputData data) {
+		
+		printRequestOutcome(returnStatus, data);
+		return new MkdirOutputData(returnStatus);
+	}
+	
+	private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
+		throws MkdirException {
+
+		try {
+			return namespace.resolveStoRIbySURL(surl, user);
+		} catch (UnapprochableSurlException e) {
+			log.error(e.getMessage());
+			throw new MkdirException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+				e.getMessage());
+		}	catch (NamespaceException e) {
+			log.error(e.getMessage());
+			throw new MkdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}	catch (InvalidSURLException e) {
+			log.error(e.getMessage());
+			throw new MkdirException(TStatusCode.SRM_INVALID_PATH, e.getMessage());
+		}	catch (IllegalArgumentException e) {
+			log.error(e.getMessage());
+			throw new MkdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}
+	}
+	
+	private boolean isAnonymous(GridUserInterface user) {
+		
+		return (user == null);
+	}
+	
+	private boolean isUserAuthorized(StoRI stori, GridUserInterface user)
+		throws MkdirException {
+		
+		TSpaceToken token;
+		try {
+			token = stori.getVirtualFileSystem().getSpaceToken();
+		} catch (NamespaceException e) {
+			log.error(e.getMessage());
+			throw new MkdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}
+		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+
+		boolean isSpaceAuthorized;
+		if (isAnonymous(user)) {
+			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MD);
+		} else {
+			isSpaceAuthorized = spaceAuth.authorize(user, SRMSpaceRequest.MD);
+		}
+		if (!isSpaceAuthorized) {
+			log.debug("srmMkdir: User not authorized to perform srmMkdir request "
+			  + "on the storage area: {}", token);
+			return false;
+		}
+
+		AuthzDecision decision;
+		if (isAnonymous(user)) {
+			decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
+				SRMFileRequest.MD, stori.getStFN());
+		} else {			
+			decision = AuthzDirector.getPathAuthz().authorize(user,
+				SRMFileRequest.MD, stori);
+		}
+		if (!decision.equals(AuthzDecision.PERMIT)) {
+			log.debug("srmMkdir: User is not authorized to make a new directory");
+			return false;
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Method that provide SrmMkdir functionality.
 	 * 
@@ -88,155 +197,49 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 	public OutputData execute(InputData data) {
 
 		log.debug("SrmMkdir: Start execution.");
-		TReturnStatus returnStatus = null;
-		MkdirInputData inputData = (MkdirInputData) data;
-		MkdirOutputData outData = null;
-
-
-		if ((inputData == null)
-			|| ((inputData != null) && (inputData.getSurl() == null))) {
-			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-				"Invalid parameter specified.");
-			printRequestOutcome(returnStatus, inputData);
-			outData = new MkdirOutputData(returnStatus);
-			return outData;
-		}
-
-		TSURL surl = inputData.getSurl();
-
-		if (surl.isEmpty()) {
-			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-				"Invalid SURL specified!");
-			printRequestOutcome(returnStatus, inputData);
-			outData = new MkdirOutputData(returnStatus);
-			return outData;
+		
+		try {
+			validate(data);
+		} catch (MkdirException e) {
+			log.error("srmRmdir: {}", e.getMessage());
+			return exitWithStatus(e.getReturnStatus(), (MkdirInputData) data);
 		}
 		
+		MkdirInputData inputData = (MkdirInputData) data;
+		TSURL surl = inputData.getSurl();
+		GridUserInterface user = (data instanceof IdentityInputData) ? 
+			((IdentityInputData) data).getUser() : null;
 		StoRI stori = null;
+
 		try {
-			if (inputData instanceof IdentityInputData) {
-				try {
-					stori = namespace.resolveStoRIbySURL(surl,
-						((IdentityInputData) inputData).getUser());
-				} catch (UnapprochableSurlException e) {
-				  log.info("Unable to build a stori for surl {} for user {}. {}",
-				    surl,
-				    DataHelper.getRequestor(inputData),
-				    e.getMessage());
-				  
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				} catch (NamespaceException e) {
-				  log.info("Unable to build a stori for surl {} for user {}. {}",
-				    surl,
-				    DataHelper.getRequestor(inputData),
-				    e.getMessage());
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				} catch (InvalidSURLException e) {
-
-				  log.info("Unable to build a stori for surl {} for user {}. {}",
-				    surl,
-				    DataHelper.getRequestor(inputData),
-				    e.getMessage());
-
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_INVALID_PATH, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				}
-			} else {
-				try {
-					stori = namespace.resolveStoRIbySURL(surl);
-				} catch (UnapprochableSurlException e) {
-				  log.info("Unable to build a stori for surl {}. {}",
-				    surl, e.getMessage());
-				  
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				} catch (NamespaceException e) {
-				  log.info("Unable to build a stori for surl {}. {}",
-				    surl, e.getMessage());
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				} catch (InvalidSURLException e) {
-				  log.info("Unable to build a stori for surl {}. {}",
-				    surl, e.getMessage());
-					returnStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_INVALID_PATH, e.getMessage());
-					printRequestOutcome(returnStatus, inputData);
-					outData = new MkdirOutputData(returnStatus);
-					return outData;
-				}
-			}
-		} catch (IllegalArgumentException e) {
-		  log.error(e.getMessage(),e);
-			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-				e.getMessage());
-			printRequestOutcome(returnStatus, inputData);
-			outData = new MkdirOutputData(returnStatus);
-			return outData;
+			stori = resolveStoRI(surl, user);
+		} catch (MkdirException e) {
+			log.error("Unable to build a stori for surl {} for user {}: {}",
+		    surl, DataHelper.getRequestor(inputData), e.getMessage());
+			return exitWithStatus(e.getReturnStatus(), inputData);
 		}
 
-		TSpaceToken token = new SpaceHelper().getTokenFromStoRI(log, stori);
-		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-		boolean isSpaceAuthorized;
-		if (inputData instanceof IdentityInputData) {
-			isSpaceAuthorized = spaceAuth.authorize(
-				((IdentityInputData) inputData).getUser(), SRMSpaceRequest.MD);
-		} else {
-			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MD);
+		boolean isAuthorized = false;
+		try {
+			isAuthorized = isUserAuthorized(stori, user);
+		} catch (MkdirException e) {
+			log.error(e.getMessage());
+			return exitWithStatus(e.getReturnStatus(), inputData);
 		}
-		if (!isSpaceAuthorized) {
-			log.debug("srmMkdir: User not authorized to perform srmMkdir request "
-			  + "on the storage area: {}", token);
-
-			returnStatus = CommandHelper.buildStatus(
-				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				": User not authorized to perform srmMkdir request on the storage area: "
-					+ token);
-
-			printRequestOutcome(returnStatus, inputData);
-			outData = new MkdirOutputData(returnStatus);
-			return outData;
-		}
-
-		AuthzDecision decision;
-		if (inputData instanceof IdentityInputData) {
-			decision = AuthzDirector.getPathAuthz().authorize(
-				((IdentityInputData) inputData).getUser(), SRMFileRequest.MD, stori);
-		} else {
-			decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
-				SRMFileRequest.MD, stori.getStFN());
-		}
-		if (decision.equals(AuthzDecision.PERMIT)) {
-
-			log.debug("srmMkdir authorized for {} for directory = {}", 
+		if (!isAuthorized) {
+			log.debug("srmMkdir not authorized for {} for directory = {}", 
 			  DataHelper.getRequestor(inputData), stori.getPFN());
-
-			returnStatus = manageAuthorizedMKDIR(stori, data);
-		} else {
-			returnStatus = CommandHelper.buildStatus(
+			return exitWithStatus(CommandHelper.buildStatus(
 				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				"User is not authorized to make a new directory");
+				"User is not authorized to make a new directory"), inputData);
 		}
-		printRequestOutcome(returnStatus, inputData);
-		outData = new MkdirOutputData(returnStatus);
-		return outData;
+		
+		log.debug("srmMkdir authorized for {} for directory = {}",
+			DataHelper.getRequestor(inputData), stori.getPFN());
+
+		TReturnStatus returnStatus = manageAuthorizedMKDIR(stori, data);
+		log.debug("srmMkdir return status: {}", returnStatus);
+		return exitWithStatus(returnStatus, inputData);
 	}
 
 	/**
@@ -256,9 +259,18 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
 		TReturnStatus returnStatus = createFolder(stori.getLocalFile());
 		if (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+			updateUsedSpace(stori);
 			manageAcl(stori, data, returnStatus);
 		}
 		return returnStatus;
+	}
+
+	private void updateUsedSpace(StoRI stori) {
+
+		SpaceUpdaterHelperInterface sh = SpaceUpdaterHelperFactory
+			.getSpaceUpdaterHelper(stori.getVirtualFileSystem());		
+		sh.increaseUsedSpace(stori.getVirtualFileSystem(), stori.getLocalFile()
+			.getSize());
 	}
 
 	private TReturnStatus createFolder(LocalFile file) {

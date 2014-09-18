@@ -42,8 +42,7 @@ public class TSURLReturnStatus {
 	public TSURLReturnStatus(TSURL surl, TReturnStatus status)
 		throws InvalidTSURLReturnStatusAttributeException {
 
-		boolean ok = (surl != null);
-		if (!ok)
+		if (surl == null)
 			throw new InvalidTSURLReturnStatusAttributeException(surl);
 		this.surl = surl;
 		this.returnStatus = status;

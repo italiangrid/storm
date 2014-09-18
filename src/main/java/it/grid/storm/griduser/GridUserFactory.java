@@ -145,7 +145,7 @@ public class GridUserFactory {
 		return user;
 	}
 
-	GridUserInterface decode(Map inputParam) {
+	GridUserInterface decode(Map<String, Object> inputParam) {
 
 		// Member name for VomsGridUser Creation
 		String member_DN = new String("userDN");
@@ -154,7 +154,7 @@ public class GridUserFactory {
 		// Get DN and FQANs[]
 		String dnString = (String) inputParam.get(member_DN);
 
-		List fqansList = null;
+		List<Object> fqansList = null;
 		try {
 			fqansList = Arrays.asList((Object[]) inputParam.get(member_Fqans));
 		} catch (NullPointerException e) {

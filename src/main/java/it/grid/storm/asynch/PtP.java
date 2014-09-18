@@ -45,6 +45,8 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.SpaceUpdaterHelperFactory;
+import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -60,6 +62,7 @@ import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -450,52 +453,67 @@ public class PtP implements Delegable, Chooser, Request {
 	private boolean managePermitTraverseStep(StoRI fileStoRI)
 		throws CannotMapUserException {
 
-		if (requestData instanceof IdentityInputData) {
-			return verifyPath(fileStoRI)
-				&& setParentAcl(fileStoRI, ((IdentityInputData) requestData).getUser()
-					.getLocalUser());
-		} else {
-			if (verifyPath(fileStoRI)) {
-				setHttpsServiceParentAcl(fileStoRI);
-				return true;
-			} else {
-				return false;
-			}
+		try {
+			verifyPath(fileStoRI);
+		} catch (IllegalStateException e) {
+			requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
+			failure = true;
+			log.debug("{} Parent points to {}.", e.getMessage(), fileStoRI
+				.getLocalFile().toString());
+			return false;
+		} catch (SecurityException e) {
+			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+			failure = true;
+			log.error("ERROR in PtPChunk! Filesystem was unable to successfully "
+				+ "create directory: {}", fileStoRI.getLocalFile().toString());
+			return false;
 		}
+
+		if (requestData instanceof IdentityInputData) {
+			LocalUser user = ((IdentityInputData) requestData).getUser()
+				.getLocalUser();
+			return setParentAcl(fileStoRI, user);
+		}
+		setHttpsServiceParentAcl(fileStoRI);
+		return true;
 	}
 
 	/**
 	 * @param fileStoRI
 	 * @return
+	 * @throws IllegalStateException 
 	 */
-	private boolean verifyPath(StoRI fileStoRI) {
+	private boolean verifyPath(StoRI fileStoRI) throws IllegalStateException {
 
-		boolean exists;
 		boolean automaticDirectoryCreation = Configuration.getInstance()
 				.getAutomaticDirectoryCreation();
 		
+		int toCreate = 0;
 		for (StoRI parentStoRI : fileStoRI.getParents()) {
-			exists = parentStoRI.getLocalFile().exists();
-			if (!exists || !parentStoRI.getLocalFile().isDirectory()) {
-				String errorString = "The requested SURL is: "
-					+ fileStoRI.getSURL().toString() + ", but its parent "
-					+ parentStoRI.getSURL().toString();
-				if (!exists) {
-					if (automaticDirectoryCreation){
-						continue;
-					}
-					else{
-						errorString = errorString + " does not exist!";
-					}
-				} else {
-					errorString = errorString + " is not a directory!";
+			LocalFile f = parentStoRI.getLocalFile();
+			if (f.exists()) {
+				if (f.isDirectory()) {
+					continue;
 				}
-				requestData.changeStatusSRM_INVALID_PATH(errorString);
-				failure = true;
-				log.debug("{} Parent points to {}.", errorString, 
-					parentStoRI.getLocalFile().toString());
-				return false;
+				throw new IllegalStateException("The requested SURL is: "
+				+ fileStoRI.getSURL().toString() + ", but its parent "
+				+ parentStoRI.getSURL().toString() + " is not a directory!");
+			} else {
+				if (automaticDirectoryCreation) {
+					toCreate++;
+					continue;
+				}
+				throw new IllegalStateException("The requested SURL is: "
+					+ fileStoRI.getSURL().toString() + ", but its parent "
+					+ parentStoRI.getSURL().toString() + " does not exist!");
 			}
+		}
+		if (toCreate > 0) {
+			if (!fileStoRI.getLocalFile().getParentFile().mkdirs()) {
+				throw new SecurityException("Local filesystem error: "
+					+ "could not crete directory!");
+			}
+			updateUsedSpace(fileStoRI, toCreate);
 		}
 		return true;
 	}
@@ -505,67 +523,37 @@ public class PtP implements Delegable, Chooser, Request {
 		log.debug("PtPChunk: setting parent traverse ACL for {} to user {}", 
 			fileStoRI.getAbsolutePath(), localUser);
 		
-		boolean automaticDirectoryCreation = Configuration.getInstance()
-			.getAutomaticDirectoryCreation();
-		
 		for (StoRI parentStoRI : fileStoRI.getParents()) {
 			LocalFile parentFile = parentStoRI.getLocalFile();
 			log.debug("PtPChunk TraverseStep - processing parent {}", 
 				parentFile.toString());
-			if (!prepareDirectory(parentFile, automaticDirectoryCreation)) {
-				log.warn("Unable to perform directory preparation step on parent "
-					+ "file {}", parentFile.getAbsolutePath());
-				failure = true;
-				return false;
-			} else {
-				try {
-					if (!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse,
-						fileStoRI.hasJustInTimeACLs())) {
-						requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
-							+ "not allow setting up correct ACLs for PtG!");
-						failure = true;
-						return false;
-					}
-				} catch (Exception e) {
-					requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
-						+ " problems manipulating ACE!");
+			try {
+				if (!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse,
+					fileStoRI.hasJustInTimeACLs())) {
+					requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
+						+ "not allow setting up correct ACLs for PtG!");
 					failure = true;
 					return false;
 				}
+			} catch (Exception e) {
+				requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
+					+ " problems manipulating ACE!");
+				failure = true;
+				return false;
 			}
 		}
 		return true;
 	}
 
-	/**
-	 * Private method that handles directory creation: it considers whether it
-	 * already exists, and if automatic creation is enabled or not. BEWARE! It
-	 * returns a boolean true if any _anomaly_ occurs!
-	 */
-	private boolean prepareDirectory(LocalFile f, boolean canCreate)
-		throws SecurityException {
-
-		if ((!f.exists()) && (!canCreate)) {
-			requestData.changeStatusSRM_INVALID_PATH("Directory structure as "
-				+ "specified in SURL does not exist!");
-			failure = true;
-			log.debug("ATTENTION in PtPChunk! Directory structure as specified "
-				+ "in {} does not exist, and automatic directory creation is disbaled! "
-				+ "Failing this chunk of request!", f);
-			return false;
-		} else {
-			if (!f.exists()) {
-				if (!f.mkdirs()) {
-					requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem error: "
-						+ "could not crete directory!");
-					failure = true;
-					log.error("ERROR in PtPChunk! Filesystem was unable to successfully "
-						+ "create directory: {}", f.toString());
-					return false;
-				}
-			}
+	private void updateUsedSpace(StoRI stori, int numDirs) {
+				
+		long dirSize = new File("/tmp").length();
+		long usedSize = dirSize * numDirs;
+		if (usedSize > 0) {
+			SpaceUpdaterHelperInterface sh = SpaceUpdaterHelperFactory
+				.getSpaceUpdaterHelper(stori.getVirtualFileSystem());		
+			sh.increaseUsedSpace(stori.getVirtualFileSystem(), usedSize);
 		}
-		return true;
 	}
 
 	private boolean managePermitSetFileStep(StoRI fileStoRI)
