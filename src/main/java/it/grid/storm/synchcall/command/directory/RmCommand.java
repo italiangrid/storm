@@ -30,7 +30,6 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.SpaceUpdaterHelperFactory;
 import it.grid.storm.space.SpaceUpdaterHelperInterface;
@@ -46,16 +45,12 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
-import it.grid.storm.synchcall.command.directory.MkdirCommand.MkdirException;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.directory.MkdirInputData;
-import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
-import it.grid.storm.synchcall.data.exception.InvalidRmOutputAttributeException;
 import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 
@@ -92,24 +87,13 @@ public class RmCommand implements Command {
 	private static final Logger log = LoggerFactory.getLogger(RmCommand.class);
 	private final String funcName = "srmRm";
 	private final NamespaceInterface namespace;
-	
-	private RmInputData inputData;
 
 	public RmCommand() {
 
 		namespace = NamespaceDirector.getNamespace();
 		
 	}
-	
-//	private RmOutputData getOutputData(TReturnStatus globalStatus,
-//		ArrayOfTSURLReturnStatus surlStatuses) {
-//
-//		RmOutputData outputData = new RmOutputData();
-//		outputData.setStatus(globalStatus);
-//		outputData.setSurlStatus(surlStatuses);
-//		return outputData;
-//	}
-	
+
 	private void checkIfAcceptable(InputData data) throws IllegalArgumentException {
 		
 		if (data == null) {
