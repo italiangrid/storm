@@ -124,26 +124,6 @@ public class VirtualFS implements VirtualFSInterface {
 		this.testingMode = testingMode;
 	}
 
-//	public VirtualFS(String aliasName, String type, String rootPath,
-//		String spaceTokenDescription, StorageClassType storageClass,
-//		Class fsDriver, Class spaceDriver, PropertyInterface properties,
-//		DefaultValuesInterface defaultValue, CapabilityInterface capabilities)
-//		throws NamespaceException {
-//
-//		this.aliasName = aliasName;
-//		this.type = type;
-//		this.rootPath = buildRootPath(rootPath);
-//		this.spaceTokenDescription = spaceTokenDescription;
-//		this.storageClass = storageClass;
-//		this.fsDriver = fsDriver;
-//		this.spaceSystemDriver = spaceDriver;
-//		this.defValue = defaultValue;
-//		this.capabilities = capabilities;
-//		this.properties = properties;
-//		buildStoRIRoot(rootPath);
-//
-//	}
-
 	/*****************************************************************************
 	 * BUILDING METHODs
 	 ****************************************************************************/

@@ -338,16 +338,4 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 		}
 	}
 
-//	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-//
-//		TReturnStatus returnStatus = null;
-//		try {
-//			returnStatus = new TReturnStatus(statusCode, explanation);
-//		} catch (IllegalArgumentException ex1) {
-//			log.debug("AbortExecutor : Error creating returnStatus: {}", 
-//			  ex1.getMessage(), ex1);
-//		}
-//		return returnStatus;
-//	}
-
 }
