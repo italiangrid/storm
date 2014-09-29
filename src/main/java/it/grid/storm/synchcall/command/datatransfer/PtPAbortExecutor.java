@@ -431,27 +431,6 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
 	/**
 	 * 
-	 * @param statusCode
-	 *          statusCode
-	 * @param explanation
-	 *          explanation string
-	 * @return returnStatus returnStatus
-	 */
-
-//	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-//
-//		TReturnStatus returnStatus = null;
-//		try {
-//			returnStatus = new TReturnStatus(statusCode, explanation);
-//		} catch (InvalidTReturnStatusAttributeException ex1) {
-//			log.debug("AbortExecutor : Error creating returnStatus "
-//				+ ex1);
-//		}
-//		return returnStatus;
-//	}
-
-	/**
-	 * 
 	 * Manage the roll back needed to execute an abort request.
 	 * 
 	 * @param chunkData

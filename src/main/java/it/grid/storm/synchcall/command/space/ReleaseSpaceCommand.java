@@ -217,25 +217,6 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     }
   }
 
-  /**
-   * 
-   * @param statusCode
-   *          statusCode
-   * @param explanation
-   *          explanation string
-   * @return returnStatus returnStatus
-   */
-//  private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-//
-//    TReturnStatus returnStatus = null;
-//    try {
-//      returnStatus = new TReturnStatus(statusCode, explanation);
-//    } catch (InvalidTReturnStatusAttributeException ex1) {
-//      log.error(ex1.getMessage(), ex1);
-//    }
-//    return returnStatus;
-//  }
-
   private void printRequestOutcome(TReturnStatus status,
     ReleaseSpaceInputData indata) {
 

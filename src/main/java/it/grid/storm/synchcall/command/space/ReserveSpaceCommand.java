@@ -104,13 +104,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   private void logRequestFailure(TStatusCode code, String explanation) {
 
-    TReturnStatus status;
-//    try {
-      status = new TReturnStatus(code, explanation);
-//    } catch (InvalidTReturnStatusAttributeException e) {
-//      throw new RuntimeException(e);
-//    }
-
+    TReturnStatus status = new TReturnStatus(code, explanation);
     log.error("srmReservespace: request failed with: [status: {}]", status);
   }
 
@@ -118,12 +112,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     TSizeInBytes guarSize, TLifeTimeInSeconds lifetime,
     TRetentionPolicyInfo rpinfo, TStatusCode code, String explanation) {
 
-    TReturnStatus status;
-//    try {
-      status = new TReturnStatus(code, explanation);
-//    } catch (InvalidTReturnStatusAttributeException e) {
-//      throw new RuntimeException(e);
-//    }
+    TReturnStatus status = new TReturnStatus(code, explanation);
 
     log.error("srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
       + " desiredSizeOfGuaranteedSpace: {}] with "
