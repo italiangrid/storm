@@ -280,7 +280,7 @@ public class Namespace implements NamespaceInterface {
 				"The requested SURL is not managed by this instance of StoRM");
 		}
 		log.debug("{} belongs to {}", realPath, targetVFS.getAliasName());
-		
+			
 		/* check if target VFS is approachable */
 		if (!vfsApproachable.contains(targetVFS)) {
 			String msg = String.format("%s is not approachable by the user",
@@ -291,6 +291,7 @@ public class Namespace implements NamespaceInterface {
 
 		log.debug("{} is approachable by the user", targetVFS.getAliasName());
 		return stori;
+		
 	}
 
 	private boolean isSolvable(TSURL surl) throws IllegalArgumentException,
@@ -427,7 +428,12 @@ public class Namespace implements NamespaceInterface {
 	public VirtualFSInterface resolveVFSbyLocalFile(LocalFile file)
 		throws NamespaceException {
 
-		return null;
+		try {
+			return this.resolveVFSbyAbsolutePath(file.getCanonicalPath());
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw new NamespaceException(e.getMessage());
+		}
 	}
 
 	public StoRI resolveStoRIbyStFN(StFN stfn, GridUserInterface user)

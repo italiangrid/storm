@@ -36,6 +36,9 @@ import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -366,7 +369,11 @@ public class LocalFile {
 	// overridden from java.io.File to change return value
 	public LocalFile getParentFile() {
 
-		return new LocalFile(localFile.getParentFile().getAbsolutePath(), this.fs);
+		File parent = localFile.getParentFile();
+		if (parent == null) {
+			return null;
+		}
+		return new LocalFile(parent.getAbsolutePath(), this.fs);
 	}
 
 	/**
@@ -812,5 +819,5 @@ public class LocalFile {
 
 		return localFile.getCanonicalPath();
 	}
-
+	
 }

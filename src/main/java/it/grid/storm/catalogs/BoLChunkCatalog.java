@@ -25,7 +25,6 @@ import it.grid.storm.griduser.GridUserInterface;
 // import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TDirOption;
@@ -221,12 +220,7 @@ public class BoLChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ auxTO.getStatus());
 		} else {
-			try {
-				status = new TReturnStatus(code, auxTO.getErrString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, auxTO.getErrString());
 		}
 		// transferURL
 		/*
@@ -412,14 +406,9 @@ public class BoLChunkCatalog {
 		TReturnStatus status = null;
 		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(auxTO.getStatus());
 		if (code != TStatusCode.EMPTY) {
-			try {
-				status = new TReturnStatus(code, auxTO.getErrString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				log.debug("BoL Chunk: Unable to build the Return Status from the String "
-					+ "'{}' and code '{}'.", auxTO.getErrString(), auxTO.getStatus());
-				}
-			}
-			inputChunk.setStatus(status);
+			status = new TReturnStatus(code, auxTO.getErrString());
+		}
+		inputChunk.setStatus(status);
 		return inputChunk;
 	}
 
@@ -635,12 +624,7 @@ public class BoLChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ reducedChunkDataTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, reducedChunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, reducedChunkDataTO.errString());
 		}
 		// make ReducedBoLChunkData
 		ReducedBoLChunkData aux = null;

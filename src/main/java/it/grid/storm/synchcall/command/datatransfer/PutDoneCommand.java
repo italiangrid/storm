@@ -25,12 +25,10 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.space.SpaceUpdaterHelperFactory;
-import it.grid.storm.space.SpaceUpdaterHelperInterface;
+import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -164,7 +162,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
 				if (lockSurl(surlStatus.getSurl())) {
 					spaceAvailableSURLs.add(surlStatus.getSurl());
-					newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "");
+					newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Success");
 					atLeastOneSuccess = true;
 				} else { // there is an active PutDone on this SURL
 					newStatus = anotherPutDoneActiveReturnStatus;
@@ -172,7 +170,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 				break;
 			case SRM_SUCCESS:
 				newStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_DUPLICATION_ERROR, "");
+					TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
 				atLeastOneFailure = true;
 				break;
 			case SRM_ABORTED:
@@ -336,24 +334,10 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 				status = surlsStatuses.get(surl);
 			} else {
 				log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
-				try {
-					status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-						"SURL does not refer to an existing file for the specified request token");
-				} catch (InvalidTReturnStatusAttributeException e) {
-					throw new IllegalStateException(
-						"Unexpected InvalidTReturnStatusAttributeException "
-							+ "in building TReturnStatus: " + e.getMessage());
-				}
+				status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+					"SURL does not refer to an existing file for the specified request token");
 			}
-			TSURLReturnStatus surlRetStatus;
-			try {
-				surlRetStatus = new TSURLReturnStatus(surl, status);
-			} catch (InvalidTSURLReturnStatusAttributeException e) {
-				// Never thrown
-				throw new IllegalStateException(
-					"Unexpected InvalidTSURLReturnStatusAttributeException "
-						+ "in building TReturnStatus: " + e.getMessage());
-			}
+			TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
 			returnStatuses.addTSurlReturnStatus(surlRetStatus);
 		}
 		return returnStatuses;
@@ -459,17 +443,23 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			// 3- compute the checksum and store it in an extended attribute
 			LocalFile localFile = stori.getLocalFile();
 
+			VirtualFSInterface vfs = null;
+			try {
+				vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
+			} catch (NamespaceException e) {
+				log.error(e.getMessage());
+				continue;
+			}
+			
 			// 4- Tape stuff management.
-			if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+			if (vfs.getStorageClassType().isTapeEnabled()) {
 				String fileAbosolutePath = localFile.getAbsolutePath();
 				StormEA.removePinned(fileAbosolutePath);
 				StormEA.setPremigrate(fileAbosolutePath);
 			}
 
-			// 5- Update FreeSpace into DB
-			SpaceUpdaterHelperInterface sh = SpaceUpdaterHelperFactory
-				.getSpaceUpdaterHelper(stori.getVirtualFileSystem());		
-			sh.increaseUsedSpace(stori.getVirtualFileSystem(), localFile.getSize());
+			// 5- Update UsedSpace into DB
+			vfs.increaseUsedSpace(localFile.getSize());
 		}
 	}
 

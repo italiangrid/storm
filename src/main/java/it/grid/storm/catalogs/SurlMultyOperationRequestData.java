@@ -3,7 +3,6 @@ package it.grid.storm.catalogs;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -73,25 +72,8 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 		}
 		HashMap<TSURL, TReturnStatus> surlStatusMap = new HashMap<TSURL, TReturnStatus>(
 			1);
-		surlStatusMap.put(surl, buildStatus(code, explanation));
+		surlStatusMap.put(surl, new TReturnStatus(code, explanation));
 		return surlStatusMap;
-	}
-
-	private static TReturnStatus buildStatus(TStatusCode statusCode,
-		String explaination) throws IllegalArgumentException, IllegalStateException {
-
-		if (statusCode == null) {
-			throw new IllegalArgumentException(
-				"Unable to build the status, null arguments: statusCode=" + statusCode);
-		}
-		try {
-			return new TReturnStatus(statusCode, explaination);
-		} catch (InvalidTReturnStatusAttributeException e1) {
-			// Never thrown
-			throw new IllegalStateException(
-				"Unexpected InvalidTReturnStatusAttributeException "
-					+ "in building TReturnStatus: " + e1.getMessage());
-		}
 	}
 
 	@Override

@@ -23,7 +23,6 @@ import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -227,13 +226,7 @@ public class RequestSummaryCatalog {
 				log.warn("RequestSummaryDataTO retrieved StatusCode was not "
 					+ "recognised: {}", to.getStatus());
 			} else {
-				try {
-					status = new TReturnStatus(code, to.getErrstring());
-				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unable to build TReturnStatus from {} {}. "
-						+ "InvalidTReturnStatusAttributeException: {}", code, 
-						to.getErrstring(), e.getMessage());
-				}
+				status = new TReturnStatus(code, to.getErrstring());
 			}
 		}
 		data.setUserToken(to.getUserToken());

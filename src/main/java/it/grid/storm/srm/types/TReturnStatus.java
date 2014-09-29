@@ -84,10 +84,11 @@ public class TReturnStatus implements Serializable {
 	 * Can be Explanation String a null value?
 	 */
 	public TReturnStatus(TStatusCode statusCode, String explanation)
-		throws InvalidTReturnStatusAttributeException {
+		throws IllegalArgumentException {
 
 		if (statusCode == null) {
-			throw new InvalidTReturnStatusAttributeException(statusCode);
+			throw new IllegalArgumentException("Invalid TReturnStatus statusCode: "
+				+ statusCode);
 		}
 		this.statusCode = statusCode;
 		this.setExplanation(explanation);
@@ -107,15 +108,9 @@ public class TReturnStatus implements Serializable {
 	}
 
 	public static TReturnStatus getInitialValue() {
-
-		TReturnStatus result = null;
-		try {
-			result = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS,
-				"Initial status..");
-		} catch (InvalidTReturnStatusAttributeException e) {
-			// Never Happen!!
-		}
-		return result;
+	
+		return new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS,
+			"Initial status..");
 	}
 
 	/**
@@ -210,10 +205,7 @@ public class TReturnStatus implements Serializable {
 
 	public boolean isSRM_SUCCESS() {
 
-		if (statusCode.equals(TStatusCode.SRM_SUCCESS))
-			return true;
-		else
-			return false;
+		return statusCode.equals(TStatusCode.SRM_SUCCESS);
 	}
 
 	public void extendExplaination(String string) {

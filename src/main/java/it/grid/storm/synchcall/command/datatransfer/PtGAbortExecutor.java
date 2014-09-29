@@ -29,7 +29,6 @@ import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -55,7 +54,6 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 
 	static Configuration config = Configuration.getInstance();
 	private static int maxLoopTimes = PtGAbortExecutor.config.getMaxLoop();
-	// private static int maxLoopTimes = 100;
 
 	private static final Logger log = LoggerFactory
 		.getLogger(PtGAbortExecutor.class);
@@ -94,7 +92,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		} catch (UnknownTokenException e) {
 			PtGAbortExecutor.log
 				.debug("PtGAbortExecutor: Request - Invalid request token");
-			globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 				"Invalid request token");
 			outputData.setReturnStatus(globalStatus);
 			outputData.setArrayOfFileStatuses(null);
@@ -106,7 +104,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		} catch (ExpiredTokenException e) {
 			log.info("The request is expired: ExpiredTokenException: "
 				+ e.getMessage());
-			globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 				"Request expired");
 			outputData.setReturnStatus(globalStatus);
 			outputData.setArrayOfFileStatuses(null);
@@ -118,7 +116,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		if (surlStatusMap.isEmpty()) {
 			PtGAbortExecutor.log
 				.debug("PtGAbortExecutor: Request - Invalid request token");
-			globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 				"Invalid request token");
 			outputData.setReturnStatus(globalStatus);
 			outputData.setArrayOfFileStatuses(null);
@@ -154,7 +152,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 							.debug("PtGAbortExecutor: requested SURL NOT found, invalid file request");
 						TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 						surlReturnStatus.setSurl(surl);
-						surlReturnStatus.setStatus(manageStatus(
+						surlReturnStatus.setStatus(new TReturnStatus(
 							TStatusCode.SRM_INVALID_PATH,
 							"SURL specified does not referes to this request token."));
 						log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
@@ -171,7 +169,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		if (surlStatusMap.isEmpty()) {
 			log
 				.debug("Abort Request - No surl specified associated to request token");
-			globalStatus = manageStatus(TStatusCode.SRM_FAILURE,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
 				"All surl specified does not referes to the request token.");
 			outputData.setReturnStatus(globalStatus);
 			outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
@@ -237,7 +235,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 						PtGAbortExecutor.log
 							.debug("PtGAbortExecutor: CHUNK already aborted!");
 						surlReturnStatus.setSurl(surlStatus.getKey());
-						surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+						surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
 							"File request successfully aborted."));
 					} else {
 						// Chunk not ABORTED. We have to work...
@@ -249,7 +247,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 						} catch (ExpiredTokenException e) {
 							log.info("The request is expired: ExpiredTokenException: "
 								+ e.getMessage());
-							globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+							globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 								"Request expired");
 							outputData.setReturnStatus(globalStatus);
 							outputData.setArrayOfFileStatuses(null);
@@ -310,7 +308,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 				} catch (UnknownTokenException e) {
 					log
 						.warn("PtGAbortExecutor: Request - Invalid request token, probably it is expired");
-					globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+					globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 						"Expired request token");
 					outputData.setReturnStatus(globalStatus);
 					outputData.setArrayOfFileStatuses(null);
@@ -322,7 +320,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 				} catch (ExpiredTokenException e) {
 					log.info("The request is expired: ExpiredTokenException: "
 						+ e.getMessage());
-					globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+					globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 						"Request expired");
 					outputData.setReturnStatus(globalStatus);
 					outputData.setArrayOfFileStatuses(null);
@@ -341,7 +339,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		if (chunkAborted < totalSize) {
 			// The ABORT execution is interrupted to prevent a deadlock situation
 			log.warn("Abort: Timeout exceeded.");
-			globalStatus = manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
 				"TimeOut for abort execution exceeded.");
 			outputData.setReturnStatus(globalStatus);
 			outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
@@ -352,22 +350,22 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		}
 
 		if (errorCount == totalSize) {
-			globalStatus = manageStatus(TStatusCode.SRM_FAILURE, "Abort failed.");
+			globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Abort failed.");
 		} else {
 			if (errorCount > 0) {
 				if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
-					globalStatus = manageStatus(TStatusCode.SRM_FAILURE,
+					globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
 						"Some chunks failed.");
 				} else {
-					globalStatus = manageStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+					globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
 						"Some chunks failed.");
 				}
 			} else {
-				globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
+				globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
 					"Abort request completed.");
 				if ((inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES))) {
-					TReturnStatus requestStatus = manageStatus(TStatusCode.SRM_ABORTED,
-						"Request Aborted.");
+					TReturnStatus requestStatus = new TReturnStatus(
+						TStatusCode.SRM_ABORTED, "Request Aborted.");
 					RequestSummaryCatalog.getInstance().updateGlobalStatus(
 						inputData.getRequestToken(), requestStatus);
 				}
@@ -407,18 +405,6 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 	 * @return returnStatus returnStatus
 	 */
 
-	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-
-		TReturnStatus returnStatus = null;
-		try {
-			returnStatus = new TReturnStatus(statusCode, explanation);
-		} catch (InvalidTReturnStatusAttributeException ex1) {
-			PtGAbortExecutor.log.debug("AbortExecutor : Error creating returnStatus "
-				+ ex1);
-		}
-		return returnStatus;
-	}
-
 	/**
 	 * 
 	 * Manage the roll back needed to execute an abort request.
@@ -435,16 +421,12 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 		TSURL surl, TReturnStatus status) throws ExpiredTokenException {
 
 		/* Query the DB to update the Chunk status */
-		// PtGChunkCatalog getCatalog = PtGChunkCatalog.getInstance();
 
 		/******************************* Phase (3) ************************************/
 
 		TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 		surlReturnStatus.setSurl(surl);
 		// Check also for the SRM_QUEUED status, in case Phase 1 or Phase2
-		// if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_FILE_PINNED))||
-		// (chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
-		// )
 		if (TStatusCode.SRM_FILE_PINNED.equals(status.getStatusCode())
 			|| TStatusCode.SRM_REQUEST_QUEUED.equals(status.getStatusCode())) { // some
 																																					// other
@@ -492,30 +474,24 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
 			}
 
 			// surlReturnStatus.setSurl(chunkData.getSURL());
-			surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+			surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
 				"File request successfully aborted."));
 		} else {
 			// The Chunk is in a SRM_Status from wich an Abort operation is not
-			// possible! (SRM_FAILURE or
-			// SRM_SUCCESS)
+			// possible! (SRM_FAILURE or SRM_SUCCESS)
 			// surlReturnStatus.setSurl(chunkData.getSURL());
 
 			// Create different case that depends on the CHUNK status!
 
-			// if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_FILE_LIFETIME_EXPIRED)))
-			// {
 			if (TStatusCode.SRM_FILE_LIFETIME_EXPIRED.equals(status.getStatusCode())) {
-				surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,
+				surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
 					"Request is in a final status. Abort not allowed."));
-				// } else
-				// if((chunkData.getStatus().getStatusCode().equals(TStatusCode.SRM_RELEASED)))
-				// {
 			} else {
 				if (TStatusCode.SRM_RELEASED.equals(status.getStatusCode())) {
-					surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,
+					surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
 						"Request is in a final status. Abort not allowed."));
 				} else {
-					surlReturnStatus.setStatus(manageStatus(TStatusCode.SRM_FAILURE,
+					surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
 						"Abort request not executed."));
 				}
 			}

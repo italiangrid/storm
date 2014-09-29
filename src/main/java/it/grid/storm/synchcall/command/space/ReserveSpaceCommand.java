@@ -39,7 +39,6 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TAccessLatency;
@@ -87,8 +86,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   private NamespaceInterface namespace;
 
-  private static final boolean SUCCESS = true;
-  private static final boolean FAILURE = false;
   private static final String SRM_COMMAND = "srmReserveSpace";
 
   TStatusCode statusCode = TStatusCode.EMPTY;
@@ -108,11 +105,11 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
   private void logRequestFailure(TStatusCode code, String explanation) {
 
     TReturnStatus status;
-    try {
+//    try {
       status = new TReturnStatus(code, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
-      throw new RuntimeException(e);
-    }
+//    } catch (InvalidTReturnStatusAttributeException e) {
+//      throw new RuntimeException(e);
+//    }
 
     log.error("srmReservespace: request failed with: [status: {}]", status);
   }
@@ -122,11 +119,11 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     TRetentionPolicyInfo rpinfo, TStatusCode code, String explanation) {
 
     TReturnStatus status;
-    try {
+//    try {
       status = new TReturnStatus(code, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
-      throw new RuntimeException(e);
-    }
+//    } catch (InvalidTReturnStatusAttributeException e) {
+//      throw new RuntimeException(e);
+//    }
 
     log.error("srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
       + " desiredSizeOfGuaranteedSpace: {}] with "
@@ -640,21 +637,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     TSpaceToken spaceToken, TLifeTimeInSeconds lifeTime) throws Exception {
 
     TReturnStatus status = null;
-    try {
-      if (!spaceSize.isLowerSpace()) {
-        status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-          "Space Reservation done");
+		if (!spaceSize.isLowerSpace()) {
+			status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+				"Space Reservation done");
 
-      } else {
-        status = new TReturnStatus(TStatusCode.SRM_LOWER_SPACE_GRANTED,
-          "Space Reservation done, lower space granted.");
-      }
-    } catch (InvalidTReturnStatusAttributeException e) {
-      log.debug("InvalidTReturnStatusAttributeException", e);
-      statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Unable to build a valid return status ";
-      throw new Exception(explanation);
-    }
+		} else {
+			status = new TReturnStatus(TStatusCode.SRM_LOWER_SPACE_GRANTED,
+				"Space Reservation done, lower space granted.");
+		}
 
     ReserveSpaceOutputData outputData = null;
     try {
@@ -754,24 +744,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     log.debug("relativeSpaceFN: {}", relativeSpaceFN);
 
     TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
-
-    TSizeInBytes freeSpace;
-    try {
-      long bytesFree = vfs.getFilesystem().getFreeSpace();
-      freeSpace = TSizeInBytes.make(bytesFree, SizeUnit.BYTES);
-    } catch (InvalidTSizeAttributesException e) {
-      log.debug(e.getMessage(), e);
-      statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error while retrieving free Space in underlying Filesystem \n"
-        + e;
-      return manageErrorStatus(statusCode, explanation);
-    } catch (NamespaceException e) {
-      log.debug(e.getMessage(), e);
-      statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-        + e.getMessage();
-      return manageErrorStatus(statusCode, explanation);
-    }
 
     boolean authorize = true;
 
@@ -1065,7 +1037,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     TReturnStatus status = null;
     try {
       status = new TReturnStatus(statusCode, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
+    } catch (IllegalArgumentException e) {
       log.warn(e.getMessage(), e);
     }
 
@@ -1078,7 +1050,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     TReturnStatus status = null;
     try {
       status = new TReturnStatus(statusCode, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
+    } catch (IllegalArgumentException e) {
       log.warn(e.getMessage(), e);
     }
     return status;

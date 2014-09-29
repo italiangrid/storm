@@ -172,7 +172,7 @@ public class WSReturnStatusConverter {
 			if (auxExplanation == null)
 				auxExplanation = "";
 			return new it.grid.storm.srm.types.TReturnStatus(code, auxExplanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
+		} catch (IllegalArgumentException e) {
 			throw new WSConversionException(
 				"Unable to complete conversion for WS TReturnStatus: "
 					+ stub.toString() + "; " + e);

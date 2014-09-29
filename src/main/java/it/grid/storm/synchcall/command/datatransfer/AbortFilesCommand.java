@@ -27,7 +27,6 @@ import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -77,7 +76,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 
 			log.debug("srmAbortFiles: Invalid input parameter specified");
 
-			globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 				"Missing mandatory parameters");
 
 			outputData.setReturnStatus(globalStatus);
@@ -145,7 +144,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 				log.info("Unable to update surls status on token {}: {}", 
 				  requestToken, e.getMessage(), e);
 
-				globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+				globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 					"Invalid request token");
 
 				outputData.setArrayOfFileStatuses(null);
@@ -164,7 +163,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 			  log.info("Expired token: {}. {}",
 			    requestToken, e.getMessage(), e);
 			  
-				globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+				globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 					"Request expired");
 				outputData.setArrayOfFileStatuses(null);
 				
@@ -193,7 +192,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 		} else {
 
 			arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
-			globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
 				"Abort sucessfully completed.");
 			outputData.setReturnStatus(globalStatus);
 
@@ -201,7 +200,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 				for (int i = 0; i < surlArray.size(); i++) {
 					TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
 					surlRetStatus.setSurl(surlArray.getTSURL(i));
-					surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+					surlRetStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
 						"File request aborted."));
 					
 					CommandHelper.printSurlOutcome(
@@ -262,14 +261,14 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 		} else {
 
 			arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
-			globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
+			globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
 				"Abort sucessfully completed.");
 			outputData.setReturnStatus(globalStatus);
 			if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
 				for (int i = 0; i < surlArray.size(); i++) {
 					TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
 					surlRetStatus.setSurl(surlArray.getTSURL(i));
-					surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+					surlRetStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
 						"File request aborted."));
 
 					CommandHelper.printSurlOutcome(
@@ -321,7 +320,7 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 				} else {
 				  log.debug("srmAbortFiles : Invalid input parameter specified");
 
-					globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+					globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
 						"Invalid request token. Abort only works for PtG, PtP and Copy.");
 					
 					CommandHelper.printRequestOutcome(
@@ -339,16 +338,16 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 		}
 	}
 
-	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-
-		TReturnStatus returnStatus = null;
-		try {
-			returnStatus = new TReturnStatus(statusCode, explanation);
-		} catch (InvalidTReturnStatusAttributeException ex1) {
-			log.debug("AbortExecutor : Error creating returnStatus: {}", 
-			  ex1.getMessage(), ex1);
-		}
-		return returnStatus;
-	}
+//	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
+//
+//		TReturnStatus returnStatus = null;
+//		try {
+//			returnStatus = new TReturnStatus(statusCode, explanation);
+//		} catch (IllegalArgumentException ex1) {
+//			log.debug("AbortExecutor : Error creating returnStatus: {}", 
+//			  ex1.getMessage(), ex1);
+//		}
+//		return returnStatus;
+//	}
 
 }

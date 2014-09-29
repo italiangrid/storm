@@ -45,8 +45,6 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.space.SpaceUpdaterHelperFactory;
-import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -467,6 +465,11 @@ public class PtP implements Delegable, Chooser, Request {
 			log.error("ERROR in PtPChunk! Filesystem was unable to successfully "
 				+ "create directory: {}", fileStoRI.getLocalFile().toString());
 			return false;
+		} catch (NamespaceException e) {
+			requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+			failure = true;
+			log.error("ERROR in PtPChunk! {}", e.getMessage());
+			return false;
 		}
 
 		if (requestData instanceof IdentityInputData) {
@@ -482,12 +485,13 @@ public class PtP implements Delegable, Chooser, Request {
 	 * @param fileStoRI
 	 * @return
 	 * @throws IllegalStateException 
+	 * @throws NamespaceException 
 	 */
-	private boolean verifyPath(StoRI fileStoRI) throws IllegalStateException {
+	private boolean verifyPath(StoRI fileStoRI) throws IllegalStateException,
+		NamespaceException {
 
 		boolean automaticDirectoryCreation = Configuration.getInstance()
 				.getAutomaticDirectoryCreation();
-		
 		int toCreate = 0;
 		for (StoRI parentStoRI : fileStoRI.getParents()) {
 			LocalFile f = parentStoRI.getLocalFile();
@@ -513,7 +517,8 @@ public class PtP implements Delegable, Chooser, Request {
 				throw new SecurityException("Local filesystem error: "
 					+ "could not crete directory!");
 			}
-			updateUsedSpace(fileStoRI, toCreate);
+			updateUsedSpace(NamespaceDirector.getNamespace()
+				.resolveVFSbyLocalFile(fileStoRI.getLocalFile()), toCreate);
 		}
 		return true;
 	}
@@ -545,14 +550,12 @@ public class PtP implements Delegable, Chooser, Request {
 		return true;
 	}
 
-	private void updateUsedSpace(StoRI stori, int numDirs) {
+	private void updateUsedSpace(VirtualFSInterface vfs, int numDirs) {
 				
 		long dirSize = new File("/tmp").length();
 		long usedSize = dirSize * numDirs;
 		if (usedSize > 0) {
-			SpaceUpdaterHelperInterface sh = SpaceUpdaterHelperFactory
-				.getSpaceUpdaterHelper(stori.getVirtualFileSystem());		
-			sh.increaseUsedSpace(stori.getVirtualFileSystem(), usedSize);
+			vfs.increaseUsedSpace(usedSize);
 		}
 	}
 
