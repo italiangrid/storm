@@ -28,7 +28,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SURLStatusDAO implements SURLStatusManager{
+public class SURLStatusDAO {
 
   public static final Logger log = LoggerFactory.getLogger(SURLStatusDAO.class);
 
@@ -150,6 +150,7 @@ public class SURLStatusDAO implements SURLStatusManager{
       closeConnection(con);
     }
   }
+
   public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
 
     surlSanityChecks(surls);
@@ -184,6 +185,7 @@ public class SURLStatusDAO implements SURLStatusManager{
       closeConnection(con);
     }
   }
+
   public void releaseSURL(TSURL surl) {
 
     surlSanityChecks(surl);
@@ -252,31 +254,34 @@ public class SURLStatusDAO implements SURLStatusManager{
     }
   }
 
-  private TSURL surlFromString(String s){
-    try{
-      
-     return TSURL.makeFromStringWellFormed(s); 
-    
-    }catch(InvalidTSURLAttributesException e){
-      throw new IllegalArgumentException("Error creating surl from string: "+s,
-        e);
+  private TSURL surlFromString(String s) {
+
+    try {
+
+      return TSURL.makeFromStringWellFormed(s);
+
+    } catch (InvalidTSURLAttributesException e) {
+      throw new IllegalArgumentException("Error creating surl from string: "
+        + s, e);
     }
   }
-  
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc){
-    
+
+  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc) {
+
     return returnStatusFromStatusCode(sc, null);
   }
-  
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc, 
-    String explanation){
+
+  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc,
+    String explanation) {
+
     try {
       return new TReturnStatus(sc, explanation);
     } catch (InvalidTReturnStatusAttributeException e) {
       throw new IllegalArgumentException(e);
     }
-    
+
   }
+
   private Map<TSURL, TReturnStatus> buildStatusMap(ResultSet rs)
     throws SQLException {
 
@@ -289,14 +294,14 @@ public class SURLStatusDAO implements SURLStatusManager{
     while (rs.next()) {
       TSURL surl = surlFromString(rs.getString(1));
       TStatusCode sc = converter.toSTORM(rs.getInt(2));
-          
+
       statusMap.put(surl, returnStatusFromStatusCode(sc));
     }
-    
+
     return statusMap;
 
   }
-  
+
   private Map<TSURL, TReturnStatus> getPtGSURLStatuses(TRequestToken token) {
 
     tokenSanityChecks(token);
@@ -350,21 +355,22 @@ public class SURLStatusDAO implements SURLStatusManager{
       return buildStatusMap(rs);
 
     } catch (SQLException e) {
-    
+
       String msg = String.format("%s: SQL error: %s", "getPtPSURLStatuses",
         e.getMessage());
       log.error(msg, e);
       throw new RuntimeException(msg, e);
-   
+
     } finally {
       closeStatetement(stat);
       closeResultSet(rs);
       closeConnection(con);
     }
-   
+
   }
 
   private Map<TSURL, TReturnStatus> getBoLSURLStatuses(TRequestToken token) {
+
     tokenSanityChecks(token);
 
     ResultSet rs = null;
@@ -384,12 +390,12 @@ public class SURLStatusDAO implements SURLStatusManager{
       return buildStatusMap(rs);
 
     } catch (SQLException e) {
-    
+
       String msg = String.format("%s: SQL error: %s", "getPtPSURLStatuses",
         e.getMessage());
       log.error(msg, e);
       throw new RuntimeException(msg, e);
-   
+
     } finally {
       closeStatetement(stat);
       closeResultSet(rs);
@@ -399,35 +405,34 @@ public class SURLStatusDAO implements SURLStatusManager{
   }
 
   private Map<TSURL, TReturnStatus> filterSURLStatuses(
-    Map<TSURL, TReturnStatus> statuses,
-    List<TSURL> surls) {
-    
+    Map<TSURL, TReturnStatus> statuses, List<TSURL> surls) {
+
     List<TSURL> surlsCopy = new ArrayList<TSURL>(surls);
-    
-    // Keep only the SURLs really requested. 
+
+    // Keep only the SURLs really requested.
     statuses.keySet().retainAll(surls);
-    
+
     // The surls that are not in the statuses key set
     // are those not linked to the actual token
     // (this is an error in the request)
     surlsCopy.removeAll(statuses.keySet());
-    
+
     // Add a failure state for the surls that were
     // requested but are not linked to the token
-    for (TSURL s: surlsCopy){
+    for (TSURL s : surlsCopy) {
       TReturnStatus rs = returnStatusFromStatusCode(TStatusCode.SRM_FAILURE,
         "SURL not linked to passed request token.");
       statuses.put(s, rs);
     }
-    
+
     return statuses;
   }
-  
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token, 
+
+  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
     List<TSURL> surls) {
 
     TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
-    
+
     switch (rt) {
     case PREPARE_TO_GET:
       return filterSURLStatuses(getPtGSURLStatuses(token), surls);
@@ -444,17 +449,17 @@ public class SURLStatusDAO implements SURLStatusManager{
       throw new IllegalArgumentException(msg);
     }
   }
-  
+
   public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
 
     TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
 
     if (rt.isEmpty())
       throw new UnknownTokenException(token.getValue());
-    
+
     if (token.hasExpirationDate() && token.isExpired())
       throw new ExpiredTokenException(token.getValue());
-    
+
     switch (rt) {
     case PREPARE_TO_GET:
       return getPtGSURLStatuses(token);
@@ -516,103 +521,40 @@ public class SURLStatusDAO implements SURLStatusManager{
 
   }
 
-  @Override
-  public boolean isSURLBusy(TSURL surl) {
-    return false;
+  private void updateStatus(TRequestType rt, TRequestToken token, TSURL surl,
+    TStatusCode code, String explanation) {
+
+    switch (rt) {
+
+    case PREPARE_TO_GET:
+      PtGChunkCatalog.getInstance()
+        .updateStatus(token, surl, code, explanation);
+      break;
+
+    case PREPARE_TO_PUT:
+      PtPChunkCatalog.getInstance()
+        .updateStatus(token, surl, code, explanation);
+      break;
+
+    default:
+      throw new IllegalArgumentException("Unsupported request type for "
+        + "updateStatus: " + rt.getValue());
+    }
   }
 
-  @Override
-  public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isSURLPinned(TSURL surl) {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
-
-    
-    
-  }
-
-
-  @Override
-  public void abortRequest(TRequestToken token, String explanation) {
-  	
-    
-    
-  }
-
-  private void updateStatus(TRequestType rt, 
-  	TRequestToken token, TSURL surl, TStatusCode code, String explanation){
-  	
-  	switch(rt){
-  	
-  		case PREPARE_TO_GET:
-  			PtGChunkCatalog.getInstance()
-  				.updateStatus(token, surl, code, explanation);
-  			break;
-  			
-  		case PREPARE_TO_PUT:
-  			PtPChunkCatalog.getInstance()
-  				.updateStatus(token, surl, code, explanation);
-  			break;
-  			
-  		default:
-  			throw new IllegalArgumentException("Unsupported request type for "
-  				+ "updateStatus: "+rt.getValue());
-  	}
-  }
-  
-  private void abortPTGRequest(TRequestToken token, 
-  	TSURL surl, String explanation) {
-
-    
-  }
-  
-  private void abortPTPRequest(TRequestToken token, 
-  	TSURL surl, String explanation) {
-
-    
-  }
-  
-  private void abortBoLRequest(TRequestToken token, 
-  	TSURL surl, String explanation) {
-
-    
-  }
-
-  @Override
-  public void abortRequestForSURL(TRequestToken token, TSURL surl,
+  private void abortPTGRequest(TRequestToken token, TSURL surl,
     String explanation) {
 
-    
-    
   }
 
-  @Override
-  public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
+  private void abortPTPRequest(TRequestToken token, TSURL surl,
+    String explanation) {
 
-  	
-    
   }
 
-  @Override
-  public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
+  private void abortBoLRequest(TRequestToken token, TSURL surl,
+    String explanation) {
 
-    
   }
 
-	@Override
-	public void failRequestForSURL(TRequestToken token, TSURL surl,
-		TStatusCode code, String explanation) {
-
-		
-		
-	}
 }

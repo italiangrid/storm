@@ -139,7 +139,7 @@ public interface SURLStatusManager {
   public void abortAllGetRequestsForSURL(TSURL surl, String explanation);
   
   /**
-   * Sets the failed state for a SURL in the request with the give token.
+   * Sets the failed state for a SURL in the request with the given token.
    *  
    * @param token the request token
    * @param surl the surl that has the failure
