@@ -36,9 +36,6 @@ import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -819,5 +816,5 @@ public class LocalFile {
 
 		return localFile.getCanonicalPath();
 	}
-	
+
 }

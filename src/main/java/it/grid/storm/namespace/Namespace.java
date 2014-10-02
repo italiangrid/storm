@@ -280,7 +280,7 @@ public class Namespace implements NamespaceInterface {
 				"The requested SURL is not managed by this instance of StoRM");
 		}
 		log.debug("{} belongs to {}", realPath, targetVFS.getAliasName());
-			
+		
 		/* check if target VFS is approachable */
 		if (!vfsApproachable.contains(targetVFS)) {
 			String msg = String.format("%s is not approachable by the user",

@@ -452,10 +452,8 @@ public class PtP implements Delegable, Chooser, Request {
 		throws CannotMapUserException {
 
 	  if (!preparePath(fileStoRI)) {
-	    
+	    return false;
 	  }
-		
-
 		if (requestData instanceof IdentityInputData) {
 			LocalUser user = ((IdentityInputData) requestData).getUser()
 				.getLocalUser();
