@@ -122,7 +122,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
 		LSOutputData outputData = new LSOutputData();
 		LSInputData inputData = (LSInputData) data;
-		TReturnStatus globalStatus = TReturnStatus.getInitialValue();
+		TReturnStatus globalStatus = null;
 		@SuppressWarnings("unused")
 		TRequestToken requestToken = null; // Not used (now LS is synchronous).
 

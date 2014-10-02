@@ -48,8 +48,7 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
-import it.grid.storm.space.NullSpaceUpdaterHelper;
-import it.grid.storm.space.SimpleSpaceUpdaterHelper;
+import it.grid.storm.space.SpaceUpdaterHelperFactory;
 import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -136,6 +135,7 @@ public class VirtualFS implements VirtualFSInterface {
 	public void setFSType(String type) {
 
 		this.type = type;
+		initializeSpaceUpdaterHelper();
 	}
 
 	public void setFSDriver(Class fsDriver) throws NamespaceException {
@@ -162,12 +162,7 @@ public class VirtualFS implements VirtualFSInterface {
 
 	private void initializeSpaceUpdaterHelper() {
 		
-		String name = spaceSystemDriver.getName();
-		if (name.equals(GPFSSpaceSystem.class.getName())) {
-			spaceUpdater = new NullSpaceUpdaterHelper();
-			return;
-		}
-		spaceUpdater = new SimpleSpaceUpdaterHelper();
+	  spaceUpdater = SpaceUpdaterHelperFactory.getSpaceUpdaterHelper(this);
 	}
 
 	@Override
@@ -183,7 +178,6 @@ public class VirtualFS implements VirtualFSInterface {
 		}
 		
 		this.spaceSystemDriver = spaceDriver;
-		initializeSpaceUpdaterHelper();
 	}
 	
 	public void setDefaultValues(DefaultValuesInterface defValue) {

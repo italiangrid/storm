@@ -124,38 +124,38 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 		}
 	}
 
-	@Override
-	protected final void setStatus(TStatusCode statusCode, String explanation) {
-
-		super.setStatus(statusCode, explanation);
-		if (!(this instanceof PersistentChunkData)) {
-			try {
-				if (explanation == null) {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
-						this.SURL, statusCode);
-				} else {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
-						this.SURL, statusCode, explanation);
-				}
-			} catch (IllegalArgumentException e) {
-				log.error(e.getMessage(), e);
-				// Never thrown
-				throw new IllegalStateException("Unexpected IllegalArgumentException "
-					+ "in updating status store: " + e.getMessage());
-			} catch (UnknownTokenException e) {
-				// Never thrown
-				log.warn("Received an UnknownTokenException, probably the token has "
-					+ "expired, unable to update its status in the store: {}", 
-					e.getMessage());
-			} catch (ExpiredTokenException e) {
-				log.warn("Received an ExpiredTokenException. The token is expired, "
-					+ "unable to update its status in the store: {}", e.getMessage());
-			} catch (UnknownSurlException e) {
-				log.warn("Received an UnknownSurlException, probably the token has "
-					+ "expired, unable to update its status in the store: {}", 
-					e.getMessage());
-			}
-		}
-	}
+//	@Override
+//	protected final void setStatus(TStatusCode statusCode, String explanation) {
+//
+//		super.setStatus(statusCode, explanation);
+//		if (!(this instanceof PersistentChunkData)) {
+//			try {
+//				if (explanation == null) {
+//					SurlStatusStore.getInstance().update(generatedRequestToken,
+//						this.SURL, statusCode);
+//				} else {
+//					SurlStatusStore.getInstance().update(generatedRequestToken,
+//						this.SURL, statusCode, explanation);
+//				}
+//			} catch (IllegalArgumentException e) {
+//				log.error(e.getMessage(), e);
+//				// Never thrown
+//				throw new IllegalStateException("Unexpected IllegalArgumentException "
+//					+ "in updating status store: " + e.getMessage());
+//			} catch (UnknownTokenException e) {
+//				// Never thrown
+//				log.warn("Received an UnknownTokenException, probably the token has "
+//					+ "expired, unable to update its status in the store: {}", 
+//					e.getMessage());
+//			} catch (ExpiredTokenException e) {
+//				log.warn("Received an ExpiredTokenException. The token is expired, "
+//					+ "unable to update its status in the store: {}", e.getMessage());
+//			} catch (UnknownSurlException e) {
+//				log.warn("Received an UnknownSurlException, probably the token has "
+//					+ "expired, unable to update its status in the store: {}", 
+//					e.getMessage());
+//			}
+//		}
+//	}
 
 }

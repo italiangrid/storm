@@ -39,6 +39,7 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
@@ -52,6 +53,16 @@ import it.grid.storm.synchcall.surl.UnknownSurlException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+class RmException extends SRMCommandException {
+
+  private static final long serialVersionUID = 1L;
+
+  public RmException(TStatusCode code, String message) {
+
+    super(code, message);
+  }
+}
+
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
@@ -61,22 +72,6 @@ import org.slf4j.LoggerFactory;
  */
 
 public class RmCommand implements Command {
-
-	class RmException extends Exception {
-
-		private static final long serialVersionUID = 1L;
-		
-		private TReturnStatus returnStatus;
-		
-		public RmException(TStatusCode code, String message) {
-			super(message);
-			this.returnStatus = CommandHelper.buildStatus(code, message);
-		}
-		
-		public TReturnStatus getReturnStatus() {
-			return returnStatus;
-		}
-	}
 	
 	private static final String SRM_COMMAND = "srmRm";
 	private static final Logger log = LoggerFactory.getLogger(RmCommand.class);

@@ -483,12 +483,8 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			root = parserUtil.getFSRoot(name);
 			vfs.setRoot(root);
 			verboseLog("VFS(" + name + ").root = '" + root + "'");
-			// log.debug("VFS(" + i + ").root = '" + root + "'");
 
-			// verboseLog("VFS fs driver name:" + name + ", util: " +
-			// parserUtil.getFSDriver(name) + "!");
 			driver = Class.forName(parserUtil.getFSDriver(name));
-			// verboseLog("FS-Driver createed!");
 			vfs.setFSDriver(driver);
 			verboseLog("VFS(" + name + ").fsDriver [CLASS Name] = '"
 				+ driver.getName() + "'");

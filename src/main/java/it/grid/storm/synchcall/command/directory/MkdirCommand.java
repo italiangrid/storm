@@ -38,6 +38,7 @@ import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -56,22 +57,14 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class MkdirException extends Exception {
+class MkdirException extends SRMCommandException {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private TReturnStatus returnStatus;
+  public MkdirException(TStatusCode code, String message) {
 
-	public MkdirException(TStatusCode code, String message) {
-
-		super(message);
-		this.returnStatus = new TReturnStatus(code, message);
-	}
-
-	public TReturnStatus getReturnStatus() {
-
-		return returnStatus;
-	}
+    super(code, message);
+  }
 }
 
 /**

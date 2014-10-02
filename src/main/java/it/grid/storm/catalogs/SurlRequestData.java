@@ -19,7 +19,6 @@ package it.grid.storm.catalogs;
 
 import java.util.Map;
 
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
@@ -40,13 +39,10 @@ public abstract class SurlRequestData implements RequestData {
 	protected TReturnStatus status;
 
 	public SurlRequestData(TSURL toSURL, TReturnStatus status)
-		throws InvalidSurlRequestDataAttributesException {
+		throws IllegalArgumentException {
 
-		if (toSURL == null || status == null || status.getStatusCode() == null) {
-			throw new InvalidSurlRequestDataAttributesException(toSURL, status);
-		}
-		this.SURL = toSURL;
-		this.status = status;
+		setSURL(toSURL);
+		setStatus(status);
 	}
 
 	/**
@@ -66,30 +62,32 @@ public abstract class SurlRequestData implements RequestData {
 
 		return status;
 	}
-
+	
+	public void setSURL(TSURL surl) {
+	  
+	  if (surl == null) {
+	    throw new IllegalArgumentException("SurlRequestData: SURL is null");
+	  }
+	  this.SURL = surl;
+	}
+	
 	/**
 	 * Method used to set the Status associated to this chunk. If status is null,
 	 * then nothing gets set!
+	 * @throws InvalidSurlRequestDataAttributesException 
 	 */
-	public void setStatus(TReturnStatus newstat) {
+  public void setStatus(TReturnStatus status)
+    throws IllegalArgumentException {
 
-		if (newstat != null) {
-			status = newstat;
-		}
+	  if (status == null) {
+      throw new IllegalArgumentException("SurlRequestData: status is null");
+    }
+		this.status = status;
 	}
 
-	protected void setStatus(TStatusCode statusCode, String explanation) {
+  protected void setStatus(TStatusCode statusCode, String explanation) {
 
-		try {
-			if (explanation == null) {
-				status = new TReturnStatus(statusCode);
-			} else {
-				status = new TReturnStatus(statusCode, explanation);
-			}
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.error("Unable to set SRM request status to [{},{}]. Error: {}", 
-				statusCode.getValue(), explanation, e.getMessage(), e);
-		}
+	  setStatus(new TReturnStatus(statusCode, explanation));
 	}
 
 	/**

@@ -13,7 +13,7 @@ class ModifiableReturnStatus extends TReturnStatus {
 	public ModifiableReturnStatus(TReturnStatus status)
 		throws InvalidTReturnStatusAttributeException {
 
-		super(status);
+		super(status.getStatusCode(), status.getExplanation());
 	}
 
 	/**

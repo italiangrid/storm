@@ -35,6 +35,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -49,22 +50,14 @@ import it.grid.storm.synchcall.data.directory.RmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirOutputData;
 
 
-class RmdirException extends Exception {
+class RmdirException extends SRMCommandException {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private TReturnStatus returnStatus;
+  public RmdirException(TStatusCode code, String message) {
 
-	public RmdirException(TStatusCode code, String message) {
-
-		super(message);
-		this.returnStatus = new TReturnStatus(code, message);
-	}
-
-	public TReturnStatus getReturnStatus() {
-
-		return returnStatus;
-	}
+    super(code, message);
+  }
 }
 
 class TSize {

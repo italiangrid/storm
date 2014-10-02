@@ -52,30 +52,8 @@ public class TReturnStatus implements Serializable {
 	public static final String PNAME_RETURNSTATUS = "returnStatus";
 	public static final String PNAME_STATUS = "status";
 
-	/**
-	 * Default constructor that makes a TReturnStatus with SRM_CUSTOM_STATUS, and
-	 * explanation String "undefined".
-	 * 
-	 * @throws InvalidTReturnStatusAttributeException
-	 */
-	public TReturnStatus() throws InvalidTReturnStatusAttributeException {
-
-		this(TStatusCode.SRM_CUSTOM_STATUS);
-	}
-
-	public TReturnStatus(TReturnStatus original)
-		throws InvalidTReturnStatusAttributeException {
-
-		if (original == null || original.statusCode == null) {
-			throw new InvalidTReturnStatusAttributeException(statusCode);
-		}
-		this.statusCode = original.statusCode;
-		this.setExplanation(original.getExplanation());
-		updated();
-	}
-
 	public TReturnStatus(TStatusCode statusCode)
-		throws InvalidTReturnStatusAttributeException {
+		throws IllegalArgumentException {
 
 		this(statusCode, UNDEFINED_EXPLANATION);
 	}
@@ -86,31 +64,13 @@ public class TReturnStatus implements Serializable {
 	public TReturnStatus(TStatusCode statusCode, String explanation)
 		throws IllegalArgumentException {
 
-		if (statusCode == null) {
-			throw new IllegalArgumentException("Invalid TReturnStatus statusCode: "
-				+ statusCode);
-		}
-		this.statusCode = statusCode;
-		this.setExplanation(explanation);
-		updated();
+	  setStatusCode(statusCode);
+	  setExplanation(explanation);
 	}
 
 	public TReturnStatus clone() {
 
-		try {
-			return new TReturnStatus(this);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			// never thrown
-			throw new IllegalStateException(
-				"unexpected InvalidTReturnStatusAttributeException "
-					+ "in TReturnStatus: " + e.getMessage());
-		}
-	}
-
-	public static TReturnStatus getInitialValue() {
-	
-		return new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS,
-			"Initial status..");
+		return new TReturnStatus(getStatusCode(), getExplanation());
 	}
 
 	/**
@@ -147,14 +107,14 @@ public class TReturnStatus implements Serializable {
 	protected void setExplanation(String explanationString) {
 
 		if (explanationString == null) {
-			this.explanation = EMPTY_EXPLANATION;
+		  log.warn("TReturnStatus: NULL explanation converted to EMPTY");
+			explanation = EMPTY_EXPLANATION;
 		} else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
-			this.explanation = explanationString;
+			explanation = explanationString;
 		} else {
-			this.explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
-			log.warn(String.format(
-				"Explanation string truncated at %d characters: '%s'",
-				MAX_EXPLANATION_LENGTH, this.explanation));
+			explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
+			log.warn("TReturnStatus: Explanation string truncated at {} characters: "
+			  + "'{}'", MAX_EXPLANATION_LENGTH, explanation);
 		}
 		updated();
 	}
@@ -190,8 +150,8 @@ public class TReturnStatus implements Serializable {
 
 		// Return STATUS OF REQUEST
 		HashMap<String, String> globalStatus = new HashMap<String, String>();
-		globalStatus.put("statusCode", this.getStatusCode().getValue());
-		globalStatus.put("explanation", this.getExplanation());
+		globalStatus.put("statusCode", getStatusCode().getValue());
+		globalStatus.put("explanation", getExplanation());
 
 		// Insert TReturnStatus struct into global Output structure
 		outputParam.put(name, globalStatus);
@@ -210,7 +170,7 @@ public class TReturnStatus implements Serializable {
 
 	public void extendExplaination(String string) {
 
-		this.setExplanation(this.getExplanation() + " [ " + string + " ]");
+		setExplanation(getExplanation() + " [ " + string + " ]");
 	}
 
 	/*
