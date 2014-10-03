@@ -42,7 +42,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;

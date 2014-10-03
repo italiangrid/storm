@@ -4,7 +4,9 @@ package it.grid.storm.catalogs.surl;
 public class SURLStatusManagerFactory {
 
   public static SURLStatusManager newSURLStatusManager(){
-    return new SURLStatusManagerImpl();
+    
+    SURLStatusManager delegate = new SURLStatusManagerImpl(); 
+    return new InMemorySURLStatusManager(delegate);
   }
   
 }

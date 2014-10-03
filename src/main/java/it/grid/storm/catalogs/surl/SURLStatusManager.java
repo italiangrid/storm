@@ -125,6 +125,7 @@ public interface SURLStatusManager {
   
   /**
    * Aborts all ongoing put requests for a given surl
+   * 
    * @param surl the surl for which the requests must be aborted
    * @param explanation a string explaining why the request was aborted
    */

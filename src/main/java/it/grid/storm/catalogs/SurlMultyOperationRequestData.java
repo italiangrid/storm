@@ -1,8 +1,5 @@
 package it.grid.storm.catalogs;
 
-import java.util.HashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -10,10 +7,15 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusStore;
+import it.grid.storm.synchcall.surl.SURLStatusStore;
 import it.grid.storm.synchcall.surl.TokenDuplicationException;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
+
+import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class SurlMultyOperationRequestData extends SurlRequestData
 	implements SynchMultyOperationRequestData {
@@ -40,13 +42,13 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 			while (!stored) {
 				try {
 					if (this instanceof IdentityInputData) {
-						SurlStatusStore.getInstance().store(
+					  SURLStatusStore.INSTANCE.store(
 							generatedRequestToken,
 							((IdentityInputData) this).getUser(),
 							buildSurlStatusMap(SURL, status.getStatusCode(),
 								status.getExplanation()));
 					} else {
-						SurlStatusStore.getInstance().store(
+					  SURLStatusStore.INSTANCE.store(
 							generatedRequestToken,
 							buildSurlStatusMap(SURL, status.getStatusCode(),
 								status.getExplanation()));
@@ -117,10 +119,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 		if (!(this instanceof PersistentChunkData)) {
 			try {
 				if (status.getExplanation() == null) {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
+				  SURLStatusStore.INSTANCE.update(generatedRequestToken,
 						this.SURL, status.getStatusCode());
 				} else {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
+				  SURLStatusStore.INSTANCE.update(generatedRequestToken,
 						this.SURL, status.getStatusCode(), status.getExplanation());
 				}
 			} catch (IllegalArgumentException e) {
@@ -149,10 +151,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
 		if (!(this instanceof PersistentChunkData)) {
 			try {
 				if (explanation == null) {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
+				  SURLStatusStore.INSTANCE.update(generatedRequestToken,
 						this.SURL, statusCode);
 				} else {
-					SurlStatusStore.getInstance().update(generatedRequestToken,
+				  SURLStatusStore.INSTANCE.update(generatedRequestToken,
 						this.SURL, statusCode, explanation);
 				}
 			} catch (IllegalArgumentException e) {
