@@ -138,6 +138,83 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
+  public int abortAllRequestForSURL(TSURL surl) {
+
+    final List<TRequestToken> toBeRemoved = new ArrayList<TRequestToken>();
+
+    for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
+      if (e.getValue().surlStatuses.containsKey(surl)) {
+
+        e.getValue().surlStatuses.remove(surl);
+
+        if (e.getValue().surlStatuses.isEmpty()) {
+          toBeRemoved.add(e.getKey());
+
+        }
+      }
+    }
+
+    final int numAbortedRequests = toBeRemoved.size();
+
+    for (TRequestToken t : toBeRemoved) {
+      statusStore.invalidate(t);
+    }
+
+    return numAbortedRequests;
+  }
+
+  @Override
+  public boolean checkedUpdate(GridUserInterface user, List<TSURL> surls,
+    TStatusCode requiredStatusCode, TStatusCode newStatusCode,
+    String explanation) {
+
+    logger.debug("checkedUpdate: user={}, surls={}, requiredStatusCode={}, "
+      + "newStatusCode={}, explanation={}", user, surls, requiredStatusCode,
+      newStatusCode, explanation);
+
+    boolean statusUpdated = false;
+    for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
+
+      Entry entry = e.getValue();
+
+      if (entry.user != null) {
+
+        if (e.getValue().user.getDn().equals(user.getDn())) {
+
+          for (TSURL s : surls) {
+            if (entry.surlStatuses.containsKey(s)) {
+
+              TStatusCode inCacheStatus = entry.surlStatuses.get(s)
+                .getStatusCode();
+
+              if (!requiredStatusCode.equals(inCacheStatus)) {
+
+                logger.warn("checkedUpdate: status not updated for surl {}. "
+                  + "inCacheStatus does not match requiredStatus. {} != {}", s,
+                  inCacheStatus, requiredStatusCode);
+
+              } else {
+
+                entry.surlStatuses.put(s, new TReturnStatus(newStatusCode,
+                  explanation));
+                statusUpdated = true;
+              }
+
+            }
+          }
+
+          if (!hasInterestingStatus(entry.surlStatuses)) {
+            logger.debug("Evicting entry {}. No interesting statuses.", entry);
+            statusStore.invalidate(entry.token);
+          }
+        }
+      }
+    }
+
+    return statusUpdated;
+  }
+
+  @Override
   public void checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
     TStatusCode requiredStatusCode, TStatusCode newStatusCode,
     String explanation) throws IllegalArgumentException, UnknownTokenException,
@@ -177,6 +254,28 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
       statusStore.invalidate(requestToken);
     }
 
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, List<TSURL> surls) {
+
+    Map<TSURL, TReturnStatus> statusMap = new HashMap<TSURL, TReturnStatus>();
+
+    for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
+      Entry entry = e.getValue();
+      if (entry.user.getDn().equals(user.getDn())) {
+        for (TSURL s : surls) {
+          if (entry.surlStatuses.containsKey(s)
+            && entry.surlStatuses.get(s).getStatusCode()
+              .equals(TStatusCode.SRM_FILE_PINNED)) {
+            statusMap.put(s, entry.surlStatuses.get(s));
+          }
+        }
+      }
+    }
+
+    return statusMap;
   }
 
   @Override
@@ -345,32 +444,6 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
     update(requestToken, Arrays.asList(surl), newStatusCode, explanation);
 
-  }
-
-  @Override
-  public int abortAllRequestForSURL(TSURL surl) {
-
-    final List<TRequestToken> toBeRemoved = new ArrayList<TRequestToken>();
-
-    for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
-      if (e.getValue().surlStatuses.containsKey(surl)) {
-
-        e.getValue().surlStatuses.remove(surl);
-
-        if (e.getValue().surlStatuses.isEmpty()) {
-          toBeRemoved.add(e.getKey());
-
-        }
-      }
-    }
-
-    final int numAbortedRequests = toBeRemoved.size();
-
-    for (TRequestToken t : toBeRemoved) {
-      statusStore.invalidate(t);
-    }
-
-    return numAbortedRequests;
   }
 
 }

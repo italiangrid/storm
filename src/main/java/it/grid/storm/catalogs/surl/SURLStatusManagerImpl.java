@@ -5,6 +5,7 @@ import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -82,7 +83,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
       PtGChunkCatalog.getInstance().updateStatus(token, surl,
         TStatusCode.SRM_ABORTED, explanation);
       break;
-      
+
     case PREPARE_TO_PUT:
       PtPChunkCatalog.getInstance().updateStatus(token, surl,
         TStatusCode.SRM_ABORTED, explanation);
@@ -131,22 +132,6 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   }
 
   @Override
-  public void releaseSURL(TSURL surl) {
-
-    final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.releaseSURL(surl);
-
-  }
-
-  @Override
-  public void releaseSURLs(List<TSURL> surls) {
-
-    final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.releaseSURLs(surls);
-
-  }
-
-  @Override
   public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
@@ -181,6 +166,22 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     }
 
+  }
+
+  @Override
+  public void releaseSURLs(GridUserInterface user, List<TSURL> surls) {
+
+    final SURLStatusDAO dao = new SURLStatusDAO();
+    dao.releaseSURLs(user, surls);
+
+  }
+
+  @Override
+  public Map<TSURL,TReturnStatus> getPinnedSURLsForUser(GridUserInterface user, 
+    List<TSURL> surls){
+
+    final SURLStatusDAO dao = new SURLStatusDAO();
+    return dao.getPinnedSURLsForUser(user, surls);
   }
 
 }

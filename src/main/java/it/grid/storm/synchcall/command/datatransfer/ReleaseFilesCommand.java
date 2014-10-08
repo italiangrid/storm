@@ -20,6 +20,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -31,6 +32,7 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DataTransferCommand;
+import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputData;
@@ -157,7 +159,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
     TReturnStatus returnStatus = CommandHelper.buildStatus(
       TStatusCode.SRM_INVALID_REQUEST,
-      "No SURLs found matching input request token or list of SURLs.");
+      "No SURLs found matching user, input request token or list of SURLs.");
 
     logRequestOutcome(returnStatus, in);
 
@@ -185,14 +187,25 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         "Release files: invalid argument type: " + inputData.getClass());
     }
 
-    Map<TSURL, TReturnStatus> surlStatuses;
+    Map<TSURL, TReturnStatus> surlStatuses = null;
 
     SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
 
+    TRequestToken token = getTokenFromInputData(inputData);
+    GridUserInterface user = ((IdentityInputData) inputData).getUser();
+
     try {
 
-      surlStatuses = checker.getSURLStatuses(getTokenFromInputData(inputData),
-        getSURLListFromInputData(inputData));
+      if (token == null) {
+        surlStatuses = checker.getPinnedSURLsForUser(user,
+          getSURLListFromInputData(inputData));
+
+      } else {
+
+        surlStatuses = checker
+          .getSURLStatuses(getTokenFromInputData(inputData),
+            getSURLListFromInputData(inputData));
+      }
 
     } catch (IllegalArgumentException e) {
 
@@ -218,7 +231,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       return new ManageFileTransferOutputData(returnStatus, surlReturnStatuses);
     }
 
-    expireSurls(surlToRelease, getTokenFromInputData(inputData));
+    if (token == null) {
+      checker.releaseSURLs(user, surlToRelease);
+    } else {
+      checker.releaseSURLs(token, surlToRelease);
+    }
+
     removePinneExtendedAttribute(surlToRelease);
 
     TReturnStatus returnStatus = buildStatus(inputData, surlReturnStatuses);
@@ -323,21 +341,6 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
 
     return surlToRelease;
-  }
-
-  private void expireSurls(List<TSURL> surlToRelease, TRequestToken requestToken) {
-
-    if (surlToRelease == null || surlToRelease.isEmpty()
-      || requestToken == null) {
-
-      throw new IllegalArgumentException(
-        "unable to expire Surls, null arguments: surlToRelease="
-          + surlToRelease + " requestToken=" + requestToken);
-    }
-
-    SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
-
-    checker.releaseSURLs(requestToken, surlToRelease);
   }
 
   /**

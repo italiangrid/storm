@@ -1,5 +1,6 @@
 package it.grid.storm.catalogs.surl;
 
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -16,8 +17,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InMemorySURLStatusManager extends DelegatingSURLStatusManager
-  implements SURLStatusManager {
+public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
   public static final Logger LOGGER = LoggerFactory
     .getLogger(InMemorySURLStatusManager.class);
@@ -34,227 +34,20 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager
 
   }
 
-  private boolean isSURLBusy(TSURL surl,
-    Map<TRequestToken, TReturnStatus> statusMap) {
-
-    for (TReturnStatus status : statusMap.values()) {
-      if (busyStatuses.contains(status.getStatusCode())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isSURLBusy(TSURL surl, Collection<TReturnStatus> statusList) {
-
-    for (TReturnStatus status : statusList) {
-      if (busyStatuses.contains(status.getStatusCode())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isSURLPinned(TSURL surl, Collection<TReturnStatus> statusList) {
-
-    for (TReturnStatus status : statusList) {
-      if (pinnedStatuses.contains(status.getStatusCode())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private Map<TRequestToken, TReturnStatus> getSURLStatusesExcludingToken(
-    TRequestToken token, TSURL surl) {
+  @Override
+  public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-
-    Map<TRequestToken, TReturnStatus> statusMap = null;
-
-    try {
-      statusMap = store.getSurlPerTokenStatuses(surl);
-      statusMap.remove(token);
-    } catch (IllegalArgumentException e) {
-      LOGGER.warn(e.getMessage(), e);
-    } catch (UnknownSurlException e) {
-      LOGGER.debug(e.getMessage());
-    }
-
-    return statusMap;
-
-  }
-
-  private Collection<TReturnStatus> getSURLStatusList(TSURL surl) {
-
-    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-
-    Collection<TReturnStatus> statusList = null;
-
-    try {
-      statusList = store.getSurlStatuses(surl);
-    } catch (IllegalArgumentException e) {
-      LOGGER.warn(e.getMessage(), e);
-    } catch (UnknownSurlException e) {
-      LOGGER.debug(e.getMessage());
-    }
-
-    return statusList;
+    store.abortAllRequestForSURL(surl);
+    super.abortAllGetRequestsForSURL(surl, explanation);
   }
 
   @Override
-  public boolean isSURLBusy(TSURL surl) {
+  public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
 
-    final Collection<TReturnStatus> statusList = getSURLStatusList(surl);
-
-    if (statusList != null && (!statusList.isEmpty())) {
-
-      final boolean busyInMemory = isSURLBusy(surl, statusList);
-      if (busyInMemory) {
-        LOGGER.debug("SURL {} BUSY in memory store.", surl);
-        return true;
-      }
-    }
-
-    final boolean busyOnDB = super.isSURLBusy(surl);
-    if (busyOnDB) {
-      LOGGER.debug("SURL {} BUSY on database.", surl);
-    }
-    return busyOnDB;
-  }
-
-  @Override
-  public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
-
-    final Map<TRequestToken, TReturnStatus> statusMap = getSURLStatusesExcludingToken(
-      requestTokenToExclude, surl);
-
-    if (statusMap != null && !statusMap.isEmpty()) {
-
-      final boolean busyInMemory = isSURLBusy(surl, statusMap);
-
-      if (busyInMemory) {
-        LOGGER.debug("SURL {} BUSY in memory store.", surl);
-        return true;
-      }
-    }
-
-    final boolean busyOnDB = super.isSURLBusy(requestTokenToExclude, surl);
-
-    if (busyOnDB) {
-      LOGGER.debug("SURL {} BUSY on database.", surl);
-    }
-
-    return busyOnDB;
-
-  }
-
-  @Override
-  public boolean isSURLPinned(TSURL surl) {
-
-    final Collection<TReturnStatus> statusList = getSURLStatusList(surl);
-
-    if (statusList != null && !statusList.isEmpty()) {
-
-      final boolean pinnedInMemory = isSURLPinned(surl, statusList);
-
-      if (pinnedInMemory) {
-        LOGGER.debug("SURL {} PINNED in memory store.", surl);
-        return true;
-      }
-    }
-
-    final boolean pinnedOnDB = super.isSURLPinned(surl);
-
-    if (pinnedOnDB) {
-      LOGGER.debug("SURL {} PINNED on database.", surl);
-    }
-    return pinnedOnDB;
-  }
-
-  @Override
-  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
-
-    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-
-    if (store.hasEntryForToken(token)) {
-      LOGGER.debug("Releasing SURLs on in memory cache for token {}", token);
-
-      try {
-
-        store.checkedUpdate(token, surls, TStatusCode.SRM_FILE_PINNED,
-          TStatusCode.SRM_RELEASED, "File released succesfully.");
-
-        return;
-
-      } catch (Throwable e) {
-
-        LOGGER.error(e.getMessage(), e);
-        throw new RuntimeException(e.getMessage(), e);
-
-      }
-
-    }
-
-    LOGGER.debug("Releasing SURLs on DB for token {}", token);
-    super.releaseSURLs(token, surls);
-  }
-
-  @Override
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
-
-    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-
-    if (store.hasEntryForToken(token)) {
-      LOGGER.debug("PutDone on SURLs on in memory cache for token {}", token);
-
-      try {
-        store.checkedUpdate(token, surls, TStatusCode.SRM_SPACE_AVAILABLE,
-          TStatusCode.SRM_SUCCESS, "Put done. SURL ready.");
-
-        return;
-
-      } catch (Throwable e) {
-
-        LOGGER.error(e.getMessage(), e);
-        throw new RuntimeException(e.getMessage(), e);
-
-      }
-    }
-
-    LOGGER.debug("PutDone on SURLs on DB for token {}", token);
-    super.markSURLsReadyForRead(token, surls);
-  }
-
-  @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
-
-    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-    if (store.hasEntryForToken(token)) {
-      LOGGER.debug("getSURLStatuses from memory for token {}", token);
-      return store.getSurlStatuses(token);
-    }
-
-    LOGGER.debug("getSURLStatuses from DB for token {}", token);
-    return super.getSURLStatuses(token);
-  }
-
-  @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
-    List<TSURL> surls) {
-
-    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-
-    if (store.hasEntryForToken(token)) {
-      LOGGER.debug("getSURLStatuses from memory for token {} and SURLs {}",
-        token, surls);
-      return store.getSurlStatuses(token, surls);
-    }
-
-    LOGGER.debug("getSURLStatuses from DB for token {} and SURLs {}", token,
-      surls);
-
-    return super.getSURLStatuses(token, surls);
+    final SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+    store.abortAllRequestForSURL(surl);
+    super.abortAllPutRequestsForSURL(surl, explanation);
   }
 
   @Override
@@ -305,18 +98,262 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager
   }
 
   @Override
-  public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, List<TSURL> surls) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-    store.abortAllRequestForSURL(surl);
-    super.abortAllGetRequestsForSURL(surl, explanation);
+    
+    Map<TSURL,TReturnStatus> surlsMap = store.getPinnedSURLsForUser(user, 
+      surls);
+    
+    if (!surlsMap.isEmpty()){
+      LOGGER.debug("getPinnedSURLsForUser user={}, surls={} got {}",
+        user, surls, surlsMap);
+      return surlsMap;
+    }
+    
+    return super.getPinnedSURLsForUser(user, surls); 
   }
 
   @Override
-  public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
+  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
 
-    final SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
-    store.abortAllRequestForSURL(surl);
-    super.abortAllPutRequestsForSURL(surl, explanation);
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+    if (store.hasEntryForToken(token)) {
+      LOGGER.debug("getSURLStatuses from memory for token {}", token);
+      return store.getSurlStatuses(token);
+    }
+
+    LOGGER.debug("getSURLStatuses from DB for token {}", token);
+    return super.getSURLStatuses(token);
   }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
+    List<TSURL> surls) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    if (store.hasEntryForToken(token)) {
+      LOGGER.debug("getSURLStatuses from memory for token {} and SURLs {}",
+        token, surls);
+      return store.getSurlStatuses(token, surls);
+    }
+
+    LOGGER.debug("getSURLStatuses from DB for token {} and SURLs {}", token,
+      surls);
+
+    return super.getSURLStatuses(token, surls);
+  }
+
+  private Map<TRequestToken, TReturnStatus> getSURLStatusesExcludingToken(
+    TRequestToken token, TSURL surl) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    Map<TRequestToken, TReturnStatus> statusMap = null;
+
+    try {
+      statusMap = store.getSurlPerTokenStatuses(surl);
+      statusMap.remove(token);
+    } catch (IllegalArgumentException e) {
+      LOGGER.warn(e.getMessage(), e);
+    } catch (UnknownSurlException e) {
+      LOGGER.debug(e.getMessage());
+    }
+
+    return statusMap;
+
+  }
+
+  private Collection<TReturnStatus> getSURLStatusList(TSURL surl) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    Collection<TReturnStatus> statusList = null;
+
+    try {
+      statusList = store.getSurlStatuses(surl);
+    } catch (IllegalArgumentException e) {
+      LOGGER.warn(e.getMessage(), e);
+    } catch (UnknownSurlException e) {
+      LOGGER.debug(e.getMessage());
+    }
+
+    return statusList;
+  }
+
+  @Override
+  public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
+
+    final Map<TRequestToken, TReturnStatus> statusMap = getSURLStatusesExcludingToken(
+      requestTokenToExclude, surl);
+
+    if (statusMap != null && !statusMap.isEmpty()) {
+
+      final boolean busyInMemory = isSURLBusy(surl, statusMap);
+
+      if (busyInMemory) {
+        LOGGER.debug("SURL {} BUSY in memory store.", surl);
+        return true;
+      }
+    }
+
+    final boolean busyOnDB = super.isSURLBusy(requestTokenToExclude, surl);
+
+    if (busyOnDB) {
+      LOGGER.debug("SURL {} BUSY on database.", surl);
+    }
+
+    return busyOnDB;
+
+  }
+
+  @Override
+  public boolean isSURLBusy(TSURL surl) {
+
+    final Collection<TReturnStatus> statusList = getSURLStatusList(surl);
+
+    if (statusList != null && (!statusList.isEmpty())) {
+
+      final boolean busyInMemory = isSURLBusy(surl, statusList);
+      if (busyInMemory) {
+        LOGGER.debug("SURL {} BUSY in memory store.", surl);
+        return true;
+      }
+    }
+
+    final boolean busyOnDB = super.isSURLBusy(surl);
+    if (busyOnDB) {
+      LOGGER.debug("SURL {} BUSY on database.", surl);
+    }
+    return busyOnDB;
+  }
+
+  private boolean isSURLBusy(TSURL surl, Collection<TReturnStatus> statusList) {
+
+    for (TReturnStatus status : statusList) {
+      if (busyStatuses.contains(status.getStatusCode())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isSURLBusy(TSURL surl,
+    Map<TRequestToken, TReturnStatus> statusMap) {
+
+    for (TReturnStatus status : statusMap.values()) {
+      if (busyStatuses.contains(status.getStatusCode())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isSURLPinned(TSURL surl) {
+
+    final Collection<TReturnStatus> statusList = getSURLStatusList(surl);
+
+    if (statusList != null && !statusList.isEmpty()) {
+
+      final boolean pinnedInMemory = isSURLPinned(surl, statusList);
+
+      if (pinnedInMemory) {
+        LOGGER.debug("SURL {} PINNED in memory store.", surl);
+        return true;
+      }
+    }
+
+    final boolean pinnedOnDB = super.isSURLPinned(surl);
+
+    if (pinnedOnDB) {
+      LOGGER.debug("SURL {} PINNED on database.", surl);
+    }
+    return pinnedOnDB;
+  }
+
+  private boolean isSURLPinned(TSURL surl, Collection<TReturnStatus> statusList) {
+
+    for (TReturnStatus status : statusList) {
+      if (pinnedStatuses.contains(status.getStatusCode())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    if (store.hasEntryForToken(token)) {
+      LOGGER.debug("PutDone on SURLs on in memory cache for token {}", token);
+
+      try {
+        store.checkedUpdate(token, surls, TStatusCode.SRM_SPACE_AVAILABLE,
+          TStatusCode.SRM_SUCCESS, "Put done. SURL ready.");
+
+        return;
+
+      } catch (Throwable e) {
+
+        LOGGER.error(e.getMessage(), e);
+        throw new RuntimeException(e.getMessage(), e);
+
+      }
+    }
+
+    LOGGER.debug("PutDone on SURLs on DB for token {}", token);
+    super.markSURLsReadyForRead(token, surls);
+  }
+
+  @Override
+  public void releaseSURLs(GridUserInterface user, List<TSURL> surls) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    boolean statusUpdated = store.checkedUpdate(user, surls,
+      TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED, "File released");
+
+    if (statusUpdated) {
+      LOGGER.debug("SURLs released in memory cache for user {}", user);
+      return;
+    }
+
+    LOGGER.debug("Releasing SURLs on DB for user {}", user);
+    super.releaseSURLs(user, surls);
+
+  }
+
+  @Override
+  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
+
+    SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
+
+    if (store.hasEntryForToken(token)) {
+      LOGGER.debug("Releasing SURLs on in memory cache for token {}", token);
+
+      try {
+
+        store.checkedUpdate(token, surls, TStatusCode.SRM_FILE_PINNED,
+          TStatusCode.SRM_RELEASED, "File released succesfully.");
+
+        return;
+
+      } catch (Throwable e) {
+
+        LOGGER.error(e.getMessage(), e);
+        throw new RuntimeException(e.getMessage(), e);
+
+      }
+
+    }
+
+    LOGGER.debug("Releasing SURLs on DB for token {}", token);
+    super.releaseSURLs(token, surls);
+  }
+
 }

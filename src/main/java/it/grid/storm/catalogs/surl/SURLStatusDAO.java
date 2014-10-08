@@ -4,6 +4,7 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.StatusCodeConverter;
 import it.grid.storm.catalogs.StoRMDataSource;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
@@ -29,93 +30,47 @@ import org.slf4j.LoggerFactory;
 
 public class SURLStatusDAO {
 
-  public static final Logger LOGGER = LoggerFactory.getLogger(SURLStatusDAO.class);
+  public static final Logger LOGGER = LoggerFactory
+    .getLogger(SURLStatusDAO.class);
 
-  private Connection getConnection() throws SQLException {
+  public void abortActivePtGsForSURL(TSURL surl, String explanation) {
 
-    if (StoRMDataSource.getInstance() == null) {
-      throw new IllegalStateException("SToRM Data source not initialized!");
+    surlSanityChecks(surl);
+
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "UPDATE status_Get sg "
+        + "JOIN (request_Get rg, request_queue rq) "
+        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+        + "SET sg.statusCode=20, rq.status=20, sg.explanation=? "
+        + "WHERE (sg.statusCode=22 OR sg.statusCode=17) "
+        + "AND rg.sourceSURL = ?";
+
+      stat = con.prepareStatement(query);
+
+      stat.setString(1, explanation);
+      stat.setString(2, surl.getSURLString());
+
+      final int updateCount = stat.executeUpdate();
+      LOGGER.debug("abortActivePtGsForSURL: surl={}, numOfAbortedRequests={}",
+        surl, updateCount);
+
+    } catch (SQLException e) {
+      String msg = String.format("abortActivePtGsForSURL: SQL error: %s",
+        e.getMessage());
+      LOGGER.error(msg, e);
+
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeConnection(con);
     }
-    return StoRMDataSource.getInstance().getConnection();
-  }
 
-  private void surlSanityChecks(List<TSURL> surls) {
-
-    if (surls == null)
-      throw new IllegalArgumentException("surls must be non-null.");
-
-    for (TSURL s : surls) {
-      surlSanityChecks(s);
-    }
-  }
-
-  private void tokenSanityChecks(TRequestToken token) {
-
-    if (token == null || token.getValue() == null)
-      throw new IllegalArgumentException("token must be non-null.");
-
-    if (token.getValue().isEmpty())
-      throw new IllegalArgumentException("token must be non-empty.");
-
-  }
-
-  private void surlSanityChecks(TSURL surl) {
-
-    if (surl == null || surl.getSURLString() == null)
-      throw new IllegalArgumentException("surl must be non-null.");
-
-    if (surl.getSURLString().isEmpty())
-      throw new IllegalArgumentException("surl must be non-empty.");
-
-  }
-
-  private void closeConnection(Connection conn) {
-
-    if (conn != null) {
-      try {
-        conn.close();
-      } catch (SQLException e) {
-        LOGGER.error("Error closing connection: {}.", e.getMessage(), e);
-      }
-    }
-  }
-
-  private void closeStatetement(Statement stat) {
-
-    if (stat != null) {
-      try {
-        stat.close();
-      } catch (SQLException e) {
-        LOGGER.error("Error closing statement: {}.", e.getMessage(), e);
-      }
-    }
-  }
-
-  private void closeResultSet(ResultSet rs) {
-
-    if (rs != null) {
-
-      try {
-        rs.close();
-      } catch (SQLException e) {
-        LOGGER.error("Error closing result set: {}", e.getMessage(), e);
-      }
-    }
-  }
-
-  private String quoteSURLList(List<TSURL> surls) {
-
-    StringBuilder sb = new StringBuilder();
-    for (TSURL s : surls) {
-      if (sb.length() > 0) {
-        sb.append(",");
-      }
-
-      sb.append('\'');
-      sb.append(s);
-      sb.append('\'');
-    }
-    return sb.toString();
   }
 
   public void abortActivePtPsForSURL(TSURL surl, String explanation) {
@@ -140,11 +95,10 @@ public class SURLStatusDAO {
       stat.setString(2, surl.getSURLString());
 
       final int updateCount = stat.executeUpdate();
-      
+
       LOGGER.debug("abortActivePtPsForSURL: surl={}, numOfAbortedRequests={}",
-        surl,updateCount);
-      
-    
+        surl, updateCount);
+
     } catch (SQLException e) {
       String msg = String.format("abortActivePtPsForSURL: SQL error: %s",
         e.getMessage());
@@ -155,209 +109,6 @@ public class SURLStatusDAO {
     } finally {
       closeStatetement(stat);
       closeConnection(con);
-    }
-
-  }
-
-  public void abortActivePtGsForSURL(TSURL surl, String explanation) {
-
-    surlSanityChecks(surl);
-
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      String query = "UPDATE status_Get sg "
-        + "JOIN (request_Get rg, request_queue rq) "
-        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=20, rq.status=20, sg.explanation=? "
-        + "WHERE (sg.statusCode=22 OR sg.statusCode=17) "
-        + "AND rg.sourceSURL = ?";
-
-      stat = con.prepareStatement(query);
-      
-      stat.setString(1, explanation);
-      stat.setString(2, surl.getSURLString());
-
-      final int updateCount = stat.executeUpdate();
-      LOGGER.debug("abortActivePtGsForSURL: surl={}, numOfAbortedRequests={}",
-        surl,updateCount);
-
-    } catch (SQLException e) {
-      String msg = String.format("abortActivePtGsForSURL: SQL error: %s",
-        e.getMessage());
-      LOGGER.error(msg, e);
-
-      throw new RuntimeException(msg, e);
-
-    } finally {
-      closeStatetement(stat);
-      closeConnection(con);
-    }
-
-  }
-
-  public void releaseSURLs(List<TSURL> surls) {
-
-    surlSanityChecks(surls);
-
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      String query = "UPDATE status_Get sg "
-        + "JOIN (request_Get rg, request_queue rq) "
-        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=21 "
-        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
-        + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ")";
-
-      stat = con.prepareStatement(query);
-      stat.executeUpdate();
-
-    } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "releaseSURLs",
-        e.getMessage());
-      LOGGER.error(msg, e);
-      throw new RuntimeException(msg, e);
-
-    } finally {
-      closeStatetement(stat);
-      closeConnection(con);
-    }
-  }
-
-  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
-
-    surlSanityChecks(surls);
-    tokenSanityChecks(token);
-
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      String query = "UPDATE status_Get sg "
-        + "JOIN (request_Get rg, request_queue rq) "
-        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=21 "
-        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
-        + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ") "
-        + "AND rq.r_token = ?";
-
-      stat = con.prepareStatement(query);
-      stat.setString(1, token.getValue());
-      stat.executeUpdate();
-
-    } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "releaseSURLs",
-        e.getMessage());
-      LOGGER.error(msg, e);
-      throw new RuntimeException(msg, e);
-
-    } finally {
-      closeStatetement(stat);
-      closeConnection(con);
-    }
-  }
-
-  public void releaseSURL(TSURL surl) {
-
-    surlSanityChecks(surl);
-
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      String query = "UPDATE status_Get sg "
-        + "JOIN (request_Get rg, request_queue rq) "
-        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=21"
-        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
-        + "AND rg.sourceSURL = ?";
-
-      stat = con.prepareStatement(query);
-      stat.setString(1, surl.getSURLString());
-
-      stat.executeUpdate();
-    } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "releaseSURL",
-        e.getMessage());
-      LOGGER.error(msg, e);
-      throw new RuntimeException(msg, e);
-
-    } finally {
-      closeStatetement(stat);
-      closeConnection(con);
-    }
-  }
-
-  public boolean surlHasOngoingPtGs(TSURL surl) {
-
-    surlSanityChecks(surl);
-
-    ResultSet rs = null;
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      // We basically check whether there are active requests
-      // that have the SURL in SRM_FILE_PINNED status
-      String query = "SELECT rq.ID, rg.ID, sg.statusCode "
-        + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-        + "ON (rg.request_queueID = rq.ID AND sg.ID = rg.ID) "
-        + "WHERE ( rg.sourceSURL = ? and sg.statusCode = 22)";
-
-      stat = con.prepareStatement(query);
-      stat.setString(1, surl.getSURLString());
-
-      rs = stat.executeQuery();
-      return rs.next();
-    } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "surlHasOngoingPtGs",
-        e.getMessage());
-      LOGGER.error(msg, e);
-      throw new RuntimeException(msg, e);
-    } finally {
-      closeStatetement(stat);
-      closeResultSet(rs);
-      closeConnection(con);
-    }
-  }
-
-  private TSURL surlFromString(String s) {
-
-    try {
-
-      return TSURL.makeFromStringWellFormed(s);
-
-    } catch (InvalidTSURLAttributesException e) {
-      throw new IllegalArgumentException("Error creating surl from string: "
-        + s, e);
-    }
-  }
-
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc) {
-
-    return returnStatusFromStatusCode(sc, null);
-  }
-
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc,
-    String explanation) {
-
-    try {
-      return new TReturnStatus(sc, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
-      throw new IllegalArgumentException(e);
     }
 
   }
@@ -380,6 +131,165 @@ public class SURLStatusDAO {
 
     return statusMap;
 
+  }
+
+  private void closeConnection(Connection conn) {
+
+    if (conn != null) {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        LOGGER.error("Error closing connection: {}.", e.getMessage(), e);
+      }
+    }
+  }
+
+  private void closeResultSet(ResultSet rs) {
+
+    if (rs != null) {
+
+      try {
+        rs.close();
+      } catch (SQLException e) {
+        LOGGER.error("Error closing result set: {}", e.getMessage(), e);
+      }
+    }
+  }
+
+  private void closeStatetement(Statement stat) {
+
+    if (stat != null) {
+      try {
+        stat.close();
+      } catch (SQLException e) {
+        LOGGER.error("Error closing statement: {}.", e.getMessage(), e);
+      }
+    }
+  }
+
+  private Map<TSURL, TReturnStatus> filterSURLStatuses(
+    Map<TSURL, TReturnStatus> statuses, List<TSURL> surls) {
+
+    if (surls == null) {
+      return statuses;
+    }
+
+    List<TSURL> surlsCopy = new ArrayList<TSURL>(surls);
+
+    // Keep only the SURLs really requested.
+    statuses.keySet().retainAll(surls);
+
+    // The surls that are not in the statuses key set
+    // are those not linked to the actual token
+    // (this is an error in the request)
+    surlsCopy.removeAll(statuses.keySet());
+
+    // Add a failure state for the surls that were
+    // requested but are not linked to the token
+    for (TSURL s : surlsCopy) {
+      TReturnStatus rs = returnStatusFromStatusCode(TStatusCode.SRM_FAILURE,
+        "SURL not linked to passed request token.");
+      statuses.put(s, rs);
+    }
+
+    return statuses;
+  }
+
+  private Map<TSURL, TReturnStatus> getBoLSURLStatuses(TRequestToken token) {
+
+    tokenSanityChecks(token);
+
+    ResultSet rs = null;
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "SELECT rb.sourceSURL, sb.statusCode "
+        + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
+        + "ON (rb.request_queueID = rq.ID AND sb.ID = rb.ID)"
+        + "WHERE ( rq.r_token = ? )";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, token.getValue());
+      rs = stat.executeQuery();
+
+      return buildStatusMap(rs);
+
+    } catch (SQLException e) {
+
+      String msg = String.format("getBoLSURLStatuses: SQL error: %s",
+        e.getMessage());
+
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeResultSet(rs);
+      closeConnection(con);
+    }
+
+  }
+
+  private Connection getConnection() throws SQLException {
+
+    if (StoRMDataSource.getInstance() == null) {
+      throw new IllegalStateException("SToRM Data source not initialized!");
+    }
+    return StoRMDataSource.getInstance().getConnection();
+  }
+
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, List<TSURL> surls) {
+
+    if (user == null) {
+      throw new NullPointerException("getPinnedSURLsForUser: null user!");
+    }
+
+    ResultSet rs = null;
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    StatusCodeConverter converter = StatusCodeConverter.getInstance();
+
+    try {
+
+      con = getConnection();
+
+      String query = "SELECT rg.sourceSURL, rg.sourceSURL_uniqueID, sg.statusCode "
+        + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
+        + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
+        + "WHERE ( sg.statusCode = 22  and rq.client_dn = ? )";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, user.getDn());
+
+      rs = stat.executeQuery();
+      Map<TSURL, TReturnStatus> statusMap = new HashMap<TSURL, TReturnStatus>();
+
+      while (rs.next()) {
+
+        TSURL surl = surlFromString(rs.getString(1));
+        surl.setUniqueID(rs.getInt(2));
+        statusMap.put(surl,
+          returnStatusFromStatusCode(converter.toSTORM(rs.getInt(3))));
+
+      }
+
+      return filterSURLStatuses(statusMap, surls);
+
+    } catch (SQLException e) {
+      String msg = String.format("getPinnedSURLsForUser: SQL error: %s",
+        e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+    } finally {
+      closeStatetement(stat);
+      closeResultSet(rs);
+      closeConnection(con);
+    }
   }
 
   private Map<TSURL, TReturnStatus> getPtGSURLStatuses(TRequestToken token) {
@@ -405,7 +315,7 @@ public class SURLStatusDAO {
       return buildStatusMap(rs);
 
     } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "getPtGSURLStatuses",
+      String msg = String.format("getPtGSURLStatuses: SQL error: %s",
         e.getMessage());
       LOGGER.error(msg, e);
       throw new RuntimeException(msg, e);
@@ -440,7 +350,7 @@ public class SURLStatusDAO {
 
     } catch (SQLException e) {
 
-      String msg = String.format("%s: SQL error: %s", "getPtPSURLStatuses",
+      String msg = String.format("getPtPSURLStatuses: SQL error: %s",
         e.getMessage());
       LOGGER.error(msg, e);
       throw new RuntimeException(msg, e);
@@ -451,89 +361,6 @@ public class SURLStatusDAO {
       closeConnection(con);
     }
 
-  }
-
-  private Map<TSURL, TReturnStatus> getBoLSURLStatuses(TRequestToken token) {
-
-    tokenSanityChecks(token);
-
-    ResultSet rs = null;
-    PreparedStatement stat = null;
-    Connection con = null;
-
-    try {
-      con = getConnection();
-
-      String query = "SELECT rb.sourceSURL, sb.statusCode "
-        + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-        + "ON (rb.request_queueID = rq.ID AND sb.ID = rb.ID)"
-        + "WHERE ( rq.r_token = ? )";
-
-      stat = con.prepareStatement(query);
-      stat.setString(1, token.getValue());
-      rs = stat.executeQuery();
-
-      return buildStatusMap(rs);
-
-    } catch (SQLException e) {
-
-      String msg = String.format("%s: SQL error: %s", "getPtPSURLStatuses",
-        e.getMessage());
-      LOGGER.error(msg, e);
-      throw new RuntimeException(msg, e);
-
-    } finally {
-      closeStatetement(stat);
-      closeResultSet(rs);
-      closeConnection(con);
-    }
-
-  }
-
-  private Map<TSURL, TReturnStatus> filterSURLStatuses(
-    Map<TSURL, TReturnStatus> statuses, List<TSURL> surls) {
-
-    List<TSURL> surlsCopy = new ArrayList<TSURL>(surls);
-
-    // Keep only the SURLs really requested.
-    statuses.keySet().retainAll(surls);
-
-    // The surls that are not in the statuses key set
-    // are those not linked to the actual token
-    // (this is an error in the request)
-    surlsCopy.removeAll(statuses.keySet());
-
-    // Add a failure state for the surls that were
-    // requested but are not linked to the token
-    for (TSURL s : surlsCopy) {
-      TReturnStatus rs = returnStatusFromStatusCode(TStatusCode.SRM_FAILURE,
-        "SURL not linked to passed request token.");
-      statuses.put(s, rs);
-    }
-
-    return statuses;
-  }
-
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
-    List<TSURL> surls) {
-
-    TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
-
-    switch (rt) {
-    case PREPARE_TO_GET:
-      return filterSURLStatuses(getPtGSURLStatuses(token), surls);
-
-    case PREPARE_TO_PUT:
-      return filterSURLStatuses(getPtPSURLStatuses(token), surls);
-
-    case BRING_ON_LINE:
-      return filterSURLStatuses(getBoLSURLStatuses(token), surls);
-
-    default:
-      String msg = String.format("Invalid request type for token %s: %s",
-        token, rt.toString());
-      throw new IllegalArgumentException(msg);
-    }
   }
 
   public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
@@ -560,6 +387,251 @@ public class SURLStatusDAO {
       String msg = String.format("Invalid request type for token %s: %s",
         token, rt.toString());
       throw new IllegalArgumentException(msg);
+    }
+  }
+
+  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
+    List<TSURL> surls) {
+
+    TRequestType rt = RequestSummaryCatalog.getInstance().typeOf(token);
+
+    switch (rt) {
+    case PREPARE_TO_GET:
+      return filterSURLStatuses(getPtGSURLStatuses(token), surls);
+
+    case PREPARE_TO_PUT:
+      return filterSURLStatuses(getPtPSURLStatuses(token), surls);
+
+    case BRING_ON_LINE:
+      return filterSURLStatuses(getBoLSURLStatuses(token), surls);
+
+    default:
+      String msg = String.format("Invalid request type for token %s: %s",
+        token, rt.toString());
+      throw new IllegalArgumentException(msg);
+    }
+  }
+
+  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+
+    tokenSanityChecks(token);
+    surlSanityChecks(surls);
+
+    // I am not reimplementing the whole catalog functions
+    PtPChunkCatalog.getInstance().updateFromPreviousStatus(token, surls,
+      TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_SUCCESS);
+
+  }
+
+  private String quoteSURLList(List<TSURL> surls) {
+
+    StringBuilder sb = new StringBuilder();
+    for (TSURL s : surls) {
+      if (sb.length() > 0) {
+        sb.append(",");
+      }
+
+      sb.append('\'');
+      sb.append(s);
+      sb.append('\'');
+    }
+    return sb.toString();
+  }
+
+  public void releaseSURL(TSURL surl) {
+
+    surlSanityChecks(surl);
+
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "UPDATE status_Get sg "
+        + "JOIN (request_Get rg, request_queue rq) "
+        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+        + "SET sg.statusCode=21"
+        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL = ?";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, surl.getSURLString());
+
+      stat.executeUpdate();
+    } catch (SQLException e) {
+      String msg = String.format("releaseSURL: SQL error: %s", e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeConnection(con);
+    }
+  }
+
+  public void releaseSURLs(GridUserInterface user, List<TSURL> surls) {
+
+    userSanityChecks(user);
+    surlSanityChecks(surls);
+
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "UPDATE status_Get sg "
+        + "JOIN (request_Get rg, request_queue rq) "
+        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+        + "SET sg.statusCode=21 "
+        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ") "
+        + "AND rq.client_dn = ?";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, user.getDn());
+      int releasedSURLsCount = stat.executeUpdate();
+
+      LOGGER.debug("releaseSURLs: released {} surls", releasedSURLsCount);
+
+    } catch (SQLException e) {
+      String msg = String.format("releaseSURLs: SQL error: %s", e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeConnection(con);
+    }
+
+  }
+
+  public void releaseSURLs(List<TSURL> surls) {
+
+    surlSanityChecks(surls);
+
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "UPDATE status_Get sg "
+        + "JOIN (request_Get rg, request_queue rq) "
+        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+        + "SET sg.statusCode=21 "
+        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ")";
+
+      stat = con.prepareStatement(query);
+      stat.executeUpdate();
+
+    } catch (SQLException e) {
+      String msg = String.format("releaseSURLs: SQL error: %s", e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeConnection(con);
+    }
+  }
+
+  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
+
+    surlSanityChecks(surls);
+    tokenSanityChecks(token);
+
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      String query = "UPDATE status_Get sg "
+        + "JOIN (request_Get rg, request_queue rq) "
+        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+        + "SET sg.statusCode=21 "
+        + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ") "
+        + "AND rq.r_token = ?";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, token.getValue());
+      stat.executeUpdate();
+
+    } catch (SQLException e) {
+      String msg = String.format("releaseSURLs: SQL error: %s", e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+
+    } finally {
+      closeStatetement(stat);
+      closeConnection(con);
+    }
+  }
+
+  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc) {
+
+    return returnStatusFromStatusCode(sc, null);
+  }
+
+  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc,
+    String explanation) {
+
+    try {
+      return new TReturnStatus(sc, explanation);
+    } catch (InvalidTReturnStatusAttributeException e) {
+      throw new IllegalArgumentException(e);
+    }
+
+  }
+
+  private TSURL surlFromString(String s) {
+
+    try {
+
+      return TSURL.makeFromStringWellFormed(s);
+
+    } catch (InvalidTSURLAttributesException e) {
+      throw new IllegalArgumentException("Error creating surl from string: "
+        + s, e);
+    }
+  }
+
+  public boolean surlHasOngoingPtGs(TSURL surl) {
+
+    surlSanityChecks(surl);
+
+    ResultSet rs = null;
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    try {
+      con = getConnection();
+
+      // We basically check whether there are active requests
+      // that have the SURL in SRM_FILE_PINNED status
+      String query = "SELECT rq.ID, rg.ID, sg.statusCode "
+        + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
+        + "ON (rg.request_queueID = rq.ID AND sg.ID = rg.ID) "
+        + "WHERE ( rg.sourceSURL = ? and sg.statusCode = 22)";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, surl.getSURLString());
+
+      rs = stat.executeQuery();
+      return rs.next();
+    } catch (SQLException e) {
+      String msg = String.format("surlHasOngoingPtGs: SQL error: %s",
+        e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+    } finally {
+      closeStatetement(stat);
+      closeResultSet(rs);
+      closeConnection(con);
     }
   }
 
@@ -595,7 +667,7 @@ public class SURLStatusDAO {
       rs = stat.executeQuery();
       return rs.next();
     } catch (SQLException e) {
-      String msg = String.format("%s: SQL error: %s", "surlHasOngoingPtPs",
+      String msg = String.format("surlHasOngoingPtPs: SQL error: %s",
         e.getMessage());
       LOGGER.error(msg, e);
       throw new RuntimeException(msg, e);
@@ -607,15 +679,40 @@ public class SURLStatusDAO {
 
   }
 
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+  private void surlSanityChecks(List<TSURL> surls) {
 
-    tokenSanityChecks(token);
-    surlSanityChecks(surls);
+    if (surls == null)
+      throw new IllegalArgumentException("surls must be non-null.");
 
-    // I am not reimplementing the whole catalog functions
-    PtPChunkCatalog.getInstance().updateFromPreviousStatus(token, surls,
-      TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_SUCCESS);
+    for (TSURL s : surls) {
+      surlSanityChecks(s);
+    }
+  }
 
+  private void surlSanityChecks(TSURL surl) {
+
+    if (surl == null || surl.getSURLString() == null)
+      throw new IllegalArgumentException("surl must be non-null.");
+
+    if (surl.getSURLString().isEmpty())
+      throw new IllegalArgumentException("surl must be non-empty.");
+
+  }
+
+  private void tokenSanityChecks(TRequestToken token) {
+
+    if (token == null || token.getValue() == null)
+      throw new IllegalArgumentException("token must be non-null.");
+
+    if (token.getValue().isEmpty())
+      throw new IllegalArgumentException("token must be non-empty.");
+
+  }
+
+  private void userSanityChecks(GridUserInterface user) {
+
+    if (user == null)
+      throw new IllegalArgumentException("user must be non-null.");
   }
 
 }

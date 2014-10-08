@@ -514,7 +514,7 @@ public class PtGChunkCatalog {
 		return lookupPtGChunkData(Arrays.asList(new TSURL[] { surl }));
 	}
 
-	private Collection<PtGPersistentChunkData> lookupPtGChunkData(
+	public Collection<PtGPersistentChunkData> lookupPtGChunkData(
 		List<TSURL> surls, GridUserInterface user) {
 
 		int[] surlsUniqueIDs = new int[surls.size()];

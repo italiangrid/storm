@@ -13,33 +13,13 @@ import java.util.Map;
 
 public interface SURLStatusStoreIF {
 
-  public boolean hasEntryForToken(TRequestToken requestToken);
+  public int abortAllRequestForSURL(TSURL surl);
 
-  public void store(TRequestToken requestToken,
-    HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException;
-
-  public void store(TRequestToken requestToken, GridUserInterface user,
-    HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException;
-
-  public void update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode) throws IllegalArgumentException,
-    UnknownTokenException, ExpiredTokenException, UnknownSurlException;
-
-  public void update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException;
-
-  public void update(TRequestToken requestToken, 
-    TStatusCode newStatusCode, String explanation) 
-      throws UnknownSurlException;
-  
-  public void update(TRequestToken requestToken, List<TSURL> surls,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException;
+  public boolean checkedUpdate(GridUserInterface user,
+    List<TSURL> surls,
+    TStatusCode requiredStatusCode,
+    TStatusCode newStatusCode, 
+    String explanation);
 
   public void checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
     TStatusCode requiredStatusCode, TStatusCode newStatusCode,
@@ -48,15 +28,44 @@ public interface SURLStatusStoreIF {
 
   public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
     throws IllegalArgumentException, UnknownSurlException;
-  
+
   public Map<TSURL, TReturnStatus> getSurlStatuses(TRequestToken token);
-  
+
   public Map<TSURL, TReturnStatus> getSurlStatuses(TRequestToken token, 
     List<TSURL> surls);
   
   public Collection<TReturnStatus> getSurlStatuses(TSURL surl)
     throws UnknownSurlException, IllegalArgumentException;
   
-  public int abortAllRequestForSURL(TSURL surl);
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(GridUserInterface user,
+    List<TSURL> surls);
+  
+  public boolean hasEntryForToken(TRequestToken requestToken);
+  
+  public void store(TRequestToken requestToken, GridUserInterface user,
+    HashMap<TSURL, TReturnStatus> surlStatuses)
+    throws IllegalArgumentException, TokenDuplicationException;
+  
+  public void store(TRequestToken requestToken,
+    HashMap<TSURL, TReturnStatus> surlStatuses)
+    throws IllegalArgumentException, TokenDuplicationException;
+  
+  public void update(TRequestToken requestToken, List<TSURL> surls,
+    TStatusCode newStatusCode, String explanation)
+    throws IllegalArgumentException, UnknownTokenException,
+    ExpiredTokenException, UnknownSurlException;
+  
+  public void update(TRequestToken requestToken, 
+    TStatusCode newStatusCode, String explanation) 
+      throws UnknownSurlException;
+  
+  public void update(TRequestToken requestToken, TSURL surl,
+    TStatusCode newStatusCode) throws IllegalArgumentException,
+    UnknownTokenException, ExpiredTokenException, UnknownSurlException;
+  
+  public void update(TRequestToken requestToken, TSURL surl,
+    TStatusCode newStatusCode, String explanation)
+    throws IllegalArgumentException, UnknownTokenException,
+    ExpiredTokenException, UnknownSurlException;
 
 }
