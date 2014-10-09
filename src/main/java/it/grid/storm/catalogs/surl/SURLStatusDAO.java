@@ -33,7 +33,8 @@ public class SURLStatusDAO {
   public static final Logger LOGGER = LoggerFactory
     .getLogger(SURLStatusDAO.class);
 
-  public void abortActivePtGsForSURL(TSURL surl, String explanation) {
+  public boolean abortActivePtGsForSURL(GridUserInterface user, TSURL surl,
+    String explanation) {
 
     surlSanityChecks(surl);
 
@@ -48,16 +49,25 @@ public class SURLStatusDAO {
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=20, rq.status=20, sg.explanation=? "
         + "WHERE (sg.statusCode=22 OR sg.statusCode=17) "
-        + "AND rg.sourceSURL = ?";
+        + "AND rg.sourceSURL = ? ";
 
+      if (user != null) {
+        query += "AND rq.client_dn = ?";
+      }
       stat = con.prepareStatement(query);
 
       stat.setString(1, explanation);
       stat.setString(2, surl.getSURLString());
 
+      if (user != null) {
+        stat.setString(3, user.getDn());
+      }
+
       final int updateCount = stat.executeUpdate();
       LOGGER.debug("abortActivePtGsForSURL: surl={}, numOfAbortedRequests={}",
         surl, updateCount);
+
+      return (updateCount != 0);
 
     } catch (SQLException e) {
       String msg = String.format("abortActivePtGsForSURL: SQL error: %s",
@@ -73,7 +83,8 @@ public class SURLStatusDAO {
 
   }
 
-  public void abortActivePtPsForSURL(TSURL surl, String explanation) {
+  public boolean abortActivePtPsForSURL(GridUserInterface user, TSURL surl,
+    String explanation) {
 
     surlSanityChecks(surl);
 
@@ -88,17 +99,27 @@ public class SURLStatusDAO {
         + "ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
         + "SET sp.statusCode=20, rq.status=20, sp.explanation=? "
         + "WHERE (sp.statusCode=24 OR sp.statusCode=17) "
-        + "AND rp.targetSURL = ?";
+        + "AND rp.targetSURL = ? ";
+
+      if (user != null) {
+        query += "AND rq.client_dn = ?";
+      }
 
       stat = con.prepareStatement(query);
       stat.setString(1, explanation);
       stat.setString(2, surl.getSURLString());
+
+      if (user != null) {
+        stat.setString(3, user.getDn());
+      }
 
       final int updateCount = stat.executeUpdate();
 
       LOGGER.debug("abortActivePtPsForSURL: surl={}, numOfAbortedRequests={}",
         surl, updateCount);
 
+      return (updateCount != 0);
+      
     } catch (SQLException e) {
       String msg = String.format("abortActivePtPsForSURL: SQL error: %s",
         e.getMessage());
@@ -265,6 +286,57 @@ public class SURLStatusDAO {
 
       stat = con.prepareStatement(query);
       stat.setString(1, user.getDn());
+
+      rs = stat.executeQuery();
+      Map<TSURL, TReturnStatus> statusMap = new HashMap<TSURL, TReturnStatus>();
+
+      while (rs.next()) {
+
+        TSURL surl = surlFromString(rs.getString(1));
+        surl.setUniqueID(rs.getInt(2));
+        statusMap.put(surl,
+          returnStatusFromStatusCode(converter.toSTORM(rs.getInt(3))));
+
+      }
+
+      return filterSURLStatuses(statusMap, surls);
+
+    } catch (SQLException e) {
+      String msg = String.format("getPinnedSURLsForUser: SQL error: %s",
+        e.getMessage());
+      LOGGER.error(msg, e);
+      throw new RuntimeException(msg, e);
+    } finally {
+      closeStatetement(stat);
+      closeResultSet(rs);
+      closeConnection(con);
+    }
+  }
+
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, TRequestToken token, List<TSURL> surls) {
+
+    userSanityChecks(user);
+    tokenSanityChecks(token);
+    surlSanityChecks(surls);
+
+    ResultSet rs = null;
+    PreparedStatement stat = null;
+    Connection con = null;
+
+    StatusCodeConverter converter = StatusCodeConverter.getInstance();
+
+    try {
+      con = getConnection();
+
+      String query = "SELECT rg.sourceSURL, rg.sourceSURL_uniqueID, sg.statusCode "
+        + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
+        + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
+        + "WHERE ( sg.statusCode = 22  and rq.client_dn = ? and rq.r_token = ? )";
+
+      stat = con.prepareStatement(query);
+      stat.setString(1, user.getDn());
+      stat.setString(2, token.getValue());
 
       rs = stat.executeQuery();
       Map<TSURL, TReturnStatus> statusMap = new HashMap<TSURL, TReturnStatus>();

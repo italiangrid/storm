@@ -15,13 +15,13 @@ public interface SURLStatusStoreIF {
 
   public int abortAllRequestForSURL(TSURL surl);
 
-  public boolean checkedUpdate(GridUserInterface user,
+  public int checkedUpdate(GridUserInterface user,
     List<TSURL> surls,
     TStatusCode requiredStatusCode,
     TStatusCode newStatusCode, 
     String explanation);
 
-  public void checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
+  public int checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
     TStatusCode requiredStatusCode, TStatusCode newStatusCode,
     String explanation) throws IllegalArgumentException, UnknownTokenException,
     ExpiredTokenException, UnknownSurlException;
@@ -29,16 +29,19 @@ public interface SURLStatusStoreIF {
   public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
     throws IllegalArgumentException, UnknownSurlException;
 
-  public Map<TSURL, TReturnStatus> getSurlStatuses(TRequestToken token);
+  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user,
+    TRequestToken token);
 
-  public Map<TSURL, TReturnStatus> getSurlStatuses(TRequestToken token, 
+  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user,
+    TRequestToken token, 
     List<TSURL> surls);
   
-  public Collection<TReturnStatus> getSurlStatuses(TSURL surl)
+  public Collection<TReturnStatus> getSurlStatuses(GridUserInterface user,
+    TSURL surl)
     throws UnknownSurlException, IllegalArgumentException;
   
   public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(GridUserInterface user,
-    List<TSURL> surls);
+    TRequestToken token, List<TSURL> surls);
   
   public boolean hasEntryForToken(TRequestToken requestToken);
   
@@ -50,20 +53,20 @@ public interface SURLStatusStoreIF {
     HashMap<TSURL, TReturnStatus> surlStatuses)
     throws IllegalArgumentException, TokenDuplicationException;
   
-  public void update(TRequestToken requestToken, List<TSURL> surls,
+  public int update(TRequestToken requestToken, List<TSURL> surls,
     TStatusCode newStatusCode, String explanation)
     throws IllegalArgumentException, UnknownTokenException,
     ExpiredTokenException, UnknownSurlException;
   
-  public void update(TRequestToken requestToken, 
+  public int update(TRequestToken requestToken, 
     TStatusCode newStatusCode, String explanation) 
       throws UnknownSurlException;
   
-  public void update(TRequestToken requestToken, TSURL surl,
+  public int update(TRequestToken requestToken, TSURL surl,
     TStatusCode newStatusCode) throws IllegalArgumentException,
     UnknownTokenException, ExpiredTokenException, UnknownSurlException;
   
-  public void update(TRequestToken requestToken, TSURL surl,
+  public int update(TRequestToken requestToken, TSURL surl,
     TStatusCode newStatusCode, String explanation)
     throws IllegalArgumentException, UnknownTokenException,
     ExpiredTokenException, UnknownSurlException;

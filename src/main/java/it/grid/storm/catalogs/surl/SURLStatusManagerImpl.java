@@ -1,13 +1,14 @@
 package it.grid.storm.catalogs.surl;
 
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.BoLChunkCatalog;
 import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
@@ -18,28 +19,30 @@ import java.util.Map;
 public class SURLStatusManagerImpl implements SURLStatusManager {
 
   @Override
-  public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
+  public boolean abortAllGetRequestsForSURL(GridUserInterface user, TSURL surl,
+    String explanation) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.abortActivePtGsForSURL(surl, explanation);
+    return dao.abortActivePtGsForSURL(user, surl, explanation);
 
   }
 
   @Override
-  public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
+  public boolean abortAllPutRequestsForSURL(GridUserInterface user, TSURL surl,
+    String explanation) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.abortActivePtPsForSURL(surl, explanation);
+    return dao.abortActivePtGsForSURL(user, surl, explanation);
 
   }
 
   @Override
-  public void abortRequest(TRequestToken token, String explanation) {
+  public boolean abortRequest(GridUserInterface user, TRequestToken token,
+    String explanation) {
 
-    TRequestType requestType = RequestSummaryCatalog.getInstance()
-      .typeOf(token);
+    RequestSummaryData request = lookupAndCheckRequest(user, token);
 
-    switch (requestType) {
+    switch (request.requestType()) {
     case PREPARE_TO_GET:
 
       PtGChunkCatalog.getInstance().updateFromPreviousStatus(token,
@@ -66,18 +69,20 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     default:
       throw new IllegalArgumentException(
-        "Abort not supported for request type: " + requestType);
+        "Abort not supported for request type: " + request.requestType());
 
     }
+
+    return true;
   }
 
   @Override
-  public void abortRequestForSURL(TRequestToken token, TSURL surl,
-    String explanation) {
+  public boolean abortRequestForSURL(GridUserInterface user,
+    TRequestToken token, TSURL surl, String explanation) {
 
-    TRequestType requestType = RequestSummaryCatalog.getInstance()
-      .typeOf(token);
-    switch (requestType) {
+    RequestSummaryData request = lookupAndCheckRequest(user, token);
+
+    switch (request.requestType()) {
 
     case PREPARE_TO_GET:
       PtGChunkCatalog.getInstance().updateStatus(token, surl,
@@ -91,30 +96,75 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     default:
       throw new IllegalArgumentException("Unsupported abort for request type: "
-        + requestType);
+        + request.requestType());
+    }
+
+    return true;
+  }
+
+  private void authzCheck(GridUserInterface user, RequestSummaryData request) {
+
+    if (!request.gridUser().getDn().equals(user.getDn())) {
+      String errorMsg = String.format("User %s is not authorized to abort "
+        + "request %s", user.getDn(), request.requestToken());
+      throw new AuthzException(errorMsg);
     }
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
-    List<TSURL> surls) {
+  public boolean failRequestForSURL(GridUserInterface user,
+    TRequestToken token, TSURL surl, TStatusCode code, String explanation) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
-    return dao.getSURLStatuses(token, surls);
+    RequestSummaryData request = lookupAndCheckRequest(user, token);
+
+    switch (request.requestType()) {
+
+    case PREPARE_TO_PUT:
+      PtPChunkCatalog.getInstance().updateStatus(token, surl,
+        TStatusCode.SRM_AUTHORIZATION_FAILURE, explanation);
+      break;
+
+    default:
+      throw new IllegalArgumentException("Unsupported request type: "
+        + request.requestType());
+
+    }
+
+    return true;
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, List<TSURL> surls) {
+
+    final SURLStatusDAO dao = new SURLStatusDAO();
+    return dao.getPinnedSURLsForUser(user, surls);
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, TRequestToken token, List<TSURL> surls) {
+
+    final SURLStatusDAO dao = new SURLStatusDAO();
+    return dao.getPinnedSURLsForUser(user, token, surls);
+
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user, 
+    TRequestToken token) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
     return dao.getSURLStatuses(token);
   }
 
   @Override
-  public boolean isSURLBusy(TSURL surl) {
+  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user,
+    TRequestToken token,
+    List<TSURL> surls) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    return dao.surlHasOngoingPtPs(surl, null);
+    return dao.getSURLStatuses(token, surls);
   }
 
   @Override
@@ -125,17 +175,38 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   }
 
   @Override
+  public boolean isSURLBusy(TSURL surl) {
+
+    final SURLStatusDAO dao = new SURLStatusDAO();
+    return dao.surlHasOngoingPtPs(surl, null);
+  }
+
+  @Override
   public boolean isSURLPinned(TSURL surl) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
     return dao.surlHasOngoingPtGs(surl);
   }
 
-  @Override
-  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
+  private RequestSummaryData lookupAndCheckRequest(GridUserInterface user,
+    TRequestToken token) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.releaseSURLs(token, surls);
+    RequestSummaryData request = lookupRequest(token);
+    authzCheck(user, request);
+    return request;
+  }
+
+  private RequestSummaryData lookupRequest(TRequestToken token) {
+
+    RequestSummaryData request = RequestSummaryCatalog.getInstance()
+      .find(token);
+
+    if (request == null) {
+      throw new IllegalArgumentException("No request found matching token "
+        + token);
+    }
+
+    return request;
   }
 
   @Override
@@ -143,28 +214,6 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
     dao.markSURLsReadyForRead(token, surls);
-
-  }
-
-  @Override
-  public void failRequestForSURL(TRequestToken token, TSURL surl,
-    TStatusCode code, String explanation) {
-
-    TRequestType requestType = RequestSummaryCatalog.getInstance()
-      .typeOf(token);
-
-    switch (requestType) {
-
-    case PREPARE_TO_PUT:
-      PtPChunkCatalog.getInstance().updateStatus(token, surl,
-        TStatusCode.SRM_AUTHORIZATION_FAILURE, explanation);
-      break;
-
-    default:
-      throw new IllegalArgumentException("Unsupported request type: "
-        + requestType);
-
-    }
 
   }
 
@@ -177,11 +226,10 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   }
 
   @Override
-  public Map<TSURL,TReturnStatus> getPinnedSURLsForUser(GridUserInterface user, 
-    List<TSURL> surls){
+  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    return dao.getPinnedSURLsForUser(user, surls);
+    dao.releaseSURLs(token, surls);
   }
 
 }

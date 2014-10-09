@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.ea.StormEA;
@@ -35,6 +36,7 @@ import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
+import it.grid.storm.synchcall.data.datatransfer.AnonymousManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
@@ -167,6 +169,11 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
   }
 
+  private boolean isAnonymousRequest(InputData inputData) {
+
+    return !(inputData instanceof IdentityInputData);
+  }
+
   /**
    * Does a ReleaseFiles. Used to release pins on the previously requested
    * "copies" (or "state") of the SURL. This function normally follows a
@@ -192,7 +199,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
 
     TRequestToken token = getTokenFromInputData(inputData);
-    GridUserInterface user = ((IdentityInputData) inputData).getUser();
+
+    GridUserInterface user = null;
+
+    if (!isAnonymousRequest(inputData)) {
+      user = ((IdentityInputData) inputData).getUser();
+    }
 
     try {
 
@@ -203,10 +215,12 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       } else {
 
         surlStatuses = checker
-          .getSURLStatuses(getTokenFromInputData(inputData),
+          .getSURLStatuses(user, getTokenFromInputData(inputData),
             getSURLListFromInputData(inputData));
       }
 
+    } catch (AuthzException e) {
+      return handleAuthzError(inputData, e);
     } catch (IllegalArgumentException e) {
 
       return handleInvalidRequest(inputData, e);
@@ -244,6 +258,18 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     logRequestOutcome(returnStatus, inputData);
 
     return new ManageFileTransferOutputData(returnStatus, surlReturnStatuses);
+  }
+
+  private OutputData handleAuthzError(InputData inputData, AuthzException e) {
+
+    log.error(e.getMessage());
+
+    TReturnStatus returnStatus = CommandHelper.buildStatus(
+      TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+
+    logRequestOutcome(returnStatus, inputData);
+
+    return new ManageFileTransferOutputData(returnStatus);
   }
 
   private TReturnStatus buildStatus(InputData inputData,

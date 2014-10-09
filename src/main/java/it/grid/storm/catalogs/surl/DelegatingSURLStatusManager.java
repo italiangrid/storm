@@ -19,48 +19,68 @@ public class DelegatingSURLStatusManager implements SURLStatusManager {
   }
 
   @Override
-  public void abortAllGetRequestsForSURL(TSURL surl, String explanation) {
-
-    delegate.abortAllGetRequestsForSURL(surl, explanation);
-  }
-
-  @Override
-  public void abortAllPutRequestsForSURL(TSURL surl, String explanation) {
-
-    delegate.abortAllPutRequestsForSURL(surl, explanation);
-  }
-
-  @Override
-  public void abortRequest(TRequestToken token, String explanation) {
-
-    delegate.abortRequest(token, explanation);
-  }
-
-  @Override
-  public void abortRequestForSURL(TRequestToken token, TSURL surl,
+  public boolean abortAllGetRequestsForSURL(GridUserInterface user, TSURL surl,
     String explanation) {
 
-    delegate.abortRequestForSURL(token, surl, explanation);
+    return delegate.abortAllGetRequestsForSURL(user, surl, explanation);
   }
 
   @Override
-  public void failRequestForSURL(TRequestToken token, TSURL surl,
-    TStatusCode code, String explanation) {
+  public boolean abortAllPutRequestsForSURL(GridUserInterface user, TSURL surl,
+    String explanation) {
 
-    delegate.failRequestForSURL(token, surl, code, explanation);
+    return delegate.abortAllPutRequestsForSURL(user, surl, explanation);
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token) {
+  public boolean abortRequest(GridUserInterface user, TRequestToken token,
+    String explanation) {
 
-    return delegate.getSURLStatuses(token);
+    return delegate.abortRequest(user, token, explanation);
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(TRequestToken token,
+  public boolean abortRequestForSURL(GridUserInterface user, TRequestToken token,
+    TSURL surl, String explanation) {
+
+    return delegate.abortRequestForSURL(user, token, surl, explanation);
+  }
+
+  @Override
+  public boolean failRequestForSURL(GridUserInterface user, TRequestToken token,
+    TSURL surl, TStatusCode code, String explanation) {
+
+    return delegate.failRequestForSURL(user, token, surl, code, explanation);
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, List<TSURL> surls) {
+
+    return delegate.getPinnedSURLsForUser(user, surls);
+
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+    GridUserInterface user, TRequestToken token, List<TSURL> surls) {
+
+    return delegate.getPinnedSURLsForUser(user, token, surls);
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user,
+    TRequestToken token) {
+
+    return delegate.getSURLStatuses(user, token);
+  }
+
+  @Override
+  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user,
+    TRequestToken token,
     List<TSURL> surls) {
 
-    return delegate.getSURLStatuses(token, surls);
+    return delegate.getSURLStatuses(user, token, surls);
   }
 
   @Override
@@ -88,22 +108,14 @@ public class DelegatingSURLStatusManager implements SURLStatusManager {
   }
 
   @Override
-  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
-
-    delegate.releaseSURLs(token, surls);
-  }
-
-  @Override
   public void releaseSURLs(GridUserInterface user, List<TSURL> surls) {
 
     delegate.releaseSURLs(user, surls);
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
-    GridUserInterface user, List<TSURL> surls) {
+  public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
 
-    return delegate.getPinnedSURLsForUser(user, surls);
-
+    delegate.releaseSURLs(token, surls);
   }
 }

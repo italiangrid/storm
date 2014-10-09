@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
@@ -389,13 +390,16 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 		TReturnStatus globalStatus = null;
 		List requestSURLsList;
 		try {
-			requestSURLsList = getListOfSURLsInTheRequest(requestToken);
+			requestSURLsList = getListOfSURLsInTheRequest(guser, requestToken);
 		} catch (UnknownTokenException e4) {
 			return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
 				"Invalid request token");
 		} catch (ExpiredTokenException e) {
 			return CommandHelper.buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
 				"Request expired");
+		} catch (AuthzException e) {
+		  return CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        e.getMessage());
 		}
 		if (requestSURLsList.isEmpty()) {
 			return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
@@ -589,7 +593,8 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 	 * @throws IllegalArgumentException
 	 * @throws ExpiredTokenException
 	 */
-	private List<SURLData> getListOfSURLsInTheRequest(TRequestToken requestToken)
+	private List<SURLData> getListOfSURLsInTheRequest(GridUserInterface user,
+	  TRequestToken requestToken)
 		throws IllegalArgumentException, UnknownTokenException,
 		ExpiredTokenException {
 
@@ -599,7 +604,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 		  .newSURLStatusManager();
 		
 		Map<TSURL, TReturnStatus> surlStatusMap = 
-		  checker.getSURLStatuses(requestToken);
+		  checker.getSURLStatuses(user, requestToken);
 		
 		if (!(surlStatusMap == null || surlStatusMap.isEmpty())) {
 			for (Entry<TSURL, TReturnStatus> surlStatus : surlStatusMap.entrySet()) {
