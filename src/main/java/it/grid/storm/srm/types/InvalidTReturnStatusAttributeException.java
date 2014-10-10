@@ -29,7 +29,7 @@ package it.grid.storm.srm.types;
 
 import it.grid.storm.srm.types.TStatusCode;
 
-public class InvalidTReturnStatusAttributeException extends Exception {
+public class InvalidTReturnStatusAttributeException extends RuntimeException {
 
 	private static final long serialVersionUID = 7879809688892494891L;
 	private boolean nullTStatusCode;

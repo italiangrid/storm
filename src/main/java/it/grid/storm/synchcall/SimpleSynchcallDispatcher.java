@@ -38,13 +38,6 @@ import it.grid.storm.synchcall.data.OutputData;
 
 public class SimpleSynchcallDispatcher implements SynchcallDispatcher {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.SynchcallDispatcher#processRequest(it.grid.storm
-	 * .health.OperationType, it.grid.storm.synchcall.data.InputData)
-	 */
 
 	public OutputData processRequest(OperationType type, InputData inputData)
 		throws IllegalArgumentException, CommandException {

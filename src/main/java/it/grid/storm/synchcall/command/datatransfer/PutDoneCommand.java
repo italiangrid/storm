@@ -17,7 +17,10 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
@@ -40,11 +43,9 @@ import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
+import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
@@ -112,13 +113,21 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       return new ManageFileTransferOutputData(globalStatus);
     }
 
-    /********************************** Start to manage the request ***********************************/
     TRequestToken requestToken = inputData.getRequestToken();
     ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
 
     ArrayOfTSURLReturnStatus surlsStatuses;
     try {
-      surlsStatuses = loadSURLsStatus(requestToken, listOfSURLs);
+      surlsStatuses = loadSURLsStatus(getUserFromInputData(inputData),
+        requestToken, listOfSURLs);
+    } catch (AuthzException e) {
+      log.error(e.getMessage(), e);
+      globalStatus = CommandHelper.buildStatus(
+        TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+
+      printRequestOutcome(globalStatus, inputData);
+      return new ManageFileTransferOutputData(globalStatus);
+
     } catch (IllegalArgumentException e) {
       log.error(funcName + "Unexpected IllegalArgumentException: "
         + e.getMessage());
@@ -162,6 +171,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
         if (lockSurl(surlStatus.getSurl())) {
           spaceAvailableSURLs.add(surlStatus.getSurl());
+
           newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
             "Success");
           atLeastOneSuccess = true;
@@ -171,7 +181,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         break;
       case SRM_SUCCESS:
         newStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
+
+        TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
+
         atLeastOneFailure = true;
         break;
       case SRM_ABORTED:
@@ -196,40 +208,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
     executePutDone(spaceAvailableSURLs, user);
 
+    SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
+
     if (!spaceAvailableSURLs.isEmpty()) {
       try {
-        SurlStatusManager.checkAndUpdateStatus(requestToken,
-          spaceAvailableSURLs, TStatusCode.SRM_SPACE_AVAILABLE,
-          TStatusCode.SRM_SUCCESS);
+
+        checker.markSURLsReadyForRead(requestToken, spaceAvailableSURLs);
 
       } catch (IllegalArgumentException e) {
         log.error(funcName + "Unexpected IllegalArgumentException: "
           + e.getMessage());
         globalStatus = CommandHelper.buildStatus(
           TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
-        printRequestOutcome(globalStatus, inputData);
-        return new ManageFileTransferOutputData(globalStatus);
-      } catch (UnknownTokenException e) {
-        log.error(funcName + "Unexpected UnknownTokenException: "
-          + e.getMessage());
-        globalStatus = CommandHelper
-          .buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-            "Request Failed,. Unexpected UnknownSurlException in checkAndUpdateStatus");
-        printRequestOutcome(globalStatus, inputData);
-        return new ManageFileTransferOutputData(globalStatus);
-      } catch (ExpiredTokenException e) {
-        log.info(funcName + "The request is expired: ExpiredTokenException: "
-          + e.getMessage());
-        globalStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-        printRequestOutcome(globalStatus, inputData);
-        return new ManageFileTransferOutputData(globalStatus);
-      } catch (UnknownSurlException e) {
-        log.error(funcName + "Unexpected UnknownSurlException: "
-          + e.getMessage());
-        globalStatus = CommandHelper
-          .buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-            "Request Failed. Unexpected UnknownSurlException in checkAndUpdateStatus");
         printRequestOutcome(globalStatus, inputData);
         return new ManageFileTransferOutputData(globalStatus);
       }
@@ -309,13 +299,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
   }
 
-  private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken,
-    List<TSURL> inputSURLs) throws IllegalArgumentException,
-    RequestUnknownException, UnknownTokenException, ExpiredTokenException {
+  private ArrayOfTSURLReturnStatus loadSURLsStatus(GridUserInterface user,
+    TRequestToken requestToken, List<TSURL> inputSURLs)
+    throws IllegalArgumentException, RequestUnknownException,
+    UnknownTokenException, ExpiredTokenException {
 
     ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(
       inputSURLs.size());
-    Map<TSURL, TReturnStatus> surlsStatuses = SurlStatusManager.getSurlsStatus(
+
+    SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
+
+    Map<TSURL, TReturnStatus> surlsStatuses = checker.getSURLStatuses(user,
       requestToken, inputSURLs);
 
     if (surlsStatuses.isEmpty()) {
@@ -372,7 +366,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       log.debug("Executing PutDone for SURL: " + surl.getSURLString());
 
       StoRI stori = null;
-      // Retrieve the StoRI associate to the SURL
+
       if (user == null) {
         try {
           stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);

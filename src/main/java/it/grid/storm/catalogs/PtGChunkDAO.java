@@ -130,7 +130,6 @@ public class PtGChunkDAO {
 	 * spurious data is supplied, it will just stay there because of a lack of a
 	 * parent request!
 	 */
-	// TODO MICHELE USER_SURL refactored
 	public synchronized void addChild(PtGChunkDataTO to) {
 
 		if (!checkConnection()) {

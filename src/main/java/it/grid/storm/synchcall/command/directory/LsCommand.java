@@ -21,6 +21,9 @@ import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
+import it.grid.storm.checksum.ChecksumAlgorithm;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.common.SRMConstants;
 import it.grid.storm.common.types.SizeUnit;
@@ -72,8 +75,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,8 +85,6 @@ import java.util.Map;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.checksum.ChecksumAlgorithm;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -715,17 +714,10 @@ public class LsCommand extends DirectoryCommand implements Command {
 	 */
 	private boolean isStoRISURLBusy(StoRI element) {
 
-		try {
-			return TStatusCode.SRM_SPACE_AVAILABLE.equals(SurlStatusManager
-				.getSurlStatus(element.getSURL()));
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException(
-				"unexpected IllegalArgumentException in SurlStatusManager.getSurlsStatus: "
-					+ e);
-		} catch (UnknownSurlException e) {
-			log.debug("Surl {} not stored, surl is not busy.", element.getSURL());
-			return false;
-		}
+	  SURLStatusManager checker = SURLStatusManagerFactory
+	    .newSURLStatusManager();
+	  
+	  return checker.isSURLBusy(element.getSURL());
 	}
 
 	private void fullDetail(LSInputData inputData, StoRI stori,

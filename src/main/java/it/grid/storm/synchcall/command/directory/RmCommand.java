@@ -17,13 +17,13 @@
 
 package it.grid.storm.synchcall.command.directory;
 
-import java.util.List;
-
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
@@ -33,13 +33,12 @@ import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
@@ -47,8 +46,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,33 +182,14 @@ public class RmCommand implements Command {
       throw new RmException(TStatusCode.SRM_INVALID_PATH,
         "The specified file is a directory. Not removed");
     }
-    long fileSize = localFile.getExactSize();
 
-    try {
+    // Get file size before it's removed
+    long fileSize = localFile.getSize();
 
-      /**
-       * If there are SrmPrepareToPut active on the SURL specified change the
-       * SRM_STATUS from SRM_SPACE_AVAILABLE to SRM_ABORTED
-       */
-      SurlStatusManager.checkAndUpdateStatus(TRequestType.PREPARE_TO_PUT, surl,
-        TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_ABORTED,
-        "File Removed by a SrmRm()");
+    SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
 
-      /**
-       * If there are SrmPrepareToGet active on the SURL specified change the
-       * SRM_STATUS from SRM_FILE_PINNED to SRM_ABORTED
-       */
-      SurlStatusManager.checkAndUpdateStatus(TRequestType.PREPARE_TO_GET, surl,
-        TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_ABORTED,
-        "File Removed by a SrmRm()");
-
-    } catch (IllegalArgumentException e) {
-      log.error("srmRm: {}", e.getMessage());
-      throw new RmException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-    } catch (UnknownSurlException e) {
-      log.error("srmRm: {}", e.getMessage());
-      throw new RmException(TStatusCode.SRM_INVALID_PATH, e.getMessage());
-    }
+    manager.abortAllGetRequestsForSURL(user, surl, "File has been removed.");
+    manager.abortAllPutRequestsForSURL(user, surl, "File has been removed.");
 
     if (!localFile.delete()) {
       log.error("srmRm: File not removed!");

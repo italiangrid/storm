@@ -19,6 +19,7 @@ package it.grid.storm;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.catalogs.StoRMDataSource;
 import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
@@ -195,6 +196,8 @@ public class StoRM {
 	  
 		configureLogging();
 	  
+		configureStoRMDataSource();
+		
 		// Start space catalog
 		spaceCatalog = new ReservedSpaceCatalog();
 		
@@ -218,7 +221,13 @@ public class StoRM {
 		
 	}
 
-	/**
+	private void configureStoRMDataSource() {
+	  
+	  StoRMDataSource.init();
+	}
+
+
+  /**
 	 * Method used to start the picker.
 	 */
 	synchronized public void startPicker() {
