@@ -24,7 +24,7 @@ package it.grid.storm.authz;
  * @author zappi
  * 
  */
-public class AuthzException extends Exception {
+public class AuthzException extends RuntimeException {
 
 	/**
 	 * 

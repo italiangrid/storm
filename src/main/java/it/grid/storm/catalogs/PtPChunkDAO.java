@@ -33,6 +33,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -1178,7 +1179,152 @@ public class PtPChunkDAO {
 		}
 		return find(surlsUniqueIDs, surlsArray, null, false);
 	}
+	
+	
+	private List<PtPChunkDataTO> chunkTOfromResultSet(ResultSet rs) 
+	  throws SQLException{
+	   
+	  List<PtPChunkDataTO> results = new ArrayList<PtPChunkDataTO>();
+    
+	  while (rs.next()) {
+	    
+	    PtPChunkDataTO chunkDataTO = new PtPChunkDataTO();
+      
+	    chunkDataTO.setFileStorageType(rs
+        .getString("rq.config_FileStorageTypeID"));
+      chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
+      chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
+      chunkDataTO.setPinLifetime(rs.getInt("rq.pinLifetime"));
+      chunkDataTO.setFileLifetime(rs.getInt("rq.fileLifetime"));
+      chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
+      chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
 
+      /**
+       * This code is only for the 1.3.18. This is a workaround to get FQANs
+       * using the proxy field on request_queue. The FE use the proxy field of
+       * request_queue to insert a single FQAN string containing all FQAN
+       * separeted by the "#" char. The proxy is a BLOB, hence it has to be
+       * properly conveted in string.
+       */
+      java.sql.Blob blob = rs.getBlob("rq.proxy");
+      if (!rs.wasNull() && blob != null) {
+        byte[] bdata = blob.getBytes(1, (int) blob.length());
+        chunkDataTO.setVomsAttributes(new String(bdata));
+      }
+      chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
+      chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
+
+      chunkDataTO.setNormalizedStFN(rs
+        .getString("rp.normalized_targetSURL_StFN"));
+      int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
+      if (!rs.wasNull()) {
+        chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+      }
+
+      chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));       
+      chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
+      chunkDataTO.setStatus(rs.getInt("sp.statusCode"));
+      results.add(chunkDataTO);
+    }
+	  
+	  return results;
+	}
+	
+	
+	
+	public synchronized List<PtPChunkDataTO> findActivePtPsOnSURLs(List<String> surls){
+	
+	  if (surls == null || surls.isEmpty()){
+	    throw new IllegalArgumentException("cannot find active active "
+        + "PtPs for an empty or null list of SURLs!");
+	  }
+	  
+	  ResultSet rs = null;
+    PreparedStatement stat = null;
+   
+    try {
+        String query = "SELECT rq.ID, rq.r_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, "
+        + "rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
+        + "sp.statusCode "
+        + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
+        + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
+        + "WHERE ( rp.targetSURL in "+ makeSurlString((String[])surls.toArray()) +" )"
+        + "AND sp.statusCode = 24";
+      
+        stat = con.prepareStatement(query);
+        logWarnings(con.getWarnings());
+        
+        rs = stat.executeQuery();
+        List<PtPChunkDataTO> results = chunkTOfromResultSet(rs);
+
+        return results;
+    
+    } catch (SQLException e) {
+
+      log.error("findActivePtPsOnSURLs(): SQL Error: {}", e.getMessage(),e);
+      return Collections.emptyList();
+      
+    } finally {
+      close(rs);
+      close(stat);
+    }
+	}
+	
+	
+  public synchronized List<PtPChunkDataTO> findActivePtPsOnSURL(String surl) {
+    return findActivePtPsOnSURL(surl, null);
+  }
+  
+  public synchronized List<PtPChunkDataTO> findActivePtPsOnSURL(String surl,
+    String currentRequestToken) {
+
+    if (surl == null || surl.isEmpty()) {
+      throw new IllegalArgumentException("cannot find active active "
+        + "PtPs for an empty or null SURL!");
+    }
+    
+    ResultSet rs = null;
+    PreparedStatement stat = null;
+    
+    try {
+
+      String query = "SELECT rq.ID, rq.r_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, "
+        + "rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
+        + "sp.statusCode "
+        + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
+        + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
+        + "WHERE ( rp.targetSURL = ? and sp.statusCode=24 )";
+      
+      if (currentRequestToken != null){
+        query += "AND rq.r_token != ?";
+      }
+
+      stat = con.prepareStatement(query);
+      logWarnings(con.getWarnings());
+
+      stat.setString(1, surl);
+      
+      if (currentRequestToken != null){
+        stat.setString(2, currentRequestToken);
+      }
+      
+      rs = stat.executeQuery();
+      List<PtPChunkDataTO> results = chunkTOfromResultSet(rs);
+
+      return results;
+      
+    } catch (SQLException e) {
+
+      log.error("findActivePtPsOnSURL(): SQL Error: {}", e.getMessage(),e);
+      return Collections.emptyList();
+      
+    } finally {
+      close(rs);
+      close(stat);
+    }
+
+  }
+  
 	private synchronized Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs,
 		String[] surlsArray, String dn, boolean withDn)
 		throws IllegalArgumentException {

@@ -24,7 +24,11 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.asynch.AdvancedPicker;
+import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
@@ -42,7 +46,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortFilesOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.SurlStatusManager;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import org.slf4j.Logger;
@@ -52,303 +55,278 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 
   private static final String SRM_COMMAND = "srmAbortFiles";
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AbortFilesCommand.class);
+  private static final Logger log = LoggerFactory
+    .getLogger(AbortFilesCommand.class);
 
-	private AdvancedPicker advancedPicker;
-	private AbortExecutorInterface executor;
+  private AdvancedPicker advancedPicker;
+  private AbortExecutorInterface executor;
 
-	public OutputData execute(InputData data) {
+  public OutputData execute(InputData data) {
 
-		advancedPicker = new AdvancedPicker();
-		AbortFilesOutputData outputData = new AbortFilesOutputData();
-		AbortFilesInputData inputData = (AbortFilesInputData) data;
+    advancedPicker = new AdvancedPicker();
+    AbortFilesOutputData outputData = new AbortFilesOutputData();
+    AbortFilesInputData inputData = (AbortFilesInputData) data;
 
-		boolean res = false;
-		TReturnStatus globalStatus = null;
-		ArrayOfTSURLReturnStatus arrayOfTSURLReturnStatus = null;
+    boolean res = false;
+    TReturnStatus globalStatus = null;
+    ArrayOfTSURLReturnStatus arrayOfTSURLReturnStatus = null;
 
-		AbortFilesCommand.log.debug("Started AbortRequest function.");
+    AbortFilesCommand.log.debug("Started AbortRequest function.");
 
-		if (inputData == null
-			|| inputData.getRequestToken() == null
-			|| (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) && inputData
-				.getArrayOfSURLs() == null)) {
+    if (inputData == null
+      || inputData.getRequestToken() == null
+      || (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) && inputData
+        .getArrayOfSURLs() == null)) {
 
-			log.debug("srmAbortFiles: Invalid input parameter specified");
+      log.debug("srmAbortFiles: Invalid input parameter specified");
 
-			globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Missing mandatory parameters");
+      globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Missing mandatory parameters");
 
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
 
-			log.error("srmAbortFiles: <> Request for [token:] [SURL:] failed with "
-				  + "[status: {}]", globalStatus);
+      log.error("srmAbortFiles: <> Request for [token:] [SURL:] failed with "
+        + "[status: {}]", globalStatus);
 
-			return outputData;
-		}
+      return outputData;
+    }
 
-		/********************************** Start to manage the request ***********************************/
+    /********************************** Start to manage the request ***********************************/
 
-		/**
-		 * We can identify 3 different phases of execution:
-		 * 
-		 * 1) Look for the request into the pending DB table, in such case the
-		 * request is still in SRM_QUEUED status and the AbortRequest can be
-		 * satisfied simply removing the request from the pending table, updating
-		 * the request status to SRM_ABORTED and copying it into the appropriate
-		 * table.
-		 * 
-		 * 2) If we are not in the first case, look for the request into the
-		 * scheduler internal structures. If the request is found and removed, the
-		 * request status into the appropriate table should be updated to
-		 * SRM_ABORTED.
-		 * 
-		 * 3) In this case the request to abort is under execution. The behaviour is
-		 * different depending on the request type. For the SrmPrepareToPut and
-		 * SrmPrepareToGet, we decide to wait until the ending of execution, and
-		 * then perform a rollback and mark the request as SRM_ABORTED. In case of
-		 * SrmCopy, we need to stop the Copy execution so the dedicated
-		 * AbortExecutor invoke an appropriate abort method.
-		 * 
-		 */
+    /**
+     * We can identify 3 different phases of execution:
+     * 
+     * 1) Look for the request into the pending DB table, in such case the
+     * request is still in SRM_QUEUED status and the AbortRequest can be
+     * satisfied simply removing the request from the pending table, updating
+     * the request status to SRM_ABORTED and copying it into the appropriate
+     * table.
+     * 
+     * 2) If we are not in the first case, look for the request into the
+     * scheduler internal structures. If the request is found and removed, the
+     * request status into the appropriate table should be updated to
+     * SRM_ABORTED.
+     * 
+     * 3) In this case the request to abort is under execution. The behaviour is
+     * different depending on the request type. For the SrmPrepareToPut and
+     * SrmPrepareToGet, we decide to wait until the ending of execution, and
+     * then perform a rollback and mark the request as SRM_ABORTED. In case of
+     * SrmCopy, we need to stop the Copy execution so the dedicated
+     * AbortExecutor invoke an appropriate abort method.
+     * 
+     */
 
-		TRequestToken requestToken = inputData.getRequestToken();
-		ArrayOfSURLs surlArray = inputData.getArrayOfSURLs();
-		AbortFilesCommand.log.debug("srmAbortFiles: requestToken={}", 
-		  requestToken);
+    TRequestToken requestToken = inputData.getRequestToken();
+    ArrayOfSURLs surlArray = inputData.getArrayOfSURLs();
+    AbortFilesCommand.log.debug("srmAbortFiles: requestToken={}", requestToken);
 
-		/****************************** PHASE (1) LOOKING INTO PENDING DB AND ADVANCED PICKER ***************************/
+    /****************************** PHASE (1) LOOKING INTO PENDING DB AND ADVANCED PICKER ***************************/
 
-		/**
-		 * Note: If a global request if found to be be in SRM_QUEUED status in the
-		 * SummaryCatalog it means that both the global status and each chunk are
-		 * still in SRM_QUEUED. There is not the possibility of partial execution,
-		 * to abort it is sufficient transit both global status and each chunk in
-		 * SRM_ABORTED.
-		 */
-		if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
+    /**
+     * Note: If a global request if found to be be in SRM_QUEUED status in the
+     * SummaryCatalog it means that both the global status and each chunk are
+     * still in SRM_QUEUED. There is not the possibility of partial execution,
+     * to abort it is sufficient transit both global status and each chunk in
+     * SRM_ABORTED.
+     */
+    if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
 
-		  log.debug("AbortRequest: SurlArray Not specified.");
+      log.debug("AbortRequest: SurlArray Not specified.");
 
-			try {
-			  
-				SurlStatusManager.checkAndUpdateStatus(
-				  requestToken,
-					TStatusCode.SRM_REQUEST_QUEUED, 
-					TStatusCode.SRM_ABORTED,
-					"User aborted request!");
+      GridUserInterface user = getUserFromInputData(inputData);
 
-			} catch (UnknownTokenException e) {
+      SURLStatusManager manager = SURLStatusManagerFactory
+        .newSURLStatusManager();
+      try {
 
-				log.info("Unable to update surls status on token {}: {}", 
-				  requestToken, e.getMessage(), e);
+        manager.abortRequest(user, requestToken, "Request aborted by user.");
 
-				globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
-					"Invalid request token");
+      } catch (UnknownTokenException e) {
 
-				outputData.setArrayOfFileStatuses(null);
+        log.info("Unable to update surls status on token {}: {}", requestToken,
+          e.getMessage(), e);
 
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken());
+        globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+          "Invalid request token");
 
-				return outputData;
+        outputData.setArrayOfFileStatuses(null);
+        outputData.setReturnStatus(globalStatus);
 
-			} catch (ExpiredTokenException e) {
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken());
 
-			  log.info("Expired token: {}. {}",
-			    requestToken, e.getMessage(), e);
-			  
-				globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-					"Request expired");
-				outputData.setArrayOfFileStatuses(null);
-				
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken());
+        return outputData;
 
-				return outputData;
-			}
-			RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
-				requestToken, TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
-				"User aborted request!");
-			res = false;
+      } catch (ExpiredTokenException e) {
 
-		} else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)){
+        log.info("Expired token: {}. {}", requestToken, e.getMessage(), e);
 
-		  log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
-			res = false;
-		}
-		
-		if (res == false) {
-			AbortFilesCommand.log.debug("Phase (1.A) AbortRequest: Token not found.");
-		} else {
+        globalStatus = manageStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+          "Request expired");
+        outputData.setArrayOfFileStatuses(null);
 
-			arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
-			globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
-				"Abort sucessfully completed.");
-			outputData.setReturnStatus(globalStatus);
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken());
 
-			if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-				for (int i = 0; i < surlArray.size(); i++) {
-					TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
-					surlRetStatus.setSurl(surlArray.getTSURL(i));
-					surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
-						"File request aborted."));
-					
-					CommandHelper.printSurlOutcome(
-					  SRM_COMMAND, 
-					  log, 
-					  globalStatus,
-					  inputData, 
-					  inputData.getRequestToken(),
-					  surlArray.getTSURL(i));
-					
-					arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
-				}
+        return outputData;
+      } catch (AuthzException e) {
 
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken(), 
-				  surlArray);
+        log.info("Authorization error: {}", e);
+        globalStatus = manageStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+          e.getMessage());
+        
+        outputData.setArrayOfFileStatuses(null);
+        outputData.setReturnStatus(globalStatus);
+        
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken());
+        
+        return outputData;
+        
+      }
 
-			} else {
+      RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
+        requestToken, TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
+        "User aborted request!");
+      res = false;
 
-				outputData.setArrayOfFileStatuses(null);
+    } else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
 
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken());
-			}
-			return outputData;
-		}
+      log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
+      res = false;
+    }
 
-		/******** Phase 1.B Look in the AdvancedPicker ************/
-		/**
-		 * Note: There is the possibility that the global request status is changed
-		 * in SRM_IN_PROGESS but each chunk is not really yet executed, (each chunk
-		 * status is still in SRM_QUEUED). The only component able to manage this
-		 * situation is the advanced picker. There is not the possibility of partial
-		 * execution, to abort it is sufficient ask to advancePicker to transit both
-		 * global status and each chunk in SRM_ABORTED.
-		 */
+    if (res == false) {
+      AbortFilesCommand.log.debug("Phase (1.A) AbortRequest: Token not found.");
+    } else {
 
-		if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
-			log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
-			advancedPicker.abortRequest(inputData.getRequestToken());
-			res = false;
+      arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
+      globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
+        "Abort sucessfully completed.");
+      outputData.setReturnStatus(globalStatus);
 
-		} else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-			log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
-			res = false;
-		}
+      if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
+        for (int i = 0; i < surlArray.size(); i++) {
+          TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
+          surlRetStatus.setSurl(surlArray.getTSURL(i));
+          surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+            "File request aborted."));
 
-		if (res == false) {
-			AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: Token not found.");
-		} else {
+          CommandHelper.printSurlOutcome(SRM_COMMAND, log, globalStatus,
+            inputData, inputData.getRequestToken(), surlArray.getTSURL(i));
 
-			arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
-			globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
-				"Abort sucessfully completed.");
-			outputData.setReturnStatus(globalStatus);
-			if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-				for (int i = 0; i < surlArray.size(); i++) {
-					TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
-					surlRetStatus.setSurl(surlArray.getTSURL(i));
-					surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
-						"File request aborted."));
+          arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
+        }
 
-					CommandHelper.printSurlOutcome(
-					  SRM_COMMAND, 
-					  log, 
-					  globalStatus,
-					  inputData, 
-					  inputData.getRequestToken(),
-					  surlArray.getTSURL(i));
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken(), surlArray);
 
-					arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
-				}
+      } else {
 
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken(), 
-				  surlArray);
+        outputData.setArrayOfFileStatuses(null);
 
-			} else {
-				outputData.setArrayOfFileStatuses(null);
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken());
+      }
+      return outputData;
+    }
 
-				CommandHelper.printRequestOutcome(
-				  SRM_COMMAND, 
-				  log, 
-				  globalStatus,
-				  inputData, 
-				  inputData.getRequestToken());
+    /******** Phase 1.B Look in the AdvancedPicker ************/
+    /**
+     * Note: There is the possibility that the global request status is changed
+     * in SRM_IN_PROGESS but each chunk is not really yet executed, (each chunk
+     * status is still in SRM_QUEUED). The only component able to manage this
+     * situation is the advanced picker. There is not the possibility of partial
+     * execution, to abort it is sufficient ask to advancePicker to transit both
+     * global status and each chunk in SRM_ABORTED.
+     */
 
-			}
-			return outputData;
-		}
+    if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
+      log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
+      advancedPicker.abortRequest(inputData.getRequestToken());
+      res = false;
 
-		TRequestType rtype = SurlStatusManager.isPersisted(requestToken);
+    } else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
+      log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
+      res = false;
+    }
 
-		if (rtype == TRequestType.PREPARE_TO_GET) {
-			executor = new PtGAbortExecutor();
-			return executor.doIt(inputData);
-		} else {
-			if (rtype == TRequestType.PREPARE_TO_PUT) {
-				executor = new PtPAbortExecutor();
-				return executor.doIt(inputData);
-			} else {
-				if (rtype == TRequestType.COPY) {
-					executor = new CopyAbortExecutor();
-					return executor.doIt(inputData);
-				} else {
-				  log.debug("srmAbortFiles : Invalid input parameter specified");
+    if (res == false) {
+      AbortFilesCommand.log.debug("Phase (1.B) AbortRequest: Token not found.");
+    } else {
 
-					globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
-						"Invalid request token. Abort only works for PtG, PtP and Copy.");
-					
-					CommandHelper.printRequestOutcome(
-					  SRM_COMMAND, 
-					  log, 
-					  globalStatus,
-					  inputData, 
-					  inputData.getRequestToken());
+      arrayOfTSURLReturnStatus = new ArrayOfTSURLReturnStatus();
+      globalStatus = manageStatus(TStatusCode.SRM_SUCCESS,
+        "Abort sucessfully completed.");
+      outputData.setReturnStatus(globalStatus);
+      if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
+        for (int i = 0; i < surlArray.size(); i++) {
+          TSURLReturnStatus surlRetStatus = new TSURLReturnStatus();
+          surlRetStatus.setSurl(surlArray.getTSURL(i));
+          surlRetStatus.setStatus(manageStatus(TStatusCode.SRM_SUCCESS,
+            "File request aborted."));
 
-					outputData.setReturnStatus(globalStatus);
-					outputData.setArrayOfFileStatuses(null);
-					return outputData;
-				}
-			}
-		}
-	}
+          CommandHelper.printSurlOutcome(SRM_COMMAND, log, globalStatus,
+            inputData, inputData.getRequestToken(), surlArray.getTSURL(i));
 
-	private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
+          arrayOfTSURLReturnStatus.addTSurlReturnStatus(surlRetStatus);
+        }
 
-		TReturnStatus returnStatus = null;
-		try {
-			returnStatus = new TReturnStatus(statusCode, explanation);
-		} catch (InvalidTReturnStatusAttributeException ex1) {
-			log.debug("AbortExecutor : Error creating returnStatus: {}", 
-			  ex1.getMessage(), ex1);
-		}
-		return returnStatus;
-	}
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken(), surlArray);
+
+      } else {
+        outputData.setArrayOfFileStatuses(null);
+
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+          inputData, inputData.getRequestToken());
+
+      }
+      return outputData;
+    }
+
+    TRequestType rtype = RequestSummaryCatalog.getInstance().typeOf(
+      requestToken);
+
+    if (rtype == TRequestType.PREPARE_TO_GET) {
+      executor = new PtGAbortExecutor();
+      return executor.doIt(inputData);
+    } else {
+      if (rtype == TRequestType.PREPARE_TO_PUT) {
+        executor = new PtPAbortExecutor();
+        return executor.doIt(inputData);
+      } else {
+        if (rtype == TRequestType.COPY) {
+          executor = new CopyAbortExecutor();
+          return executor.doIt(inputData);
+        } else {
+          log.debug("srmAbortFiles : Invalid input parameter specified");
+
+          globalStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+            "Invalid request token. Abort only works for PtG, PtP and Copy.");
+
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+            inputData, inputData.getRequestToken());
+
+          outputData.setReturnStatus(globalStatus);
+          outputData.setArrayOfFileStatuses(null);
+          return outputData;
+        }
+      }
+    }
+  }
+
+  private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
+
+    TReturnStatus returnStatus = null;
+    try {
+      returnStatus = new TReturnStatus(statusCode, explanation);
+    } catch (InvalidTReturnStatusAttributeException ex1) {
+      log.debug("AbortExecutor : Error creating returnStatus: {}",
+        ex1.getMessage(), ex1);
+    }
+    return returnStatus;
+  }
 
 }
