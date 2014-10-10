@@ -70,428 +70,429 @@ import org.slf4j.LoggerFactory;
 
 public class PutDoneCommand extends DataTransferCommand implements Command {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(PutDoneCommand.class);
-	private static final String funcName = "PutDone: ";
+  private static final Logger log = LoggerFactory
+    .getLogger(PutDoneCommand.class);
+  private static final String funcName = "PutDone: ";
 
-	private static final Set<String> lockedSurls = new HashSet<String>();
-	private static final Object lock = new Object();
+  private static final Set<String> lockedSurls = new HashSet<String>();
+  private static final Object lock = new Object();
 
-	private static final TReturnStatus anotherPutDoneActiveReturnStatus = CommandHelper
-		.buildStatus(TStatusCode.SRM_FAILURE,
-			"There is another PutDone in execution on this SURL.");
-	private static final String SRM_COMMAND = "srmPutDone";
+  private static final TReturnStatus anotherPutDoneActiveReturnStatus = CommandHelper
+    .buildStatus(TStatusCode.SRM_FAILURE,
+      "There is another PutDone in execution on this SURL.");
+  private static final String SRM_COMMAND = "srmPutDone";
 
-	public PutDoneCommand() {
+  public PutDoneCommand() {
 
-	};
+  };
 
-	/**
-	 * Implements the srmPutDone. Used to notify the SRM that the client completed
-	 * a file transfer to the TransferURL in the allocated space (by a
-	 * PrepareToPut).
-	 */
-	public OutputData execute(InputData absData) {
+  /**
+   * Implements the srmPutDone. Used to notify the SRM that the client completed
+   * a file transfer to the TransferURL in the allocated space (by a
+   * PrepareToPut).
+   */
+  public OutputData execute(InputData absData) {
 
-		ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
-		TReturnStatus globalStatus = null;
-		log.debug(funcName + "Started.");
+    ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
+    TReturnStatus globalStatus = null;
+    log.debug(funcName + "Started.");
 
-		if (inputData == null || inputData.getRequestToken() == null
-			|| inputData.getArrayOfSURLs() == null
-			|| inputData.getArrayOfSURLs().size() < 1) {
-			log.error(funcName + "Invalid input parameter specified");
-			globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Missing mandatory parameters");
-			if (inputData == null) {
-				log.error("srmPutDone: Requestfailed with [status: " + globalStatus
-					+ "]");
-			} else {
-				printRequestOutcome(globalStatus, inputData);
-			}
-			return new ManageFileTransferOutputData(globalStatus);
-		}
+    if (inputData == null || inputData.getRequestToken() == null
+      || inputData.getArrayOfSURLs() == null
+      || inputData.getArrayOfSURLs().size() < 1) {
+      log.error(funcName + "Invalid input parameter specified");
+      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Missing mandatory parameters");
+      if (inputData == null) {
+        log.error("srmPutDone: Requestfailed with [status: " + globalStatus
+          + "]");
+      } else {
+        printRequestOutcome(globalStatus, inputData);
+      }
+      return new ManageFileTransferOutputData(globalStatus);
+    }
 
-		/********************************** Start to manage the request ***********************************/
-		TRequestToken requestToken = inputData.getRequestToken();
-		ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
+    /********************************** Start to manage the request ***********************************/
+    TRequestToken requestToken = inputData.getRequestToken();
+    ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
 
-		ArrayOfTSURLReturnStatus surlsStatuses;
-		try {
-			surlsStatuses = loadSURLsStatus(requestToken, listOfSURLs);
-		} catch (IllegalArgumentException e) {
-			log.error(funcName + "Unexpected IllegalArgumentException: "
-				+ e.getMessage());
-			globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-				"Request Failed, retry.");
-			printRequestOutcome(globalStatus, inputData);
-			return new ManageFileTransferOutputData(globalStatus);
-		} catch (RequestUnknownException e) {
-			log.info(funcName
-				+ "Invalid request token and surl. RequestUnknownException: "
-				+ e.getMessage());
-			globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid request token and surls");
-			printRequestOutcome(globalStatus, inputData);
-			return new ManageFileTransferOutputData(globalStatus);
-		} catch (UnknownTokenException e) {
-			log.info(funcName + "Invalid request token. UnknownTokenException: "
-				+ e.getMessage());
-			globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid request token");
-			printRequestOutcome(globalStatus, inputData);
-			return new ManageFileTransferOutputData(globalStatus);
-		} catch (ExpiredTokenException e) {
-			log.info(funcName + "The request is expired: ExpiredTokenException: "
-				+ e.getMessage());
-			globalStatus = CommandHelper.buildStatus(
-				TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-			printRequestOutcome(globalStatus, inputData);
-			return new ManageFileTransferOutputData(globalStatus);
-		}
+    ArrayOfTSURLReturnStatus surlsStatuses;
+    try {
+      surlsStatuses = loadSURLsStatus(requestToken, listOfSURLs);
+    } catch (IllegalArgumentException e) {
+      log.error(funcName + "Unexpected IllegalArgumentException: "
+        + e.getMessage());
+      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+        "Request Failed, retry.");
+      printRequestOutcome(globalStatus, inputData);
+      return new ManageFileTransferOutputData(globalStatus);
+    } catch (RequestUnknownException e) {
+      log.info(funcName
+        + "Invalid request token and surl. RequestUnknownException: "
+        + e.getMessage());
+      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Invalid request token and surls");
+      printRequestOutcome(globalStatus, inputData);
+      return new ManageFileTransferOutputData(globalStatus);
+    } catch (UnknownTokenException e) {
+      log.info(funcName + "Invalid request token. UnknownTokenException: "
+        + e.getMessage());
+      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Invalid request token");
+      printRequestOutcome(globalStatus, inputData);
+      return new ManageFileTransferOutputData(globalStatus);
+    } catch (ExpiredTokenException e) {
+      log.info(funcName + "The request is expired: ExpiredTokenException: "
+        + e.getMessage());
+      globalStatus = CommandHelper.buildStatus(
+        TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+      printRequestOutcome(globalStatus, inputData);
+      return new ManageFileTransferOutputData(globalStatus);
+    }
 
-		LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
-		boolean atLeastOneSuccess = false;
-		boolean atLeastOneFailure = false;
-		boolean atLeastOneAborted = false;
-		for (TSURLReturnStatus surlStatus : surlsStatuses.getArray()) {
-			TReturnStatus newStatus;
-			TReturnStatus currentStatus = surlStatus.getStatus();
-			switch (currentStatus.getStatusCode()) {
-			case SRM_SPACE_AVAILABLE:
+    LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
+    boolean atLeastOneSuccess = false;
+    boolean atLeastOneFailure = false;
+    boolean atLeastOneAborted = false;
+    for (TSURLReturnStatus surlStatus : surlsStatuses.getArray()) {
+      TReturnStatus newStatus;
+      TReturnStatus currentStatus = surlStatus.getStatus();
+      switch (currentStatus.getStatusCode()) {
+      case SRM_SPACE_AVAILABLE:
 
-				if (lockSurl(surlStatus.getSurl())) {
-					spaceAvailableSURLs.add(surlStatus.getSurl());
-					newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Success");
-					atLeastOneSuccess = true;
-				} else { // there is an active PutDone on this SURL
-					newStatus = anotherPutDoneActiveReturnStatus;
-				}
-				break;
-			case SRM_SUCCESS:
-				newStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
-				atLeastOneFailure = true;
-				break;
-			case SRM_ABORTED:
-				newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-					"PtP status for this SURL is SRM_ABORTED");
-				atLeastOneAborted = true;
-				break;
-			default:
-				newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-					"Check StatusOfPutRequest for more information");
-				atLeastOneFailure = true;
-				break;
-			}
-			surlsStatuses.updateStatus(surlStatus, newStatus);
-		}
+        if (lockSurl(surlStatus.getSurl())) {
+          spaceAvailableSURLs.add(surlStatus.getSurl());
+          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
+            "Success");
+          atLeastOneSuccess = true;
+        } else { // there is an active PutDone on this SURL
+          newStatus = anotherPutDoneActiveReturnStatus;
+        }
+        break;
+      case SRM_SUCCESS:
+        newStatus = CommandHelper.buildStatus(
+          TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
+        atLeastOneFailure = true;
+        break;
+      case SRM_ABORTED:
+        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+          "PtP status for this SURL is SRM_ABORTED");
+        atLeastOneAborted = true;
+        break;
+      default:
+        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
+          "Check StatusOfPutRequest for more information");
+        atLeastOneFailure = true;
+        break;
+      }
+      surlsStatuses.updateStatus(surlStatus, newStatus);
+    }
 
-		GridUserInterface user;
-		if (inputData instanceof IdentityInputData) {
-			user = ((IdentityInputData) inputData).getUser();
-		} else {
-			user = null;
-		}
-		executePutDone(spaceAvailableSURLs, user);
+    GridUserInterface user;
+    if (inputData instanceof IdentityInputData) {
+      user = ((IdentityInputData) inputData).getUser();
+    } else {
+      user = null;
+    }
+    executePutDone(spaceAvailableSURLs, user);
 
-		if (!spaceAvailableSURLs.isEmpty()) {
-			try {
-				SurlStatusManager.checkAndUpdateStatus(requestToken,
-					spaceAvailableSURLs, TStatusCode.SRM_SPACE_AVAILABLE,
-					TStatusCode.SRM_SUCCESS);
+    if (!spaceAvailableSURLs.isEmpty()) {
+      try {
+        SurlStatusManager.checkAndUpdateStatus(requestToken,
+          spaceAvailableSURLs, TStatusCode.SRM_SPACE_AVAILABLE,
+          TStatusCode.SRM_SUCCESS);
 
-			} catch (IllegalArgumentException e) {
-				log.error(funcName + "Unexpected IllegalArgumentException: "
-					+ e.getMessage());
-				globalStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
-				printRequestOutcome(globalStatus, inputData);
-				return new ManageFileTransferOutputData(globalStatus);
-			} catch (UnknownTokenException e) {
-				log.error(funcName + "Unexpected UnknownTokenException: "
-					+ e.getMessage());
-				globalStatus = CommandHelper
-					.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-						"Request Failed,. Unexpected UnknownSurlException in checkAndUpdateStatus");
-				printRequestOutcome(globalStatus, inputData);
-				return new ManageFileTransferOutputData(globalStatus);
-			} catch (ExpiredTokenException e) {
-				log.info(funcName + "The request is expired: ExpiredTokenException: "
-					+ e.getMessage());
-				globalStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-				printRequestOutcome(globalStatus, inputData);
-				return new ManageFileTransferOutputData(globalStatus);
-			} catch (UnknownSurlException e) {
-				log.error(funcName + "Unexpected UnknownSurlException: "
-					+ e.getMessage());
-				globalStatus = CommandHelper
-					.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-						"Request Failed. Unexpected UnknownSurlException in checkAndUpdateStatus");
-				printRequestOutcome(globalStatus, inputData);
-				return new ManageFileTransferOutputData(globalStatus);
-			}
-		}
+      } catch (IllegalArgumentException e) {
+        log.error(funcName + "Unexpected IllegalArgumentException: "
+          + e.getMessage());
+        globalStatus = CommandHelper.buildStatus(
+          TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
+        printRequestOutcome(globalStatus, inputData);
+        return new ManageFileTransferOutputData(globalStatus);
+      } catch (UnknownTokenException e) {
+        log.error(funcName + "Unexpected UnknownTokenException: "
+          + e.getMessage());
+        globalStatus = CommandHelper
+          .buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+            "Request Failed,. Unexpected UnknownSurlException in checkAndUpdateStatus");
+        printRequestOutcome(globalStatus, inputData);
+        return new ManageFileTransferOutputData(globalStatus);
+      } catch (ExpiredTokenException e) {
+        log.info(funcName + "The request is expired: ExpiredTokenException: "
+          + e.getMessage());
+        globalStatus = CommandHelper.buildStatus(
+          TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
+        printRequestOutcome(globalStatus, inputData);
+        return new ManageFileTransferOutputData(globalStatus);
+      } catch (UnknownSurlException e) {
+        log.error(funcName + "Unexpected UnknownSurlException: "
+          + e.getMessage());
+        globalStatus = CommandHelper
+          .buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
+            "Request Failed. Unexpected UnknownSurlException in checkAndUpdateStatus");
+        printRequestOutcome(globalStatus, inputData);
+        return new ManageFileTransferOutputData(globalStatus);
+      }
+    }
 
-		for (TSURL surl : spaceAvailableSURLs) {
-			if (surl != null) {
-				unlockSurl(surl);
-			}
-		}
+    for (TSURL surl : spaceAvailableSURLs) {
+      if (surl != null) {
+        unlockSurl(surl);
+      }
+    }
 
-		log.debug("Number of SURLs locked: " + lockedSurls.size());
+    log.debug("Number of SURLs locked: " + lockedSurls.size());
 
-		if (atLeastOneSuccess) {
-			if (!atLeastOneFailure && !atLeastOneAborted) {
-				globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-					"All file requests are successfully completed");
-			} else {
-				globalStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_PARTIAL_SUCCESS, "Details are on the file statuses");
-			}
-		} else {
-			if (atLeastOneFailure) {
-				if (!atLeastOneAborted) {
-					globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-						"All file requests are failed");
-				} else {
-					globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-						"Some file requests are failed, the others are aborted");
-				}
-			} else {
-				if (atLeastOneAborted) {
-					globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_ABORTED,
-						"Request " + requestToken.toString());
-				} else {
-					// unexpected
-					log
-						.error("None of the surls is success, failed or aborted, Unexpeced! SurlStatus = "
-							+ surlsStatuses.getArray());
-					globalStatus = CommandHelper.buildStatus(
-						TStatusCode.SRM_INTERNAL_ERROR,
-						"Request Failed, no surl status recognized, retry.");
-				}
-			}
-		}
-		log.debug(funcName + "Finished with status: " + globalStatus.toString());
+    if (atLeastOneSuccess) {
+      if (!atLeastOneFailure && !atLeastOneAborted) {
+        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
+          "All file requests are successfully completed");
+      } else {
+        globalStatus = CommandHelper.buildStatus(
+          TStatusCode.SRM_PARTIAL_SUCCESS, "Details are on the file statuses");
+      }
+    } else {
+      if (atLeastOneFailure) {
+        if (!atLeastOneAborted) {
+          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
+            "All file requests are failed");
+        } else {
+          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
+            "Some file requests are failed, the others are aborted");
+        }
+      } else {
+        if (atLeastOneAborted) {
+          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_ABORTED,
+            "Request " + requestToken.toString());
+        } else {
+          // unexpected
+          log
+            .error("None of the surls is success, failed or aborted, Unexpeced! SurlStatus = "
+              + surlsStatuses.getArray());
+          globalStatus = CommandHelper.buildStatus(
+            TStatusCode.SRM_INTERNAL_ERROR,
+            "Request Failed, no surl status recognized, retry.");
+        }
+      }
+    }
+    log.debug(funcName + "Finished with status: " + globalStatus.toString());
 
-		printRequestOutcome(globalStatus, inputData);
-		return new ManageFileTransferOutputData(globalStatus, surlsStatuses);
-	}
+    printRequestOutcome(globalStatus, inputData);
+    return new ManageFileTransferOutputData(globalStatus, surlsStatuses);
+  }
 
-	private static void printRequestOutcome(TReturnStatus status,
-		ManageFileTransferRequestFilesInputData inputData) {
+  private static void printRequestOutcome(TReturnStatus status,
+    ManageFileTransferRequestFilesInputData inputData) {
 
-		if (inputData != null) {
-			if (inputData.getArrayOfSURLs() != null) {
-				if (inputData.getRequestToken() != null) {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-						inputData, inputData.getRequestToken(), inputData.getArrayOfSURLs()
-							.asStringList());
-				} else {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-						inputData, inputData.getArrayOfSURLs().asStringList());
-				}
+    if (inputData != null) {
+      if (inputData.getArrayOfSURLs() != null) {
+        if (inputData.getRequestToken() != null) {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
+            inputData, inputData.getRequestToken(), inputData.getArrayOfSURLs()
+              .asStringList());
+        } else {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
+            inputData, inputData.getArrayOfSURLs().asStringList());
+        }
 
-			} else {
-				if (inputData.getRequestToken() != null) {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-						inputData, inputData.getRequestToken());
-				} else {
-					CommandHelper
-						.printRequestOutcome(SRM_COMMAND, log, status, inputData);
-				}
-			}
-		} else {
-			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
-		}
-	}
+      } else {
+        if (inputData.getRequestToken() != null) {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
+            inputData, inputData.getRequestToken());
+        } else {
+          CommandHelper
+            .printRequestOutcome(SRM_COMMAND, log, status, inputData);
+        }
+      }
+    } else {
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+    }
+  }
 
-	private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken,
-		List<TSURL> inputSURLs) throws IllegalArgumentException,
-		RequestUnknownException, UnknownTokenException, ExpiredTokenException {
+  private ArrayOfTSURLReturnStatus loadSURLsStatus(TRequestToken requestToken,
+    List<TSURL> inputSURLs) throws IllegalArgumentException,
+    RequestUnknownException, UnknownTokenException, ExpiredTokenException {
 
-		ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(
-			inputSURLs.size());
-		Map<TSURL, TReturnStatus> surlsStatuses = SurlStatusManager.getSurlsStatus(
-			requestToken, inputSURLs);
+    ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(
+      inputSURLs.size());
+    Map<TSURL, TReturnStatus> surlsStatuses = SurlStatusManager.getSurlsStatus(
+      requestToken, inputSURLs);
 
-		if (surlsStatuses.isEmpty()) {
-			log.info(funcName
-				+ "No one of the requested surls found for the provided token");
-			throw new RequestUnknownException(
-				"No one of the requested surls found for the provided token");
-		}
+    if (surlsStatuses.isEmpty()) {
+      log.info(funcName
+        + "No one of the requested surls found for the provided token");
+      throw new RequestUnknownException(
+        "No one of the requested surls found for the provided token");
+    }
 
-		TReturnStatus status = null;
-		for (TSURL surl : inputSURLs) {
+    TReturnStatus status = null;
+    for (TSURL surl : inputSURLs) {
 
-			log.debug(funcName + "Checking SURL " + surl);
+      log.debug(funcName + "Checking SURL " + surl);
 
-			if (surlsStatuses.containsKey(surl)) {
-				log.debug(funcName + "SURL \'" + surl + "\' found!");
-				status = surlsStatuses.get(surl);
-			} else {
-				log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
-				status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-					"SURL does not refer to an existing file for the specified request token");
-			}
-			TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
-			returnStatuses.addTSurlReturnStatus(surlRetStatus);
-		}
-		return returnStatuses;
-	}
+      if (surlsStatuses.containsKey(surl)) {
+        log.debug(funcName + "SURL \'" + surl + "\' found!");
+        status = surlsStatuses.get(surl);
+      } else {
+        log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
+        status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+          "SURL does not refer to an existing file for the specified request token");
+      }
+      TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
+      returnStatuses.addTSurlReturnStatus(surlRetStatus);
+    }
+    return returnStatuses;
+  }
 
-	/**
-	 * Executes the PutDone for the given SURLs. Function called also from the
-	 * purge thread of PtPChunkCatalog.
-	 * 
-	 * @param spaceAvailableSURLs
-	 *          list of SURLs for which to execute the PutDone.
-	 * @param arrayOfFileStatus
-	 *          array of file status for each of the given SURL (<code>null</code>
-	 *          when called from the purge thread of PtPChunkCatalog)
-	 * @param user
-	 *          the user requesting the PutDone (<code>null</code> when called
-	 *          from the purge thread of PtPChunkCatalog)
-	 * @param localUser
-	 *          the local user associate to the Grid user (<code>null</code> when
-	 *          called from the purge thread of PtPChunkCatalog)
-	 */
-	public static void executePutDone(List<TSURL> spaceAvailableSURLs,
-		GridUserInterface user) {
+  /**
+   * Executes the PutDone for the given SURLs. Function called also from the
+   * purge thread of PtPChunkCatalog.
+   * 
+   * @param spaceAvailableSURLs
+   *          list of SURLs for which to execute the PutDone.
+   * @param arrayOfFileStatus
+   *          array of file status for each of the given SURL (<code>null</code>
+   *          when called from the purge thread of PtPChunkCatalog)
+   * @param user
+   *          the user requesting the PutDone (<code>null</code> when called
+   *          from the purge thread of PtPChunkCatalog)
+   * @param localUser
+   *          the local user associate to the Grid user (<code>null</code> when
+   *          called from the purge thread of PtPChunkCatalog)
+   */
+  public static void executePutDone(List<TSURL> spaceAvailableSURLs,
+    GridUserInterface user) {
 
-		for (TSURL surl : spaceAvailableSURLs) {
+    for (TSURL surl : spaceAvailableSURLs) {
 
-			if (surl == null) {
-				continue;
-			}
+      if (surl == null) {
+        continue;
+      }
 
-			log.debug("Executing PutDone for SURL: " + surl.getSURLString());
+      log.debug("Executing PutDone for SURL: " + surl.getSURLString());
 
-			StoRI stori = null;
-			// Retrieve the StoRI associate to the SURL
-			if (user == null) {
-				try {
-					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-				} catch (IllegalArgumentException e) {
-					log.error(String.format(
-						"Unable to build a stori for surl %s, %s: %s", surl, e.getClass()
-							.getName(), e.getMessage()));
-					continue;
-				} catch (Exception e) {
-					log.info(String.format("Unable to build a stori for surl %s, %s: %s",
-						surl, e.getClass().getName(), e.getMessage()));
-					continue;
-				}
-			} else {
-				try {
-					stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl,
-						user);
-				} catch (IllegalArgumentException e) {
-					log.error(String.format(
-						"User %s is unable to build a stori for surl %s, %s: %s", user,
-						surl, e.getClass().getName(), e.getMessage()));
-					continue;
-				} catch (Exception e) {
-					log.info(String.format(
-						"User %s is unable to build a stori for surl %s, %s: %s", user,
-						surl, e.getClass().getName(), e.getMessage()));
-					continue;
-				}
-			}
+      StoRI stori = null;
+      // Retrieve the StoRI associate to the SURL
+      if (user == null) {
+        try {
+          stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        } catch (IllegalArgumentException e) {
+          log.error(String.format(
+            "Unable to build a stori for surl %s, %s: %s", surl, e.getClass()
+              .getName(), e.getMessage()));
+          continue;
+        } catch (Exception e) {
+          log.info(String.format("Unable to build a stori for surl %s, %s: %s",
+            surl, e.getClass().getName(), e.getMessage()));
+          continue;
+        }
+      } else {
+        try {
+          stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl,
+            user);
+        } catch (IllegalArgumentException e) {
+          log.error(String.format(
+            "User %s is unable to build a stori for surl %s, %s: %s", user,
+            surl, e.getClass().getName(), e.getMessage()));
+          continue;
+        } catch (Exception e) {
+          log.info(String.format(
+            "User %s is unable to build a stori for surl %s, %s: %s", user,
+            surl, e.getClass().getName(), e.getMessage()));
+          continue;
+        }
+      }
 
-			// 1- if the SURL is volatile update the entry in the Volatile table
-			if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
-				try {
-					VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
-						Calendar.getInstance());
-				} catch (Exception e) {
-					// impossible because of the "exists" check
-				}
-			}
+      // 1- if the SURL is volatile update the entry in the Volatile table
+      if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
+        try {
+          VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
+            Calendar.getInstance());
+        } catch (Exception e) {
+          // impossible because of the "exists" check
+        }
+      }
 
-			// 2- JiTs must me removed from the TURL;
-			if (stori.hasJustInTimeACLs()) {
-				log.debug(funcName + "JiT case, removing ACEs on SURL: "
-					+ surl.toString());
-				// Retrieve the PFN of the SURL parents
-				List<StoRI> storiParentsList = stori.getParents();
-				List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+      // 2- JiTs must me removed from the TURL;
+      if (stori.hasJustInTimeACLs()) {
+        log.debug(funcName + "JiT case, removing ACEs on SURL: "
+          + surl.toString());
+        // Retrieve the PFN of the SURL parents
+        List<StoRI> storiParentsList = stori.getParents();
+        List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
 
-				for (StoRI parentStoRI : storiParentsList) {
-					pfnParentsList.add(parentStoRI.getPFN());
-				}
-				LocalUser localUser = null;
-				try {
-					if (user != null) {
-						localUser = user.getLocalUser();
-					}
-				} catch (CannotMapUserException e) {
-					log.warn(funcName + "Unable to get the local user for user " + user
-						+ ". CannotMapUserException: " + e.getMessage());
-				}
-				if (localUser != null) {
-					VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(),
-						localUser);
-				} else {
-					VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
-				}
-			}
+        for (StoRI parentStoRI : storiParentsList) {
+          pfnParentsList.add(parentStoRI.getPFN());
+        }
+        LocalUser localUser = null;
+        try {
+          if (user != null) {
+            localUser = user.getLocalUser();
+          }
+        } catch (CannotMapUserException e) {
+          log.warn(funcName + "Unable to get the local user for user " + user
+            + ". CannotMapUserException: " + e.getMessage());
+        }
+        if (localUser != null) {
+          VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(),
+            localUser);
+        } else {
+          VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
+        }
+      }
 
-			// 3- compute the checksum and store it in an extended attribute
-			LocalFile localFile = stori.getLocalFile();
+      // 3- compute the checksum and store it in an extended attribute
+      LocalFile localFile = stori.getLocalFile();
 
-			VirtualFSInterface vfs = null;
-			try {
-				vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
-			} catch (NamespaceException e) {
-				log.error(e.getMessage());
-				continue;
-			}
-			
-			// 4- Tape stuff management.
-			if (vfs.getStorageClassType().isTapeEnabled()) {
-				String fileAbosolutePath = localFile.getAbsolutePath();
-				StormEA.removePinned(fileAbosolutePath);
-				StormEA.setPremigrate(fileAbosolutePath);
-			}
+      VirtualFSInterface vfs = null;
+      try {
+        vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
+      } catch (NamespaceException e) {
+        log.error(e.getMessage());
+        continue;
+      }
 
-			// 5- Update UsedSpace into DB
-			vfs.increaseUsedSpace(localFile.getSize());
-		}
-	}
+      // 4- Tape stuff management.
+      if (vfs.getStorageClassType().isTapeEnabled()) {
+        String fileAbosolutePath = localFile.getAbsolutePath();
+        StormEA.removePinned(fileAbosolutePath);
+        StormEA.setPremigrate(fileAbosolutePath);
+      }
 
-	public static void executeImplicitPutDone(List<TSURL> spaceAvailableSURLs) {
+      // 5- Update UsedSpace into DB
+      vfs.increaseUsedSpace(localFile.getSize());
+    }
+  }
 
-		for (TSURL surl : spaceAvailableSURLs) {
+  public static void executeImplicitPutDone(List<TSURL> spaceAvailableSURLs) {
 
-			if (surl == null) {
-				continue;
-			}
+    for (TSURL surl : spaceAvailableSURLs) {
 
-			if (lockSurl(surl)) {
-				ArrayList<TSURL> elementList = new ArrayList<TSURL>(1);
-				elementList.add(surl);
-				executePutDone(elementList, null);
-			} else {
-				continue;
-			}
-		}
-	}
+      if (surl == null) {
+        continue;
+      }
 
-	private static boolean lockSurl(TSURL surl) {
+      if (lockSurl(surl)) {
+        ArrayList<TSURL> elementList = new ArrayList<TSURL>(1);
+        elementList.add(surl);
+        executePutDone(elementList, null);
+      } else {
+        continue;
+      }
+    }
+  }
 
-		synchronized (lock) {
-			return lockedSurls.add(surl.getSURLString());
-		}
-	}
+  private static boolean lockSurl(TSURL surl) {
 
-	private static void unlockSurl(TSURL surl) {
+    synchronized (lock) {
+      return lockedSurls.add(surl.getSURLString());
+    }
+  }
 
-		synchronized (lock) {
-			lockedSurls.remove(surl.getSURLString());
-		}
-	}
+  private static void unlockSurl(TSURL surl) {
+
+    synchronized (lock) {
+      lockedSurls.remove(surl.getSURLString());
+    }
+  }
 }

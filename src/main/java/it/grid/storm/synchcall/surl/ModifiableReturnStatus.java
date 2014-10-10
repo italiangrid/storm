@@ -7,57 +7,57 @@ import it.grid.storm.srm.types.TStatusCode;
 
 class ModifiableReturnStatus extends TReturnStatus {
 
-	private static final long serialVersionUID = -6694381547014889754L;
-	private ReentrantLock statusLock = new ReentrantLock();
+  private static final long serialVersionUID = -6694381547014889754L;
+  private ReentrantLock statusLock = new ReentrantLock();
 
-	public ModifiableReturnStatus(TReturnStatus status)
-		throws InvalidTReturnStatusAttributeException {
+  public ModifiableReturnStatus(TReturnStatus status)
+    throws InvalidTReturnStatusAttributeException {
 
-		super(status.getStatusCode(), status.getExplanation());
-	}
+    super(status.getStatusCode(), status.getExplanation());
+  }
 
-	/**
-	 * @param statusCode
-	 *          the statusCode to set
-	 */
-	@Override
-	public void setStatusCode(TStatusCode statusCode) {
+  /**
+   * @param statusCode
+   *          the statusCode to set
+   */
+  @Override
+  public void setStatusCode(TStatusCode statusCode) {
 
-		statusLock.lock();
-		super.setStatusCode(statusCode);
-		statusLock.unlock();
-	}
+    statusLock.lock();
+    super.setStatusCode(statusCode);
+    statusLock.unlock();
+  }
 
-	/**
-	 * Set explanation string
-	 * 
-	 * @param expl
-	 *          String
-	 */
-	@Override
-	public void setExplanation(String explanationString) {
+  /**
+   * Set explanation string
+   * 
+   * @param expl
+   *          String
+   */
+  @Override
+  public void setExplanation(String explanationString) {
 
-		super.setExplanation(explanationString);
-	}
+    super.setExplanation(explanationString);
+  }
 
-	public boolean testAndSetStatusCodeExplanation(
-		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
-		String explanation) {
+  public boolean testAndSetStatusCodeExplanation(
+    TStatusCode expectedStatusCode, TStatusCode newStatusCode,
+    String explanation) {
 
-		try {
-			statusLock.lock();
-			if (expectedStatusCode.equals(super.statusCode)) {
-				super.setStatusCode(newStatusCode);
-				super.setExplanation(explanation);
-				return true;
-			} else {
-				return false;
-			}
+    try {
+      statusLock.lock();
+      if (expectedStatusCode.equals(super.statusCode)) {
+        super.setStatusCode(newStatusCode);
+        super.setExplanation(explanation);
+        return true;
+      } else {
+        return false;
+      }
 
-		} finally {
-			statusLock.unlock();
-		}
+    } finally {
+      statusLock.unlock();
+    }
 
-	}
+  }
 
 }

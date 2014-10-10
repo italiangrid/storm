@@ -66,638 +66,625 @@ import org.slf4j.LoggerFactory;
 
 public class PtPAbortExecutor implements AbortExecutorInterface {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(PtPAbortExecutor.class);
+  private static final Logger log = LoggerFactory
+    .getLogger(PtPAbortExecutor.class);
 
-	// TODO DEFINE THE TIMEOUT FROM CONFIGURATION
-	// CMQ sotto i 3 minuti per discorso tcp timeout?
+  // TODO DEFINE THE TIMEOUT FROM CONFIGURATION
+  // CMQ sotto i 3 minuti per discorso tcp timeout?
 
-	static Configuration config = Configuration.getInstance();
-	private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
+  static Configuration config = Configuration.getInstance();
+  private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
 
-	private NamespaceInterface namespace;
+  private NamespaceInterface namespace;
 
-	private ArrayList<TStatusCode> acceptedStatuses = new ArrayList<TStatusCode>();
-	
-	public PtPAbortExecutor() {
-		acceptedStatuses.clear();
-		acceptedStatuses.add(TStatusCode.SRM_SPACE_AVAILABLE);
-		acceptedStatuses.add(TStatusCode.SRM_REQUEST_QUEUED);
-	};
+  private ArrayList<TStatusCode> acceptedStatuses = new ArrayList<TStatusCode>();
 
-	public AbortGeneralOutputData doIt(AbortInputData inputData) {
+  public PtPAbortExecutor() {
 
-		// Used to delete the physical file
-		namespace = NamespaceDirector.getNamespace();
+    acceptedStatuses.clear();
+    acceptedStatuses.add(TStatusCode.SRM_SPACE_AVAILABLE);
+    acceptedStatuses.add(TStatusCode.SRM_REQUEST_QUEUED);
+  };
 
-		AbortGeneralOutputData outputData = new AbortGeneralOutputData();
-		ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
+  public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
-		TReturnStatus globalStatus = null;
+    // Used to delete the physical file
+    namespace = NamespaceDirector.getNamespace();
 
-		log.debug("srmAbortRequest: Start PtPAbortExecutor...");
+    AbortGeneralOutputData outputData = new AbortGeneralOutputData();
+    ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
 
-		/**
-		 * 0) Get all Chunk related to the specified request according with user
-		 * specification (in case of AbortFiles). 1) Wait until the request goes in
-		 * SRM_SPACE_AVAILABLE status. 2) Rollback. For a PtP request the rollback
-		 * means to: - PtP without space reservation: Remove the file (if not
-		 * existing? And if partially wrote?). - PtP with implicit space reservation
-		 * (size specified): Remove the file.(the space is associated directly to
-		 * the file.) - PtP with SpaceToken: Recreaete the SpaceFile, update the
-		 * SpaceCatalog and remove the file. - PtP with SpaceToken and size Recreate
-		 * the space, update the space file, update the space catalog and remove the
-		 * files
-		 */
+    TReturnStatus globalStatus = null;
 
-		/****************** Phase 0 ******************/
+    log.debug("srmAbortRequest: Start PtPAbortExecutor...");
 
-		Map<TSURL, TReturnStatus> surlStatusMap;
-		try {
-			surlStatusMap = SurlStatusManager.getSurlsStatus(inputData
-				.getRequestToken());
-		} catch (IllegalArgumentException e) {
-			log
-				.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
-					+ e);
-			throw new IllegalStateException("Unexpected IllegalArgumentException: "
-				+ e.getMessage());
-		} catch (UnknownTokenException e) {
-			log
-				.debug("PtPAbortExecutor: Request - Invalid request token");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid request token");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
-			log.info("srmAbortRequest: <"
-				+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-				+ inputData.getRequestToken() + "] failed with [status: "
-				+ globalStatus + "]");
-			return outputData;
-		} catch (ExpiredTokenException e) {
-			log.info("The request is expired: ExpiredTokenException: "
-				+ e.getMessage());
-			globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-				"Request expired");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
-			log.info("srmAbortRequest: <"
-				+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-				+ inputData.getRequestToken() + "] failed with [status: "
-				+ globalStatus + "]");
-			return outputData;
-		}
+    /**
+     * 0) Get all Chunk related to the specified request according with user
+     * specification (in case of AbortFiles). 1) Wait until the request goes in
+     * SRM_SPACE_AVAILABLE status. 2) Rollback. For a PtP request the rollback
+     * means to: - PtP without space reservation: Remove the file (if not
+     * existing? And if partially wrote?). - PtP with implicit space reservation
+     * (size specified): Remove the file.(the space is associated directly to
+     * the file.) - PtP with SpaceToken: Recreaete the SpaceFile, update the
+     * SpaceCatalog and remove the file. - PtP with SpaceToken and size Recreate
+     * the space, update the space file, update the space catalog and remove the
+     * files
+     */
 
-		if (surlStatusMap.isEmpty()) {
-			log
-				.debug("PtPAbortExecutor: Request - Invalid request token");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid request token");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
-			log.info("srmAbortRequest: <"
-				+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-				+ inputData.getRequestToken() + "] failed with [status: "
-				+ globalStatus + "]");
-			return outputData;
-		}
+    /****************** Phase 0 ******************/
 
-		/**
-		 * Get only the SURL requested in a AbortFile Request Define a new
-		 * Collection to contains the "epurated" chunk, removing the ones not
-		 * specified in input request
-		 */
+    Map<TSURL, TReturnStatus> surlStatusMap;
+    try {
+      surlStatusMap = SurlStatusManager.getSurlsStatus(inputData
+        .getRequestToken());
+    } catch (IllegalArgumentException e) {
+      log
+        .error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
+          + e);
+      throw new IllegalStateException("Unexpected IllegalArgumentException: "
+        + e.getMessage());
+    } catch (UnknownTokenException e) {
+      log.debug("PtPAbortExecutor: Request - Invalid request token");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Invalid request token");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
+      log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+        + "> Request for [token:" + inputData.getRequestToken()
+        + "] failed with [status: " + globalStatus + "]");
+      return outputData;
+    } catch (ExpiredTokenException e) {
+      log.info("The request is expired: ExpiredTokenException: "
+        + e.getMessage());
+      globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+        "Request expired");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
+      log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+        + "> Request for [token:" + inputData.getRequestToken()
+        + "] failed with [status: " + globalStatus + "]");
+      return outputData;
+    }
 
-		if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-			log
-				.debug("srmAbortFiles: PtPAbortExecutor: Case of AbortFile request. Purge Chunks with SurlArray.");
+    if (surlStatusMap.isEmpty()) {
+      log.debug("PtPAbortExecutor: Request - Invalid request token");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Invalid request token");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
+      log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+        + "> Request for [token:" + inputData.getRequestToken()
+        + "] failed with [status: " + globalStatus + "]");
+      return outputData;
+    }
 
-			/**
-			 * Get the related Chunk for each SURL in the input SurlArray. If a Surl
-			 * requested is not founf, the TSURLReturnStatus related is setted to
-			 * SRM_INVALID_PATH
-			 */
+    /**
+     * Get only the SURL requested in a AbortFile Request Define a new
+     * Collection to contains the "epurated" chunk, removing the ones not
+     * specified in input request
+     */
 
-			ArrayList<TSURL> surlList = extractSurlArray(inputData).getArrayList();
-			surlStatusMap.keySet().retainAll(surlList);
-			if (!surlStatusMap.keySet().containsAll(surlList)) {
-				for (TSURL surl : surlList) {
-					if (!surlStatusMap.containsKey(surl)) {
-						log
-							.debug("srmAbortFiles: Abort: SURL NOT found, invalid Chunk!Set TSURLReturnStatus");
-						TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
-						surlReturnStatus.setSurl(surl);
-						surlReturnStatus.setStatus(new TReturnStatus(
-							TStatusCode.SRM_INVALID_PATH,
-							"SURL specified does not referes to this request token."));
-						log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
-							+ "> Request for [token:" + inputData.getRequestToken()
-							+ "] for [SURL:" + surl + "] failed  with [status: "
-							+ surlReturnStatus.getStatus() + "]");
-						arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
-					}
-				}
-			}
-		}
+    if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
+      log
+        .debug("srmAbortFiles: PtPAbortExecutor: Case of AbortFile request. Purge Chunks with SurlArray.");
 
-		/********* Check here the new chunks container is not empty! ******/
-		if (surlStatusMap.isEmpty()) {
-			log
-				.debug("Abort Request - No surl specified associated to request token");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-				"All surl specified does not referes to the request token.");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-			log.info("srmAbortRequest: <"
-				+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-				+ inputData.getRequestToken() + "] failed with [status: "
-				+ globalStatus + "]");
-			return outputData;
-		}
+      /**
+       * Get the related Chunk for each SURL in the input SurlArray. If a Surl
+       * requested is not founf, the TSURLReturnStatus related is setted to
+       * SRM_INVALID_PATH
+       */
 
-		/*********
-		 * Phase 1 Wait until the request goes in a status different from
-		 * REQUEST_QUEUED
-		 ********/
+      ArrayList<TSURL> surlList = extractSurlArray(inputData).getArrayList();
+      surlStatusMap.keySet().retainAll(surlList);
+      if (!surlStatusMap.keySet().containsAll(surlList)) {
+        for (TSURL surl : surlList) {
+          if (!surlStatusMap.containsKey(surl)) {
+            log
+              .debug("srmAbortFiles: Abort: SURL NOT found, invalid Chunk!Set TSURLReturnStatus");
+            TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
+            surlReturnStatus.setSurl(surl);
+            surlReturnStatus.setStatus(new TReturnStatus(
+              TStatusCode.SRM_INVALID_PATH,
+              "SURL specified does not referes to this request token."));
+            log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
+              + "> Request for [token:" + inputData.getRequestToken()
+              + "] for [SURL:" + surl + "] failed  with [status: "
+              + surlReturnStatus.getStatus() + "]");
+            arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
+          }
+        }
+      }
+    }
 
-		int chunkAborted = 0;
+    /********* Check here the new chunks container is not empty! ******/
+    if (surlStatusMap.isEmpty()) {
+      log
+        .debug("Abort Request - No surl specified associated to request token");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
+        "All surl specified does not referes to the request token.");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
+      log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+        + "> Request for [token:" + inputData.getRequestToken()
+        + "] failed with [status: " + globalStatus + "]");
+      return outputData;
+    }
 
-		// To avoid deadlock
-		int counter = 0;
-		// NumberOfFailure for globalStatus
-		int errorCount = 0;
-		// Total initial Size
-		int totalSize = surlStatusMap.size();
+    /*********
+     * Phase 1 Wait until the request goes in a status different from
+     * REQUEST_QUEUED
+     ********/
 
-		while ((chunkAborted < totalSize)
-			&& (counter < PtPAbortExecutor.maxLoopTimes)) {
-			// Increment loop times
-			counter++;
+    int chunkAborted = 0;
 
-			Iterator<Map.Entry<TSURL, TReturnStatus>> iterator = surlStatusMap
-				.entrySet().iterator();
-			int numOfSurl = 0;
-			while (iterator.hasNext()) {
-				Map.Entry<TSURL, TReturnStatus> surlStatus = iterator.next();
-				numOfSurl++;
+    // To avoid deadlock
+    int counter = 0;
+    // NumberOfFailure for globalStatus
+    int errorCount = 0;
+    // Total initial Size
+    int totalSize = surlStatusMap.size();
 
-				/*
-				 * Check if any chunk have a status different from
-				 * SRM_REQUEST_INPROGESS. That means the request execution is finished,
-				 * and the rollback start.
-				 */
+    while ((chunkAborted < totalSize)
+      && (counter < PtPAbortExecutor.maxLoopTimes)) {
+      // Increment loop times
+      counter++;
 
-				if (!(surlStatus.getValue().getStatusCode()
-					.equals(TStatusCode.SRM_REQUEST_INPROGRESS))) {
-					/*
-					 * If an EXECUTED CHUNK is found, then it is ABORTED.
-					 */
-					log
-						.debug("PtPAbortExecutor: PtPChunk not in IN_PROGRESS state. Ready for Abort.");
-					TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
+      Iterator<Map.Entry<TSURL, TReturnStatus>> iterator = surlStatusMap
+        .entrySet().iterator();
+      int numOfSurl = 0;
+      while (iterator.hasNext()) {
+        Map.Entry<TSURL, TReturnStatus> surlStatus = iterator.next();
+        numOfSurl++;
 
-					/******** Phase (3) of Abort *************/
-					log.debug("PtPAbortExecutor: start Phase(3)");
+        /*
+         * Check if any chunk have a status different from
+         * SRM_REQUEST_INPROGESS. That means the request execution is finished,
+         * and the rollback start.
+         */
 
-					/*
-					 * AvancePicker HACK! Due to a thread issue in the
-					 * advancePicker.abortRequest(...) we have to check here if the chunk
-					 * has already been aborted frome the picker. In that case, the
-					 * manageAbort is not needed
-					 */
-					if ((surlStatus.getValue().getStatusCode()
-						.equals(TStatusCode.SRM_ABORTED))) {
-						// The AdvancedPicker have already aborted the chunk.
-						log
-							.debug("PtPAbortExecutor: CHUNK already aborted!");
-						surlReturnStatus.setSurl(surlStatus.getKey());
-						surlReturnStatus.setStatus(new TReturnStatus(
-							TStatusCode.SRM_SUCCESS, "File request successfully aborted."));
-					} else {
-						log.debug("PtPAbortExecutor:CHUNK to abort.");
-						// Chunk not ABORTED. We have to work...
-						surlReturnStatus = manageAuthorizedAbort(
-							inputData.getRequestToken(), surlStatus.getKey(),
-							surlStatus.getValue(), inputData);
-					}
+        if (!(surlStatus.getValue().getStatusCode()
+          .equals(TStatusCode.SRM_REQUEST_INPROGRESS))) {
+          /*
+           * If an EXECUTED CHUNK is found, then it is ABORTED.
+           */
+          log
+            .debug("PtPAbortExecutor: PtPChunk not in IN_PROGRESS state. Ready for Abort.");
+          TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
 
-					// Remove this chunks from the other to abort.
-					iterator.remove();
-					if ((surlReturnStatus.getStatus().getStatusCode()
-						.equals(TStatusCode.SRM_SUCCESS))) {
-						log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
-							+ "> Request for [token:" + inputData.getRequestToken()
-							+ "] for SURL " + numOfSurl + " of " + totalSize + " [SURL:"
-							+ surlStatus.getKey() + "] successfully done  with [status: "
-							+ surlReturnStatus.getStatus() + "]");
-					} else {
-						log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
-							+ "> Request for [token:" + inputData.getRequestToken()
-							+ "] for SURL " + numOfSurl + " of " + totalSize + " [SURL:"
-							+ surlStatus.getKey() + "] failed with [status: "
-							+ surlReturnStatus.getStatus() + "]");
-						errorCount++;
-					}
-					// Add returnStatus
-					arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
+          /******** Phase (3) of Abort *************/
+          log.debug("PtPAbortExecutor: start Phase(3)");
 
-					// Increment number of chunk aborted
-					chunkAborted++;
+          /*
+           * AvancePicker HACK! Due to a thread issue in the
+           * advancePicker.abortRequest(...) we have to check here if the chunk
+           * has already been aborted frome the picker. In that case, the
+           * manageAbort is not needed
+           */
+          if ((surlStatus.getValue().getStatusCode()
+            .equals(TStatusCode.SRM_ABORTED))) {
+            // The AdvancedPicker have already aborted the chunk.
+            log.debug("PtPAbortExecutor: CHUNK already aborted!");
+            surlReturnStatus.setSurl(surlStatus.getKey());
+            surlReturnStatus.setStatus(new TReturnStatus(
+              TStatusCode.SRM_SUCCESS, "File request successfully aborted."));
+          } else {
+            log.debug("PtPAbortExecutor:CHUNK to abort.");
+            // Chunk not ABORTED. We have to work...
+            surlReturnStatus = manageAuthorizedAbort(
+              inputData.getRequestToken(), surlStatus.getKey(),
+              surlStatus.getValue(), inputData);
+          }
 
-				}
+          // Remove this chunks from the other to abort.
+          iterator.remove();
+          if ((surlReturnStatus.getStatus().getStatusCode()
+            .equals(TStatusCode.SRM_SUCCESS))) {
+            log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
+              + "> Request for [token:" + inputData.getRequestToken()
+              + "] for SURL " + numOfSurl + " of " + totalSize + " [SURL:"
+              + surlStatus.getKey() + "] successfully done  with [status: "
+              + surlReturnStatus.getStatus() + "]");
+          } else {
+            log.info("srmAbortFiles: <" + DataHelper.getRequestor(inputData)
+              + "> Request for [token:" + inputData.getRequestToken()
+              + "] for SURL " + numOfSurl + " of " + totalSize + " [SURL:"
+              + surlStatus.getKey() + "] failed with [status: "
+              + surlReturnStatus.getStatus() + "]");
+            errorCount++;
+          }
+          // Add returnStatus
+          arrayOfTSurlRetStatus.addTSurlReturnStatus(surlReturnStatus);
 
-			} // while chunk Collection
+          // Increment number of chunk aborted
+          chunkAborted++;
 
-			if (chunkAborted < totalSize) {
-				log.debug("PtPAbortExecutor: Wait for some time...");
-				log.debug("Abort: I'm waiting...");
-				try {
-					long numMillisecondsToSleep = 100; // 1 seconds
-					Thread.sleep(numMillisecondsToSleep);
-				} catch (InterruptedException e) {
+        }
 
-				}
+      } // while chunk Collection
 
-				log.debug("PtPAbortExecutor: Wake up! It's time to work...");
-				log.debug("srmAbortRequest: PtPAbortExecutor: refresh surl status");
-				try {
-					surlStatusMap = SurlStatusManager.getSurlsStatus(
-						inputData.getRequestToken(), surlStatusMap.keySet());
-				} catch (IllegalArgumentException e) {
-					log
-						.error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
-							+ e);
-					throw new IllegalStateException(
-						"Unexpected IllegalArgumentException: " + e.getMessage());
-				} catch (UnknownTokenException e) {
-					log
-						.debug("PtPAbortExecutor: Request - Invalid request token, probably it is expired");
-					globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-						"Expired request token");
-					outputData.setReturnStatus(globalStatus);
-					outputData.setArrayOfFileStatuses(null);
-					log.info("srmAbortRequest: <"
-						+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-						+ inputData.getRequestToken() + "] failed with [status: "
-						+ globalStatus + "]");
-					return outputData;
-				} catch (ExpiredTokenException e) {
-					log.info("The request is expired: ExpiredTokenException: "
-						+ e.getMessage());
-					globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-						"Request expired");
-					outputData.setReturnStatus(globalStatus);
-					outputData.setArrayOfFileStatuses(null);
-					log.info("srmAbortRequest: <"
-						+ DataHelper.getRequestor(inputData) + "> Request for [token:"
-						+ inputData.getRequestToken() + "] failed with [status: "
-						+ globalStatus + "]");
-					return outputData;
-				}
-				log.debug("srmAbortRequest: PtPAbortExecutor: refresh done.");
-			}
+      if (chunkAborted < totalSize) {
+        log.debug("PtPAbortExecutor: Wait for some time...");
+        log.debug("Abort: I'm waiting...");
+        try {
+          long numMillisecondsToSleep = 100; // 1 seconds
+          Thread.sleep(numMillisecondsToSleep);
+        } catch (InterruptedException e) {
 
-		}
+        }
 
-		// LoopTimes Exceeded?
-		if (chunkAborted < totalSize) {
-			// The ABORT execution is interrupted to prevent a deadlock situation
-			log.debug("Abort: Timeout exceeded.");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
-				"TimeOut for abort execution exceeded.");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-			log
-				.error("srmAbortFiles: <"
-					+ DataHelper.getRequestor(inputData)
-					+ "> Request for [token:"
-					+ inputData.getRequestToken()
-					+ "]"
-					+ (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
-						+ extractSurlArray(inputData) + "]"
-						: "") + " completed with [status: " + globalStatus + "]");
-			return outputData;
-		}
+        log.debug("PtPAbortExecutor: Wake up! It's time to work...");
+        log.debug("srmAbortRequest: PtPAbortExecutor: refresh surl status");
+        try {
+          surlStatusMap = SurlStatusManager.getSurlsStatus(
+            inputData.getRequestToken(), surlStatusMap.keySet());
+        } catch (IllegalArgumentException e) {
+          log
+            .error("Unexpected IllegalArgumentException during SurlStatusManager.getSurlsStatus: "
+              + e);
+          throw new IllegalStateException(
+            "Unexpected IllegalArgumentException: " + e.getMessage());
+        } catch (UnknownTokenException e) {
+          log
+            .debug("PtPAbortExecutor: Request - Invalid request token, probably it is expired");
+          globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+            "Expired request token");
+          outputData.setReturnStatus(globalStatus);
+          outputData.setArrayOfFileStatuses(null);
+          log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+            + "> Request for [token:" + inputData.getRequestToken()
+            + "] failed with [status: " + globalStatus + "]");
+          return outputData;
+        } catch (ExpiredTokenException e) {
+          log.info("The request is expired: ExpiredTokenException: "
+            + e.getMessage());
+          globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+            "Request expired");
+          outputData.setReturnStatus(globalStatus);
+          outputData.setArrayOfFileStatuses(null);
+          log.info("srmAbortRequest: <" + DataHelper.getRequestor(inputData)
+            + "> Request for [token:" + inputData.getRequestToken()
+            + "] failed with [status: " + globalStatus + "]");
+          return outputData;
+        }
+        log.debug("srmAbortRequest: PtPAbortExecutor: refresh done.");
+      }
 
-		if (errorCount == totalSize) {
-			globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Abort failed.");
-		} else if (errorCount > 0) {
-			if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
-				globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"Some chunks failed.");
-			} else {
-				globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-					"Some chunks failed.");
-			}
-		} else {
-			globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-				"Abort request completed.");
-			if ((inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST))) {
-				TReturnStatus requestStatus = new TReturnStatus(TStatusCode.SRM_ABORTED,
-					"Request Aborted.");
-				RequestSummaryCatalog.getInstance().updateGlobalStatus(
-					inputData.getRequestToken(), requestStatus);
-			}
-		}
-		// Set output data
-		outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
-		outputData.setReturnStatus(globalStatus);
-		log
-			.info("srmAbortFiles: <"
-				+ DataHelper.getRequestor(inputData)
-				+ "> Request for [token:"
-				+ inputData.getRequestToken()
-				+ "]"
-				+ (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
-					+ extractSurlArray(inputData) + "]"
-					: "") + " completed with [status: " + globalStatus + "]");
-		return outputData;
+    }
 
-	}
+    // LoopTimes Exceeded?
+    if (chunkAborted < totalSize) {
+      // The ABORT execution is interrupted to prevent a deadlock situation
+      log.debug("Abort: Timeout exceeded.");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
+        "TimeOut for abort execution exceeded.");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
+      log
+        .error("srmAbortFiles: <"
+          + DataHelper.getRequestor(inputData)
+          + "> Request for [token:"
+          + inputData.getRequestToken()
+          + "]"
+          + (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
+            + extractSurlArray(inputData) + "]"
+            : "") + " completed with [status: " + globalStatus + "]");
+      return outputData;
+    }
 
-	private ArrayOfSURLs extractSurlArray(AbortInputData inputData) {
+    if (errorCount == totalSize) {
+      globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "Abort failed.");
+    } else if (errorCount > 0) {
+      if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
+        globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
+          "Some chunks failed.");
+      } else {
+        globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+          "Some chunks failed.");
+      }
+    } else {
+      globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+        "Abort request completed.");
+      if ((inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST))) {
+        TReturnStatus requestStatus = new TReturnStatus(
+          TStatusCode.SRM_ABORTED, "Request Aborted.");
+        RequestSummaryCatalog.getInstance().updateGlobalStatus(
+          inputData.getRequestToken(), requestStatus);
+      }
+    }
+    // Set output data
+    outputData.setArrayOfFileStatuses(arrayOfTSurlRetStatus);
+    outputData.setReturnStatus(globalStatus);
+    log
+      .info("srmAbortFiles: <"
+        + DataHelper.getRequestor(inputData)
+        + "> Request for [token:"
+        + inputData.getRequestToken()
+        + "]"
+        + (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES) ? " for [SURL:"
+          + extractSurlArray(inputData) + "]"
+          : "") + " completed with [status: " + globalStatus + "]");
+    return outputData;
 
-		switch (inputData.getType()) {
-		case ABORT_REQUEST:
-			throw new IllegalStateException(
-				"Unable to get SurlArray from an ABORT_REQUEST input data");
-		case ABORT_FILES:
-			return ((AbortFilesInputData) inputData).getArrayOfSURLs();
-		default:
-			throw new IllegalStateException("Received an unknown AbortType: "
-				+ inputData.getType());
-		}
-	}
+  }
 
-	/**
-	 * 
-	 * Manage the roll back needed to execute an abort request.
-	 * 
-	 * @param chunkData
-	 *          PtGChunkData
-	 * @return returnStatus TSURLReturnStatus
-	 */
-	private TSURLReturnStatus manageAuthorizedAbort(TRequestToken token,
-		TSURL surl, TReturnStatus status, AbortInputData inputData) {
+  private ArrayOfSURLs extractSurlArray(AbortInputData inputData) {
 
-		boolean failure = false;
-		namespace = NamespaceDirector.getNamespace();
+    switch (inputData.getType()) {
+    case ABORT_REQUEST:
+      throw new IllegalStateException(
+        "Unable to get SurlArray from an ABORT_REQUEST input data");
+    case ABORT_FILES:
+      return ((AbortFilesInputData) inputData).getArrayOfSURLs();
+    default:
+      throw new IllegalStateException("Received an unknown AbortType: "
+        + inputData.getType());
+    }
+  }
 
-		/******************************* Phase (3) ************************************/
+  /**
+   * 
+   * Manage the roll back needed to execute an abort request.
+   * 
+   * @param chunkData
+   *          PtGChunkData
+   * @return returnStatus TSURLReturnStatus
+   */
+  private TSURLReturnStatus manageAuthorizedAbort(TRequestToken token,
+    TSURL surl, TReturnStatus status, AbortInputData inputData) {
 
-		log.debug("PtPAbortExecutor: Phase(3) RollBack start.");
+    boolean failure = false;
+    namespace = NamespaceDirector.getNamespace();
 
-		TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
-		surlReturnStatus.setSurl(surl);
+    /******************************* Phase (3) ************************************/
 
-		StoRI stori = null;
-		boolean res = false;
+    log.debug("PtPAbortExecutor: Phase(3) RollBack start.");
 
-		if (!acceptedStatuses.contains(status.getStatusCode())) {
+    TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
+    surlReturnStatus.setSurl(surl);
 
-			// The Chunk is in a SRM_Status from wich an Abort operation is not
-			// possible! (SRM_FAILURE or SRM_SUCCESS)
-			if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-				surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"Request is in a final status. Abort not allowed."));
-			} else {
-				surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"Abort request not executed."));
-			}
-			return surlReturnStatus;
-		}
+    StoRI stori = null;
+    boolean res = false;
 
-		log
-			.debug("PtPAbortExecutor: The Chunk is in a VALID state for the RollBack action!");
-		if (!SurlStatusManager.isPersisted(token).isEmpty()) {
-			/*
-			 * TODO TEMPORARY. catalog direct access needed until a RequestManager
-			 * storing token and request infos will be available
-			 */
-			Collection<PtPPersistentChunkData> chunksData = PtPChunkCatalog
-				.getInstance().lookup(token);
-			PtPPersistentChunkData chunkData = null;
-			for (PtPPersistentChunkData surlChunkData : chunksData) {
-				if (surlChunkData.getSURL().equals(surl)) {
-					chunkData = surlChunkData;
-					break;
-				}
-			}
-			// Manage Rollback
+    if (!acceptedStatuses.contains(status.getStatusCode())) {
 
-			if (chunkData == null) {
-				throw new IllegalStateException("Unexpected condition. token " + token
-					+ " stored on the db but no associated surl " + surl + " found");
-			}
-			if (!(chunkData.getSpaceToken().isEmpty())) {
-				TSpaceToken sToken = chunkData.getSpaceToken();
-				TReturnStatus reserveSpaceStatus;
-				ReserveSpaceCommand rexec = new ReserveSpaceCommand();
+      // The Chunk is in a SRM_Status from wich an Abort operation is not
+      // possible! (SRM_FAILURE or SRM_SUCCESS)
+      if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+        surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
+          "Request is in a final status. Abort not allowed."));
+      } else {
+        surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_FAILURE,
+          "Abort request not executed."));
+      }
+      return surlReturnStatus;
+    }
 
-				// Space Token specified in the request
-				log.debug("PtPAbortExecutor: Space token found.");
-				/*
-				 * We have now two possible cases: 1) With size specified. 2) Without
-				 * size specified.
-				 */
-				if (chunkData.expectedFileSize().isEmpty()) {
-					/*
-					 * Without fileSize specified. In this case the whole space_file has
-					 * been associated to the requested file. So the roll back must
-					 * recreate the Space Catalog entry and update the information on used
-					 * space.
-					 */
-					reserveSpaceStatus = rexec.resetReservation(sToken);
-					if (!reserveSpaceStatus.getStatusCode().equals(
-						TStatusCode.SRM_SUCCESS)) {
-						// Something goes wrong
-						failure = true;
-					}
-				} else {
-					/*
-					 * With fileSize specified. In this case the spaceFile have to be
-					 * increased from the free block of the removed put placeholder.
-					 */
-					reserveSpaceStatus = rexec.updateReservation(
-						chunkData.getSpaceToken(), chunkData.expectedFileSize(),
-						chunkData.getSURL());
-					if (!reserveSpaceStatus.getStatusCode().equals(
-						TStatusCode.SRM_SUCCESS)) {
-						// Something goes wrong
-						failure = true;
-					}
-				}
-			}
-		}
-		// The File Must be removed in any case!
-		log.debug("PtPAbortExecutor: No space token found.");
-		log.debug("PtPAbortExecutor: Start removing file from the file system...");
-		LocalFile fileToRemove = null;
-		if (!surl.isEmpty()) {
-			try {
-				if (inputData instanceof IdentityInputData) {
-					stori = namespace.resolveStoRIbySURL(surl,
-						((IdentityInputData) inputData).getUser());
-				} else {
-					stori = namespace.resolveStoRIbySURL(surl);
-				}
-			} catch (UnapprochableSurlException e) {
-				failure = true;
-				if (inputData instanceof IdentityInputData) {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s for user %s UnapprochableSurlException: %s",
-								surl, DataHelper.getRequestor(inputData), e.getMessage()));
-				} else {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s UnapprochableSurlException: %s",
-								surl, e.getMessage()));
-				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
-				surlReturnStatus.setStatus(new TReturnStatus(
-					TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
-				return surlReturnStatus;
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to build StoRI by SURL and user", e);
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INTERNAL_ERROR,
-						e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e);
-				}
-				surlReturnStatus.setStatus(new TReturnStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
-				return surlReturnStatus;
-			} catch (NamespaceException e) {
-				failure = true;
-				if (inputData instanceof IdentityInputData) {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s for user %s NamespaceException: %s",
-								surl, DataHelper.getRequestor(inputData), e.getMessage()));
-				} else {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s NamespaceException: %s",
-								surl, e.getMessage()));
-				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
-				surlReturnStatus.setStatus(new TReturnStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
-				return surlReturnStatus;
-			} catch (InvalidSURLException e) {
-				failure = true;
-				if (inputData instanceof IdentityInputData) {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s for user %s InvalidSURLException: %s",
-								surl, DataHelper.getRequestor(inputData), e.getMessage()));
-				} else {
-					log
-						.info(String
-							.format(
-								"Unable to build a stori for surl %s InvalidSURLException: %s",
-								surl, e.getMessage()));
-				}
-				try {
-					SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-						TStatusCode.SRM_INVALID_PATH, e.getMessage());
-				} catch (UnknownSurlException e1) {
-					log
-						.error(
-							"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-							e1);
-				}
-				surlReturnStatus.setStatus(new TReturnStatus(
-					TStatusCode.SRM_INVALID_PATH, e.getMessage()));
-				return surlReturnStatus;
-			}
-		}
+    log
+      .debug("PtPAbortExecutor: The Chunk is in a VALID state for the RollBack action!");
+    if (!SurlStatusManager.isPersisted(token).isEmpty()) {
+      /*
+       * TODO TEMPORARY. catalog direct access needed until a RequestManager
+       * storing token and request infos will be available
+       */
+      Collection<PtPPersistentChunkData> chunksData = PtPChunkCatalog
+        .getInstance().lookup(token);
+      PtPPersistentChunkData chunkData = null;
+      for (PtPPersistentChunkData surlChunkData : chunksData) {
+        if (surlChunkData.getSURL().equals(surl)) {
+          chunkData = surlChunkData;
+          break;
+        }
+      }
+      // Manage Rollback
 
-		// Get LocalFile and Remove
-		fileToRemove = stori.getLocalFile();
-		res = fileToRemove.delete();
-		res = true;
+      if (chunkData == null) {
+        throw new IllegalStateException("Unexpected condition. token " + token
+          + " stored on the db but no associated surl " + surl + " found");
+      }
+      if (!(chunkData.getSpaceToken().isEmpty())) {
+        TSpaceToken sToken = chunkData.getSpaceToken();
+        TReturnStatus reserveSpaceStatus;
+        ReserveSpaceCommand rexec = new ReserveSpaceCommand();
 
-		log.debug("PtPAbortExecutor: File removed.");
+        // Space Token specified in the request
+        log.debug("PtPAbortExecutor: Space token found.");
+        /*
+         * We have now two possible cases: 1) With size specified. 2) Without
+         * size specified.
+         */
+        if (chunkData.expectedFileSize().isEmpty()) {
+          /*
+           * Without fileSize specified. In this case the whole space_file has
+           * been associated to the requested file. So the roll back must
+           * recreate the Space Catalog entry and update the information on used
+           * space.
+           */
+          reserveSpaceStatus = rexec.resetReservation(sToken);
+          if (!reserveSpaceStatus.getStatusCode().equals(
+            TStatusCode.SRM_SUCCESS)) {
+            // Something goes wrong
+            failure = true;
+          }
+        } else {
+          /*
+           * With fileSize specified. In this case the spaceFile have to be
+           * increased from the free block of the removed put placeholder.
+           */
+          reserveSpaceStatus = rexec.updateReservation(
+            chunkData.getSpaceToken(), chunkData.expectedFileSize(),
+            chunkData.getSURL());
+          if (!reserveSpaceStatus.getStatusCode().equals(
+            TStatusCode.SRM_SUCCESS)) {
+            // Something goes wrong
+            failure = true;
+          }
+        }
+      }
+    }
+    // The File Must be removed in any case!
+    log.debug("PtPAbortExecutor: No space token found.");
+    log.debug("PtPAbortExecutor: Start removing file from the file system...");
+    LocalFile fileToRemove = null;
+    if (!surl.isEmpty()) {
+      try {
+        if (inputData instanceof IdentityInputData) {
+          stori = namespace.resolveStoRIbySURL(surl,
+            ((IdentityInputData) inputData).getUser());
+        } else {
+          stori = namespace.resolveStoRIbySURL(surl);
+        }
+      } catch (UnapprochableSurlException e) {
+        failure = true;
+        if (inputData instanceof IdentityInputData) {
+          log
+            .info(String
+              .format(
+                "Unable to build a stori for surl %s for user %s UnapprochableSurlException: %s",
+                surl, DataHelper.getRequestor(inputData), e.getMessage()));
+        } else {
+          log
+            .info(String
+              .format(
+                "Unable to build a stori for surl %s UnapprochableSurlException: %s",
+                surl, e.getMessage()));
+        }
+        try {
+          SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+            TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+        } catch (UnknownSurlException e1) {
+          log
+            .error(
+              "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+              e1);
+        }
+        surlReturnStatus.setStatus(new TReturnStatus(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+        return surlReturnStatus;
+      } catch (IllegalArgumentException e) {
+        log.error("Unable to build StoRI by SURL and user", e);
+        try {
+          SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+            TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+        } catch (UnknownSurlException e1) {
+          log
+            .error(
+              "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+              e);
+        }
+        surlReturnStatus.setStatus(new TReturnStatus(
+          TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+        return surlReturnStatus;
+      } catch (NamespaceException e) {
+        failure = true;
+        if (inputData instanceof IdentityInputData) {
+          log
+            .info(String
+              .format(
+                "Unable to build a stori for surl %s for user %s NamespaceException: %s",
+                surl, DataHelper.getRequestor(inputData), e.getMessage()));
+        } else {
+          log.info(String.format(
+            "Unable to build a stori for surl %s NamespaceException: %s", surl,
+            e.getMessage()));
+        }
+        try {
+          SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+            TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+        } catch (UnknownSurlException e1) {
+          log
+            .error(
+              "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+              e1);
+        }
+        surlReturnStatus.setStatus(new TReturnStatus(
+          TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()));
+        return surlReturnStatus;
+      } catch (InvalidSURLException e) {
+        failure = true;
+        if (inputData instanceof IdentityInputData) {
+          log
+            .info(String
+              .format(
+                "Unable to build a stori for surl %s for user %s InvalidSURLException: %s",
+                surl, DataHelper.getRequestor(inputData), e.getMessage()));
+        } else {
+          log.info(String.format(
+            "Unable to build a stori for surl %s InvalidSURLException: %s",
+            surl, e.getMessage()));
+        }
+        try {
+          SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+            TStatusCode.SRM_INVALID_PATH, e.getMessage());
+        } catch (UnknownSurlException e1) {
+          log
+            .error(
+              "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+              e1);
+        }
+        surlReturnStatus.setStatus(new TReturnStatus(
+          TStatusCode.SRM_INVALID_PATH, e.getMessage()));
+        return surlReturnStatus;
+      }
+    }
 
-		// This method is used to mark as expired the specified entry
-		// in the JitCatalog. In this way the next time the GarbageCollector
-		// will wake up, it will remove the entry as expired.
-		// The file is already removed, but the garbage collection is
-		// smart enought to manage the case.
+    // Get LocalFile and Remove
+    fileToRemove = stori.getLocalFile();
+    res = fileToRemove.delete();
+    res = true;
 
-		// Change status to aborted
-		if (failure) {
-			// Something goes wrong during the update catalog operation
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
-			surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
-				"Database Not Updated."));
-			return surlReturnStatus;
-		}
+    log.debug("PtPAbortExecutor: File removed.");
 
-		if (res) {
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
-			surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
-				"File request successfully aborted."));
-			return surlReturnStatus;
-		} else {
-			try {
-				SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
-					TStatusCode.SRM_ABORTED, "Request aborted.");
-			} catch (UnknownSurlException e) {
-				log
-					.error(
-						"Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
-						e);
-			}
-			surlReturnStatus.setStatus(new TReturnStatus(
-				TStatusCode.SRM_INTERNAL_ERROR, "File not removed."));
-			return surlReturnStatus;
-		}
+    // This method is used to mark as expired the specified entry
+    // in the JitCatalog. In this way the next time the GarbageCollector
+    // will wake up, it will remove the entry as expired.
+    // The file is already removed, but the garbage collection is
+    // smart enought to manage the case.
 
-	}
+    // Change status to aborted
+    if (failure) {
+      // Something goes wrong during the update catalog operation
+      try {
+        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+          TStatusCode.SRM_ABORTED, "Request aborted.");
+      } catch (UnknownSurlException e) {
+        log
+          .error(
+            "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+            e);
+      }
+      surlReturnStatus.setStatus(new TReturnStatus(
+        TStatusCode.SRM_INTERNAL_ERROR, "Database Not Updated."));
+      return surlReturnStatus;
+    }
+
+    if (res) {
+      try {
+        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+          TStatusCode.SRM_ABORTED, "Request aborted.");
+      } catch (UnknownSurlException e) {
+        log
+          .error(
+            "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+            e);
+      }
+      surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
+        "File request successfully aborted."));
+      return surlReturnStatus;
+    } else {
+      try {
+        SurlStatusManager.updateStatus(TRequestType.PREPARE_TO_PUT, surl,
+          TStatusCode.SRM_ABORTED, "Request aborted.");
+      } catch (UnknownSurlException e) {
+        log
+          .error(
+            "Unexpected UnknownSurlException in SurlStatusManager.updateStatus: ",
+            e);
+      }
+      surlReturnStatus.setStatus(new TReturnStatus(
+        TStatusCode.SRM_INTERNAL_ERROR, "File not removed."));
+      return surlReturnStatus;
+    }
+
+  }
 
 }

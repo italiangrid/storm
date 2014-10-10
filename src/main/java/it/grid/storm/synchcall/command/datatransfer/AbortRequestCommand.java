@@ -53,143 +53,136 @@ import org.slf4j.LoggerFactory;
 
 public class AbortRequestCommand extends DataTransferCommand implements Command {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AbortRequestCommand.class);
+  private static final Logger log = LoggerFactory
+    .getLogger(AbortRequestCommand.class);
 
-	private AdvancedPicker advancedPicker = null;
-	private AbortExecutorInterface executor = null;
+  private AdvancedPicker advancedPicker = null;
+  private AbortExecutorInterface executor = null;
 
-	public AbortRequestCommand() {
+  public AbortRequestCommand() {
 
-	};
+  };
 
-	public OutputData execute(InputData data) {
+  public OutputData execute(InputData data) {
 
-		advancedPicker = new AdvancedPicker();
-		AbortRequestOutputData outputData = new AbortRequestOutputData();
-		AbortInputData inputData = (AbortInputData) data;
+    advancedPicker = new AdvancedPicker();
+    AbortRequestOutputData outputData = new AbortRequestOutputData();
+    AbortInputData inputData = (AbortInputData) data;
 
-		boolean res = false;
-		TReturnStatus globalStatus = null;
+    boolean res = false;
+    TReturnStatus globalStatus = null;
 
-		AbortRequestCommand.log.debug("Started AbortRequest function.");
+    AbortRequestCommand.log.debug("Started AbortRequest function.");
 
-		if (inputData == null || inputData.getRequestToken() == null
-			|| (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES))) {
-			log.debug("SrmAbortRequest: Invalid input parameter specified");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Missing mandatory parameters");
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
-			log.error("srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: {}]",
-			  globalStatus);
-			return outputData;
-		}
+    if (inputData == null || inputData.getRequestToken() == null
+      || (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES))) {
+      log.debug("SrmAbortRequest: Invalid input parameter specified");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Missing mandatory parameters");
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
+      log
+        .error(
+          "srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: {}]",
+          globalStatus);
+      return outputData;
+    }
 
-		TRequestToken requestToken = inputData.getRequestToken();
-		log.debug("srmAbortRequest: requestToken={}", requestToken);
+    TRequestToken requestToken = inputData.getRequestToken();
+    log.debug("srmAbortRequest: requestToken={}", requestToken);
 
-		if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
+    if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
 
-			AbortRequestCommand.log
-				.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
+      AbortRequestCommand.log
+        .debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
 
-			try {
-			  
-				SurlStatusManager.checkAndUpdateStatus(inputData.getRequestToken(),
-					TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
-					"User aborted request!");
-				
-			} catch (UnknownTokenException e) {
+      try {
 
-			  log.info("Unknown token: {}", e.getMessage());
-				globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-					"Invalid request token");
-				outputData.setArrayOfFileStatuses(null);
+        SurlStatusManager.checkAndUpdateStatus(inputData.getRequestToken(),
+          TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED,
+          "User aborted request!");
 
-				CommandHelper.printRequestOutcome("srmAbortRequest", 
-				  log,
-				  globalStatus,
-				  inputData,
-				  inputData.getRequestToken());
-				
-				return outputData;
+      } catch (UnknownTokenException e) {
 
-			} catch (ExpiredTokenException e) {
+        log.info("Unknown token: {}", e.getMessage());
+        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+          "Invalid request token");
+        outputData.setArrayOfFileStatuses(null);
 
-			  log.info("Expired token: {}. {}", requestToken, e.getMessage());
+        CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
+          inputData, inputData.getRequestToken());
 
-				globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-					"Request expired");
+        return outputData;
 
-				outputData.setArrayOfFileStatuses(null);
+      } catch (ExpiredTokenException e) {
 
-				CommandHelper.printRequestOutcome("srmAbortRequest", 
-				  log,
-				  globalStatus,
-				  inputData,
-				  inputData.getRequestToken());
+        log.info("Expired token: {}. {}", requestToken, e.getMessage());
 
-				return outputData;
-			}
+        globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
+          "Request expired");
 
-			RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
-				inputData.getRequestToken(), TStatusCode.SRM_REQUEST_QUEUED,
-				TStatusCode.SRM_ABORTED, "User aborted request!");
+        outputData.setArrayOfFileStatuses(null);
 
-			res = false;
+        CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
+          inputData, inputData.getRequestToken());
 
-		} else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-		  
-			log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
-			res = false;
-		} 
+        return outputData;
+      }
 
-		if (res == false) {
-		  log.debug("Phase (1.A) AbortRequest: Token not found.");
-		}
+      RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
+        inputData.getRequestToken(), TStatusCode.SRM_REQUEST_QUEUED,
+        TStatusCode.SRM_ABORTED, "User aborted request!");
 
-		if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
-			log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
+      res = false;
 
-			advancedPicker.abortRequest(inputData.getRequestToken());
-			res = false;
+    } else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
 
-		} else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
-			log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
-			res = false;
-		}
+      log.debug("Phase (1.A) AbortRequest: SurlArray Specified.");
+      res = false;
+    }
 
-		if (res == false) {
-			log.debug("Phase (1.B) AbortRequest: Token not found.");
-		}
+    if (res == false) {
+      log.debug("Phase (1.A) AbortRequest: Token not found.");
+    }
 
-		TRequestType rtype = SurlStatusManager.isPersisted(requestToken);
+    if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
+      log.debug("Phase (1.B) AbortRequest: SurlArray Not specified.");
 
-		if (rtype == TRequestType.PREPARE_TO_GET) {
-			executor = new PtGAbortExecutor();
-			return executor.doIt(inputData);
-		} else if (rtype == TRequestType.PREPARE_TO_PUT) {
-			executor = new PtPAbortExecutor();
-			return executor.doIt(inputData);
-		} else if (rtype == TRequestType.COPY) {
-			executor = new CopyAbortExecutor();
-			return executor.doIt(inputData);
-		} else {
-			log.debug("SrmAbortRequest : Invalid input parameter specified");
-			globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid request token. Abort only works for PtG, PtP and Copy.");
+      advancedPicker.abortRequest(inputData.getRequestToken());
+      res = false;
 
-			CommandHelper.printRequestOutcome("srmAbortRequest", 
-				  log,
-				  globalStatus,
-				  inputData,
-				  inputData.getRequestToken());
+    } else if (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES)) {
+      log.debug("Phase (1.B) AbortRequest: SurlArray Specified.");
+      res = false;
+    }
 
-			outputData.setReturnStatus(globalStatus);
-			outputData.setArrayOfFileStatuses(null);
-			return outputData;
-		}
-	}
+    if (res == false) {
+      log.debug("Phase (1.B) AbortRequest: Token not found.");
+    }
+
+    TRequestType rtype = SurlStatusManager.isPersisted(requestToken);
+
+    if (rtype == TRequestType.PREPARE_TO_GET) {
+      executor = new PtGAbortExecutor();
+      return executor.doIt(inputData);
+    } else if (rtype == TRequestType.PREPARE_TO_PUT) {
+      executor = new PtPAbortExecutor();
+      return executor.doIt(inputData);
+    } else if (rtype == TRequestType.COPY) {
+      executor = new CopyAbortExecutor();
+      return executor.doIt(inputData);
+    } else {
+      log.debug("SrmAbortRequest : Invalid input parameter specified");
+      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+        "Invalid request token. Abort only works for PtG, PtP and Copy.");
+
+      CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
+        inputData, inputData.getRequestToken());
+
+      outputData.setReturnStatus(globalStatus);
+      outputData.setArrayOfFileStatuses(null);
+      return outputData;
+    }
+  }
 
 }
