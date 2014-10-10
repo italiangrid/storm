@@ -478,6 +478,9 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean verifyPath(StoRI fileStoRI) {
 
     boolean exists;
+    boolean automaticDirectoryCreation = Configuration.getInstance()
+      .getAutomaticDirectoryCreation();
+
     for (StoRI parentStoRI : fileStoRI.getParents()) {
       exists = parentStoRI.getLocalFile().exists();
       if (!exists || !parentStoRI.getLocalFile().isDirectory()) {
@@ -485,9 +488,13 @@ public class PtP implements Delegable, Chooser, Request {
           + fileStoRI.getSURL().toString() + ", but its parent "
           + parentStoRI.getSURL().toString();
         if (!exists) {
-          errorString = errorString + "does not exist!";
+          if (automaticDirectoryCreation) {
+            continue;
+          } else {
+            errorString = errorString + " does not exist!";
+          }
         } else {
-          errorString = errorString + "is not a directory!";
+          errorString = errorString + " is not a directory!";
         }
         requestData.changeStatusSRM_INVALID_PATH(errorString);
         failure = true;
@@ -556,7 +563,7 @@ public class PtP implements Delegable, Chooser, Request {
       return false;
     } else {
       if (!f.exists()) {
-        if (f.mkdirs()) {
+        if (!f.mkdirs()) {
           requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem error: "
             + "could not crete directory!");
           failure = true;
