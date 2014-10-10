@@ -103,7 +103,7 @@ import org.slf4j.LoggerFactory;
  * not exist, the request fails and chenages state to SRM_FAILURE. If the
  * setting up of the ACL fails, the request fails too and the state changes to
  * SRM_FAILURE. Appropriate messagges get logged.
- * 
+ *
  * @author EGRID - ICTP Trieste
  * @date June, 2005
  * @version 3.0
@@ -1063,7 +1063,7 @@ public class PtP implements Delegable, Chooser, Request {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.asynch.Request#getSURL()
    */
   @Override
@@ -1074,7 +1074,7 @@ public class PtP implements Delegable, Chooser, Request {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.asynch.Request#isResultSuccess()
    */
   @Override

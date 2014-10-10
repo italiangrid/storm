@@ -19,7 +19,8 @@ public class Constants {
 	public static final String RESOURCE = "configuration";
 	public static final String VERSION_1_0 = "1.0";
 	public static final String VERSION_1_1 = "1.1";
-	public static final String VERSION = "1.2";
+	public static final String VERSION_1_2 = "1.2";
+	public static final String VERSION = "1.3";
 	public static final String LIST_ALL_KEY = "StorageAreaList";
 	public static final char VFS_LIST_SEPARATOR = ':';
 	public static final String VFS_NAME_KEY = "name";
@@ -31,16 +32,8 @@ public class Constants {
 	public static final String VFS_ENABLED_PROTOCOLS_KEY = "protocols";
 	public static final char VFS_ENABLED_PROTOCOLS_SEPARATOR = ';';
 	public static final String VFS_ANONYMOUS_PERMS_KEY = "anonymous";
+	public static final String LIST_ALL_VFS = "VirtualFSList";
 	
 	public static enum HttpPerms { NOREAD, READ, READWRITE };
 
-	/*
-	 * Usage samples in an HTTP GET call /RESOURCE/VERSION/LIST_ALL_KEY
-	 * 
-	 * Response sample
-	 * name=DTEAMT0D1-FS&root=/storage/dteamt0d1&stfnRoot=/dteamt0d1
-	 * ;/dteam&protocols
-	 * =https:name=ATLAST0D1-FS&root=/storage/atlast0d1&stfnRoot=/
-	 * atlast0d1&protocols=https;http
-	 */
 }

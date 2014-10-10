@@ -11,21 +11,20 @@ package it.grid.storm.namespace.remote.resource;
  * language governing permissions and limitations under the License.
  */
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.SAInfo;
 import it.grid.storm.namespace.remote.Constants;
-import it.grid.storm.namespace.remote.Constants.HttpPerms;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -47,12 +46,11 @@ public class VirtualFSResource {
 	 * @throws WebApplicationException
 	 */
 	@GET
-	@Path("/" + Constants.LIST_ALL_KEY)
-	@Produces("text/plain")
-	public String listVFS() throws WebApplicationException {
+	@Path("/" + Constants.LIST_ALL_VFS)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, SAInfo> listVFS() throws WebApplicationException {
 
 		log.info("Serving VFS resource listing");
-		String vfsListString = "";
 		Collection<VirtualFSInterface> vfsCollection = null;
 		try {
 			vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
@@ -65,72 +63,16 @@ public class VirtualFSResource {
 			responseBuilder.entity("Unable to retrieve virtual file systems");
 			throw new WebApplicationException(responseBuilder.build());
 		}
+		Map<String, SAInfo> output = new HashMap<String, SAInfo>();
 		for (VirtualFSInterface vfs : vfsCollection) {
-			if (!vfsListString.equals("")) {
-				vfsListString += Constants.VFS_LIST_SEPARATOR;
-			}
 			try {
-				vfsListString += encodeVFS(vfs);
+				output.put(vfs.getAliasName(), SAInfo.buildFromVFS(vfs));
 			} catch (NamespaceException e) {
-				log
-					.error("Unable to encode the virtual file system. NamespaceException : "
-						+ e.getMessage());
-				ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-				responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-				responseBuilder.entity("Unable to encode the virtual file system");
-				throw new WebApplicationException(responseBuilder.build());
+				log.error(e.getMessage());
 			}
 		}
-		return vfsListString;
+		
+		return output;
 	}
 
-	/**
-	 * @param vfs
-	 * @return
-	 * @throws NamespaceException
-	 */
-	private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
-
-		String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getAliasName();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ROOT_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getRootPath();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		List<MappingRule> mappingRules = vfs.getMappingRules();
-		vfsEncoded += Constants.VFS_STFN_ROOT_KEY + Constants.VFS_FIELD_MATCHER;
-		for (int i = 0; i < mappingRules.size(); i++) {
-			MappingRule mappingRule = mappingRules.get(i);
-			if (i > 0) {
-				vfsEncoded += Constants.VFS_STFN_ROOT_SEPARATOR;
-			}
-			vfsEncoded += mappingRule.getStFNRoot();
-		}
-		Iterator<Protocol> protocolsIterator = vfs.getCapabilities()
-			.getAllManagedProtocols().iterator();
-		if (protocolsIterator.hasNext()) {
-			vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-			vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
-			vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		}
-		while (protocolsIterator.hasNext()) {
-			vfsEncoded += protocolsIterator.next().getSchema();
-			if (protocolsIterator.hasNext()) {
-				vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
-			}
-		}
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ANONYMOUS_PERMS_KEY;
-		vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		if (vfs.isHttpWorldReadable()) {
-			if (vfs.isApproachableByAnonymous()) {
-				vfsEncoded += HttpPerms.READWRITE;
-			} else {
-				vfsEncoded += HttpPerms.READ;
-			}
-		} else {
-			vfsEncoded += HttpPerms.NOREAD;
-		}
-		return vfsEncoded;
-	}
 }

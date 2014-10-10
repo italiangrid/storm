@@ -68,7 +68,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.13</version>
         <configuration>
-          <!-- skips tests by default, until we have not reviewed them and make sure 
+          <!-- skips tests by default, until we have not reviewed them and make sure
             they work -->
           <skipTests>true</skipTests>
         </configuration>
@@ -95,10 +95,10 @@
         </executions>
       </plugin>
 
-      <!-- Enable the wagon plugin (which in turn need some work from the dependency 
-        plugin) to deploy to a remote machine. It copies over ssh the storm-backend-server 
-        jar, the dependency jars, and all configuration files except those that are not supposed 
-        to be overwritten by a re-deployment, i.e. those that are marked config noreplace 
+      <!-- Enable the wagon plugin (which in turn need some work from the dependency
+        plugin) to deploy to a remote machine. It copies over ssh the storm-backend-server
+        jar, the dependency jars, and all configuration files except those that are not supposed
+        to be overwritten by a re-deployment, i.e. those that are marked config noreplace
         in the rpm -->
 
       <plugin>
@@ -134,7 +134,7 @@
               <url>${remoteDeployment.url}/</url>
               <serverId>${remoteDeployment.serverId}</serverId>
               <fromDir>etc</fromDir>
-              <!-- exclude config files that might have edited remotely, the same 
+              <!-- exclude config files that might have edited remotely, the same
                 that are marked config noreplace in rpm -->
               <excludes>
                 logging.xml, namespace.xml, path-authz.db,
@@ -216,8 +216,8 @@
         </executions>
       </plugin>
 
-      <!-- needed so that mvn is not going to try to deploy (classic maven deploy), 
-        because we are using mvn deploy to deploy the complete project to a remote machine 
+      <!-- needed so that mvn is not going to try to deploy (classic maven deploy),
+        because we are using mvn deploy to deploy the complete project to a remote machine
         in development -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -365,9 +365,9 @@
       <version>${jsonVersion}</version>
     </dependency>
 
-    <!-- not on Maven Central, we have it on our own repository, you can install 
-      it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The artifacts 
-      not prefix with cog are dependencies. As all of them are very old, and not supported, 
+    <!-- not on Maven Central, we have it on our own repository, you can install
+      it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The artifacts
+      not prefix with cog are dependencies. As all of them are very old, and not supported,
       we have installed the versions distributed with CoG, with the CoG version and groupID -->
     <dependency>
       <groupId>org.globus</groupId>
@@ -415,7 +415,7 @@
       <version>${cogGlobusVersion}</version>
     </dependency>
 
-    <!-- not on Maven Central, we have it on our own repository, taken form the lib 
+    <!-- not on Maven Central, we have it on our own repository, taken form the lib
       directory of the old src code repository https://github.com/italiangrid/storm/commits/BE_1.11/lib/srm22client.jar -->
     <dependency>
       <groupId>srm22client</groupId>
@@ -486,7 +486,7 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- not on Maven Central, we have it on our own repository, you can install 
+    <!-- not on Maven Central, we have it on our own repository, you can install
       it from official releases http://archive.apache.org/dist/jakarta/oro/ -->
     <dependency>
       <groupId>org.apache.oro</groupId>
