@@ -159,7 +159,11 @@ public class RmCommand implements Command {
       }
 
     }
-    globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure);
+    if (surls.size() == 1) {
+      globalStatus = arrayOfFileStatus.getTSURLReturnStatus(0).getStatus();
+    } else {
+      globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure);
+    }
     outputData = new RmOutputData(globalStatus, arrayOfFileStatus);
 
     return outputData;

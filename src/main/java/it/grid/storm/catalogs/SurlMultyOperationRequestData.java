@@ -43,19 +43,19 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
         try {
           if (this instanceof IdentityInputData) {
             SURLStatusStore.INSTANCE.store(
-              generatedRequestToken,
+              getGeneratedRequestToken(),
               ((IdentityInputData) this).getUser(),
               buildSurlStatusMap(SURL, status.getStatusCode(),
                 status.getExplanation()));
           } else {
             SURLStatusStore.INSTANCE.store(
-              generatedRequestToken,
+              getGeneratedRequestToken(),
               buildSurlStatusMap(SURL, status.getStatusCode(),
                 status.getExplanation()));
           }
           stored = true;
         } catch (TokenDuplicationException e) {
-          generatedRequestToken = TRequestToken.getRandom();
+          setGeneratedRequestToken(TRequestToken.getRandom());
         }
       }
     } catch (IllegalArgumentException e) {
@@ -99,7 +99,15 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
   @Override
   public TRequestToken getGeneratedRequestToken() {
 
+    if (generatedRequestToken == null) {
+      setGeneratedRequestToken(TRequestToken.getRandom());
+    }
     return generatedRequestToken;
+  }
+  
+  protected void setGeneratedRequestToken(TRequestToken token) {
+    
+    generatedRequestToken = token;
   }
 
   @Override
@@ -119,10 +127,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     if (!(this instanceof PersistentChunkData)) {
       try {
         if (status.getExplanation() == null) {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          SURLStatusStore.INSTANCE.update(getGeneratedRequestToken(), this.SURL,
             status.getStatusCode());
         } else {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          SURLStatusStore.INSTANCE.update(getGeneratedRequestToken(), this.SURL,
             status.getStatusCode(), status.getExplanation());
         }
       } catch (IllegalArgumentException e) {
@@ -151,10 +159,10 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     if (!(this instanceof PersistentChunkData)) {
       try {
         if (explanation == null) {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          SURLStatusStore.INSTANCE.update(getGeneratedRequestToken(), this.SURL,
             statusCode);
         } else {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          SURLStatusStore.INSTANCE.update(getGeneratedRequestToken(), this.SURL,
             statusCode, explanation);
         }
       } catch (IllegalArgumentException e) {

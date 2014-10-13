@@ -107,7 +107,7 @@ public class TReturnStatus implements Serializable {
 	protected void setExplanation(String explanationString) {
 
 		if (explanationString == null) {
-		  log.warn("TReturnStatus: NULL explanation converted to EMPTY");
+		  log.debug("TReturnStatus: NULL explanation converted to EMPTY");
 			explanation = EMPTY_EXPLANATION;
 		} else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
 			explanation = explanationString;
