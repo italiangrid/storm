@@ -39,11 +39,14 @@ public abstract class SurlRequestData implements RequestData {
 	protected TReturnStatus status;
 
 	public SurlRequestData(TSURL toSURL, TReturnStatus status)
-		throws IllegalArgumentException {
+		throws InvalidSurlRequestDataAttributesException {
 
-		setSURL(toSURL);
-		setStatus(status);
-	}
+	  if (toSURL == null || status == null || status.getStatusCode() == null) {
+      throw new InvalidSurlRequestDataAttributesException(toSURL, status);
+    }
+    this.SURL = toSURL;
+    this.status = status;
+  }
 
 	/**
 	 * Method that returns the TURL for this chunk of the srm request.
@@ -63,31 +66,24 @@ public abstract class SurlRequestData implements RequestData {
 		return status;
 	}
 	
-	public void setSURL(TSURL surl) {
-	  
-	  if (surl == null) {
-	    throw new IllegalArgumentException("SurlRequestData: SURL is null");
-	  }
-	  this.SURL = surl;
-	}
-	
 	/**
 	 * Method used to set the Status associated to this chunk. If status is null,
 	 * then nothing gets set!
-	 * @throws InvalidSurlRequestDataAttributesException 
 	 */
-  public void setStatus(TReturnStatus status)
-    throws IllegalArgumentException {
+  public void setStatus(TReturnStatus status) {
 
-	  if (status == null) {
-      throw new IllegalArgumentException("SurlRequestData: status is null");
+    if (status != null) {
+      this.status = status;
     }
-		this.status = status;
 	}
 
   protected void setStatus(TStatusCode statusCode, String explanation) {
 
-	  setStatus(new TReturnStatus(statusCode, explanation));
+    if (explanation == null) {
+      status = new TReturnStatus(statusCode);
+    } else {
+      status = new TReturnStatus(statusCode, explanation);
+    }
 	}
 
 	/**
