@@ -45,7 +45,6 @@ public class TReturnStatus implements Serializable {
 	protected String explanation = null;
 	private Long lastUpdateTIme = null;
 
-	private static final String UNDEFINED_EXPLANATION = "undefined";
 	private static final String EMPTY_EXPLANATION = "";
 	private static final int MAX_EXPLANATION_LENGTH = 255;
 
@@ -55,14 +54,13 @@ public class TReturnStatus implements Serializable {
 	public TReturnStatus(TStatusCode statusCode)
 		throws IllegalArgumentException {
 
-		this(statusCode, UNDEFINED_EXPLANATION);
+		this(statusCode, EMPTY_EXPLANATION);
 	}
 
 	/**
 	 * Can be Explanation String a null value?
 	 */
-	public TReturnStatus(TStatusCode statusCode, String explanation)
-		throws IllegalArgumentException {
+	public TReturnStatus(TStatusCode statusCode, String explanation) {
 
 	  setStatusCode(statusCode);
 	  setExplanation(explanation);
@@ -107,7 +105,6 @@ public class TReturnStatus implements Serializable {
 	protected void setExplanation(String explanationString) {
 
 		if (explanationString == null) {
-		  log.debug("TReturnStatus: NULL explanation converted to EMPTY");
 			explanation = EMPTY_EXPLANATION;
 		} else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
 			explanation = explanationString;

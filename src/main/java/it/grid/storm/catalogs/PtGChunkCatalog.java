@@ -26,7 +26,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;

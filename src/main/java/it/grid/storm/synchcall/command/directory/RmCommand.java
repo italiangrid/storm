@@ -131,6 +131,7 @@ public class RmCommand implements Command {
     List<TSURL> surls = null;
     boolean atLeastOneSuccess = false;
     boolean atLeastOneFailure = false;
+    boolean allUnauthorized = true;
     ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
     try {
@@ -155,15 +156,14 @@ public class RmCommand implements Command {
           returnStatus));
         atLeastOneSuccess |= returnStatus.isSRM_SUCCESS();
         atLeastOneFailure |= !returnStatus.isSRM_SUCCESS();
+        allUnauthorized &= returnStatus.getStatusCode().equals(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE);
         printSurlOutcome(returnStatus, data, surl);
       }
 
     }
-    if (surls.size() == 1) {
-      globalStatus = arrayOfFileStatus.getTSURLReturnStatus(0).getStatus();
-    } else {
-      globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure);
-    }
+    globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure,
+      allUnauthorized);
     outputData = new RmOutputData(globalStatus, arrayOfFileStatus);
 
     return outputData;
@@ -216,7 +216,7 @@ public class RmCommand implements Command {
   }
 
   private TReturnStatus computeGlobalStatus(boolean atLeastOneSuccess,
-    boolean atLeastOneFailure) {
+    boolean atLeastOneFailure, boolean allUnauthorized) {
 
     if (atLeastOneSuccess && !atLeastOneFailure) {
       return new TReturnStatus(TStatusCode.SRM_SUCCESS, "All files removed");
@@ -224,6 +224,10 @@ public class RmCommand implements Command {
     if (atLeastOneSuccess) {
       return new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
         "Some files were not removed");
+    }
+    if (allUnauthorized) {
+      return new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        "User is not authorized to remove any files");
     }
     return new TReturnStatus(TStatusCode.SRM_FAILURE, "No files removed");
   }

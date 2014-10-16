@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.*;
 
 import srmClientStubs.TReturnStatus;
