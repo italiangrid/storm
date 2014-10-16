@@ -640,11 +640,6 @@ public class SURLStatusDAO {
     }
   }
 
-//  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc) {
-//
-//    return new TReturnStatus(sc);
-//  }
-
   private TSURL surlFromString(String s) {
 
     try {
